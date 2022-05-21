@@ -30,6 +30,7 @@ public:
     float ReadFloat();
     double ReadDouble();
     char ReadChar();
+    char8_t ReadChar8();
     char16_t ReadWChar();
     char32_t ReadUChar();
     std::string ReadUtf8String();

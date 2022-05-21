@@ -105,7 +105,7 @@ JsonValue* JsonNumber::Clone() const
 
 std::string JsonNumber::ToString() const
 {
-    return std::to_string(value);
+    return ToUtf8(std::to_string(value));
 }
 
 JsonBool::JsonBool() : JsonValue(JsonValueType::boolean), value(false)
@@ -161,7 +161,7 @@ std::string JsonObject::GetStringField(const std::u32string& fieldName)
         }
         else
         {
-            throw std::runtime_error("error getting field " + ToUtf8(fieldName) + ": string field expected");
+            throw std::runtime_error("error getting field " + Utf8StringToPlatformString(ToUtf8(fieldName)) + ": string field expected");
         }
     }
     else

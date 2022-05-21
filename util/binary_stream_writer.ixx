@@ -29,6 +29,7 @@ public:
     void Write(float x);
     void Write(double x);
     void Write(char x);
+    void Write(char8_t x);
     void Write(char16_t x);
     void Write(char32_t x);
     void Write(const std::string& s);

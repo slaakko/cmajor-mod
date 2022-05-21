@@ -100,6 +100,11 @@ void BinaryStreamWriter::Write(char x)
     Write(static_cast<uint8_t>(x));
 }
 
+void BinaryStreamWriter::Write(char8_t x)
+{
+    Write(static_cast<uint8_t>(x));
+}
+
 void BinaryStreamWriter::Write(char16_t x)
 {
     Write(static_cast<uint16_t>(x));

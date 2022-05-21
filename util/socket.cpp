@@ -410,4 +410,14 @@ std::string ReadStr(TcpSocket& socket)
     return str;
 }
 
+void SocketInit()
+{
+    Sockets::Init();
+}
+
+void SocketDone()
+{
+    Sockets::Done();
+}
+
 } // namespace util
