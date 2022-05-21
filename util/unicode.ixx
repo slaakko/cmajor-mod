@@ -11,7 +11,7 @@ import util.binary.stream.reader;
 
 export namespace util {
 
-std::string CmajorVersionStr();
+std::string SoulVersionStr();
 std::string CmajorRoot();
 std::string CmajorUcdFilePath();
 
@@ -26,10 +26,13 @@ void ThrowUnicodeException(const std::string& message_);
 
 std::u32string ToUtf32(const std::string& utf8Str);
 std::u32string ToUtf32(const std::u16string& utf16Str);
+inline const std::u32string& ToUtf32(const std::u32string& utf32Str) { return utf32Str; }
 std::u16string ToUtf16(const std::u32string& utf32Str);
-std::u16string ToUtf16(const std::string& utf8Str);
+inline const std::u16string& ToUtf16(const std::u16string& utf16Str) { return utf16Str; }
+std::u16string ToUtf16(const std::string& u8str);
 std::string ToUtf8(const std::u32string& utf32Str);
 std::string ToUtf8(const std::u16string& utf16Str);
+inline const std::string& ToUtf8(const std::string& utf8Str) { return utf8Str; }
 
 class Utf8ToUtf32Engine
 {
@@ -1024,10 +1027,11 @@ private:
     std::vector<uint32_t> extendedPageStarts;
 };
 
-const uint8_t cmajor_ucd_version_1 = '1';
-const uint8_t cmajor_ucd_version_2 = '2';
-const uint8_t cmajor_ucd_version_3 = '3';
-const uint8_t current_cmajor_ucd_version = cmajor_ucd_version_3;
+const uint8_t soul_ucd_version_1 = '1';
+const uint8_t soul_ucd_version_2 = '2';
+const uint8_t soul_ucd_version_3 = '3';
+const uint8_t soul_ucd_version_4 = '4';
+const uint8_t current_soul_ucd_version = soul_ucd_version_4;
 
 enum class CharacterTableDataSource
 {

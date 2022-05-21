@@ -30,7 +30,7 @@ std::u32string ToUtf32(const std::string& utf8Str)
     int bytesRemaining = int(utf8Str.length());
     while (bytesRemaining > 0)
     {
-        char c = *p;
+        char8_t c = *p;
         uint8_t x = static_cast<uint8_t>(c);
         if ((x & 0x80u) == 0u)
         {
@@ -291,8 +291,8 @@ std::string ToUtf8(const std::u32string& utf32Str)
                 b0 = b0 | (static_cast<uint8_t>(x & 1u) << i);
                 x = x >> 1u;
             }
-            result.append(1, static_cast<char>(b0));
-            result.append(1, static_cast<char>(b1));
+            result.append(1, static_cast<char8_t>(b0));
+            result.append(1, static_cast<char8_t>(b1));
         }
         else if (x < 0x10000u)
         {
@@ -314,9 +314,9 @@ std::string ToUtf8(const std::u32string& utf32Str)
                 b0 = b0 | (static_cast<uint8_t>(x & 1u) << i);
                 x = x >> 1u;
             }
-            result.append(1, static_cast<char>(b0));
-            result.append(1, static_cast<char>(b1));
-            result.append(1, static_cast<char>(b2));
+            result.append(1, static_cast<char8_t>(b0));
+            result.append(1, static_cast<char8_t>(b1));
+            result.append(1, static_cast<char8_t>(b2));
         }
         else if (x < 0x110000u)
         {
@@ -344,10 +344,10 @@ std::string ToUtf8(const std::u32string& utf32Str)
                 b0 = b0 | (static_cast<uint8_t>(x & 1u) << i);
                 x = x >> 1u;
             }
-            result.append(1, static_cast<char>(b0));
-            result.append(1, static_cast<char>(b1));
-            result.append(1, static_cast<char>(b2));
-            result.append(1, static_cast<char>(b3));
+            result.append(1, static_cast<char8_t>(b0));
+            result.append(1, static_cast<char8_t>(b1));
+            result.append(1, static_cast<char8_t>(b2));
+            result.append(1, static_cast<char8_t>(b3));
         }
         else
         {

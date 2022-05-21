@@ -8,37 +8,36 @@ module util.unicode;
 import util.text.util;
 import util.path;
 import util.memory.stream;
-import util.deflate.stream;
 import util.buffered.stream;
 import util.file.stream;
 import std.filesystem;
 
 namespace util {
 
-std::string CmajorVersionStr()
+std::string SoulVersionStr()
 {
-    return "4.3.0";
+    return "4.0.0";
 }
 
-std::string CmajorRoot()
+std::string SoulRoot()
 {
-    std::string cmajorRoot;
+    std::string soulRoot;
 #pragma warning(suppress : 4996)
-    const char* cmajorRootEnv = std::getenv("CMAJOR_ROOT");
-    if (cmajorRootEnv)
+    const char* soulRootEnv = std::getenv("SOUL_ROOT");
+    if (soulRootEnv)
     {
-        cmajorRoot = cmajorRootEnv;
+        soulRoot = soulRootEnv;
     }
-    if (cmajorRoot.empty())
+    if (soulRoot.empty())
     {
-        throw UnicodeException("please set 'CMAJOR_ROOT' environment variable to contain /path/to/cmajor directory.");
+        throw UnicodeException("please set 'SOUL_ROOT' environment variable to contain /path/to/soul directory.");
     }
-    return cmajorRoot;
+    return soulRoot;
 }
 
-std::string CmajorUcdFilePath()
+std::string SoulUcdFilePath()
 {
-    return (std::filesystem::path(CmajorRoot()) / std::filesystem::path("unicode") / std::filesystem::path("cmajor_ucd.bin")).generic_string();
+    return (std::filesystem::path(SoulRoot()) / std::filesystem::path("unicode") / std::filesystem::path("soul_ucd.bin")).generic_string();
 }
 
 std::u32string ToUpper(const std::u32string& s)
@@ -1539,8 +1538,8 @@ std::unique_ptr<CharacterTable> CharacterTable::instance;
 
 const uint8_t headerMagic[8] =
 {
-    static_cast<uint8_t>('C'), static_cast<uint8_t>('M'), static_cast<uint8_t>('A'), static_cast<uint8_t>('J'),
-    static_cast<uint8_t>('U'), static_cast<uint8_t>('C'), static_cast<uint8_t>('D'), current_cmajor_ucd_version
+    static_cast<uint8_t>('S'), static_cast<uint8_t>('O'), static_cast<uint8_t>('U'), static_cast<uint8_t>('L'),
+    static_cast<uint8_t>('U'), static_cast<uint8_t>('C'), static_cast<uint8_t>('D'), current_soul_ucd_version
 };
 
 CharacterTable::CharacterTable() : dataSource(CharacterTableDataSource::file), data(nullptr), size(0), headerRead(false), extendedHeaderStart(0), extendedHeaderEnd(0), extendedHeaderRead(false)
@@ -1549,7 +1548,7 @@ CharacterTable::CharacterTable() : dataSource(CharacterTableDataSource::file), d
 
 std::string CharacterTable::FilePath() const
 {
-    std::string ucdFilePath = CmajorUcdFilePath();
+    std::string ucdFilePath = SoulUcdFilePath();
     return ucdFilePath;
 }
 
@@ -1570,24 +1569,6 @@ int64_t CharacterTable::GetUncompressedFileSize() const
     std::string ucdFilePath = FilePath();
     return std::filesystem::file_size(ucdFilePath);
 }
-
-#ifdef _WIN32
-void CharacterTable::SetDeflateData(uint8_t* deflateData, int64_t deflateSize, int64_t uncompressedSize)
-{
-    MemoryStream memoryStream(deflateData, deflateSize);
-    DeflateStream deflateStream(CompressionMode::decompress, memoryStream);
-    BufferedStream bufferedStream(deflateStream);
-    BinaryStreamReader reader(bufferedStream);
-    memory.clear();
-    memory.reserve(uncompressedSize);
-    for (int64_t i = 0; i < uncompressedSize; ++i)
-    {
-        uint8_t x = reader.ReadByte();
-        memory.push_back(x);
-    }
-    SetData(memory.data(), memory.size());
-}
-#endif
 
 Streams CharacterTable::GetReadStreams()
 {
@@ -1635,30 +1616,6 @@ void CharacterTable::Write()
     writer.GetStream().Seek(0, Origin::seekSet);
     WriteHeader(writer);
 }
-
-#ifdef _WIN32
-void CharacterTable::WriteDeflate()
-{
-    std::string ucdFilePath = FilePath();
-    Streams readStreams;
-    FileStream* file = new FileStream(ucdFilePath, OpenMode::read | OpenMode::binary);
-    int64_t size = file->Size();
-    readStreams.Add(file);
-    readStreams.Add(new BufferedStream(*file));
-    BinaryStreamReader reader(readStreams.Back());
-    Streams writeStreams;
-    writeStreams.Add(new FileStream(DeflateFilePath(), OpenMode::write | OpenMode::binary));
-    writeStreams.Add(new BufferedStream(writeStreams.Back()));
-    writeStreams.Add(new DeflateStream(CompressionMode::compress, writeStreams.Back()));
-    writeStreams.Add(new BufferedStream(writeStreams.Back()));
-    BinaryStreamWriter writer(writeStreams.Back());
-    for (int64_t i = 0; i < size; ++i)
-    {
-        uint8_t x = reader.ReadByte();
-        writer.Write(x);
-    }
-}
-#endif
 
 void CharacterTable::WriteHeader(BinaryStreamWriter& writer)
 {

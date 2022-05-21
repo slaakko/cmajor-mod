@@ -60,6 +60,7 @@ private:
 
 CodeFormatter& operator<<(CodeFormatter& f, const std::string& s);
 CodeFormatter& operator<<(CodeFormatter& f, const char* s);
+CodeFormatter& operator<<(CodeFormatter& f, const char8_t* s);
 CodeFormatter& operator<<(CodeFormatter& f, char c);
 CodeFormatter& operator<<(CodeFormatter& f, bool b);
 CodeFormatter& operator<<(CodeFormatter& f, int x);

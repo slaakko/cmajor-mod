@@ -1,0 +1,29 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.lexer.error;
+
+import std.core;
+import soul.lexer.source.pos;
+
+export namespace soul::lexer {
+
+class ParsingException : public std::runtime_error
+{
+public:
+    ParsingException(const std::string& message_, const std::string& fileName_, const SourcePos& sourcePos_);
+    const std::string& Project() const { return project; }
+    void SetProject(const std::string& project_);
+    const std::string& Message() const { return message; }
+    const std::string& FileName() const { return fileName; }
+    const SourcePos& GetSourcePos() const { return sourcePos; }
+private:
+    std::string project;
+    std::string message;
+    std::string fileName;
+    SourcePos sourcePos;
+};
+
+} // namespace soul::lexer

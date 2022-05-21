@@ -99,6 +99,12 @@ char BinaryStreamReader::ReadChar()
     return static_cast<char>(x);
 }
 
+char8_t BinaryStreamReader::ReadChar8()
+{
+    uint8_t x = ReadByte();
+    return static_cast<char8_t>(x);
+}
+
 char16_t BinaryStreamReader::ReadWChar()
 {
     uint16_t x = ReadUShort();
