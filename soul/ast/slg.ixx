@@ -70,11 +70,14 @@ class TokenCollection : public Collection
 {
 public:    
     TokenCollection(const std::string& name_);
+    bool Initialized() const { return initialized; }
+    void SetInitialized() { initialized = true; }
     void AddToken(Token* token);
     const std::vector<std::unique_ptr<Token>>& Tokens() const { return tokens; }
     int32_t Id() const { return id; }
     Token* GetToken(int64_t id) const;
 private:
+    bool initialized;
     int32_t id;
     std::vector<std::unique_ptr<Token>> tokens;
     std::map<int64_t, Token*> tokenMap;
@@ -141,6 +144,7 @@ public:
     void SetIndex(int index_) { index = index_; }
     const std::string& Id() const { return id; }
     const std::string& Value() const { return value; }
+    const std::string& FileName() const;
     int Line() const { return line; }
 private:
     int index;
@@ -174,15 +178,24 @@ class Rule
 {
 public:
     Rule(const std::string& expr_, soul::ast::cpp::CompoundStatementNode* code_, int action_, int line_);
+    int Index() const { return index; }
+    void SetIndex(int index_) { index = index_; }
+    void SetCollection(Collection* collection_) { collection = collection_; }
+    Collection* GetCollection() const { return collection; }
     const std::string& Expr() const { return expr; }
     soul::ast::cpp::CompoundStatementNode* Code() const { return code.get(); }
     int Action() const { return action; }
     int Line() const { return line; }
+    int NfaIndex() const { return nfaIndex; }
+    void SetNfaIndex(int nfaIndex_) { nfaIndex = nfaIndex_; }
 private:
+    int index;
     std::string expr;
     std::unique_ptr<soul::ast::cpp::CompoundStatementNode> code;
     int action;
     int line;
+    Collection* collection;
+    int nfaIndex;
 };
 
 class Variable
@@ -199,12 +212,12 @@ private:
 class Action
 {
 public:
-    Action(int id_, soul::ast::cpp::CompoundStatementNode* stmt_);
+    Action(int id_, soul::ast::cpp::CompoundStatementNode* code_);
     int Id() const { return id; }
-    soul::ast::cpp::CompoundStatementNode* Stmt() const { return stmt.get(); }
+    soul::ast::cpp::CompoundStatementNode* Code() const { return code.get(); }
 private:
     int id;
-    std::unique_ptr<soul::ast::cpp::CompoundStatementNode> stmt;
+    std::unique_ptr<soul::ast::cpp::CompoundStatementNode> code;
 };
 
 class Actions
@@ -222,12 +235,18 @@ class Lexer : public Collection
 public:
     Lexer(const std::string& name_);
     void AddRule(Rule* rule);
+    const std::vector<std::unique_ptr<Rule>>& Rules() const { return rules; }
     void AddVariable(Variable* variable);
+    const std::vector<std::unique_ptr<Variable>>& Variables() const { return variables; }
     void AddAction(Action* action);
+    const Actions& GetActions() const { return actions; }
+    const std::string& VariableClassName() const { return variableClassName; }
+    void SetVariableClassName(const std::string& variableClassName_);
 private:
     std::vector<std::unique_ptr<Rule>> rules;
     std::vector<std::unique_ptr<Variable>> variables;
     Actions actions;
+    std::string variableClassName;
 };
 
 class LexerFile : public File
@@ -314,6 +333,43 @@ private:
     std::vector<std::unique_ptr<LexerFile>> lexerFiles;
     std::vector<Collection*> collections;
     std::map<std::string, Collection*> collectionMap;
+};
+
+class ClassMap
+{
+public:
+    ClassMap();
+};
+
+class Tokens
+{
+public:
+    Tokens();
+    void AddToken(Token* token);
+    const std::vector<Token*>& GetTokens() const { return tokens; }
+private:
+    std::vector<Token*> tokens;
+};
+
+class Keywords
+{
+public:
+    Keywords();
+    void AddKeyword(Keyword* keyword);
+    const std::vector<Keyword*>& GetKeywords() const { return keywords; }
+private:
+    std::vector<Keyword*> keywords;
+};
+
+class Expressions
+{
+public:
+    Expressions();
+    void AddExpression(Expression* expression);
+    Expression* GetExpression(const std::string& id) const;
+private:
+    std::vector<Expression*> expressions;
+    std::map<std::string, Expression*> expressionMap;
 };
 
 } // namespace soul::ast::slg

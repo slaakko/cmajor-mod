@@ -156,6 +156,8 @@
   <ItemGroup>
     <ClCompile Include="cpp.cpp" />
     <ClCompile Include="cpp.ixx" />
+    <ClCompile Include="re.cpp" />
+    <ClCompile Include="re.ixx" />
     <ClCompile Include="slg.cpp" />
     <ClCompile Include="slg.ixx" />
     <ClCompile Include="spg.cpp" />

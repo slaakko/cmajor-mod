@@ -28,6 +28,7 @@ class Node
 public:
     Node();
     virtual ~Node();
+    virtual Node* Clone() const = 0;
     virtual void Accept(Visitor& visitor) = 0;
     virtual void Write(CodeFormatter& formatter) = 0;
     virtual void Add(Node* node) {}
@@ -58,6 +59,7 @@ class ThisNode : public Node
 {
 public:
     ThisNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return "this"; }
@@ -66,12 +68,14 @@ public:
 class IdExprNode : public Node
 {
 public:
-    IdExprNode(const std::string& value_);
+    IdExprNode(const std::string& id_);
+    const std::string& Id() const { return id; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
-    std::string ToString() const override { return value; }
+    std::string ToString() const override { return id; }
 private:
-    std::string value;
+    std::string id;
 };
 
 class IndexExprNode : public UnaryNode
@@ -79,6 +83,7 @@ class IndexExprNode : public UnaryNode
 public:
     IndexExprNode(Node* child_, Node* index_);
     Node* Index() const { return index.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -90,6 +95,7 @@ class InvokeNode : public UnaryNode
 {
 public:
     InvokeNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     void Add(Node* node) override;
@@ -104,6 +110,7 @@ class MemberAccessNode : public UnaryNode
 public:
     MemberAccessNode(Node* child_, Node* member_);
     Node* Member() const { return member.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -116,6 +123,7 @@ class PtrMemberAccessNode : public UnaryNode
 public:
     PtrMemberAccessNode(Node* child_, Node* member_);
     Node* Member() const { return member.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -127,6 +135,7 @@ class PostIncrementNode : public UnaryNode
 {
 public:
     PostIncrementNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -136,6 +145,7 @@ class PostDecrementNode : public UnaryNode
 {
 public:
     PostDecrementNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -151,6 +161,7 @@ class StaticCastNode : public CppCastNode
 {
 public:
     StaticCastNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return "static_cast"; }
@@ -160,6 +171,7 @@ class DynamicCastNode : public CppCastNode
 {
 public:
     DynamicCastNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return "dynamic_cast"; }
@@ -169,6 +181,7 @@ class ReinterpretCastNode : public CppCastNode
 {
 public:
     ReinterpretCastNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return "reinterpret_cast"; }
@@ -178,6 +191,7 @@ class ConstCastNode : public CppCastNode
 {
 public:
     ConstCastNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return "const_cast"; }
@@ -189,6 +203,7 @@ public:
     PostCastNode(CppCastNode* cppCastNode_, Node* type_, Node* child_);
     CppCastNode* GetCppCastNode() const { return cppCastNode.get(); }
     Node* Type() const { return type.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -201,6 +216,7 @@ class TypeIdExprNode : public UnaryNode
 {
 public:
     TypeIdExprNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -210,6 +226,7 @@ class PreIncrementNode : public UnaryNode
 {
 public:
     PreIncrementNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -219,6 +236,7 @@ class PreDecrementNode : public UnaryNode
 {
 public:
     PreDecrementNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -229,6 +247,7 @@ class UnaryOpExprNode : public UnaryNode
 public:
     UnaryOpExprNode(Operator op_, Node* child_);
     Operator Op() const { return op; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -240,6 +259,7 @@ class SizeOfNode : public UnaryNode
 {
 public:
     SizeOfNode(Node* child_, bool parens_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -252,6 +272,7 @@ class CastNode : public UnaryNode
 public:
     CastNode(Node* type_, Node* child_);
     Node* Type() const { return type.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -264,6 +285,7 @@ class BinaryOpExprNode : public BinaryNode
 public:
     BinaryOpExprNode(Operator op_, Node* left_, Node* right_);
     Operator Op() const { return op; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -275,6 +297,7 @@ class ConditionalNode : public Node
 {
 public:
     ConditionalNode(Node* condition_, Node* thenExpr_, Node* elseExpr_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     Node* Condition() const { return condition.get(); }
@@ -291,6 +314,8 @@ class ThrowExprNode : public Node
 {
 public:
     ThrowExprNode(Node* exception_);
+    Node* Exception() const { return exception.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -311,8 +336,10 @@ public:
     void EndAddToInitializer() { addToPlacement = false; }
     void Add(Node* node) override;
     void SetTypeId(Node* typeId_);
+    Node* TypeId() const { return typeId.get(); }
     const std::vector<std::unique_ptr<Node>>& Placement() const { return placement; }
     const std::vector<std::unique_ptr<Node>>& Initializer() const { return initializer; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -332,6 +359,7 @@ public:
     DeleteNode(bool global_, bool isArray_, Node* child_);
     bool Global() const { return global; }
     bool IsArray() const { return isArray; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -344,6 +372,7 @@ class ParenExprNode : public UnaryNode
 {
 public:
     ParenExprNode(Node* child_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -354,6 +383,7 @@ class LiteralNode : public Node
 public:
     LiteralNode(const std::string& rep_);
     const std::string& Rep() const { return rep; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return rep; }
@@ -374,6 +404,7 @@ public:
     LabeledStatementNode(const std::string& label_, StatementNode* stmt_);
     const std::string& Label() const { return label; }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -387,6 +418,7 @@ public:
     CaseStatementNode(Node* caseExpr_, StatementNode* stmt_);
     Node* CaseExpr() const { return caseExpr.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -399,6 +431,7 @@ class DefaultStatementNode : public StatementNode
 public:
     DefaultStatementNode(StatementNode* stmt_);
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -409,6 +442,7 @@ class EmptyStatementNode : public StatementNode
 {
 public:
     EmptyStatementNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 };
@@ -418,6 +452,7 @@ class ExpressionStatementNode : public StatementNode
 public:
     ExpressionStatementNode(Node* expr_);
     Node* Expr() const { return expr.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -432,6 +467,7 @@ public:
     void Add(StatementNode* stmt);
     const std::vector<std::unique_ptr<StatementNode>>& Statements() const { return statements; };
     bool IsCompoundStatementNode() const override { return true; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -445,6 +481,7 @@ public:
     Node* Cond() const { return cond.get(); }
     StatementNode* ThenStmt() const { return thenStmt.get(); }
     StatementNode* ElseStmt() const { return elseStmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -459,6 +496,7 @@ public:
     SwitchStatementNode(Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -472,6 +510,7 @@ public:
     WhileStatementNode(Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -485,6 +524,7 @@ public:
     DoStatementNode(Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -500,6 +540,7 @@ public:
     Node* Cond() const { return cond.get(); }
     Node* Iter() const { return iter.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -513,6 +554,7 @@ class BreakStatementNode : public StatementNode
 {
 public:
     BreakStatementNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 };
@@ -521,6 +563,7 @@ class ContinueStatementNode : public StatementNode
 {
 public:
     ContinueStatementNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 };
@@ -530,6 +573,7 @@ class GotoStatementNode : public StatementNode
 public:
     GotoStatementNode(const std::string& target_);
     const std::string& Target() const { return target; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -541,6 +585,7 @@ class ReturnStatementNode : public StatementNode
 public:
     ReturnStatementNode(Node* expr_);
     Node* Expr() const { return expr.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -553,8 +598,9 @@ class ConditionWithDeclaratorNode : public Node
 {
 public:
     ConditionWithDeclaratorNode(TypeIdNode* type_, const std::string& declarator_, Node* expression_);
-    void Write(CodeFormatter& formatter) override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
+    void Write(CodeFormatter& formatter) override;
     TypeIdNode* Type() const { return type.get(); }
     const std::string& Declarator() const { return declarator; }
     Node* Expression() const { return expression.get(); }
@@ -571,6 +617,7 @@ public:
     TypeIdNode* TypeId() const { return typeId.get(); }
     const std::string& Declarator() const { return declarator; }
     void SetDeclarator(const std::string& declarator_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -585,6 +632,7 @@ public:
     ForRangeDeclarationNode* Declaration() const { return declaration.get(); }
     Node* Container() const { return container.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -598,6 +646,7 @@ class DeclarationStatementNode : public StatementNode
 public:
     DeclarationStatementNode(Node* declaration_);
     Node* Declaration() const { return declaration.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -610,8 +659,10 @@ public:
     ExceptionDeclarationNode();
     TypeIdNode* TypeId() const { return typeId.get(); }
     const std::string& Declarator() const { return declarator; }
+    void SetDeclarator(const std::string& declarator_);
     bool CatchAll() const { return catchAll; }
     void SetCatchAll() { catchAll = true; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -626,6 +677,7 @@ public:
     HandlerNode(ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_);
     ExceptionDeclarationNode* ExceptionDeclaration() const { return exceptionDeclaration.get(); }
     CompoundStatementNode* HandlerBlock() const { return handlerBlock.get(); }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -640,6 +692,7 @@ public:
     CompoundStatementNode* TryBlock() const { return tryBlock.get(); }
     void AddHandler(HandlerNode* handler);
     const std::vector<std::unique_ptr<HandlerNode>>& Handlers() const { return handlers; }
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
 private:
@@ -654,9 +707,10 @@ public:
     Node* AssignmentExpr() const { return assignmentExpr.get(); }
     const std::vector<std::unique_ptr<AssignInitNode>>& SubInits() const { return subInits; }
     void Add(AssignInitNode* subInit);
+    Node* Clone() const override;
+    void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
-    void Accept(Visitor& visitor) override;
 private:
     std::unique_ptr<Node> assignmentExpr;
     std::vector<std::unique_ptr<AssignInitNode>> subInits;
@@ -671,6 +725,7 @@ public:
     void Add(Node* expr) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::unique_ptr<AssignInitNode> assignInit;
@@ -685,6 +740,7 @@ public:
     InitializerNode* GetInitializer() const { return initializer.get(); }
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::string declarator;
@@ -699,6 +755,7 @@ public:
     void Add(InitDeclaratorNode* initDeclarator);
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::vector<std::unique_ptr<InitDeclaratorNode>> initDeclarators;
@@ -717,6 +774,7 @@ class TypedefNode : public DeclSpecifierNode
 {
 public:
     TypedefNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -726,6 +784,7 @@ class TypeSpecifierNode : public DeclSpecifierNode
 {
 public:
     TypeSpecifierNode(const std::string& name_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return Name(); }
@@ -735,6 +794,7 @@ class ConstNode : public TypeSpecifierNode
 {
 public:
     ConstNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 };
 
@@ -742,6 +802,7 @@ class VolatileNode : public TypeSpecifierNode
 {
 public:
     VolatileNode();
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 };
 
@@ -750,11 +811,13 @@ class TypeNameNode : public TypeSpecifierNode
 public:
     TypeNameNode(const std::string& name_);
     void AddTemplateArgument(Node* templateArgument);
+    const std::vector<std::unique_ptr<Node>>& TemplateArgs() const { return templateArguments; }
     bool IsTemplate() const { return isTemplate; }
     void SetTemplate() { isTemplate = true; }
     std::string ToString() const override;
     void Write(CodeFormatter& formatter) override;
     void Accept(Visitor& visitor) override;
+    Node* Clone() const override;
 private:
     bool isTemplate;
     std::vector<std::unique_ptr<Node>> templateArguments;
@@ -765,8 +828,10 @@ class TypeNode : public Node
 public:
     TypeNode();
     void Add(TypeSpecifierNode* typeSpecifier);
+    const std::vector<std::unique_ptr<TypeSpecifierNode>>& TypeSpecifiers() const { return typeSpecifiers; }
     std::string ToString() const override;
     void Write(CodeFormatter& formatter) override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::vector<std::unique_ptr<TypeSpecifierNode>> typeSpecifiers;
@@ -776,6 +841,7 @@ class StorageClassSpecifierNode : public DeclSpecifierNode
 {
 public:
     StorageClassSpecifierNode(const std::string& name_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -789,6 +855,7 @@ public:
     const std::vector<std::unique_ptr<TypeSpecifierNode>>& TypeSpecifiers() const { return typeSpecifiers; }
     const std::string& Declarator() const { return declarator; }
     void SetDeclarator(const std::string& declarator_);
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
@@ -807,6 +874,7 @@ public:
     InitDeclaratorListNode* GetInitDeclaratorList() const { return initDeclaratorList.get(); }
     void Write(CodeFormatter& formatter) override;
     void Accept(Visitor& visitor) override;
+    Node* Clone() const override;
 private:
     std::vector<std::unique_ptr<DeclSpecifierNode>> declSpecifiers;
     std::unique_ptr<InitDeclaratorListNode> initDeclaratorList;
@@ -826,6 +894,7 @@ class NamespaceAliasNode : public UsingObjectNode
 public:
     NamespaceAliasNode(const std::string& aliasName_, const std::string& namespaceName_);
     void Write(CodeFormatter& formatter) override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::string aliasName;
@@ -838,6 +907,7 @@ public:
     UsingDeclarationNode(const std::string& usingId_);
     const std::string& UsingId() const { return usingId; }
     void Write(CodeFormatter& formatter) override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::string usingId;
@@ -849,6 +919,7 @@ public:
     UsingDirectiveNode(const std::string& usingNs_);
     const std::string& UsingNs() const { return usingNs; }
     void Write(CodeFormatter& formatter) override;
+    Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 private:
     std::string usingNs;
@@ -916,11 +987,78 @@ public:
     virtual void Visit(TypeNameNode& node) {}
     virtual void Visit(TypeNode& node) {}
     virtual void Visit(StorageClassSpecifierNode& node) {}
-    virtual void Visit(TypeIdNode& node);
+    virtual void Visit(TypeIdNode& node) {}
     virtual void Visit(SimpleDeclarationNode& node) {}
     virtual void Visit(NamespaceAliasNode& node) {}
     virtual void Visit(UsingDeclarationNode& node) {}
     virtual void Visit(UsingDirectiveNode& node) {}
+};
+
+class DefaultVisitor : public Visitor
+{
+public:
+    void Visit(IndexExprNode& node) override;
+    void Visit(InvokeNode& node) override;
+    void Visit(MemberAccessNode& node) override;
+    void Visit(PtrMemberAccessNode& node) override;
+    void Visit(PostIncrementNode& node) override;
+    void Visit(PostDecrementNode& node) override;
+    void Visit(PostCastNode& node) override;
+    void Visit(TypeIdExprNode& node) override;
+    void Visit(PreIncrementNode& node) override;
+    void Visit(PreDecrementNode& node) override;
+    void Visit(UnaryOpExprNode& node) override;
+    void Visit(SizeOfNode& node) override;
+    void Visit(CastNode& node) override;
+    void Visit(BinaryOpExprNode& node) override;
+    void Visit(ConditionalNode& node) override;
+    void Visit(ThrowExprNode& node) override;
+    void Visit(NewNode& node) override;
+    void Visit(DeleteNode& node) override;
+    void Visit(ParenExprNode& node) override;
+    void Visit(LabeledStatementNode& node) override;
+    void Visit(CaseStatementNode& node) override;
+    void Visit(DefaultStatementNode& node) override;
+    void Visit(ExpressionStatementNode& node) override;
+    void Visit(CompoundStatementNode& node) override;
+    void Visit(IfStatementNode& node) override;
+    void Visit(SwitchStatementNode& node) override;
+    void Visit(WhileStatementNode& node) override;
+    void Visit(DoStatementNode& node) override;
+    void Visit(ForStatementNode& node) override;
+    void Visit(ReturnStatementNode& node) override;
+    void Visit(ConditionWithDeclaratorNode& node) override;
+    void Visit(ForRangeDeclarationNode& node) override;
+    void Visit(RangeForStatementNode& node) override;
+    void Visit(DeclarationStatementNode& node) override;
+    void Visit(ExceptionDeclarationNode& node) override;
+    void Visit(HandlerNode& node) override;
+    void Visit(TryStatementNode& node) override;
+    void Visit(AssignInitNode& node) override;
+    void Visit(InitializerNode& node) override;
+    void Visit(InitDeclaratorNode& node) override;
+    void Visit(InitDeclaratorListNode& node) override;
+    void Visit(TypeNameNode& node) override;
+    void Visit(TypeNode& node) override;
+    void Visit(TypeIdNode& node) override;
+    void Visit(SimpleDeclarationNode& node) override;
+};
+
+class CodeEvaluationVisitor : public DefaultVisitor
+{
+public:
+    CodeEvaluationVisitor();
+    bool HasReturn() const { return hasReturn; }
+    bool HasPass() const { return hasPass; }
+    bool HasSourcePos() const { return hasSourcePos; }
+    bool HasVars() const { return hasVars; }
+    void Visit(ReturnStatementNode& node) override;
+    void Visit(IdExprNode& node) override;
+private:
+    bool hasReturn;
+    bool hasPass;
+    bool hasSourcePos;
+    bool hasVars;
 };
 
 } // namespace soul::ast::cpp

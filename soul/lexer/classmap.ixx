@@ -41,19 +41,16 @@ ClassMap<Char>* MakeClassMap(const std::string& classMapName)
     BinaryResourcePtr resource(currentExecutableName, classMapName);
     MemoryStream memoryStream(resource.Data(), resource.Size());
     BinaryStreamReader rawReader(memoryStream);
-    int64_t size = rawReader.ReadLong();
-    int32_t upperBound = rawReader.ReadInt();
-    int8_t* bytes = static_cast<int8_t*>(malloc(size));
+    int32_t size = rawReader.ReadInt();
+    int32_t* data = new int32_t[size];
     DeflateStream compressedStream(CompressionMode::decompress, memoryStream);
-    BufferedStream bufferedStream(compressedStream);
-    BinaryStreamReader reader(bufferedStream);
+    BinaryStreamReader reader(compressedStream);
     for (int64_t i = 0; i < size; ++i)
     {
-        uint8_t x = reader.ReadByte();
-        bytes[i] = x;
+        int32_t x = reader.ReadInt();
+        data[i] = x;
     }
-    int32_t* data = static_cast<int32_t*>(static_cast<void*>(bytes));
-    ClassMap<Char>* classMap = new ClassMap<Char>(data, upperBound);
+    ClassMap<Char>* classMap = new ClassMap<Char>(data, size);
     return classMap;
 }
 
