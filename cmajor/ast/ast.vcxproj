@@ -152,6 +152,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ast.ixx" />
+    <ClCompile Include="ast_reader.cpp" />
+    <ClCompile Include="ast_reader.ixx" />
+    <ClCompile Include="ast_writer.cpp" />
+    <ClCompile Include="ast_writer.ixx" />
     <ClCompile Include="basic_type.cpp" />
     <ClCompile Include="basic_type.ixx" />
     <ClCompile Include="clone.cpp" />
