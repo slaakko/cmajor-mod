@@ -31,7 +31,7 @@ Token::Token(const std::string& name_, const std::string& info_) : id(-1), name(
 {
 }
 
-TokenCollection::TokenCollection(const std::string& name_) : Collection(CollectionKind::tokenCollection, name_), id(std::hash<std::string>{}(Name()) & 0x7FFFFFFF)
+TokenCollection::TokenCollection(const std::string& name_) : Collection(CollectionKind::tokenCollection, name_), initialized(false), id(std::hash<std::string>{}(Name()) & 0x7FFFFFFF)
 {
 }
 
@@ -107,6 +107,13 @@ Expression::Expression(const std::string& id_, const std::string& value_, int li
 {
 }
 
+const std::string& Expression::FileName() const
+{
+    Collection* collection = GetCollection();
+    File* file = collection->GetFile();
+    return file->FilePath();
+}
+
 ExpressionCollection::ExpressionCollection(const std::string& name_) : Collection(CollectionKind::expressionCollection, name_)
 {
 }
@@ -127,7 +134,8 @@ void ExpressionFile::SetExpressionCollection(ExpressionCollection* expressionCol
     expressionCollection->SetFile(this);
 }
 
-Rule::Rule(const std::string& expr_, soul::ast::cpp::CompoundStatementNode* code_, int action_, int line_) : expr(expr_), code(code_), action(action_), line(line_)
+Rule::Rule(const std::string& expr_, soul::ast::cpp::CompoundStatementNode* code_, int action_, int line_) : 
+    index(-1), expr(expr_), code(code_), action(action_), line(line_), collection(nullptr), nfaIndex(-1)
 {
 }
 
@@ -135,13 +143,14 @@ Variable::Variable(soul::ast::cpp::TypeIdNode* type_, const std::string& name_) 
 {
 }
 
-Action::Action(int id_, soul::ast::cpp::CompoundStatementNode* stmt_) : id(id_), stmt(stmt_)
+Action::Action(int id_, soul::ast::cpp::CompoundStatementNode* code_) : id(id_), code(code_)
 {
 }
 
 void Actions::AddAction(Action* action)
 {
     actions.push_back(std::unique_ptr<Action>(action));
+    actionMap[action->Id()] = action;
 }
 
 Action* Actions::GetAction(int id) const
@@ -163,6 +172,8 @@ Lexer::Lexer(const std::string& name_) : Collection(CollectionKind::lexer, name_
 
 void Lexer::AddRule(Rule* rule)
 {
+    rule->SetIndex(rules.size());
+    rule->SetCollection(this);
     rules.push_back(std::unique_ptr<Rule>(rule));
 }
 
@@ -174,6 +185,11 @@ void Lexer::AddVariable(Variable* variable)
 void Lexer::AddAction(Action* action)
 {
     actions.AddAction(action);
+}
+
+void Lexer::SetVariableClassName(const std::string& variableClassName_)
+{
+    variableClassName = variableClassName_;
 }
 
 LexerFile::LexerFile(const std::string& filePath_) : File(FileKind::lexerFile, filePath_)
@@ -193,6 +209,7 @@ void LexerFile::AddImport(soul::ast::spg::Import* imp)
 void LexerFile::SetLexer(Lexer* lexer_)
 {
     lexer.reset(lexer_);
+    lexer->SetFile(this);
 }
 
 SlgFileDeclaration::SlgFileDeclaration(SlgFileDeclarationKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_)
@@ -291,6 +308,53 @@ Collection* SlgFile::GetCollection(const std::string& name) const
     else
     {
         throw std::runtime_error("collection '" + name + "' not found");
+    }
+}
+
+Tokens::Tokens()
+{
+}
+
+void Tokens::AddToken(Token* token)
+{
+    tokens.push_back(token);
+}
+
+Keywords::Keywords()
+{
+}
+
+void Keywords::AddKeyword(Keyword* keyword)
+{
+    keywords.push_back(keyword);
+}
+
+Expressions::Expressions()
+{
+}
+
+void Expressions::AddExpression(Expression* expression)
+{
+    expression->SetIndex(expressions.size());
+    expressions.push_back(expression);
+    Expression* prevExpr = GetExpression(expression->Id());
+    if (prevExpr)
+    {
+        throw std::runtime_error("expression '" + expression->Id() + "' already defined");
+    }
+    expressionMap[expression->Id()] = expression;
+}
+
+Expression* Expressions::GetExpression(const std::string& id) const
+{
+    auto it = expressionMap.find(id);
+    if (it != expressionMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
     }
 }
 

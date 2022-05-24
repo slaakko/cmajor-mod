@@ -7,14 +7,12 @@ module soul.ast.spg;
 
 import util;
 
-using namespace util;
-
 namespace soul::ast::spg {
 
 std::string ToNamespaceName(const std::string& qualifiedId)
 {
     std::string namespaceName;
-    std::vector<std::string> components = Split(qualifiedId, '.');
+    std::vector<std::string> components = util::Split(qualifiedId, '.');
     bool first = true;
     for (const auto& component : components)
     {
