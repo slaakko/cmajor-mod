@@ -6,34 +6,61 @@
 export module soul.ast.spg;
 
 import std.core;
+import soul.ast.common;
 
 export namespace soul::ast::spg {
-
-std::string ToNamespaceName(const std::string& qualifiedId);
-
-class ExportModule
+    
+enum class FileKind
 {
-public:
-    ExportModule(const std::string& moduleName_);
-    const std::string& ModuleName() const { return moduleName; }
-private:
-    std::string moduleName;
+    spgFile, parserFile
 };
 
-enum class ImportPrefix
-{
-    interfacePrefix, implementationPrefix
-};
-
-class Import
+class File
 {
 public:
-    Import(const std::string& moduleName_, ImportPrefix prefix_);
-    const std::string& ModuleName() const { return moduleName; }
-    ImportPrefix Prefix() const { return prefix; }
+    File(FileKind kind_, const std::string& filePath_);
+    FileKind Kind() const { return kind; }
+    const std::string& FilePath() const { return filePath; }
 private:
-    std::string moduleName;
-    ImportPrefix prefix;
+    FileKind kind;
+    std::string filePath;
+};
+
+class SpgFileDeclaration
+{
+public:
+    SpgFileDeclaration(FileKind fileKind_, const std::string& filePath_);
+    virtual ~SpgFileDeclaration();
+    FileKind GetFileKind() const { return fileKind; }
+    const std::string& FilePath() const { return filePath; }
+private:
+    FileKind fileKind;
+    std::string filePath;
+};
+
+class ParserFileDeclaration : public SpgFileDeclaration
+{
+public:
+    ParserFileDeclaration(const std::string& filePath_);
+};
+
+class ParserFile : public File
+{
+public:
+    ParserFile(const std::string& filePath_);
+};
+
+class SpgFile : public File
+{
+public:
+    SpgFile(const std::string& filePath_, const std::string& projectName_);
+    const std::string& ProjectName() const { return projectName; }
+    void AddDeclaration(SpgFileDeclaration* declaration);
+    const std::vector<std::unique_ptr<SpgFileDeclaration>>& Declarations() const { return declarations; }
+private:
+    std::string projectName;
+    std::vector<std::unique_ptr<SpgFileDeclaration>> declarations;
+    std::vector<std::unique_ptr<ParserFile>> parserFiles;
 };
 
 } // namespace soul::ast::spg

@@ -757,7 +757,6 @@ Nfa Opt(LexerContext& lexerContext, const Nfa& nfa)
     return opt;
 }
 
-//DfaState::DfaState(int id_, const std::vector<NfaState*>& nfaStates_) : id(id_), nfaStates(nfaStates_), next(), marked(false), accept(false), ruleIndex(-1)
 DfaState::DfaState(int id_, const std::vector<int>& nfaStateIds_) : id(id_), nfaStateIds(nfaStateIds_), next(), marked(false), accept(false), ruleIndex(-1)
 {
 }
@@ -779,13 +778,12 @@ DfaState* DfaState::Next(int i) const
     }
 }
 
-/*
 void DfaState::Print(LexerContext& context, CodeFormatter& formatter)
 {
     std::string str = std::to_string(id);
     str.append("[");
     bool first = true;
-    for (NfaState* nfaState : nfaStates)
+    for (int nfaStateId : nfaStateIds)
     {
         if (first)
         {
@@ -795,7 +793,7 @@ void DfaState::Print(LexerContext& context, CodeFormatter& formatter)
         {
             str.append(", ");
         }
-        str.append(std::to_string(nfaState->Id()));
+        str.append(std::to_string(nfaStateId));
     }
     str.append("]");
     if (accept)
@@ -823,7 +821,6 @@ void DfaState::Print(LexerContext& context, CodeFormatter& formatter)
     }
     formatter.DecIndent();
 }
-*/
 
 void Dfa::AddState(DfaState* state)
 {
@@ -849,7 +846,6 @@ void Dfa::Finalize(LexerContext& lexerContext)
     }
 }
 
-/*
 void Dfa::Print(LexerContext& lexerContext, CodeFormatter& formatter)
 {
     formatter.WriteLine("DFA:");
@@ -859,7 +855,6 @@ void Dfa::Print(LexerContext& lexerContext, CodeFormatter& formatter)
     }
     formatter.WriteLine();
 }
-*/
 
 std::vector<int> EpsilonClosure(LexerContext& lexerContext, const std::vector<int>& stateIds)
 {
@@ -960,8 +955,13 @@ ExprParser::~ExprParser()
 LexerContext::LexerContext() :
     nextNfaStateId(0), nextDfaStateId(0), ruleIndex(-1), classIndex(0), any(), epsilon(eps), 
     asciiIdStart(new Class(classIndex++)), asciiIdCont(new Class(classIndex++)), unicodeIdStart(new Class(classIndex++)), unicodeIdCont(new Class(classIndex++)),
-    classMap(nullptr), tokens(nullptr), keywords(nullptr), expressions(nullptr), lexer(nullptr), currentExpression(nullptr), exprParser(nullptr), masterNfaIndex(-1)
+    tokens(nullptr), keywords(nullptr), expressions(nullptr), lexer(nullptr), currentExpression(nullptr), exprParser(nullptr), masterNfaIndex(-1)
 {
+    symbols.push_back(asciiIdStart);
+    symbols.push_back(asciiIdCont);
+    symbols.push_back(unicodeIdStart);
+    symbols.push_back(unicodeIdCont);
+
     asciiIdStart->SetName("{ascii_id_start}");
     asciiIdStart->AddSymbol(MakeRange('A', 'Z'));
     asciiIdStart->AddSymbol(MakeRange('a', 'z'));

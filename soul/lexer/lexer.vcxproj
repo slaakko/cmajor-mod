@@ -159,6 +159,8 @@
     <ClCompile Include="concepts.ixx" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
+    <ClCompile Include="file_map.cpp" />
+    <ClCompile Include="file_map.ixx" />
     <ClCompile Include="keyword.ixx" />
     <ClCompile Include="lexeme.ixx" />
     <ClCompile Include="lexer.ixx" />

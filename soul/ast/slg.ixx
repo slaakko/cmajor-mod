@@ -6,7 +6,7 @@
 export module soul.ast.slg;
 
 import std.core;
-import soul.ast.spg;
+import soul.ast.common;
 import soul.ast.cpp;
 
 export namespace soul::ast::slg {
@@ -127,11 +127,11 @@ public:
     KeywordFile(const std::string& filePath_);
     void SetKeywordCollection(KeywordCollection* keywordCollection_);
     KeywordCollection* GetKeywordCollection() const { return keywordCollection.get(); }
-    void AddImport(soul::ast::spg::Import* imp);
-    const std::vector<std::unique_ptr<soul::ast::spg::Import>>& Imports() const { return imports; }
+    void AddImport(soul::ast::common::Import* imp);
+    const std::vector<std::unique_ptr<soul::ast::common::Import>>& Imports() const { return imports; }
 private:
     std::unique_ptr<KeywordCollection> keywordCollection;
-    std::vector<std::unique_ptr<soul::ast::spg::Import>> imports;
+    std::vector<std::unique_ptr<soul::ast::common::Import>> imports;
 };
 
 class Expression
@@ -253,15 +253,15 @@ class LexerFile : public File
 {
 public:
     LexerFile(const std::string& filePath_);
-    void SetExportModule(soul::ast::spg::ExportModule* exportModule_);
-    soul::ast::spg::ExportModule* GetExportModule() const { return exportModule.get(); }
-    void AddImport(soul::ast::spg::Import* imp);
-    const std::vector<std::unique_ptr<soul::ast::spg::Import>>& Imports() const { return imports; }
+    void SetExportModule(soul::ast::common::ExportModule* exportModule_);
+    soul::ast::common::ExportModule* GetExportModule() const { return exportModule.get(); }
+    void AddImport(soul::ast::common::Import* imp);
+    const std::vector<std::unique_ptr<soul::ast::common::Import>>& Imports() const { return imports; }
     void SetLexer(Lexer* lexer_);
     Lexer* GetLexer() const { return lexer.get(); }
 private:
-    std::unique_ptr<soul::ast::spg::ExportModule> exportModule;
-    std::vector<std::unique_ptr<soul::ast::spg::Import>> imports;
+    std::unique_ptr<soul::ast::common::ExportModule> exportModule;
+    std::vector<std::unique_ptr<soul::ast::common::Import>> imports;
     std::unique_ptr<Lexer> lexer;
 };
 
@@ -309,8 +309,7 @@ public:
 class SlgFile : public File
 {
 public:
-    SlgFile(const std::string& filePath_);
-    void SetProjectName(const std::string& projectName_);
+    SlgFile(const std::string& filePath_, const std::string& projectName_);
     const std::string& ProjectName() const { return projectName; }
     void AddDeclaration(SlgFileDeclaration* declaration);
     const std::vector<std::unique_ptr<SlgFileDeclaration>>& Declarations() const { return declarations; }
@@ -333,12 +332,6 @@ private:
     std::vector<std::unique_ptr<LexerFile>> lexerFiles;
     std::vector<Collection*> collections;
     std::map<std::string, Collection*> collectionMap;
-};
-
-class ClassMap
-{
-public:
-    ClassMap();
 };
 
 class Tokens

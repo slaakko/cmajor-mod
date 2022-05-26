@@ -23,6 +23,7 @@ template<typename Machine, typename Char>
 concept FiniteStateMachine = requires(Machine machine, Char chr, LexerBase<Char>& lexer)
 {
     { machine.NextState(int{}, chr, lexer) } -> std::same_as<int>;  // returns next state id when given current state id, current input char and lexer ref
+    typename Variables;
 };
 
 template<typename Stack>

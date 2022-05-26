@@ -16,6 +16,7 @@ export import soul.lexer.error;
 export import soul.lexer.source.pos;
 export import soul.lexer.parsing.log;
 export import soul.lexer.xml.parsing.log;
+export import soul.lexer.file.map;
 
 import std.core;
 import util.unicode;
@@ -92,10 +93,12 @@ class Lexer : public LexerBase<Char>
 public:
     using CharType = Char;
     using TokenType = Token<Char, LexerBase<Char>>;
+    using VariableClassType = Machine::Variables;
 
     Lexer(const Char* start_, const Char* end_, const std::string& fileName_) :
         flags(LexerFlags::none), 
-        line(1), 
+        file(-1),
+        line(1),
         current(tokens.end()), 
         token(this),
         separatorChar('\0'), 
@@ -164,6 +167,14 @@ public:
     const std::string& FileName() const override
     {
         return fileName;
+    }
+    int File() const override
+    {
+        return file;
+    }
+    void SetFile(int file_)
+    {
+        file = file_;
     }
     int Line() const override
     {
@@ -284,7 +295,7 @@ public:
         }
         Token token = GetToken(pos);
         int col = static_cast<int>(token.match.begin - s + 1);
-        return SourcePos(pos, line, col);
+        return SourcePos(pos, file, line, col);
     }
     std::string ErrorLines(int64_t pos) const
     {
@@ -352,6 +363,15 @@ public:
             restOfLine = restOfLine.substr(0, maxLineLength);
         }
         return restOfLine;
+    }
+    std::vector<int> GetLineStartIndeces() const
+    {
+        std::vector<int> lineStartIndeces;
+        for (int i = 0; i < lineStarts.size(); ++i)
+        {
+            lineStartIndeces.push_back(static_cast<int>(lineStarts[i] - start));
+        }
+        return lineStartIndeces;
     }
 private:
     void NextToken()
@@ -465,6 +485,7 @@ private:
     std::vector<Token<Char, LexerBase<Char>>>::iterator current;
     Token<Char, LexerBase<Char>> token;
     Lexeme<Char> lexeme;
+    int32_t file;
     int32_t line;
     const Char* start;
     const Char* end;

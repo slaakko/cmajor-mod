@@ -25,6 +25,7 @@ public:
     virtual const Lexeme<Char>& CurrentLexeme() const = 0;
     virtual const Token<Char, Self>& GetToken(int64_t pos) const = 0;
     virtual const std::string& FileName() const = 0;
+    virtual int File() const = 0;
     virtual int Line() const = 0;
     virtual ClassMap<Char>* GetClassMap() const = 0;
     virtual void SetClassMap(ClassMap<Char>* classMap) = 0;

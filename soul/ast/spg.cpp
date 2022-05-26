@@ -9,32 +9,33 @@ import util;
 
 namespace soul::ast::spg {
 
-std::string ToNamespaceName(const std::string& qualifiedId)
-{
-    std::string namespaceName;
-    std::vector<std::string> components = util::Split(qualifiedId, '.');
-    bool first = true;
-    for (const auto& component : components)
-    {
-        if (first)
-        {
-            first = false;
-        }
-        else
-        {
-            namespaceName.append("::");
-        }
-        namespaceName.append(component);
-    }
-    return namespaceName;
-}
-
-ExportModule::ExportModule(const std::string& moduleName_) : moduleName(moduleName_)
+File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_)
 {
 }
 
-Import::Import(const std::string& moduleName_, ImportPrefix prefix_) : moduleName(moduleName_), prefix(prefix_)
+SpgFileDeclaration::SpgFileDeclaration(FileKind fileKind_, const std::string& filePath_) : fileKind(fileKind_), filePath(filePath_)
 {
+}
+
+SpgFileDeclaration::~SpgFileDeclaration()
+{
+}
+
+ParserFileDeclaration::ParserFileDeclaration(const std::string& filePath_) : SpgFileDeclaration(FileKind::parserFile, filePath_)
+{
+}
+
+ParserFile::ParserFile(const std::string& filePath_) : File(FileKind::parserFile, filePath_)
+{
+}
+
+SpgFile::SpgFile(const std::string& filePath_, const std::string& projectName_) : File(FileKind::spgFile, filePath_), projectName(projectName_)
+{
+}
+
+void SpgFile::AddDeclaration(SpgFileDeclaration* declaration)
+{
+    declarations.push_back(std::unique_ptr<SpgFileDeclaration>(declaration));
 }
 
 } // namespace soul::ast::spg

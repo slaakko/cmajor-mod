@@ -7,6 +7,7 @@ export module soul.lexer.error;
 
 import std.core;
 import soul.lexer.source.pos;
+import soul.lexer.file.map;
 
 export namespace soul::lexer {
 
@@ -25,5 +26,7 @@ private:
     std::string fileName;
     SourcePos sourcePos;
 };
+
+std::string MakeErrorMessage(const std::string& msg, const SourcePos& sourcePos, const FileMap& fileMap);
 
 } // namespace soul::lexer
