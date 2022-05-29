@@ -23,9 +23,12 @@ public:
     virtual ~File();
     FileKind Kind() const { return kind; }
     const std::string& FilePath() const { return filePath; }
+    bool IsExternal() const { return external; }
+    void SetExternal() { external = true; }
 private:
     FileKind kind;
     std::string filePath;
+    bool external;
 };
 
 enum class CollectionKind
@@ -285,7 +288,10 @@ private:
 class TokenFileDeclaration : public SlgFileDeclaration
 {
 public:
-    TokenFileDeclaration(const std::string& filePath_);
+    TokenFileDeclaration(const std::string& filePath_, bool external_);
+    bool External() const { return external; }
+private:
+    bool external;
 };
 
 class KeywordFileDeclaration : public SlgFileDeclaration

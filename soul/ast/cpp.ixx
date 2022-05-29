@@ -27,12 +27,17 @@ class Node
 {
 public:
     Node();
+    Node* Parent() const { return parent; }
+    void SetParent(Node* parent_) { parent = parent_; }
     virtual ~Node();
     virtual Node* Clone() const = 0;
     virtual void Accept(Visitor& visitor) = 0;
     virtual void Write(CodeFormatter& formatter) = 0;
     virtual void Add(Node* node) {}
     virtual std::string ToString() const { return std::string(); }
+    virtual void Replace(Node* node, Node* replacement) {}
+private:
+    Node* parent;
 };
 
 class UnaryNode : public Node
@@ -40,6 +45,7 @@ class UnaryNode : public Node
 public:
     UnaryNode(Node* child_);
     Node* Child() const { return child.get(); }
+    void Replace(Node* node, Node* replacement) override;
 private:
     std::unique_ptr<Node> child;
 };
@@ -50,9 +56,26 @@ public:
     BinaryNode(Node* left_, Node* right_);
     Node* Left() const { return left.get(); }
     Node* Right() const { return right.get(); }
+    void Replace(Node* node, Node* replacement) override;
 private:
     std::unique_ptr<Node> left;
     std::unique_ptr<Node> right;
+};
+
+class ExprListNode : public Node
+{
+public:
+    ExprListNode();
+    Node* Clone() const override;
+    void Accept(Visitor& visitor) override;
+    void Write(CodeFormatter& formatter) override;
+    std::string ToString() const override;
+    void Add(Node* node) override;
+    void Replace(Node* node, Node* replacement) override;
+    const std::vector<std::unique_ptr<Node>>& Exprs() const { return exprs; }
+    int Count() const { return exprs.size(); }
+private:
+    std::vector<std::unique_ptr<Node>> exprs;
 };
 
 class ThisNode : public Node
@@ -70,6 +93,7 @@ class IdExprNode : public Node
 public:
     IdExprNode(const std::string& id_);
     const std::string& Id() const { return id; }
+    void SetId(const std::string& id_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -99,6 +123,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     void Add(Node* node) override;
+    void Replace(Node* node, Node* replacement) override;
     const std::vector<std::unique_ptr<Node>>& Args() const { return args; }
     std::string ToString() const override;
 private:
@@ -465,6 +490,7 @@ public:
     CompoundStatementNode();
     void InsertFront(StatementNode* stmt);
     void Add(StatementNode* stmt);
+    void Replace(Node* node, Node* replacement) override;
     const std::vector<std::unique_ptr<StatementNode>>& Statements() const { return statements; };
     bool IsCompoundStatementNode() const override { return true; }
     Node* Clone() const override;
@@ -585,6 +611,7 @@ class ReturnStatementNode : public StatementNode
 public:
     ReturnStatementNode(Node* expr_);
     Node* Expr() const { return expr.get(); }
+    void SetExpr(Node* expr_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -700,6 +727,30 @@ private:
     std::vector<std::unique_ptr<HandlerNode>> handlers;
 };
 
+class IfdefStatementNode : public StatementNode
+{
+public:
+    IfdefStatementNode(Node* symbol_);
+    Node* Clone() const override;
+    void Accept(Visitor& visitor) override;
+    void Write(CodeFormatter& formatter) override;
+    Node* Symbol() const { return symbol.get(); }
+private:
+    std::unique_ptr<Node> symbol;
+};
+
+class EndIfStatementNode : public StatementNode
+{
+public:
+    EndIfStatementNode(Node* comment_);
+    Node* Clone() const override;
+    void Accept(Visitor& visitor) override;
+    void Write(CodeFormatter& formatter) override;
+    Node* Comment() const { return comment.get(); }
+private:
+    std::unique_ptr<Node> comment;
+};
+
 class AssignInitNode : public Node
 {
 public:
@@ -780,14 +831,23 @@ public:
     std::string ToString() const override;
 };
 
+enum class TypeSpecifierNodeKind
+{
+    typeSpecifierNode, constNode, volatileNode, typeNameNode
+};
+
 class TypeSpecifierNode : public DeclSpecifierNode
 {
 public:
     TypeSpecifierNode(const std::string& name_);
+    TypeSpecifierNode(TypeSpecifierNodeKind kind_, const std::string& name_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return Name(); }
+    TypeSpecifierNodeKind Kind() const { return kind;  };
+private:
+    TypeSpecifierNodeKind kind;
 };
 
 class ConstNode : public TypeSpecifierNode
@@ -858,7 +918,9 @@ public:
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
+    void WriteNonPtrType(CodeFormatter& formatter);
     std::string ToString() const override;
+    bool IsPtrType() const;
 private:
     std::vector<std::unique_ptr<TypeSpecifierNode>> typeSpecifiers;
     std::string declarator;
@@ -928,6 +990,7 @@ private:
 class Visitor
 {
 public:
+    virtual void Visit(ExprListNode& node) {}
     virtual void Visit(ThisNode& node) {}
     virtual void Visit(IdExprNode& node) {}
     virtual void Visit(IndexExprNode& node) {}
@@ -976,6 +1039,8 @@ public:
     virtual void Visit(ExceptionDeclarationNode& node) {}
     virtual void Visit(HandlerNode& node) {}
     virtual void Visit(TryStatementNode& node) {}
+    virtual void Visit(IfdefStatementNode& node) {}
+    virtual void Visit(EndIfStatementNode& node) {}
     virtual void Visit(AssignInitNode& node) {}
     virtual void Visit(InitializerNode& node) {}
     virtual void Visit(InitDeclaratorNode& node) {}
@@ -997,6 +1062,7 @@ public:
 class DefaultVisitor : public Visitor
 {
 public:
+    void Visit(ExprListNode& node) override;
     void Visit(IndexExprNode& node) override;
     void Visit(InvokeNode& node) override;
     void Visit(MemberAccessNode& node) override;
@@ -1034,6 +1100,8 @@ public:
     void Visit(ExceptionDeclarationNode& node) override;
     void Visit(HandlerNode& node) override;
     void Visit(TryStatementNode& node) override;
+    void Visit(IfdefStatementNode& node) override;
+    void Visit(EndIfStatementNode& node) override;
     void Visit(AssignInitNode& node) override;
     void Visit(InitializerNode& node) override;
     void Visit(InitDeclaratorNode& node) override;
@@ -1050,14 +1118,12 @@ public:
     CodeEvaluationVisitor();
     bool HasReturn() const { return hasReturn; }
     bool HasPass() const { return hasPass; }
-    bool HasSourcePos() const { return hasSourcePos; }
     bool HasVars() const { return hasVars; }
     void Visit(ReturnStatementNode& node) override;
     void Visit(IdExprNode& node) override;
 private:
     bool hasReturn;
     bool hasPass;
-    bool hasSourcePos;
     bool hasVars;
 };
 

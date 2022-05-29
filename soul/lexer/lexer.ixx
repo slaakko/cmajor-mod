@@ -17,6 +17,7 @@ export import soul.lexer.source.pos;
 export import soul.lexer.parsing.log;
 export import soul.lexer.xml.parsing.log;
 export import soul.lexer.file.map;
+export import soul.lexer.lexing.util;
 
 import std.core;
 import util.unicode;
@@ -108,12 +109,12 @@ public:
         fileName(fileName_), 
         countLines(true), 
         classMap(nullptr),
-        vars(nullptr),
         tokenCollection(nullptr),
         keywordMap(nullptr),
         ruleNameVecPtr(nullptr),
         farthestPos(GetPos()),
-        log(nullptr)
+        log(nullptr),
+        vars()
     {
         ComputeLineStarts();
     }
@@ -188,14 +189,12 @@ public:
     {
         classMap = classMap_;
     }
-    Variables* GetVariables() const override
-    {
-        return vars;
-    }
+/*
     void SetVariables(Variables* vars_) override
     {
-        vars = vars_;
+        
     }
+*/
     soul::ast::slg::TokenCollection* GetTokenCollection() const override
     {
         return tokenCollection;
@@ -373,6 +372,10 @@ public:
         }
         return lineStartIndeces;
     }
+    soul::lexer::Variables* GetVariables() const override 
+    { 
+        return const_cast<soul::lexer::Variables*>(static_cast<const soul::lexer::Variables*>(&vars));
+    }
 private:
     void NextToken()
     {
@@ -493,7 +496,6 @@ private:
     std::string fileName;
     bool countLines;
     ClassMap<Char>* classMap;
-    Variables* vars;
     soul::ast::slg::TokenCollection* tokenCollection;
     KeywordMap<Char>* keywordMap;
     int64_t farthestPos;
@@ -502,6 +504,7 @@ private:
     std::vector<const Char*> lineStarts;
     std::vector<std::string>* ruleNameVecPtr;
     ParsingLog* log;
+    Machine::Variables vars;
 };
 
 inline std::string GetEndTokenInfo()

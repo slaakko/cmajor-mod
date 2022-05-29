@@ -7,7 +7,7 @@ module soul.ast.slg;
 
 namespace soul::ast::slg {
 
-File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_)
+File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_), external(false)
 {
 }
 
@@ -220,7 +220,8 @@ SlgFileDeclaration::~SlgFileDeclaration()
 {
 }
 
-TokenFileDeclaration::TokenFileDeclaration(const std::string& filePath_) : SlgFileDeclaration(SlgFileDeclarationKind::tokenFileDeclaration, filePath_)
+TokenFileDeclaration::TokenFileDeclaration(const std::string& filePath_, bool external_) : 
+    SlgFileDeclaration(SlgFileDeclarationKind::tokenFileDeclaration, filePath_), external(external_)
 {
 }
 
