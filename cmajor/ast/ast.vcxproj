@@ -165,6 +165,8 @@
     <ClCompile Include="init_done.ixx" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node.ixx" />
+    <ClCompile Include="node_list.cpp" />
+    <ClCompile Include="node_list.ixx" />
     <ClCompile Include="specifier.cpp" />
     <ClCompile Include="specifier.ixx" />
     <ClCompile Include="visitor.ixx" />

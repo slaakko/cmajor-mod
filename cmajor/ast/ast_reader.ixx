@@ -19,7 +19,7 @@ import util;
 import cmajor.ast.specifier;
 import soul.lexer.source.pos;
 
-namespace cmajor::ast {
+export namespace cmajor::ast {
 
 class Node;
 class IdentifierNode;
