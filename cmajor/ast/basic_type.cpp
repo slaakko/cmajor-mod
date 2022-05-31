@@ -9,7 +9,7 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-BoolNode::BoolNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::boolNode, sourcePos_, moduleId_)
+BoolNode::BoolNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::boolNode, sourcePos_, moduleId_)
 {
 }
 
@@ -24,7 +24,7 @@ void BoolNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-SByteNode::SByteNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::sbyteNode, sourcePos_, moduleId_)
+SByteNode::SByteNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::sbyteNode, sourcePos_, moduleId_)
 {
 }
 
@@ -39,7 +39,7 @@ void SByteNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ByteNode::ByteNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::byteNode, sourcePos_, moduleId_)
+ByteNode::ByteNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::byteNode, sourcePos_, moduleId_)
 {
 }
 
@@ -54,7 +54,7 @@ void ByteNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ShortNode::ShortNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::shortNode, sourcePos_, moduleId_)
+ShortNode::ShortNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::shortNode, sourcePos_, moduleId_)
 {
 }
 
@@ -69,7 +69,7 @@ void ShortNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UShortNode::UShortNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ushortNode, sourcePos_, moduleId_)
+UShortNode::UShortNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ushortNode, sourcePos_, moduleId_)
 {
 }
 
@@ -84,7 +84,7 @@ void UShortNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-IntNode::IntNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::intNode, sourcePos_, moduleId_)
+IntNode::IntNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::intNode, sourcePos_, moduleId_)
 {
 }
 
@@ -99,7 +99,7 @@ void IntNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UIntNode::UIntNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::uintNode, sourcePos_, moduleId_)
+UIntNode::UIntNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::uintNode, sourcePos_, moduleId_)
 {
 }
 
@@ -114,7 +114,7 @@ void UIntNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-LongNode::LongNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::longNode, sourcePos_, moduleId_)
+LongNode::LongNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::longNode, sourcePos_, moduleId_)
 {
 }
 
@@ -129,7 +129,7 @@ void LongNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ULongNode::ULongNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ulongNode, sourcePos_, moduleId_)
+ULongNode::ULongNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ulongNode, sourcePos_, moduleId_)
 {
 }
 
@@ -144,7 +144,7 @@ void ULongNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-FloatNode::FloatNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::floatNode, sourcePos_, moduleId_)
+FloatNode::FloatNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::floatNode, sourcePos_, moduleId_)
 {
 }
 
@@ -159,7 +159,7 @@ void FloatNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-DoubleNode::DoubleNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::doubleNode, sourcePos_, moduleId_)
+DoubleNode::DoubleNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::doubleNode, sourcePos_, moduleId_)
 {
 }
 
@@ -174,7 +174,7 @@ void DoubleNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CharNode::CharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::charNode, sourcePos_, moduleId_)
+CharNode::CharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::charNode, sourcePos_, moduleId_)
 {
 }
 
@@ -189,7 +189,7 @@ void CharNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-WCharNode::WCharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::wcharNode, sourcePos_, moduleId_)
+WCharNode::WCharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::wcharNode, sourcePos_, moduleId_)
 {
 }
 
@@ -204,7 +204,7 @@ void WCharNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UCharNode::UCharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ucharNode, sourcePos_, moduleId_)
+UCharNode::UCharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::ucharNode, sourcePos_, moduleId_)
 {
 }
 
@@ -219,7 +219,7 @@ void UCharNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-VoidNode::VoidNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::voidNode, sourcePos_, moduleId_)
+VoidNode::VoidNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::voidNode, sourcePos_, moduleId_)
 {
 }
 

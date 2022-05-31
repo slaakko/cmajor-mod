@@ -167,7 +167,6 @@
     <ClCompile Include="lexing_util.ixx" />
     <ClCompile Include="parsing_log.cpp" />
     <ClCompile Include="parsing_log.ixx" />
-    <ClCompile Include="source_pos.ixx" />
     <ClCompile Include="token.ixx" />
     <ClCompile Include="token_parser.ixx" />
     <ClCompile Include="variables.cpp" />

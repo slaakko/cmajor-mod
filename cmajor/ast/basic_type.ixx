@@ -13,7 +13,7 @@ export namespace cmajor::ast {
 class BoolNode : public Node
 {
 public:
-    BoolNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    BoolNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "bool"; }
@@ -22,7 +22,7 @@ public:
 class SByteNode : public Node
 {
 public:
-    SByteNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SByteNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "sbyte"; }
@@ -31,7 +31,7 @@ public:
 class ByteNode : public Node
 {
 public:
-    ByteNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ByteNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsUnsignedTypeNode() const override { return true; }
@@ -41,7 +41,7 @@ public:
 class ShortNode : public Node
 {
 public:
-    ShortNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ShortNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "short"; }
@@ -50,7 +50,7 @@ public:
 class UShortNode : public Node
 {
 public:
-    UShortNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UShortNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsUnsignedTypeNode() const override { return true; }
@@ -60,7 +60,7 @@ public:
 class IntNode : public Node
 {
 public:
-    IntNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    IntNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "int"; }
@@ -69,7 +69,7 @@ public:
 class UIntNode : public Node
 {
 public:
-    UIntNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UIntNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsUnsignedTypeNode() const override { return true; }
@@ -79,7 +79,7 @@ public:
 class LongNode : public Node
 {
 public:
-    LongNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    LongNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "long"; }
@@ -88,7 +88,7 @@ public:
 class ULongNode : public Node
 {
 public:
-    ULongNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ULongNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsUnsignedTypeNode() const override { return true; }
@@ -98,7 +98,7 @@ public:
 class FloatNode : public Node
 {
 public:
-    FloatNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    FloatNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "float"; }
@@ -107,7 +107,7 @@ public:
 class DoubleNode : public Node
 {
 public:
-    DoubleNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    DoubleNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "double"; }
@@ -116,7 +116,7 @@ public:
 class CharNode : public Node
 {
 public:
-    CharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    CharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "char"; }
@@ -125,7 +125,7 @@ public:
 class WCharNode : public Node
 {
 public:
-    WCharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    WCharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "wchar"; }
@@ -134,7 +134,7 @@ public:
 class UCharNode : public Node
 {
 public:
-    UCharNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UCharNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "uchar"; }
@@ -143,7 +143,7 @@ public:
 class VoidNode : public Node
 {
 public:
-    VoidNode(const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    VoidNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "void"; }

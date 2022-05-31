@@ -7,6 +7,7 @@ export module soul.ast.cpp;
 
 import std.core;
 import util.code.formatter;
+import soul.ast.source.pos;
 
 export namespace soul::ast::cpp {
 
@@ -23,10 +24,25 @@ enum class Operator
 
 std::string OperatorStr(Operator op);
 
+enum class NodeKind
+{
+    exprListNode, thisNode, idExprNode, indexExprNode, invokeNode, memberAccessNode, ptrMemberAccessNode, postIncrementNode, postDecrementNode,
+    staticCastNode, dynamicCastNode, reinterpretCastNode, constCastNode, postCastNode, typeIdExprNode, preIncrementNode, preDecrementNode,
+    unaryOpExprNode, sizeOfNode, castNode, binaryOpExprNode, conditionalNode, throwExprNode, newNode, deleteNode, parenExprNode, literalNode,
+    labeledStatementNode, caseStatementNode, defaultStatementNode, emptyStatementNode, expressionStatementNode, compoundStatementNode,
+    ifStatementNode, switchStatementNode, whileStatementNode, doStatementNode, forStatementNode, breakStatementNode, continueStatementNode,
+    gotoStatementNode, returnStatementNode, conditionWithDeclaratorNode, forRangeDeclarationNode, rangeForStatementNode, declarationStatementNode,
+    exceptionDeclarationNode, handlerNode, tryStatementNode, ifdefStatementNode, endIfStatementNode, assignInitNode, initializerNode,
+    initDeclaratorNode, initDeclaratorListNode, typedefNode, typeSpecifierNode, constNode, volatileNode, typeNameNode, typeNode,
+    storageClassSpecifierNode, typeIdNode, simpleDeclarationNode, namespaceAliasNode, usingDeclarationNode, usingDirectiveNode
+};
+
 class Node
 {
 public:
-    Node();
+    Node(NodeKind kind_, const soul::ast::SourcePos& sourcePos_);
+    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
+    NodeKind Kind() const { return kind; }
     Node* Parent() const { return parent; }
     void SetParent(Node* parent_) { parent = parent_; }
     virtual ~Node();
@@ -37,13 +53,15 @@ public:
     virtual std::string ToString() const { return std::string(); }
     virtual void Replace(Node* node, Node* replacement) {}
 private:
+    NodeKind kind;
+    soul::ast::SourcePos sourcePos;
     Node* parent;
 };
 
 class UnaryNode : public Node
 {
 public:
-    UnaryNode(Node* child_);
+    UnaryNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Child() const { return child.get(); }
     void Replace(Node* node, Node* replacement) override;
 private:
@@ -53,7 +71,7 @@ private:
 class BinaryNode : public Node
 {
 public:
-    BinaryNode(Node* left_, Node* right_);
+    BinaryNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, Node* left_, Node* right_);
     Node* Left() const { return left.get(); }
     Node* Right() const { return right.get(); }
     void Replace(Node* node, Node* replacement) override;
@@ -65,7 +83,7 @@ private:
 class ExprListNode : public Node
 {
 public:
-    ExprListNode();
+    ExprListNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -81,7 +99,7 @@ private:
 class ThisNode : public Node
 {
 public:
-    ThisNode();
+    ThisNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -91,7 +109,7 @@ public:
 class IdExprNode : public Node
 {
 public:
-    IdExprNode(const std::string& id_);
+    IdExprNode(const soul::ast::SourcePos& sourcePos_, const std::string& id_);
     const std::string& Id() const { return id; }
     void SetId(const std::string& id_);
     Node* Clone() const override;
@@ -105,7 +123,7 @@ private:
 class IndexExprNode : public UnaryNode
 {
 public:
-    IndexExprNode(Node* child_, Node* index_);
+    IndexExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* index_);
     Node* Index() const { return index.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -118,7 +136,7 @@ private:
 class InvokeNode : public UnaryNode
 {
 public:
-    InvokeNode(Node* child_);
+    InvokeNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -133,7 +151,7 @@ private:
 class MemberAccessNode : public UnaryNode
 {
 public:
-    MemberAccessNode(Node* child_, Node* member_);
+    MemberAccessNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* member_);
     Node* Member() const { return member.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -146,7 +164,7 @@ private:
 class PtrMemberAccessNode : public UnaryNode
 {
 public:
-    PtrMemberAccessNode(Node* child_, Node* member_);
+    PtrMemberAccessNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* member_);
     Node* Member() const { return member.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -159,7 +177,7 @@ private:
 class PostIncrementNode : public UnaryNode
 {
 public:
-    PostIncrementNode(Node* child_);
+    PostIncrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -169,7 +187,7 @@ public:
 class PostDecrementNode : public UnaryNode
 {
 public:
-    PostDecrementNode(Node* child_);
+    PostDecrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -179,13 +197,13 @@ public:
 class CppCastNode : public Node
 {
 public:
-    CppCastNode();
+    CppCastNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_);
 };
 
 class StaticCastNode : public CppCastNode
 {
 public:
-    StaticCastNode();
+    StaticCastNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -195,7 +213,7 @@ public:
 class DynamicCastNode : public CppCastNode
 {
 public:
-    DynamicCastNode();
+    DynamicCastNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -205,7 +223,7 @@ public:
 class ReinterpretCastNode : public CppCastNode
 {
 public:
-    ReinterpretCastNode();
+    ReinterpretCastNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -215,7 +233,7 @@ public:
 class ConstCastNode : public CppCastNode
 {
 public:
-    ConstCastNode();
+    ConstCastNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -225,7 +243,7 @@ public:
 class PostCastNode : public UnaryNode
 {
 public:
-    PostCastNode(CppCastNode* cppCastNode_, Node* type_, Node* child_);
+    PostCastNode(const soul::ast::SourcePos& sourcePos_, CppCastNode* cppCastNode_, Node* type_, Node* child_);
     CppCastNode* GetCppCastNode() const { return cppCastNode.get(); }
     Node* Type() const { return type.get(); }
     Node* Clone() const override;
@@ -240,7 +258,7 @@ private:
 class TypeIdExprNode : public UnaryNode
 {
 public:
-    TypeIdExprNode(Node* child_);
+    TypeIdExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -250,7 +268,7 @@ public:
 class PreIncrementNode : public UnaryNode
 {
 public:
-    PreIncrementNode(Node* child_);
+    PreIncrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -260,7 +278,7 @@ public:
 class PreDecrementNode : public UnaryNode
 {
 public:
-    PreDecrementNode(Node* child_);
+    PreDecrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -270,7 +288,7 @@ public:
 class UnaryOpExprNode : public UnaryNode
 {
 public:
-    UnaryOpExprNode(Operator op_, Node* child_);
+    UnaryOpExprNode(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* child_);
     Operator Op() const { return op; }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -283,7 +301,7 @@ private:
 class SizeOfNode : public UnaryNode
 {
 public:
-    SizeOfNode(Node* child_, bool parens_);
+    SizeOfNode(const soul::ast::SourcePos& sourcePos_, Node* child_, bool parens_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -295,7 +313,7 @@ private:
 class CastNode : public UnaryNode
 {
 public:
-    CastNode(Node* type_, Node* child_);
+    CastNode(const soul::ast::SourcePos& sourcePos_, Node* type_, Node* child_);
     Node* Type() const { return type.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -308,7 +326,7 @@ private:
 class BinaryOpExprNode : public BinaryNode
 {
 public:
-    BinaryOpExprNode(Operator op_, Node* left_, Node* right_);
+    BinaryOpExprNode(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* left_, Node* right_);
     Operator Op() const { return op; }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -321,7 +339,7 @@ private:
 class ConditionalNode : public Node
 {
 public:
-    ConditionalNode(Node* condition_, Node* thenExpr_, Node* elseExpr_);
+    ConditionalNode(const soul::ast::SourcePos& sourcePos_, Node* condition_, Node* thenExpr_, Node* elseExpr_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -338,7 +356,7 @@ private:
 class ThrowExprNode : public Node
 {
 public:
-    ThrowExprNode(Node* exception_);
+    ThrowExprNode(const soul::ast::SourcePos& sourcePos_, Node* exception_);
     Node* Exception() const { return exception.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -351,7 +369,7 @@ private:
 class NewNode : public Node
 {
 public:
-    NewNode(bool global_);
+    NewNode(const soul::ast::SourcePos& sourcePos_, bool global_);
     bool Global() const { return global; }
     bool Parens() const { return parens; }
     void SetParens(bool parens_) { parens = parens_; }
@@ -381,7 +399,7 @@ private:
 class DeleteNode : public UnaryNode
 {
 public:
-    DeleteNode(bool global_, bool isArray_, Node* child_);
+    DeleteNode(const soul::ast::SourcePos& sourcePos_, bool global_, bool isArray_, Node* child_);
     bool Global() const { return global; }
     bool IsArray() const { return isArray; }
     Node* Clone() const override;
@@ -396,7 +414,7 @@ private:
 class ParenExprNode : public UnaryNode
 {
 public:
-    ParenExprNode(Node* child_);
+    ParenExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -406,7 +424,7 @@ public:
 class LiteralNode : public Node
 {
 public:
-    LiteralNode(const std::string& rep_);
+    LiteralNode(const soul::ast::SourcePos& sourcePos_, const std::string& rep_);
     const std::string& Rep() const { return rep; }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -419,14 +437,14 @@ private:
 class StatementNode : public Node
 {
 public:
-    StatementNode();
+    StatementNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_);
     virtual bool IsCompoundStatementNode() const { return false; }
 };
 
 class LabeledStatementNode : public StatementNode
 {
 public:
-    LabeledStatementNode(const std::string& label_, StatementNode* stmt_);
+    LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const std::string& label_, StatementNode* stmt_);
     const std::string& Label() const { return label; }
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
@@ -440,7 +458,7 @@ private:
 class CaseStatementNode : public StatementNode
 {
 public:
-    CaseStatementNode(Node* caseExpr_, StatementNode* stmt_);
+    CaseStatementNode(const soul::ast::SourcePos& sourcePos_, Node* caseExpr_, StatementNode* stmt_);
     Node* CaseExpr() const { return caseExpr.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
@@ -454,7 +472,7 @@ private:
 class DefaultStatementNode : public StatementNode
 {
 public:
-    DefaultStatementNode(StatementNode* stmt_);
+    DefaultStatementNode(const soul::ast::SourcePos& sourcePos_, StatementNode* stmt_);
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -466,7 +484,7 @@ private:
 class EmptyStatementNode : public StatementNode
 {
 public:
-    EmptyStatementNode();
+    EmptyStatementNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -475,7 +493,7 @@ public:
 class ExpressionStatementNode : public StatementNode
 {
 public:
-    ExpressionStatementNode(Node* expr_);
+    ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, Node* expr_);
     Node* Expr() const { return expr.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -487,7 +505,7 @@ private:
 class CompoundStatementNode : public StatementNode
 {
 public:
-    CompoundStatementNode();
+    CompoundStatementNode(const soul::ast::SourcePos& sourcePos_);
     void InsertFront(StatementNode* stmt);
     void Add(StatementNode* stmt);
     void Replace(Node* node, Node* replacement) override;
@@ -503,7 +521,7 @@ private:
 class IfStatementNode : public StatementNode
 {
 public:
-    IfStatementNode(Node* cond_, StatementNode* thenStmt_, StatementNode* elseStmt_);
+    IfStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* thenStmt_, StatementNode* elseStmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* ThenStmt() const { return thenStmt.get(); }
     StatementNode* ElseStmt() const { return elseStmt.get(); }
@@ -519,7 +537,7 @@ private:
 class SwitchStatementNode : public StatementNode
 {
 public:
-    SwitchStatementNode(Node* cond_, StatementNode* stmt_);
+    SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
@@ -533,7 +551,7 @@ private:
 class WhileStatementNode : public StatementNode
 {
 public:
-    WhileStatementNode(Node* cond_, StatementNode* stmt_);
+    WhileStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
@@ -547,7 +565,7 @@ private:
 class DoStatementNode : public StatementNode
 {
 public:
-    DoStatementNode(Node* cond_, StatementNode* stmt_);
+    DoStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_);
     Node* Cond() const { return cond.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
     Node* Clone() const override;
@@ -561,7 +579,7 @@ private:
 class ForStatementNode : public StatementNode
 {
 public:
-    ForStatementNode(Node* init_, Node* cond_, Node* iter_, StatementNode* stmt_);
+    ForStatementNode(const soul::ast::SourcePos& sourcePos_, Node* init_, Node* cond_, Node* iter_, StatementNode* stmt_);
     Node* Init() const { return init.get(); }
     Node* Cond() const { return cond.get(); }
     Node* Iter() const { return iter.get(); }
@@ -579,7 +597,7 @@ private:
 class BreakStatementNode : public StatementNode
 {
 public:
-    BreakStatementNode();
+    BreakStatementNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -588,7 +606,7 @@ public:
 class ContinueStatementNode : public StatementNode
 {
 public:
-    ContinueStatementNode();
+    ContinueStatementNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -597,7 +615,7 @@ public:
 class GotoStatementNode : public StatementNode
 {
 public:
-    GotoStatementNode(const std::string& target_);
+    GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const std::string& target_);
     const std::string& Target() const { return target; }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -609,7 +627,7 @@ private:
 class ReturnStatementNode : public StatementNode
 {
 public:
-    ReturnStatementNode(Node* expr_);
+    ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, Node* expr_);
     Node* Expr() const { return expr.get(); }
     void SetExpr(Node* expr_);
     Node* Clone() const override;
@@ -624,7 +642,7 @@ class TypeIdNode;
 class ConditionWithDeclaratorNode : public Node
 {
 public:
-    ConditionWithDeclaratorNode(TypeIdNode* type_, const std::string& declarator_, Node* expression_);
+    ConditionWithDeclaratorNode(const soul::ast::SourcePos& sourcePos_, TypeIdNode* type_, const std::string& declarator_, Node* expression_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -640,7 +658,7 @@ private:
 class ForRangeDeclarationNode : public Node
 {
 public:
-    ForRangeDeclarationNode();
+    ForRangeDeclarationNode(const soul::ast::SourcePos& sourcePos_);
     TypeIdNode* TypeId() const { return typeId.get(); }
     const std::string& Declarator() const { return declarator; }
     void SetDeclarator(const std::string& declarator_);
@@ -655,7 +673,7 @@ private:
 class RangeForStatementNode : public StatementNode
 {
 public:
-    RangeForStatementNode(ForRangeDeclarationNode* declaration_, Node* container_, StatementNode* stmt_);
+    RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, ForRangeDeclarationNode* declaration_, Node* container_, StatementNode* stmt_);
     ForRangeDeclarationNode* Declaration() const { return declaration.get(); }
     Node* Container() const { return container.get(); }
     StatementNode* Stmt() const { return stmt.get(); }
@@ -671,7 +689,7 @@ private:
 class DeclarationStatementNode : public StatementNode
 {
 public:
-    DeclarationStatementNode(Node* declaration_);
+    DeclarationStatementNode(const soul::ast::SourcePos& sourcePos_, Node* declaration_);
     Node* Declaration() const { return declaration.get(); }
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -683,7 +701,7 @@ private:
 class ExceptionDeclarationNode : public Node
 {
 public:
-    ExceptionDeclarationNode();
+    ExceptionDeclarationNode(const soul::ast::SourcePos& sourcePos_);
     TypeIdNode* TypeId() const { return typeId.get(); }
     const std::string& Declarator() const { return declarator; }
     void SetDeclarator(const std::string& declarator_);
@@ -701,7 +719,7 @@ private:
 class HandlerNode : public Node
 {
 public:
-    HandlerNode(ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_);
+    HandlerNode(const soul::ast::SourcePos& sourcePos_, ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_);
     ExceptionDeclarationNode* ExceptionDeclaration() const { return exceptionDeclaration.get(); }
     CompoundStatementNode* HandlerBlock() const { return handlerBlock.get(); }
     Node* Clone() const override;
@@ -715,7 +733,7 @@ private:
 class TryStatementNode : public StatementNode
 {
 public:
-    TryStatementNode(CompoundStatementNode* tryBlock_);
+    TryStatementNode(const soul::ast::SourcePos& sourcePos_, CompoundStatementNode* tryBlock_);
     CompoundStatementNode* TryBlock() const { return tryBlock.get(); }
     void AddHandler(HandlerNode* handler);
     const std::vector<std::unique_ptr<HandlerNode>>& Handlers() const { return handlers; }
@@ -730,7 +748,7 @@ private:
 class IfdefStatementNode : public StatementNode
 {
 public:
-    IfdefStatementNode(Node* symbol_);
+    IfdefStatementNode(const soul::ast::SourcePos& sourcePos_, Node* symbol_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -742,7 +760,7 @@ private:
 class EndIfStatementNode : public StatementNode
 {
 public:
-    EndIfStatementNode(Node* comment_);
+    EndIfStatementNode(const soul::ast::SourcePos& sourcePos_, Node* comment_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -754,7 +772,7 @@ private:
 class AssignInitNode : public Node
 {
 public:
-    AssignInitNode(Node* assignmentExpr_);
+    AssignInitNode(const soul::ast::SourcePos& sourcePos_, Node* assignmentExpr_);
     Node* AssignmentExpr() const { return assignmentExpr.get(); }
     const std::vector<std::unique_ptr<AssignInitNode>>& SubInits() const { return subInits; }
     void Add(AssignInitNode* subInit);
@@ -770,7 +788,7 @@ private:
 class InitializerNode : public Node
 {
 public:
-    InitializerNode(AssignInitNode* assignInit_);
+    InitializerNode(const soul::ast::SourcePos& sourcePos_, AssignInitNode* assignInit_);
     AssignInitNode* GetAssignInit() const { return assignInit.get(); }
     const std::vector<std::unique_ptr<Node>>& GetExpressionList() const { return expressionList; }
     void Add(Node* expr) override;
@@ -786,7 +804,7 @@ private:
 class InitDeclaratorNode : public Node
 {
 public:
-    InitDeclaratorNode(const std::string& declarator_, InitializerNode* initializer_);
+    InitDeclaratorNode(const soul::ast::SourcePos& sourcePos_, const std::string& declarator_, InitializerNode* initializer_);
     const std::string& Declarator() const { return declarator; }
     InitializerNode* GetInitializer() const { return initializer.get(); }
     void Write(CodeFormatter& formatter) override;
@@ -801,7 +819,7 @@ private:
 class InitDeclaratorListNode : public Node
 {
 public:
-    InitDeclaratorListNode();
+    InitDeclaratorListNode(const soul::ast::SourcePos& sourcePos_);
     const std::vector<std::unique_ptr<InitDeclaratorNode>>& InitDeclarators() const { return initDeclarators; }
     void Add(InitDeclaratorNode* initDeclarator);
     void Write(CodeFormatter& formatter) override;
@@ -815,7 +833,7 @@ private:
 class DeclSpecifierNode : public Node
 {
 public:
-    DeclSpecifierNode(const std::string& name_);
+    DeclSpecifierNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     const std::string& Name() const { return name; }
 private:
     std::string name;
@@ -824,36 +842,28 @@ private:
 class TypedefNode : public DeclSpecifierNode
 {
 public:
-    TypedefNode();
+    TypedefNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override;
 };
 
-enum class TypeSpecifierNodeKind
-{
-    typeSpecifierNode, constNode, volatileNode, typeNameNode
-};
-
 class TypeSpecifierNode : public DeclSpecifierNode
 {
 public:
-    TypeSpecifierNode(const std::string& name_);
-    TypeSpecifierNode(TypeSpecifierNodeKind kind_, const std::string& name_);
+    TypeSpecifierNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
+    TypeSpecifierNode(const soul::ast::SourcePos& sourcePos_, NodeKind kind_, const std::string& name_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
     std::string ToString() const override { return Name(); }
-    TypeSpecifierNodeKind Kind() const { return kind;  };
-private:
-    TypeSpecifierNodeKind kind;
 };
 
 class ConstNode : public TypeSpecifierNode
 {
 public:
-    ConstNode();
+    ConstNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 };
@@ -861,7 +871,7 @@ public:
 class VolatileNode : public TypeSpecifierNode
 {
 public:
-    VolatileNode();
+    VolatileNode(const soul::ast::SourcePos& sourcePos_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
 };
@@ -869,7 +879,7 @@ public:
 class TypeNameNode : public TypeSpecifierNode
 {
 public:
-    TypeNameNode(const std::string& name_);
+    TypeNameNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     void AddTemplateArgument(Node* templateArgument);
     const std::vector<std::unique_ptr<Node>>& TemplateArgs() const { return templateArguments; }
     bool IsTemplate() const { return isTemplate; }
@@ -886,7 +896,7 @@ private:
 class TypeNode : public Node
 {
 public:
-    TypeNode();
+    TypeNode(const soul::ast::SourcePos& sourcePos_);
     void Add(TypeSpecifierNode* typeSpecifier);
     const std::vector<std::unique_ptr<TypeSpecifierNode>>& TypeSpecifiers() const { return typeSpecifiers; }
     std::string ToString() const override;
@@ -900,7 +910,7 @@ private:
 class StorageClassSpecifierNode : public DeclSpecifierNode
 {
 public:
-    StorageClassSpecifierNode(const std::string& name_);
+    StorageClassSpecifierNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
     void Write(CodeFormatter& formatter) override;
@@ -910,7 +920,7 @@ public:
 class TypeIdNode : public Node
 {
 public:
-    TypeIdNode();
+    TypeIdNode(const soul::ast::SourcePos& sourcePos_);
     void Add(TypeSpecifierNode* typeSpecifier);
     const std::vector<std::unique_ptr<TypeSpecifierNode>>& TypeSpecifiers() const { return typeSpecifiers; }
     const std::string& Declarator() const { return declarator; }
@@ -929,7 +939,7 @@ private:
 class SimpleDeclarationNode : public Node
 {
 public:
-    SimpleDeclarationNode();
+    SimpleDeclarationNode(const soul::ast::SourcePos& sourcePos_);
     void Add(DeclSpecifierNode* declSpecifier);
     const std::vector<std::unique_ptr<DeclSpecifierNode>>& DeclSpecifiers() const { return declSpecifiers; }
     void SetInitDeclaratorList(InitDeclaratorListNode* initDeclaratorList_);
@@ -945,7 +955,7 @@ private:
 class UsingObjectNode : public Node
 {
 public:
-    UsingObjectNode(const std::string& name_);
+    UsingObjectNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     const std::string& Name() const { return name; }
 private:
     std::string name;
@@ -954,7 +964,7 @@ private:
 class NamespaceAliasNode : public UsingObjectNode
 {
 public:
-    NamespaceAliasNode(const std::string& aliasName_, const std::string& namespaceName_);
+    NamespaceAliasNode(const soul::ast::SourcePos& sourcePos_, const std::string& aliasName_, const std::string& namespaceName_);
     void Write(CodeFormatter& formatter) override;
     Node* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -966,7 +976,7 @@ private:
 class UsingDeclarationNode : public UsingObjectNode
 {
 public:
-    UsingDeclarationNode(const std::string& usingId_);
+    UsingDeclarationNode(const soul::ast::SourcePos& sourcePos_, const std::string& usingId_);
     const std::string& UsingId() const { return usingId; }
     void Write(CodeFormatter& formatter) override;
     Node* Clone() const override;
@@ -978,7 +988,7 @@ private:
 class UsingDirectiveNode : public UsingObjectNode
 {
 public:
-    UsingDirectiveNode(const std::string& usingNs_);
+    UsingDirectiveNode(const soul::ast::SourcePos& sourcePos_, const std::string& usingNs_);
     const std::string& UsingNs() const { return usingNs; }
     void Write(CodeFormatter& formatter) override;
     Node* Clone() const override;

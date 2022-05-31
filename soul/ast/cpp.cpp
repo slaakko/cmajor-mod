@@ -51,7 +51,7 @@ std::string OperatorStr(Operator op)
     return "";
 }
 
-Node::Node() : parent(nullptr)
+Node::Node(NodeKind kind_, const soul::ast::SourcePos& sourcePos_) : kind(kind_), sourcePos(sourcePos_), parent(nullptr)
 {
 }
 
@@ -59,7 +59,7 @@ Node::~Node()
 {
 }
 
-UnaryNode::UnaryNode(Node* child_) : Node(), child(child_)
+UnaryNode::UnaryNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, Node* child_) : Node(kind_, sourcePos_), child(child_)
 {
     child->SetParent(this);
 }
@@ -72,7 +72,7 @@ void UnaryNode::Replace(Node* node, Node* replacement)
     }
 }
 
-BinaryNode::BinaryNode(Node* left_, Node* right_) : Node(), left(left_), right(right_)
+BinaryNode::BinaryNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, Node* left_, Node* right_) : Node(kind_, sourcePos_), left(left_), right(right_)
 {
     left->SetParent(this);
     right->SetParent(this);
@@ -90,13 +90,13 @@ void BinaryNode::Replace(Node* node, Node* replacement)
     }
 }
 
-ExprListNode::ExprListNode()
+ExprListNode::ExprListNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::exprListNode, sourcePos_)
 {
 }
 
 Node* ExprListNode::Clone() const
 {
-    ExprListNode* clone = new ExprListNode();
+    ExprListNode* clone = new ExprListNode(GetSourcePos());
     for (const auto& expr : exprs)
     {
         clone->Add(expr->Clone());
@@ -166,13 +166,13 @@ void ExprListNode::Replace(Node* node, Node* replacement)
     }
 }
 
-ThisNode::ThisNode() : Node()
+ThisNode::ThisNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::thisNode, sourcePos_)
 {
 }
 
 Node* ThisNode::Clone() const
 {
-    return new ThisNode();
+    return new ThisNode(GetSourcePos());
 }
 
 void ThisNode::Accept(Visitor& visitor)
@@ -185,7 +185,7 @@ void ThisNode::Write(CodeFormatter& formatter)
     formatter.Write("this");
 }
 
-IdExprNode::IdExprNode(const std::string& id_) : Node(), id(id_)
+IdExprNode::IdExprNode(const soul::ast::SourcePos& sourcePos_, const std::string& id_) : Node(NodeKind::idExprNode, sourcePos_), id(id_)
 {
 }
 
@@ -196,7 +196,7 @@ void IdExprNode::SetId(const std::string& id_)
 
 Node* IdExprNode::Clone() const
 {
-    return new IdExprNode(id);
+    return new IdExprNode(GetSourcePos(), id);
 }
 
 void IdExprNode::Accept(Visitor& visitor)
@@ -209,14 +209,14 @@ void IdExprNode::Write(CodeFormatter& formatter)
     formatter.Write(id);
 }
 
-IndexExprNode::IndexExprNode(Node* child_, Node* index_) : UnaryNode(child_), index(index_)
+IndexExprNode::IndexExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* index_) : UnaryNode(NodeKind::indexExprNode, sourcePos_, child_), index(index_)
 {
     index->SetParent(this);
 }
 
 Node* IndexExprNode::Clone() const
 {
-    return new IndexExprNode(Child()->Clone(), index->Clone());
+    return new IndexExprNode(GetSourcePos(), Child()->Clone(), index->Clone());
 }
 
 void IndexExprNode::Accept(Visitor& visitor)
@@ -237,13 +237,13 @@ std::string IndexExprNode::ToString() const
     return Child()->ToString() + "[" + index->ToString() + "]";
 }
 
-InvokeNode::InvokeNode(Node* child_) : UnaryNode(child_)
+InvokeNode::InvokeNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::invokeNode, sourcePos_, child_)
 {
 }
 
 Node* InvokeNode::Clone() const
 {
-    InvokeNode* clone = new InvokeNode(Child()->Clone());
+    InvokeNode* clone = new InvokeNode(GetSourcePos(), Child()->Clone());
     for (const auto& arg : args)
     {
         clone->Add(arg->Clone());
@@ -315,14 +315,14 @@ void InvokeNode::Replace(Node* node, Node* replacement)
     }
 }
 
-MemberAccessNode::MemberAccessNode(Node* child_, Node* member_) : UnaryNode(child_), member(member_)
+MemberAccessNode::MemberAccessNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* member_) : UnaryNode(NodeKind::memberAccessNode, sourcePos_, child_), member(member_)
 {
     member->SetParent(this);
 }
 
 Node* MemberAccessNode::Clone() const
 {
-    return new MemberAccessNode(Child()->Clone(), member->Clone());
+    return new MemberAccessNode(GetSourcePos(), Child()->Clone(), member->Clone());
 }
 
 void MemberAccessNode::Accept(Visitor& visitor)
@@ -342,14 +342,15 @@ std::string MemberAccessNode::ToString() const
     return Child()->ToString() + "." + member->ToString();
 }
 
-PtrMemberAccessNode::PtrMemberAccessNode(Node* child_, Node* member_) : UnaryNode(child_), member(member_)
+PtrMemberAccessNode::PtrMemberAccessNode(const soul::ast::SourcePos& sourcePos_, Node* child_, Node* member_) : 
+    UnaryNode(NodeKind::ptrMemberAccessNode, sourcePos_, child_), member(member_)
 {
     member->SetParent(this);
 }
 
 Node* PtrMemberAccessNode::Clone() const
 {
-    return new PtrMemberAccessNode(Child()->Clone(), member->Clone());
+    return new PtrMemberAccessNode(GetSourcePos(), Child()->Clone(), member->Clone());
 }
 
 void PtrMemberAccessNode::Accept(Visitor& visitor)
@@ -369,13 +370,13 @@ std::string PtrMemberAccessNode::ToString() const
     return Child()->ToString() + "->" + member->ToString();
 }
 
-PostIncrementNode::PostIncrementNode(Node* child_) : UnaryNode(child_)
+PostIncrementNode::PostIncrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::postIncrementNode, sourcePos_, child_)
 {
 }
 
 Node* PostIncrementNode::Clone() const
 {
-    return new PostIncrementNode(Child()->Clone());
+    return new PostIncrementNode(GetSourcePos(), Child()->Clone());
 }
 
 void PostIncrementNode::Accept(Visitor& visitor)
@@ -394,13 +395,13 @@ std::string PostIncrementNode::ToString() const
     return Child()->ToString() + "++";
 }
 
-PostDecrementNode::PostDecrementNode(Node* child_) : UnaryNode(child_)
+PostDecrementNode::PostDecrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::postDecrementNode, sourcePos_, child_)
 {
 }
 
 Node* PostDecrementNode::Clone() const
 {
-    return new PostDecrementNode(Child()->Clone());
+    return new PostDecrementNode(GetSourcePos(), Child()->Clone());
 }
 
 void PostDecrementNode::Accept(Visitor& visitor)
@@ -419,17 +420,17 @@ std::string PostDecrementNode::ToString() const
     return Child()->ToString() + "--";
 }
 
-CppCastNode::CppCastNode()
+CppCastNode::CppCastNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_) : Node(kind_, sourcePos_)
 {
 }
 
-StaticCastNode::StaticCastNode() : CppCastNode()
+StaticCastNode::StaticCastNode(const soul::ast::SourcePos& sourcePos_) : CppCastNode(NodeKind::staticCastNode, sourcePos_)
 {
 }
 
 Node* StaticCastNode::Clone() const
 {
-    return new StaticCastNode();
+    return new StaticCastNode(GetSourcePos());
 }
 
 void StaticCastNode::Accept(Visitor& visitor)
@@ -442,13 +443,13 @@ void StaticCastNode::Write(CodeFormatter& formatter)
     formatter.Write("static_cast");
 }
 
-DynamicCastNode::DynamicCastNode() : CppCastNode()
+DynamicCastNode::DynamicCastNode(const soul::ast::SourcePos& sourcePos_) : CppCastNode(NodeKind::dynamicCastNode, sourcePos_)
 {
 }
 
 Node* DynamicCastNode::Clone() const
 {
-    return new DynamicCastNode();
+    return new DynamicCastNode(GetSourcePos());
 }
 
 void DynamicCastNode::Accept(Visitor& visitor)
@@ -461,13 +462,13 @@ void DynamicCastNode::Write(CodeFormatter& formatter)
     formatter.Write("dynamic_cast");
 }
 
-ReinterpretCastNode::ReinterpretCastNode() : CppCastNode()
+ReinterpretCastNode::ReinterpretCastNode(const soul::ast::SourcePos& sourcePos_) : CppCastNode(NodeKind::reinterpretCastNode, sourcePos_)
 {
 }
 
 Node* ReinterpretCastNode::Clone() const
 {
-    return new ReinterpretCastNode();
+    return new ReinterpretCastNode(GetSourcePos());
 }
 
 void ReinterpretCastNode::Accept(Visitor& visitor)
@@ -480,13 +481,13 @@ void ReinterpretCastNode::Write(CodeFormatter& formatter)
     formatter.Write("reinterpret_cast");
 }
 
-ConstCastNode::ConstCastNode() : CppCastNode()
+ConstCastNode::ConstCastNode(const soul::ast::SourcePos& sourcePos_) : CppCastNode(NodeKind::constCastNode, sourcePos_)
 {
 }
 
 Node* ConstCastNode::Clone() const
 {
-    return new ConstCastNode();
+    return new ConstCastNode(GetSourcePos());
 }
 
 void ConstCastNode::Accept(Visitor& visitor)
@@ -499,7 +500,8 @@ void ConstCastNode::Write(CodeFormatter& formatter)
     formatter.Write("const_cast");
 }
 
-PostCastNode::PostCastNode(CppCastNode* cppCastNode_, Node* type_, Node* child_) : UnaryNode(child_), cppCastNode(cppCastNode_), type(type_)
+PostCastNode::PostCastNode(const soul::ast::SourcePos& sourcePos_, CppCastNode* cppCastNode_, Node* type_, Node* child_) : 
+    UnaryNode(NodeKind::postCastNode, sourcePos_, child_), cppCastNode(cppCastNode_), type(type_)
 {
     cppCastNode->SetParent(this);
     type->SetParent(this);
@@ -507,7 +509,7 @@ PostCastNode::PostCastNode(CppCastNode* cppCastNode_, Node* type_, Node* child_)
 
 Node* PostCastNode::Clone() const
 {
-    return new PostCastNode(static_cast<CppCastNode*>(cppCastNode->Clone()), type->Clone(), Child()->Clone());
+    return new PostCastNode(GetSourcePos(), static_cast<CppCastNode*>(cppCastNode->Clone()), type->Clone(), Child()->Clone());
 }
 
 void PostCastNode::Accept(Visitor& visitor)
@@ -537,13 +539,13 @@ std::string PostCastNode::ToString() const
     return str;
 }
 
-TypeIdExprNode::TypeIdExprNode(Node* child_) : UnaryNode(child_)
+TypeIdExprNode::TypeIdExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::typeIdExprNode, sourcePos_, child_)
 {
 }
 
 Node* TypeIdExprNode::Clone() const
 {
-    return new TypeIdExprNode(Child()->Clone());
+    return new TypeIdExprNode(GetSourcePos(), Child()->Clone());
 }
 
 void TypeIdExprNode::Accept(Visitor& visitor)
@@ -563,13 +565,13 @@ std::string TypeIdExprNode::ToString() const
     return "typeid(" + Child()->ToString() + ")";
 }
 
-PreIncrementNode::PreIncrementNode(Node* child_) : UnaryNode(child_)
+PreIncrementNode::PreIncrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::preIncrementNode, sourcePos_, child_)
 {
 }
 
 Node* PreIncrementNode::Clone() const
 {
-    return new PreIncrementNode(Child()->Clone());
+    return new PreIncrementNode(GetSourcePos(), Child()->Clone());
 }
 
 void PreIncrementNode::Accept(Visitor& visitor)
@@ -588,13 +590,13 @@ std::string PreIncrementNode::ToString() const
     return "++" + Child()->ToString();
 }
 
-PreDecrementNode::PreDecrementNode(Node* child_) : UnaryNode(child_)
+PreDecrementNode::PreDecrementNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::preDecrementNode, sourcePos_, child_)
 {
 }
 
 Node* PreDecrementNode::Clone() const
 {
-    return new PreDecrementNode(Child()->Clone());
+    return new PreDecrementNode(GetSourcePos(), Child()->Clone());
 }
 
 void PreDecrementNode::Accept(Visitor& visitor)
@@ -613,13 +615,13 @@ std::string PreDecrementNode::ToString() const
     return "--" + Child()->ToString();
 }
 
-UnaryOpExprNode::UnaryOpExprNode(Operator op_, Node* child_) : UnaryNode(child_), op(op_)
+UnaryOpExprNode::UnaryOpExprNode(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* child_) : UnaryNode(NodeKind::unaryOpExprNode, sourcePos_, child_), op(op_)
 {
 }
 
 Node* UnaryOpExprNode::Clone() const
 {
-    return new UnaryOpExprNode(op, Child()->Clone());
+    return new UnaryOpExprNode(GetSourcePos(), op, Child()->Clone());
 }
 
 void UnaryOpExprNode::Accept(Visitor& visitor)
@@ -638,13 +640,13 @@ std::string UnaryOpExprNode::ToString() const
     return OperatorStr(op) + Child()->ToString();
 }
 
-SizeOfNode::SizeOfNode(Node* child_, bool parens_) : UnaryNode(child_), parens(parens_)
+SizeOfNode::SizeOfNode(const soul::ast::SourcePos& sourcePos_, Node* child_, bool parens_) : UnaryNode(NodeKind::sizeOfNode, sourcePos_, child_), parens(parens_)
 {
 }
 
 Node* SizeOfNode::Clone() const
 {
-    return new SizeOfNode(Child()->Clone(), parens);
+    return new SizeOfNode(GetSourcePos(), Child()->Clone(), parens);
 }
 
 void SizeOfNode::Accept(Visitor& visitor)
@@ -689,14 +691,14 @@ std::string SizeOfNode::ToString() const
     return str;
 }
 
-CastNode::CastNode(Node* type_, Node* child_) : UnaryNode(child_), type(type_)
+CastNode::CastNode(const soul::ast::SourcePos& sourcePos_, Node* type_, Node* child_) : UnaryNode(NodeKind::castNode, sourcePos_, child_), type(type_)
 {
     type->SetParent(this);
 }
 
 Node* CastNode::Clone() const
 {
-    return new CastNode(type->Clone(), Child()->Clone());
+    return new CastNode(GetSourcePos(), type->Clone(), Child()->Clone());
 }
 
 void CastNode::Accept(Visitor& visitor)
@@ -717,13 +719,14 @@ std::string CastNode::ToString() const
     return "(" + type->ToString() + ")" + Child()->ToString();
 }
 
-BinaryOpExprNode::BinaryOpExprNode(Operator op_, Node* left_, Node* right_) : BinaryNode(left_, right_), op(op_)
+BinaryOpExprNode::BinaryOpExprNode(const soul::ast::SourcePos& sourcePos_, Operator op_, Node* left_, Node* right_) : 
+    BinaryNode(NodeKind::binaryOpExprNode, sourcePos_, left_, right_), op(op_)
 {
 }
 
 Node* BinaryOpExprNode::Clone() const
 {
-    return new BinaryOpExprNode(op, Left()->Clone(), Right()->Clone());
+    return new BinaryOpExprNode(GetSourcePos(), op, Left()->Clone(), Right()->Clone());
 }
 
 void BinaryOpExprNode::Accept(Visitor& visitor)
@@ -745,7 +748,8 @@ std::string BinaryOpExprNode::ToString() const
     return Left()->ToString() + " " + OperatorStr(op) + " " + Right()->ToString();
 }
 
-ConditionalNode::ConditionalNode(Node* condition_, Node* thenExpr_, Node* elseExpr_) : Node(), condition(condition_), thenExpr(thenExpr_), elseExpr(elseExpr_)
+ConditionalNode::ConditionalNode(const soul::ast::SourcePos& sourcePos_, Node* condition_, Node* thenExpr_, Node* elseExpr_) : 
+    Node(NodeKind::conditionalNode, sourcePos_), condition(condition_), thenExpr(thenExpr_), elseExpr(elseExpr_)
 {
     condition->SetParent(this);
     thenExpr->SetParent(this);
@@ -754,7 +758,7 @@ ConditionalNode::ConditionalNode(Node* condition_, Node* thenExpr_, Node* elseEx
 
 Node* ConditionalNode::Clone() const
 {
-    return new ConditionalNode(condition->Clone(), thenExpr->Clone(), elseExpr->Clone());
+    return new ConditionalNode(GetSourcePos(), condition->Clone(), thenExpr->Clone(), elseExpr->Clone());
 }
 
 void ConditionalNode::Accept(Visitor& visitor)
@@ -776,7 +780,7 @@ std::string ConditionalNode::ToString() const
     return condition->ToString() + " ? " + thenExpr->ToString() + " : " + elseExpr->ToString();
 }
 
-ThrowExprNode::ThrowExprNode(Node* exception_) : Node(), exception(exception_)
+ThrowExprNode::ThrowExprNode(const soul::ast::SourcePos& sourcePos_, Node* exception_) : Node(NodeKind::throwExprNode, sourcePos_), exception(exception_)
 {
     if (exception)
     {
@@ -788,11 +792,11 @@ Node* ThrowExprNode::Clone() const
 {
     if (exception)
     {
-        return new ThrowExprNode(exception->Clone());
+        return new ThrowExprNode(GetSourcePos(), exception->Clone());
     }
     else
     {
-        return new ThrowExprNode(nullptr);
+        return new ThrowExprNode(GetSourcePos(), nullptr);
     }
 }
 
@@ -821,7 +825,7 @@ std::string ThrowExprNode::ToString() const
     return str;
 }
 
-NewNode::NewNode(bool global_) : Node(), global(global_), parens(false), addToPlacement(false), addToInitializer(false)
+NewNode::NewNode(const soul::ast::SourcePos& sourcePos_, bool global_) : Node(NodeKind::newNode, sourcePos_), global(global_), parens(false), addToPlacement(false), addToInitializer(false)
 {
 }
 
@@ -846,7 +850,7 @@ void NewNode::SetTypeId(Node* typeId_)
 
 Node* NewNode::Clone() const
 {
-    NewNode* clone = new NewNode(global);
+    NewNode* clone = new NewNode(GetSourcePos(), global);
     if (typeId)
     {
         clone->SetTypeId(typeId->Clone());
@@ -983,13 +987,14 @@ std::string NewNode::ToString() const
     return str;
 }
 
-DeleteNode::DeleteNode(bool global_, bool isArray_, Node* child_) : UnaryNode(child_),  global(global_), isArray(isArray_)
+DeleteNode::DeleteNode(const soul::ast::SourcePos& sourcePos_, bool global_, bool isArray_, Node* child_) : 
+    UnaryNode(NodeKind::deleteNode, sourcePos_, child_),  global(global_), isArray(isArray_)
 {
 }
 
 Node* DeleteNode::Clone() const
 {
-    return new DeleteNode(global, isArray, Child()->Clone());
+    return new DeleteNode(GetSourcePos(), global, isArray, Child()->Clone());
 }
 
 void DeleteNode::Accept(Visitor& visitor)
@@ -1029,13 +1034,13 @@ std::string DeleteNode::ToString() const
     return str;
 }
 
-ParenExprNode::ParenExprNode(Node* child_) : UnaryNode(child_)
+ParenExprNode::ParenExprNode(const soul::ast::SourcePos& sourcePos_, Node* child_) : UnaryNode(NodeKind::parenExprNode, sourcePos_, child_)
 {
 }
 
 Node* ParenExprNode::Clone() const
 {
-    return new ParenExprNode(Child()->Clone());
+    return new ParenExprNode(GetSourcePos(), Child()->Clone());
 }
 
 void ParenExprNode::Accept(Visitor& visitor)
@@ -1055,13 +1060,13 @@ std::string ParenExprNode::ToString() const
     return "(" + Child()->ToString() + ")";
 }
 
-LiteralNode::LiteralNode(const std::string& rep_) : Node(), rep(rep_)
+LiteralNode::LiteralNode(const soul::ast::SourcePos& sourcePos_, const std::string& rep_) : Node(NodeKind::literalNode, sourcePos_), rep(rep_)
 {
 }
 
 Node* LiteralNode::Clone() const
 {
-    return new LiteralNode(rep);
+    return new LiteralNode(GetSourcePos(), rep);
 }
 
 void LiteralNode::Accept(Visitor& visitor)
@@ -1074,18 +1079,19 @@ void LiteralNode::Write(CodeFormatter& formatter)
     formatter.Write(rep);
 }
 
-StatementNode::StatementNode() : Node()
+StatementNode::StatementNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_) : Node(kind_, sourcePos_)
 {
 }
 
-LabeledStatementNode::LabeledStatementNode(const std::string& label_, StatementNode* stmt_) : StatementNode(), label(label_), stmt(stmt_)
+LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const std::string& label_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::labeledStatementNode, sourcePos_), label(label_), stmt(stmt_)
 {
     stmt->SetParent(this);
 }
 
 Node* LabeledStatementNode::Clone() const
 {
-    return new LabeledStatementNode(label, static_cast<StatementNode*>(stmt->Clone()));
+    return new LabeledStatementNode(GetSourcePos(), label, static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void LabeledStatementNode::Accept(Visitor& visitor)
@@ -1100,7 +1106,8 @@ void LabeledStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-CaseStatementNode::CaseStatementNode(Node* caseExpr_, StatementNode* stmt_) : StatementNode(), caseExpr(caseExpr_), stmt(stmt_)
+CaseStatementNode::CaseStatementNode(const soul::ast::SourcePos& sourcePos_, Node* caseExpr_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::caseStatementNode, sourcePos_), caseExpr(caseExpr_), stmt(stmt_)
 {
     caseExpr->SetParent(this);
     stmt->SetParent(this);
@@ -1108,7 +1115,7 @@ CaseStatementNode::CaseStatementNode(Node* caseExpr_, StatementNode* stmt_) : St
 
 Node* CaseStatementNode::Clone() const
 {
-    return new CaseStatementNode(caseExpr->Clone(), static_cast<StatementNode*>(stmt->Clone()));
+    return new CaseStatementNode(GetSourcePos(), caseExpr->Clone(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void CaseStatementNode::Accept(Visitor& visitor)
@@ -1124,14 +1131,14 @@ void CaseStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-DefaultStatementNode::DefaultStatementNode(StatementNode* stmt_) : StatementNode(), stmt(stmt_)
+DefaultStatementNode::DefaultStatementNode(const soul::ast::SourcePos& sourcePos_, StatementNode* stmt_) : StatementNode(NodeKind::defaultStatementNode, sourcePos_), stmt(stmt_)
 {
     stmt->SetParent(this);
 }
 
 Node* DefaultStatementNode::Clone() const
 {
-    return new DefaultStatementNode(static_cast<StatementNode*>(stmt->Clone()));
+    return new DefaultStatementNode(GetSourcePos(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void DefaultStatementNode::Accept(Visitor& visitor)
@@ -1145,13 +1152,13 @@ void DefaultStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-EmptyStatementNode::EmptyStatementNode() : StatementNode()
+EmptyStatementNode::EmptyStatementNode(const soul::ast::SourcePos& sourcePos_) : StatementNode(NodeKind::emptyStatementNode, sourcePos_)
 {
 }
 
 Node* EmptyStatementNode::Clone() const
 {
-    return new EmptyStatementNode();
+    return new EmptyStatementNode(GetSourcePos());
 }
 
 void EmptyStatementNode::Accept(Visitor& visitor)
@@ -1164,14 +1171,14 @@ void EmptyStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(";");
 }
 
-ExpressionStatementNode::ExpressionStatementNode(Node* expr_) : StatementNode(), expr(expr_)
+ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, Node* expr_) : StatementNode(NodeKind::expressionStatementNode, sourcePos_), expr(expr_)
 {
     expr->SetParent(this);
 }
 
 Node* ExpressionStatementNode::Clone() const
 {
-    return new ExpressionStatementNode(expr->Clone());
+    return new ExpressionStatementNode(GetSourcePos(), expr->Clone());
 }
 
 void ExpressionStatementNode::Accept(Visitor& visitor)
@@ -1185,7 +1192,7 @@ void ExpressionStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(";");
 }
 
-CompoundStatementNode::CompoundStatementNode() : StatementNode()
+CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_) : StatementNode(NodeKind::compoundStatementNode, sourcePos_)
 {
 }
 
@@ -1214,7 +1221,7 @@ void CompoundStatementNode::Replace(Node* node, Node* replacement)
 
 Node* CompoundStatementNode::Clone() const
 {
-    CompoundStatementNode* clone = new CompoundStatementNode();
+    CompoundStatementNode* clone = new CompoundStatementNode(GetSourcePos());
     for (const auto& stmt : statements)
     {
         clone->Add(static_cast<StatementNode*>(stmt->Clone()));
@@ -1239,7 +1246,8 @@ void CompoundStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine("}");
 }
 
-IfStatementNode::IfStatementNode(Node* cond_, StatementNode* thenStmt_, StatementNode* elseStmt_) : StatementNode(), cond(cond_), thenStmt(thenStmt_), elseStmt(elseStmt_)
+IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* thenStmt_, StatementNode* elseStmt_) : 
+    StatementNode(NodeKind::ifStatementNode, sourcePos_), cond(cond_), thenStmt(thenStmt_), elseStmt(elseStmt_)
 {
     cond->SetParent(this);
     thenStmt->SetParent(this);
@@ -1256,7 +1264,7 @@ Node* IfStatementNode::Clone() const
     {
         clonedElseStmt = static_cast<StatementNode*>(elseStmt->Clone());
     }
-    return new IfStatementNode(cond->Clone(), static_cast<StatementNode*>(thenStmt->Clone()), clonedElseStmt);
+    return new IfStatementNode(GetSourcePos(), cond->Clone(), static_cast<StatementNode*>(thenStmt->Clone()), clonedElseStmt);
 }
 
 void IfStatementNode::Accept(Visitor& visitor)
@@ -1293,7 +1301,8 @@ void IfStatementNode::Write(CodeFormatter& formatter)
     }
 }
 
-SwitchStatementNode::SwitchStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
+SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::switchStatementNode, sourcePos_), cond(cond_), stmt(stmt_)
 {
     cond->SetParent(this);
     stmt->SetParent(this);
@@ -1301,7 +1310,7 @@ SwitchStatementNode::SwitchStatementNode(Node* cond_, StatementNode* stmt_) : St
 
 Node* SwitchStatementNode::Clone() const
 {
-    return new SwitchStatementNode(cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
+    return new SwitchStatementNode(GetSourcePos(), cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void SwitchStatementNode::Accept(Visitor& visitor)
@@ -1317,7 +1326,8 @@ void SwitchStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-WhileStatementNode::WhileStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
+WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::whileStatementNode, sourcePos_), cond(cond_), stmt(stmt_)
 {
     cond->SetParent(this);
     stmt->SetParent(this);
@@ -1325,7 +1335,7 @@ WhileStatementNode::WhileStatementNode(Node* cond_, StatementNode* stmt_) : Stat
 
 Node* WhileStatementNode::Clone() const
 {
-    return new WhileStatementNode(cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
+    return new WhileStatementNode(GetSourcePos(), cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void WhileStatementNode::Accept(Visitor& visitor)
@@ -1349,7 +1359,8 @@ void WhileStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-DoStatementNode::DoStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
+DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, Node* cond_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::doStatementNode, sourcePos_), cond(cond_), stmt(stmt_)
 {
     cond->SetParent(this);
     stmt->SetParent(this);
@@ -1357,7 +1368,7 @@ DoStatementNode::DoStatementNode(Node* cond_, StatementNode* stmt_) : StatementN
 
 Node* DoStatementNode::Clone() const
 {
-    return new DoStatementNode(cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
+    return new DoStatementNode(GetSourcePos(), cond->Clone(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void DoStatementNode::Accept(Visitor& visitor)
@@ -1382,7 +1393,8 @@ void DoStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(");");
 }
 
-ForStatementNode::ForStatementNode(Node* init_, Node* cond_, Node* iter_, StatementNode* stmt_) : StatementNode(), init(init_), cond(cond_), iter(iter_), stmt(stmt_)
+ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, Node* init_, Node* cond_, Node* iter_, StatementNode* stmt_) : 
+    StatementNode(NodeKind::forStatementNode, sourcePos_), init(init_), cond(cond_), iter(iter_), stmt(stmt_)
 {
     if (init)
     {
@@ -1416,7 +1428,7 @@ Node* ForStatementNode::Clone() const
     {
         clonedIter = iter->Clone();
     }
-    return new ForStatementNode(clonedInit, clonedCond, clonedIter, static_cast<StatementNode*>(stmt->Clone()));
+    return new ForStatementNode(GetSourcePos(), clonedInit, clonedCond, clonedIter, static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void ForStatementNode::Accept(Visitor& visitor)
@@ -1453,13 +1465,13 @@ void ForStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-BreakStatementNode::BreakStatementNode() : StatementNode()
+BreakStatementNode::BreakStatementNode(const soul::ast::SourcePos& sourcePos_) : StatementNode(NodeKind::breakStatementNode, sourcePos_)
 {
 }
 
 Node* BreakStatementNode::Clone() const
 {
-    return new BreakStatementNode();
+    return new BreakStatementNode(GetSourcePos());
 }
 
 void BreakStatementNode::Accept(Visitor& visitor)
@@ -1472,13 +1484,13 @@ void BreakStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine("break;");
 }
 
-ContinueStatementNode::ContinueStatementNode() : StatementNode()
+ContinueStatementNode::ContinueStatementNode(const soul::ast::SourcePos& sourcePos_) : StatementNode(NodeKind::continueStatementNode, sourcePos_)
 {
 }
 
 Node* ContinueStatementNode::Clone() const
 {
-    return new ContinueStatementNode();
+    return new ContinueStatementNode(GetSourcePos());
 }
 
 void ContinueStatementNode::Accept(Visitor& visitor)
@@ -1491,13 +1503,13 @@ void ContinueStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine("continue;");
 }
 
-GotoStatementNode::GotoStatementNode(const std::string& target_) : StatementNode(), target(target_)
+GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const std::string& target_) : StatementNode(NodeKind::gotoStatementNode, sourcePos_), target(target_)
 {
 }
 
 Node* GotoStatementNode::Clone() const
 {
-    return new GotoStatementNode(target);
+    return new GotoStatementNode(GetSourcePos(), target);
 }
 
 void GotoStatementNode::Accept(Visitor& visitor)
@@ -1512,7 +1524,7 @@ void GotoStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(";");
 }
 
-ReturnStatementNode::ReturnStatementNode(Node* expr_) : StatementNode(), expr(expr_)
+ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, Node* expr_) : StatementNode(NodeKind::returnStatementNode, sourcePos_), expr(expr_)
 {
     if (expr)
     {
@@ -1532,7 +1544,7 @@ Node* ReturnStatementNode::Clone() const
     {
         clonedExpr = expr->Clone();
     }
-    return new ReturnStatementNode(clonedExpr);
+    return new ReturnStatementNode(GetSourcePos(), clonedExpr);
 }
 
 void ReturnStatementNode::Accept(Visitor& visitor)
@@ -1551,8 +1563,8 @@ void ReturnStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(";");
 }
 
-ConditionWithDeclaratorNode::ConditionWithDeclaratorNode(TypeIdNode* type_, const std::string& declarator_, Node* expression_) : 
-    Node(), type(type_), declarator(declarator_), expression(expression_)
+ConditionWithDeclaratorNode::ConditionWithDeclaratorNode(const soul::ast::SourcePos& sourcePos_, TypeIdNode* type_, const std::string& declarator_, Node* expression_) :
+    Node(NodeKind::conditionWithDeclaratorNode, sourcePos_), type(type_), declarator(declarator_), expression(expression_)
 {
     type->SetParent(this);
     expression->SetParent(this);
@@ -1560,7 +1572,7 @@ ConditionWithDeclaratorNode::ConditionWithDeclaratorNode(TypeIdNode* type_, cons
 
 Node* ConditionWithDeclaratorNode::Clone() const
 {
-    return new ConditionWithDeclaratorNode(static_cast<TypeIdNode*>(type->Clone()), declarator, expression->Clone());
+    return new ConditionWithDeclaratorNode(GetSourcePos(), static_cast<TypeIdNode*>(type->Clone()), declarator, expression->Clone());
 }
 
 void ConditionWithDeclaratorNode::Accept(Visitor& visitor)
@@ -1575,7 +1587,8 @@ void ConditionWithDeclaratorNode::Write(CodeFormatter& formatter)
     expression->Write(formatter);
 }
 
-ForRangeDeclarationNode::ForRangeDeclarationNode() : Node(), typeId(new TypeIdNode()), declarator()
+ForRangeDeclarationNode::ForRangeDeclarationNode(const soul::ast::SourcePos& sourcePos_) : 
+    Node(NodeKind::forRangeDeclarationNode, sourcePos_), typeId(new TypeIdNode(sourcePos_)), declarator()
 {
     typeId->SetParent(this);
 }
@@ -1587,7 +1600,7 @@ void ForRangeDeclarationNode::SetDeclarator(const std::string& declarator_)
 
 Node* ForRangeDeclarationNode::Clone() const
 {
-    ForRangeDeclarationNode* clone = new ForRangeDeclarationNode();
+    ForRangeDeclarationNode* clone = new ForRangeDeclarationNode(GetSourcePos());
     clone->SetDeclarator(declarator);
     return clone;
 }
@@ -1604,8 +1617,8 @@ void ForRangeDeclarationNode::Write(CodeFormatter& formatter)
     formatter.Write(declarator);
 }
 
-RangeForStatementNode::RangeForStatementNode(ForRangeDeclarationNode* declaration_, Node* container_, StatementNode* stmt_) :
-    declaration(declaration_), container(container_), stmt(stmt_)
+RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, ForRangeDeclarationNode* declaration_, Node* container_, StatementNode* stmt_) :
+    StatementNode(NodeKind::rangeForStatementNode, sourcePos_), declaration(declaration_), container(container_), stmt(stmt_)
 {
     declaration->SetParent(this);
     container->SetParent(this);
@@ -1614,7 +1627,7 @@ RangeForStatementNode::RangeForStatementNode(ForRangeDeclarationNode* declaratio
 
 Node* RangeForStatementNode::Clone() const
 {
-    return new RangeForStatementNode(static_cast<ForRangeDeclarationNode*>(declaration->Clone()), container->Clone(), static_cast<StatementNode*>(stmt->Clone()));
+    return new RangeForStatementNode(GetSourcePos(), static_cast<ForRangeDeclarationNode*>(declaration->Clone()), container->Clone(), static_cast<StatementNode*>(stmt->Clone()));
 }
 
 void RangeForStatementNode::Accept(Visitor& visitor)
@@ -1640,14 +1653,15 @@ void RangeForStatementNode::Write(CodeFormatter& formatter)
     stmt->Write(formatter);
 }
 
-DeclarationStatementNode::DeclarationStatementNode(Node* declaration_) : declaration(declaration_)
+DeclarationStatementNode::DeclarationStatementNode(const soul::ast::SourcePos& sourcePos_, Node* declaration_) : 
+    StatementNode(NodeKind::declarationStatementNode, sourcePos_), declaration(declaration_)
 {
     declaration->SetParent(this);
 }
 
 Node* DeclarationStatementNode::Clone() const
 {
-    return new DeclarationStatementNode(declaration->Clone());
+    return new DeclarationStatementNode(GetSourcePos(), declaration->Clone());
 }
 
 void DeclarationStatementNode::Accept(Visitor& visitor)
@@ -1661,8 +1675,8 @@ void DeclarationStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine(";");
 }
 
-ExceptionDeclarationNode::ExceptionDeclarationNode() :
-    Node(), typeId(new TypeIdNode()), declarator(), catchAll(false)
+ExceptionDeclarationNode::ExceptionDeclarationNode(const soul::ast::SourcePos& sourcePos_) :
+    Node(NodeKind::exceptionDeclarationNode, sourcePos_), typeId(new TypeIdNode(sourcePos_)), declarator(), catchAll(false)
 {
     typeId->SetParent(this);
 }
@@ -1674,7 +1688,7 @@ void ExceptionDeclarationNode::SetDeclarator(const std::string& declarator_)
 
 Node* ExceptionDeclarationNode::Clone() const
 {
-    ExceptionDeclarationNode* clone = new ExceptionDeclarationNode();
+    ExceptionDeclarationNode* clone = new ExceptionDeclarationNode(GetSourcePos());
     clone->SetDeclarator(declarator);
     if (catchAll)
     {
@@ -1702,8 +1716,8 @@ void ExceptionDeclarationNode::Write(CodeFormatter& formatter)
     }
 }
 
-HandlerNode::HandlerNode(ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_) : 
-    Node(), exceptionDeclaration(exceptionDeclaration_), handlerBlock(handlerBlock_)
+HandlerNode::HandlerNode(const soul::ast::SourcePos& sourcePos_, ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_) :
+    Node(NodeKind::handlerNode, sourcePos_), exceptionDeclaration(exceptionDeclaration_), handlerBlock(handlerBlock_)
 {
     exceptionDeclaration->SetParent(this);
     handlerBlock->SetParent(this);
@@ -1711,7 +1725,7 @@ HandlerNode::HandlerNode(ExceptionDeclarationNode* exceptionDeclaration_, Compou
 
 Node* HandlerNode::Clone() const
 {
-    return new HandlerNode(static_cast<ExceptionDeclarationNode*>(exceptionDeclaration->Clone()), static_cast<CompoundStatementNode*>(handlerBlock->Clone()));
+    return new HandlerNode(GetSourcePos(), static_cast<ExceptionDeclarationNode*>(exceptionDeclaration->Clone()), static_cast<CompoundStatementNode*>(handlerBlock->Clone()));
 }
 
 void HandlerNode::Accept(Visitor& visitor)
@@ -1727,7 +1741,8 @@ void HandlerNode::Write(CodeFormatter& formatter)
     handlerBlock->Write(formatter);
 }
 
-TryStatementNode::TryStatementNode(CompoundStatementNode* tryBlock_) : tryBlock(tryBlock_)
+TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, CompoundStatementNode* tryBlock_) : 
+    StatementNode(NodeKind::tryStatementNode, sourcePos_), tryBlock(tryBlock_)
 {
     tryBlock->SetParent(this);
 }
@@ -1740,7 +1755,7 @@ void TryStatementNode::AddHandler(HandlerNode* handler)
 
 Node* TryStatementNode::Clone() const
 {
-    TryStatementNode* clone = new TryStatementNode(static_cast<CompoundStatementNode*>(tryBlock->Clone()));
+    TryStatementNode* clone = new TryStatementNode(GetSourcePos(), static_cast<CompoundStatementNode*>(tryBlock->Clone()));
     for (const auto& handler : handlers)
     {
         clone->AddHandler(static_cast<HandlerNode*>(handler->Clone()));
@@ -1763,14 +1778,14 @@ void TryStatementNode::Write(CodeFormatter& formatter)
     }
 }
 
-IfdefStatementNode::IfdefStatementNode(Node* symbol_) : StatementNode(), symbol(symbol_)
+IfdefStatementNode::IfdefStatementNode(const soul::ast::SourcePos& sourcePos_, Node* symbol_) : StatementNode(NodeKind::ifdefStatementNode, sourcePos_), symbol(symbol_)
 {
     symbol->SetParent(this);
 }
 
 Node* IfdefStatementNode::Clone() const
 {
-    return new IfdefStatementNode(symbol->Clone());
+    return new IfdefStatementNode(GetSourcePos(), symbol->Clone());
 }
 
 void IfdefStatementNode::Accept(Visitor& visitor)
@@ -1785,7 +1800,7 @@ void IfdefStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine();
 }
 
-EndIfStatementNode::EndIfStatementNode(Node* comment_) : StatementNode(), comment(comment_)
+EndIfStatementNode::EndIfStatementNode(const soul::ast::SourcePos& sourcePos_, Node* comment_) : StatementNode(NodeKind::endIfStatementNode, sourcePos_), comment(comment_)
 {
     if (comment)
     {
@@ -1800,7 +1815,7 @@ Node* EndIfStatementNode::Clone() const
     {
         clonedComment = comment->Clone();
     }
-    return new EndIfStatementNode(clonedComment);
+    return new EndIfStatementNode(GetSourcePos(), clonedComment);
 }
 
 void EndIfStatementNode::Accept(Visitor& visitor)
@@ -1822,7 +1837,7 @@ void EndIfStatementNode::Write(CodeFormatter& formatter)
     }
 }
 
-AssignInitNode::AssignInitNode(Node* assignmentExpr_) : Node(), assignmentExpr(assignmentExpr_)
+AssignInitNode::AssignInitNode(const soul::ast::SourcePos& sourcePos_, Node* assignmentExpr_) : Node(NodeKind::assignInitNode, sourcePos_), assignmentExpr(assignmentExpr_)
 {
     if (assignmentExpr)
     {
@@ -1897,7 +1912,7 @@ Node* AssignInitNode::Clone() const
     {
         clonedAssignmentExprNode = assignmentExpr->Clone();
     }
-    AssignInitNode* clone = new AssignInitNode(clonedAssignmentExprNode);
+    AssignInitNode* clone = new AssignInitNode(GetSourcePos(), clonedAssignmentExprNode);
     for (const auto& subInit : subInits)
     {
         clone->Add(static_cast<AssignInitNode*>(subInit->Clone()));
@@ -1910,7 +1925,7 @@ void AssignInitNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-InitializerNode::InitializerNode(AssignInitNode* assignInit_) : Node(), assignInit(assignInit_)
+InitializerNode::InitializerNode(const soul::ast::SourcePos& sourcePos_, AssignInitNode* assignInit_) : Node(NodeKind::initializerNode, sourcePos_), assignInit(assignInit_)
 {
     if (assignInit)
     {
@@ -1986,7 +2001,7 @@ Node* InitializerNode::Clone() const
     {
         clonedAssignInitNode = static_cast<AssignInitNode*>(assignInit->Clone());
     }
-    InitializerNode* clone = new InitializerNode(clonedAssignInitNode);
+    InitializerNode* clone = new InitializerNode(GetSourcePos(), clonedAssignInitNode);
     for (const auto& expr : expressionList)
     {
         clone->Add(expr->Clone());
@@ -1999,7 +2014,8 @@ void InitializerNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-InitDeclaratorNode::InitDeclaratorNode(const std::string& declarator_, InitializerNode* initializer_) : declarator(declarator_), initializer(initializer_)
+InitDeclaratorNode::InitDeclaratorNode(const soul::ast::SourcePos& sourcePos_, const std::string& declarator_, InitializerNode* initializer_) : 
+    Node(NodeKind::initDeclaratorNode, sourcePos_), declarator(declarator_), initializer(initializer_)
 {
     if (initializer)
     {
@@ -2034,7 +2050,7 @@ Node* InitDeclaratorNode::Clone() const
     {
         clonedInitializer = static_cast<InitializerNode*>(initializer->Clone());
     }
-    return new InitDeclaratorNode(declarator, clonedInitializer);
+    return new InitDeclaratorNode(GetSourcePos(), declarator, clonedInitializer);
 }
 
 void InitDeclaratorNode::Accept(Visitor& visitor)
@@ -2042,7 +2058,7 @@ void InitDeclaratorNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-InitDeclaratorListNode::InitDeclaratorListNode() : Node()
+InitDeclaratorListNode::InitDeclaratorListNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::initDeclaratorListNode, sourcePos_)
 {
 }
 
@@ -2090,7 +2106,7 @@ std::string InitDeclaratorListNode::ToString() const
 
 Node* InitDeclaratorListNode::Clone() const
 {
-    InitDeclaratorListNode* clone = new InitDeclaratorListNode();
+    InitDeclaratorListNode* clone = new InitDeclaratorListNode(GetSourcePos());
     for (const auto& initDeclarator : initDeclarators)
     {
         clone->Add(static_cast<InitDeclaratorNode*>(initDeclarator->Clone()));
@@ -2103,17 +2119,17 @@ void InitDeclaratorListNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-DeclSpecifierNode::DeclSpecifierNode(const std::string& name_) : Node(), name(name_)
+DeclSpecifierNode::DeclSpecifierNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_) : Node(kind_, sourcePos_), name(name_)
 {
 }
 
-TypedefNode::TypedefNode() : DeclSpecifierNode("typedef")
+TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_) : DeclSpecifierNode(NodeKind::typedefNode, sourcePos_, "typedef")
 {
 }
 
 Node* TypedefNode::Clone() const
 {
-    return new TypedefNode();
+    return new TypedefNode(GetSourcePos());
 }
 
 void TypedefNode::Accept(Visitor& visitor)
@@ -2131,17 +2147,19 @@ std::string TypedefNode::ToString() const
     return Name();
 }
 
-TypeSpecifierNode::TypeSpecifierNode(const std::string& name_) : DeclSpecifierNode(name_), kind(TypeSpecifierNodeKind::typeSpecifierNode)
+TypeSpecifierNode::TypeSpecifierNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
+    DeclSpecifierNode(NodeKind::typeSpecifierNode, sourcePos_, name_)
 {
 }
 
-TypeSpecifierNode::TypeSpecifierNode(TypeSpecifierNodeKind kind_, const std::string& name_) : DeclSpecifierNode(name_), kind(kind_)
+TypeSpecifierNode::TypeSpecifierNode(const soul::ast::SourcePos& sourcePos_, NodeKind kind_, const std::string& name_) : 
+    DeclSpecifierNode(kind_, sourcePos_, name_)
 {
 }
 
 Node* TypeSpecifierNode::Clone() const
 {
-    return new TypeSpecifierNode(Kind(), Name());
+    return new TypeSpecifierNode(GetSourcePos(), Kind(), Name());
 }
 
 void TypeSpecifierNode::Accept(Visitor& visitor)
@@ -2154,13 +2172,13 @@ void TypeSpecifierNode::Write(CodeFormatter& formatter)
     formatter.Write(Name());
 }
 
-ConstNode::ConstNode() : TypeSpecifierNode(TypeSpecifierNodeKind::constNode, "const")
+ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_) : TypeSpecifierNode(sourcePos_, NodeKind::constNode, "const")
 {
 }
 
 Node* ConstNode::Clone() const
 {
-    return new ConstNode();
+    return new ConstNode(GetSourcePos());
 }
 
 void ConstNode::Accept(Visitor& visitor)
@@ -2168,13 +2186,13 @@ void ConstNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-VolatileNode::VolatileNode() : TypeSpecifierNode(TypeSpecifierNodeKind::volatileNode, "volatile")
+VolatileNode::VolatileNode(const soul::ast::SourcePos& sourcePos_) : TypeSpecifierNode(sourcePos_, NodeKind::volatileNode, "volatile")
 {
 }
 
 Node* VolatileNode::Clone() const
 {
-    return new VolatileNode();
+    return new VolatileNode(GetSourcePos());
 }
 
 void VolatileNode::Accept(Visitor& visitor)
@@ -2182,7 +2200,8 @@ void VolatileNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-TypeNameNode::TypeNameNode(const std::string& name_) : TypeSpecifierNode(TypeSpecifierNodeKind::typeNameNode, name_), isTemplate(false)
+TypeNameNode::TypeNameNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
+    TypeSpecifierNode(sourcePos_, NodeKind::typeNameNode, name_), isTemplate(false)
 {
 }
 
@@ -2223,7 +2242,7 @@ void TypeNameNode::Write(CodeFormatter& formatter)
 
 Node* TypeNameNode::Clone() const
 {
-    TypeNameNode* clone = new TypeNameNode(Name());
+    TypeNameNode* clone = new TypeNameNode(GetSourcePos(), Name());
     if (isTemplate)
     {
         clone->SetTemplate();
@@ -2240,7 +2259,7 @@ void TypeNameNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-TypeNode::TypeNode() : Node()
+TypeNode::TypeNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::typeNode, sourcePos_)
 {
 }
 
@@ -2276,7 +2295,7 @@ void TypeNode::Write(CodeFormatter& formatter)
 
 Node* TypeNode::Clone() const
 {
-    TypeNode* clone = new TypeNode();
+    TypeNode* clone = new TypeNode(GetSourcePos());
     for (const auto& typeSpecifier : typeSpecifiers)
     {
         clone->Add(static_cast<TypeSpecifierNode*>(typeSpecifier->Clone()));
@@ -2289,13 +2308,14 @@ void TypeNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-StorageClassSpecifierNode::StorageClassSpecifierNode(const std::string& name_) : DeclSpecifierNode(name_)
+StorageClassSpecifierNode::StorageClassSpecifierNode(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
+    DeclSpecifierNode(NodeKind::storageClassSpecifierNode, sourcePos_, name_)
 {
 }
 
 Node* StorageClassSpecifierNode::Clone() const
 {
-    return new StorageClassSpecifierNode(Name());
+    return new StorageClassSpecifierNode(GetSourcePos(), Name());
 }
 
 void StorageClassSpecifierNode::Accept(Visitor& visitor)
@@ -2313,7 +2333,7 @@ std::string StorageClassSpecifierNode::ToString() const
     return Name();
 }
 
-TypeIdNode::TypeIdNode() : Node()
+TypeIdNode::TypeIdNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::typeIdNode, sourcePos_)
 {
 }
 
@@ -2330,7 +2350,7 @@ void TypeIdNode::SetDeclarator(const std::string& declarator_)
 
 Node* TypeIdNode::Clone() const
 {
-    TypeIdNode* clone = new TypeIdNode();
+    TypeIdNode* clone = new TypeIdNode(GetSourcePos());
     clone->SetDeclarator(declarator);
     for (const auto& typeSpecifier : typeSpecifiers)
     {
@@ -2422,7 +2442,7 @@ bool TypeIdNode::IsPtrType() const
     }
 }
 
-SimpleDeclarationNode::SimpleDeclarationNode() : Node()
+SimpleDeclarationNode::SimpleDeclarationNode(const soul::ast::SourcePos& sourcePos_) : Node(NodeKind::simpleDeclarationNode, sourcePos_)
 {
 }
 
@@ -2465,7 +2485,7 @@ void SimpleDeclarationNode::Write(CodeFormatter& formatter)
 
 Node* SimpleDeclarationNode::Clone() const
 {
-    SimpleDeclarationNode* clone = new SimpleDeclarationNode();
+    SimpleDeclarationNode* clone = new SimpleDeclarationNode(GetSourcePos());
     for (const auto& declSpecifier : declSpecifiers)
     {
         clone->Add(static_cast<DeclSpecifierNode*>(declSpecifier->Clone()));
@@ -2482,12 +2502,12 @@ void SimpleDeclarationNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UsingObjectNode::UsingObjectNode(const std::string& name_) : Node(), name(name_)
+UsingObjectNode::UsingObjectNode(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_) : Node(kind_, sourcePos_), name(name_)
 {
 }
 
-NamespaceAliasNode::NamespaceAliasNode(const std::string& aliasName_, const std::string& namespaceName_) : 
-    UsingObjectNode("namespaceAlias"), aliasName(aliasName_), namespaceName(namespaceName_)
+NamespaceAliasNode::NamespaceAliasNode(const soul::ast::SourcePos& sourcePos_, const std::string& aliasName_, const std::string& namespaceName_) :
+    UsingObjectNode(NodeKind::namespaceAliasNode, sourcePos_, "namespaceAlias"), aliasName(aliasName_), namespaceName(namespaceName_)
 {
 }
 
@@ -2498,7 +2518,7 @@ void NamespaceAliasNode::Write(CodeFormatter& formatter)
 
 Node* NamespaceAliasNode::Clone() const
 {
-    return new NamespaceAliasNode(aliasName, namespaceName);
+    return new NamespaceAliasNode(GetSourcePos(), aliasName, namespaceName);
 }
 
 void NamespaceAliasNode::Accept(Visitor& visitor)
@@ -2506,7 +2526,8 @@ void NamespaceAliasNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UsingDeclarationNode::UsingDeclarationNode(const std::string& usingId_) : UsingObjectNode("usingDeclaration"), usingId(usingId_)
+UsingDeclarationNode::UsingDeclarationNode(const soul::ast::SourcePos& sourcePos_, const std::string& usingId_) : 
+    UsingObjectNode(NodeKind::usingDeclarationNode, sourcePos_, "usingDeclaration"), usingId(usingId_)
 {
 }
 
@@ -2517,7 +2538,7 @@ void UsingDeclarationNode::Write(CodeFormatter& formatter)
 
 Node* UsingDeclarationNode::Clone() const
 {
-    return new UsingDeclarationNode(usingId);
+    return new UsingDeclarationNode(GetSourcePos(), usingId);
 }
 
 void UsingDeclarationNode::Accept(Visitor& visitor)
@@ -2525,7 +2546,8 @@ void UsingDeclarationNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-UsingDirectiveNode::UsingDirectiveNode(const std::string& usingNs_) : UsingObjectNode("usingDirective"), usingNs(usingNs_)
+UsingDirectiveNode::UsingDirectiveNode(const soul::ast::SourcePos& sourcePos_, const std::string& usingNs_) : 
+    UsingObjectNode(NodeKind::usingDirectiveNode, sourcePos_, "usingDirective"), usingNs(usingNs_)
 {
 }
 
@@ -2536,7 +2558,7 @@ void UsingDirectiveNode::Write(CodeFormatter& formatter)
 
 Node* UsingDirectiveNode::Clone() const
 {
-    return new UsingDirectiveNode(usingNs);
+    return new UsingDirectiveNode(GetSourcePos(), usingNs);
 }
 
 void UsingDirectiveNode::Accept(Visitor& visitor)

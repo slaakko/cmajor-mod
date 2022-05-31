@@ -5,6 +5,8 @@
 
 module soul.lexer.file.map;
 
+import util;
+
 namespace soul::lexer {
 
 int FileMap::AddFilePath(const std::string& filePath)
@@ -57,7 +59,31 @@ std::u32string FileMap::GetFileLine(int file, int line) const
     {
         lineLength = contents.second[line + 1] - lineStart;
     }
-    return contents.first.substr(lineStart, lineLength);
+    std::u32string lineStr = contents.first.substr(lineStart, lineLength);
+    int n = lineStr.length();
+    int i = n - 1;
+    while (i >= 0)
+    {
+        if (lineStr[i] != '\r' && lineStr[i] != '\n')
+        {
+            break;
+        }
+        --i;
+    }
+    std::u32string trimmedLine = lineStr.substr(0, i + 1);
+    return trimmedLine;
+}
+
+FileMap* globalFileMap = nullptr;
+
+FileMap* GetGlobalFileMap()
+{
+    return globalFileMap;
+}
+
+void SetGlobalFileMap(FileMap* fileMap)
+{
+    globalFileMap = fileMap;
 }
 
 } // namespace soul::lexer

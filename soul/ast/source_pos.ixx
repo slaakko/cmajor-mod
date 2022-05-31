@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module soul.lexer.source.pos;
+export module soul.ast.source.pos;
 
 import std.core;
 
-export namespace soul::lexer {
+export namespace soul::ast {
 
 struct SourcePos
 {
@@ -37,4 +37,4 @@ inline bool operator<(const SourcePos& left, const SourcePos& right)
     return left.col < right.col;
 }
 
-} // namespace soul::lexer
+} // namespace soul::ast

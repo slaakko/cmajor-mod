@@ -8,6 +8,7 @@ export module soul.ast.spg;
 import std.core;
 import soul.ast.common;
 import soul.ast.cpp;
+import soul.ast.source.pos;
 
 export namespace soul::ast::spg {
 
@@ -15,13 +16,15 @@ class ParamVar
 {
 public:
     enum class Kind { parameter, variable };
-    ParamVar(Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
+    ParamVar(const soul::ast::SourcePos& sourcePos_, Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
     virtual ~ParamVar();
+    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     Kind GetKind() const { return kind; }
     soul::ast::cpp::TypeIdNode* Type() const { return type.get(); }
     const std::string& Name() const { return name; }
     virtual ParamVar* Clone() const = 0;
 private:
+    soul::ast::SourcePos sourcePos;
     Kind kind;
     std::unique_ptr<soul::ast::cpp::TypeIdNode> type;
     std::string name;
@@ -30,14 +33,14 @@ private:
 class Parameter : public ParamVar
 {
 public:
-    Parameter(soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
+    Parameter(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
     ParamVar* Clone() const override;
 };
 
 class Variable : public ParamVar
 {
 public:
-    Variable(soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
+    Variable(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
     ParamVar* Clone() const override;
 };
 
@@ -60,7 +63,10 @@ enum class ParserKind
 class Parser
 {
 public:
-    Parser(ParserKind kind_);
+    Parser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_);
+    Parser* Parent() const { return parent; }
+    void SetParent(Parser* parent_) { parent = parent_; }
+    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     virtual ~Parser();
     virtual Parser* Clone() const = 0;
     virtual void Accept(Visitor& visitor) = 0;
@@ -70,14 +76,17 @@ public:
     ParserKind Kind() const { return kind; }
     bool IsNonterminalParser() const { return kind == ParserKind::nonterminalParser; }
     bool IsTokenParser() const { return kind == ParserKind::tokenParser; }
+    bool IsListParser() const { return kind == ParserKind::listParser; }
 private:
+    Parser* parent;
+    soul::ast::SourcePos sourcePos;
     ParserKind kind;
 };
 
 class UnaryParser : public Parser
 {
 public:
-    UnaryParser(ParserKind kind_, Parser* child_);
+    UnaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* child_);
     Parser* Child() const { return child.get(); }
 private:
     std::unique_ptr<Parser> child;
@@ -86,7 +95,7 @@ private:
 class BinaryParser : public Parser
 {
 public:
-    BinaryParser(ParserKind kind_, Parser* left_, Parser* right_);
+    BinaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* left_, Parser* right_);
     Parser* Left() const { return left.get(); }
     Parser* Right() const { return right.get(); }
 private:
@@ -97,7 +106,7 @@ private:
 class AlternativeParser : public BinaryParser
 {
 public:
-    AlternativeParser(Parser* left_, Parser* right_);
+    AlternativeParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "alternative"; }
@@ -107,7 +116,7 @@ public:
 class SequenceParser : public BinaryParser
 {
 public:
-    SequenceParser(Parser* left_, Parser* right_);
+    SequenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "sequence"; }
@@ -116,7 +125,7 @@ public:
 class DifferenceParser : public BinaryParser
 {
 public:
-    DifferenceParser(Parser* left_, Parser* right_);
+    DifferenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "difference"; }
@@ -125,7 +134,7 @@ public:
 class ListParser : public UnaryParser
 {
 public:
-    ListParser(Parser* left_, Parser* right_);
+    ListParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
     Parser* Clone() const override;
     Parser* Left() const { return left; }
     Parser* Right() const { return right; }
@@ -139,7 +148,7 @@ private:
 class LookaheadParser : public UnaryParser
 {
 public:
-    LookaheadParser(Parser* child_);
+    LookaheadParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "lookahead"; }
@@ -148,7 +157,7 @@ public:
 class KleeneParser : public UnaryParser
 {
 public:
-    KleeneParser(Parser* child_);
+    KleeneParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "kleene"; }
@@ -157,7 +166,7 @@ public:
 class PositiveParser : public UnaryParser
 {
 public:
-    PositiveParser(Parser* child_);
+    PositiveParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "positive"; }
@@ -166,7 +175,7 @@ public:
 class OptionalParser : public UnaryParser
 {
 public:
-    OptionalParser(Parser* child_);
+    OptionalParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "optional"; }
@@ -175,7 +184,7 @@ public:
 class ExpectationParser : public UnaryParser
 {
 public:
-    ExpectationParser(Parser* child_);
+    ExpectationParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "expectation"; }
@@ -184,7 +193,7 @@ public:
 class ActionParser : public UnaryParser
 {
 public:
-    ActionParser(Parser* child_, soul::ast::cpp::CompoundStatementNode* successCode_, soul::ast::cpp::CompoundStatementNode* failureCode_);
+    ActionParser(const soul::ast::SourcePos& sourcePos_, Parser* child_, soul::ast::cpp::CompoundStatementNode* successCode_, soul::ast::cpp::CompoundStatementNode* failureCode_);
     soul::ast::cpp::CompoundStatementNode* SuccessCode() const { return successCode.get(); }
     soul::ast::cpp::CompoundStatementNode* FailureCode() const { return failureCode.get(); }
     Parser* Clone() const override;
@@ -201,7 +210,7 @@ class RuleParser;
 class NonterminalParser : public Parser
 {
 public:
-    NonterminalParser(const std::string& ruleName_, const std::string& instanceName_, soul::ast::cpp::ExprListNode* args_);
+    NonterminalParser(const soul::ast::SourcePos& sourcePos_, const std::string& ruleName_, const std::string& instanceName_, soul::ast::cpp::ExprListNode* args_);
     const std::string& RuleName() const { return ruleName; }
     const std::string& InstanceName() const { return instanceName; }
     const std::unique_ptr<soul::ast::cpp::ExprListNode>& Arguments() const { return arguments; }
@@ -220,7 +229,7 @@ private:
 class EmptyParser : public Parser
 {
 public:
-    EmptyParser();
+    EmptyParser(const soul::ast::SourcePos& sourcePos_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "empty"; }
@@ -229,7 +238,7 @@ public:
 class AnyParser : public Parser
 {
 public:
-    AnyParser();
+    AnyParser(const soul::ast::SourcePos& sourcePos_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "any"; }
@@ -238,7 +247,7 @@ public:
 class TokenParser : public Parser
 {
 public:
-    TokenParser(const std::string& tokenName_);
+    TokenParser(const soul::ast::SourcePos& sourcePos_, const std::string& tokenName_);
     const std::string& TokenName() const { return tokenName; }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -250,7 +259,7 @@ private:
 class CharParser : public Parser
 {
 public:
-    CharParser(char32_t chr_);
+    CharParser(const soul::ast::SourcePos& sourcePos_, char32_t chr_);
     char32_t Chr() const { return chr; }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -262,7 +271,7 @@ private:
 class StringParser : public Parser
 {
 public:
-    StringParser(const std::u32string& str_);
+    StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_);
     const std::u32string& Str() const { return str; }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -274,7 +283,7 @@ private:
 class CharSetParser : public Parser
 {
 public:
-    CharSetParser(CharSet* charSet_);
+    CharSetParser(const soul::ast::SourcePos& sourcePos_, CharSet* charSet_);
     CharSet* GetCharSet() const { return charSet.get(); }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
@@ -286,7 +295,7 @@ private:
 class GroupingParser : public UnaryParser
 {
 public:
-    GroupingParser(Parser* child_);
+    GroupingParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "grouping"; }
@@ -297,10 +306,12 @@ class GrammarParser;
 class RuleParser : public Parser
 {
 public:
-    RuleParser(const std::string& name_);
+    RuleParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     std::string Name() const override { return name; }
-    void SetId(int id_) { id = id_; }
-    int Id() const { return id; }
+    void SetIndex(int32_t index_) { index = index_; }
+    int32_t Index() const { return index; }
+    void SetId(int64_t id_) { id = id_; }
+    int64_t Id() const { return id; }
     void SetInfo(const std::string& info_);
     const std::string& Info() const { return info; }
     void AddParamOrVariable(ParamVar* paramVar);
@@ -320,7 +331,8 @@ public:
     void Accept(Visitor& visitor) override;
 private:
     std::string name;
-    int id;
+    int32_t index;
+    int64_t id;
     std::string info;
     std::vector<std::unique_ptr<Parameter>> params;
     std::vector<std::unique_ptr<Variable>> vars;
@@ -331,19 +343,32 @@ private:
     bool hasReturn;
 };
 
+struct Using
+{
+    Using(const soul::ast::SourcePos& sourcePos_, const std::string& parserRuleId_);
+    soul::ast::SourcePos sourcePos;
+    std::string parserRuleId;
+};
+
+class ParserFile;
+
 class GrammarParser : public Parser
 {
 public:
-    GrammarParser(const std::string& name_);
+    GrammarParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     std::string Name() const override { return name; }
     bool Main() const { return main; }
     void SetMain() { main = true; }
+    int32_t Id() const { return id; }
+    void SetId(int32_t id_) { id = id_; }
+    ParserFile* GetParserFile() const { return parserFile; }
+    void SetParserFile(ParserFile* parserFile_) { parserFile = parserFile_; }
     void AddLexer(soul::ast::cpp::TypeIdNode* lexerTypeId);
     const std::vector<std::unique_ptr<soul::ast::cpp::TypeIdNode>>& Lexers() const { return lexers; }
-    void AddUsing(const std::string& parserRuleId);
-    const std::vector<std::string>& Usings() const { return usings; }
-    void AddRule(RuleParser* rule);
-    void MapRule(RuleParser* rule);
+    void AddUsing(const soul::ast::SourcePos& sourcePos, const std::string& parserRuleId);
+    const std::vector<Using>& Usings() const { return usings; }
+    bool AddRule(RuleParser* rule);
+    bool MapRule(RuleParser* rule);
     RuleParser* GetRule(const std::string& ruleName) const;
     const std::vector<std::unique_ptr<RuleParser>>& Rules() const { return rules; }
     Parser* Clone() const override;
@@ -351,8 +376,10 @@ public:
 private:
     std::string name;
     bool main;
+    int32_t id;
+    ParserFile* parserFile;
     std::vector<std::unique_ptr<soul::ast::cpp::TypeIdNode>> lexers;
-    std::vector<std::string> usings;
+    std::vector<Using> usings;
     std::vector<std::unique_ptr<RuleParser>> rules;
     std::map<std::string, RuleParser*> ruleMap;
 };
@@ -377,11 +404,13 @@ private:
 class SpgFileDeclaration
 {
 public:
-    SpgFileDeclaration(FileKind fileKind_, const std::string& filePath_);
+    SpgFileDeclaration(const soul::ast::SourcePos& sourcePos_, FileKind fileKind_, const std::string& filePath_);
     virtual ~SpgFileDeclaration();
+    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     FileKind GetFileKind() const { return fileKind; }
     const std::string& FilePath() const { return filePath; }
 private:
+    soul::ast::SourcePos sourcePos;
     FileKind fileKind;
     std::string filePath;
 };
@@ -389,7 +418,7 @@ private:
 class ParserFileDeclaration : public SpgFileDeclaration
 {
 public:
-    ParserFileDeclaration(const std::string& filePath_, bool external_);
+    ParserFileDeclaration(const soul::ast::SourcePos& sourcePos_, const std::string& filePath_, bool external_);
     bool External() const { return external; }
 private:
     bool external;
@@ -424,7 +453,7 @@ public:
     const std::vector<std::unique_ptr<SpgFileDeclaration>>& Declarations() const { return declarations; }
     void AddParserFile(ParserFile* parserFile);
     const std::vector<std::unique_ptr<ParserFile>>& ParserFiles() const { return parserFiles; }
-    void AddParser(GrammarParser* parser);
+    bool AddParser(GrammarParser* parser);
     GrammarParser* GetParser(const std::string& name) const;
     void AddRule(RuleParser* rule);
     const std::vector<RuleParser*>& Rules() const { return rules; }

@@ -7,3 +7,6 @@ xcopy /F /Y ..\..\soul-mod\soul\lexer\*.cpp lexer\
 
 xcopy /F /Y ..\..\soul-mod\soul\parser\*.ixx parser\
 xcopy /F /Y ..\..\soul-mod\soul\parser\*.cpp parser\
+
+xcopy /F /Y ..\..\soul-mod\soul\xml\dom\*.ixx xml\dom\
+xcopy /F /Y ..\..\soul-mod\soul\xml\dom\*.cpp xml\dom\

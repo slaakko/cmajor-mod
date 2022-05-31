@@ -25,7 +25,7 @@ AstReader::AstReader(const std::string& fileName_) :
 Node* AstReader::ReadNode()
 {
     NodeType nodeType = static_cast<NodeType>(binaryStreamReader.ReadByte());
-    soul::lexer::SourcePos sourcePos = ReadSourcePos();
+    soul::ast::SourcePos sourcePos = ReadSourcePos();
 
     boost::uuids::uuid moduleId;
     binaryStreamReader.ReadUuid(moduleId);
@@ -221,12 +221,12 @@ Specifiers AstReader::ReadSpecifiers()
     return static_cast<Specifiers>(binaryStreamReader.ReadUInt());
 }
 
-soul::lexer::SourcePos AstReader::ReadSourcePos()
+soul::ast::SourcePos AstReader::ReadSourcePos()
 {
         uint32_t file = binaryStreamReader.ReadULEB128UInt();
         uint32_t line = binaryStreamReader.ReadULEB128UInt();
         uint32_t col = binaryStreamReader.ReadULEB128UInt();
-        return soul::lexer::SourcePos(static_cast<int32_t>(file), static_cast<int32_t>(line), static_cast<int32_t>(col));
+        return soul::ast::SourcePos(static_cast<int32_t>(file), static_cast<int32_t>(line), static_cast<int32_t>(col));
 }
 /*
 void AstReader::SetModuleMaps(const boost::uuids::uuid& rootModuleId_, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_)

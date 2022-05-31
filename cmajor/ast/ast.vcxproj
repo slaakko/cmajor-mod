@@ -141,6 +141,7 @@
       <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -170,6 +171,9 @@
     <ClCompile Include="visitor.ixx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\soul\lexer\lexer.vcxproj">
       <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
     </ProjectReference>
