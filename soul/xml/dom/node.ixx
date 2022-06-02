@@ -28,6 +28,8 @@ public:
     NodeKind Kind() const { return kind; }
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     const std::string& Name() const { return name; }
+    const std::string& NamespaceUri() const { return namespaceUri; }
+    void SetNamespaceUri(const std::string& namespaceUri_);
     bool IsAttributeNode() const { return kind == NodeKind::attributeNode; }
     bool IsDocumentFragmentNode() const { return kind == NodeKind::documentFragmentNode; }
     bool IsDocumentNode() const { return kind == NodeKind::documentNode; }
@@ -63,6 +65,7 @@ private:
     NodeKind kind;
     soul::ast::SourcePos sourcePos;
     std::string name;
+    std::string namespaceUri;
     ParentNode* parent;
     Node* prev;
     Node* next;

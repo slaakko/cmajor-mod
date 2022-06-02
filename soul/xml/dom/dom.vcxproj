@@ -184,6 +184,8 @@
     <ClCompile Include="entity_reference.ixx" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
+    <ClCompile Include="index.cpp" />
+    <ClCompile Include="index.ixx" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node.ixx" />
     <ClCompile Include="parent_node.cpp" />

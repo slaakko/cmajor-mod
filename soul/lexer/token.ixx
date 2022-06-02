@@ -24,6 +24,7 @@ struct Token
     Token(int64_t id_, LexerBaseT* lexer_) : match(), lexer(lexer_), id(id_), line(1) {}
     Token(int64_t id_, const Lexeme<Char>& match_, LexerBaseT* lexer_, int line_) : match(match_), lexer(lexer_), id(id_), line(line_) {}
     std::basic_string<Char> ToString() const { return match.ToString(); }
+    Char Chr() const { return *match.begin; }
     int8_t ToSByte() const { return ParseSByte(match.begin, match.end, lexer, line); }
     uint8_t ToByte() const { return ParseByte(match.begin, match.end, lexer, line); }
     int16_t ToShort() const { return ParseShort(match.begin, match.end, lexer, line); }

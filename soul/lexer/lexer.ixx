@@ -18,6 +18,7 @@ export import soul.lexer.parsing.log;
 export import soul.lexer.xml.parsing.log;
 export import soul.lexer.file.map;
 export import soul.lexer.lexing.util;
+export import soul.lexer.test;
 
 import std.core;
 import util.unicode;
@@ -294,19 +295,31 @@ public:
         int col = static_cast<int>(token.match.begin - s + 1);
         return soul::ast::SourcePos(pos, file, line, col);
     }
-    std::string ErrorLines(int64_t pos) const
+    std::string ErrorLines(int64_t pos) const override
     {
         auto token = GetToken(pos);
         std::basic_string<Char> lines;
         const Char* lineStart = LineStart(start, token.match.begin);
         const Char* lineEnd = LineEnd(end, token.match.end);
-        lines.append(std::basic_string<Char>(lineStart, token.match.begin));
+        if (token.match.begin > lineStart)
+        {
+            lines.append(std::basic_string<Char>(lineStart, token.match.begin));
+        }
         lines.append(token.match.ToString());
-        lines.append(std::basic_string<Char>(token.match.end, lineEnd));
+        if (lineEnd > token.match.end)
+        {
+            lines.append(std::basic_string<Char>(token.match.end, lineEnd));
+        }
         lines.append(1, '\n');
-        lines.append(token.match.begin - lineStart, ' ');
+        if (token.match.begin > lineStart)
+        {
+            lines.append(token.match.begin - lineStart, ' ');
+        }
         lines.append(std::max(static_cast<int64_t>(1), token.match.end - token.match.begin), '^');
-        lines.append(lineEnd - token.match.end, ' ');
+        if (lineEnd > token.match.end)
+        {
+            lines.append(lineEnd - token.match.end, ' ');
+        }
         return ToUtf8(lines);
     }
     void ThrowExpectationFailure(int64_t pos, const std::string& name)
@@ -375,6 +388,18 @@ public:
     soul::lexer::Variables* GetVariables() const override 
     { 
         return const_cast<soul::lexer::Variables*>(static_cast<const soul::lexer::Variables*>(&vars));
+    }
+    const Char* Start() const
+    {
+        return start;
+    }
+    const Char* Pos() const
+    {
+        return pos;
+    }
+    const Char* End() const
+    {
+        return end;
     }
 private:
     void NextToken()

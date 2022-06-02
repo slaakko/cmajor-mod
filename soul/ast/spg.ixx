@@ -12,6 +12,12 @@ import soul.ast.source.pos;
 
 export namespace soul::ast::spg {
 
+struct Range
+{
+    int32_t first;
+    int32_t last;
+};
+
 class ParamVar
 {
 public:
@@ -46,10 +52,16 @@ public:
 
 class CharSet
 {
-    // todo
 public:
     CharSet();
     CharSet* Clone() const;
+    bool Inverse() const { return inverse; }
+    void SetInverse() { inverse = true; }
+    const std::vector<Range>& Ranges() const { return ranges; }
+    void AddRange(const Range& range);
+private:
+    bool inverse;
+    std::vector<Range> ranges;
 };
 
 class Visitor;
@@ -273,11 +285,14 @@ class StringParser : public Parser
 public:
     StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_);
     const std::u32string& Str() const { return str; }
+    const std::string& ArrayName() const { return arrayName; }
+    void SetArrayName(const std::string& arrayName_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "string"; }
 private:
     std::u32string str;
+    std::string arrayName;
 };
 
 class CharSetParser : public Parser
@@ -285,11 +300,14 @@ class CharSetParser : public Parser
 public:
     CharSetParser(const soul::ast::SourcePos& sourcePos_, CharSet* charSet_);
     CharSet* GetCharSet() const { return charSet.get(); }
+    const std::string& ArrayName() const { return arrayName; }
+    void SetArrayName(const std::string& arrayName_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "charSet"; }
 private:
     std::unique_ptr<CharSet> charSet;
+    std::string arrayName;
 };
 
 class GroupingParser : public UnaryParser

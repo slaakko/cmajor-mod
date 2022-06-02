@@ -38,14 +38,27 @@ ParamVar* Variable::Clone() const
     return new Variable(GetSourcePos(),static_cast<soul::ast::cpp::TypeIdNode*>(Type()->Clone()), Name());
 }
 
-CharSet::CharSet() 
+CharSet::CharSet() : inverse(false)
 {
-    // todo
+}
+
+void CharSet::AddRange(const Range& range)
+{
+    ranges.push_back(range);
 }
 
 CharSet* CharSet::Clone() const
 {
-    return new CharSet(); // todo
+    CharSet* clone = new CharSet();
+    if (inverse)
+    {
+        clone->SetInverse();
+    }
+    for (const auto& range : ranges)
+    {
+        clone->AddRange(range);
+    }
+    return clone;
 }
 
 Parser::Parser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_) : parent(nullptr), sourcePos(sourcePos_), kind(kind_)
@@ -308,8 +321,13 @@ void CharParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-StringParser::StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_) : Parser(sourcePos_, ParserKind::stringParser), str(str)
+StringParser::StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_) : Parser(sourcePos_, ParserKind::stringParser), str(str_)
 {
+}
+
+void StringParser::SetArrayName(const std::string& arrayName_)
+{
+    arrayName = arrayName_;
 }
 
 Parser* StringParser::Clone() const
@@ -324,6 +342,11 @@ void StringParser::Accept(Visitor& visitor)
 
 CharSetParser::CharSetParser(const soul::ast::SourcePos& sourcePos_, CharSet* charSet_) : Parser(sourcePos_, ParserKind::charSetParser), charSet(charSet_)
 {
+}
+
+void CharSetParser::SetArrayName(const std::string& arrayName_)
+{
+    arrayName = arrayName_;
 }
 
 Parser* CharSetParser::Clone() const

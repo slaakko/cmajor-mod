@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{858c4b45-3557-4861-a721-adec61d3fdb5}</ProjectGuid>
-    <RootNamespace>lexer</RootNamespace>
+    <ProjectGuid>{21e6c1c2-daa6-4f4e-954e-b56538d46244}</ProjectGuid>
+    <RootNamespace>xmlparser</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -59,26 +59,26 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
+    <Import Project="..\..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
+    <Import Project="..\..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
+    <Import Project="..\..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
+    <Import Project="..\..\..\config\build.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>soul.lexerd</TargetName>
+    <TargetName>soul.xml.parserd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>soul.lexer</TargetName>
+    <TargetName>soul.xml.parser</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,11 +118,11 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <EnableModules>true</EnableModules>
-      <AdditionalOptions>/experimental:module /std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
+      <AdditionalOptions>/experimental:module /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -139,11 +139,11 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <EnableModules>true</EnableModules>
-      <AdditionalOptions>/experimental:module /std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
+      <AdditionalOptions>/experimental:module /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -154,34 +154,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="base.ixx" />
-    <ClCompile Include="classmap.ixx" />
-    <ClCompile Include="concepts.ixx" />
-    <ClCompile Include="error.cpp" />
-    <ClCompile Include="error.ixx" />
-    <ClCompile Include="file_map.cpp" />
-    <ClCompile Include="file_map.ixx" />
-    <ClCompile Include="keyword.ixx" />
-    <ClCompile Include="lexeme.ixx" />
-    <ClCompile Include="lexer.ixx" />
-    <ClCompile Include="lexing_util.ixx" />
-    <ClCompile Include="parsing_log.cpp" />
-    <ClCompile Include="parsing_log.ixx" />
-    <ClCompile Include="test_lexer.ixx" />
-    <ClCompile Include="token.ixx" />
-    <ClCompile Include="token_parser.ixx" />
-    <ClCompile Include="trivial_lexer.ixx" />
-    <ClCompile Include="variables.cpp" />
-    <ClCompile Include="variables.ixx" />
-    <ClCompile Include="xml_parsing_log.cpp" />
-    <ClCompile Include="xml_parsing_log.ixx" />
+    <ClCompile Include="xml_document_parser.cpp" />
+    <ClCompile Include="xml_document_parser.ixx" />
+    <ClCompile Include="xml_parser.cpp" />
+    <ClCompile Include="xml_parser.ixx" />
+    <ClCompile Include="xml_parser_rules.cpp" />
+    <ClCompile Include="xml_parser_rules.ixx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\util\util.vcxproj">
-      <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ast\ast.vcxproj">
+    <ProjectReference Include="..\..\ast\ast.vcxproj">
       <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\parser\parser.vcxproj">
+      <Project>{536511be-fbac-449f-bd75-704655bdce4d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\processor\processor.vcxproj">
+      <Project>{1ad67257-5fbe-45a6-a3bf-161bf9778089}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -18,3 +18,4 @@ export import soul.xml.parent.node;
 export import soul.xml.processing.instruction;
 export import soul.xml.text;
 export import soul.xml.error;
+export import soul.xml.index;

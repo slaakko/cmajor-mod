@@ -6,10 +6,9 @@
 export module soul.xml.document;
 
 import soul.xml.parent.node;
+import soul.xml.element;
 
 export namespace soul::xml {
-
-class Element;
 
 class Document : public ParentNode
 {
@@ -21,6 +20,8 @@ public:
     void SetXmlVersion(const std::string& xmlVersion_) { xmlVersion = xmlVersion_; }
     const std::string& XmlEncoding() const { return xmlEncoding; }
     void SetXmlEncoding(const std::string& xmlEncoding_) { xmlEncoding = xmlEncoding_; }
+    std::map<std::string, Element*>& Index() { return index; }
+    Element* GetElementById(const std::string& elementId);
     void AppendChild(Node* child) override;
     void InsertBefore(Node* newChild, Node* refChild) override;
     std::unique_ptr<Node> RemoveChild(Node* child) override;
@@ -36,6 +37,7 @@ private:
     bool xmlStandalone;
     std::string xmlVersion;
     std::string xmlEncoding;
+    std::map<std::string, Element*> index;
 };
 
 std::unique_ptr<Document> MakeDocument();

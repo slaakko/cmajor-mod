@@ -37,6 +37,7 @@ public:
     virtual void SetKeywordMap(KeywordMap<Char>* keywordMap_) = 0;
     virtual std::map<int64_t, std::string>* GetRuleNameMapPtr() const = 0;
     virtual void SetRuleNameMapPtr(std::map<int64_t, std::string>* ruleNameMapPtr) = 0;
+    virtual std::string ErrorLines(int64_t pos) const = 0;
 };
 
 } // namespace soul::lexer

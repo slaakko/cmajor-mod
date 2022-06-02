@@ -6,8 +6,8 @@
 module soul.xml.document;
 
 import soul.xml.visitor;
-import soul.xml.element;
 import soul.xml.error;
+import soul.xml.index;
 import soul.lexer.file.map;
 import soul.lexer.error;
 
@@ -16,6 +16,25 @@ namespace soul::xml {
 Document::Document(const soul::ast::SourcePos& sourcePos_) : 
     ParentNode(NodeKind::documentNode, sourcePos_, "document"), documentElement(nullptr), indexValid(false), xmlStandalone(false)
 {
+}
+
+Element* Document::GetElementById(const std::string& elementId)
+{
+    if (!indexValid)
+    {
+        index.clear();
+        BuildIndex(this);
+        indexValid = true;
+    }
+    auto it = index.find(elementId);
+    if (it != index.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 void Document::AppendChild(Node* child)

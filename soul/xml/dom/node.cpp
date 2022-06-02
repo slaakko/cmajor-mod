@@ -18,6 +18,11 @@ Node::~Node()
 {
 }
 
+void Node::SetNamespaceUri(const std::string& namespaceUri_)
+{
+    namespaceUri = namespaceUri_;
+}
+
 std::string Node::Prefix() const
 {
     if (IsElementNode() || IsAttributeNode())
