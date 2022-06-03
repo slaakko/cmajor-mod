@@ -391,7 +391,182 @@ parser XmlParser
         }
         ;
 
-    DocTypeDecl(soul::xml::processor::XmlProcessor* processor) 
-        ::= empty // todo
+    DocTypeDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            "<!DOCTYPE"
+            S:s1 
+            Name:rootElementName
+            (S:s2 ExternalID:extID)?
+            S:s3?
+            ('[' IntSubset(processor):intSubset ']' S:s4?)? 
+            '>'
+        )
+        ;
+
+    ExternalID
+        ::= ("SYSTEM" S:s1 SystemLiteral:s2)
+        |   ("PUBLIC" S:s3 PubidLiteral:p2 S:s4 SystemLiteral:s5)
+        ;
+
+    SystemLiteral
+        ::= '"' "[^\"]"* '"'
+        |   '\'' "[^']"* '\''
+        ;
+
+    PubidLiteral
+        ::= '"' PubidChar:p1* '"' 
+        |   '\'' (PubidChar:p2 - '\'')* '\''
+        ;
+
+    PubidChar
+        ::= "[\x20\xD\xA]" | "[a-zA-Z0-9]" | "[-'()+,./:=?;!*#@$_%]"
+        ;
+
+    IntSubset(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (   MarkupDecl(processor):mdecl 
+        |   DeclSep(processor):declsep
+        )*
+        ;
+
+    MarkupDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= ElementDecl(processor):elementDecl
+        |   AttlistDecl(processor):attlistDecl
+        |   EntityDecl(processor):entityDecl
+        |   NotationDecl(processor):notationDecl
+        |   PI(processor):pi 
+        |   Comment(processor):comment
+        ;
+
+    ElementDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ELEMENT" S:s1 Name:elementName S:s2 ContentSpec:contentSpec S:s3? '>'
+        ;
+
+    ContentSpec
+        ::= "EMPTY" | "ANY" | Mixed:mixed | Children:children
+        ;
+
+    Mixed
+        ::= '(' S:s1? "#PCDATA" (S:s2? '|' S:s3? Name:name)* S:s4? ")*"
+        |   '(' S:s5? "#PCDATA" S:s6? ')'
+        ;
+
+    Choice
+        ::= '(' S:s1? CP:cp1 (S:s2? '|' S:s3? CP:cp2)+ S:s4? ')'
+        ;
+
+    CP
+        ::= (Name:name | Choice:choice | Seq:seq) ('?' | '*' | '+')?
+        ;
+
+    Seq
+        ::= '(' S:s1? CP:cp1 (S:s2? ',' S:s3? CP:cp2)* S:s4? ')'
+        ;
+
+    Children
+        ::= (Choice:choice | Seq:seq) ('?' | '*' | '+')?
+        ;
+
+    AttlistDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ATTLIST" S:s1 Name:name AttDef(processor):attdef* S:s2? '>'
+        ;
+
+    AttDef(soul::xml::processor::XmlProcessor* processor)
+        ::= S:s Name:name S:s2 AttType:attType S:s3 DefaultDecl(processor):defaultDecl
+        ;
+
+    AttType
+        ::= StringType:stringType | TokenizedType:tokenizedType | EnumeratedType:enumeratedType
+        ;
+
+    StringType
+        ::= "CDATA"
+        ;
+
+    TokenizedType
+        ::= "ID"
+        |   "IDREF"
+        |   "IDREFS"
+        |   "ENTITY"
+        |   "ENTITIES"
+        |   "NMTOKEN"
+        |   "NMTOKENS"
+        ;
+
+    EnumeratedType
+        ::= NotationType:notationType 
+        |   Enumeration:enumeration
+        ;
+
+    NotationType
+        ::= "NOTATION" S:s1 '(' S:s2? Name:f (S:s3? '|' S:s4? Name:n)* S:s5? ')'
+        ;
+
+    Enumeration
+        ::= '(' S:s1? Nmtoken:nmtoken (S:s2? '|' S:s3? Nmtoken:nmtoken2)* S:s4? ')'
+        ;
+
+    Nmtoken
+        ::= NameChar:nameChar+
+        ;
+
+    DefaultDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "#REQUIRED" | "#IMPLIED" | (("#FIXED" S:s)? AttValue(processor):attValue)
+        ;
+
+    EntityDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= GEDecl(processor):gedecl | PEDecl(processor):pedecl
+        ;
+
+    GEDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ENTITY" S:s0 Name:entityName S:s1 EntityDef(processor):entityDef S:s2? '>'
+        ;
+
+    EntityDef(soul::xml::processor::XmlProcessor* processor)
+        ::= EntityValue(processor):entityValue | (ExternalID:extID NDataDecl:notation?)
+        ;
+
+    EntityValue(soul::xml::processor::XmlProcessor* processor)
+        ::= '"'
+            (   "[^%&\"]"
+            |   PEReference(processor):pr1
+            |   Reference(processor):ref1
+            )* 
+            '"'
+        |   '\''
+            (   "[^%&']"
+            |   PEReference(processor):pr2
+            |   Reference(processor):ref2
+            )* 
+            '\''
+        ;
+
+    PEReference(soul::xml::processor::XmlProcessor* processor)
+        ::= '%' Name:name ';'
+        ;
+
+    PEDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ENTITY" S:s0 '%' S:s1 Name:peName S:s2 PEDef(processor):peValue S:s3? '>'
+        ;
+
+    PEDef(soul::xml::processor::XmlProcessor* processor)
+        ::= EntityValue(processor):entityValue | ExternalID:extID
+        ;
+
+    NDataDecl
+        ::= S:s1 "NDATA" S:s2 Name:name
+        ;
+
+    NotationDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!NOTATION" S:s Name:name S:s2 (ExternalID:extID | PublicID:pubID) S:s3? '>'
+        ;
+
+    DeclSep(soul::xml::processor::XmlProcessor* processor)
+        ::= PEReference(processor):peref | S:s
+        ;
+
+    PublicID
+        ::= "PUBLIC" S:s PubidLiteral:pl
         ;
 }
