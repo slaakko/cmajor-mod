@@ -154,6 +154,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common.cpp" />
+    <ClCompile Include="common.ixx" />
     <ClCompile Include="cpp.cpp" />
     <ClCompile Include="cpp.ixx" />
     <ClCompile Include="re.cpp" />

@@ -159,9 +159,12 @@
     <ClCompile Include="concepts.ixx" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
+    <ClCompile Include="file_map.cpp" />
+    <ClCompile Include="file_map.ixx" />
     <ClCompile Include="keyword.ixx" />
     <ClCompile Include="lexeme.ixx" />
     <ClCompile Include="lexer.ixx" />
+    <ClCompile Include="lexing_util.ixx" />
     <ClCompile Include="parsing_log.cpp" />
     <ClCompile Include="parsing_log.ixx" />
     <ClCompile Include="source_pos.ixx" />

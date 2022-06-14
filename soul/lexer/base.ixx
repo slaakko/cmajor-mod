@@ -25,11 +25,12 @@ public:
     virtual const Lexeme<Char>& CurrentLexeme() const = 0;
     virtual const Token<Char, Self>& GetToken(int64_t pos) const = 0;
     virtual const std::string& FileName() const = 0;
+    virtual int File() const = 0;
     virtual int Line() const = 0;
     virtual ClassMap<Char>* GetClassMap() const = 0;
     virtual void SetClassMap(ClassMap<Char>* classMap) = 0;
     virtual Variables* GetVariables() const = 0;
-    virtual void SetVariables(Variables* vars_) = 0;
+    //virtual void SetVariables(Variables* vars) = 0;
     virtual soul::ast::slg::TokenCollection* GetTokenCollection() const = 0;
     virtual void SetTokenCollection(soul::ast::slg::TokenCollection* tokenCollection_) = 0;
     virtual KeywordMap<Char>* GetKeywordMap() const = 0;

@@ -201,24 +201,21 @@ Nfa Opt(LexerContext& lexerContext, const Nfa& nfa);
 class DfaState
 {
 public:
-    //DfaState(int id_, const std::vector<NfaState*>& nfaStates_);
     DfaState(int id_, const std::vector<int>& nfaStateIds_);
     int Id() const { return id; }
     bool IsMarked() const { return marked; }
     void Mark() { marked = true; }
     bool Accept() const { return accept; }
     void SetAccept(bool accept_) { accept = accept_; }
-    int  RuleIndex() const { return ruleIndex; }
+    int RuleIndex() const { return ruleIndex; }
     void SetRuleIndex(int index) { ruleIndex = index; }
-    //const std::vector<NfaState*>& NfaStates() const { return nfaStates; }
     const std::vector<int>& NfaStateIds() const { return nfaStateIds; }
     void AddNext(DfaState* next);
     DfaState* Next(int i) const;
-    //void Print(LexerContext& context, CodeFormatter& formatter);
+    void Print(LexerContext& context, CodeFormatter& formatter);
 private:
     int id;
     std::vector<int> nfaStateIds;
-    //std::vector<NfaState*> nfaStates;
     std::vector<DfaState*> next;
     bool marked;
     bool accept;
@@ -236,10 +233,8 @@ private:
     std::vector<DfaState*> states;
 };
 
-//std::vector<NfaState*> EpsilonClosure(const std::vector<NfaState*>& states);
 std::vector<int> EpsilonClosure(LexerContext& lexerContext, const std::vector<int>& stateIds);
 std::vector<int> EpsilonClosure(LexerContext& lexerContext, int nfaStateId);
-//std::vector<NfaState*> Move(const std::vector<NfaState*>& states, char32_t c);
 std::vector<int> Move(LexerContext& lexerContext, const std::vector<int>& stateIds, char32_t c);
 Dfa Compile(LexerContext& lexerContext, Nfa& nfa);
 
@@ -260,7 +255,6 @@ public:
     NfaState* MakeNfaState();
     NfaState* GetNfaState(int id) const;
     const std::vector<NfaState*>& NfaStates() const { return nfaStates; }
-    //DfaState* MakeDfaState(const std::vector<NfaState*>& nfaStates);
     DfaState* MakeDfaState(const std::vector<int>& nfaStates);
     Symbol* MakeChar(char32_t c);
     Symbol* MakeAny() { return &any; }
@@ -315,7 +309,6 @@ private:
     Class* asciiIdCont;
     Class* unicodeIdStart;
     Class* unicodeIdCont;
-    soul::ast::slg::ClassMap* classMap;
     soul::ast::slg::Tokens* tokens;
     soul::ast::slg::Keywords* keywords;
     soul::ast::slg::Expressions* expressions;

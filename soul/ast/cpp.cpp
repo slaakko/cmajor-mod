@@ -51,7 +51,7 @@ std::string OperatorStr(Operator op)
     return "";
 }
 
-Node::Node()
+Node::Node() : parent(nullptr)
 {
 }
 
@@ -61,10 +61,109 @@ Node::~Node()
 
 UnaryNode::UnaryNode(Node* child_) : Node(), child(child_)
 {
+    child->SetParent(this);
+}
+
+void UnaryNode::Replace(Node* node, Node* replacement)
+{
+    if (child.get() == node)
+    {
+        child.reset(replacement);
+    }
 }
 
 BinaryNode::BinaryNode(Node* left_, Node* right_) : Node(), left(left_), right(right_)
 {
+    left->SetParent(this);
+    right->SetParent(this);
+}
+
+void BinaryNode::Replace(Node* node, Node* replacement)
+{
+    if (left.get() == node)
+    {
+        left.reset(replacement);
+    }
+    else if (right.get() == node)
+    {
+        right.reset(replacement);
+    }
+}
+
+ExprListNode::ExprListNode()
+{
+}
+
+Node* ExprListNode::Clone() const
+{
+    ExprListNode* clone = new ExprListNode();
+    for (const auto& expr : exprs)
+    {
+        clone->Add(expr->Clone());
+    }
+    return clone;
+}
+
+void ExprListNode::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+void ExprListNode::Write(CodeFormatter& formatter)
+{
+    formatter.Write("(");
+    bool first = true;
+    for (const auto& expr : exprs)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            formatter.Write(", ");
+        }
+        expr->Write(formatter);
+    }
+    formatter.Write(")");
+}
+
+std::string ExprListNode::ToString() const
+{
+    std::string str = "(";
+    bool first = true;
+    for (const auto& expr : exprs)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            str.append(", ");
+        }
+        str.append(expr->ToString());
+    }
+    str.append(")");
+    return str;
+}
+
+void ExprListNode::Add(Node* node)
+{
+    node->SetParent(this);
+    exprs.push_back(std::unique_ptr<Node>(node));
+}
+
+void ExprListNode::Replace(Node* node, Node* replacement)
+{
+    for (auto& expr : exprs)
+    {
+        if (expr.get() == node)
+        {
+            expr.reset(replacement);
+            break;
+        }
+    }
 }
 
 ThisNode::ThisNode() : Node()
@@ -90,6 +189,11 @@ IdExprNode::IdExprNode(const std::string& id_) : Node(), id(id_)
 {
 }
 
+void IdExprNode::SetId(const std::string& id_)
+{
+    id = id_;
+}
+
 Node* IdExprNode::Clone() const
 {
     return new IdExprNode(id);
@@ -107,6 +211,7 @@ void IdExprNode::Write(CodeFormatter& formatter)
 
 IndexExprNode::IndexExprNode(Node* child_, Node* index_) : UnaryNode(child_), index(index_)
 {
+    index->SetParent(this);
 }
 
 Node* IndexExprNode::Clone() const
@@ -138,7 +243,12 @@ InvokeNode::InvokeNode(Node* child_) : UnaryNode(child_)
 
 Node* InvokeNode::Clone() const
 {
-    return new InvokeNode(Child()->Clone());
+    InvokeNode* clone = new InvokeNode(Child()->Clone());
+    for (const auto& arg : args)
+    {
+        clone->Add(arg->Clone());
+    }
+    return clone;
 }
 
 void InvokeNode::Accept(Visitor& visitor)
@@ -189,11 +299,25 @@ std::string InvokeNode::ToString() const
 
 void InvokeNode::Add(Node* node)
 {
+    node->SetParent(this);
     args.push_back(std::unique_ptr<Node>(node));
+}
+
+void InvokeNode::Replace(Node* node, Node* replacement)
+{
+    for (auto& arg : args)
+    {
+        if (arg.get() == node)
+        {
+            arg.reset(replacement);
+            break;
+        }
+    }
 }
 
 MemberAccessNode::MemberAccessNode(Node* child_, Node* member_) : UnaryNode(child_), member(member_)
 {
+    member->SetParent(this);
 }
 
 Node* MemberAccessNode::Clone() const
@@ -220,6 +344,7 @@ std::string MemberAccessNode::ToString() const
 
 PtrMemberAccessNode::PtrMemberAccessNode(Node* child_, Node* member_) : UnaryNode(child_), member(member_)
 {
+    member->SetParent(this);
 }
 
 Node* PtrMemberAccessNode::Clone() const
@@ -376,6 +501,8 @@ void ConstCastNode::Write(CodeFormatter& formatter)
 
 PostCastNode::PostCastNode(CppCastNode* cppCastNode_, Node* type_, Node* child_) : UnaryNode(child_), cppCastNode(cppCastNode_), type(type_)
 {
+    cppCastNode->SetParent(this);
+    type->SetParent(this);
 }
 
 Node* PostCastNode::Clone() const
@@ -564,6 +691,7 @@ std::string SizeOfNode::ToString() const
 
 CastNode::CastNode(Node* type_, Node* child_) : UnaryNode(child_), type(type_)
 {
+    type->SetParent(this);
 }
 
 Node* CastNode::Clone() const
@@ -619,6 +747,9 @@ std::string BinaryOpExprNode::ToString() const
 
 ConditionalNode::ConditionalNode(Node* condition_, Node* thenExpr_, Node* elseExpr_) : Node(), condition(condition_), thenExpr(thenExpr_), elseExpr(elseExpr_)
 {
+    condition->SetParent(this);
+    thenExpr->SetParent(this);
+    elseExpr->SetParent(this);
 }
 
 Node* ConditionalNode::Clone() const
@@ -647,6 +778,10 @@ std::string ConditionalNode::ToString() const
 
 ThrowExprNode::ThrowExprNode(Node* exception_) : Node(), exception(exception_)
 {
+    if (exception)
+    {
+        exception->SetParent(this);
+    }
 }
 
 Node* ThrowExprNode::Clone() const
@@ -692,6 +827,7 @@ NewNode::NewNode(bool global_) : Node(), global(global_), parens(false), addToPl
 
 void NewNode::Add(Node* node)
 {
+    node->SetParent(this);
     if (addToPlacement)
     {
         placement.push_back(std::unique_ptr<Node>(node));
@@ -705,6 +841,7 @@ void NewNode::Add(Node* node)
 void NewNode::SetTypeId(Node* typeId_)
 {
     typeId.reset(typeId_);
+    typeId->SetParent(this);
 }
 
 Node* NewNode::Clone() const
@@ -943,6 +1080,7 @@ StatementNode::StatementNode() : Node()
 
 LabeledStatementNode::LabeledStatementNode(const std::string& label_, StatementNode* stmt_) : StatementNode(), label(label_), stmt(stmt_)
 {
+    stmt->SetParent(this);
 }
 
 Node* LabeledStatementNode::Clone() const
@@ -964,6 +1102,8 @@ void LabeledStatementNode::Write(CodeFormatter& formatter)
 
 CaseStatementNode::CaseStatementNode(Node* caseExpr_, StatementNode* stmt_) : StatementNode(), caseExpr(caseExpr_), stmt(stmt_)
 {
+    caseExpr->SetParent(this);
+    stmt->SetParent(this);
 }
 
 Node* CaseStatementNode::Clone() const
@@ -986,6 +1126,7 @@ void CaseStatementNode::Write(CodeFormatter& formatter)
 
 DefaultStatementNode::DefaultStatementNode(StatementNode* stmt_) : StatementNode(), stmt(stmt_)
 {
+    stmt->SetParent(this);
 }
 
 Node* DefaultStatementNode::Clone() const
@@ -1025,6 +1166,7 @@ void EmptyStatementNode::Write(CodeFormatter& formatter)
 
 ExpressionStatementNode::ExpressionStatementNode(Node* expr_) : StatementNode(), expr(expr_)
 {
+    expr->SetParent(this);
 }
 
 Node* ExpressionStatementNode::Clone() const
@@ -1049,12 +1191,25 @@ CompoundStatementNode::CompoundStatementNode() : StatementNode()
 
 void CompoundStatementNode::InsertFront(StatementNode* stmt)
 {
+    stmt->SetParent(this);
     statements.insert(statements.begin(), std::unique_ptr<StatementNode>(stmt));
 }
 
 void CompoundStatementNode::Add(StatementNode* stmt)
 {
+    stmt->SetParent(this);
     statements.push_back(std::unique_ptr<StatementNode>(stmt));
+}
+
+void CompoundStatementNode::Replace(Node* node, Node* replacement)
+{
+    for (auto& stmt : statements)
+    {
+        if (stmt.get() == node)
+        {
+            stmt.reset(static_cast<StatementNode*>(replacement));
+        }
+    }
 }
 
 Node* CompoundStatementNode::Clone() const
@@ -1086,6 +1241,12 @@ void CompoundStatementNode::Write(CodeFormatter& formatter)
 
 IfStatementNode::IfStatementNode(Node* cond_, StatementNode* thenStmt_, StatementNode* elseStmt_) : StatementNode(), cond(cond_), thenStmt(thenStmt_), elseStmt(elseStmt_)
 {
+    cond->SetParent(this);
+    thenStmt->SetParent(this);
+    if (elseStmt)
+    {
+        elseStmt->SetParent(this);
+    }
 }
 
 Node* IfStatementNode::Clone() const
@@ -1134,6 +1295,8 @@ void IfStatementNode::Write(CodeFormatter& formatter)
 
 SwitchStatementNode::SwitchStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
 {
+    cond->SetParent(this);
+    stmt->SetParent(this);
 }
 
 Node* SwitchStatementNode::Clone() const
@@ -1156,6 +1319,8 @@ void SwitchStatementNode::Write(CodeFormatter& formatter)
 
 WhileStatementNode::WhileStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
 {
+    cond->SetParent(this);
+    stmt->SetParent(this);
 }
 
 Node* WhileStatementNode::Clone() const
@@ -1186,6 +1351,8 @@ void WhileStatementNode::Write(CodeFormatter& formatter)
 
 DoStatementNode::DoStatementNode(Node* cond_, StatementNode* stmt_) : StatementNode(), cond(cond_), stmt(stmt_)
 {
+    cond->SetParent(this);
+    stmt->SetParent(this);
 }
 
 Node* DoStatementNode::Clone() const
@@ -1217,6 +1384,19 @@ void DoStatementNode::Write(CodeFormatter& formatter)
 
 ForStatementNode::ForStatementNode(Node* init_, Node* cond_, Node* iter_, StatementNode* stmt_) : StatementNode(), init(init_), cond(cond_), iter(iter_), stmt(stmt_)
 {
+    if (init)
+    {
+        init->SetParent(this);
+    }
+    if (cond)
+    {
+        cond->SetParent(this);
+    }
+    if (iter)
+    {
+        iter->SetParent(this);
+    }
+    stmt->SetParent(this);
 }
 
 Node* ForStatementNode::Clone() const
@@ -1334,6 +1514,15 @@ void GotoStatementNode::Write(CodeFormatter& formatter)
 
 ReturnStatementNode::ReturnStatementNode(Node* expr_) : StatementNode(), expr(expr_)
 {
+    if (expr)
+    {
+        expr->SetParent(this);
+    }
+}
+
+void ReturnStatementNode::SetExpr(Node* expr_)
+{
+    expr.reset(expr_);
 }
 
 Node* ReturnStatementNode::Clone() const
@@ -1365,6 +1554,8 @@ void ReturnStatementNode::Write(CodeFormatter& formatter)
 ConditionWithDeclaratorNode::ConditionWithDeclaratorNode(TypeIdNode* type_, const std::string& declarator_, Node* expression_) : 
     Node(), type(type_), declarator(declarator_), expression(expression_)
 {
+    type->SetParent(this);
+    expression->SetParent(this);
 }
 
 Node* ConditionWithDeclaratorNode::Clone() const
@@ -1386,6 +1577,7 @@ void ConditionWithDeclaratorNode::Write(CodeFormatter& formatter)
 
 ForRangeDeclarationNode::ForRangeDeclarationNode() : Node(), typeId(new TypeIdNode()), declarator()
 {
+    typeId->SetParent(this);
 }
 
 void ForRangeDeclarationNode::SetDeclarator(const std::string& declarator_)
@@ -1415,6 +1607,9 @@ void ForRangeDeclarationNode::Write(CodeFormatter& formatter)
 RangeForStatementNode::RangeForStatementNode(ForRangeDeclarationNode* declaration_, Node* container_, StatementNode* stmt_) :
     declaration(declaration_), container(container_), stmt(stmt_)
 {
+    declaration->SetParent(this);
+    container->SetParent(this);
+    stmt->SetParent(this);
 }
 
 Node* RangeForStatementNode::Clone() const
@@ -1447,6 +1642,7 @@ void RangeForStatementNode::Write(CodeFormatter& formatter)
 
 DeclarationStatementNode::DeclarationStatementNode(Node* declaration_) : declaration(declaration_)
 {
+    declaration->SetParent(this);
 }
 
 Node* DeclarationStatementNode::Clone() const
@@ -1468,6 +1664,7 @@ void DeclarationStatementNode::Write(CodeFormatter& formatter)
 ExceptionDeclarationNode::ExceptionDeclarationNode() :
     Node(), typeId(new TypeIdNode()), declarator(), catchAll(false)
 {
+    typeId->SetParent(this);
 }
 
 void ExceptionDeclarationNode::SetDeclarator(const std::string& declarator_)
@@ -1508,6 +1705,8 @@ void ExceptionDeclarationNode::Write(CodeFormatter& formatter)
 HandlerNode::HandlerNode(ExceptionDeclarationNode* exceptionDeclaration_, CompoundStatementNode* handlerBlock_) : 
     Node(), exceptionDeclaration(exceptionDeclaration_), handlerBlock(handlerBlock_)
 {
+    exceptionDeclaration->SetParent(this);
+    handlerBlock->SetParent(this);
 }
 
 Node* HandlerNode::Clone() const
@@ -1530,10 +1729,12 @@ void HandlerNode::Write(CodeFormatter& formatter)
 
 TryStatementNode::TryStatementNode(CompoundStatementNode* tryBlock_) : tryBlock(tryBlock_)
 {
+    tryBlock->SetParent(this);
 }
 
 void TryStatementNode::AddHandler(HandlerNode* handler)
 {
+    handler->SetParent(this);
     handlers.push_back(std::unique_ptr<HandlerNode>(handler));
 }
 
@@ -1562,12 +1763,76 @@ void TryStatementNode::Write(CodeFormatter& formatter)
     }
 }
 
+IfdefStatementNode::IfdefStatementNode(Node* symbol_) : StatementNode(), symbol(symbol_)
+{
+    symbol->SetParent(this);
+}
+
+Node* IfdefStatementNode::Clone() const
+{
+    return new IfdefStatementNode(symbol->Clone());
+}
+
+void IfdefStatementNode::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+void IfdefStatementNode::Write(CodeFormatter& formatter)
+{
+    formatter.Write("#ifdef ");
+    symbol->Write(formatter);
+    formatter.WriteLine();
+}
+
+EndIfStatementNode::EndIfStatementNode(Node* comment_) : StatementNode(), comment(comment_)
+{
+    if (comment)
+    {
+        comment->SetParent(this);
+    }
+}
+
+Node* EndIfStatementNode::Clone() const
+{
+    Node* clonedComment = nullptr;
+    if (comment)
+    {
+        clonedComment = comment->Clone();
+    }
+    return new EndIfStatementNode(clonedComment);
+}
+
+void EndIfStatementNode::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+void EndIfStatementNode::Write(CodeFormatter& formatter)
+{
+    if (comment)
+    {
+        formatter.Write("#endif ");
+        comment->Write(formatter);
+        formatter.WriteLine();
+    }
+    else
+    {
+        formatter.WriteLine("#endif");
+    }
+}
+
 AssignInitNode::AssignInitNode(Node* assignmentExpr_) : Node(), assignmentExpr(assignmentExpr_)
 {
+    if (assignmentExpr)
+    {
+        assignmentExpr->SetParent(this);
+    }
 }
 
 void AssignInitNode::Add(AssignInitNode* subInit)
 {
+    subInit->SetParent(this);
     subInits.push_back(std::unique_ptr<AssignInitNode>(subInit));
 }
 
@@ -1647,10 +1912,15 @@ void AssignInitNode::Accept(Visitor& visitor)
 
 InitializerNode::InitializerNode(AssignInitNode* assignInit_) : Node(), assignInit(assignInit_)
 {
+    if (assignInit)
+    {
+        assignInit->SetParent(this);
+    }
 }
 
 void InitializerNode::Add(Node* expr)
 {
+    expr->SetParent(this);
     expressionList.push_back(std::unique_ptr<Node>(expr));
 }
 
@@ -1731,6 +2001,10 @@ void InitializerNode::Accept(Visitor& visitor)
 
 InitDeclaratorNode::InitDeclaratorNode(const std::string& declarator_, InitializerNode* initializer_) : declarator(declarator_), initializer(initializer_)
 {
+    if (initializer)
+    {
+        initializer->SetParent(this);
+    }
 }
 
 void InitDeclaratorNode::Write(CodeFormatter& formatter)
@@ -1774,6 +2048,7 @@ InitDeclaratorListNode::InitDeclaratorListNode() : Node()
 
 void InitDeclaratorListNode::Add(InitDeclaratorNode* initDeclarator)
 {
+    initDeclarator->SetParent(this);
     initDeclarators.push_back(std::unique_ptr<InitDeclaratorNode>(initDeclarator));
 }
 
@@ -1856,13 +2131,17 @@ std::string TypedefNode::ToString() const
     return Name();
 }
 
-TypeSpecifierNode::TypeSpecifierNode(const std::string& name_) : DeclSpecifierNode(name_)
+TypeSpecifierNode::TypeSpecifierNode(const std::string& name_) : DeclSpecifierNode(name_), kind(TypeSpecifierNodeKind::typeSpecifierNode)
+{
+}
+
+TypeSpecifierNode::TypeSpecifierNode(TypeSpecifierNodeKind kind_, const std::string& name_) : DeclSpecifierNode(name_), kind(kind_)
 {
 }
 
 Node* TypeSpecifierNode::Clone() const
 {
-    return new TypeSpecifierNode(Name());
+    return new TypeSpecifierNode(Kind(), Name());
 }
 
 void TypeSpecifierNode::Accept(Visitor& visitor)
@@ -1875,7 +2154,7 @@ void TypeSpecifierNode::Write(CodeFormatter& formatter)
     formatter.Write(Name());
 }
 
-ConstNode::ConstNode() : TypeSpecifierNode("const")
+ConstNode::ConstNode() : TypeSpecifierNode(TypeSpecifierNodeKind::constNode, "const")
 {
 }
 
@@ -1889,7 +2168,7 @@ void ConstNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-VolatileNode::VolatileNode() : TypeSpecifierNode("volatile")
+VolatileNode::VolatileNode() : TypeSpecifierNode(TypeSpecifierNodeKind::volatileNode, "volatile")
 {
 }
 
@@ -1903,12 +2182,13 @@ void VolatileNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-TypeNameNode::TypeNameNode(const std::string& name_) : TypeSpecifierNode(name_), isTemplate(false)
+TypeNameNode::TypeNameNode(const std::string& name_) : TypeSpecifierNode(TypeSpecifierNodeKind::typeNameNode, name_), isTemplate(false)
 {
 }
 
 void TypeNameNode::AddTemplateArgument(Node* templateArgument)
 {
+    templateArgument->SetParent(this);
     templateArguments.push_back(std::unique_ptr<Node>(templateArgument));
 }
 
@@ -1966,6 +2246,7 @@ TypeNode::TypeNode() : Node()
 
 void TypeNode::Add(TypeSpecifierNode* typeSpecifier)
 {
+    typeSpecifier->SetParent(this);
     typeSpecifiers.push_back(std::unique_ptr<TypeSpecifierNode>(typeSpecifier));
 }
 
@@ -2038,6 +2319,7 @@ TypeIdNode::TypeIdNode() : Node()
 
 void TypeIdNode::Add(TypeSpecifierNode* typeSpecifier)
 {
+    typeSpecifier->SetParent(this);
     typeSpecifiers.push_back(std::unique_ptr<TypeSpecifierNode>(typeSpecifier));
 }
 
@@ -2080,6 +2362,34 @@ void TypeIdNode::Write(CodeFormatter& formatter)
     formatter.Write(declarator);
 }
 
+void TypeIdNode::WriteNonPtrType(CodeFormatter& formatter)
+{
+    if (IsPtrType())
+    {
+        bool first = true;
+        for (const auto& typeSpecifier : typeSpecifiers)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                formatter.Write(" ");
+            }
+            typeSpecifier->Write(formatter);
+        }
+        if (!declarator.empty())
+        {
+            formatter.Write(declarator.substr(0, declarator.size() - 1));
+        }
+    }
+    else
+    {
+        Write(formatter);
+    }
+}
+
 std::string TypeIdNode::ToString() const
 {
     std::string str;
@@ -2100,18 +2410,32 @@ std::string TypeIdNode::ToString() const
     return str;
 }
 
+bool TypeIdNode::IsPtrType() const
+{
+    if (!declarator.empty())
+    {
+        return declarator.back() == '*';
+    }
+    else
+    {
+        return false;
+    }
+}
+
 SimpleDeclarationNode::SimpleDeclarationNode() : Node()
 {
 }
 
 void SimpleDeclarationNode::Add(DeclSpecifierNode* declSpecifier)
 {
+    declSpecifier->SetParent(this);
     declSpecifiers.push_back(std::unique_ptr<DeclSpecifierNode>(declSpecifier));
 }
 
 void SimpleDeclarationNode::SetInitDeclaratorList(InitDeclaratorListNode* initDeclaratorList_)
 {
     initDeclaratorList.reset(initDeclaratorList_);
+    initDeclaratorList->SetParent(this);
 }
 
 void SimpleDeclarationNode::Write(CodeFormatter& formatter)
@@ -2218,6 +2542,14 @@ Node* UsingDirectiveNode::Clone() const
 void UsingDirectiveNode::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void DefaultVisitor::Visit(ExprListNode& node)
+{
+    for (const auto& expr : node.Exprs())
+    {
+        expr->Accept(*this);
+    }
 }
 
 void DefaultVisitor::Visit(IndexExprNode& node)
@@ -2464,6 +2796,19 @@ void DefaultVisitor::Visit(TryStatementNode& node)
     }
 }
 
+void DefaultVisitor::Visit(IfdefStatementNode& node)
+{
+    node.Symbol()->Accept(*this);
+}
+
+void DefaultVisitor::Visit(EndIfStatementNode& node)
+{
+    if (node.Comment())
+    {
+        node.Comment()->Accept(*this);
+    }
+}
+
 void DefaultVisitor::Visit(AssignInitNode& node)
 {
     if (node.AssignmentExpr())
@@ -2537,7 +2882,7 @@ void DefaultVisitor::Visit(SimpleDeclarationNode& node)
     node.GetInitDeclaratorList()->Accept(*this);
 }
 
-CodeEvaluationVisitor::CodeEvaluationVisitor() : hasReturn(false), hasPass(false), hasSourcePos(false), hasVars(false)
+CodeEvaluationVisitor::CodeEvaluationVisitor() : hasReturn(false), hasPass(false), hasVars(false)
 {
 }
 
@@ -2553,10 +2898,6 @@ void CodeEvaluationVisitor::Visit(IdExprNode& node)
     if (node.Id() == "pass")
     {
         hasPass = true;
-    }
-    else if (node.Id() == "sourcePos")
-    {
-        hasSourcePos = true;
     }
     else if (node.Id() == "vars")
     {

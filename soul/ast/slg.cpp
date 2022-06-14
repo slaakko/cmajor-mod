@@ -7,7 +7,7 @@ module soul.ast.slg;
 
 namespace soul::ast::slg {
 
-File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_)
+File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_), external(false)
 {
 }
 
@@ -98,9 +98,9 @@ void KeywordFile::SetKeywordCollection(KeywordCollection* keywordCollection_)
     keywordCollection->SetFile(this);
 }
 
-void KeywordFile::AddImport(soul::ast::spg::Import* imp)
+void KeywordFile::AddImport(soul::ast::common::Import* imp)
 {
-    imports.push_back(std::unique_ptr<soul::ast::spg::Import>(imp));
+    imports.push_back(std::unique_ptr<soul::ast::common::Import>(imp));
 }
 
 Expression::Expression(const std::string& id_, const std::string& value_, int line_) : index(-1), id(id_), value(value_), line(line_), collection(nullptr)
@@ -196,14 +196,14 @@ LexerFile::LexerFile(const std::string& filePath_) : File(FileKind::lexerFile, f
 {
 }
 
-void LexerFile::SetExportModule(soul::ast::spg::ExportModule* exportModule_)
+void LexerFile::SetExportModule(soul::ast::common::ExportModule* exportModule_)
 {
     exportModule.reset(exportModule_);
 }
 
-void LexerFile::AddImport(soul::ast::spg::Import* imp)
+void LexerFile::AddImport(soul::ast::common::Import* imp)
 {
-    imports.push_back(std::unique_ptr<soul::ast::spg::Import>(imp));
+    imports.push_back(std::unique_ptr<soul::ast::common::Import>(imp));
 }
 
 void LexerFile::SetLexer(Lexer* lexer_)
@@ -220,7 +220,8 @@ SlgFileDeclaration::~SlgFileDeclaration()
 {
 }
 
-TokenFileDeclaration::TokenFileDeclaration(const std::string& filePath_) : SlgFileDeclaration(SlgFileDeclarationKind::tokenFileDeclaration, filePath_)
+TokenFileDeclaration::TokenFileDeclaration(const std::string& filePath_, bool external_) : 
+    SlgFileDeclaration(SlgFileDeclarationKind::tokenFileDeclaration, filePath_), external(external_)
 {
 }
 
@@ -236,13 +237,8 @@ LexerFileDeclaration::LexerFileDeclaration(const std::string& filePath_) : SlgFi
 {
 }
 
-SlgFile::SlgFile(const std::string& filePath_) : File(FileKind::slgFile, filePath_)
+SlgFile::SlgFile(const std::string& filePath_, const std::string& projectName_) : File(FileKind::slgFile, filePath_), projectName(projectName_)
 {
-}
-
-void SlgFile::SetProjectName(const std::string& projectName_)
-{
-    projectName = projectName_;
 }
 
 void SlgFile::AddDeclaration(SlgFileDeclaration* declaration)
