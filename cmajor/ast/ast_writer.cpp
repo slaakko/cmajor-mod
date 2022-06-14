@@ -11,7 +11,7 @@
 
 module cmajor.ast.writer;
 
-import cmajor.ast.node;
+//import cmajor.ast.node;
 
 namespace cmajor::ast {
 

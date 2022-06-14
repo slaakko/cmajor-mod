@@ -3,20 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-//#include <sngcm/ast/Node.hpp>
-//#include <sngcm/ast/NodeList.hpp>
-
 export module cmajor.ast.literal;
 
 import cmajor.ast.node;
 import cmajor.ast.node.list;
 
-namespace cmajor::ast {
+export namespace cmajor::ast {
     
 class LiteralNode : public Node
 {
 public:
-    LiteralNode(NodeType nodeType_, const Span& span_, const boost::uuids::uuid& moduleId_);
+    LiteralNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     void SetText(const std::u32string& text_);
@@ -25,16 +22,16 @@ private:
     std::u32string text;
 };
 
- LiteralNode* CreateIntegerLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, uint64_t value, bool unsignedSuffix);
- LiteralNode* CreateFloatingLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, double value, bool float_);
- LiteralNode* CreateCharacterLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, char32_t value, int chrLitPrefix);
- LiteralNode* CreateStringLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, const std::u32string& value, int strLitPrefix);
+ LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, uint64_t value, bool unsignedSuffix);
+ LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, double value, bool float_);
+ LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, char32_t value, int chrLitPrefix);
+ LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::u32string& value, int strLitPrefix);
 
 class  BooleanLiteralNode : public LiteralNode
 {
 public:
-    BooleanLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    BooleanLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, bool value_);
+    BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, bool value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -48,8 +45,8 @@ private:
 class  SByteLiteralNode : public LiteralNode
 {
 public:
-    SByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    SByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int8_t value_);
+    SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int8_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -63,8 +60,8 @@ private:
 class  ByteLiteralNode : public LiteralNode
 {
 public:
-    ByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    ByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint8_t value_);
+    ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint8_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -78,8 +75,8 @@ private:
 class  ShortLiteralNode : public LiteralNode
 {
 public:
-    ShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    ShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int16_t value_);
+    ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -93,8 +90,8 @@ private:
 class  UShortLiteralNode : public LiteralNode
 {
 public:
-    UShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    UShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint16_t value_);
+    UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -108,8 +105,8 @@ private:
 class  IntLiteralNode : public LiteralNode
 {
 public:
-    IntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    IntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int32_t value_);
+    IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -124,8 +121,8 @@ private:
 class  UIntLiteralNode : public LiteralNode
 {
 public:
-    UIntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    UIntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint32_t value_);
+    UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -139,8 +136,8 @@ private:
 class  LongLiteralNode : public LiteralNode
 {
 public:
-    LongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    LongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int64_t value_);
+    LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int64_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -154,8 +151,8 @@ private:
 class  ULongLiteralNode : public LiteralNode
 {
 public:
-    ULongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    ULongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint64_t value_);
+    ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint64_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -169,8 +166,8 @@ private:
 class  FloatLiteralNode : public LiteralNode
 {
 public:
-    FloatLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    FloatLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, float value_);
+    FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, float value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -184,8 +181,8 @@ private:
 class  DoubleLiteralNode : public LiteralNode
 {
 public:
-    DoubleLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    DoubleLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, double value_);
+    DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, double value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -199,8 +196,8 @@ private:
 class  CharLiteralNode : public LiteralNode
 {
 public:
-    CharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    CharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char value_);
+    CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -214,8 +211,8 @@ private:
 class  WCharLiteralNode : public LiteralNode
 {
 public:
-    WCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    WCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char16_t value_);
+    WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -229,8 +226,8 @@ private:
 class  UCharLiteralNode : public LiteralNode
 {
 public:
-    UCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    UCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char32_t value_);
+    UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -244,8 +241,8 @@ private:
 class  StringLiteralNode : public LiteralNode
 {
 public:
-    StringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    StringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::string& value_);
+    StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -259,8 +256,8 @@ private:
 class  WStringLiteralNode : public LiteralNode
 {
 public:
-    WStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    WStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::u16string& value_);
+    WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u16string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -274,8 +271,8 @@ private:
 class  UStringLiteralNode : public LiteralNode
 {
 public:
-    UStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    UStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::u32string& value_);
+    UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -289,7 +286,7 @@ private:
 class  NullLiteralNode : public LiteralNode
 {
 public:
-    NullLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
+    NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "null"; }
@@ -298,7 +295,7 @@ public:
 class  ArrayLiteralNode : public LiteralNode
 {
 public:
-    ArrayLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
+    ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -314,7 +311,7 @@ private:
 class  StructuredLiteralNode : public LiteralNode
 {
 public:
-    StructuredLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
+    StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -330,8 +327,8 @@ private:
 class  UuidLiteralNode : public LiteralNode
 {
 public:
-    UuidLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_);
-    UuidLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const boost::uuids::uuid& uuid_);
+    UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const boost::uuids::uuid& uuid_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

@@ -16,10 +16,11 @@ import std.core;
 import util;
 import cmajor.ast.specifier;
 import soul.ast.source.pos;
+import cmajor.ast.node;
 
 export namespace cmajor::ast {
 
-class Node;
+//class Node;
 
 class AstWriter
 {

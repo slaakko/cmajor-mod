@@ -14,4 +14,3 @@ export import cmajor.ast.writer;
 export import cmajor.ast.reader;
 export import cmajor.ast.visitor;
 export import cmajor.ast.literal;
-export import cmajor.ast.api;

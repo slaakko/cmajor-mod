@@ -13,31 +13,34 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <limits>
 */
+
+//module;
+//#include <boost/uuid/uuid_generators.hpp>
+
 module cmajor.ast.literal;
 
 import std.core;
 import cmajor.ast.visitor;
 import cmajor.ast.writer;
 import cmajor.ast.reader;
+import util;
 
 namespace cmajor::ast {
 
-using namespace soulng::unicode;
-
-LiteralNode::LiteralNode(NodeType nodeType_, const Span& span_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, span_, moduleId_)
+LiteralNode::LiteralNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
 void LiteralNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
-    writer.GetBinaryWriter().Write(text);
+    writer.GetBinaryStreamWriter().Write(text);
 }
 
 void LiteralNode::Read(AstReader& reader)
 {
     Node::Read(reader);
-    text = reader.GetBinaryReader().ReadUtf32String();
+    text = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
 void LiteralNode::SetText(const std::u32string& text_)
@@ -45,94 +48,94 @@ void LiteralNode::SetText(const std::u32string& text_)
     text = text_;
 }
 
-LiteralNode* CreateIntegerLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, uint64_t value, bool unsignedSuffix)
+LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, uint64_t value, bool unsignedSuffix)
 {
     if (unsignedSuffix)
     {
-        if (value <= std::numeric_limits<uint8_t>::max()) return new ByteLiteralNode(span, moduleId, static_cast<uint8_t>(value));
-        if (value <= std::numeric_limits<uint16_t>::max()) return new UShortLiteralNode(span, moduleId, static_cast<uint16_t>(value));
-        if (value <= std::numeric_limits<uint32_t>::max()) return new UIntLiteralNode(span, moduleId, static_cast<uint32_t>(value));
-        return new ULongLiteralNode(span, moduleId, value);
+        if (value <= std::numeric_limits<uint8_t>::max()) return new ByteLiteralNode(sourcePos, moduleId, static_cast<uint8_t>(value));
+        if (value <= std::numeric_limits<uint16_t>::max()) return new UShortLiteralNode(sourcePos, moduleId, static_cast<uint16_t>(value));
+        if (value <= std::numeric_limits<uint32_t>::max()) return new UIntLiteralNode(sourcePos, moduleId, static_cast<uint32_t>(value));
+        return new ULongLiteralNode(sourcePos, moduleId, value);
     }
     else
     {
-        if (value <= std::numeric_limits<int8_t>::max()) return new SByteLiteralNode(span, moduleId, static_cast<int8_t>(value));
-        if (value <= std::numeric_limits<uint8_t>::max()) return new ByteLiteralNode(span, moduleId, static_cast<uint8_t>(value));
-        if (value <= std::numeric_limits<int16_t>::max()) return new ShortLiteralNode(span, moduleId, static_cast<int16_t>(value));
-        if (value <= std::numeric_limits<uint16_t>::max()) return new UShortLiteralNode(span, moduleId, static_cast<uint16_t>(value));
-        if (value <= std::numeric_limits<int32_t>::max()) return new IntLiteralNode(span, moduleId, static_cast<int32_t>(value));
-        if (value <= std::numeric_limits<uint32_t>::max()) return new UIntLiteralNode(span, moduleId, static_cast<uint32_t>(value));
+        if (value <= std::numeric_limits<int8_t>::max()) return new SByteLiteralNode(sourcePos, moduleId, static_cast<int8_t>(value));
+        if (value <= std::numeric_limits<uint8_t>::max()) return new ByteLiteralNode(sourcePos, moduleId, static_cast<uint8_t>(value));
+        if (value <= std::numeric_limits<int16_t>::max()) return new ShortLiteralNode(sourcePos, moduleId, static_cast<int16_t>(value));
+        if (value <= std::numeric_limits<uint16_t>::max()) return new UShortLiteralNode(sourcePos, moduleId, static_cast<uint16_t>(value));
+        if (value <= std::numeric_limits<int32_t>::max()) return new IntLiteralNode(sourcePos, moduleId, static_cast<int32_t>(value));
+        if (value <= std::numeric_limits<uint32_t>::max()) return new UIntLiteralNode(sourcePos, moduleId, static_cast<uint32_t>(value));
 #pragma warning(disable : 4018)
-        if (value <= std::numeric_limits<int64_t>::max()) return new LongLiteralNode(span, moduleId, static_cast<int64_t>(value));
+        if (value <= std::numeric_limits<int64_t>::max()) return new LongLiteralNode(sourcePos, moduleId, static_cast<int64_t>(value));
 #pragma warning(default : 4018)
-        return new ULongLiteralNode(span, moduleId, value);
+        return new ULongLiteralNode(sourcePos, moduleId, value);
     }
 }
 
-LiteralNode* CreateFloatingLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, double value, bool float_)
+LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, double value, bool float_)
 {
     if (float_)
     {
-        return new FloatLiteralNode(span, moduleId, static_cast<float>(value));
+        return new FloatLiteralNode(sourcePos, moduleId, static_cast<float>(value));
     }
     else
     {
-        return new DoubleLiteralNode(span, moduleId, value);
+        return new DoubleLiteralNode(sourcePos, moduleId, value);
     }
 }
 
-SNGCM_AST_API LiteralNode* CreateCharacterLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, char32_t value, int chrLitPrefix)
+LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, char32_t value, int chrLitPrefix)
 {
     switch (chrLitPrefix)
     {
     case 0:
     {
-        return new CharLiteralNode(span, moduleId, static_cast<char>(value));
+        return new CharLiteralNode(sourcePos, moduleId, static_cast<char>(value));
     }
     case 1:
     {
-        return new WCharLiteralNode(span, moduleId, static_cast<char16_t>(value));
+        return new WCharLiteralNode(sourcePos, moduleId, static_cast<char16_t>(value));
     }
     case 2:
     {
-        return new UCharLiteralNode(span, moduleId, value);
+        return new UCharLiteralNode(sourcePos, moduleId, value);
     }
     }
     return nullptr;
 }
 
-SNGCM_AST_API LiteralNode* CreateStringLiteralNode(const Span& span, const boost::uuids::uuid& moduleId, const std::u32string& value, int strLitPrefix)
+LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::u32string& value, int strLitPrefix)
 {
     switch (strLitPrefix)
     {
     case 0:
     {
-        return new StringLiteralNode(span, moduleId, ToUtf8(value));
+        return new StringLiteralNode(sourcePos, moduleId, util::ToUtf8(value));
     }
     case 1:
     {
-        return new WStringLiteralNode(span, moduleId, ToUtf16(value));
+        return new WStringLiteralNode(sourcePos, moduleId, util::ToUtf16(value));
     }
     case 2:
     {
-        return new UStringLiteralNode(span, moduleId, value);
+        return new UStringLiteralNode(sourcePos, moduleId, value);
     }
     }
     return nullptr;
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::booleanLiteralNode, span_, moduleId_), value(false)
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(false)
 {
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, bool value_) :
-    LiteralNode(NodeType::booleanLiteralNode, span_, moduleId_), value(value_)
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, bool value_) :
+    LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* BooleanLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    BooleanLiteralNode* clone = new BooleanLiteralNode(GetSpan(), ModuleId(), value);
+    BooleanLiteralNode* clone = new BooleanLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -144,13 +147,13 @@ void BooleanLiteralNode::Accept(Visitor& visitor)
 void BooleanLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void BooleanLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadBool();
+    value = reader.GetBinaryStreamReader().ReadBool();
 }
 
 std::string BooleanLiteralNode::ToString() const
@@ -158,19 +161,19 @@ std::string BooleanLiteralNode::ToString() const
     if (value) return "true"; else return "false";
 }
 
-SByteLiteralNode::SByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::sbyteLiteralNode, span_, moduleId_), value(0)
+SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::sbyteLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-SByteLiteralNode::SByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int8_t value_) :
-    LiteralNode(NodeType::sbyteLiteralNode, span_, moduleId_), value(value_)
+SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int8_t value_) :
+    LiteralNode(NodeType::sbyteLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* SByteLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    SByteLiteralNode* clone = new SByteLiteralNode(GetSpan(), ModuleId(), value);
+    SByteLiteralNode* clone = new SByteLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -182,13 +185,13 @@ void SByteLiteralNode::Accept(Visitor& visitor)
 void SByteLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void SByteLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadSByte();
+    value = reader.GetBinaryStreamReader().ReadSByte();
 }
 
 std::string SByteLiteralNode::ToString() const
@@ -196,19 +199,19 @@ std::string SByteLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-ByteLiteralNode::ByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::byteLiteralNode, span_, moduleId_), value(0u)
+ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::byteLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-ByteLiteralNode::ByteLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint8_t value_) :
-    LiteralNode(NodeType::byteLiteralNode, span_, moduleId_), value(value_)
+ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint8_t value_) :
+    LiteralNode(NodeType::byteLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* ByteLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    ByteLiteralNode* clone = new ByteLiteralNode(GetSpan(), ModuleId(), value);
+    ByteLiteralNode* clone = new ByteLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -220,13 +223,13 @@ void ByteLiteralNode::Accept(Visitor& visitor)
 void ByteLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void ByteLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadByte();
+    value = reader.GetBinaryStreamReader().ReadByte();
 }
 
 std::string ByteLiteralNode::ToString() const
@@ -234,19 +237,19 @@ std::string ByteLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-ShortLiteralNode::ShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::shortLiteralNode, span_, moduleId_), value(0)
+ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::shortLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-ShortLiteralNode::ShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int16_t value_) :
-    LiteralNode(NodeType::shortLiteralNode, span_, moduleId_), value(value_)
+ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int16_t value_) :
+    LiteralNode(NodeType::shortLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* ShortLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    ShortLiteralNode* clone = new ShortLiteralNode(GetSpan(), ModuleId(), value);
+    ShortLiteralNode* clone = new ShortLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -258,13 +261,13 @@ void ShortLiteralNode::Accept(Visitor& visitor)
 void ShortLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void ShortLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadShort();
+    value = reader.GetBinaryStreamReader().ReadShort();
 }
 
 std::string ShortLiteralNode::ToString() const
@@ -272,18 +275,18 @@ std::string ShortLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-UShortLiteralNode::UShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ushortLiteralNode, span_, moduleId_), value(0u)
+UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-UShortLiteralNode::UShortLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint16_t value_) :
-    LiteralNode(NodeType::ushortLiteralNode, span_, moduleId_), value(value_)
+UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint16_t value_) :
+    LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* UShortLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    UShortLiteralNode* clone = new UShortLiteralNode(GetSpan(), ModuleId(), value);
+    UShortLiteralNode* clone = new UShortLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -295,13 +298,13 @@ void UShortLiteralNode::Accept(Visitor& visitor)
 void UShortLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void UShortLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUShort();
+    value = reader.GetBinaryStreamReader().ReadUShort();
 }
 
 std::string UShortLiteralNode::ToString() const
@@ -309,19 +312,19 @@ std::string UShortLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-IntLiteralNode::IntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::intLiteralNode, span_, moduleId_), value(0)
+IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::intLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-IntLiteralNode::IntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int32_t value_) :
-    LiteralNode(NodeType::intLiteralNode, span_, moduleId_), value(value_)
+IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int32_t value_) :
+    LiteralNode(NodeType::intLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* IntLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    IntLiteralNode* clone = new IntLiteralNode(GetSpan(), ModuleId(), value);
+    IntLiteralNode* clone = new IntLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -333,13 +336,13 @@ void IntLiteralNode::Accept(Visitor& visitor)
 void IntLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void IntLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadInt();
+    value = reader.GetBinaryStreamReader().ReadInt();
 }
 
 std::string IntLiteralNode::ToString() const
@@ -347,19 +350,19 @@ std::string IntLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-UIntLiteralNode::UIntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::uintLiteralNode, span_, moduleId_), value(0u)
+UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::uintLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-UIntLiteralNode::UIntLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint32_t value_) :
-    LiteralNode(NodeType::uintLiteralNode, span_, moduleId_), value(value_)
+UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint32_t value_) :
+    LiteralNode(NodeType::uintLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* UIntLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    UIntLiteralNode* clone = new UIntLiteralNode(GetSpan(), ModuleId(), value);
+    UIntLiteralNode* clone = new UIntLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -371,13 +374,13 @@ void UIntLiteralNode::Accept(Visitor& visitor)
 void UIntLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void UIntLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUInt();
+    value = reader.GetBinaryStreamReader().ReadUInt();
 }
 
 std::string UIntLiteralNode::ToString() const
@@ -385,19 +388,19 @@ std::string UIntLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-LongLiteralNode::LongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::longLiteralNode, span_, moduleId_), value(0)
+LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::longLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-LongLiteralNode::LongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, int64_t value_) :
-    LiteralNode(NodeType::longLiteralNode, span_, moduleId_), value(value_)
+LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int64_t value_) :
+    LiteralNode(NodeType::longLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* LongLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    LongLiteralNode* clone = new LongLiteralNode(GetSpan(), ModuleId(), value);
+    LongLiteralNode* clone = new LongLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -409,13 +412,13 @@ void LongLiteralNode::Accept(Visitor& visitor)
 void LongLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void LongLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadLong();
+    value = reader.GetBinaryStreamReader().ReadLong();
 }
 
 std::string LongLiteralNode::ToString() const
@@ -423,18 +426,18 @@ std::string LongLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-ULongLiteralNode::ULongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ulongLiteralNode, span_, moduleId_), value(0u)
+ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-ULongLiteralNode::ULongLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, uint64_t value_) :
-    LiteralNode(NodeType::ulongLiteralNode, span_, moduleId_), value(value_)
+ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint64_t value_) :
+    LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* ULongLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    ULongLiteralNode* clone = new ULongLiteralNode(GetSpan(), ModuleId(), value);
+    ULongLiteralNode* clone = new ULongLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -446,13 +449,13 @@ void ULongLiteralNode::Accept(Visitor& visitor)
 void ULongLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void ULongLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadULong();
+    value = reader.GetBinaryStreamReader().ReadULong();
 }
 
 std::string ULongLiteralNode::ToString() const
@@ -460,19 +463,19 @@ std::string ULongLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-FloatLiteralNode::FloatLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::floatLiteralNode, span_, moduleId_), value(0)
+FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::floatLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-FloatLiteralNode::FloatLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, float value_) :
-    LiteralNode(NodeType::floatLiteralNode, span_, moduleId_), value(value_)
+FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, float value_) :
+    LiteralNode(NodeType::floatLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* FloatLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    FloatLiteralNode* clone = new FloatLiteralNode(GetSpan(), ModuleId(), value);
+    FloatLiteralNode* clone = new FloatLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -484,13 +487,13 @@ void FloatLiteralNode::Accept(Visitor& visitor)
 void FloatLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void FloatLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadFloat();
+    value = reader.GetBinaryStreamReader().ReadFloat();
 }
 
 std::string FloatLiteralNode::ToString() const
@@ -498,19 +501,19 @@ std::string FloatLiteralNode::ToString() const
     return std::to_string(value) + "f";
 }
 
-DoubleLiteralNode::DoubleLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::doubleLiteralNode, span_, moduleId_), value(0)
+DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::doubleLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-DoubleLiteralNode::DoubleLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, double value_) :
-    LiteralNode(NodeType::doubleLiteralNode, span_, moduleId_), value(value_)
+DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, double value_) :
+    LiteralNode(NodeType::doubleLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* DoubleLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    DoubleLiteralNode* clone = new DoubleLiteralNode(GetSpan(), ModuleId(), value);
+    DoubleLiteralNode* clone = new DoubleLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -522,13 +525,13 @@ void DoubleLiteralNode::Accept(Visitor& visitor)
 void DoubleLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void DoubleLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadDouble();
+    value = reader.GetBinaryStreamReader().ReadDouble();
 }
 
 std::string DoubleLiteralNode::ToString() const
@@ -536,18 +539,18 @@ std::string DoubleLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-CharLiteralNode::CharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::charLiteralNode, span_, moduleId_), value('\0')
+CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-CharLiteralNode::CharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char value_) :
-    LiteralNode(NodeType::charLiteralNode, span_, moduleId_), value(value_)
+CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char value_) :
+    LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* CharLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    CharLiteralNode* clone = new CharLiteralNode(GetSpan(), ModuleId(), value);
+    CharLiteralNode* clone = new CharLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -559,33 +562,33 @@ void CharLiteralNode::Accept(Visitor& visitor)
 void CharLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void CharLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadChar();
+    value = reader.GetBinaryStreamReader().ReadChar();
 }
 
 std::string CharLiteralNode::ToString() const
 {
-    return "'" + CharStr(value) + "'";
+    return "'" + util::CharStr(value) + "'";
 }
 
-WCharLiteralNode::WCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::wcharLiteralNode, span_, moduleId_), value('\0')
+WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::wcharLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-WCharLiteralNode::WCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char16_t value_) :
-    LiteralNode(NodeType::wcharLiteralNode, span_, moduleId_), value(value_)
+WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char16_t value_) :
+    LiteralNode(NodeType::wcharLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* WCharLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    WCharLiteralNode* clone = new WCharLiteralNode(GetSpan(), ModuleId(), value);
+    WCharLiteralNode* clone = new WCharLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -597,33 +600,33 @@ void WCharLiteralNode::Accept(Visitor& visitor)
 void WCharLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void WCharLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadWChar();
+    value = reader.GetBinaryStreamReader().ReadWChar();
 }
 
 std::string WCharLiteralNode::ToString() const
 {
-    return "w'" + ToUtf8(CharStr(char32_t(value))) + "'";
+    return "w'" + util::ToUtf8(util::CharStr(char32_t(value))) + "'";
 }
 
-UCharLiteralNode::UCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::ucharLiteralNode, span_, moduleId_), value('\0')
+UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::ucharLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-UCharLiteralNode::UCharLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, char32_t value_) :
-    LiteralNode(NodeType::ucharLiteralNode, span_, moduleId_), value(value_)
+UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char32_t value_) :
+    LiteralNode(NodeType::ucharLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* UCharLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    UCharLiteralNode* clone = new UCharLiteralNode(GetSpan(), ModuleId(), value);
+    UCharLiteralNode* clone = new UCharLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -635,33 +638,33 @@ void UCharLiteralNode::Accept(Visitor& visitor)
 void UCharLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void UCharLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUChar();
+    value = reader.GetBinaryStreamReader().ReadUChar();
 }
 
 std::string UCharLiteralNode::ToString() const
 {
-    return "u'" + ToUtf8(CharStr(value)) + "'";
+    return "u'" + util::ToUtf8(util::CharStr(value)) + "'";
 }
 
-StringLiteralNode::StringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::stringLiteralNode, span_, moduleId_), value()
+StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::stringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-StringLiteralNode::StringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::string& value_) :
-    LiteralNode(NodeType::stringLiteralNode, span_, moduleId_), value(value_)
+StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::string& value_) :
+    LiteralNode(NodeType::stringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* StringLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    StringLiteralNode* clone = new StringLiteralNode(GetSpan(), ModuleId(), value);
+    StringLiteralNode* clone = new StringLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -673,33 +676,33 @@ void StringLiteralNode::Accept(Visitor& visitor)
 void StringLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void StringLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUtf8String();
+    value = reader.GetBinaryStreamReader().ReadUtf8String();
 }
 
 std::string StringLiteralNode::ToString() const
 {
-    return "\"" + StringStr(value) + "\"";
+    return "\"" + util::StringStr(value) + "\"";
 }
 
-WStringLiteralNode::WStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::wstringLiteralNode, span_, moduleId_), value()
+WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::wstringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-WStringLiteralNode::WStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::u16string& value_) :
-    LiteralNode(NodeType::wstringLiteralNode, span_, moduleId_), value(value_)
+WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u16string& value_) :
+    LiteralNode(NodeType::wstringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* WStringLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    WStringLiteralNode* clone = new WStringLiteralNode(GetSpan(), ModuleId(), value);
+    WStringLiteralNode* clone = new WStringLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -711,33 +714,33 @@ void WStringLiteralNode::Accept(Visitor& visitor)
 void WStringLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void WStringLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUtf16String();
+    value = reader.GetBinaryStreamReader().ReadUtf16String();
 }
 
 std::string WStringLiteralNode::ToString() const
 {
-    return "\"" + StringStr(ToUtf8(value)) + "\"";
+    return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
-UStringLiteralNode::UStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::ustringLiteralNode, span_, moduleId_), value()
+UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::ustringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-UStringLiteralNode::UStringLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const std::u32string& value_) :
-    LiteralNode(NodeType::ustringLiteralNode, span_, moduleId_), value(value_)
+UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& value_) :
+    LiteralNode(NodeType::ustringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
 
 Node* UStringLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    UStringLiteralNode* clone = new UStringLiteralNode(GetSpan(), ModuleId(), value);
+    UStringLiteralNode* clone = new UStringLiteralNode(GetSourcePos(), ModuleId(), value);
     return clone;
 }
 
@@ -749,28 +752,28 @@ void UStringLiteralNode::Accept(Visitor& visitor)
 void UStringLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(value);
 }
 
 void UStringLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    value = reader.GetBinaryReader().ReadUtf32String();
+    value = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
 std::string UStringLiteralNode::ToString() const
 {
-    return "\"" + StringStr(ToUtf8(value)) + "\"";
+    return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
-NullLiteralNode::NullLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::nullLiteralNode, span_, moduleId_)
+NullLiteralNode::NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::nullLiteralNode, sourcePos_, moduleId_)
 {
 }
 
 Node* NullLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    NullLiteralNode* clone = new NullLiteralNode(GetSpan(), ModuleId());
+    NullLiteralNode* clone = new NullLiteralNode(GetSourcePos(), ModuleId());
     return clone;
 }
 
@@ -779,14 +782,14 @@ void NullLiteralNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ArrayLiteralNode::ArrayLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::arrayLiteralNode, span_, moduleId_)
+ArrayLiteralNode::ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::arrayLiteralNode, sourcePos_, moduleId_)
 {
 }
 
 Node* ArrayLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    ArrayLiteralNode* clone = new ArrayLiteralNode(GetSpan(), ModuleId());
+    ArrayLiteralNode* clone = new ArrayLiteralNode(GetSourcePos(), ModuleId());
     int n = values.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -818,14 +821,14 @@ void ArrayLiteralNode::AddValue(Node* value)
     values.Add(value);
 }
 
-StructuredLiteralNode::StructuredLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::structuredLiteralNode, span_, moduleId_)
+StructuredLiteralNode::StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::structuredLiteralNode, sourcePos_, moduleId_)
 {
 }
 
 Node* StructuredLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    StructuredLiteralNode* clone = new StructuredLiteralNode(GetSpan(), ModuleId());
+    StructuredLiteralNode* clone = new StructuredLiteralNode(GetSourcePos(), ModuleId());
     int n = members.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -857,19 +860,19 @@ void StructuredLiteralNode::AddMember(Node* member)
     members.Add(member);
 }
 
-UuidLiteralNode::UuidLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_) :
-    LiteralNode(NodeType::uuidLiteralNode, span_, moduleId_), uuid(boost::uuids::nil_uuid())
+UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+    LiteralNode(NodeType::uuidLiteralNode, sourcePos_, moduleId_), uuid(util::nil_uuid())
 {
 }
 
-UuidLiteralNode::UuidLiteralNode(const Span& span_, const boost::uuids::uuid& moduleId_, const boost::uuids::uuid& uuid_) :
-    LiteralNode(NodeType::uuidLiteralNode, span_, moduleId_), uuid(uuid_)
+UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const boost::uuids::uuid& uuid_) :
+    LiteralNode(NodeType::uuidLiteralNode, sourcePos_, moduleId_), uuid(uuid_)
 {
 }
 
 Node* UuidLiteralNode::Clone(CloneContext& cloneContext) const
 {
-    UuidLiteralNode* clone = new UuidLiteralNode(GetSpan(), ModuleId(), uuid);
+    UuidLiteralNode* clone = new UuidLiteralNode(GetSourcePos(), ModuleId(), uuid);
     return clone;
 }
 
@@ -881,13 +884,13 @@ void UuidLiteralNode::Accept(Visitor& visitor)
 void UuidLiteralNode::Write(AstWriter& writer)
 {
     LiteralNode::Write(writer);
-    writer.GetBinaryWriter().Write(uuid);
+    writer.GetBinaryStreamWriter().Write(uuid);
 }
 
 void UuidLiteralNode::Read(AstReader& reader)
 {
     LiteralNode::Read(reader);
-    reader.GetBinaryReader().ReadUuid(uuid);
+    reader.GetBinaryStreamReader().ReadUuid(uuid);
 }
 
 
