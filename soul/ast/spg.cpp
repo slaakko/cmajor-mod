@@ -9,7 +9,8 @@ import util;
 
 namespace soul::ast::spg {
 
-ParamVar::ParamVar(Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : kind(kind_), type(type_), name(name_)
+ParamVar::ParamVar(const soul::ast::SourcePos& sourcePos_, Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
+    sourcePos(sourcePos_), kind(kind_), type(type_), name(name_)
 {
 }
 
@@ -17,35 +18,50 @@ ParamVar::~ParamVar()
 {
 }
 
-Parameter::Parameter(soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : ParamVar(ParamVar::Kind::parameter, type_, name_)
+Parameter::Parameter(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
+    ParamVar(sourcePos_, ParamVar::Kind::parameter, type_, name_)
 {
 }
 
 ParamVar* Parameter::Clone() const
 {
-    return new Parameter(static_cast<soul::ast::cpp::TypeIdNode*>(Type()->Clone()), Name());
+    return new Parameter(GetSourcePos(), static_cast<soul::ast::cpp::TypeIdNode*>(Type()->Clone()), Name());
 }
 
-Variable::Variable(soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : ParamVar(ParamVar::Kind::variable, type_, name_)
+Variable::Variable(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
+    ParamVar(sourcePos_, ParamVar::Kind::variable, type_, name_)
 {
 }
 
 ParamVar* Variable::Clone() const
 {
-    return new Variable(static_cast<soul::ast::cpp::TypeIdNode*>(Type()->Clone()), Name());
+    return new Variable(GetSourcePos(),static_cast<soul::ast::cpp::TypeIdNode*>(Type()->Clone()), Name());
 }
 
-CharSet::CharSet() 
+CharSet::CharSet() : inverse(false)
 {
-    // todo
+}
+
+void CharSet::AddRange(const Range& range)
+{
+    ranges.push_back(range);
 }
 
 CharSet* CharSet::Clone() const
 {
-    return new CharSet(); // todo
+    CharSet* clone = new CharSet();
+    if (inverse)
+    {
+        clone->SetInverse();
+    }
+    for (const auto& range : ranges)
+    {
+        clone->AddRange(range);
+    }
+    return clone;
 }
 
-Parser::Parser(ParserKind kind_) : kind(kind_)
+Parser::Parser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_) : parent(nullptr), sourcePos(sourcePos_), kind(kind_)
 {
 }
 
@@ -53,21 +69,25 @@ Parser::~Parser()
 {
 }
 
-UnaryParser::UnaryParser(ParserKind kind_, Parser* child_) : Parser(kind_), child(child_)
+UnaryParser::UnaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* child_) : Parser(sourcePos_, kind_), child(child_)
 {
+    child->SetParent(this);
 }
 
-BinaryParser::BinaryParser(ParserKind kind_, Parser* left_, Parser* right_) : Parser(kind_), left(left_), right(right_)
+BinaryParser::BinaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* left_, Parser* right_) : Parser(sourcePos_, kind_), left(left_), right(right_)
 {
+    left->SetParent(this);
+    right->SetParent(this);
 }
 
-AlternativeParser::AlternativeParser(Parser* left_, Parser* right_) : BinaryParser(ParserKind::alternativeParser, left_, right_)
+AlternativeParser::AlternativeParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : 
+    BinaryParser(sourcePos_, ParserKind::alternativeParser, left_, right_)
 {
 }
 
 Parser* AlternativeParser::Clone() const
 {
-    return new AlternativeParser(Left()->Clone(), Right()->Clone());
+    return new AlternativeParser(GetSourcePos(), Left()->Clone(), Right()->Clone());
 }
 
 void AlternativeParser::Accept(Visitor& visitor)
@@ -75,13 +95,13 @@ void AlternativeParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-SequenceParser::SequenceParser(Parser* left_, Parser* right_) : BinaryParser(ParserKind::sequenceParser, left_, right_)
+SequenceParser::SequenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : BinaryParser(sourcePos_, ParserKind::sequenceParser, left_, right_)
 {
 }
 
 Parser* SequenceParser::Clone() const
 {
-    return new SequenceParser(Left()->Clone(), Right()->Clone());
+    return new SequenceParser(GetSourcePos(), Left()->Clone(), Right()->Clone());
 }
 
 void SequenceParser::Accept(Visitor& visitor)
@@ -89,13 +109,13 @@ void SequenceParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-DifferenceParser::DifferenceParser(Parser* left_, Parser* right_) : BinaryParser(ParserKind::differenceParser, left_, right_)
+DifferenceParser::DifferenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : BinaryParser(sourcePos_, ParserKind::differenceParser, left_, right_)
 {
 }
 
 Parser* DifferenceParser::Clone() const
 {
-    return new DifferenceParser(Left()->Clone(), Right()->Clone());
+    return new DifferenceParser(GetSourcePos(), Left()->Clone(), Right()->Clone());
 }
 
 void DifferenceParser::Accept(Visitor& visitor)
@@ -103,14 +123,18 @@ void DifferenceParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ListParser::ListParser(Parser* left_, Parser* right_) : 
-    UnaryParser(ParserKind::listParser, new SequenceParser(left_, new KleeneParser(new SequenceParser(right_, left_->Clone())))), left(left_), right(right_)
+ListParser::ListParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) :
+    UnaryParser(sourcePos_, ParserKind::listParser, 
+        new SequenceParser(sourcePos_, left_, 
+            new KleeneParser(sourcePos_, 
+                new SequenceParser(sourcePos_, right_, left_->Clone())))), 
+    left(left_), right(right_)
 {
 }
 
 Parser* ListParser::Clone() const
 {
-    return new ListParser(left->Clone(), right->Clone());
+    return new ListParser(GetSourcePos(), left->Clone(), right->Clone());
 }
 
 void ListParser::Accept(Visitor& visitor)
@@ -118,13 +142,13 @@ void ListParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-LookaheadParser::LookaheadParser(Parser* child_) : UnaryParser(ParserKind::lookaheadParser, child_)
+LookaheadParser::LookaheadParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::lookaheadParser, child_)
 {
 }
 
 Parser* LookaheadParser::Clone() const
 {
-    return new LookaheadParser(Child()->Clone());
+    return new LookaheadParser(GetSourcePos(), Child()->Clone());
 }
 
 void LookaheadParser::Accept(Visitor& visitor)
@@ -132,13 +156,13 @@ void LookaheadParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-KleeneParser::KleeneParser(Parser* child_) : UnaryParser(ParserKind::kleeneParser, child_)
+KleeneParser::KleeneParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::kleeneParser, child_)
 {
 }
 
 Parser* KleeneParser::Clone() const
 {
-    return new KleeneParser(Child()->Clone());
+    return new KleeneParser(GetSourcePos(), Child()->Clone());
 }
 
 void KleeneParser::Accept(Visitor& visitor)
@@ -146,13 +170,13 @@ void KleeneParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-PositiveParser::PositiveParser(Parser* child_) : UnaryParser(ParserKind::positiveParser, child_)
+PositiveParser::PositiveParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::positiveParser, child_)
 {
 }
 
 Parser* PositiveParser::Clone() const
 {
-    return new PositiveParser(Child()->Clone());
+    return new PositiveParser(GetSourcePos(), Child()->Clone());
 }
 
 void PositiveParser::Accept(Visitor& visitor)
@@ -160,13 +184,13 @@ void PositiveParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-OptionalParser::OptionalParser(Parser* child_) : UnaryParser(ParserKind::optionalParser, child_)
+OptionalParser::OptionalParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::optionalParser, child_)
 {
 }
 
 Parser* OptionalParser::Clone() const
 {
-    return new OptionalParser(Child()->Clone());
+    return new OptionalParser(GetSourcePos(), Child()->Clone());
 }
 
 void OptionalParser::Accept(Visitor& visitor)
@@ -174,13 +198,13 @@ void OptionalParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ExpectationParser::ExpectationParser(Parser* child_) : UnaryParser(ParserKind::expectationParser, child_)
+ExpectationParser::ExpectationParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::expectationParser, child_)
 {
 }
 
 Parser* ExpectationParser::Clone() const
 {
-    return new ExpectationParser(Child()->Clone());
+    return new ExpectationParser(GetSourcePos(), Child()->Clone());
 }
 
 void ExpectationParser::Accept(Visitor& visitor)
@@ -188,8 +212,8 @@ void ExpectationParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ActionParser::ActionParser(Parser* child_, soul::ast::cpp::CompoundStatementNode* successCode_, soul::ast::cpp::CompoundStatementNode* failureCode_) :
-    UnaryParser(ParserKind::actionParser, child_), successCode(successCode_), failureCode(failureCode_)
+ActionParser::ActionParser(const soul::ast::SourcePos& sourcePos_, Parser* child_, soul::ast::cpp::CompoundStatementNode* successCode_, soul::ast::cpp::CompoundStatementNode* failureCode_) :
+    UnaryParser(sourcePos_, ParserKind::actionParser, child_), successCode(successCode_), failureCode(failureCode_)
 {
 }
 
@@ -201,7 +225,7 @@ Parser* ActionParser::Clone() const
     {
         clonedFailureCode = static_cast<soul::ast::cpp::CompoundStatementNode*>(failureCode->Clone());
     }
-    return new ActionParser(Child()->Clone(), clonedSuccessCode, clonedFailureCode);
+    return new ActionParser(GetSourcePos(), Child()->Clone(), clonedSuccessCode, clonedFailureCode);
 }
 
 void ActionParser::Accept(Visitor& visitor)
@@ -221,8 +245,8 @@ bool ActionParser::IsActionToken() const
     return Child()->IsTokenParser();
 }
 
-NonterminalParser::NonterminalParser(const std::string& ruleName_, const std::string& instanceName_, soul::ast::cpp::ExprListNode* args_) : 
-    Parser(ParserKind::nonterminalParser), ruleName(ruleName_), instanceName(instanceName_), arguments(args_), rule(nullptr)
+NonterminalParser::NonterminalParser(const soul::ast::SourcePos& sourcePos_, const std::string& ruleName_, const std::string& instanceName_, soul::ast::cpp::ExprListNode* args_) :
+    Parser(sourcePos_, ParserKind::nonterminalParser), ruleName(ruleName_), instanceName(instanceName_), arguments(args_), rule(nullptr)
 {
 }
 
@@ -233,7 +257,7 @@ Parser* NonterminalParser::Clone() const
     {
         clonedArgs = static_cast<soul::ast::cpp::ExprListNode*>(arguments->Clone());
     }
-    return new NonterminalParser(ruleName, instanceName, clonedArgs);
+    return new NonterminalParser(GetSourcePos(), ruleName, instanceName, clonedArgs);
 }
 
 void NonterminalParser::Accept(Visitor& visitor)
@@ -241,13 +265,13 @@ void NonterminalParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-EmptyParser::EmptyParser() : Parser(ParserKind::emptyParser)
+EmptyParser::EmptyParser(const soul::ast::SourcePos& sourcePos_) : Parser(sourcePos_, ParserKind::emptyParser)
 {
 }
 
 Parser* EmptyParser::Clone() const
 {
-    return new EmptyParser();
+    return new EmptyParser(GetSourcePos());
 }
 
 void EmptyParser::Accept(Visitor& visitor)
@@ -255,13 +279,13 @@ void EmptyParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-AnyParser::AnyParser() : Parser(ParserKind::anyParser)
+AnyParser::AnyParser(const soul::ast::SourcePos& sourcePos_) : Parser(sourcePos_, ParserKind::anyParser)
 {
 }
 
 Parser* AnyParser::Clone() const
 {
-    return new AnyParser();
+    return new AnyParser(GetSourcePos());
 }
 
 void AnyParser::Accept(Visitor& visitor)
@@ -269,13 +293,13 @@ void AnyParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-TokenParser::TokenParser(const std::string& tokenName_) : Parser(ParserKind::tokenParser), tokenName(tokenName_)
+TokenParser::TokenParser(const soul::ast::SourcePos& sourcePos_, const std::string& tokenName_) : Parser(sourcePos_, ParserKind::tokenParser), tokenName(tokenName_)
 {
 }
 
 Parser* TokenParser::Clone() const
 {
-    return new TokenParser(tokenName);
+    return new TokenParser(GetSourcePos(), tokenName);
 }
 
 void TokenParser::Accept(Visitor& visitor)
@@ -283,13 +307,13 @@ void TokenParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CharParser::CharParser(char32_t chr_) : Parser(ParserKind::charParser), chr(chr_)
+CharParser::CharParser(const soul::ast::SourcePos& sourcePos_, char32_t chr_) : Parser(sourcePos_, ParserKind::charParser), chr(chr_)
 {
 }
 
 Parser* CharParser::Clone() const
 {
-    return new CharParser(chr);
+    return new CharParser(GetSourcePos(), chr);
 }
 
 void CharParser::Accept(Visitor& visitor)
@@ -297,13 +321,18 @@ void CharParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-StringParser::StringParser(const std::u32string& str_) : Parser(ParserKind::stringParser), str(str)
+StringParser::StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_) : Parser(sourcePos_, ParserKind::stringParser), str(str_)
 {
+}
+
+void StringParser::SetArrayName(const std::string& arrayName_)
+{
+    arrayName = arrayName_;
 }
 
 Parser* StringParser::Clone() const
 {
-    return new StringParser(str);
+    return new StringParser(GetSourcePos(), str);
 }
 
 void StringParser::Accept(Visitor& visitor)
@@ -311,13 +340,18 @@ void StringParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CharSetParser::CharSetParser(CharSet* charSet_) : Parser(ParserKind::charSetParser), charSet(charSet_)
+CharSetParser::CharSetParser(const soul::ast::SourcePos& sourcePos_, CharSet* charSet_) : Parser(sourcePos_, ParserKind::charSetParser), charSet(charSet_)
 {
+}
+
+void CharSetParser::SetArrayName(const std::string& arrayName_)
+{
+    arrayName = arrayName_;
 }
 
 Parser* CharSetParser::Clone() const
 {
-    return new CharSetParser(charSet->Clone());
+    return new CharSetParser(GetSourcePos(), charSet->Clone());
 }
 
 void CharSetParser::Accept(Visitor& visitor)
@@ -325,13 +359,13 @@ void CharSetParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-GroupingParser::GroupingParser(Parser* child_) : UnaryParser(ParserKind::groupingParser, child_)
+GroupingParser::GroupingParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::groupingParser, child_)
 {
 }
 
 Parser* GroupingParser::Clone() const
 {
-    return new GroupingParser(Child()->Clone());
+    return new GroupingParser(GetSourcePos(), Child()->Clone());
 }
 
 void GroupingParser::Accept(Visitor& visitor)
@@ -339,7 +373,8 @@ void GroupingParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-RuleParser::RuleParser(const std::string& name_) : Parser(ParserKind::ruleParser), name(name_), id(-1), grammar(nullptr), hasReturn(false)
+RuleParser::RuleParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
+    Parser(sourcePos_, ParserKind::ruleParser), name(name_), id(-1), index(-1), grammar(nullptr), hasReturn(false)
 {
 }
 
@@ -382,7 +417,7 @@ void RuleParser::SetGrammar(GrammarParser* grammar_)
 
 Parser* RuleParser::Clone() const
 {
-    RuleParser* clone = new RuleParser(name);
+    RuleParser* clone = new RuleParser(GetSourcePos(), name);
     clone->SetId(id);
     clone->SetInfo(info);
     for (const auto& param : params)
@@ -416,7 +451,12 @@ void RuleParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-GrammarParser::GrammarParser(const std::string& name_) : Parser(ParserKind::grammarParser), name(name_), main(false)
+Using::Using(const soul::ast::SourcePos& sourcePos_, const std::string& parserRuleId_) : sourcePos(sourcePos_), parserRuleId(parserRuleId_)
+{
+}
+
+GrammarParser::GrammarParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
+    Parser(sourcePos_, ParserKind::grammarParser), name(name_), main(false), id(-1), parserFile(nullptr)
 {
 }
 
@@ -425,26 +465,28 @@ void GrammarParser::AddLexer(soul::ast::cpp::TypeIdNode* lexerTypeId)
     lexers.push_back(std::unique_ptr< soul::ast::cpp::TypeIdNode>(lexerTypeId));
 }
 
-void GrammarParser::AddUsing(const std::string& parserRuleId)
+void GrammarParser::AddUsing(const soul::ast::SourcePos& sourcePos, const std::string& parserRuleId)
 {
-    usings.push_back(parserRuleId);
+    usings.push_back(Using(sourcePos, parserRuleId));
 }
 
-void GrammarParser::AddRule(RuleParser* rule)
+bool GrammarParser::AddRule(RuleParser* rule)
 {
     rule->SetGrammar(this);
+    rule->SetIndex(rules.size());
     rules.push_back(std::unique_ptr<RuleParser>(rule));
-    MapRule(rule);
+    return MapRule(rule);
 }
 
-void GrammarParser::MapRule(RuleParser* rule)
+bool GrammarParser::MapRule(RuleParser* rule)
 {
     auto it = ruleMap.find(rule->Name());
     if (it != ruleMap.cend())
     {
-        throw std::runtime_error("rule '" + rule->Name() + "' already added to parser '" + name + "'");
+        return false;
     }
     ruleMap[rule->Name()] = rule;
+    return true;
 }
 
 RuleParser* GrammarParser::GetRule(const std::string& ruleName) const
@@ -456,7 +498,7 @@ RuleParser* GrammarParser::GetRule(const std::string& ruleName) const
     }
     else
     {
-        throw std::runtime_error("rule '" + ruleName + "' not found from parser '" + name + "'");
+        return nullptr;
     }
 }
 
@@ -474,7 +516,8 @@ File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath
 {
 }
 
-SpgFileDeclaration::SpgFileDeclaration(FileKind fileKind_, const std::string& filePath_) : fileKind(fileKind_), filePath(filePath_)
+SpgFileDeclaration::SpgFileDeclaration(const soul::ast::SourcePos& sourcePos_, FileKind fileKind_, const std::string& filePath_) : 
+    sourcePos(sourcePos_), fileKind(fileKind_), filePath(filePath_)
 {
 }
 
@@ -482,7 +525,8 @@ SpgFileDeclaration::~SpgFileDeclaration()
 {
 }
 
-ParserFileDeclaration::ParserFileDeclaration(const std::string& filePath_, bool external_) : SpgFileDeclaration(FileKind::parserFile, filePath_), external(external_)
+ParserFileDeclaration::ParserFileDeclaration(const soul::ast::SourcePos& sourcePos_, const std::string& filePath_, bool external_) : 
+    SpgFileDeclaration(sourcePos_, FileKind::parserFile, filePath_), external(external_)
 {
 }
 
@@ -511,6 +555,7 @@ void ParserFile::AddImport(soul::ast::common::Import* imprt)
 
 void ParserFile::AddParser(soul::ast::spg::GrammarParser* parser)
 {
+    parser->SetParserFile(this);
     parsers.push_back(std::unique_ptr< soul::ast::spg::GrammarParser>(parser));
 }
 
@@ -530,7 +575,6 @@ void SpgFile::AddParserFile(ParserFile* parserFile)
 
 void SpgFile::AddRule(RuleParser* rule)
 {
-    rule->SetId(rules.size());
     rules.push_back(rule);
 }
 
@@ -539,14 +583,15 @@ void SpgFile::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-void SpgFile::AddParser(GrammarParser* parser)
+bool SpgFile::AddParser(GrammarParser* parser)
 {
     auto it = parserMap.find(parser->Name());
     if (it != parserMap.cend())
     {
-        throw std::runtime_error("parser '" + parser->Name() + "' already exists");
+        return false;
     }
     parserMap[parser->Name()] = parser;
+    return true;
 }
 
 GrammarParser* SpgFile::GetParser(const std::string& name) const
@@ -558,7 +603,7 @@ GrammarParser* SpgFile::GetParser(const std::string& name) const
     }
     else
     {
-        throw std::runtime_error("parser '" + name + "' not found");
+        return nullptr;
     }
 }
 

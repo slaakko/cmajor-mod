@@ -156,7 +156,6 @@
   <ItemGroup>
     <ClCompile Include="match.ixx" />
     <ClCompile Include="parser.ixx" />
-    <ClCompile Include="range.ixx" />
     <ClCompile Include="value.ixx" />
   </ItemGroup>
   <ItemGroup>

@@ -43,7 +43,7 @@ std::string NodeTypeStr(NodeType nodeType)
     return nodeTypeStr[static_cast<size_t>(nodeType)];
 }
 
-Node::Node(NodeType nodeType_, const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
+Node::Node(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
     nodeType(nodeType_), sourcePos(sourcePos_), moduleId(moduleId_), parent(nullptr), lexerFlags()
 {
 }
@@ -80,12 +80,12 @@ void Node::AddTemplateParameter(TemplateParameterNode* templateParameter)
     throw std::runtime_error("Node::AddTemplateParameter not overridden");
 }
 
-UnaryNode::UnaryNode(NodeType nodeType_, const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
+UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
     Node(nodeType_, sourcePos_, moduleId_), subject()
 {
 }
 
-UnaryNode::UnaryNode(NodeType nodeType_, const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : 
+UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : 
     Node(nodeType_, sourcePos_, moduleId_), subject(subject_)
 {
 }
@@ -103,12 +103,12 @@ void UnaryNode::Read(AstReader& reader)
     subject->SetParent(this);
 }
 
-BinaryNode::BinaryNode(NodeType nodeType, const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
+BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
     Node(nodeType, sourcePos_, moduleId_), left(), right()
 {
 }
 
-BinaryNode::BinaryNode(NodeType nodeType, const soul::lexer::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : 
+BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : 
     Node(nodeType, sourcePos_, moduleId_), left(left_), right(right_)
 {
     left->SetParent(this);
@@ -146,7 +146,7 @@ public:
     ConcreteNodeCreator() : NodeCreator() {}
     ConcreteNodeCreator(const ConcreteNodeCreator&) = delete;
     ConcreteNodeCreator& operator=(const ConcreteNodeCreator&) = delete;
-    Node* CreateNode(const soul::lexer::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override
+    Node* CreateNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override
     {
         return new T(sourcePos, moduleId);
     }
@@ -367,7 +367,7 @@ void NodeFactory::Register(NodeType nodeType, NodeCreator* creator)
     creators[static_cast<size_t>(nodeType)] = std::unique_ptr<NodeCreator>(creator);
 }
 
-Node* NodeFactory::CreateNode(NodeType nodeType, const soul::lexer::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+Node* NodeFactory::CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
 {
     const std::unique_ptr<NodeCreator>& creator = creators[static_cast<size_t>(nodeType)];
     if (creator)

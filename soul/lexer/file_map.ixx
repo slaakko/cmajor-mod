@@ -23,4 +23,7 @@ private:
     std::vector<std::pair<std::u32string, std::vector<int>>> fileContents;
 };
 
+FileMap* GetGlobalFileMap();
+void SetGlobalFileMap(soul::lexer::FileMap* fileMap_);
+
 } // namespace soul::lexer

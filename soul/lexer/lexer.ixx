@@ -5,6 +5,7 @@
 
 export module soul.lexer;
 
+import soul.ast.source.pos;
 export import soul.lexer.concepts;
 export import soul.lexer.lexeme;
 export import soul.lexer.token;
@@ -13,11 +14,11 @@ export import soul.lexer.base;
 export import soul.lexer.classmap;
 export import soul.lexer.variables;
 export import soul.lexer.error;
-export import soul.lexer.source.pos;
 export import soul.lexer.parsing.log;
 export import soul.lexer.xml.parsing.log;
 export import soul.lexer.file.map;
 export import soul.lexer.lexing.util;
+export import soul.lexer.test;
 
 import std.core;
 import util.unicode;
@@ -52,7 +53,7 @@ template<typename Stack>
     requires RuleStack<Stack>
 struct RuleGuard
 {
-    RuleGuard(Stack& stack_, int ruleId) : stack(stack_)
+    RuleGuard(Stack& stack_, int64_t ruleId) : stack(stack_)
     {
         stack.PushRule(ruleId);
     }
@@ -97,21 +98,21 @@ public:
     using VariableClassType = Machine::Variables;
 
     Lexer(const Char* start_, const Char* end_, const std::string& fileName_) :
-        flags(LexerFlags::none), 
+        flags(LexerFlags::none),
         file(-1),
         line(1),
-        current(tokens.end()), 
+        current(tokens.end()),
         token(this),
-        separatorChar('\0'), 
-        start(start_), 
-        end(end_), 
-        pos(start), 
-        fileName(fileName_), 
-        countLines(true), 
+        separatorChar('\0'),
+        start(start_),
+        end(end_),
+        pos(start),
+        fileName(fileName_),
+        countLines(true),
         classMap(nullptr),
         tokenCollection(nullptr),
         keywordMap(nullptr),
-        ruleNameVecPtr(nullptr),
+        ruleNameMapPtr(nullptr),
         farthestPos(GetPos()),
         log(nullptr),
         vars()
@@ -181,6 +182,10 @@ public:
     {
         return line;
     }
+    void SetLine(int32_t line_) override
+    {
+        line = line_;
+    }
     ClassMap<Char>* GetClassMap() const override
     {
         return classMap;
@@ -189,12 +194,6 @@ public:
     {
         classMap = classMap_;
     }
-/*
-    void SetVariables(Variables* vars_) override
-    {
-        
-    }
-*/
     soul::ast::slg::TokenCollection* GetTokenCollection() const override
     {
         return tokenCollection;
@@ -211,19 +210,19 @@ public:
     {
         keywordMap = keywordMap_;
     }
-    std::vector<std::string>* GetRuleNameVecPtr() const override
+    std::map<int64_t, std::string>* GetRuleNameMapPtr() const override
     {
-        return ruleNameVecPtr;
+        return ruleNameMapPtr;
     }
-    void SetRuleNameVecPtr(std::vector<std::string>* ruleNameVecPtr_) override
+    void SetRuleNameMapPtr(std::map<int64_t, std::string>* ruleNameMapPtr_) override
     { 
-        ruleNameVecPtr = ruleNameVecPtr_; 
+        ruleNameMapPtr = ruleNameMapPtr_;
     }
     LexerFlags Flags() const { return flags; }
     bool GetFlag(LexerFlags flag) const { return (flags & flag) != LexerFlags::none; }
     void SetFlag(LexerFlags flag) { flags = flags | flag; }
     void ResetFlag(LexerFlags flag) { flags = flags & ~flag; }
-    void PushRule(int ruleId)
+    void PushRule(int64_t ruleId)
     {
         ruleContext.push_back(ruleId);
     }
@@ -284,7 +283,7 @@ public:
     {
         return pos >> 32;
     }
-    SourcePos GetSourcePos(int64_t pos) const
+    soul::ast::SourcePos GetSourcePos(int64_t pos) const
     {
         const Char* s = start;
         int line = GetLine(pos);
@@ -294,42 +293,56 @@ public:
         }
         Token token = GetToken(pos);
         int col = static_cast<int>(token.match.begin - s + 1);
-        return SourcePos(pos, file, line, col);
+        return soul::ast::SourcePos(pos, file, line, col);
     }
-    std::string ErrorLines(int64_t pos) const
+    std::string ErrorLines(int64_t pos) const override
     {
         auto token = GetToken(pos);
         std::basic_string<Char> lines;
         const Char* lineStart = LineStart(start, token.match.begin);
         const Char* lineEnd = LineEnd(end, token.match.end);
-        lines.append(std::basic_string<Char>(lineStart, token.match.begin));
+        if (token.match.begin > lineStart)
+        {
+            lines.append(std::basic_string<Char>(lineStart, token.match.begin));
+        }
         lines.append(token.match.ToString());
-        lines.append(std::basic_string<Char>(token.match.end, lineEnd));
+        if (lineEnd > token.match.end)
+        {
+            lines.append(std::basic_string<Char>(token.match.end, lineEnd));
+        }
         lines.append(1, '\n');
-        lines.append(token.match.begin - lineStart, ' ');
+        if (token.match.begin > lineStart)
+        {
+            lines.append(token.match.begin - lineStart, ' ');
+        }
         lines.append(std::max(static_cast<int64_t>(1), token.match.end - token.match.begin), '^');
-        lines.append(lineEnd - token.match.end, ' ');
-        lines.append(1, '\n');
+        if (lineEnd > token.match.end)
+        {
+            lines.append(lineEnd - token.match.end, ' ');
+        }
         return ToUtf8(lines);
     }
     void ThrowExpectationFailure(int64_t pos, const std::string& name)
     {
-        SourcePos sourcePos = GetSourcePos(pos);
-        throw ParsingException("parsing error at '" + fileName + ":" + std::to_string(sourcePos.line) + "': " + name + " expected:\n" + ErrorLines(pos), fileName, sourcePos);
+        soul::ast::SourcePos sourcePos = GetSourcePos(pos);
+        std::string parserStateStr = GetParserStateStr();
+        throw ParsingException("parsing error at '" + fileName + ":" + std::to_string(sourcePos.line) + "': " + name + " expected:\n" + ErrorLines(pos) + parserStateStr, 
+            fileName, sourcePos);
     }
     std::string GetParserStateStr() const
     {
         std::string parserStateStr;
         int n = farthestRuleContext.size();
-        if (ruleNameVecPtr && n > 0)
+        if (ruleNameMapPtr && n > 0)
         {
             parserStateStr.append("\nParser state:\n");
             for (int i = 0; i < n; ++i)
             {
-                int ruleId = farthestRuleContext[i];
-                if (ruleId >= 0 && ruleId < ruleNameVecPtr->size())
+                int64_t ruleId = farthestRuleContext[i];
+                auto it = (*ruleNameMapPtr).find(ruleId);
+                if (it != (*ruleNameMapPtr).cend())
                 {
-                    std::string ruleName = (*ruleNameVecPtr)[ruleId];
+                    std::string ruleName = it->second;
                     parserStateStr.append(ruleName.append("\n"));
                 }
             }
@@ -343,7 +356,7 @@ public:
     }
     void ThrowFarthestError()
     {
-        SourcePos sourcePos = GetSourcePos(farthestPos);
+        soul::ast::SourcePos sourcePos = GetSourcePos(farthestPos);
         throw ParsingException(GetError(farthestPos), fileName, sourcePos);
     }
     void SetLog(ParsingLog* log_) 
@@ -375,6 +388,18 @@ public:
     soul::lexer::Variables* GetVariables() const override 
     { 
         return const_cast<soul::lexer::Variables*>(static_cast<const soul::lexer::Variables*>(&vars));
+    }
+    const Char* Start() const
+    {
+        return start;
+    }
+    const Char* Pos() const
+    {
+        return pos;
+    }
+    const Char* End() const
+    {
+        return end;
     }
 private:
     void NextToken()
@@ -499,10 +524,10 @@ private:
     soul::ast::slg::TokenCollection* tokenCollection;
     KeywordMap<Char>* keywordMap;
     int64_t farthestPos;
-    std::vector<int> ruleContext;
-    std::vector<int> farthestRuleContext;
+    std::vector<int64_t> ruleContext;
+    std::vector<int64_t> farthestRuleContext;
     std::vector<const Char*> lineStarts;
-    std::vector<std::string>* ruleNameVecPtr;
+    std::map<int64_t, std::string>* ruleNameMapPtr;
     ParsingLog* log;
     Machine::Variables vars;
 };

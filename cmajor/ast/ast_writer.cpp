@@ -32,7 +32,7 @@ void AstWriter::Write(Specifiers specifiers)
     binaryStreamWriter.Write(static_cast<uint32_t>(specifiers));
 }
 
-void AstWriter::Write(const soul::lexer::SourcePos& sourcePos)
+void AstWriter::Write(const soul::ast::SourcePos& sourcePos)
 {
     binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(sourcePos.file));
     binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(sourcePos.line));

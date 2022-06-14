@@ -9,7 +9,7 @@ export module cmajor.ast.reader;
 import std.core;
 import util;
 import cmajor.ast.specifier;
-import soul.lexer.source.pos;
+import soul.ast.source.pos;
 
 export namespace cmajor::ast {
 
@@ -52,7 +52,7 @@ public:
     ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
     */
     Specifiers ReadSpecifiers();
-    soul::lexer::SourcePos ReadSourcePos();
+    soul::ast::SourcePos ReadSourcePos();
     //void SetModuleMaps(const boost::uuids::uuid& rootModuleId, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_); TODO
 private:
     util::FileStream fileStream;

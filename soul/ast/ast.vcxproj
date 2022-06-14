@@ -162,6 +162,7 @@
     <ClCompile Include="re.ixx" />
     <ClCompile Include="slg.cpp" />
     <ClCompile Include="slg.ixx" />
+    <ClCompile Include="source_pos.ixx" />
     <ClCompile Include="spg.cpp" />
     <ClCompile Include="spg.ixx" />
   </ItemGroup>
