@@ -12,4 +12,5 @@ export import cmajor.ast.function;
 export import cmajor.ast.init.done;
 export import cmajor.ast.writer;
 export import cmajor.ast.reader;
-
+export import cmajor.ast.visitor;
+export import cmajor.ast.literal;

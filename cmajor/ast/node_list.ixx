@@ -16,7 +16,7 @@
 export module cmajor.ast.node.list;
 
 import std.core;
-//import cmajor.ast.node;
+import cmajor.ast.node;
 import cmajor.ast.writer;
 import cmajor.ast.reader;
 
@@ -100,7 +100,7 @@ public:
         {
             Node* node = reader.ReadNode();
             T* asTPtrNode = dynamic_cast<T*>(node);
-            Assert(asTPtrNode, "wrong node type");
+            // Assert(asTPtrNode, "wrong node type"); TODO
             nodes.push_back(std::unique_ptr<T>(asTPtrNode));
         }
     }
