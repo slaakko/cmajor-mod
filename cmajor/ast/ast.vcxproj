@@ -163,12 +163,19 @@
     <ClCompile Include="function.ixx" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.ixx" />
+    <ClCompile Include="literal.cpp" />
+    <ClCompile Include="literal.ixx" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node.ixx" />
     <ClCompile Include="node_list.cpp" />
     <ClCompile Include="node_list.ixx" />
+    <ClCompile Include="project.cpp" />
+    <ClCompile Include="project.ixx" />
     <ClCompile Include="specifier.cpp" />
     <ClCompile Include="specifier.ixx" />
+    <ClCompile Include="system_file_index.cpp" />
+    <ClCompile Include="system_file_index.ixx" />
+    <ClCompile Include="visitor.cpp" />
     <ClCompile Include="visitor.ixx" />
   </ItemGroup>
   <ItemGroup>

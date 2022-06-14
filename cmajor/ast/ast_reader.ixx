@@ -4,15 +4,7 @@
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <sngcm/ast/AstApi.hpp>
-#include <sngcm/ast/Specifier.hpp>
-#include <soulng/util/BinaryReader.hpp>
-#include <soulng/lexer/Span.hpp>
-#include <unordered_map>
-*/
 export module cmajor.ast.reader;
-
 
 import std.core;
 import util;
