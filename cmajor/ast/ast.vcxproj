@@ -163,6 +163,8 @@
     <ClCompile Include="basic_type.ixx" />
     <ClCompile Include="clone.cpp" />
     <ClCompile Include="clone.ixx" />
+    <ClCompile Include="comment.cpp" />
+    <ClCompile Include="comment.ixx" />
     <ClCompile Include="function.ixx" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.ixx" />
