@@ -14,11 +14,11 @@
 module cmajor.ast.reader;
 
 import cmajor.ast.node;
+import cmajor.ast.attribute;
 
 namespace cmajor::ast {
- //AstWriter::AstWriter(const std::string& fileName_) : fileStream(fileName_,util::OpenMode::binary| util::OpenMode::read), bufferedStream(fileStream), binaryStreamWriter(bufferedStream)
 AstReader::AstReader(const std::string& fileName_) :
-    fileStream(fileName_, util::OpenMode::binary | util::OpenMode::read), bufferedStream(fileStream), binaryStreamReader(bufferedStream) //, rootModuleId(boost::uuids::nil_uuid()), moduleNameTable(nullptr), moduleIdMap(nullptr)
+    fileStream(fileName_, util::OpenMode::binary | util::OpenMode::read), bufferedStream(fileStream), binaryStreamReader(bufferedStream) 
 {
 }
 
@@ -33,7 +33,7 @@ Node* AstReader::ReadNode()
     node->Read(*this);
     return node;
 }
-/*
+
 AttributeNode* AstReader::ReadAttributeNode()
 {
     Node* node = ReadNode();
@@ -46,7 +46,7 @@ AttributeNode* AstReader::ReadAttributeNode()
         throw std::runtime_error("attribute node expected");
     }
 }
-
+/*
 AttributesNode* AstReader::ReadAttributesNode()
 {
     Node* node = ReadNode();

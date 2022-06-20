@@ -35,8 +35,8 @@ public:
     AstReader(const std::string& fileName_);
     util::BinaryStreamReader& GetBinaryStreamReader() { return binaryStreamReader; }
     Node* ReadNode();
-    /*
     AttributeNode* ReadAttributeNode();
+    /*
     AttributesNode* ReadAttributesNode();
     IdentifierNode* ReadIdentifierNode();
     LabelNode* ReadLabelNode();

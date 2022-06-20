@@ -3,20 +3,6 @@
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <sngcm/ast/Literal.hpp>
-#include <sngcm/ast/Visitor.hpp>
-#include <sngcm/ast/AstWriter.hpp>
-#include <sngcm/ast/AstReader.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <limits>
-*/
-
-//module;
-//#include <boost/uuid/uuid_generators.hpp>
-
 module cmajor.ast.literal;
 
 import std.core;
