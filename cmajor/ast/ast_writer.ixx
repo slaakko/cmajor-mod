@@ -31,14 +31,14 @@ public:
     void Write(Specifiers specifiers);
     void Write(const soul::ast::SourcePos& sourcePos);
     //void SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_); TODO
-    //void SetSpanConversionModuleId(const boost::uuids::uuid& spanConversionModuleId_); TODO
-    //const boost::uuids::uuid& SpanConversionModuleId() const { return spanConversionModuleId; } TODO
+    void SetSourcePosConversionModuleId(const boost::uuids::uuid& sourcePosConversionModuleId_); 
+    const boost::uuids::uuid& SourcePosConversionModuleId() const { return sourcePosConversionModuleId; } 
 private:
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;
     util::BinaryStreamWriter binaryStreamWriter;
     //std::vector<soulng::lexer::Lexer*>* lexers;
-    //boost::uuids::uuid spanConversionModuleId;
+    boost::uuids::uuid sourcePosConversionModuleId;
 };
 
 } // namespace cmajor::ast

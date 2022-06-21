@@ -167,6 +167,12 @@
     <ClCompile Include="comment.ixx" />
     <ClCompile Include="constant.cpp" />
     <ClCompile Include="constant.ixx" />
+    <ClCompile Include="delegate.cpp" />
+    <ClCompile Include="delegate.ixx" />
+    <ClCompile Include="enumeration.cpp" />
+    <ClCompile Include="enumeration.ixx" />
+    <ClCompile Include="expression.cpp" />
+    <ClCompile Include="expression.ixx" />
     <ClCompile Include="function.ixx" />
     <ClCompile Include="identifier.cpp" />
     <ClCompile Include="identifier.ixx" />
