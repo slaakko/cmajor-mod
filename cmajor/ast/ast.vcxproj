@@ -174,10 +174,14 @@
     <ClCompile Include="expression.cpp" />
     <ClCompile Include="expression.ixx" />
     <ClCompile Include="function.ixx" />
+    <ClCompile Include="global_variable.cpp" />
+    <ClCompile Include="global_variable.ixx" />
     <ClCompile Include="identifier.cpp" />
     <ClCompile Include="identifier.ixx" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.ixx" />
+    <ClCompile Include="interface.cpp" />
+    <ClCompile Include="interface.ixx" />
     <ClCompile Include="literal.cpp" />
     <ClCompile Include="literal.ixx" />
     <ClCompile Include="node.cpp" />
