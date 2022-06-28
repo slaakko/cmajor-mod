@@ -2,19 +2,11 @@
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <sngcm/ast/AstReader.hpp>
-#include <sngcm/ast/Identifier.hpp>
-#include <sngcm/ast/Statement.hpp>
-#include <sngcm/ast/Concept.hpp>
-#include <sngcm/ast/Statement.hpp>
-#include <sngcm/ast/Class.hpp>
-#include <boost/uuid/nil_generator.hpp>
-*/
 module cmajor.ast.reader;
 
 import cmajor.ast.node;
 import cmajor.ast.attribute;
+import cmajor.ast.identifier;
 
 namespace cmajor::ast {
 AstReader::AstReader(const std::string& fileName_) :
@@ -46,7 +38,7 @@ AttributeNode* AstReader::ReadAttributeNode()
         throw std::runtime_error("attribute node expected");
     }
 }
-/*
+
 AttributesNode* AstReader::ReadAttributesNode()
 {
     Node* node = ReadNode();
@@ -72,7 +64,7 @@ IdentifierNode* AstReader::ReadIdentifierNode()
         throw std::runtime_error("identifier node expected");
     }
 }
-
+/*
 LabelNode* AstReader::ReadLabelNode()
 {
     Node* node = ReadNode();

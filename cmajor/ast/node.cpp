@@ -212,7 +212,9 @@ NodeFactory::NodeFactory()
     Register(NodeType::namespaceNode, new ConcreteNodeCreator<NamespaceNode>());
     Register(NodeType::aliasNode, new ConcreteNodeCreator<AliasNode>());
     Register(NodeType::namespaceImportNode, new ConcreteNodeCreator<NamespaceImportNode>());
-    Register(NodeType::identifierNode, new ConcreteNodeCreator<IdentifierNode>());
+*/
+    //Register(NodeType::identifierNode, new ConcreteNodeCreator<IdentifierNode>());
+/*
     Register(NodeType::templateIdNode, new ConcreteNodeCreator<TemplateIdNode>());
     Register(NodeType::functionNode, new ConcreteNodeCreator<FunctionNode>());
     Register(NodeType::classNode, new ConcreteNodeCreator<ClassNode>());

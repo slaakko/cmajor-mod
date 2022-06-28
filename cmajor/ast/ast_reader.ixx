@@ -36,9 +36,9 @@ public:
     util::BinaryStreamReader& GetBinaryStreamReader() { return binaryStreamReader; }
     Node* ReadNode();
     AttributeNode* ReadAttributeNode();
-    /*
     AttributesNode* ReadAttributesNode();
     IdentifierNode* ReadIdentifierNode();
+    /*
     LabelNode* ReadLabelNode();
     StatementNode* ReadStatementNode();
     DefaultStatementNode* ReadDefaultStatementNode();
