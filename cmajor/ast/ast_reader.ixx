@@ -40,16 +40,16 @@ public:
     IdentifierNode* ReadIdentifierNode();
     ConstraintNode* ReadConstraintNode();
     ConceptIdNode* ReadConceptIdNode();
-    /*
     LabelNode* ReadLabelNode();
     StatementNode* ReadStatementNode();
     DefaultStatementNode* ReadDefaultStatementNode();
     CompoundStatementNode* ReadCompoundStatementNode();
+    ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
+    ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
+    /*
     WhereConstraintNode* ReadWhereConstraintNode();
     ConceptNode* ReadConceptNode();
     TemplateIdNode* ReadTemplateIdNode();
-    ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
-    ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
     */
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();

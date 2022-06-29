@@ -7,6 +7,7 @@ module cmajor.ast.reader;
 import cmajor.ast.node;
 import cmajor.ast.attribute;
 import cmajor.ast.concept_;
+import cmajor.ast.statement;
 import cmajor.ast.identifier;
 
 namespace cmajor::ast {
@@ -91,7 +92,6 @@ ConceptIdNode* AstReader::ReadConceptIdNode()
         throw std::runtime_error("concept id node expected");
     }
 }
-/*
 LabelNode* AstReader::ReadLabelNode()
 {
     Node* node = ReadNode();
@@ -144,6 +144,33 @@ CompoundStatementNode* AstReader::ReadCompoundStatementNode()
     }
 }
 
+ConditionalCompilationExpressionNode* AstReader::ReadConditionalCompilationExpressionNode()
+{
+    Node* node = ReadNode();
+    if (node->IsConditionalCompilationExpressionNode())
+    {
+        return static_cast<ConditionalCompilationExpressionNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("conditional compilation expression node expected");
+    }
+}
+
+ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::conditionalCompilationPartNode)
+    {
+        return static_cast<ConditionalCompilationPartNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("conditional compilation part node expected");
+    }
+}
+
+/*
 
 WhereConstraintNode* AstReader::ReadWhereConstraintNode()
 {
@@ -185,31 +212,7 @@ TemplateIdNode* AstReader::ReadTemplateIdNode()
     }
 }
 
-ConditionalCompilationExpressionNode* AstReader::ReadConditionalCompilationExpressionNode()
-{
-    Node* node = ReadNode();
-    if (node->IsConditionalCompilationExpressionNode())
-    {
-        return static_cast<ConditionalCompilationExpressionNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("conditional compilation expression node expected");
-    }
-}
 
-ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::conditionalCompilationPartNode)
-    {
-        return static_cast<ConditionalCompilationPartNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("conditional compilation part node expected");
-    }
-}
 */
 Specifiers AstReader::ReadSpecifiers()
 {

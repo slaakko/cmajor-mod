@@ -194,6 +194,8 @@
     <ClCompile Include="parameter.ixx" />
     <ClCompile Include="specifier.cpp" />
     <ClCompile Include="specifier.ixx" />
+    <ClCompile Include="statement.cpp" />
+    <ClCompile Include="statement.ixx" />
     <ClCompile Include="visitor.cpp" />
     <ClCompile Include="visitor.ixx" />
   </ItemGroup>
