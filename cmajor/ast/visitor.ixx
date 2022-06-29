@@ -6,6 +6,8 @@
 
 export module cmajor.ast.visitor;
 
+import cmajor.ast.node;
+
 export namespace cmajor::ast {
 
 class BoolNode;
@@ -133,7 +135,7 @@ class ConstantNode;
 class EnumTypeNode;
 class EnumConstantNode;
 class ParameterNode;
-class TemplateParameterNodeX;
+class TemplateParameterNode;
 class TypedefNode;
 
 class ConstNode;
@@ -244,6 +246,7 @@ public:
     virtual void Visit(IdentifierNode& identifierNode) {}
     virtual void Visit(CursorIdNode& cursorIdNode) {}
     virtual void Visit(TemplateIdNode& templateIdNode) {}
+    virtual void Visit(TemplateParameterNode& templateParameterNode) {}
     virtual void Visit(FullInstantiationRequestNode& fullInstantiationRequestNode) {}
     virtual void Visit(FunctionNode& functionNode) {}
     virtual void Visit(FunctionPtrNode& functionPtrNode) {}
@@ -325,7 +328,6 @@ public:
     virtual void Visit(EnumTypeNode& enumTypeNode) {}
     virtual void Visit(EnumConstantNode& enumConstantNode) {}
     virtual void Visit(ParameterNode& parameterNode) {}
-    virtual void Visit(TemplateParameterNodeX& templateParameterNode) {}
 
     virtual void Visit(ConstNode& constNode) {}
     virtual void Visit(LValueRefNode& lvalueRefNode) {}

@@ -52,7 +52,6 @@ class Visitor;
 class AstWriter;
 class AstReader;
 class ParameterNode;
-class TemplateParameterNode;
 
 class Node
 {
@@ -69,7 +68,7 @@ public:
     virtual std::string ToString() const { return std::string(); }
     virtual void AddArgument(Node* argument);
     virtual void AddParameter(ParameterNode* parameter);
-    virtual void AddTemplateParameter(TemplateParameterNode* templateParameter);
+    virtual void AddTemplateParameter(Node* templateParameter);
     virtual bool IsUnsignedTypeNode() const { return false; }
     virtual bool IsStatementNode() const { return false; }
     virtual bool NodeIsConstraintNode() const { return false; }

@@ -10,7 +10,6 @@ import cmajor.ast.reader;
 import cmajor.ast.writer;
 import cmajor.ast.identifier;
 import cmajor.ast.visitor;
-//import util;
 
 namespace cmajor::ast {
 
@@ -80,11 +79,11 @@ void TemplateIdNode::AddTemplateArgument(Node* templateArgument)
     templateArguments.Add(templateArgument);
 }
 
-TemplateParameterNodeX::TemplateParameterNodeX(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
+TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
 {
 }
 
-TemplateParameterNodeX::TemplateParameterNodeX(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
+TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
     Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id(id_), defaultTemplateArgument(defaultTemplateArgument_)
 {
     id->SetParent(this);
@@ -94,23 +93,23 @@ TemplateParameterNodeX::TemplateParameterNodeX(const soul::ast::SourcePos& sourc
     }
 }
 
-Node* TemplateParameterNodeX::Clone(CloneContext& cloneContext) const
+Node* TemplateParameterNode::Clone(CloneContext& cloneContext) const
 {
     Node* clonedDefaultTemplateArgument = nullptr;
     if (defaultTemplateArgument)
     {
         clonedDefaultTemplateArgument = defaultTemplateArgument->Clone(cloneContext);
     }
-    TemplateParameterNodeX* clone = new TemplateParameterNodeX(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedDefaultTemplateArgument);
+    TemplateParameterNode* clone = new TemplateParameterNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedDefaultTemplateArgument);
     return clone;
 }
 
-void TemplateParameterNodeX::Accept(Visitor& visitor)
+void TemplateParameterNode::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
 
-void TemplateParameterNodeX::Write(AstWriter& writer)
+void TemplateParameterNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
     writer.Write(id.get());
@@ -122,7 +121,7 @@ void TemplateParameterNodeX::Write(AstWriter& writer)
     }
 }
 
-void TemplateParameterNodeX::Read(AstReader& reader)
+void TemplateParameterNode::Read(AstReader& reader)
 {
     Node::Read(reader);
     id.reset(reader.ReadIdentifierNode());

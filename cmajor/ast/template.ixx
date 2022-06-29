@@ -30,11 +30,11 @@ private:
     NodeList<Node> templateArguments;
 };
 
-class TemplateParameterNodeX : public Node
+class TemplateParameterNode : public Node
 {
 public:
-    TemplateParameterNodeX(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TemplateParameterNodeX(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_);
+    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
