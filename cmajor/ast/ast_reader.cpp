@@ -6,6 +6,9 @@ module cmajor.ast.reader;
 
 import cmajor.ast.node;
 import cmajor.ast.attribute;
+import cmajor.ast.concept_;
+import cmajor.ast.template_;
+import cmajor.ast.statement;
 import cmajor.ast.identifier;
 
 namespace cmajor::ast {
@@ -64,7 +67,32 @@ IdentifierNode* AstReader::ReadIdentifierNode()
         throw std::runtime_error("identifier node expected");
     }
 }
-/*
+
+ConstraintNode* AstReader::ReadConstraintNode()
+{
+    Node* node = ReadNode();
+    if (node->NodeIsConstraintNode())
+    {
+        return static_cast<ConstraintNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("constraint node expected");
+    }
+}
+
+ConceptIdNode* AstReader::ReadConceptIdNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::conceptIdNode)
+    {
+        return static_cast<ConceptIdNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("concept id node expected");
+    }
+}
 LabelNode* AstReader::ReadLabelNode()
 {
     Node* node = ReadNode();
@@ -117,71 +145,6 @@ CompoundStatementNode* AstReader::ReadCompoundStatementNode()
     }
 }
 
-ConstraintNode* AstReader::ReadConstraintNode()
-{
-    Node* node = ReadNode();
-    if (node->NodeIsConstraintNode())
-    {
-        return static_cast<ConstraintNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("constraint node expected");
-    }
-}
-
-WhereConstraintNode* AstReader::ReadWhereConstraintNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::whereConstraintNode)
-    {
-        return static_cast<WhereConstraintNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("where constraint node expected");
-    }
-}
-
-ConceptIdNode* AstReader::ReadConceptIdNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::conceptIdNode)
-    {
-        return static_cast<ConceptIdNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("concept id node expected");
-    }
-}
-
-ConceptNode* AstReader::ReadConceptNode()
-{
-    Node* node = ReadNode();
-    if (node->IsConceptNode())
-    {
-        return static_cast<ConceptNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("concept node expected");
-    }
-}
-
-TemplateIdNode* AstReader::ReadTemplateIdNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::templateIdNode)
-    {
-        return static_cast<TemplateIdNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("template id node expected");
-    }
-}
-
 ConditionalCompilationExpressionNode* AstReader::ReadConditionalCompilationExpressionNode()
 {
     Node* node = ReadNode();
@@ -207,6 +170,51 @@ ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
         throw std::runtime_error("conditional compilation part node expected");
     }
 }
+
+TemplateIdNode* AstReader::ReadTemplateIdNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::templateIdNode)
+    {
+        return static_cast<TemplateIdNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("template id node expected");
+    }
+}
+
+/*
+
+WhereConstraintNode* AstReader::ReadWhereConstraintNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::whereConstraintNode)
+    {
+        return static_cast<WhereConstraintNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("where constraint node expected");
+    }
+}
+
+
+ConceptNode* AstReader::ReadConceptNode()
+{
+    Node* node = ReadNode();
+    if (node->IsConceptNode())
+    {
+        return static_cast<ConceptNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("concept node expected");
+    }
+}
+
+
+
 */
 Specifiers AstReader::ReadSpecifiers()
 {

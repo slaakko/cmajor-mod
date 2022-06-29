@@ -165,6 +165,8 @@
     <ClCompile Include="clone.ixx" />
     <ClCompile Include="comment.cpp" />
     <ClCompile Include="comment.ixx" />
+    <ClCompile Include="concept.cpp" />
+    <ClCompile Include="concept.ixx" />
     <ClCompile Include="constant.cpp" />
     <ClCompile Include="constant.ixx" />
     <ClCompile Include="delegate.cpp" />
@@ -192,6 +194,10 @@
     <ClCompile Include="parameter.ixx" />
     <ClCompile Include="specifier.cpp" />
     <ClCompile Include="specifier.ixx" />
+    <ClCompile Include="statement.cpp" />
+    <ClCompile Include="statement.ixx" />
+    <ClCompile Include="template.cpp" />
+    <ClCompile Include="template.ixx" />
     <ClCompile Include="visitor.cpp" />
     <ClCompile Include="visitor.ixx" />
   </ItemGroup>
