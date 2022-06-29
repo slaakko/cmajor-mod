@@ -6,6 +6,7 @@ module cmajor.ast.reader;
 
 import cmajor.ast.node;
 import cmajor.ast.attribute;
+import cmajor.ast.concept_;
 import cmajor.ast.identifier;
 
 namespace cmajor::ast {
@@ -64,6 +65,32 @@ IdentifierNode* AstReader::ReadIdentifierNode()
         throw std::runtime_error("identifier node expected");
     }
 }
+
+ConstraintNode* AstReader::ReadConstraintNode()
+{
+    Node* node = ReadNode();
+    if (node->NodeIsConstraintNode())
+    {
+        return static_cast<ConstraintNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("constraint node expected");
+    }
+}
+
+ConceptIdNode* AstReader::ReadConceptIdNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::conceptIdNode)
+    {
+        return static_cast<ConceptIdNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("concept id node expected");
+    }
+}
 /*
 LabelNode* AstReader::ReadLabelNode()
 {
@@ -117,18 +144,6 @@ CompoundStatementNode* AstReader::ReadCompoundStatementNode()
     }
 }
 
-ConstraintNode* AstReader::ReadConstraintNode()
-{
-    Node* node = ReadNode();
-    if (node->NodeIsConstraintNode())
-    {
-        return static_cast<ConstraintNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("constraint node expected");
-    }
-}
 
 WhereConstraintNode* AstReader::ReadWhereConstraintNode()
 {
@@ -143,18 +158,6 @@ WhereConstraintNode* AstReader::ReadWhereConstraintNode()
     }
 }
 
-ConceptIdNode* AstReader::ReadConceptIdNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::conceptIdNode)
-    {
-        return static_cast<ConceptIdNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("concept id node expected");
-    }
-}
 
 ConceptNode* AstReader::ReadConceptNode()
 {

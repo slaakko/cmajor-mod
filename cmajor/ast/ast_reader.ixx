@@ -38,14 +38,14 @@ public:
     AttributeNode* ReadAttributeNode();
     AttributesNode* ReadAttributesNode();
     IdentifierNode* ReadIdentifierNode();
+    ConstraintNode* ReadConstraintNode();
+    ConceptIdNode* ReadConceptIdNode();
     /*
     LabelNode* ReadLabelNode();
     StatementNode* ReadStatementNode();
     DefaultStatementNode* ReadDefaultStatementNode();
     CompoundStatementNode* ReadCompoundStatementNode();
-    ConstraintNode* ReadConstraintNode();
     WhereConstraintNode* ReadWhereConstraintNode();
-    ConceptIdNode* ReadConceptIdNode();
     ConceptNode* ReadConceptNode();
     TemplateIdNode* ReadTemplateIdNode();
     ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
