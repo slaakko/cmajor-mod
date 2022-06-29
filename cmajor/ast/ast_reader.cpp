@@ -7,6 +7,7 @@ module cmajor.ast.reader;
 import cmajor.ast.node;
 import cmajor.ast.attribute;
 import cmajor.ast.concept_;
+import cmajor.ast.template_;
 import cmajor.ast.statement;
 import cmajor.ast.identifier;
 
@@ -170,6 +171,19 @@ ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
     }
 }
 
+TemplateIdNode* AstReader::ReadTemplateIdNode()
+{
+    Node* node = ReadNode();
+    if (node->GetNodeType() == NodeType::templateIdNode)
+    {
+        return static_cast<TemplateIdNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("template id node expected");
+    }
+}
+
 /*
 
 WhereConstraintNode* AstReader::ReadWhereConstraintNode()
@@ -199,18 +213,6 @@ ConceptNode* AstReader::ReadConceptNode()
     }
 }
 
-TemplateIdNode* AstReader::ReadTemplateIdNode()
-{
-    Node* node = ReadNode();
-    if (node->GetNodeType() == NodeType::templateIdNode)
-    {
-        return static_cast<TemplateIdNode*>(node);
-    }
-    else
-    {
-        throw std::runtime_error("template id node expected");
-    }
-}
 
 
 */

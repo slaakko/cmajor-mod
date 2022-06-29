@@ -46,10 +46,10 @@ public:
     CompoundStatementNode* ReadCompoundStatementNode();
     ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
     ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
+    TemplateIdNode* ReadTemplateIdNode();
     /*
     WhereConstraintNode* ReadWhereConstraintNode();
     ConceptNode* ReadConceptNode();
-    TemplateIdNode* ReadTemplateIdNode();
     */
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();

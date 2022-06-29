@@ -133,7 +133,7 @@ class ConstantNode;
 class EnumTypeNode;
 class EnumConstantNode;
 class ParameterNode;
-class TemplateParameterNode;
+class TemplateParameterNodeX;
 class TypedefNode;
 
 class ConstNode;
@@ -325,7 +325,7 @@ public:
     virtual void Visit(EnumTypeNode& enumTypeNode) {}
     virtual void Visit(EnumConstantNode& enumConstantNode) {}
     virtual void Visit(ParameterNode& parameterNode) {}
-    virtual void Visit(TemplateParameterNode& templateParameterNode) {}
+    virtual void Visit(TemplateParameterNodeX& templateParameterNode) {}
 
     virtual void Visit(ConstNode& constNode) {}
     virtual void Visit(LValueRefNode& lvalueRefNode) {}
