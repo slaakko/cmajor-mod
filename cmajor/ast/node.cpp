@@ -5,6 +5,8 @@
 
 module cmajor.ast.node;
 
+import cmajor.ast.template_;
+
 namespace cmajor::ast {
 
 const char* nodeTypeStr[] =
@@ -75,9 +77,13 @@ void Node::AddParameter(ParameterNode* parameter)
     throw std::runtime_error("Node::AddParameter not overridden");
 }
 
-void Node::AddTemplateParameter(TemplateParameterNode* templateParameter)
+// TODO:
+void Node::AddTemplateParameter(Node* templateParameter)
 {
-    throw std::runtime_error("Node::AddTemplateParameter not overridden");
+    if (templateParameter->nodeType == NodeType::templateParameterNode)
+    {
+        throw std::runtime_error("Node::AddTemplateParameter not overridden");
+    }
 }
 
 UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
