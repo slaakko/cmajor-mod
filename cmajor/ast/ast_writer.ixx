@@ -5,13 +5,6 @@
 // =================================
 export module cmajor.ast.writer;
 
-/*
-#include <sngcm/ast/AstApi.hpp>
-#include <sngcm/ast/Specifier.hpp>
-#include <soulng/util/BinaryWriter.hpp>
-#include <soulng/lexer/Span.hpp>
-#include <soulng/lexer/Lexer.hpp>
-*/
 import std.core;
 import util;
 import cmajor.ast.specifier;
@@ -19,8 +12,6 @@ import soul.ast.source.pos;
 import cmajor.ast.node;
 
 export namespace cmajor::ast {
-
-//class Node;
 
 class AstWriter
 {

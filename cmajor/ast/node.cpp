@@ -5,7 +5,7 @@
 
 module cmajor.ast.node;
 
-import cmajor.ast.template_;
+//import cmajor.ast.template_;
 
 namespace cmajor::ast {
 

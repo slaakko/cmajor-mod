@@ -4,13 +4,6 @@
 // =================================
 
 module cmajor.ast.concept_;
-/*
-#include <sngcm/ast/Concept.hpp>
-#include <sngcm/ast/Identifier.hpp>
-#include <sngcm/ast/Visitor.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <boost/uuid/nil_generator.hpp>
-*/
 import std.core;
 import cmajor.ast.identifier;
 import cmajor.ast.parameter;
@@ -21,8 +14,6 @@ import util.unicode;
 import util;
 
 namespace cmajor::ast {
-
-//using namespace soulng::unicode;
 
 ConstraintNode::ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {

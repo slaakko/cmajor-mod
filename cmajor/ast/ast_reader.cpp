@@ -184,7 +184,6 @@ TemplateIdNode* AstReader::ReadTemplateIdNode()
     }
 }
 
-/*
 
 WhereConstraintNode* AstReader::ReadWhereConstraintNode()
 {
@@ -213,9 +212,6 @@ ConceptNode* AstReader::ReadConceptNode()
     }
 }
 
-
-
-*/
 Specifiers AstReader::ReadSpecifiers()
 {
     return static_cast<Specifiers>(binaryStreamReader.ReadUInt());

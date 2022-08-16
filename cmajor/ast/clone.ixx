@@ -7,6 +7,7 @@ export module cmajor.ast.clone;
 
 import std.core;
 
+
 export namespace cmajor::ast {
 
 class FunctionNode;
