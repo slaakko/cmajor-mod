@@ -4,15 +4,6 @@
 // Distributed under the MIT license
 // =================================
 
-/*
-#ifndef SNGCM_AST_NODE_LIST_INCLUDED
-#define SNGCM_AST_NODE_LIST_INCLUDED
-#include <sngcm/ast/AstWriter.hpp>
-#include <sngcm/ast/AstReader.hpp>
-#include <vector>
-#include <memory>
-*/
-
 export module cmajor.ast.node.list;
 
 import std.core;

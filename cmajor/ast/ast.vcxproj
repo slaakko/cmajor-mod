@@ -161,6 +161,8 @@
     <ClCompile Include="attribute.ixx" />
     <ClCompile Include="basic_type.cpp" />
     <ClCompile Include="basic_type.ixx" />
+    <ClCompile Include="class.cpp" />
+    <ClCompile Include="class.ixx" />
     <ClCompile Include="clone.cpp" />
     <ClCompile Include="clone.ixx" />
     <ClCompile Include="comment.cpp" />
@@ -175,6 +177,7 @@
     <ClCompile Include="enumeration.ixx" />
     <ClCompile Include="expression.cpp" />
     <ClCompile Include="expression.ixx" />
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="function.ixx" />
     <ClCompile Include="global_variable.cpp" />
     <ClCompile Include="global_variable.ixx" />
@@ -186,6 +189,8 @@
     <ClCompile Include="interface.ixx" />
     <ClCompile Include="literal.cpp" />
     <ClCompile Include="literal.ixx" />
+    <ClCompile Include="namespace.cpp" />
+    <ClCompile Include="namespace.ixx" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node.ixx" />
     <ClCompile Include="node_list.cpp" />
@@ -198,6 +203,10 @@
     <ClCompile Include="statement.ixx" />
     <ClCompile Include="template.cpp" />
     <ClCompile Include="template.ixx" />
+    <ClCompile Include="typedef.cpp" />
+    <ClCompile Include="typedef.ixx" />
+    <ClCompile Include="type_expr.cpp" />
+    <ClCompile Include="type_expr.ixx" />
     <ClCompile Include="visitor.cpp" />
     <ClCompile Include="visitor.ixx" />
   </ItemGroup>

@@ -47,10 +47,8 @@ public:
     ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
     ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
     TemplateIdNode* ReadTemplateIdNode();
-    /*
     WhereConstraintNode* ReadWhereConstraintNode();
     ConceptNode* ReadConceptNode();
-    */
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();
     //void SetModuleMaps(const boost::uuids::uuid& rootModuleId, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_); TODO
