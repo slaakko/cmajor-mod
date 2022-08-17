@@ -167,6 +167,8 @@
     <ClCompile Include="clone.ixx" />
     <ClCompile Include="comment.cpp" />
     <ClCompile Include="comment.ixx" />
+    <ClCompile Include="compile_unit.cpp" />
+    <ClCompile Include="compile_unit.ixx" />
     <ClCompile Include="concept.cpp" />
     <ClCompile Include="concept.ixx" />
     <ClCompile Include="constant.cpp" />
