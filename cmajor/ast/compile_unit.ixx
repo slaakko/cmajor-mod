@@ -6,9 +6,6 @@ export module cmajor.ast.compile.unit;
 // Distributed under the MIT license
 // =================================
 
-
-//#include <cmajor/common/Common.hpp>
-//#include <sngcm/ast/Namespace.hpp>
 import cmajor.ast.namespace_;
 import cmajor.ast.node;
 import cmajor.ast.node.list;

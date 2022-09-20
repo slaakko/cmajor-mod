@@ -2,20 +2,11 @@
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <sngcm/ast/AstWriter.hpp>
-#include <sngcm/ast/AstReader.hpp>
-#include <sngcm/ast/Node.hpp>
-#include <boost/uuid/nil_generator.hpp>
-*/
 
 module cmajor.ast.writer;
 
-//import cmajor.ast.node;
-
 namespace cmajor::ast {
 
-//AstWriter::AstWriter(const std::string& fileName_) : binaryStreamWriter(fileName_), lexers(nullptr), spanConversionModuleId(boost::uuids::nil_uuid())
     AstWriter::AstWriter(const std::string& fileName_) : fileStream(fileName_,util::OpenMode::binary| util::OpenMode::write), bufferedStream(fileStream), binaryStreamWriter(bufferedStream)
 {
 }
