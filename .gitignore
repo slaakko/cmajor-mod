@@ -75,3 +75,9 @@ cmajor/doc/compiler/reference/soulng/parser/parser.xml
 cmajor/doc/compiler/reference/soulng/util/util.xml
 cmajor/doc/compiler/reference/sxcmc/sxcmc.xml
 cmajor/doc/compiler/reference/symbols/symbols.xml
+/CppDependOut
+/DependencyGraphSnapshot.svg
+/DependencyGraphSnapshot0.svg
+/cmajor/symbols/foo.cpp
+/cmajor/symbols/foo.ixx
+/cmajor/symbols/ClassDiagram.cd
