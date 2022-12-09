@@ -10,6 +10,7 @@ import cmajor.ast.visitor;
 import cmajor.ast.namespace_;
 import cmajor.ast.class_;
 import cmajor.ast.compile.unit;
+import cmajor.ast.node;
 
 namespace cmajor::ast {
 
