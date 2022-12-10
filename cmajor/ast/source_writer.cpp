@@ -43,7 +43,7 @@ import cmajor.ast.delegate;
 import cmajor.ast.typedef_;
 import cmajor.ast.constant;
 import cmajor.ast.enumeration;
-import cmajor.ast.type_expr;
+import cmajor.ast.type.expr;
 import cmajor.ast.expression;
 import cmajor.ast.global.variable;
 import cmajor.ast.comment;

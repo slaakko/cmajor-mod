@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.ast.type_expr;
+module cmajor.ast.type.expr;
 
 import cmajor.ast.visitor;
 import cmajor.ast.writer;

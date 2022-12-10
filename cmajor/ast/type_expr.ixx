@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.ast.type_expr;
+export module cmajor.ast.type.expr;
 
 import cmajor.ast.node;
 
