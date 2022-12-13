@@ -7,20 +7,6 @@ export module cmajor.symbols.basic.type.operation;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/BasicTypeSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/Value.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <cmajor/ir/cmajor::ir::Emitter.hpp>
-*/
-
 import cmajor.symbols.value;
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.basic.type.symbol;

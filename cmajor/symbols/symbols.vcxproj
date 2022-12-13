@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="array_type_symbol.ixx" />
+    <ClCompile Include="basic_type_operation.cpp" />
     <ClCompile Include="basic_type_operation.ixx" />
     <ClCompile Include="basic_type_symbol.ixx" />
     <ClCompile Include="class_template_specialization_symbol.ixx" />
@@ -165,6 +166,7 @@
     <ClCompile Include="derived_type_symbol.ixx" />
     <ClCompile Include="edit_module_cache.ixx" />
     <ClCompile Include="enum_symbol.ixx" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
     <ClCompile Include="exception.ixx" />
     <ClCompile Include="function_index.ixx" />
