@@ -155,6 +155,7 @@
     <ClCompile Include="array_type_symbol.ixx" />
     <ClCompile Include="basic_type_operation.ixx" />
     <ClCompile Include="basic_type_symbol.ixx" />
+    <ClCompile Include="class_template_specialization_symbol.ixx" />
     <ClCompile Include="class_type_symbol.ixx" />
     <ClCompile Include="concept_symbol.ixx" />
     <ClCompile Include="constant_symbol.ixx" />
@@ -190,6 +191,9 @@
     <ClCompile Include="symbol_table.ixx" />
     <ClCompile Include="symbol_writer.cpp" />
     <ClCompile Include="symbol_writer.ixx" />
+    <ClCompile Include="template_symbol.ixx" />
+    <ClCompile Include="trace.ixx" />
+    <ClCompile Include="trap.ixx" />
     <ClCompile Include="typedef_symbol.ixx" />
     <ClCompile Include="type_index.ixx" />
     <ClCompile Include="type_map.cpp" />
