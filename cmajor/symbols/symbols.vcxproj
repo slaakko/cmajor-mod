@@ -168,6 +168,7 @@
     <ClCompile Include="enum_symbol.ixx" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
+    <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.ixx" />
     <ClCompile Include="function_index.ixx" />
     <ClCompile Include="function_symbol.ixx" />
