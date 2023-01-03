@@ -7,15 +7,6 @@ export module cmajor.symbols.function.symbol;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/Meta.hpp>
-#include <sngcm/ast/Function.hpp>
-#include <cmajor/ir/cmajor::ir::GenObject.hpp>
-#include <unordered_set>
-*/
-
 import cmajor.ast.function;
 import cmajor.ast.concept_;
 import cmajor.ast.specifier;
@@ -24,7 +15,7 @@ import cmajor.ast.node.list;
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.symbol;
 import cmajor.symbols.container.symbol;
-//import cmajor.symbols.meta;
+import cmajor.symbols.meta;
 import soul.ast.source.pos;
 import soul.xml.element;
 import cmajor.ir.emitter;
@@ -37,7 +28,6 @@ export namespace cmajor::symbols {
 
 using namespace cmajor::ir;
 class Value;
-class IntrinsicFunction;
 class FunctionSymbol;
 
 struct FunctionSymbolsEqual
@@ -148,7 +138,6 @@ std::string FunctionSymbolFlagStr(FunctionSymbolFlags flags);
 
 class ParameterSymbol;
 class LocalVariableSymbol;
-//class TypeSymbol;
 class TemplateParameterSymbol;
 class BoundTemplateParameterSymbol;
 
@@ -285,8 +274,8 @@ public:
     void SetImtIndex(int32_t imtIndex_) { imtIndex = imtIndex_; }
     FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
     void SetFunctionGroup(FunctionGroupSymbol* functionGroup_) { functionGroup = functionGroup_; }
-    IntrinsicFunction* GetIntrinsic() { /* TODO return intrinsic.get(); */ return 0; }
-    void SetIntrinsic(IntrinsicFunction* intrinsic_) { /* TODO intrinsic.reset(intrinsic_); */ }
+    IntrinsicFunction* GetIntrinsic() {  return intrinsic.get();  }
+    void SetIntrinsic(IntrinsicFunction* intrinsic_) { intrinsic.reset(intrinsic_);  }
     bool IsProgramMain() const { return isProgramMain; }
     void SetProgramMain() { isProgramMain = true; }
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
