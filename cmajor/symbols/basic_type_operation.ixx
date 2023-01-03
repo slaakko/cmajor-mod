@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.basic.type.operation;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -23,10 +20,6 @@ import util;
 import std.core;
 
 export namespace cmajor::symbols {
-
-//class TypeSymbol;
-
-       // using namespace soulng::unicode;
 
 struct BasicTypeNot
 {

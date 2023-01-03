@@ -8,11 +8,6 @@ export module cmajor.symbols.symbol.reader;
 import cmajor.ast.reader;
 import util.binary.stream.reader;
 import std.core;
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <sngcm/ast/AstReader.hpp>
-#include <vector>
-*/
 
 export namespace cmajor::symbols {
 

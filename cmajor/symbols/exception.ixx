@@ -9,9 +9,6 @@ import std.core;
 import soul.ast.source.pos;
 import soul.xml.dom;
 import util;
-/*
-#include <sngxml/dom/Element.hpp>
-*/
 
 export namespace cmajor::symbols {
 

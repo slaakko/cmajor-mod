@@ -4,28 +4,6 @@ export module cmajor.symbols.symbol.table;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/NamespaceSymbol.hpp>
-#include <cmajor/symbols/DerivedTypeSymbol.hpp>
-#include <cmajor/symbols/ClassTemplateSpecializationSymbol.hpp>
-#include <cmajor/symbols/ArrayTypeSymbol.hpp>
-#include <cmajor/symbols/ConversionTable.hpp>
-#include <sngxml/dom/Document.hpp>
-#include <sngcm/ast/Namespace.hpp>
-#include <sngcm/ast/Function.hpp>
-#include <sngcm/ast/Class.hpp>
-#include <sngcm/ast/Interface.hpp>
-#include <sngcm/ast/Delegate.hpp>
-#include <sngcm/ast/Typedef.hpp>
-#include <sngcm/ast/Constant.hpp>
-#include <sngcm/ast/GlobalVariable.hpp>
-#include <sngcm/ast/Enumeration.hpp>
-#include <boost/functional/hash.hpp>
-#include <stack>
-*/
-
-//import cmajor.symbols.namespace_.symbol;
-//import cmajor.symbols.symbol;
 import cmajor.symbols.derived.type.symbol;
 import cmajor.symbols.namespace_.symbol;
 import cmajor.symbols.conversion.table;
@@ -40,17 +18,13 @@ import util.uuid;
 
 export namespace cmajor::symbols {
 
-//class Symbol;
 class Module;
 class FunctionSymbol;
-//class TypeSymbol;
 class ClassTypeSymbol;
 class ConceptSymbol;
-//class ContainerSymbol;
 class TypedefSymbol;
 class ConstantSymbol;
 class ArrayTypeSymbol;
-//class DerivedTypeSymbol;
 class ClassTemplateSpecializationSymbol;
 class GlobalVariableSymbol;
 

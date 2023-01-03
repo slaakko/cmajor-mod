@@ -5,12 +5,6 @@
 
 export module cmajor.symbols.class_.type.symbol;
 
-/*
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <sngcm/ast/Class.hpp>
-#include <sngcm/ast/Constant.hpp>
-*/
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.scope;
 import soul.ast.source.pos;
@@ -35,7 +29,6 @@ class ConstructorSymbol;
 class DestructorSymbol;
 class MemberFunctionSymbol;
 class ClassTemplateSpecializationSymbol;
-//class ContainerScope;
 
 class ClassGroupTypeSymbol : public TypeSymbol
 {

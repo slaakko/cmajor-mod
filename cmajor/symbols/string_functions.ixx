@@ -5,8 +5,6 @@ export module cmajor.symbols.string.functions;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/TypeSymbol.hpp>
-//#include <cmajor/symbols/FunctionSymbol.hpp>
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;
 import cmajor.ir.emitter;

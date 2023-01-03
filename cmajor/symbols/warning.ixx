@@ -5,12 +5,6 @@ export module cmajor.symbols.warning;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <soulng/util/Json.hpp>
-#include <soulng/lexer/soul::ast::SourcePos.hpp>
-#include <boost/uuid/uuid.hpp>
-*/
 import soul.ast.source.pos;
 import std.core;
 import util.uuid;

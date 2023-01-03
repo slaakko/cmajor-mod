@@ -5,17 +5,12 @@ export module cmajor.symbols.edit.module_.cache;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Module.hpp>
-//#include <sngcm/ast/Project.hpp>
-
-//import cmajor.symbols.module_;
 import cmajor.ast.project;
 import std.core;
 
 export namespace cmajor::symbols {
 
 class Module;
-//using ReadProjectFunc = std::unique_ptr<sngcm::ast::Project>(*)(const std::string&);
     using ReadProjectFunc = std::unique_ptr<cmajor::ast::Project>(*)(const std::string&);
 
 void SetReadProjectFunction(ReadProjectFunc readProjectFunc);

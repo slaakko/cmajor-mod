@@ -4,8 +4,6 @@ export module cmajor.symbols.basic.type.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/TypeSymbol.hpp>
-
 import cmajor.symbols.type.symbol;
 import soul.ast.source.pos;
 import util.code.formatter;

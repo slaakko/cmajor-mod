@@ -4,25 +4,12 @@
 // =================================
 module cmajor.symbols.exception;
 
-/*
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <sngxml/dom/CharacterData.hpp>
-#include <soulng/util/MappedInputFile.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <algorithm>
-*/
 import cmajor.symbols.module_.cache;
 import cmajor.symbols.module_;
 
 import std.core;
 
 namespace cmajor::symbols {
-
-        //using namespace soulng::util;
-        //using namespace soulng::unicode;
 
 std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {

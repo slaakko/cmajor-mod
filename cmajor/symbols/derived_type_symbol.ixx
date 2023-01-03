@@ -4,8 +4,6 @@ export module cmajor.symbols.derived.type.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/TypeSymbol.hpp>
-
 import cmajor.symbols.type.symbol;
 import std.core;
 

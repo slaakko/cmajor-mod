@@ -6,11 +6,6 @@
 module cmajor.symbols.type.map;
 
 import util;
-/*
-#include <cmajor/symbols/TypeMap.hpp>
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <soulng/util/Unicode.hpp>
-*/
 
 namespace cmajor::symbols {
 

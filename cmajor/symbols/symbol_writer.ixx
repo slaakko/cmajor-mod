@@ -18,7 +18,6 @@ class SymbolWriter
 public:
     SymbolWriter(const std::string& fileName_);
     cmajor::ast::AstWriter& GetAstWriter() { return astWriter; }
-    //BinaryWriter& GetBinaryWriter() { return astWriter.GetBinaryWriter(); }
     util::BinaryStreamWriter& GetBinaryStreamWriter() { return astWriter.GetBinaryStreamWriter(); }
     void Write(Symbol* symbol);
     //void SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_); TODO

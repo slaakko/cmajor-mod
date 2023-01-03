@@ -7,11 +7,7 @@ module cmajor.symbols.symbol.writer;
 
 import std.core;
 import cmajor.symbols.symbol;
-/*
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <cmajor/symbols/Symbol.hpp>
-*/
+
 namespace cmajor::symbols {
 
 SymbolWriter::SymbolWriter(const std::string& fileName_) : astWriter(fileName_), spanConversionModuleId(util::nil_uuid())//, lexers(nullptr) TODO

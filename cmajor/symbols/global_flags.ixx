@@ -4,13 +4,6 @@ export module cmajor.symbols.global.flags;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <string>
-#include <vector>
-#include <stdint.h>
-#include <set>
-*/
 import std.core;
 
 export namespace cmajor::symbols {

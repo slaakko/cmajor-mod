@@ -4,7 +4,6 @@ module cmajor.symbols.operation;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Operation.hpp>
 import cmajor.symbols.function.symbol;
 import std.core;
 

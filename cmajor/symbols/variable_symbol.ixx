@@ -5,12 +5,6 @@ export module cmajor.symbols.variable.symbol;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/Value.hpp>
-#include <cmajor/symbols/TypeMap.hpp>
-#include <cmajor/ir/Emitter.hpp>
-*/
-
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import soul.ast.source.pos;
@@ -22,7 +16,6 @@ import std.core;
 
 export namespace cmajor::symbols
 {
-//        using namespace cmajor::ir;
 
 class VariableSymbol : public Symbol
 {

@@ -5,8 +5,6 @@ export module cmajor.symbols.operation;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/FunctionSymbol.hpp>
-//import cmajor.symbols.function.symbol;
 import std.core;
 
 export namespace cmajor::symbols {

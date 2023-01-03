@@ -152,10 +152,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="array_type_symbol.cpp" />
     <ClCompile Include="array_type_symbol.ixx" />
     <ClCompile Include="basic_type_operation.cpp" />
     <ClCompile Include="basic_type_operation.ixx" />
+    <ClCompile Include="basic_type_symbol.cpp" />
     <ClCompile Include="basic_type_symbol.ixx" />
+    <ClCompile Include="class_template_specialization_symbol.cpp" />
     <ClCompile Include="class_template_specialization_symbol.ixx" />
     <ClCompile Include="class_type_symbol.ixx" />
     <ClCompile Include="concept_symbol.ixx" />

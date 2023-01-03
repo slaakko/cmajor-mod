@@ -4,14 +4,10 @@ export module cmajor.symbols.keyword.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Symbol.hpp>
-//#include <sngcm/cmnothrowlexer/CmajorNothrowTokens.hpp>
 import cmajor.symbols.symbol;
 import std.core;
 
 export namespace cmajor::symbols {
-
-//using namespace CmajorNothrowTokens;
 
 class KeywordSymbol : public Symbol
 {

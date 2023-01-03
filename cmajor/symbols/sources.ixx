@@ -5,23 +5,12 @@
 
 export module cmajor.symbols.sources;
 
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <sngcm/ast/CompileUnit.hpp>
-#include <chrono>
-#include <memory>
-#include <map>
-#include <string>
-#include <vector>
-*/
-
 import std.core;
 import cmajor.ast.compile.unit;
 import cmajor.ast.namespace_;
 import cmajor.symbols.scope;
 
 export namespace cmajor::symbols {
-
 
 class Module;
 class Symbol;

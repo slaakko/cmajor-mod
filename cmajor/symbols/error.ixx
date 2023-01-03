@@ -4,8 +4,6 @@ export module cmajor.symbols.error;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/SymbolsApi.hpp>
-//#include <stdexcept>
 import std.core;
 
 export namespace cmajor::symbols {

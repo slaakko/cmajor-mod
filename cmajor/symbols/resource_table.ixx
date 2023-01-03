@@ -5,14 +5,6 @@ export module cmajor.symbols.resource.table;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <soulng/util/BinaryReader.hpp>
-#include <soulng/util/BinaryWriter.hpp>
-#include <soulng/util/CodeFormatter.hpp>
-#include <vector>
-#include <set>
-*/
 import util.binary.stream.reader;
 import util.binary.stream.writer;
 import util.code.formatter;
