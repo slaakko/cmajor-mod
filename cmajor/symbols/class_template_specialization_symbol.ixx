@@ -65,7 +65,7 @@ public:
     const std::vector<TypeSymbol*>& TemplateArgumentTypes() const { return templateArgumentTypes; }
     std::vector<TypeSymbol*>& TemplateArgumentTypes() { return templateArgumentTypes; }
     void SetGlobalNs(std::unique_ptr<cmajor::ast::Node>&& globalNs_);
-    Node* GlobalNs() { return globalNs.get(); }
+    cmajor::ast::Node* GlobalNs() { return globalNs.get(); }
     void SetFileScope(FileScope* fileScope_);
     FileScope* ReleaseFileScope();
     void SetPrototype() { SetFlag(ClassTemplateSpecializationFlags::prototype); }

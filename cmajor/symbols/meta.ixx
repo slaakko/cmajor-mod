@@ -6,16 +6,11 @@ export module cmajor.symbols.meta;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Value.hpp>
-//import cmajor.symbols.symbol.table;
-//import cmajor.symbols.type.symbol;
-//import cmajor.symbols.value;
 import soul.ast.source.pos;
 import std.core;
 
 export namespace cmajor::symbols {
 
-//class Module;
 class TypeSymbol;
 class Value;
 class SymbolTable;

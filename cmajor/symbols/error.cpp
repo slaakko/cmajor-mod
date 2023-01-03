@@ -1,0 +1,14 @@
+module cmajor.symbols.error;
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+//#include <cmajor/symbols/Error.hpp>
+
+namespace cmajor::symbols {
+
+	Error::Error(const std::string& message_) : std::runtime_error(message_), message(message_)
+	{
+	}
+} // namespace cmajor::symbols

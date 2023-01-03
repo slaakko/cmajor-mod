@@ -153,8 +153,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="array_type_symbol.ixx" />
+    <ClCompile Include="basic_type_operation.cpp" />
     <ClCompile Include="basic_type_operation.ixx" />
     <ClCompile Include="basic_type_symbol.ixx" />
+    <ClCompile Include="class_template_specialization_symbol.ixx" />
     <ClCompile Include="class_type_symbol.ixx" />
     <ClCompile Include="concept_symbol.ixx" />
     <ClCompile Include="constant_symbol.ixx" />
@@ -164,7 +166,9 @@
     <ClCompile Include="derived_type_symbol.ixx" />
     <ClCompile Include="edit_module_cache.ixx" />
     <ClCompile Include="enum_symbol.ixx" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="error.ixx" />
+    <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.ixx" />
     <ClCompile Include="function_index.ixx" />
     <ClCompile Include="function_symbol.ixx" />
@@ -190,6 +194,9 @@
     <ClCompile Include="symbol_table.ixx" />
     <ClCompile Include="symbol_writer.cpp" />
     <ClCompile Include="symbol_writer.ixx" />
+    <ClCompile Include="template_symbol.ixx" />
+    <ClCompile Include="trace.ixx" />
+    <ClCompile Include="trap.ixx" />
     <ClCompile Include="typedef_symbol.ixx" />
     <ClCompile Include="type_index.ixx" />
     <ClCompile Include="type_map.cpp" />
@@ -215,9 +222,6 @@
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
