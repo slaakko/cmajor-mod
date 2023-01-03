@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 module cmajor.symbols.basic.type.operation;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -13,182 +10,182 @@ import std.core;
 
 namespace cmajor ::symbols {
 
-BasicTypeUnaryPlusOperation::BasicTypeUnaryPlusOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeUnaryPlusOperation::BasicTypeUnaryPlusOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeUnaryOperation<BasicTypeUnaryPlus>(SymbolType::basicTypeUnaryPlus)
 {
 }
 
-BasicTypeIntUnaryMinusOperation::BasicTypeIntUnaryMinusOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeIntUnaryMinusOperation::BasicTypeIntUnaryMinusOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeUnaryOperation<BasicTypeIntUnaryMinus>(SymbolType::basicTypeIntUnaryMinus)
 {
 }
 
-BasicTypeFloatUnaryMinusOperation::BasicTypeFloatUnaryMinusOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatUnaryMinusOperation::BasicTypeFloatUnaryMinusOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeUnaryOperation<BasicTypeFloatUnaryMinus>(SymbolType::basicTypeFloatUnaryMinus)
 {
 }
 
-BasicTypeComplementOperation::BasicTypeComplementOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeComplementOperation::BasicTypeComplementOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeUnaryOperation<BasicTypeComplement>(SymbolType::basicTypeComplement)
 {
 }
 
-BasicTypeNotOperation::BasicTypeNotOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeNotOperation::BasicTypeNotOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeUnaryOperation<BasicTypeNot>(SymbolType::basicTypeNot)
 {
 }
 
-BasicTypeAddOperation::BasicTypeAddOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeAddOperation::BasicTypeAddOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeAdd>(SymbolType::basicTypeAdd)
 {
 }
 
-BasicTypeFAddOperation::BasicTypeFAddOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFAddOperation::BasicTypeFAddOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeFAdd>(SymbolType::basicTypeFAdd)
 {
 }
 
-BasicTypeSubOperation::BasicTypeSubOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeSubOperation::BasicTypeSubOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeSub>(SymbolType::basicTypeSub)
 {
 }
 
-BasicTypeFSubOperation::BasicTypeFSubOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFSubOperation::BasicTypeFSubOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeFSub>(SymbolType::basicTypeFSub)
 {
 }
 
-BasicTypeMulOperation::BasicTypeMulOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeMulOperation::BasicTypeMulOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeMul>(SymbolType::basicTypeMul)
 {
 }
 
-BasicTypeFMulOperation::BasicTypeFMulOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFMulOperation::BasicTypeFMulOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeFMul>(SymbolType::basicTypeFMul)
 {
 }
 
-BasicTypeSDivOperation::BasicTypeSDivOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeSDivOperation::BasicTypeSDivOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeSDiv>(SymbolType::basicTypeSDiv)
 {
 }
 
-BasicTypeUDivOperation::BasicTypeUDivOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeUDivOperation::BasicTypeUDivOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeUDiv>(SymbolType::basicTypeUDiv)
 {
 }
 
-BasicTypeFDivOperation::BasicTypeFDivOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFDivOperation::BasicTypeFDivOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeFDiv>(SymbolType::basicTypeFDiv)
 {
 }
 
-BasicTypeSRemOperation::BasicTypeSRemOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeSRemOperation::BasicTypeSRemOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeSRem>(SymbolType::basicTypeSRem)
 {
 }
 
-BasicTypeURemOperation::BasicTypeURemOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeURemOperation::BasicTypeURemOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeURem>(SymbolType::basicTypeURem)
 {
 }
 
-BasicTypeAndOperation::BasicTypeAndOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeAndOperation::BasicTypeAndOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeAnd>(SymbolType::basicTypeAnd)
 {
 }
 
-BasicTypeOrOperation::BasicTypeOrOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeOrOperation::BasicTypeOrOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeOr>(SymbolType::basicTypeOr)
 {
 }
 
-BasicTypeXorOperation::BasicTypeXorOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeXorOperation::BasicTypeXorOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeXor>(SymbolType::basicTypeXor)
 {
 }
 
-BasicTypeShlOperation::BasicTypeShlOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeShlOperation::BasicTypeShlOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeShl>(SymbolType::basicTypeShl)
 {
 }
 
-BasicTypeAShrOperation::BasicTypeAShrOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeAShrOperation::BasicTypeAShrOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeAShr>(SymbolType::basicTypeAShr)
 {
 }
 
-BasicTypeLShrOperation::BasicTypeLShrOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeLShrOperation::BasicTypeLShrOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeBinaryOperation<BasicTypeLShr>(SymbolType::basicTypeLShr)
 {
 }
 
-BasicTypeDefaultInt1Operation::BasicTypeDefaultInt1Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultInt1Operation::BasicTypeDefaultInt1Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultInt1>(SymbolType::defaultInt1)
 {
 }
 
-BasicTypeDefaultSInt8Operation::BasicTypeDefaultSInt8Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultSInt8Operation::BasicTypeDefaultSInt8Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultSInt8>(SymbolType::defaultSInt8)
 {
 }
 
-BasicTypeDefaultUInt8Operation::BasicTypeDefaultUInt8Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultUInt8Operation::BasicTypeDefaultUInt8Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultUInt8>(SymbolType::defaultUInt8)
 {
 }
 
-BasicTypeDefaultSInt16Operation::BasicTypeDefaultSInt16Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultSInt16Operation::BasicTypeDefaultSInt16Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultSInt16>(SymbolType::defaultSInt16)
 {
 }
 
-BasicTypeDefaultUInt16Operation::BasicTypeDefaultUInt16Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultUInt16Operation::BasicTypeDefaultUInt16Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultUInt16>(SymbolType::defaultUInt16)
 {
 }
 
-BasicTypeDefaultSInt32Operation::BasicTypeDefaultSInt32Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultSInt32Operation::BasicTypeDefaultSInt32Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultSInt32>(SymbolType::defaultSInt32)
 {
 }
 
-BasicTypeDefaultUInt32Operation::BasicTypeDefaultUInt32Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultUInt32Operation::BasicTypeDefaultUInt32Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultUInt32>(SymbolType::defaultUInt32)
 {
 }
 
-BasicTypeDefaultSInt64Operation::BasicTypeDefaultSInt64Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultSInt64Operation::BasicTypeDefaultSInt64Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultSInt64>(SymbolType::defaultSInt64)
 {
 }
 
-BasicTypeDefaultUInt64Operation::BasicTypeDefaultUInt64Operation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultUInt64Operation::BasicTypeDefaultUInt64Operation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultUInt64>(SymbolType::defaultUInt64)
 {
 }
 
-BasicTypeDefaultFloatOperation::BasicTypeDefaultFloatOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultFloatOperation::BasicTypeDefaultFloatOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultFloat>(SymbolType::defaultFloat)
 {
 }
 
-BasicTypeDefaultDoubleOperation::BasicTypeDefaultDoubleOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultDoubleOperation::BasicTypeDefaultDoubleOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultDouble>(SymbolType::defaultDouble)
 {
 }
 
-BasicTypeDefaultCharOperation::BasicTypeDefaultCharOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultCharOperation::BasicTypeDefaultCharOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultChar>(SymbolType::defaultChar)
 {
 }
 
-BasicTypeDefaultWCharOperation::BasicTypeDefaultWCharOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultWCharOperation::BasicTypeDefaultWCharOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultWChar>(SymbolType::defaultWChar)
 {
 }
 
-BasicTypeDefaultUCharOperation::BasicTypeDefaultUCharOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeDefaultUCharOperation::BasicTypeDefaultUCharOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeDefaultCtor<DefaultUChar>(SymbolType::defaultUChar)
 {
 }
@@ -211,12 +208,12 @@ BasicTypeCopyCtor::BasicTypeCopyCtor(TypeSymbol* type) : FunctionSymbol(SymbolTy
     }
 }
 
-BasicTypeCopyCtor::BasicTypeCopyCtor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeCopyCtor::BasicTypeCopyCtor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     FunctionSymbol(SymbolType::basicTypeCopyCtor, sourcePos_, sourceModuleId_, name_)
 {
 }
 
-void BasicTypeCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+void BasicTypeCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     // TODO
     //Assert(genObjects.size() == 2, "copy constructor needs two objects");
@@ -224,7 +221,7 @@ void BasicTypeCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
     genObjects[0]->Store(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
 }
 
-std::unique_ptr<Value> BasicTypeCopyCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, Value* receiver) const
+std::unique_ptr<Value> BasicTypeCopyCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const
 {
     // TODO
     //Assert(argumentValues.size() == 1, "one source value expected");
@@ -249,12 +246,12 @@ BasicTypeMoveCtor::BasicTypeMoveCtor(TypeSymbol* type) : FunctionSymbol(SymbolTy
     }
 }
 
-BasicTypeMoveCtor::BasicTypeMoveCtor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeMoveCtor::BasicTypeMoveCtor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     FunctionSymbol(SymbolType::basicTypeMoveCtor, sourcePos_, sourceModuleId_, name_)
 {
 }
 
-void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     // TODO
     //Assert(genObjects.size() == 2, "move constructor needs two objects");
@@ -264,7 +261,7 @@ void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
     genObjects[0]->Store(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
 }
 
-std::unique_ptr<Value> BasicTypeMoveCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, Value* receiver) const
+std::unique_ptr<Value> BasicTypeMoveCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const
 {
     // TODO
     //Assert(argumentValues.size() == 1, "one source value expected");
@@ -290,12 +287,12 @@ BasicTypeCopyAssignment::BasicTypeCopyAssignment(TypeSymbol* type, TypeSymbol* v
     }
 }
 
-BasicTypeCopyAssignment::BasicTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeCopyAssignment::BasicTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     FunctionSymbol(SymbolType::basicTypeCopyAssignment, sourcePos_, sourceModuleId_, name_)
 {
 }
 
-void BasicTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+void BasicTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     // TODO
     //Assert(genObjects.size() == 2, "copy assignment needs two objects");
@@ -322,12 +319,12 @@ BasicTypeMoveAssignment::BasicTypeMoveAssignment(TypeSymbol* type, TypeSymbol* v
     }
 }
 
-BasicTypeMoveAssignment::BasicTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeMoveAssignment::BasicTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     FunctionSymbol(SymbolType::basicTypeMoveAssignment, sourcePos_, sourceModuleId_, name_)
 {
 }
 
-void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     // TODO
     //Assert(genObjects.size() == 2, "move assignment needs two objects");
@@ -353,109 +350,109 @@ BasicTypeReturn::BasicTypeReturn(TypeSymbol* type) : FunctionSymbol(SymbolType::
     }
 }
 
-BasicTypeReturn::BasicTypeReturn(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeReturn::BasicTypeReturn(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     FunctionSymbol(SymbolType::basicTypeReturn, sourcePos_, sourceModuleId_, name_)
 {
 }
 
-void BasicTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+void BasicTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     // TODO
     //Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
-BasicTypeIntegerEqualityOperation::BasicTypeIntegerEqualityOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeIntegerEqualityOperation::BasicTypeIntegerEqualityOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeComparisonOperation<BasicTypeIntegerEquality>(SymbolType::basicTypeIntegerEquality)
 {
 }
 
-BasicTypeFloatingEqualityOperation::BasicTypeFloatingEqualityOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingEqualityOperation::BasicTypeFloatingEqualityOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeComparisonOperation<BasicTypeFloatingEquality>(SymbolType::basicTypeFloatingEquality)
 {
 }
 
-BasicTypeUnsignedIntegerLessThanOperation::BasicTypeUnsignedIntegerLessThanOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeUnsignedIntegerLessThanOperation::BasicTypeUnsignedIntegerLessThanOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeComparisonOperation<BasicTypeUnsignedIntegerLessThan>(SymbolType::basicTypeUnsignedIntegerLessThan)
 {
 }
 
-BasicTypeSignedIntegerLessThanOperation::BasicTypeSignedIntegerLessThanOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeSignedIntegerLessThanOperation::BasicTypeSignedIntegerLessThanOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeComparisonOperation<BasicTypeSignedIntegerLessThan>(SymbolType::basicTypeSignedIntegerLessThan)
 {
 }
 
-BasicTypeFloatingLessThanOperation::BasicTypeFloatingLessThanOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingLessThanOperation::BasicTypeFloatingLessThanOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeComparisonOperation<BasicTypeFloatingLessThan>(SymbolType::basicTypeFloatingLessThan)
 {
 }
 
-BasicTypeImplicitSignExtensionOperation::BasicTypeImplicitSignExtensionOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeImplicitSignExtensionOperation::BasicTypeImplicitSignExtensionOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeImplicitConversion<BasicTypeSignExtension>(SymbolType::basicTypeImplicitSignExtension)
 {
 }
 
-BasicTypeImplicitZeroExtensionOperation::BasicTypeImplicitZeroExtensionOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeImplicitZeroExtensionOperation::BasicTypeImplicitZeroExtensionOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeImplicitConversion<BasicTypeZeroExtension>(SymbolType::basicTypeImplicitZeroExtension)
 {
 }
 
-BasicTypeExplicitSignExtensionOperation::BasicTypeExplicitSignExtensionOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeExplicitSignExtensionOperation::BasicTypeExplicitSignExtensionOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeSignExtension>(SymbolType::basicTypeExplicitSignExtension)
 {
 }
 
-BasicTypeExplicitZeroExtensionOperation::BasicTypeExplicitZeroExtensionOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeExplicitZeroExtensionOperation::BasicTypeExplicitZeroExtensionOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeZeroExtension>(SymbolType::basicTypeExplicitZeroExtension)
 {
 }
 
-BasicTypeTruncationOperation::BasicTypeTruncationOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeTruncationOperation::BasicTypeTruncationOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeTruncation>(SymbolType::basicTypeTruncation)
 {
 }
 
-BasicTypeBitCastOperation::BasicTypeBitCastOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeBitCastOperation::BasicTypeBitCastOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeBitCast>(SymbolType::basicTypeBitCast)
 {
 }
 
-BasicTypeImplicitUnsignedIntToFloatingOperation::BasicTypeImplicitUnsignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeImplicitUnsignedIntToFloatingOperation::BasicTypeImplicitUnsignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeImplicitConversion<BasicTypeUnsignedIntToFloating>(SymbolType::basicTypeImplicitUnsignedIntToFloating)
 {
 }
 
-BasicTypeImplicitSignedIntToFloatingOperation::BasicTypeImplicitSignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeImplicitSignedIntToFloatingOperation::BasicTypeImplicitSignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeImplicitConversion<BasicTypeSignedIntToFloating>(SymbolType::basicTypeImplicitSignedIntToFloating)
 {
 }
 
-BasicTypeExplicitUnsignedIntToFloatingOperation::BasicTypeExplicitUnsignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeExplicitUnsignedIntToFloatingOperation::BasicTypeExplicitUnsignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeUnsignedIntToFloating>(SymbolType::basicTypeExplicitUnsignedIntToFloating)
 {
 }
 
-BasicTypeExplicitSignedIntToFloatingOperation::BasicTypeExplicitSignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeExplicitSignedIntToFloatingOperation::BasicTypeExplicitSignedIntToFloatingOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeSignedIntToFloating>(SymbolType::basicTypeExplicitSignedIntToFloating)
 {
 }
 
-BasicTypeFloatingToUnsignedIntOperation::BasicTypeFloatingToUnsignedIntOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingToUnsignedIntOperation::BasicTypeFloatingToUnsignedIntOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeFloatingToUnsignedInt>(SymbolType::basicTypeFloatingToUnsignedInt)
 {
 }
 
-BasicTypeFloatingToSignedIntOperation::BasicTypeFloatingToSignedIntOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingToSignedIntOperation::BasicTypeFloatingToSignedIntOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeFloatingToSignedInt>(SymbolType::basicTypeFloatingToSignedInt)
 {
 }
 
-BasicTypeFloatingExtensionOperation::BasicTypeFloatingExtensionOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingExtensionOperation::BasicTypeFloatingExtensionOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeImplicitConversion<BasicTypeFloatingExtension>(SymbolType::basicTypeFloatingExtension)
 {
 }
 
-BasicTypeFloatingTruncationOperation::BasicTypeFloatingTruncationOperation(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
+BasicTypeFloatingTruncationOperation::BasicTypeFloatingTruncationOperation(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     BasicTypeExplicitConversion<BasicTypeFloatingTruncation>(SymbolType::basicTypeFloatingTruncation)
 {
 }

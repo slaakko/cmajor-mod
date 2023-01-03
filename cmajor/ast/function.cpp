@@ -20,17 +20,17 @@ import cmajor.ast.statement;
 
 namespace cmajor::ast {
 
-FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::functionNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
+FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::functionNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
     parameters(), body(), bodySource(), programMain(false)
 {
 }
 
-FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
+FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
     parameters(), body(), bodySource(), programMain(false)
 {
 }
 
-FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
+FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
     Node(NodeType::functionNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), bodySource(), attributes(attributes_), programMain(false)
 {
     if (returnTypeExpr)
@@ -39,7 +39,7 @@ FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::
     }
 }
 
-FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
+FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
     Node(nodeType_, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), bodySource(), attributes(attributes_), programMain(false)
 {
     if (returnTypeExpr)
@@ -279,7 +279,7 @@ void FunctionNode::SetBodySource(CompoundStatementNode* bodySource_)
     bodySource->SetParent(this);
 }
 
-FunctionPtrNode::FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::functionPtrNode, sourcePos_, moduleId_), boundExpression(nullptr)
+FunctionPtrNode::FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::functionPtrNode, sourcePos_, moduleId_), boundExpression(nullptr)
 {
 }
 

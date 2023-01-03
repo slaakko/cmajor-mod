@@ -13,7 +13,7 @@ export namespace cmajor::symbols {
 class NamespaceSymbol : public ContainerSymbol
 {
 public:
-    NamespaceSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    NamespaceSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "namespace"; }
     std::u32string Id() const override { return U"ns_" + FullName(); }
     bool IsParentSymbol() const override { return true; }

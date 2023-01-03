@@ -11,12 +11,12 @@ import cmajor.ast.attribute;
 
 namespace cmajor::ast {
 
-InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     Node(NodeType::interfaceNode, sourcePos_, moduleId_), specifiers(), id(), members()
 {
 }
 
-InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
     Node(NodeType::interfaceNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), members(), attributes(attributes_)
 {
     id->SetParent(this);

@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.warning;
 
 // =================================
@@ -16,6 +13,7 @@ export module cmajor.symbols.warning;
 */
 import soul.ast.source.pos;
 import std.core;
+import util.uuid;
 
 export namespace cmajor::symbols {
 
@@ -28,16 +26,16 @@ public:
     const std::u32string& Project() const { return project; }
     const std::string& Message() const { return message; }
     const soul::ast::SourcePos& Defined() const { return defined; }
-    void SetDefined(const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) { defined = defined_; definedModuleId = definedModuleId_; }
-    const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& References() const { return references; }
-    void SetReferences(const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_);
+    void SetDefined(const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) { defined = defined_; definedModuleId = definedModuleId_; }
+    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& References() const { return references; }
+    void SetReferences(const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_);
     //std::unique_ptr<JsonValue> ToJson() const;
 private:
     std::u32string project;
     std::string message;
     soul::ast::SourcePos defined;
-    boost::uuids::uuid definedModuleId;
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> references;
+    util::uuid definedModuleId;
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
 };
 
 class CompileWarningCollection

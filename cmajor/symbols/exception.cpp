@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 // =================================
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
@@ -26,35 +24,35 @@ namespace cmajor::symbols {
         //using namespace soulng::util;
         //using namespace soulng::unicode;
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId)
+std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> references;
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
     return Expand(errorMessage, sourcePos, moduleId, references);
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const boost::uuids::uuid& primaryModuleId,
-    const soul::ast::SourcePos& referenceSourcePos, const boost::uuids::uuid& referenceModuleId)
+std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const util::uuid& primaryModuleId,
+    const soul::ast::SourcePos& referenceSourcePos, const util::uuid& referenceModuleId)
 {
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
     return Expand(errorMessage, primarySourcePos, primaryModuleId, references, "Error");
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const boost::uuids::uuid& primaryModuleId,
-    const soul::ast::SourcePos& referenceSourcePos, const boost::uuids::uuid& referenceModuleId, const std::string& title)
+std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const util::uuid& primaryModuleId,
+    const soul::ast::SourcePos& referenceSourcePos, const util::uuid& referenceModuleId, const std::string& title)
 {
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
     return Expand(errorMessage, primarySourcePos, primaryModuleId, references, title);
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references)
+std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references)
 {
     return Expand(errorMessage, sourcePos, moduleId, references, "Error");
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references,
+std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references,
     const std::string& title)
 {
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> referenceSourcePoss = references;
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> referenceSourcePoss = references;
     referenceSourcePoss.erase(std::unique(referenceSourcePoss.begin(), referenceSourcePoss.end()), referenceSourcePoss.end());
     std::string expandedMessage = title + ": " + errorMessage;
     if (sourcePos.IsValid())
@@ -70,7 +68,7 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
             }
         }
     }
-    for (const std::pair<soul::ast::SourcePos, boost::uuids::uuid>& referenceSourcePos : referenceSourcePoss)
+    for (const std::pair<soul::ast::SourcePos, util::uuid>& referenceSourcePos : referenceSourcePoss)
     {
         if (!referenceSourcePos.first.IsValid()) continue;
         if (referenceSourcePos.first == sourcePos && referenceSourcePos.second == moduleId) continue;
@@ -147,18 +145,18 @@ std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const
     return sourcePosElement;
 }
 */
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) :
+Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
     what(Expand(message_, defined_, definedModuleId_)), message(message_), defined(defined_), definedModuleId(definedModuleId_)
 {
 }
 
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_, const soul::ast::SourcePos& referenced_, const boost::uuids::uuid& referencedModuleId_) :
+Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_, const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
     what(Expand(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)), message(message_), defined(defined_), definedModuleId(definedModuleId_)
 {
     references.push_back(std::make_pair(referenced_, referencedModuleId_));
 }
 
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_, const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_) :
+Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
     what(Expand(message_, defined_, definedModuleId_, references_)), message(message_), defined(defined_), definedModuleId(definedModuleId_), references(references_)
 {
 }
@@ -181,9 +179,9 @@ std::unique_ptr<util::JsonValue> Exception::ToJson() const
     {
         refs->AddItem(std::move(ref));
     }
-    std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>> referenceSourcePoss = references;
+    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> referenceSourcePoss = references;
     referenceSourcePoss.erase(std::unique(referenceSourcePoss.begin(), referenceSourcePoss.end()), referenceSourcePoss.end());
-    for (const std::pair<soul::ast::SourcePos, boost::uuids::uuid>& referenceSourcePosModuleId : referenceSourcePoss)
+    for (const std::pair<soul::ast::SourcePos, util::uuid>& referenceSourcePosModuleId : referenceSourcePoss)
     {
         if (!referenceSourcePosModuleId.first.Valid()) continue;
         if (referenceSourcePosModuleId.first == defined && referenceSourcePosModuleId.second == definedModuleId) continue;
@@ -221,7 +219,7 @@ void Exception::AddToDiagnosticsElement(soul::xml::Element* diagnosticsElement) 
         diagnosticElement->AppendChild(std::unique_ptr<soul::xml::Node>(sourcePosElement.release()));
     }
     diagnosticsElement->AppendChild(std::unique_ptr<soul::xml::Node>(diagnosticElement.release()));
-    for (const std::pair<soul::ast::SourcePos, boost::uuids::uuid>& sourcePosModuleId : references)
+    for (const std::pair<soul::ast::SourcePos, util::uuid>& sourcePosModuleId : references)
     {
         if (!sourcePosModuleId.first.Valid()) continue;
         Module* mod = cmajor::symbols::GetModuleById(sourcePosModuleId.second);
@@ -248,72 +246,72 @@ ModuleImmutableException::ModuleImmutableException(Module* module_, Module* immu
 {
 }
 
-SymbolCheckException::SymbolCheckException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& moduleId_) : Exception(message_, defined_, moduleId_)
+SymbolCheckException::SymbolCheckException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& moduleId_) : Exception(message_, defined_, moduleId_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) : Exception(message_, defined_, definedModuleId_)
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) : Exception(message_, defined_, definedModuleId_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const boost::uuids::uuid& referencedModuleId_) :
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
     Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_) : Exception(message_, defined_, definedModuleId_, references_)
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) : Exception(message_, defined_, definedModuleId_, references_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) :
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
     Exception(message_, defined_, definedModuleId_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const boost::uuids::uuid& referencedModuleId_) :
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
     Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_) :
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
     Exception(message_, defined_, definedModuleId_, references_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) :
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
     Exception(message_, defined_, definedModuleId_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const boost::uuids::uuid& referencedModuleId_) :
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
     Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_) :
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
     Exception(message_, defined_, definedModuleId_, references_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_) :
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
     Exception(message_, defined_, definedModuleId_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const boost::uuids::uuid& referencedModuleId_) :
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
     Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const boost::uuids::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, boost::uuids::uuid>>& references_) :
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
+    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
     Exception(message_, defined_, definedModuleId_, references_)
 {
 }

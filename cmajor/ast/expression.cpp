@@ -14,11 +14,11 @@ import util;
 
 namespace cmajor::ast {
 
-DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::dotNode, sourcePos_, moduleId_), memberId()
+DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::dotNode, sourcePos_, moduleId_), memberId()
 {
 }
 
-DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) : UnaryNode(NodeType::dotNode, sourcePos_, moduleId_, subject_), memberId(memberId_)
+DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) : UnaryNode(NodeType::dotNode, sourcePos_, moduleId_, subject_), memberId(memberId_)
 {
     memberId->SetParent(this);
 }
@@ -52,11 +52,11 @@ std::string DotNode::ToString() const
     return Subject()->ToString() + "." + memberId->ToString();
 }
 
-ArrowNode::ArrowNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::arrowNode, sourcePos_, moduleId_), memberId()
+ArrowNode::ArrowNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::arrowNode, sourcePos_, moduleId_), memberId()
 {
 }
 
-ArrowNode::ArrowNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) :
+ArrowNode::ArrowNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) :
     UnaryNode(NodeType::arrowNode, sourcePos_, moduleId_, subject_), memberId(memberId_)
 {
     memberId->SetParent(this);
@@ -91,11 +91,11 @@ std::string ArrowNode::ToString() const
     return Subject()->ToString() + "->" + memberId->ToString();
 }
 
-EquivalenceNode::EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::equivalenceNode, sourcePos_, moduleId_)
+EquivalenceNode::EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::equivalenceNode, sourcePos_, moduleId_)
 {
 }
 
-EquivalenceNode::EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+EquivalenceNode::EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::equivalenceNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -116,11 +116,11 @@ std::string EquivalenceNode::ToString() const
     return Left()->ToString() + "<=>" + Right()->ToString();
 }
 
-ImplicationNode::ImplicationNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::implicationNode, sourcePos_, moduleId_)
+ImplicationNode::ImplicationNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::implicationNode, sourcePos_, moduleId_)
 {
 }
 
-ImplicationNode::ImplicationNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+ImplicationNode::ImplicationNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::implicationNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -141,11 +141,11 @@ std::string ImplicationNode::ToString() const
     return Left()->ToString() + "=>" + Right()->ToString();
 }
 
-DisjunctionNode::DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::disjunctionNode, sourcePos_, moduleId_)
+DisjunctionNode::DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::disjunctionNode, sourcePos_, moduleId_)
 {
 }
 
-DisjunctionNode::DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+DisjunctionNode::DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::disjunctionNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -166,11 +166,11 @@ std::string DisjunctionNode::ToString() const
     return Left()->ToString() + " || " + Right()->ToString();
 }
 
-ConjunctionNode::ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::conjunctionNode, sourcePos_, moduleId_)
+ConjunctionNode::ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::conjunctionNode, sourcePos_, moduleId_)
 {
 }
 
-ConjunctionNode::ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+ConjunctionNode::ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::conjunctionNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -191,11 +191,11 @@ std::string ConjunctionNode::ToString() const
     return Left()->ToString() + " && " + Right()->ToString();
 }
 
-BitOrNode::BitOrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::bitOrNode, sourcePos_, moduleId_)
+BitOrNode::BitOrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::bitOrNode, sourcePos_, moduleId_)
 {
 }
 
-BitOrNode::BitOrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::bitOrNode, sourcePos_, moduleId_, left_, right_)
+BitOrNode::BitOrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::bitOrNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -215,11 +215,11 @@ std::string BitOrNode::ToString() const
     return Left()->ToString() + " | " + Right()->ToString();
 }
 
-BitXorNode::BitXorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::bitXorNode, sourcePos_, moduleId_)
+BitXorNode::BitXorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::bitXorNode, sourcePos_, moduleId_)
 {
 }
 
-BitXorNode::BitXorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+BitXorNode::BitXorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::bitXorNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -240,11 +240,11 @@ std::string BitXorNode::ToString() const
     return Left()->ToString() + " ^ " + Right()->ToString();
 }
 
-BitAndNode::BitAndNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::bitAndNode, sourcePos_, moduleId_)
+BitAndNode::BitAndNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::bitAndNode, sourcePos_, moduleId_)
 {
 }
 
-BitAndNode::BitAndNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+BitAndNode::BitAndNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::bitAndNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -265,11 +265,11 @@ std::string BitAndNode::ToString() const
     return Left()->ToString() + " & " + Right()->ToString();
 }
 
-EqualNode::EqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::equalNode, sourcePos_, moduleId_)
+EqualNode::EqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::equalNode, sourcePos_, moduleId_)
 {
 }
 
-EqualNode::EqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+EqualNode::EqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::equalNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -290,11 +290,11 @@ std::string EqualNode::ToString() const
     return Left()->ToString() + " == " + Right()->ToString();
 }
 
-NotEqualNode::NotEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::notEqualNode, sourcePos_, moduleId_)
+NotEqualNode::NotEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::notEqualNode, sourcePos_, moduleId_)
 {
 }
 
-NotEqualNode::NotEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::notEqualNode, sourcePos_, moduleId_, left_, right_)
+NotEqualNode::NotEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::notEqualNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -314,11 +314,11 @@ std::string NotEqualNode::ToString() const
     return Left()->ToString() + " != " + Right()->ToString();
 }
 
-LessNode::LessNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::lessNode, sourcePos_, moduleId_)
+LessNode::LessNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::lessNode, sourcePos_, moduleId_)
 {
 }
 
-LessNode::LessNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::lessNode, sourcePos_, moduleId_, left_, right_)
+LessNode::LessNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::lessNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -338,11 +338,11 @@ std::string LessNode::ToString() const
     return Left()->ToString() + " < " + Right()->ToString();
 }
 
-GreaterNode::GreaterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::greaterNode, sourcePos_, moduleId_)
+GreaterNode::GreaterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::greaterNode, sourcePos_, moduleId_)
 {
 }
 
-GreaterNode::GreaterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::greaterNode, sourcePos_, moduleId_, left_, right_)
+GreaterNode::GreaterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::greaterNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -362,11 +362,11 @@ std::string GreaterNode::ToString() const
     return Left()->ToString() + " > " + Right()->ToString();
 }
 
-LessOrEqualNode::LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::lessOrEqualNode, sourcePos_, moduleId_)
+LessOrEqualNode::LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::lessOrEqualNode, sourcePos_, moduleId_)
 {
 }
 
-LessOrEqualNode::LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+LessOrEqualNode::LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::lessOrEqualNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -387,11 +387,11 @@ std::string LessOrEqualNode::ToString() const
     return Left()->ToString() + " <= " + Right()->ToString();
 }
 
-GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::greaterOrEqualNode, sourcePos_, moduleId_)
+GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::greaterOrEqualNode, sourcePos_, moduleId_)
 {
 }
 
-GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+GreaterOrEqualNode::GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::greaterOrEqualNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -412,11 +412,11 @@ std::string GreaterOrEqualNode::ToString() const
     return Left()->ToString() + " >= " + Right()->ToString();
 }
 
-ShiftLeftNode::ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::shiftLeftNode, sourcePos_, moduleId_)
+ShiftLeftNode::ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::shiftLeftNode, sourcePos_, moduleId_)
 {
 }
 
-ShiftLeftNode::ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+ShiftLeftNode::ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::shiftLeftNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -437,11 +437,11 @@ std::string ShiftLeftNode::ToString() const
     return Left()->ToString() + " << " + Right()->ToString();
 }
 
-ShiftRightNode::ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::shiftRightNode, sourcePos_, moduleId_)
+ShiftRightNode::ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::shiftRightNode, sourcePos_, moduleId_)
 {
 }
 
-ShiftRightNode::ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+ShiftRightNode::ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::shiftRightNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -462,11 +462,11 @@ std::string ShiftRightNode::ToString() const
     return Left()->ToString() + " >> " + Right()->ToString();
 }
 
-AddNode::AddNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::addNode, sourcePos_, moduleId_)
+AddNode::AddNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::addNode, sourcePos_, moduleId_)
 {
 }
 
-AddNode::AddNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::addNode, sourcePos_, moduleId_, left_, right_)
+AddNode::AddNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::addNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -486,11 +486,11 @@ std::string AddNode::ToString() const
     return Left()->ToString() + " + " + Right()->ToString();
 }
 
-SubNode::SubNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::subNode, sourcePos_, moduleId_)
+SubNode::SubNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::subNode, sourcePos_, moduleId_)
 {
 }
 
-SubNode::SubNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+SubNode::SubNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::subNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -511,11 +511,11 @@ std::string SubNode::ToString() const
     return Left()->ToString() + " - " + Right()->ToString();
 }
 
-MulNode::MulNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::mulNode, sourcePos_, moduleId_)
+MulNode::MulNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::mulNode, sourcePos_, moduleId_)
 {
 }
 
-MulNode::MulNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+MulNode::MulNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::mulNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -536,11 +536,11 @@ std::string MulNode::ToString() const
     return Left()->ToString() + " * " + Right()->ToString();
 }
 
-DivNode::DivNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::divNode, sourcePos_, moduleId_)
+DivNode::DivNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::divNode, sourcePos_, moduleId_)
 {
 }
 
-DivNode::DivNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) :
+DivNode::DivNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) :
     BinaryNode(NodeType::divNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -561,11 +561,11 @@ std::string DivNode::ToString() const
     return Left()->ToString() + " / " + Right()->ToString();
 }
 
-RemNode::RemNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryNode(NodeType::remNode, sourcePos_, moduleId_)
+RemNode::RemNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryNode(NodeType::remNode, sourcePos_, moduleId_)
 {
 }
 
-RemNode::RemNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::remNode, sourcePos_, moduleId_, left_, right_)
+RemNode::RemNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : BinaryNode(NodeType::remNode, sourcePos_, moduleId_, left_, right_)
 {
 }
 
@@ -585,11 +585,11 @@ std::string RemNode::ToString() const
     return Left()->ToString() + " % " + Right()->ToString();
 }
 
-NotNode::NotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::notNode, sourcePos_, moduleId_)
+NotNode::NotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::notNode, sourcePos_, moduleId_)
 {
 }
 
-NotNode::NotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::notNode, sourcePos_, moduleId_, subject_)
+NotNode::NotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::notNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -609,11 +609,11 @@ std::string NotNode::ToString() const
     return "!" + Subject()->ToString();
 }
 
-UnaryPlusNode::UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::unaryPlusNode, sourcePos_, moduleId_)
+UnaryPlusNode::UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::unaryPlusNode, sourcePos_, moduleId_)
 {
 }
 
-UnaryPlusNode::UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::unaryPlusNode, sourcePos_, moduleId_, subject_)
+UnaryPlusNode::UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::unaryPlusNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -633,11 +633,11 @@ std::string UnaryPlusNode::ToString() const
     return "+" + Subject()->ToString();
 }
 
-UnaryMinusNode::UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::unaryMinusNode, sourcePos_, moduleId_)
+UnaryMinusNode::UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::unaryMinusNode, sourcePos_, moduleId_)
 {
 }
 
-UnaryMinusNode::UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::unaryMinusNode, sourcePos_, moduleId_, subject_)
+UnaryMinusNode::UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::unaryMinusNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -657,11 +657,11 @@ std::string UnaryMinusNode::ToString() const
     return "-" + Subject()->ToString();
 }
 
-PrefixIncrementNode::PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::prefixIncrementNode, sourcePos_, moduleId_)
+PrefixIncrementNode::PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::prefixIncrementNode, sourcePos_, moduleId_)
 {
 }
 
-PrefixIncrementNode::PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+PrefixIncrementNode::PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     UnaryNode(NodeType::prefixIncrementNode, sourcePos_, moduleId_, subject_)
 {
 }
@@ -682,11 +682,11 @@ std::string PrefixIncrementNode::ToString() const
     return "++" + Subject()->ToString();
 }
 
-PrefixDecrementNode::PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::prefixDecrementNode, sourcePos_, moduleId_)
+PrefixDecrementNode::PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::prefixDecrementNode, sourcePos_, moduleId_)
 {
 }
 
-PrefixDecrementNode::PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+PrefixDecrementNode::PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     UnaryNode(NodeType::prefixDecrementNode, sourcePos_, moduleId_, subject_)
 {
 }
@@ -707,11 +707,11 @@ std::string PrefixDecrementNode::ToString() const
     return "--" + Subject()->ToString();
 }
 
-ComplementNode::ComplementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::complementNode, sourcePos_, moduleId_)
+ComplementNode::ComplementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::complementNode, sourcePos_, moduleId_)
 {
 }
 
-ComplementNode::ComplementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::complementNode, sourcePos_, moduleId_, subject_)
+ComplementNode::ComplementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::complementNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -731,11 +731,11 @@ std::string ComplementNode::ToString() const
     return "~" + Subject()->ToString();
 }
 
-DerefNode::DerefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::derefNode, sourcePos_, moduleId_)
+DerefNode::DerefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::derefNode, sourcePos_, moduleId_)
 {
 }
 
-DerefNode::DerefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::derefNode, sourcePos_, moduleId_, subject_)
+DerefNode::DerefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::derefNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -755,11 +755,11 @@ std::string DerefNode::ToString() const
     return "*" + Subject()->ToString();
 }
 
-AddrOfNode::AddrOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::addrOfNode, sourcePos_, moduleId_)
+AddrOfNode::AddrOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::addrOfNode, sourcePos_, moduleId_)
 {
 }
 
-AddrOfNode::AddrOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+AddrOfNode::AddrOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     UnaryNode(NodeType::addrOfNode, sourcePos_, moduleId_, subject_)
 {
 }
@@ -780,11 +780,11 @@ std::string AddrOfNode::ToString() const
     return "&" + Subject()->ToString();
 }
 
-IsNode::IsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::isNode, sourcePos_, moduleId_), expr(), targetTypeExpr()
+IsNode::IsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::isNode, sourcePos_, moduleId_), expr(), targetTypeExpr()
 {
 }
 
-IsNode::IsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_) :
+IsNode::IsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_) :
     Node(NodeType::isNode, sourcePos_, moduleId_), expr(expr_), targetTypeExpr(targetTypeExpr_)
 {
     expr->SetParent(this);
@@ -823,11 +823,11 @@ std::string IsNode::ToString() const
     return expr->ToString() + " is " + targetTypeExpr->ToString();
 }
 
-AsNode::AsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::asNode, sourcePos_, moduleId_), expr(), targetTypeExpr()
+AsNode::AsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::asNode, sourcePos_, moduleId_), expr(), targetTypeExpr()
 {
 }
 
-AsNode::AsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_) : Node(NodeType::asNode, sourcePos_, moduleId_), expr(expr_), targetTypeExpr(targetTypeExpr_)
+AsNode::AsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_) : Node(NodeType::asNode, sourcePos_, moduleId_), expr(expr_), targetTypeExpr(targetTypeExpr_)
 {
     expr->SetParent(this);
     targetTypeExpr->SetParent(this);
@@ -865,11 +865,11 @@ std::string AsNode::ToString() const
     return expr->ToString() + " as " + targetTypeExpr->ToString();
 }
 
-IndexingNode::IndexingNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::indexingNode, sourcePos_, moduleId_), subject(), index()
+IndexingNode::IndexingNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::indexingNode, sourcePos_, moduleId_), subject(), index()
 {
 }
 
-IndexingNode::IndexingNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, Node* index_) :
+IndexingNode::IndexingNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, Node* index_) :
     Node(NodeType::indexingNode, sourcePos_, moduleId_), subject(subject_), index(index_)
 {
     subject->SetParent(this);
@@ -908,11 +908,11 @@ std::string IndexingNode::ToString() const
     return subject->ToString() + "[" + index->ToString() + "]";
 }
 
-InvokeNode::InvokeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::invokeNode, sourcePos_, moduleId_), subject(), arguments()
+InvokeNode::InvokeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::invokeNode, sourcePos_, moduleId_), subject(), arguments()
 {
 }
 
-InvokeNode::InvokeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+InvokeNode::InvokeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     Node(NodeType::invokeNode, sourcePos_, moduleId_), subject(subject_), arguments()
 {
     subject->SetParent(this);
@@ -974,11 +974,11 @@ std::string InvokeNode::ToString() const
     return s;
 }
 
-PostfixIncrementNode::PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::postfixIncrementNode, sourcePos_, moduleId_)
+PostfixIncrementNode::PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::postfixIncrementNode, sourcePos_, moduleId_)
 {
 }
 
-PostfixIncrementNode::PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+PostfixIncrementNode::PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     UnaryNode(NodeType::postfixIncrementNode, sourcePos_, moduleId_, subject_)
 {
 }
@@ -999,11 +999,11 @@ std::string PostfixIncrementNode::ToString() const
     return Subject()->ToString() + "++";
 }
 
-PostfixDecrementNode::PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : UnaryNode(NodeType::postfixDecrementNode, sourcePos_, moduleId_)
+PostfixDecrementNode::PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : UnaryNode(NodeType::postfixDecrementNode, sourcePos_, moduleId_)
 {
 }
 
-PostfixDecrementNode::PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::postfixDecrementNode, sourcePos_, moduleId_, subject_)
+PostfixDecrementNode::PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : UnaryNode(NodeType::postfixDecrementNode, sourcePos_, moduleId_, subject_)
 {
 }
 
@@ -1023,11 +1023,11 @@ std::string PostfixDecrementNode::ToString() const
     return Subject()->ToString() + "--";
 }
 
-SizeOfNode::SizeOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::sizeOfNode, sourcePos_, moduleId_), expression()
+SizeOfNode::SizeOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::sizeOfNode, sourcePos_, moduleId_), expression()
 {
 }
 
-SizeOfNode::SizeOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+SizeOfNode::SizeOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     Node(NodeType::sizeOfNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
@@ -1062,11 +1062,11 @@ std::string SizeOfNode::ToString() const
     return "sizeof(" + expression->ToString() + ")";
 }
 
-TypeNameNode::TypeNameNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::typeNameNode, sourcePos_, moduleId_), expression(), static_(false)
+TypeNameNode::TypeNameNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::typeNameNode, sourcePos_, moduleId_), expression(), static_(false)
 {
 }
 
-TypeNameNode::TypeNameNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+TypeNameNode::TypeNameNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     Node(NodeType::typeNameNode, sourcePos_, moduleId_), expression(expression_), static_(false)
 {
     expression->SetParent(this);
@@ -1107,11 +1107,11 @@ std::string TypeNameNode::ToString() const
     return "typename(" + expression->ToString() + ")";
 }
 
-TypeIdNode::TypeIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::typeIdNode, sourcePos_, moduleId_), expression()
+TypeIdNode::TypeIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::typeIdNode, sourcePos_, moduleId_), expression()
 {
 }
 
-TypeIdNode::TypeIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) : Node(NodeType::typeIdNode, sourcePos_, moduleId_), expression(expression_)
+TypeIdNode::TypeIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) : Node(NodeType::typeIdNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
 }
@@ -1145,11 +1145,11 @@ std::string TypeIdNode::ToString() const
     return "typeid(" + expression->ToString() + ")";
 }
 
-CastNode::CastNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::castNode, sourcePos_, moduleId_), targetTypeExpr(), sourceExpr()
+CastNode::CastNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::castNode, sourcePos_, moduleId_), targetTypeExpr(), sourceExpr()
 {
 }
 
-CastNode::CastNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* targetTypeExpr_, Node* sourceExpr_) :
+CastNode::CastNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* targetTypeExpr_, Node* sourceExpr_) :
     Node(NodeType::castNode, sourcePos_, moduleId_), targetTypeExpr(targetTypeExpr_), sourceExpr(sourceExpr_)
 {
     targetTypeExpr->SetParent(this);
@@ -1188,11 +1188,11 @@ std::string CastNode::ToString() const
     return "cast<" + targetTypeExpr->ToString() + ">(" + sourceExpr->ToString() + ")";
 }
 
-ConstructNode::ConstructNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::constructNode, sourcePos_, moduleId_), typeExpr(), arguments()
+ConstructNode::ConstructNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::constructNode, sourcePos_, moduleId_), typeExpr(), arguments()
 {
 }
 
-ConstructNode::ConstructNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_) :
+ConstructNode::ConstructNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_) :
     Node(NodeType::constructNode, sourcePos_, moduleId_), typeExpr(typeExpr_), arguments()
 {
     typeExpr->SetParent(this);
@@ -1253,11 +1253,11 @@ std::string ConstructNode::ToString() const
     return s;
 }
 
-NewNode::NewNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::newNode, sourcePos_, moduleId_), typeExpr(), arguments()
+NewNode::NewNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::newNode, sourcePos_, moduleId_), typeExpr(), arguments()
 {
 }
 
-NewNode::NewNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_) :
+NewNode::NewNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_) :
     Node(NodeType::newNode, sourcePos_, moduleId_), typeExpr(typeExpr_), arguments()
 {
     typeExpr->SetParent(this);
@@ -1319,7 +1319,7 @@ std::string NewNode::ToString() const
     return s;
 }
 
-ThisNode::ThisNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::thisNode, sourcePos_, moduleId_)
+ThisNode::ThisNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::thisNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1339,7 +1339,7 @@ std::string ThisNode::ToString() const
     return "this";
 }
 
-BaseNode::BaseNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::baseNode, sourcePos_, moduleId_)
+BaseNode::BaseNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::baseNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1359,12 +1359,12 @@ std::string BaseNode::ToString() const
     return "base";
 }
 
-ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     UnaryNode(NodeType::parenthesizedExpressionNode, sourcePos_, moduleId_)
 {
 }
 
-ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* child_) :
+ParenthesizedExpressionNode::ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* child_) :
     UnaryNode(NodeType::parenthesizedExpressionNode, sourcePos_, moduleId_, child_)
 {
 }

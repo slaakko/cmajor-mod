@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.derived.type.symbol;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -59,8 +57,8 @@ TypeDerivationRec UnifyDerivations(const TypeDerivationRec& left, const TypeDeri
 class DerivedTypeSymbol : public TypeSymbol
 {
 public:
-    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_);
+    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_);
     ~DerivedTypeSymbol();
     std::string TypeString() const override { return "derived_type"; }
     std::u32string SimpleName() const override;
@@ -70,14 +68,14 @@ public:
     void ComputeTypeId();
     const TypeSymbol* BaseType() const override { return baseType; }
     TypeSymbol* BaseType() override { return baseType; }
-    TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     void* IrType(cmajor::ir::Emitter& emitter) override;
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
     void* CreateDIType(cmajor::ir::Emitter& emitter) override;
@@ -93,10 +91,10 @@ public:
     ContainerScope* GetArrowScope() override;
     bool ContainsTemplateParameter() const override { return baseType->ContainsTemplateParameter(); }
     const TypeDerivationRec& DerivationRec() const override { return derivationRec; }
-    TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* Unify(TypeSymbol* sourceType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    //bool IsRecursive(TypeSymbol* type, std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>& tested) override;
-    bool IsRecursive(TypeSymbol* type, std::set<boost::uuids::uuid>& tested) override;
+    TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* Unify(TypeSymbol* sourceType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    //bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested) override;
+    bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested) override;
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
     std::u32string Info() const override { return Name(); }
@@ -110,7 +108,7 @@ private:
 class NullPtrType : public TypeSymbol
 {
 public:
-    NullPtrType(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    NullPtrType(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "nullptr_type"; }
     bool IsPointerType() const override { return true; }
     bool IsNullPtrType() const override { return true; }

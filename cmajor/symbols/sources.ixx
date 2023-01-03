@@ -52,7 +52,7 @@ public:
     const std::u32string& Content() const { return content; }
     const char32_t* Start() const { return content.c_str(); }
     const char32_t* End() const { return content.c_str() + content.size(); }
-    void Parse(const boost::uuids::uuid& moduleId, int index);
+    void Parse(const util::uuid& moduleId, int index);
     const std::vector<std::string>& Errors() const { return errors; }
     bool Synchronized() const { return synchronized; }
     ContainerSymbol* CursorContainer() const { return cursorContainer; }

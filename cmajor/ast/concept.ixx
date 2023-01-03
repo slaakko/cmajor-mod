@@ -15,7 +15,7 @@ class ParameterNode;
 class ConstraintNode : public Node
 {
 public:
-    ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool NodeIsConstraintNode() const override { return true; }
     virtual bool IsHeaderConstraint() const { return false; }
 };
@@ -23,8 +23,8 @@ public:
 class ParenthesizedConstraintNode : public ConstraintNode
 {
 public:
-    ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* constraint_);
+    ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -39,8 +39,8 @@ private:
 class BinaryConstraintNode : public ConstraintNode
 {
 public:
-    BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
+    BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const ConstraintNode* Left() const { return left.get(); }
@@ -55,8 +55,8 @@ private:
 class DisjunctiveConstraintNode : public BinaryConstraintNode
 {
 public:
-    DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
+    DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -65,8 +65,8 @@ public:
 class ConjunctiveConstraintNode : public BinaryConstraintNode
 {
 public:
-    ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
+    ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -75,8 +75,8 @@ public:
 class WhereConstraintNode : public ConstraintNode
 {
 public:
-    WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* constraint_);
+    WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -97,8 +97,8 @@ private:
 class PredicateConstraintNode : public ConstraintNode
 {
 public:
-    PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* invokeExpr_);
+    PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* invokeExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -113,8 +113,8 @@ private:
 class IsConstraintNode : public ConstraintNode
 {
 public:
-    IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_, Node* conceptOrTypeName_);
+    IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, Node* conceptOrTypeName_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -132,8 +132,8 @@ private:
 class MultiParamConstraintNode : public ConstraintNode
 {
 public:
-    MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* conceptId_);
+    MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* conceptId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -151,8 +151,8 @@ private:
 class TypeNameConstraintNode : public ConstraintNode
 {
 public:
-    TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeId_);
+    TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -167,14 +167,14 @@ private:
 class SignatureConstraintNode : public ConstraintNode
 {
 public:
-    SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
 };
 
 class ConstructorConstraintNode : public SignatureConstraintNode
 {
 public:
-    ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* typeParamId_);
+    ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -192,8 +192,8 @@ private:
 class DestructorConstraintNode : public SignatureConstraintNode
 {
 public:
-    DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* typeParamId_);
+    DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -207,8 +207,8 @@ private:
 class MemberFunctionConstraintNode : public SignatureConstraintNode
 {
 public:
-    MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_);
+    MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -231,8 +231,8 @@ private:
 class FunctionConstraintNode : public SignatureConstraintNode
 {
 public:
-    FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* returnTypeExpr_, const std::u32string& groupId_);
+    FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, const std::u32string& groupId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -252,8 +252,8 @@ private:
 class AxiomStatementNode : public Node
 {
 public:
-    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_, const std::u32string& text_);
+    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_, const std::u32string& text_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -270,8 +270,8 @@ private:
 class AxiomNode : public Node
 {
 public:
-    AxiomNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AxiomNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_);
+    AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -297,8 +297,8 @@ private:
 class ConceptIdNode : public Node
 {
 public:
-    ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_);
+    ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -317,10 +317,10 @@ private:
 class ConceptNode : public Node
 {
 public:
-    ConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
-    ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
+    ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
+    ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -364,7 +364,7 @@ class SameConstraintNode : public IntrinsicConstraintNode
 {
 public:
     SameConstraintNode();
-    SameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -373,7 +373,7 @@ class DerivedConstraintNode : public IntrinsicConstraintNode
 {
 public:
     DerivedConstraintNode();
-    DerivedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    DerivedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -382,7 +382,7 @@ class ConvertibleConstraintNode : public IntrinsicConstraintNode
 {
 public:
     ConvertibleConstraintNode();
-    ConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -391,7 +391,7 @@ class ExplicitlyConvertibleConstraintNode : public IntrinsicConstraintNode
 {
 public:
     ExplicitlyConvertibleConstraintNode();
-    ExplicitlyConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ExplicitlyConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -400,7 +400,7 @@ class CommonConstraintNode : public IntrinsicConstraintNode
 {
 public:
     CommonConstraintNode();
-    CommonConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    CommonConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -409,7 +409,7 @@ class NonreferenceTypeConstraintNode : public IntrinsicConstraintNode
 {
 public:
     NonreferenceTypeConstraintNode();
-    NonreferenceTypeConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    NonreferenceTypeConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Accept(Visitor& visitor) override;
     Node* Clone(CloneContext& cloneContext) const override;
 };
@@ -418,7 +418,7 @@ class SameConceptNode : public ConceptNode
 {
 public:
     SameConceptNode();
-    SameConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SameConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsIntrinsicConceptNode() const override { return true; }
 };
 
@@ -426,7 +426,7 @@ class DerivedConceptNode : public ConceptNode
 {
 public:
     DerivedConceptNode();
-    DerivedConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    DerivedConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsIntrinsicConceptNode() const override { return true; }
 };
 
@@ -434,7 +434,7 @@ class ConvertibleConceptNode : public ConceptNode
 {
 public:
     ConvertibleConceptNode();
-    ConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsIntrinsicConceptNode() const override { return true; }
 };
 
@@ -442,7 +442,7 @@ class ExplicitlyConvertibleConceptNode : public ConceptNode
 {
 public:
     ExplicitlyConvertibleConceptNode();
-    ExplicitlyConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ExplicitlyConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsIntrinsicConceptNode() const override { return true; }
 };
 
@@ -450,7 +450,7 @@ class CommonConceptNode : public ConceptNode
 {
 public:
     CommonConceptNode();
-    CommonConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    CommonConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsCommonConceptNode() const override { return true; }
     bool IsIntrinsicConceptNode() const override { return true; }
 };
@@ -459,7 +459,7 @@ class NonreferenceTypeConceptNode : public ConceptNode
 {
 public:
     NonreferenceTypeConceptNode();
-    NonreferenceTypeConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    NonreferenceTypeConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool IsIntrinsicConceptNode() const override { return true; }
 };
 } // namespace cmajor::ast

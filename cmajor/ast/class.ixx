@@ -19,8 +19,8 @@ class AttributesNode;
 class ClassNode : public Node
 {
 public:
-    ClassNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ClassNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
+    ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -67,7 +67,7 @@ private:
 class InitializerNode : public Node
 {
 public:
-    InitializerNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    InitializerNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     void AddArgument(Node* argument) override;
@@ -79,7 +79,7 @@ private:
 class ThisInitializerNode : public InitializerNode
 {
 public:
-    ThisInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ThisInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
 };
@@ -87,7 +87,7 @@ public:
 class BaseInitializerNode : public InitializerNode
 {
 public:
-    BaseInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    BaseInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
 };
@@ -95,8 +95,8 @@ public:
 class MemberInitializerNode : public InitializerNode
 {
 public:
-    MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* memberId_);
+    MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* memberId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -110,8 +110,8 @@ private:
 class StaticConstructorNode : public FunctionNode
 {
 public:
-    StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
+    StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -128,8 +128,8 @@ private:
 class ConstructorNode : public FunctionNode
 {
 public:
-    ConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
+    ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -146,8 +146,8 @@ private:
 class DestructorNode : public FunctionNode
 {
 public:
-    DestructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DestructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
+    DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -161,8 +161,8 @@ private:
 class MemberFunctionNode : public FunctionNode
 {
 public:
-    MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
+    MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsConst() const { return (GetSpecifiers() & Specifiers::const_) != Specifiers::none; }
@@ -172,8 +172,8 @@ public:
 class ConversionFunctionNode : public FunctionNode
 {
 public:
-    ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_);
+    ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     bool IsConst() const { return (GetSpecifiers() & Specifiers::const_) != Specifiers::none; }
@@ -183,8 +183,8 @@ public:
 class MemberVariableNode : public Node
 {
 public:
-    MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_);
+    MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

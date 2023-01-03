@@ -13,11 +13,11 @@ import util;
 
 namespace cmajor::ast {
 
-CommentNode::CommentNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::commentNode, sourcePos_, moduleId_)
+CommentNode::CommentNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::commentNode, sourcePos_, moduleId_)
 {
-}
+} 
 
-CommentNode::CommentNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& comment_) : Node(NodeType::commentNode, sourcePos_, moduleId_), comment(comment_)
+CommentNode::CommentNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& comment_) : Node(NodeType::commentNode, sourcePos_, moduleId_), comment(comment_)
 {
 }
 

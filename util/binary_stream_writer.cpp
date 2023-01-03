@@ -221,9 +221,9 @@ void BinaryStreamWriter::WriteSLEB128Long(int64_t x)
     }
 }
 
-void BinaryStreamWriter::Write(const boost::uuids::uuid& uuid)
+void BinaryStreamWriter::Write(const util::uuid& uuid)
 {
-    for (boost::uuids::uuid::value_type x : uuid)
+    for (util::uuid::value_type x : uuid)
     {
         Write(x);
     }

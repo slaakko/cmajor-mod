@@ -12,11 +12,11 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(Specifiers::none), cu(nullptr)
+GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(Specifiers::none), cu(nullptr)
 {
 }
 
-GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, CompileUnitNode* cu_) :
+GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, CompileUnitNode* cu_) :
     Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), cu(cu_)
 {
     typeExpr->SetParent(this);

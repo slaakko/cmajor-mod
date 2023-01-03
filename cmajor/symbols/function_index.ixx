@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 //#include <boost/functional/hash.hpp>
 
 // =================================
@@ -11,6 +9,7 @@ export module cmajor.symbols.function.index;
 
 import std.core;
 import util.binary.stream.writer;
+import util.uuid;
 /*
 #include <cmajor/symbols/SymbolsApi.hpp>
 #include <soulng/util/BinaryWriter.hpp>
@@ -29,14 +28,14 @@ class FunctionIndex
 {
 public:
     FunctionIndex(Module* module_);
-    void AddFunction(const boost::uuids::uuid& functionId, FunctionSymbol* functionSymbol);
-    void SetMainFunctionId(const boost::uuids::uuid& functionId);
-    const boost::uuids::uuid& GetMainFunctionId() const { return mainFunctionId; }
+    void AddFunction(const util::uuid& functionId, FunctionSymbol* functionSymbol);
+    void SetMainFunctionId(const util::uuid& functionId);
+    const util::uuid& GetMainFunctionId() const { return mainFunctionId; }
     void Write(util::BinaryStreamWriter& writer);
 private:
     Module* module;
-    //std::unordered_map<boost::uuids::uuid, FunctionSymbol*, boost::hash<boost::uuids::uuid>> functionMap;
-    std::map<boost::uuids::uuid, FunctionSymbol*> functionMap;
-    boost::uuids::uuid mainFunctionId;
+    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionMap;
+    std::map<util::uuid, FunctionSymbol*> functionMap;
+    util::uuid mainFunctionId;
 };
 } // namespace cmajor::symbols

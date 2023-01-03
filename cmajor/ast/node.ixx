@@ -3,9 +3,6 @@
 // Distributed under the MIT license
 // =================================
 
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.ast.node;
 
 import std.core;
@@ -13,6 +10,7 @@ import soul.ast.source.pos;
 import soul.lexer;
 import cmajor.ast.specifier;
 import cmajor.ast.clone;
+import util.uuid;
 
 export namespace cmajor::ast {
 
@@ -56,7 +54,7 @@ class ParameterNode;
 class Node
 {
 public:
-    Node(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    Node(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     virtual ~Node();
     Node(const Node&) = delete;
     Node& operator=(const Node&) = delete;
@@ -82,13 +80,13 @@ public:
     const Node* Parent() const { return parent; }
     Node* Parent() { return parent; }
     void SetParent(Node* parent_);
-    const boost::uuids::uuid& ModuleId() const { return moduleId; }
+    const util::uuid& ModuleId() const { return moduleId; }
     void SetLexerFlags(soul::lexer::LexerFlags lexerFlags_) { lexerFlags = lexerFlags_; }
     soul::lexer::LexerFlags GetLexerFlags() const { return lexerFlags; }
 private:
     NodeType nodeType;
     soul::ast::SourcePos sourcePos;
-    boost::uuids::uuid moduleId;
+    util::uuid moduleId;
     Node* parent;
     soul::lexer::LexerFlags lexerFlags;
 };
@@ -96,8 +94,8 @@ private:
 class UnaryNode : public Node
 {
 public:
-    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const Node* Subject() const { return subject.get(); }
@@ -109,8 +107,8 @@ private:
 class BinaryNode : public Node
 {
 public:
-    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const Node* Left() const { return left.get(); }
@@ -129,7 +127,7 @@ public:
     NodeCreator(const NodeCreator&) = delete;
     NodeCreator& operator=(const NodeCreator&) = delete;
     virtual ~NodeCreator();
-    virtual Node* CreateNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId) = 0;
+    virtual Node* CreateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId) = 0;
 };
 
 class NodeFactory
@@ -141,7 +139,7 @@ public:
     static void Init();
     static void Done();
     void Register(NodeType nodeType, NodeCreator* creator);
-    Node* CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    Node* CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
 private:
     static std::unique_ptr<NodeFactory> instance;
     std::vector<std::unique_ptr<NodeCreator>> creators;

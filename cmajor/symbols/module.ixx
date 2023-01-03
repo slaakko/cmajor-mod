@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 // =================================
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
@@ -142,7 +140,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<std::u32string>> fileContentMap;
 };
 
-//cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId);
+//cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
 
 class Module
 {
@@ -155,7 +153,7 @@ public:
     uint8_t Format() const { return format; }
     ModuleFlags Flags() const { return flags; }
     const std::u32string& Name() const { return name; }
-    const boost::uuids::uuid& Id() const { return id; }
+    const util::uuid& Id() const { return id; }
     const std::string& OriginalFilePath() const { return originalFilePath; }
     const std::string& FilePathReadFrom() const { return filePathReadFrom; }
     const std::string& LibraryFilePath() const { return libraryFilePath; }
@@ -257,7 +255,7 @@ private:
     uint8_t format;
     ModuleFlags flags;
     std::u32string name;
-    boost::uuids::uuid id;
+    util::uuid id;
     cmajor::ast::BackEnd backend;
     cmajor::ast::Config config;
     std::string originalFilePath;
@@ -310,7 +308,7 @@ private:
     void CheckUpToDate();
 };
 
-std::string GetSourceFilePath(int32_t fileIndex, const boost::uuids::uuid& moduleId);
+std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId);
 bool HasRootModuleForCurrentThread();
 Module* GetRootModuleForCurrentThread();
 void SetRootModuleForCurrentThread(Module* rootModule_);

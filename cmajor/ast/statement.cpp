@@ -13,11 +13,11 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::labelNode, sourcePos_, moduleId_)
+LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::labelNode, sourcePos_, moduleId_)
 {
 }
 
-LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& label_) : Node(NodeType::labelNode, sourcePos_, moduleId_), label(label_)
+LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& label_) : Node(NodeType::labelNode, sourcePos_, moduleId_), label(label_)
 {
 }
 
@@ -44,7 +44,7 @@ void LabelNode::Read(AstReader& reader)
     label = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-StatementNode::StatementNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+StatementNode::StatementNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
@@ -58,11 +58,11 @@ void StatementNode::Read(AstReader& reader)
     Node::Read(reader);
 }
 
-LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::labeledStatementNode, sourcePos_, moduleId_)
+LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::labeledStatementNode, sourcePos_, moduleId_)
 {
 }
 
-LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, StatementNode* stmt_) :
+LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* stmt_) :
     StatementNode(NodeType::labeledStatementNode, sourcePos_, moduleId_), stmt(stmt_)
 {
     stmt->SetParent(this);
@@ -102,7 +102,7 @@ void LabeledStatementNode::SetLabelNode(LabelNode* labelNode_)
     labelNode->SetParent(this);
 }
 
-SyncStatementNode::SyncStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::syncStatementNode, sourcePos_, moduleId_)
+SyncStatementNode::SyncStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::syncStatementNode, sourcePos_, moduleId_)
 {
 }
 
@@ -116,7 +116,7 @@ void SyncStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), beginBraceSourcePos(), endBraceSourcePos(), tracerInserted(false)
 {
 }
@@ -178,12 +178,12 @@ int CompoundStatementNode::Level() const
     return level;
 }
 
-ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::returnStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     StatementNode(NodeType::returnStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     if (expression)
@@ -230,12 +230,12 @@ void ReturnStatementNode::Read(AstReader& reader)
     }
 }
 
-IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::ifStatementNode, sourcePos_, moduleId_), condition(), thenS(), elseS()
 {
 }
 
-IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* condition_, StatementNode* thenS_, StatementNode* elseS_) :
+IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_, StatementNode* thenS_, StatementNode* elseS_) :
     StatementNode(NodeType::ifStatementNode, sourcePos_, moduleId_), condition(condition_), thenS(thenS_), elseS(elseS_)
 {
     condition->SetParent(this);
@@ -300,12 +300,12 @@ void IfStatementNode::Read(AstReader& reader)
     elseSourcePos = reader.ReadSourcePos();
 }
 
-WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::whileStatementNode, sourcePos_, moduleId_), condition(), statement()
 {
 }
 
-WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* condition_, StatementNode* statement_) :
+WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_, StatementNode* statement_) :
     StatementNode(NodeType::whileStatementNode, sourcePos_, moduleId_), condition(condition_), statement(statement_)
 {
     condition->SetParent(this);
@@ -346,12 +346,12 @@ void WhileStatementNode::Read(AstReader& reader)
     rightParenSourcePos = reader.ReadSourcePos();
 }
 
-DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::doStatementNode, sourcePos_, moduleId_), statement(), condition()
 {
 }
 
-DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, StatementNode* statement_, Node* condition_) :
+DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* statement_, Node* condition_) :
     StatementNode(NodeType::doStatementNode, sourcePos_, moduleId_), statement(statement_), condition(condition_)
 {
     statement->SetParent(this);
@@ -395,12 +395,12 @@ void DoStatementNode::Read(AstReader& reader)
     rightParenSourcePos = reader.ReadSourcePos();
 }
 
-ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::forStatementNode, sourcePos_, moduleId_), initS(), condition(), loopS(), actionS()
 {
 }
 
-ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, StatementNode* initS_, Node* condition_, StatementNode* loopS_, StatementNode* actionS_) :
+ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* initS_, Node* condition_, StatementNode* loopS_, StatementNode* actionS_) :
     StatementNode(NodeType::forStatementNode, sourcePos_, moduleId_), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
 {
     initS->SetParent(this);
@@ -473,7 +473,7 @@ void ForStatementNode::Read(AstReader& reader)
     rightParenSourcePos = reader.ReadSourcePos();
 }
 
-BreakStatementNode::BreakStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::breakStatementNode, sourcePos_, moduleId_)
+BreakStatementNode::BreakStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::breakStatementNode, sourcePos_, moduleId_)
 {
 }
 
@@ -488,7 +488,7 @@ void BreakStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ContinueStatementNode::ContinueStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::continueStatementNode, sourcePos_, moduleId_)
+ContinueStatementNode::ContinueStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::continueStatementNode, sourcePos_, moduleId_)
 {
 }
 
@@ -503,12 +503,12 @@ void ContinueStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::gotoStatementNode, sourcePos_, moduleId_)
 {
 }
 
-GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& target_) :
+GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& target_) :
     StatementNode(NodeType::gotoStatementNode, sourcePos_, moduleId_), target(target_)
 {
 }
@@ -536,12 +536,12 @@ void GotoStatementNode::Read(AstReader& reader)
     target = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::constructionStatementNode, sourcePos_, moduleId_), typeExpr(), id(), arguments(), assignment(false), empty(false)
 {
 }
 
-ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_) :
+ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_) :
     StatementNode(NodeType::constructionStatementNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), arguments(), assignment(false), empty(false)
 {
     typeExpr->SetParent(this);
@@ -601,11 +601,11 @@ void ConstructionStatementNode::AddArgument(Node* argument)
     }
 }
 
-DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::deleteStatementNode, sourcePos_, moduleId_), expression()
+DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::deleteStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     StatementNode(NodeType::deleteStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
@@ -635,12 +635,12 @@ void DeleteStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::destroyStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     StatementNode(NodeType::destroyStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
@@ -670,12 +670,12 @@ void DestroyStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::assignmentStatementNode, sourcePos_, moduleId_), targetExpr(), sourceExpr()
 {
 }
 
-AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* targetExpr_, Node* sourceExpr_) :
+AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* targetExpr_, Node* sourceExpr_) :
     StatementNode(NodeType::assignmentStatementNode, sourcePos_, moduleId_), targetExpr(targetExpr_), sourceExpr(sourceExpr_)
 {
     targetExpr->SetParent(this);
@@ -709,12 +709,12 @@ void AssignmentStatementNode::Read(AstReader& reader)
     sourceExpr->SetParent(this);
 }
 
-ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::expressionStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     StatementNode(NodeType::expressionStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
@@ -744,7 +744,7 @@ void ExpressionStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-EmptyStatementNode::EmptyStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::emptyStatementNode, sourcePos_, moduleId_)
+EmptyStatementNode::EmptyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::emptyStatementNode, sourcePos_, moduleId_)
 {
 }
 
@@ -759,12 +759,12 @@ void EmptyStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::rangeForStatementNode, sourcePos_, moduleId_), typeExpr(), id(), container(), action()
 {
 }
 
-RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
+RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
     StatementNode(NodeType::rangeForStatementNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), container(container_), action(action_)
 {
     typeExpr->SetParent(this);
@@ -817,12 +817,12 @@ void RangeForStatementNode::Read(AstReader& reader)
     colonSourcePos = reader.ReadSourcePos();
 }
 
-SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::switchStatementNode, sourcePos_, moduleId_), condition(), cases(), defaultS()
 {
 }
 
-SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* condition_) :
+SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_) :
     StatementNode(NodeType::switchStatementNode, sourcePos_, moduleId_), condition(condition_), cases(), defaultS()
 {
     condition->SetParent(this);
@@ -901,7 +901,7 @@ void SwitchStatementNode::SetDefault(DefaultStatementNode* defaultS_)
     defaultS->SetParent(this);
 }
 
-CaseStatementNode::CaseStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+CaseStatementNode::CaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::caseStatementNode, sourcePos_, moduleId_), caseExprs(), statements()
 {
 }
@@ -973,7 +973,7 @@ void CaseStatementNode::AddStatement(StatementNode* statement)
     statements.Add(statement);
 }
 
-DefaultStatementNode::DefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::defaultStatementNode, sourcePos_, moduleId_), statements()
+DefaultStatementNode::DefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::defaultStatementNode, sourcePos_, moduleId_), statements()
 {
 }
 
@@ -1012,12 +1012,12 @@ void DefaultStatementNode::AddStatement(StatementNode* statement)
     statements.Add(statement);
 }
 
-GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::gotoCaseStatementNode, sourcePos_, moduleId_), caseExpr()
 {
 }
 
-GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* caseExpr_) :
+GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* caseExpr_) :
     StatementNode(NodeType::gotoCaseStatementNode, sourcePos_, moduleId_), caseExpr(caseExpr_)
 {
     caseExpr->SetParent(this);
@@ -1046,7 +1046,7 @@ void GotoCaseStatementNode::Read(AstReader& reader)
     caseExpr.reset(reader.ReadNode());
 }
 
-GotoDefaultStatementNode::GotoDefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : StatementNode(NodeType::gotoDefaultStatementNode, sourcePos_, moduleId_)
+GotoDefaultStatementNode::GotoDefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::gotoDefaultStatementNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1061,12 +1061,12 @@ void GotoDefaultStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::throwStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_) :
+ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
     StatementNode(NodeType::throwStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     if (expression)
@@ -1113,11 +1113,11 @@ void ThrowStatementNode::Read(AstReader& reader)
     }
 }
 
-CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::catchNode, sourcePos_, moduleId_), typeExpr(), id(), catchBlock()
+CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::catchNode, sourcePos_, moduleId_), typeExpr(), id(), catchBlock()
 {
 }
 
-CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, CompoundStatementNode* catchBlock_) :
+CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, CompoundStatementNode* catchBlock_) :
     Node(NodeType::catchNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), catchBlock(catchBlock_)
 {
     typeExpr->SetParent(this);
@@ -1179,12 +1179,12 @@ void CatchNode::Read(AstReader& reader)
     rightParenSourcePos = reader.ReadSourcePos();
 }
 
-TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::tryStatementNode, sourcePos_, moduleId_), tryBlock(), catches()
 {
 }
 
-TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, CompoundStatementNode* tryBlock_) :
+TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, CompoundStatementNode* tryBlock_) :
     StatementNode(NodeType::tryStatementNode, sourcePos_, moduleId_), tryBlock(tryBlock_), catches()
 {
     tryBlock->SetParent(this);
@@ -1228,12 +1228,12 @@ void TryStatementNode::AddCatch(CatchNode* catch_)
     catches.Add(catch_);
 }
 
-AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::assertStatementNode, sourcePos_, moduleId_), assertExpr()
 {
 }
 
-AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* assertExpr_) :
+AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* assertExpr_) :
     StatementNode(NodeType::assertStatementNode, sourcePos_, moduleId_), assertExpr(assertExpr_)
 {
     assertExpr->SetParent(this);
@@ -1263,16 +1263,16 @@ void AssertStatementNode::Read(AstReader& reader)
     assertExpr->SetParent(this);
 }
 
-ConditionalCompilationExpressionNode::ConditionalCompilationExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+ConditionalCompilationExpressionNode::ConditionalCompilationExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationExpressionNode(nodeType_, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
+ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
     ConditionalCompilationExpressionNode(nodeType_, sourcePos_, moduleId_), left(left_), right(right_)
 {
     left->SetParent(this);
@@ -1295,12 +1295,12 @@ void ConditionalCompilationBinaryExpressionNode::Read(AstReader& reader)
     right->SetParent(this);
 }
 
-ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_,
+ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
     ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
     ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, sourcePos_, moduleId_, left_, right_)
 {
@@ -1317,12 +1317,12 @@ void ConditionalCompilationDisjunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_,
+ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
     ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
     ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, sourcePos_, moduleId_, left_, right_)
 {
@@ -1339,12 +1339,12 @@ void ConditionalCompilationConjunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
+ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
     ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, sourcePos_, moduleId_), expr(expr_)
 {
     expr->SetParent(this);
@@ -1374,12 +1374,12 @@ void ConditionalCompilationNotNode::Read(AstReader& reader)
     expr->SetParent(this);
 }
 
-ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& symbol_) :
+ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& symbol_) :
     ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, sourcePos_, moduleId_), symbol(symbol_)
 {
 }
@@ -1407,12 +1407,12 @@ void ConditionalCompilationPrimaryNode::Read(AstReader& reader)
     symbol = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, sourcePos_, moduleId_)
 {
 }
 
-ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
+ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
     ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, sourcePos_, moduleId_), expr(expr_)
 {
 }
@@ -1441,11 +1441,11 @@ void ParenthesizedConditionalCompilationExpressionNode::Read(AstReader& reader)
     expr->SetParent(this);
 }
 
-ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::conditionalCompilationPartNode, sourcePos_, moduleId_)
+ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conditionalCompilationPartNode, sourcePos_, moduleId_)
 {
 }
 
-ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
+ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
     Node(NodeType::conditionalCompilationPartNode, sourcePos_, moduleId_), expr(expr_)
 {
     if (expr)
@@ -1516,12 +1516,12 @@ void ConditionalCompilationPartNode::Read(AstReader& reader)
     rightParenSourcePos = reader.ReadSourcePos();
 }
 
-ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(nullptr)
 {
 }
 
-ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* ifExpr_) :
+ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* ifExpr_) :
     StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(new ConditionalCompilationPartNode(sourcePos_, moduleId_, ifExpr_))
 {
 }
@@ -1531,7 +1531,7 @@ void ConditionalCompilationStatementNode::AddIfStatement(StatementNode* statemen
     ifPart->AddStatement(statement);
 }
 
-void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& span, const boost::uuids::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
+void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& span, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
 {
     elifParts.Add(new ConditionalCompilationPartNode(span, moduleId_, expr));
 }
@@ -1556,7 +1556,7 @@ void ConditionalCompilationStatementNode::SetElifKeywordSourcePos(const soul::as
     elifParts[elifParts.Count() - 1]->SetKeywordSourcePos(span);
 }
 
-void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::SourcePos& span, const boost::uuids::uuid& moduleId_, StatementNode* statement)
+void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::SourcePos& span, const util::uuid& moduleId_, StatementNode* statement)
 {
     if (!elsePart)
     {

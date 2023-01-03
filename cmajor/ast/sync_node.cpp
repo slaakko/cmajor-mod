@@ -9,7 +9,7 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-SyncNode::SyncNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::syncNode, sourcePos_, moduleId_)
+SyncNode::SyncNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::syncNode, sourcePos_, moduleId_)
 {
 }
 

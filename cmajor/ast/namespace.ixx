@@ -31,8 +31,8 @@ inline constexpr NsFlags operator&(NsFlags left, NsFlags right)
 class NamespaceNode : public Node
 {
 public:
-    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_);
+    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -54,8 +54,8 @@ private:
 class AliasNode : public Node
 {
 public:
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_);
+    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -70,8 +70,8 @@ private:
 class NamespaceImportNode : public Node
 {
 public:
-    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* ns_);
+    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

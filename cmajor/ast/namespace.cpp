@@ -14,18 +14,17 @@ import util;
 
 namespace cmajor::ast {
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(), flags()
+NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(), flags()
 {
 }
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(id_), flags()
+NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(id_), flags()
 {
     if (id == nullptr)
     {
         SetUnnamedNs();
         util::Sha1 sha1;
-        boost::uuids::uuid randomUuid;
-        util::RandomUuid(randomUuid);
+        util::uuid randomUuid = util::random_uuid();
         for (uint8_t x : randomUuid)
         {
             sha1.Process(x);
@@ -107,11 +106,11 @@ void NamespaceNode::AddMember(Node* member)
     }
 }
 
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(), qid()
+AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(), qid()
 {
 }
 
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(id_), qid(qid_)
+AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(id_), qid(qid_)
 {
     id->SetParent(this);
     qid->SetParent(this);
@@ -154,11 +153,11 @@ IdentifierNode* AliasNode::Qid() const
     return qid.get();
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
+NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
 {
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* ns_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns(ns_)
+NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns(ns_)
 {
     ns->SetParent(this);
 }

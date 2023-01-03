@@ -15,8 +15,8 @@ export namespace cmajor::ast {
 class CompileUnitNode : public Node//, public cmajor::common::ColumnSpanProvider
 {
 public:
-    CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::string& filePath_);
+    CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& filePath_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     const std::string& FilePath() const { return filePath; }

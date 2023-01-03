@@ -11,11 +11,11 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::constNode, sourcePos_, moduleId_)
+ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::constNode, sourcePos_, moduleId_)
 {
 }
 
-ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) : Node(NodeType::constNode, sourcePos_, moduleId_), subject(subject_)
+ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : Node(NodeType::constNode, sourcePos_, moduleId_), subject(subject_)
 {
     subject->SetParent(this);
 }
@@ -49,11 +49,11 @@ std::string ConstNode::ToString() const
     return "const " + subject->ToString();
 }
 
-LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::lvalueRefNode, sourcePos_, moduleId_)
+LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::lvalueRefNode, sourcePos_, moduleId_)
 {
 }
 
-LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     Node(NodeType::lvalueRefNode, sourcePos_, moduleId_), subject(subject_)
 {
     subject->SetParent(this);
@@ -88,11 +88,11 @@ std::string LValueRefNode::ToString() const
     return subject->ToString() + "&";
 }
 
-RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::rvalueRefNode, sourcePos_, moduleId_)
+RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::rvalueRefNode, sourcePos_, moduleId_)
 {
 }
 
-RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     Node(NodeType::rvalueRefNode, sourcePos_, moduleId_), subject(subject_)
 {
     subject->SetParent(this);
@@ -127,11 +127,11 @@ std::string RValueRefNode::ToString() const
     return subject->ToString() + "&&";
 }
 
-PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::pointerNode, sourcePos_, moduleId_)
+PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::pointerNode, sourcePos_, moduleId_)
 {
 }
 
-PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_) :
+PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
     Node(NodeType::pointerNode, sourcePos_, moduleId_), subject(subject_)
 {
     subject->SetParent(this);
@@ -166,11 +166,11 @@ std::string PointerNode::ToString() const
     return subject->ToString() + "*";
 }
 
-ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::arrayNode, sourcePos_, moduleId_), subject(), size()
+ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::arrayNode, sourcePos_, moduleId_), subject(), size()
 {
 }
 
-ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, Node* size_) :
+ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, Node* size_) :
     Node(NodeType::arrayNode, sourcePos_, moduleId_), subject(subject_), size(size_)
 {
     subject->SetParent(this);

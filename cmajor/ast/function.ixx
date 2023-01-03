@@ -37,10 +37,10 @@ class CompoundStatementNode;
 class FunctionNode : public Node
 {
 public:
-    FunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    FunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
-    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
+    FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
+    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
     FunctionNode(const FunctionNode&) = delete;
     FunctionNode& operator=(const FunctionNode&) = delete;
     Node* Clone(CloneContext& cloneContext) const override;
@@ -95,7 +95,7 @@ private:
 class FunctionPtrNode : public Node
 {
 public:
-    FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void SetBoundExpression(void* boundExpression_) { boundExpression = boundExpression_; }

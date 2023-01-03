@@ -13,11 +13,11 @@ import util;
 
 namespace cmajor::ast {
 
-CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::compileUnitNode, sourcePos_, moduleId_), globalNs(), isSynthesizedUnit(false), isProgramMainUnit(false)
+CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::compileUnitNode, sourcePos_, moduleId_), globalNs(), isSynthesizedUnit(false), isProgramMainUnit(false)
 {
 }
 
-CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::string& filePath_) :
+CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& filePath_) :
     Node(NodeType::compileUnitNode, sourcePos_, moduleId_), filePath(filePath_), globalNs(new NamespaceNode(sourcePos_, moduleId_, new IdentifierNode(sourcePos_, moduleId_, U""))), isSynthesizedUnit(false), isProgramMainUnit(false)
 {
 }

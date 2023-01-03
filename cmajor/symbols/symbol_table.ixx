@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.symbol.table;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -39,6 +36,7 @@ import cmajor.ast;
 import soul.ast.source.pos;
 import soul.xml.document;
 import std.core;
+import util.uuid;
 
 export namespace cmajor::symbols {
 
@@ -58,17 +56,17 @@ class GlobalVariableSymbol;
 
 struct TypeOrConceptRequest
 {
-    TypeOrConceptRequest(Symbol* symbol_, const boost::uuids::uuid& typeId_, int index_) : symbol(symbol_), typeId(typeId_), index(index_) {}
+    TypeOrConceptRequest(Symbol* symbol_, const util::uuid& typeId_, int index_) : symbol(symbol_), typeId(typeId_), index(index_) {}
     Symbol* symbol;
-    boost::uuids::uuid typeId;
+    util::uuid typeId;
     int index;
 };
 
 struct FunctionRequest
 {
-    FunctionRequest(Symbol* symbol_, const boost::uuids::uuid& functionId_, int index_) : symbol(symbol_), functionId(functionId_), index(index_) {}
+    FunctionRequest(Symbol* symbol_, const util::uuid& functionId_, int index_) : symbol(symbol_), functionId(functionId_), index(index_) {}
     Symbol* symbol;
-    boost::uuids::uuid functionId;
+    util::uuid functionId;
     int index;
 };
 
@@ -107,11 +105,11 @@ struct ClassTemplateSpecializationKeyHash
 {
     size_t operator()(const ClassTemplateSpecializationKey& key) const
     {
-        size_t x = boost::hash<boost::uuids::uuid>()(key.classTemplate->TypeId());
+        size_t x = boost::hash<util::uuid>()(key.classTemplate->TypeId());
         int n = key.templateArgumentTypes.size();
         for (int i = 0; i < n; ++i)
         {
-            x = x ^ boost::hash<boost::uuids::uuid>()(key.templateArgumentTypes[i]->TypeId());
+            x = x ^ boost::hash<util::uuid>()(key.templateArgumentTypes[i]->TypeId());
         }
         return x;
     }
@@ -143,7 +141,7 @@ struct ArrayKeyHash
 {
     size_t operator()(const ArrayKey& key) const
     {
-        size_t x = boost::hash<boost::uuids::uuid>()(key.elementType->TypeId());
+        size_t x = boost::hash<util::uuid>()(key.elementType->TypeId());
         x = x ^ std::hash<int64_t>()(key.size);
         return x;
     }
@@ -193,7 +191,7 @@ public:
     void MapNs(NamespaceSymbol* fromNs, NamespaceSymbol* toNs);
     NamespaceSymbol* GetMappedNs(NamespaceSymbol* fromNs) const;
     NamespaceSymbol* BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode);
-    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId);
+    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
     void EndNamespace();
     void BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t functionIndex);
     void EndFunction(bool addMember);
@@ -245,27 +243,27 @@ public:
     void SetTypeIdFor(TypeSymbol* typeSymbol);
     void SetTypeIdFor(ConceptSymbol* conceptSymbol);
     void SetFunctionIdFor(FunctionSymbol* functionSymbol);
-    FunctionSymbol* GetFunctionById(const boost::uuids::uuid& functionId) const;
+    FunctionSymbol* GetFunctionById(const util::uuid& functionId) const;
     void AddTypeOrConceptSymbolToTypeIdMap(Symbol* typeOrConceptSymbol);
     void AddFunctionSymbolToFunctionIdMap(FunctionSymbol* functionSymbol);
-    void EmplaceTypeRequest(SymbolReader& reader, Symbol* forSymbol, const boost::uuids::uuid& typeId, int index);
-    void EmplaceConceptRequest(SymbolReader& reader, Symbol* forSymbol, const boost::uuids::uuid& typeId);
-    void EmplaceFunctionRequest(SymbolReader& reader, Symbol* forSymbol, const boost::uuids::uuid& functionId, int index);
+    void EmplaceTypeRequest(SymbolReader& reader, Symbol* forSymbol, const util::uuid& typeId, int index);
+    void EmplaceConceptRequest(SymbolReader& reader, Symbol* forSymbol, const util::uuid& typeId);
+    void EmplaceFunctionRequest(SymbolReader& reader, Symbol* forSymbol, const util::uuid& functionId, int index);
     void ProcessTypeConceptAndFunctionRequests(const std::vector<TypeOrConceptRequest>& typeAndConceptRequests, const std::vector<FunctionRequest>& functionRequests);
     TypeSymbol* GetTypeByNameNoThrow(const std::u32string& typeName) const;
     TypeSymbol* GetTypeByName(const std::u32string& typeName) const;
-    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<TypeSymbol*>& templateArgumentTypes,
-        const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     ClassTemplateSpecializationSymbol* CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     ClassTemplateSpecializationSymbol* GetCurrentClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     void AddClassTemplateSpecializationsToClassTemplateSpecializationMap(const std::vector<ClassTemplateSpecializationSymbol*>& classTemplateSpecializations);
-    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     const FunctionSymbol* MainFunctionSymbol() const { return mainFunctionSymbol; }
     FunctionSymbol* MainFunctionSymbol() { return mainFunctionSymbol; }
     void AddConversion(FunctionSymbol* conversion);
     void AddConversion(FunctionSymbol* conversion, Module* module);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) const;
     ConversionTable& GetConversionTable() { return conversionTable; }
     const ConversionTable& GetConversionTable() const { return conversionTable; }
     void AddPolymorphicClass(ClassTypeSymbol* polymorphicClass);
@@ -280,8 +278,8 @@ public:
     InterfaceTypeSymbol* CurrentInterface() { return currentInterface; }
     void SetCurrentClass(ClassTypeSymbol* currentClass_) { currentClass = currentClass_; }
     void SetCurrentFunctionSymbol(FunctionSymbol* currentFunctionSymbol_) { currentFunctionSymbol = currentFunctionSymbol_; }
-    void MapProfiledFunction(const boost::uuids::uuid& functionId, const std::u32string& profiledFunctionName);
-    std::u32string GetProfiledFunctionName(const boost::uuids::uuid& functionId) const;
+    void MapProfiledFunction(const util::uuid& functionId, const std::u32string& profiledFunctionName);
+    std::u32string GetProfiledFunctionName(const util::uuid& functionId) const;
     Module* GetModule() { return module; }
     std::unique_ptr<soul::xml::Document> ToDomDocument();
     void MapInvoke(cmajor::ast::IdentifierNode* invokeId, FunctionSymbol* functionSymbol);
@@ -291,8 +289,8 @@ public:
     void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode, Module* module, Symbol* symbol);
     SymbolLocation* GetDefinitionLocation(const SymbolLocation& identifierLocation);
     void InitUuids();
-    const boost::uuids::uuid& GetDerivationId(Derivation derivation) const;
-    const boost::uuids::uuid& GetPositionId(int index) const;
+    const util::uuid& GetDerivationId(Derivation derivation) const;
+    const util::uuid& GetPositionId(int index) const;
     int NumSpecializations() const { return classTemplateSpecializationMap.size(); }
     int NumSpecializationsNew() const { return numSpecializationsNew; }
     int NumSpecializationsCopied() const { return numSpecializationsCopied; }
@@ -312,8 +310,8 @@ public:
     void AddNamespaceImport(cmajor::ast::NamespaceImportNode* namespaceImport) { namespaceImports.push_back(namespaceImport); }
 private:
     Module* module;
-    std::vector<boost::uuids::uuid> derivationIds;
-    std::vector<boost::uuids::uuid> positionIds;
+    std::vector<util::uuid> derivationIds;
+    std::vector<util::uuid> positionIds;
     NamespaceSymbol globalNs;
     std::vector<cmajor::ast::AliasNode*> aliasNodes;
     std::vector<cmajor::ast::NamespaceImportNode*> namespaceImports;
@@ -335,22 +333,22 @@ private:
     int axiomNumber;
 
 // TOOD
-    //std::unordered_map<boost::uuids::uuid, FunctionSymbol*, boost::hash<boost::uuids::uuid>> functionMap;
-    //std::map<boost::uuids::uuid, FunctionSymbol*> functionMap;
+    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionMap;
+    //std::map<util::uuid, FunctionSymbol*> functionMap;
 
     //std::unordered_map<NamespaceSymbol*, NamespaceSymbol*> nsMap;
     std::map<NamespaceSymbol*, NamespaceSymbol*> nsMap;
     std::unordered_map<cmajor::ast::Node*, Symbol*> nodeSymbolMap;
     std::unordered_map<Symbol*, cmajor::ast::Node*> symbolNodeMap;
-    //std::unordered_map<boost::uuids::uuid, Symbol*, boost::hash<boost::uuids::uuid>> typeIdMap;
-    std::map<boost::uuids::uuid, Symbol*> typeIdMap;
-    //std::unordered_map<boost::uuids::uuid, FunctionSymbol*, boost::hash<boost::uuids::uuid>> functionIdMap;
-    std::map<boost::uuids::uuid, FunctionSymbol*> functionIdMap;
+    //std::unordered_map<util::uuid, Symbol*, boost::hash<util::uuid>> typeIdMap;
+    std::map<util::uuid, Symbol*> typeIdMap;
+    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionIdMap;
+    std::map<util::uuid, FunctionSymbol*> functionIdMap;
     std::unordered_map<std::u32string, TypeSymbol*> typeNameMap;
-    //std::unordered_map<boost::uuids::uuid, std::u32string, boost::hash<boost::uuids::uuid>> profiledFunctionNameMap;
-    std::map<boost::uuids::uuid, std::u32string> profiledFunctionNameMap;
-    //std::unordered_map<boost::uuids::uuid, std::vector<DerivedTypeSymbol*>, boost::hash<boost::uuids::uuid>> derivedTypeMap;
-    std::map<boost::uuids::uuid, std::vector<DerivedTypeSymbol*>> derivedTypeMap;
+    //std::unordered_map<util::uuid, std::u32string, boost::hash<util::uuid>> profiledFunctionNameMap;
+    std::map<util::uuid, std::u32string> profiledFunctionNameMap;
+    //std::unordered_map<util::uuid, std::vector<DerivedTypeSymbol*>, boost::hash<util::uuid>> derivedTypeMap;
+    std::map<util::uuid, std::vector<DerivedTypeSymbol*>> derivedTypeMap;
     std::vector<std::unique_ptr<DerivedTypeSymbol>> derivedTypes;
     //std::unordered_map<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationKeyHash> classTemplateSpecializationMap;
     std::map<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationKeyLess> classTemplateSpecializationMap;
@@ -370,7 +368,7 @@ private:
     int numSpecializationsNew;
     int GetNextDeclarationBlockIndex() { return declarationBlockIndex++; }
     void ResetDeclarationBlockIndex() { declarationBlockIndex = 0; }
-    void EmplaceTypeOrConceptRequest(SymbolReader& reader, Symbol* forSymbol, const boost::uuids::uuid& typeId, int index);
+    void EmplaceTypeOrConceptRequest(SymbolReader& reader, Symbol* forSymbol, const util::uuid& typeId, int index);
     void WriteSymbolDefinitionMap(SymbolWriter& writer);
     void ReadSymbolDefinitionMap(SymbolReader& reader);
 };

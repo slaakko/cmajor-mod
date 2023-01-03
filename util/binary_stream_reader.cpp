@@ -205,9 +205,9 @@ int64_t BinaryStreamReader::ReadSLEB128Long()
     return result;
 }
 
-void BinaryStreamReader::ReadUuid(boost::uuids::uuid& uuid)
+void BinaryStreamReader::ReadUuid(util::uuid& uuid)
 {
-    for (boost::uuids::uuid::value_type& x : uuid)
+    for (util::uuid::value_type& x : uuid)
     {
         x = ReadByte();
     }

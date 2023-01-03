@@ -14,11 +14,11 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
+DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
 {
 }
 
-DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
     Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
 {
     returnTypeExpr->SetParent(this);
@@ -68,12 +68,12 @@ void DelegateNode::AddParameter(ParameterNode* parameter)
     parameters.Add(parameter);
 }
 
-ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : 
+ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
     Node(NodeType::classDelegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
 {
 }
 
-ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
     Node(NodeType::classDelegateNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
 {
     returnTypeExpr->SetParent(this);

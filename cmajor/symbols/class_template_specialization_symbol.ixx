@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.class_.template_specialization.symbol;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -50,8 +47,8 @@ std::u32string MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplat
 class ClassTemplateSpecializationSymbol : public ClassTypeSymbol
 {
 public:
-    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_);
+    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_);
     ~ClassTemplateSpecializationSymbol();
     std::u32string SimpleName() const override;
     void Write(SymbolWriter& writer) override;
@@ -79,8 +76,8 @@ public:
     bool GetFlag(ClassTemplateSpecializationFlags flag) const { return (flags & flag) != ClassTemplateSpecializationFlags::none; }
     void ResetFlag(ClassTemplateSpecializationFlags flag) { flags = flags & ~flag; }
     // TODO
-    //TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
-    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    //TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     std::u32string Id() const override;
     const char* ClassName() const override { return "ClassTemplateSpecializationSymbol"; }
     void Check() override;

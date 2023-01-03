@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 // =================================
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
@@ -29,7 +27,7 @@ struct ConversionTableEntry;
 class TypeSymbol : public ContainerSymbol
 {
 public:
-    TypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    TypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsTypeSymbol() const override { return true; }
@@ -47,14 +45,14 @@ public:
     virtual bool IsCharacterPointerType() const { return false; }
     virtual const TypeSymbol* BaseType() const { return this; }
     virtual TypeSymbol* BaseType() { return this; }
-    virtual TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return this; }
-    virtual TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    virtual TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    virtual TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    virtual TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    virtual TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
+    virtual TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
+    virtual TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
+    virtual TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
+    virtual TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual void* IrType(cmajor::ir::Emitter& emitter) = 0;
     virtual void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) = 0;
     virtual void* CreateDIType(cmajor::ir::Emitter& emitter);
@@ -73,19 +71,19 @@ public:
     virtual bool HasNontrivialDestructor() const { return false; }
     virtual bool ContainsTemplateParameter() const { return false; }
     virtual bool CompletelyBound() const { return IsBound(); }
-    void SetTypeId(const boost::uuids::uuid& typeId_) { typeId = typeId_; }
+    void SetTypeId(const util::uuid& typeId_) { typeId = typeId_; }
     // TODO
-    const boost::uuids::uuid& TypeId() const { /*Assert(!typeId.is_nil(), "type id not initialized"); TODO*/  return typeId; }
+    const util::uuid& TypeId() const { /*Assert(!typeId.is_nil(), "type id not initialized"); TODO*/  return typeId; }
     bool TypeIdNotSet() const { return typeId.is_nil(); }
     virtual const TypeDerivationRec& DerivationRec() const;
-    virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    virtual TypeSymbol* Unify(TypeSymbol* that, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return nullptr; }
-    //virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return nullptr; }
-    virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) { return nullptr; }
+    virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual TypeSymbol* Unify(TypeSymbol* that, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
+    //virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
+    virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
 
     // TODO
-    //virtual bool IsRecursive(TypeSymbol* type, std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>& tested);
-    virtual bool IsRecursive(TypeSymbol* type, std::set<boost::uuids::uuid>& tested);
+    //virtual bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested);
+    virtual bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested);
     virtual ValueType GetValueType() const;
     virtual Value* MakeValue() const { return nullptr; }
     std::u32string Id() const override;
@@ -95,7 +93,7 @@ public:
     const char* ClassName() const override { return "TypeSymbol"; }
     void Check() override;
 private:
-    boost::uuids::uuid typeId;
+    util::uuid typeId;
 };
 
 bool CompareTypesForEquality(const TypeSymbol* left, const TypeSymbol* right);

@@ -22,10 +22,10 @@ public:
     util::BinaryStreamWriter& GetBinaryStreamWriter() { return astWriter.GetBinaryStreamWriter(); }
     void Write(Symbol* symbol);
     //void SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_); TODO
-    void SetSpanConversionModuleId(const boost::uuids::uuid& spanConversionModuleId_);
+    void SetSpanConversionModuleId(const util::uuid& spanConversionModuleId_);
 private:
     cmajor::ast::AstWriter astWriter;
-    boost::uuids::uuid spanConversionModuleId;
+    util::uuid spanConversionModuleId;
     //std::vector<soulng::lexer::Lexer*>* lexers;
 };
 

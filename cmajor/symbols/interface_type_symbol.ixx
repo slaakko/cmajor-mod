@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.interface_.type.symbol;
 
 // =================================
@@ -25,7 +23,7 @@ class InterfaceTypeCopyConstructor;
 class InterfaceTypeSymbol : public TypeSymbol
 {
 public:
-    InterfaceTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "interface"; }
     void AddMember(Symbol* member) override;
     void Accept(SymbolCollector* collector) override;
@@ -33,7 +31,7 @@ public:
     void* IrType(cmajor::ir::Emitter& emitter) override;
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
     const std::vector<MemberFunctionSymbol*>& MemberFunctions() const { return memberFunctions; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, MemberFunctionSymbol* interfaceMemberFunction, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, MemberFunctionSymbol* interfaceMemberFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     void SetCopyConstructor(InterfaceTypeCopyConstructor* copyConstructor_) { copyConstructor = copyConstructor_; }
     InterfaceTypeCopyConstructor* CopyConstructor() { return copyConstructor; }
     std::u32string Info() const override { return Name(); }
@@ -49,12 +47,12 @@ private:
 class InterfaceTypeDefaultConstructor : public FunctionSymbol
 {
 public:
-    InterfaceTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     InterfaceTypeDefaultConstructor(InterfaceTypeSymbol* interfaceType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeDefaultConstructor"; }
 private:
@@ -64,12 +62,12 @@ private:
 class InterfaceTypeCopyConstructor : public FunctionSymbol
 {
 public:
-    InterfaceTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     InterfaceTypeCopyConstructor(InterfaceTypeSymbol* interfaceType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeCopyConstructor"; }
 private:
@@ -79,12 +77,12 @@ private:
 class InterfaceTypeMoveConstructor : public FunctionSymbol
 {
 public:
-    InterfaceTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     InterfaceTypeMoveConstructor(InterfaceTypeSymbol* interfaceType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeMoveConstructor"; }
 private:
@@ -94,12 +92,12 @@ private:
 class InterfaceTypeCopyAssignment : public FunctionSymbol
 {
 public:
-    InterfaceTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeCopyAssignment"; }
 private:
@@ -109,12 +107,12 @@ private:
 class InterfaceTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    InterfaceTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    InterfaceTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "InterfaceTypeMoveAssignment"; }
 private:
@@ -124,15 +122,15 @@ private:
 class ClassToInterfaceConversion : public FunctionSymbol
 {
 public:
-    ClassToInterfaceConversion(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    ClassToInterfaceConversion(ClassTypeSymbol* sourceClassType_, InterfaceTypeSymbol* targetInterfaceType_, int32_t interfaceIndex_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_);
+    ClassToInterfaceConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassToInterfaceConversion(ClassTypeSymbol* sourceClassType_, InterfaceTypeSymbol* targetInterfaceType_, int32_t interfaceIndex_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     ConversionType GetConversionType() const override { return ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
     std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsClassToInterfaceTypeConversion() const override { return true; }
     const char* ClassName() const override { return "ClassToInterfaceConversion"; }
@@ -146,12 +144,12 @@ private:
 class GetObjectPtrFromInterface : public FunctionSymbol
 {
 public:
-    GetObjectPtrFromInterface(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    GetObjectPtrFromInterface(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     GetObjectPtrFromInterface(InterfaceTypeSymbol* interfaceTypeSymbol);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "GetObjectPtrFromInterface"; }
 private:

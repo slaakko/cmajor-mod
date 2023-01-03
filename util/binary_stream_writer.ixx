@@ -3,12 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module util.binary.stream.writer;
 import std.core;
 import util.stream;
+import util.uuid;
 
 export namespace util {
 
@@ -40,7 +38,7 @@ public:
     void WriteULEB128ULong(uint64_t x);
     void WriteSLEB128Int(int32_t x);
     void WriteSLEB128Long(int64_t x);
-    void Write(const boost::uuids::uuid& uuid);
+    void Write(const util::uuid& uuid);
     void WriteTime(time_t time);
     int64_t Position() const { return stream.Position(); }
 private:

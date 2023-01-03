@@ -13,16 +13,16 @@ import util;
 
 namespace cmajor::ast {
 
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier()
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier()
 {
 }
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, NodeType nodeType_) : Node(nodeType_, sourcePos_, moduleId_), identifier()
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_) : Node(nodeType_, sourcePos_, moduleId_), identifier()
 {
 }
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& identifier_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier(identifier_)
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier(identifier_)
 {
 }
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, NodeType nodeType_, const std::u32string& identifier_) : Node(nodeType_, sourcePos_, moduleId_), identifier(identifier_)
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_, const std::u32string& identifier_) : Node(nodeType_, sourcePos_, moduleId_), identifier(identifier_)
 {
     std::u32string result;
     for (char32_t c : identifier)
@@ -35,7 +35,7 @@ IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boo
     std::swap(result, identifier);
 }
 
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const Token& token) : Node(NodeType::identifierNode, sourcePos_, moduleId_)
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const Token& token) : Node(NodeType::identifierNode, sourcePos_, moduleId_)
 {
     identifier = std::u32string(token.match.begin, token.match.end);
 }
@@ -73,11 +73,11 @@ bool IdentifierNode::IsInternal() const
     return !identifier.empty() && identifier.front() == '@';
 }
 
-CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode)
+CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode)
 {
 }
 
-CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& identifier_) : IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode, identifier_)
+CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode, identifier_)
 {
 }
 

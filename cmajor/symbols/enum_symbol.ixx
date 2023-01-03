@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.enum_.symbol;
 
 // =================================
@@ -29,7 +27,7 @@ class EnumConstantSymbol;
 class EnumTypeSymbol : public TypeSymbol
 {
 public:
-    EnumTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
@@ -64,7 +62,7 @@ private:
 class EnumConstantSymbol : public Symbol
 {
 public:
-    EnumConstantSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumConstantSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     std::string TypeString() const override { return "enumeration_constant"; }
     void Accept(SymbolCollector* collector) override;
@@ -94,12 +92,12 @@ private:
 class EnumTypeDefaultConstructor : public FunctionSymbol
 {
 public:
-    EnumTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeDefaultConstructor(EnumTypeSymbol* enumType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeDefaultConstructor"; }
     void Check() override;
@@ -110,12 +108,12 @@ private:
 class EnumTypeCopyConstructor : public FunctionSymbol
 {
 public:
-    EnumTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeCopyConstructor(EnumTypeSymbol* enumType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeCopyConstructor"; }
     void Check() override;
@@ -126,12 +124,12 @@ private:
 class EnumTypeMoveConstructor : public FunctionSymbol
 {
 public:
-    EnumTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeMoveConstructor(EnumTypeSymbol* enumType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeMoveConstructor"; }
     void Check() override;
@@ -142,12 +140,12 @@ private:
 class EnumTypeCopyAssignment : public FunctionSymbol
 {
 public:
-    EnumTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeCopyAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeCopyAssignment"; }
     void Check() override;
@@ -158,12 +156,12 @@ private:
 class EnumTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    EnumTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeMoveAssignment(EnumTypeSymbol* enumType_, TypeSymbol* voidType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeMoveAssignment"; }
     void Check() override;
@@ -174,12 +172,12 @@ private:
 class EnumTypeReturn : public FunctionSymbol
 {
 public:
-    EnumTypeReturn(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeReturn(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeReturn(EnumTypeSymbol* enumType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeReturn"; }
     void Check() override;
@@ -190,12 +188,12 @@ private:
 class EnumTypeEqualityOp : public FunctionSymbol
 {
 public:
-    EnumTypeEqualityOp(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeEqualityOp(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     EnumTypeEqualityOp(EnumTypeSymbol* enumType_, TypeSymbol* boolType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceFunction(FunctionSymbol* functionSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "EnumTypeEqualityOp"; }
     void Check() override;
@@ -206,13 +204,13 @@ private:
 class EnumTypeToUnderlyingTypeConversion : public FunctionSymbol
 {
 public:
-    EnumTypeToUnderlyingTypeConversion(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    EnumTypeToUnderlyingTypeConversion(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_);
+    EnumTypeToUnderlyingTypeConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    EnumTypeToUnderlyingTypeConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     ConversionType GetConversionType() const override { return ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
@@ -226,13 +224,13 @@ private:
 class UnderlyingTypeToEnumTypeConversion : public FunctionSymbol
 {
 public:
-    UnderlyingTypeToEnumTypeConversion(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    UnderlyingTypeToEnumTypeConversion(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_);
+    UnderlyingTypeToEnumTypeConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    UnderlyingTypeToEnumTypeConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     ConversionType GetConversionType() const override { return ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }

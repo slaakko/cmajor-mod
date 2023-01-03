@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.function.symbol;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -57,7 +54,7 @@ AccessCheckFunction GetAccessCheckFunction();
 class FunctionGroupSymbol : public Symbol
 {
 public:
-    FunctionGroupSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    FunctionGroupSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
     std::string TypeString() const override { return "function_group"; }
     void ComputeMangledName() override;
@@ -144,8 +141,8 @@ class BoundTemplateParameterSymbol;
 class FunctionSymbol : public ContainerSymbol
 {
 public:
-    FunctionSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    FunctionSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    FunctionSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    FunctionSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     FunctionSymbol(const FunctionSymbol&) = delete;
     FunctionSymbol& operator=(const FunctionSymbol&) = delete;
     void Write(SymbolWriter& writer) override;
@@ -184,9 +181,9 @@ public:
     virtual bool IsCompileTimePrimitiveFunction() const { return false; }
     virtual bool IsClassToInterfaceTypeConversion() const { return false; }
     virtual bool IsMemberFunctionToClassDelegateConversion() const { return false; }
-    virtual void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    void GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
-    virtual std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, Value* receiver) const;
+    virtual void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    void GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const;
     virtual std::unique_ptr<Value> ConvertValue(const std::unique_ptr<Value>& value) const;
     virtual ParameterSymbol* GetThisParam() const { return nullptr; }
     virtual bool IsConstructorDestructorOrNonstaticMemberFunction() const { return false; }
@@ -198,8 +195,8 @@ public:
     bool IsCopyAssignment() const;
     bool IsMoveAssignment() const;
     virtual int StartParamIndex() const { return 0; }
-    const boost::uuids::uuid& FunctionId() const { /* TODO Assert(!functionId.is_nil(), "function id not initialized");*/  return functionId; }
-    void SetFunctionId(const boost::uuids::uuid& functionId_) { functionId = functionId_; }
+    const util::uuid& FunctionId() const { /* TODO Assert(!functionId.is_nil(), "function id not initialized");*/  return functionId; }
+    void SetFunctionId(const util::uuid& functionId_) { functionId = functionId_; }
     const std::u32string& GroupName() const { return groupName; }
     void SetGroupName(const std::u32string& groupName_);
     const std::vector<TemplateParameterSymbol*>& TemplateParameters() const { return templateParameters; }
@@ -265,7 +262,7 @@ public:
     bool ReturnsClassInterfaceOrClassDelegateByValue() const;
     bool IsFunctionTemplate() const { return !templateParameters.empty(); }
     void CloneUsingNodes(const std::vector<cmajor::ast::Node*>& usingNodes_);
-    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId);
+    LocalVariableSymbol* CreateTemporary(TypeSymbol* type, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction);
     void* IrType(cmajor::ir::Emitter& emitter);
     int32_t VmtIndex() const { return vmtIndex; }
@@ -306,7 +303,7 @@ public:
 private:
     FunctionSymbol* functionTemplate;
     FunctionSymbol* master;
-    boost::uuids::uuid functionId;
+    util::uuid functionId;
     std::u32string groupName;
     std::vector<TemplateParameterSymbol*> templateParameters;
     std::vector<TypeSymbol*> templateArgumentTypes;
@@ -334,7 +331,7 @@ private:
 class StaticConstructorSymbol : public FunctionSymbol
 {
 public:
-    StaticConstructorSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    StaticConstructorSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "static_constructor"; }
     void Accept(SymbolCollector* collector) override {}
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
@@ -349,7 +346,7 @@ public:
 class ConstructorSymbol : public FunctionSymbol
 {
 public:
-    ConstructorSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ConstructorSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override;
     std::u32string DocName() const override;
     std::u32string CodeName() const override;
@@ -366,7 +363,7 @@ public:
 class DestructorSymbol : public FunctionSymbol
 {
 public:
-    DestructorSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    DestructorSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
@@ -390,7 +387,7 @@ private:
 class MemberFunctionSymbol : public FunctionSymbol
 {
 public:
-    MemberFunctionSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    MemberFunctionSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override;
     std::u32string DocName() const override;
     ParameterSymbol* GetThisParam() const override { if (IsStatic()) return nullptr; else return Parameters()[0]; }
@@ -404,7 +401,7 @@ public:
 class ConversionFunctionSymbol : public FunctionSymbol
 {
 public:
-    ConversionFunctionSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ConversionFunctionSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "conversion_function"; }
     std::u32string DocName() const override;
     ParameterSymbol* GetThisParam() const override { return Parameters()[0]; }
@@ -438,7 +435,7 @@ private:
 class MemberExpressionTypeSymbol : public TypeSymbol
 {
 public:
-    MemberExpressionTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_, void* boundMemberExpression_);
+    MemberExpressionTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, void* boundMemberExpression_);
     bool IsExportSymbol() const override { return false; }
     void* IrType(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get ir type of member expression type");*/  return nullptr; }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get default ir value of member expression type");*/ return nullptr; }

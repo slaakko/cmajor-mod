@@ -22,7 +22,7 @@ Node* AstReader::ReadNode()
     NodeType nodeType = static_cast<NodeType>(binaryStreamReader.ReadByte());
     soul::ast::SourcePos sourcePos = ReadSourcePos();
 
-    boost::uuids::uuid moduleId;
+    util::uuid moduleId;
     binaryStreamReader.ReadUuid(moduleId);
     Node* node = NodeFactory::Instance().CreateNode(nodeType, sourcePos, moduleId);
     node->Read(*this);
@@ -225,7 +225,7 @@ soul::ast::SourcePos AstReader::ReadSourcePos()
         return soul::ast::SourcePos(static_cast<int32_t>(file), static_cast<int32_t>(line), static_cast<int32_t>(col));
 }
 /*
-void AstReader::SetModuleMaps(const boost::uuids::uuid& rootModuleId_, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_)
+void AstReader::SetModuleMaps(const util::uuid& rootModuleId_, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_)
 {
     rootModuleId = rootModuleId_;
     moduleNameTable = moduleNameTable_;

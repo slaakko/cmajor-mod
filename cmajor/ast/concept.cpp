@@ -15,15 +15,15 @@ import util;
 
 namespace cmajor::ast {
 
-ConstraintNode::ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+ConstraintNode::ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
-ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConstraintNode(NodeType::parenthesizedConstraintNode, sourcePos_, moduleId_)
+ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(NodeType::parenthesizedConstraintNode, sourcePos_, moduleId_)
 {
 }
 
-ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* constraint_) :
+ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_) :
     ConstraintNode(NodeType::parenthesizedConstraintNode, sourcePos_, moduleId_), constraint(constraint_)
 {
 }
@@ -56,11 +56,11 @@ std::string ParenthesizedConstraintNode::ToString() const
     return "(" + constraint->ToString() + ")";
 }
 
-BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_), left(), right()
+BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_), left(), right()
 {
 }
 
-BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
+BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
     ConstraintNode(nodeType_, sourcePos_, moduleId_), left(left_), right(right_)
 {
     left->SetParent(this);
@@ -83,11 +83,11 @@ void BinaryConstraintNode::Read(AstReader& reader)
     right->SetParent(this);
 }
 
-DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryConstraintNode(NodeType::disjunctiveConstraintNode, sourcePos_, moduleId_)
+DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryConstraintNode(NodeType::disjunctiveConstraintNode, sourcePos_, moduleId_)
 {
 }
 
-DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
+DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
     BinaryConstraintNode(NodeType::disjunctiveConstraintNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -108,11 +108,11 @@ std::string DisjunctiveConstraintNode::ToString() const
     return Left()->ToString() + " or " + Right()->ToString();
 }
 
-ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : BinaryConstraintNode(NodeType::conjunctiveConstraintNode, sourcePos_, moduleId_)
+ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryConstraintNode(NodeType::conjunctiveConstraintNode, sourcePos_, moduleId_)
 {
 }
 
-ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
+ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
     BinaryConstraintNode(NodeType::conjunctiveConstraintNode, sourcePos_, moduleId_, left_, right_)
 {
 }
@@ -134,12 +134,12 @@ std::string ConjunctiveConstraintNode::ToString() const
 }
 
 
-WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConstraintNode(NodeType::whereConstraintNode, sourcePos_, moduleId_), constraint(), headerConstraint(false), semicolon(false)
 {
 }
 
-WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, ConstraintNode* constraint_) :
+WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_) :
     ConstraintNode(NodeType::whereConstraintNode, sourcePos_, moduleId_), constraint(constraint_), headerConstraint(false), semicolon(false)
 {
     constraint->SetParent(this);
@@ -186,12 +186,12 @@ std::string WhereConstraintNode::ToString() const
     return "where " + constraint->ToString();
 }
 
-PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConstraintNode(NodeType::predicateConstraintNode, sourcePos_, moduleId_), invokeExpr()
 {
 }
 
-PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* invokeExpr_) :
+PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* invokeExpr_) :
     ConstraintNode(NodeType::predicateConstraintNode, sourcePos_, moduleId_), invokeExpr(invokeExpr_)
 {
     invokeExpr->SetParent(this);
@@ -226,12 +226,12 @@ std::string PredicateConstraintNode::ToString() const
     return invokeExpr->ToString();
 }
 
-IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConstraintNode(NodeType::isConstraintNode, sourcePos_, moduleId_), typeExpr(), conceptOrTypeName()
 {
 }
 
-IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_, Node* conceptOrTypeName_) :
+IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, Node* conceptOrTypeName_) :
     ConstraintNode(NodeType::isConstraintNode, sourcePos_, moduleId_), typeExpr(typeExpr_), conceptOrTypeName(conceptOrTypeName_)
 {
     typeExpr->SetParent(this);
@@ -270,12 +270,12 @@ std::string IsConstraintNode::ToString() const
     return typeExpr->ToString() + " is " + conceptOrTypeName->ToString();
 }
 
-MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConstraintNode(NodeType::multiParamConstraintNode, sourcePos_, moduleId_), conceptId(), typeExprs()
 {
 }
 
-MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* conceptId_) :
+MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* conceptId_) :
     ConstraintNode(NodeType::multiParamConstraintNode, sourcePos_, moduleId_), conceptId(conceptId_), typeExprs()
 {
     conceptId->SetParent(this);
@@ -336,12 +336,12 @@ std::string MultiParamConstraintNode::ToString() const
     return s;
 }
 
-TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConstraintNode(NodeType::typeNameConstraintNode, sourcePos_, moduleId_), typeId()
 {
 }
 
-TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeId_) :
+TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeId_) :
     ConstraintNode(NodeType::typeNameConstraintNode, sourcePos_, moduleId_), typeId(typeId_)
 {
     typeId->SetParent(this);
@@ -375,16 +375,16 @@ std::string TypeNameConstraintNode::ToString() const
     return "typename " + typeId->ToString();
 }
 
-SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_)
+SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_)
 {
 }
 
-ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     SignatureConstraintNode(NodeType::constructorConstraintNode, sourcePos_, moduleId_), typeParamId(), parameters()
 {
 }
 
-ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* typeParamId_) :
+ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_) :
     SignatureConstraintNode(NodeType::constructorConstraintNode, sourcePos_, moduleId_), typeParamId(typeParamId_), parameters()
 {
     typeParamId->SetParent(this);
@@ -446,12 +446,12 @@ void ConstructorConstraintNode::AddParameter(ParameterNode* parameter)
     parameters.Add(parameter);
 }
 
-DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     SignatureConstraintNode(NodeType::destructorConstraintNode, sourcePos_, moduleId_), typeParamId()
 {
 }
 
-DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* typeParamId_) :
+DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_) :
     SignatureConstraintNode(NodeType::destructorConstraintNode, sourcePos_, moduleId_), typeParamId(typeParamId_)
 {
     typeParamId->SetParent(this);
@@ -488,12 +488,12 @@ std::string DestructorConstraintNode::ToString() const
     return s;
 }
 
-MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     SignatureConstraintNode(NodeType::memberFunctionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(), typeParamId(), groupId(), parameters()
 {
 }
 
-MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_) :
+MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_) :
     SignatureConstraintNode(NodeType::memberFunctionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(returnTypeExpr_), typeParamId(typeParamId_), groupId(groupId_), parameters()
 {
     returnTypeExpr->SetParent(this);
@@ -567,12 +567,12 @@ std::string MemberFunctionConstraintNode::ToString() const
     return s;
 }
 
-FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     SignatureConstraintNode(NodeType::functionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(), groupId(), parameters()
 {
 }
 
-FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* returnTypeExpr_, const std::u32string& groupId_)
+FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, const std::u32string& groupId_)
     : SignatureConstraintNode(NodeType::functionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), parameters()
 {
     returnTypeExpr->SetParent(this);
@@ -641,11 +641,11 @@ std::string FunctionConstraintNode::ToString() const
     return s;
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(), text()
+AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(), text()
 {
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_, const std::u32string& text_) :
+AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_, const std::u32string& text_) :
     Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(expression_), text(text_)
 {
     expression->SetParent(this);
@@ -682,11 +682,11 @@ std::string AxiomStatementNode::ToString() const
     return util::ToUtf8(text);
 }
 
-AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::axiomNode, sourcePos_, moduleId_), id(), parameters(), statements()
+AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomNode, sourcePos_, moduleId_), id(), parameters(), statements()
 {
 }
 
-AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_) :
+AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) :
     Node(NodeType::axiomNode, sourcePos_, moduleId_), id(id_), parameters(), statements()
 {
     id->SetParent(this);
@@ -751,11 +751,11 @@ void AxiomNode::AddStatement(AxiomStatementNode* statement)
     statements.Add(statement);
 }
 
-ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(), typeParameters()
+ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(), typeParameters()
 {
 }
 
-ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(id_), typeParameters()
+ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(id_), typeParameters()
 {
     id->SetParent(this);
 }
@@ -815,21 +815,21 @@ std::string ConceptIdNode::ToString() const
     return s;
 }
 
-ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::conceptNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conceptNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
 {
 }
 
-ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
 {
 }
 
-ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
+ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
     Node(NodeType::conceptNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
 {
     id->SetParent(this);
 }
 
-ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
+ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
     Node(nodeType_, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
 {
     id->SetParent(this);
@@ -940,7 +940,7 @@ SameConstraintNode::SameConstraintNode() : IntrinsicConstraintNode(NodeType::sam
 {
 }
 
-SameConstraintNode::SameConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::sameConstraintNode)
+SameConstraintNode::SameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::sameConstraintNode)
 {
 }
 
@@ -958,7 +958,7 @@ DerivedConstraintNode::DerivedConstraintNode() : IntrinsicConstraintNode(NodeTyp
 {
 }
 
-DerivedConstraintNode::DerivedConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::derivedConstraintNode)
+DerivedConstraintNode::DerivedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::derivedConstraintNode)
 {
 }
 
@@ -976,7 +976,7 @@ ConvertibleConstraintNode::ConvertibleConstraintNode() : IntrinsicConstraintNode
 {
 }
 
-ConvertibleConstraintNode::ConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::convertibleConstraintNode)
+ConvertibleConstraintNode::ConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::convertibleConstraintNode)
 {
 }
 
@@ -994,7 +994,7 @@ ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode() : Int
 {
 }
 
-ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::explicitlyConvertibleConstraintNode)
+ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::explicitlyConvertibleConstraintNode)
 {
 }
 
@@ -1012,7 +1012,7 @@ CommonConstraintNode::CommonConstraintNode() : IntrinsicConstraintNode(NodeType:
 {
 }
 
-CommonConstraintNode::CommonConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::commonConstraintNode)
+CommonConstraintNode::CommonConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::commonConstraintNode)
 {
 }
 
@@ -1030,7 +1030,7 @@ NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode() : IntrinsicCons
 {
 }
 
-NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::nonreferenceTypeConstraintNode)
+NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::nonreferenceTypeConstraintNode)
 {
 }
 
@@ -1051,7 +1051,7 @@ SameConceptNode::SameConceptNode() : ConceptNode(NodeType::sameConceptNode, soul
     AddConstraint(new SameConstraintNode());
 }
 
-SameConceptNode::SameConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConceptNode(NodeType::sameConceptNode, sourcePos_, moduleId_)
+SameConceptNode::SameConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::sameConceptNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1062,7 +1062,7 @@ DerivedConceptNode::DerivedConceptNode() : ConceptNode(NodeType::derivedConceptN
     AddConstraint(new DerivedConstraintNode());
 }
 
-DerivedConceptNode::DerivedConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConceptNode(NodeType::derivedConceptNode, sourcePos_, moduleId_)
+DerivedConceptNode::DerivedConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::derivedConceptNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1073,7 +1073,7 @@ ConvertibleConceptNode::ConvertibleConceptNode() : ConceptNode(NodeType::convert
     AddConstraint(new ConvertibleConstraintNode());
 }
 
-ConvertibleConceptNode::ConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConceptNode(NodeType::convertibleConceptNode, sourcePos_, moduleId_)
+ConvertibleConceptNode::ConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::convertibleConceptNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1085,7 +1085,7 @@ ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode() :
     AddConstraint(new ExplicitlyConvertibleConstraintNode());
 }
 
-ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     ConceptNode(NodeType::explicitlyConvertibleConceptNode, sourcePos_, moduleId_)
 {
 }
@@ -1098,7 +1098,7 @@ CommonConceptNode::CommonConceptNode() :
     AddConstraint(new CommonConstraintNode());
 }
 
-CommonConceptNode::CommonConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConceptNode(NodeType::commonConceptNode, sourcePos_, moduleId_)
+CommonConceptNode::CommonConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::commonConceptNode, sourcePos_, moduleId_)
 {
 }
 
@@ -1109,7 +1109,7 @@ NonreferenceTypeConceptNode::NonreferenceTypeConceptNode() :
     AddConstraint(new NonreferenceTypeConstraintNode());
 }
 
-NonreferenceTypeConceptNode::NonreferenceTypeConceptNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : ConceptNode(NodeType::nonreferenceTypeConceptNode, sourcePos_, moduleId_)
+NonreferenceTypeConceptNode::NonreferenceTypeConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::nonreferenceTypeConceptNode, sourcePos_, moduleId_)
 {
 }
 } // namespace cmajor::ast

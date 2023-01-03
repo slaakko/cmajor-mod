@@ -13,7 +13,7 @@ import util;
 
 namespace cmajor::ast {
 
-LiteralNode::LiteralNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+LiteralNode::LiteralNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
@@ -34,7 +34,7 @@ void LiteralNode::SetText(const std::u32string& text_)
     text = text_;
 }
 
-LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, uint64_t value, bool unsignedSuffix)
+LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t value, bool unsignedSuffix)
 {
     if (unsignedSuffix)
     {
@@ -58,7 +58,7 @@ LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, con
     }
 }
 
-LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, double value, bool float_)
+LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, double value, bool float_)
 {
     if (float_)
     {
@@ -70,7 +70,7 @@ LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, co
     }
 }
 
-LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, char32_t value, int chrLitPrefix)
+LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, int chrLitPrefix)
 {
     switch (chrLitPrefix)
     {
@@ -90,7 +90,7 @@ LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, c
     return nullptr;
 }
 
-LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::u32string& value, int strLitPrefix)
+LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, int strLitPrefix)
 {
     switch (strLitPrefix)
     {
@@ -110,11 +110,11 @@ LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, cons
     return nullptr;
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(false)
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(false)
 {
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, bool value_) :
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool value_) :
     LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -147,12 +147,12 @@ std::string BooleanLiteralNode::ToString() const
     if (value) return "true"; else return "false";
 }
 
-SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::sbyteLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int8_t value_) :
+SByteLiteralNode::SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int8_t value_) :
     LiteralNode(NodeType::sbyteLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -185,12 +185,12 @@ std::string SByteLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::byteLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint8_t value_) :
+ByteLiteralNode::ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint8_t value_) :
     LiteralNode(NodeType::byteLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -223,12 +223,12 @@ std::string ByteLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::shortLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int16_t value_) :
+ShortLiteralNode::ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int16_t value_) :
     LiteralNode(NodeType::shortLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -261,11 +261,11 @@ std::string ShortLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(0u)
+UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint16_t value_) :
+UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint16_t value_) :
     LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -298,12 +298,12 @@ std::string UShortLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::intLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int32_t value_) :
+IntLiteralNode::IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int32_t value_) :
     LiteralNode(NodeType::intLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -336,12 +336,12 @@ std::string IntLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::uintLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint32_t value_) :
+UIntLiteralNode::UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint32_t value_) :
     LiteralNode(NodeType::uintLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -374,12 +374,12 @@ std::string UIntLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::longLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, int64_t value_) :
+LongLiteralNode::LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int64_t value_) :
     LiteralNode(NodeType::longLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -412,11 +412,11 @@ std::string LongLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(0u)
+ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
-ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, uint64_t value_) :
+ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint64_t value_) :
     LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -449,12 +449,12 @@ std::string ULongLiteralNode::ToString() const
     return std::to_string(value) + "u";
 }
 
-FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::floatLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, float value_) :
+FloatLiteralNode::FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, float value_) :
     LiteralNode(NodeType::floatLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -487,12 +487,12 @@ std::string FloatLiteralNode::ToString() const
     return std::to_string(value) + "f";
 }
 
-DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::doubleLiteralNode, sourcePos_, moduleId_), value(0)
 {
 }
 
-DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, double value_) :
+DoubleLiteralNode::DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, double value_) :
     LiteralNode(NodeType::doubleLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -525,11 +525,11 @@ std::string DoubleLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value('\0')
+CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char value_) :
+CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char value_) :
     LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -562,12 +562,12 @@ std::string CharLiteralNode::ToString() const
     return "'" + util::CharStr(value) + "'";
 }
 
-WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::wcharLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char16_t value_) :
+WCharLiteralNode::WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char16_t value_) :
     LiteralNode(NodeType::wcharLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -600,12 +600,12 @@ std::string WCharLiteralNode::ToString() const
     return "w'" + util::ToUtf8(util::CharStr(char32_t(value))) + "'";
 }
 
-UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::ucharLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
-UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, char32_t value_) :
+UCharLiteralNode::UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char32_t value_) :
     LiteralNode(NodeType::ucharLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -638,12 +638,12 @@ std::string UCharLiteralNode::ToString() const
     return "u'" + util::ToUtf8(util::CharStr(value)) + "'";
 }
 
-StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::stringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::string& value_) :
+StringLiteralNode::StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& value_) :
     LiteralNode(NodeType::stringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -676,12 +676,12 @@ std::string StringLiteralNode::ToString() const
     return "\"" + util::StringStr(value) + "\"";
 }
 
-WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::wstringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u16string& value_) :
+WStringLiteralNode::WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u16string& value_) :
     LiteralNode(NodeType::wstringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -714,12 +714,12 @@ std::string WStringLiteralNode::ToString() const
     return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
-UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::ustringLiteralNode, sourcePos_, moduleId_), value()
 {
 }
 
-UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& value_) :
+UStringLiteralNode::UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& value_) :
     LiteralNode(NodeType::ustringLiteralNode, sourcePos_, moduleId_), value(value_)
 {
 }
@@ -752,7 +752,7 @@ std::string UStringLiteralNode::ToString() const
     return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
-NullLiteralNode::NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+NullLiteralNode::NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::nullLiteralNode, sourcePos_, moduleId_)
 {
 }
@@ -768,7 +768,7 @@ void NullLiteralNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ArrayLiteralNode::ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ArrayLiteralNode::ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::arrayLiteralNode, sourcePos_, moduleId_)
 {
 }
@@ -807,7 +807,7 @@ void ArrayLiteralNode::AddValue(Node* value)
     values.Add(value);
 }
 
-StructuredLiteralNode::StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+StructuredLiteralNode::StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::structuredLiteralNode, sourcePos_, moduleId_)
 {
 }
@@ -846,12 +846,12 @@ void StructuredLiteralNode::AddMember(Node* member)
     members.Add(member);
 }
 
-UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     LiteralNode(NodeType::uuidLiteralNode, sourcePos_, moduleId_), uuid(util::nil_uuid())
 {
 }
 
-UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const boost::uuids::uuid& uuid_) :
+UuidLiteralNode::UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const util::uuid& uuid_) :
     LiteralNode(NodeType::uuidLiteralNode, sourcePos_, moduleId_), uuid(uuid_)
 {
 }

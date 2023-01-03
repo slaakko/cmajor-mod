@@ -15,8 +15,8 @@ class IdentifierNode;
 class TypedefNode : public Node
 {
 public:
-    TypedefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TypedefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_);
+    TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

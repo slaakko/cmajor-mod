@@ -1,6 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
-
 export module cmajor.symbols.trap;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -21,8 +18,8 @@ export namespace cmajor::symbols {
     {
     public:
         TrapFunction(SymbolTable& symbolTable);
-        TrapFunction(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId, const std::u32string& name_);
-        void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) override;
+        TrapFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
+        void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     };
 
     void InitTrap(SymbolTable& symbolTable);

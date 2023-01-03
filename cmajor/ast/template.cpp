@@ -13,11 +13,11 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::templateIdNode, sourcePos_, moduleId_)
+TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::templateIdNode, sourcePos_, moduleId_)
 {
 }
 
-TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* primary_) :
+TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* primary_) :
     Node(NodeType::templateIdNode, sourcePos_, moduleId_), primary(primary_)
 {
     primary->SetParent(this);
@@ -79,11 +79,11 @@ void TemplateIdNode::AddTemplateArgument(Node* templateArgument)
     templateArguments.Add(templateArgument);
 }
 
-TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
+TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
 {
 }
 
-TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
+TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
     Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id(id_), defaultTemplateArgument(defaultTemplateArgument_)
 {
     id->SetParent(this);
@@ -134,11 +134,11 @@ void TemplateParameterNode::Read(AstReader& reader)
     }
 }
 
-FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId()
+FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId()
 {
 }
 
-FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, TemplateIdNode* templateId_) :
+FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TemplateIdNode* templateId_) :
     Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId(templateId_)
 {
 }

@@ -14,11 +14,11 @@ import util;
 
 namespace cmajor::ast {
 
-ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), templateParameters(), baseClassOrInterfaces(), members()
 {
 }
-ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
     Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), templateParameters(), baseClassOrInterfaces(), members(), attributes(attributes_)
 {
 }
@@ -228,7 +228,7 @@ int ClassNode::Level() const
     return level;
 }
 
-InitializerNode::InitializerNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+InitializerNode::InitializerNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
 {
 }
 
@@ -251,7 +251,7 @@ void InitializerNode::AddArgument(Node* argument)
     arguments.Add(argument);
 }
 
-ThisInitializerNode::ThisInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : InitializerNode(NodeType::thisInitializerNode, sourcePos_, moduleId_)
+ThisInitializerNode::ThisInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::thisInitializerNode, sourcePos_, moduleId_)
 {
 }
 
@@ -271,7 +271,7 @@ void ThisInitializerNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-BaseInitializerNode::BaseInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : InitializerNode(NodeType::baseInitializerNode, sourcePos_, moduleId_)
+BaseInitializerNode::BaseInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::baseInitializerNode, sourcePos_, moduleId_)
 {
 }
 
@@ -291,11 +291,11 @@ void BaseInitializerNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : InitializerNode(NodeType::memberInitializerNode, sourcePos_, moduleId_), memberId()
+MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::memberInitializerNode, sourcePos_, moduleId_), memberId()
 {
 }
 
-MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* memberId_) :
+MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* memberId_) :
     InitializerNode(NodeType::memberInitializerNode, sourcePos_, moduleId_), memberId(memberId_)
 {
     memberId->SetParent(this);
@@ -331,11 +331,11 @@ void MemberInitializerNode::Read(AstReader& reader)
 }
 
 /*
-StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@static_constructor", nullptr), initializers()
 {
 }
-StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
+StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
     FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@static_constructor", attributes_), initializers()
 {
 }
@@ -380,11 +380,11 @@ void StaticConstructorNode::AddInitializer(InitializerNode* initializer)
 }
 
 
-ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@constructor", nullptr), initializers()
+ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@constructor", nullptr), initializers()
 {
 }
 
-ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@constructor", attributes_), initializers()
+ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@constructor", attributes_), initializers()
 {
 }
 
@@ -427,11 +427,11 @@ void ConstructorNode::AddInitializer(InitializerNode* initializer)
     initializers.Add(initializer);
 }
 
-DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : FunctionNode(NodeType::destructorNode, sourcePos_, moduleId_)
+DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::destructorNode, sourcePos_, moduleId_)
 {
 }
 
-DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
+DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
     FunctionNode(NodeType::destructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@destructor", attributes_)
 {
 }
@@ -461,11 +461,11 @@ void DestructorNode::Read(AstReader& reader)
     classId.reset(reader.ReadIdentifierNode());
 }
 
-MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : FunctionNode(NodeType::memberFunctionNode, sourcePos_, moduleId_)
+MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::memberFunctionNode, sourcePos_, moduleId_)
 {
 }
 
-MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
+MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
     FunctionNode(NodeType::memberFunctionNode, sourcePos_, moduleId_, specifiers_, returnTypeExpr_, groupId_, attributes_)
 {
 }
@@ -486,11 +486,11 @@ void MemberFunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : FunctionNode(NodeType::conversionFunctionNode, sourcePos_, moduleId_)
+ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::conversionFunctionNode, sourcePos_, moduleId_)
 {
 }
 
-ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_) :
+ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_) :
     FunctionNode(NodeType::conversionFunctionNode, sourcePos_, moduleId_, specifiers_, returnTypeExpr_, U"@operator_conv", attributes_)
 {
 }
@@ -511,11 +511,11 @@ void ConversionFunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::memberVariableNode, sourcePos_, moduleId_), specifiers()
+MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::memberVariableNode, sourcePos_, moduleId_), specifiers()
 {
 }
 
-MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_) :
+MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_) :
     Node(NodeType::memberVariableNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), attributes(attributes_)
 {
     typeExpr->SetParent(this);

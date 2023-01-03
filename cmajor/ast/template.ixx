@@ -15,8 +15,8 @@ class IdentifierNode;
 class TemplateIdNode : public Node
 {
 public:
-    TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* primary_);
+    TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* primary_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -33,8 +33,8 @@ private:
 class TemplateParameterNode : public Node
 {
 public:
-    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_);
+    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -51,8 +51,8 @@ public:
 class FullInstantiationRequestNode : public Node
 {
 public:
-    FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, TemplateIdNode* templateId_);
+    FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TemplateIdNode* templateId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

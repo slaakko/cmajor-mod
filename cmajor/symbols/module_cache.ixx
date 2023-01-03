@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.module_.cache;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -11,6 +9,7 @@ export module cmajor.symbols.module_.cache;
 //import cmajor.symbols.module_;
 import cmajor.ast.project;
 import std.core;
+import util.uuid;
 
 export namespace cmajor::symbols {
 
@@ -29,7 +28,7 @@ public:
     static std::unique_ptr<ModuleCache> Release();
     static ModuleCache& Instance() { return *instance; }
     Module* GetModule(const std::string& moduleFilePath);
-    Module* GetModule(const boost::uuids::uuid& moduleId) const;
+    Module* GetModule(const util::uuid& moduleId) const;
     void MapModule(Module* module_);
     Module* GetCachedModule(const std::string& moduleFilePath) const;
     void PutModule(std::unique_ptr<Module>&& module_);
@@ -46,8 +45,8 @@ private:
     std::unordered_map<std::string, int> moduleMap;
     std::vector<std::unique_ptr<Module>> modules;
     // TODO
-    //std::unordered_map<boost::uuids::uuid, Module*, boost::hash<boost::uuids::uuid>> moduleIdMap;
-    std::map<boost::uuids::uuid, Module*> moduleIdMap;
+    //std::unordered_map<util::uuid, Module*, boost::hash<util::uuid>> moduleIdMap;
+    std::map<util::uuid, Module*> moduleIdMap;
     void CollectModuleIndices(Module* module_, std::unordered_set<int>& moduleIndeces);
 };
 
@@ -67,7 +66,7 @@ Module* GetCachedModule(const std::string& moduleFilePath);
 void SetCacheModule(const std::string& moduleFilePath, std::unique_ptr<Module>&& module_);
 void RemoveModuleFromCache(const std::string& moduleFilePath);
 void MoveNonSystemModulesTo(std::unique_ptr<ModuleCache>& cachePtr);
-Module* GetModuleById(const boost::uuids::uuid& moduleId);
+Module* GetModuleById(const util::uuid& moduleId);
 void MapModule(Module* module_);
 void UpdateModuleCache();
 } // namespace cmajor::symbols

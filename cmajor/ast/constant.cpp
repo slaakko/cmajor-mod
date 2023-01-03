@@ -14,11 +14,11 @@ import util;
 
 namespace cmajor::ast {
 
-ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::constantNode, sourcePos_, moduleId_), specifiers(Specifiers::none)
+ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::constantNode, sourcePos_, moduleId_), specifiers(Specifiers::none)
 {
 }
 
-ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_) :
+ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_) :
     Node(NodeType::constantNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), value(value_)
 {
     typeExpr->SetParent(this);

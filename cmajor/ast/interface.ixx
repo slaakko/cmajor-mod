@@ -18,8 +18,8 @@ class IdentifierNode;
 class InterfaceNode : public Node
 {
 public:
-    InterfaceNode(const soul::ast::SourcePos& span_, const boost::uuids::uuid& moduleId_);
-    InterfaceNode(const soul::ast::SourcePos& span_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
+    InterfaceNode(const soul::ast::SourcePos& span_, const util::uuid& moduleId_);
+    InterfaceNode(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

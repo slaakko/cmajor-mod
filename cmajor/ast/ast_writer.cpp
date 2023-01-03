@@ -35,7 +35,7 @@ void AstWriter::SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_)
     lexers = lexers_;
 }
 
-void AstWriter::SetSpanConversionModuleId(const boost::uuids::uuid& spanConversionModuleId_)
+void AstWriter::SetSpanConversionModuleId(const util::uuid& spanConversionModuleId_)
 {
     spanConversionModuleId = spanConversionModuleId_;
 }

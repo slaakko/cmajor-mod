@@ -206,6 +206,8 @@
     <ClCompile Include="memory_writer.ixx" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="path.ixx" />
+    <ClCompile Include="rand.cpp" />
+    <ClCompile Include="rand.ixx" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="sha1.ixx" />
     <ClCompile Include="socket.cpp" />

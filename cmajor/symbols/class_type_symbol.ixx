@@ -40,7 +40,7 @@ class ClassTemplateSpecializationSymbol;
 class ClassGroupTypeSymbol : public TypeSymbol
 {
 public:
-    ClassGroupTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& name_);
+    ClassGroupTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
     std::string TypeString() const override { return "class_group"; }
     bool IsInComplete() const override { return true; }
@@ -116,8 +116,8 @@ const int32_t functionVmtIndexOffset = 6;   // virtual method table
 class ClassTypeSymbol : public TypeSymbol
 {
 public:
-    ClassTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
-    ClassTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     const cmajor::ast::NodeList<cmajor::ast::Node>& UsingNodes() const { return usingNodes; }
@@ -137,8 +137,8 @@ public:
     void CollectMembers(SymbolCollector* collector);
     void Dump(util::CodeFormatter& formatter) override;
     // TODO
-    //bool IsRecursive(TypeSymbol* type, std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>>& tested) override;
-    bool IsRecursive(TypeSymbol* type, std::set<boost::uuids::uuid>& tested) override;
+    //bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested) override;
+    bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested) override;
     virtual bool IsPrototypeTemplateSpecialization() const { return false; }
     bool CompletelyBound() const override { return IsBound() && !StatementsNotBound(); }
     void CreateDestructorSymbol();

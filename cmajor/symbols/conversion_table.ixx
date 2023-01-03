@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.conversion.table;
 
 // =================================
@@ -40,7 +38,7 @@ struct ConversionTableEntryHash
 {
     size_t operator()(const ConversionTableEntry& entry) const
     {
-        return boost::hash<boost::uuids::uuid>()(entry.sourceType->TypeId()) ^ boost::hash<boost::uuids::uuid>()(entry.targetType->TypeId());
+        return boost::hash<util::uuid>()(entry.sourceType->TypeId()) ^ boost::hash<util::uuid>()(entry.targetType->TypeId());
     }
 };
 */
@@ -74,7 +72,7 @@ public:
     ConversionTable(const ConversionTable&) = delete;
     ConversionTable& operator=(const ConversionTable&) = delete;
     void AddConversion(FunctionSymbol* conversion);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) const;
     void AddGeneratedConversion(std::unique_ptr<FunctionSymbol>&& generatedConversion);
     void Add(const ConversionTable& that);
     void Check();

@@ -2,14 +2,13 @@
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-module;
-#include <boost/uuid/uuid.hpp>
 
 export module cmajor.symbols.scope;
 
 import std.core;
 import soul.ast.source.pos;
 import cmajor.ast.namespace_;
+import util.uuid;
 
 export namespace cmajor::symbols {
 
@@ -100,7 +99,7 @@ public:
     const NamespaceSymbol* Ns() const;
     NamespaceSymbol* Ns();
     void Clear();
-    NamespaceSymbol* CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId);
+    NamespaceSymbol* CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId);
     void CollectViableFunctions(int arity, const std::u32string& groupName, std::unordered_set<ContainerScope*>& scopesLookedUp, ScopeLookup scopeLookup,
         ViableFunctionSet& viableFunctions, Module* module);
     const std::map<std::u32string, Symbol*>& SymbolMap() const { return symbolMap; }

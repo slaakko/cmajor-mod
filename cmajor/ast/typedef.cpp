@@ -12,12 +12,12 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     Node(NodeType::typedefNode, sourcePos_, moduleId_), specifiers(Specifiers::none), typeExpr(), id()
 {
 }
 
-TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
+TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
     Node(NodeType::typedefNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_)
 {
     typeExpr->SetParent(this);

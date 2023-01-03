@@ -1,5 +1,7 @@
-module;
-#include <boost/uuid/uuid.hpp>
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
 
 export module util.uuid;
 
@@ -7,23 +9,42 @@ import std.core;
 
 export namespace util {
 
-void UuidToInts(const boost::uuids::uuid& id, uint64_t& int1, uint64_t& int2);
-void IntsToUuid(uint64_t int1, uint64_t int2, boost::uuids::uuid& id);
-void RandomUuid(boost::uuids::uuid& id);
-
-// generate a nil uuid
-struct nil_generator {
-    typedef boost::uuids::uuid result_type;
-
-    boost::uuids::uuid operator()() const {
-        // initialize to all zeros
-        boost::uuids::uuid u = { {0} };
-        return u;
-    }
+struct uuid
+{
+    using value_type = uint8_t;
+    uuid();
+    uuid(const uuid& that);
+    uuid& operator=(const uuid& that);
+    uuid(uuid&& that);
+    uuid& operator=(uuid&& that);
+    static uuid random();
+    static constexpr int static_size() { return 16; }
+    const std::uint8_t* begin() const { return &data[0]; }
+    const std::uint8_t* end() const { return &data[static_size()]; }
+    bool is_nil() const;
+    std::uint8_t* begin() { return &data[0]; }
+    std::uint8_t* end() { return &data[static_size()]; }
+    std::uint8_t data[16];
 };
 
-inline boost::uuids::uuid nil_uuid() {
-    return nil_generator()();
+bool operator==(const uuid& left, const uuid& right);
+inline bool operator!=(const uuid& left, const uuid& right) { return !(left == right); }
+bool operator<(const uuid& left, const uuid& right);
+
+void UuidToInts(const uuid& id, uint64_t& int1, uint64_t& int2);
+void IntsToUuid(uint64_t int1, uint64_t int2, uuid& id);
+void RandomUuid(uuid& id);
+std::string ToString(const uuid& uuid);
+uuid ParseUuid(const std::string& str);
+
+inline uuid nil_uuid()
+{
+    return uuid();
+}
+
+inline uuid random_uuid()
+{
+    return uuid::random();
 }
 
 } // namespace util

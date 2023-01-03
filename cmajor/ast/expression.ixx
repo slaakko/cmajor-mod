@@ -15,8 +15,8 @@ class IdentifierNode;
 class DotNode : public UnaryNode
 {
 public:
-    DotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_);
+    DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -31,8 +31,8 @@ private:
 class ArrowNode : public UnaryNode
 {
 public:
-    ArrowNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ArrowNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_);
+    ArrowNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ArrowNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -47,8 +47,8 @@ private:
 class EquivalenceNode : public BinaryNode
 {
 public:
-    EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    EquivalenceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -57,8 +57,8 @@ public:
 class ImplicationNode : public BinaryNode
 {
 public:
-    ImplicationNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ImplicationNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    ImplicationNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ImplicationNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -67,8 +67,8 @@ public:
 class DisjunctionNode : public BinaryNode
 {
 public:
-    DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -77,8 +77,8 @@ public:
 class ConjunctionNode : public BinaryNode
 {
 public:
-    ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -87,8 +87,8 @@ public:
 class BitOrNode : public BinaryNode
 {
 public:
-    BitOrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    BitOrNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    BitOrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BitOrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -97,8 +97,8 @@ public:
 class BitXorNode : public BinaryNode
 {
 public:
-    BitXorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    BitXorNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    BitXorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BitXorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -107,8 +107,8 @@ public:
 class BitAndNode : public BinaryNode
 {
 public:
-    BitAndNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    BitAndNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    BitAndNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BitAndNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -117,8 +117,8 @@ public:
 class EqualNode : public BinaryNode
 {
 public:
-    EqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    EqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    EqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    EqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -127,8 +127,8 @@ public:
 class NotEqualNode : public BinaryNode
 {
 public:
-    NotEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    NotEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    NotEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NotEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -137,8 +137,8 @@ public:
 class LessNode : public BinaryNode
 {
 public:
-    LessNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    LessNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    LessNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    LessNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -147,8 +147,8 @@ public:
 class GreaterNode : public BinaryNode
 {
 public:
-    GreaterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    GreaterNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    GreaterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    GreaterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -157,8 +157,8 @@ public:
 class LessOrEqualNode : public BinaryNode
 {
 public:
-    LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    LessOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -167,8 +167,8 @@ public:
 class GreaterOrEqualNode : public BinaryNode
 {
 public:
-    GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    GreaterOrEqualNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -177,8 +177,8 @@ public:
 class ShiftLeftNode : public BinaryNode
 {
 public:
-    ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ShiftLeftNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -187,8 +187,8 @@ public:
 class ShiftRightNode : public BinaryNode
 {
 public:
-    ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ShiftRightNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -197,8 +197,8 @@ public:
 class AddNode : public BinaryNode
 {
 public:
-    AddNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AddNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    AddNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AddNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -207,8 +207,8 @@ public:
 class SubNode : public BinaryNode
 {
 public:
-    SubNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    SubNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    SubNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    SubNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -217,8 +217,8 @@ public:
 class MulNode : public BinaryNode
 {
 public:
-    MulNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    MulNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    MulNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    MulNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -227,8 +227,8 @@ public:
 class DivNode : public BinaryNode
 {
 public:
-    DivNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DivNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    DivNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DivNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -237,8 +237,8 @@ public:
 class RemNode : public BinaryNode
 {
 public:
-    RemNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    RemNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* left_, Node* right_);
+    RemNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    RemNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -247,8 +247,8 @@ public:
 class NotNode : public UnaryNode
 {
 public:
-    NotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    NotNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    NotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -257,8 +257,8 @@ public:
 class UnaryPlusNode : public UnaryNode
 {
 public:
-    UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    UnaryPlusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -267,8 +267,8 @@ public:
 class UnaryMinusNode : public UnaryNode
 {
 public:
-    UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    UnaryMinusNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -277,8 +277,8 @@ public:
 class PrefixIncrementNode : public UnaryNode
 {
 public:
-    PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PrefixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -287,8 +287,8 @@ public:
 class PrefixDecrementNode : public UnaryNode
 {
 public:
-    PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PrefixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -297,8 +297,8 @@ public:
 class ComplementNode : public UnaryNode
 {
 public:
-    ComplementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ComplementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    ComplementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ComplementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -307,8 +307,8 @@ public:
 class DerefNode : public UnaryNode
 {
 public:
-    DerefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    DerefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    DerefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    DerefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -317,8 +317,8 @@ public:
 class AddrOfNode : public UnaryNode
 {
 public:
-    AddrOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AddrOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    AddrOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AddrOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -327,8 +327,8 @@ public:
 class IsNode : public Node
 {
 public:
-    IsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    IsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_);
+    IsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    IsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -346,8 +346,8 @@ private:
 class AsNode : public Node
 {
 public:
-    AsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    AsNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_);
+    AsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    AsNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expr_, Node* targetTypeExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -365,8 +365,8 @@ private:
 class IndexingNode : public Node
 {
 public:
-    IndexingNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    IndexingNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, Node* index_);
+    IndexingNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    IndexingNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, Node* index_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -384,8 +384,8 @@ private:
 class InvokeNode : public Node
 {
 public:
-    InvokeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    InvokeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    InvokeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    InvokeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -403,8 +403,8 @@ private:
 class PostfixIncrementNode : public UnaryNode
 {
 public:
-    PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PostfixIncrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -413,8 +413,8 @@ public:
 class PostfixDecrementNode : public UnaryNode
 {
 public:
-    PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PostfixDecrementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -423,8 +423,8 @@ public:
 class SizeOfNode : public Node
 {
 public:
-    SizeOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    SizeOfNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_);
+    SizeOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    SizeOfNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -439,8 +439,8 @@ private:
 class TypeNameNode : public Node
 {
 public:
-    TypeNameNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TypeNameNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_);
+    TypeNameNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TypeNameNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -458,8 +458,8 @@ private:
 class TypeIdNode : public Node
 {
 public:
-    TypeIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    TypeIdNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* expression_);
+    TypeIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    TypeIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -474,8 +474,8 @@ private:
 class CastNode : public Node
 {
 public:
-    CastNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    CastNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* targetTypeExpr_, Node* sourceExpr_);
+    CastNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    CastNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* targetTypeExpr_, Node* sourceExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -493,8 +493,8 @@ private:
 class ConstructNode : public Node
 {
 public:
-    ConstructNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConstructNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_);
+    ConstructNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConstructNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -512,8 +512,8 @@ private:
 class NewNode : public Node
 {
 public:
-    NewNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    NewNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* typeExpr_);
+    NewNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NewNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -531,7 +531,7 @@ private:
 class ThisNode : public Node
 {
 public:
-    ThisNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    ThisNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -540,7 +540,7 @@ public:
 class BaseNode : public Node
 {
 public:
-    BaseNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    BaseNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
@@ -549,8 +549,8 @@ public:
 class ParenthesizedExpressionNode : public UnaryNode
 {
 public:
-    ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* child_);
+    ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ParenthesizedExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* child_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;

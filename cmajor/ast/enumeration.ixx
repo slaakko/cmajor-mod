@@ -16,8 +16,8 @@ class EnumConstantNode;
 class EnumTypeNode : public Node
 {
 public:
-    EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
+    EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -45,8 +45,8 @@ private:
 class EnumConstantNode : public Node
 {
 public:
-    EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* value_);
+    EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -64,6 +64,6 @@ private:
     std::u32string strValue;
 };
 
-Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const boost::uuids::uuid& moduleId_, EnumTypeNode* enumType);
+Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uuid& moduleId_, EnumTypeNode* enumType);
 
 } // namespace cmajor::ast

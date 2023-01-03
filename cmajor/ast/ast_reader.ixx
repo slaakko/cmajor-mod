@@ -51,12 +51,12 @@ public:
     ConceptNode* ReadConceptNode();
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();
-    //void SetModuleMaps(const boost::uuids::uuid& rootModuleId, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_); TODO
+    //void SetModuleMaps(const util::uuid& rootModuleId, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_); TODO
 private:
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;
     util::BinaryStreamReader binaryStreamReader;
-    //boost::uuids::uuid rootModuleId; TODO
+    //util::uuid rootModuleId; TODO
     //std::unordered_map<int16_t, std::string>* moduleNameTable; TODO
     //std::unordered_map<std::string, int16_t>* moduleIdMap; TODO
 };

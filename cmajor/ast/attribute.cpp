@@ -13,11 +13,11 @@ import util;
 
 namespace cmajor::ast {
 
-AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::attributeNode, sourcePos_, moduleId_), name(), value()
+AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::attributeNode, sourcePos_, moduleId_), name(), value()
 {
 }
 
-AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& name_, const std::u32string& value_) :
+AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& name_, const std::u32string& value_) :
     Node(NodeType::attributeNode, sourcePos_, moduleId_), name(name_), value(value_)
 {
 }
@@ -46,7 +46,7 @@ void AttributeNode::Read(AstReader& reader)
     value = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-AttributesNode::AttributesNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::attributesNode, sourcePos_, moduleId_)
+AttributesNode::AttributesNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::attributesNode, sourcePos_, moduleId_)
 {
 }
 
@@ -60,12 +60,12 @@ AttributeNode* AttributesNode::GetAttribute(const std::u32string& name) const
     return nullptr;
 }
 
-void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::u32string& name)
+void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& name)
 {
     AddAttribute(sourcePos, moduleId, name, U"true");
 }
 
-void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& moduleId, const std::u32string& name, const std::u32string& value)
+void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& name, const std::u32string& value)
 {
     AttributeNode* prev = GetAttribute(name);
     if (prev != nullptr)
@@ -118,8 +118,8 @@ void AttributesNode::Read(AstReader& reader)
     }
 }
 
-AttributeNotUniqueException::AttributeNotUniqueException(const std::string& message_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_,
-    const soul::ast::SourcePos& prevSourcePos_, const boost::uuids::uuid& prevModuleId_) : std::runtime_error(message_), sourcePos(sourcePos_), moduleId(moduleId_), prevSourcePos(prevSourcePos_), prevModuleId(prevModuleId_)
+AttributeNotUniqueException::AttributeNotUniqueException(const std::string& message_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
+    const soul::ast::SourcePos& prevSourcePos_, const util::uuid& prevModuleId_) : std::runtime_error(message_), sourcePos(sourcePos_), moduleId(moduleId_), prevSourcePos(prevSourcePos_), prevModuleId(prevModuleId_)
 {
 }
 

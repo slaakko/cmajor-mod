@@ -16,11 +16,11 @@ import util;
 
 namespace cmajor::ast {
 
-EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) : Node(NodeType::enumTypeNode, sourcePos_, moduleId_)
+EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::enumTypeNode, sourcePos_, moduleId_)
 {
 }
 
-EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
+EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
     Node(NodeType::enumTypeNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_)
 {
     id->SetParent(this);
@@ -99,12 +99,12 @@ void EnumTypeNode::SetUnderlyingType(Node* underlyingType_)
     underlyingType->SetParent(this);
 }
 
-EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_) :
+EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     Node(NodeType::enumConstantNode, sourcePos_, moduleId_), hasValue(false)
 {
 }
 
-EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, IdentifierNode* id_, Node* value_) :
+EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* value_) :
     Node(NodeType::enumConstantNode, sourcePos_, moduleId_), id(id_), value(value_), hasValue(false)
 {
     id->SetParent(this);
@@ -149,7 +149,7 @@ void EnumConstantNode::Read(AstReader& reader)
     strValue = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const boost::uuids::uuid& moduleId, EnumTypeNode* enumType)
+Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uuid& moduleId, EnumTypeNode* enumType)
 {
     EnumConstantNode* lastConstant = enumType->GetLastConstant();
     if (lastConstant)

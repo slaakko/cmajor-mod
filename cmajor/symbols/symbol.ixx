@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 // =================================
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
@@ -121,11 +119,11 @@ public:
     SymbolLocation() : moduleId(util::nil_uuid()), fileIndex(0), line(0), scol(0)
     {
     }
-    SymbolLocation(const boost::uuids::uuid& moduleId_, int32_t fileIndex_, int32_t line_, int32_t scol_) :
+    SymbolLocation(const util::uuid& moduleId_, int32_t fileIndex_, int32_t line_, int32_t scol_) :
         moduleId(moduleId_), fileIndex(fileIndex_), line(line_), scol(scol_)
     {
     }
-    boost::uuids::uuid moduleId;
+    util::uuid moduleId;
     int32_t fileIndex;
     int32_t line;
     int32_t scol;
@@ -139,7 +137,7 @@ SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module*
 class Symbol
 {
 public:
-    Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     virtual ~Symbol();
     virtual void Write(SymbolWriter& writer);
     virtual void Read(SymbolReader& reader);
@@ -254,7 +252,7 @@ public:
     virtual bool HasProjectMembers() const { return false; }
     virtual const char* ClassName() const { return "Symbol"; }
     bool GetLocation(SymbolLocation& definitionLocation) const;
-    const boost::uuids::uuid& SourceModuleId() const { return sourceModuleId; }
+    const util::uuid& SourceModuleId() const { return sourceModuleId; }
     int SymbolIndex() const { return symbolIndex; }
     void SetSymbolIndex(int symbolIndex_) { symbolIndex = symbolIndex_; }
     virtual std::unique_ptr<Symbol> RemoveMember(int symbolIndex);
@@ -265,7 +263,7 @@ public:
 private:
     SymbolType symbolType;
     soul::ast::SourcePos sourcePos;
-    boost::uuids::uuid sourceModuleId;
+    util::uuid sourceModuleId;
     std::u32string name;
     SymbolFlags flags;
     std::u32string mangledName;
@@ -280,7 +278,7 @@ class SymbolCreator
 {
 public:
     virtual ~SymbolCreator();
-    virtual Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId, const std::u32string& name) = 0;
+    virtual Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name) = 0;
 };
 
 class SymbolFactory
@@ -289,7 +287,7 @@ public:
     static void Init();
     static void Done();
     static SymbolFactory& Instance() { /*Assert(instance, "symbol factory not initialized");*/ return *instance; }
-    Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId, const std::u32string& name);
+    Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name);
     void Register(SymbolType symbolType, SymbolCreator* creator);
 private:
     static std::unique_ptr<SymbolFactory> instance;

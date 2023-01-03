@@ -12,8 +12,8 @@ export namespace cmajor::ast {
 class ConstNode : public Node
 {
 public:
-    ConstNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ConstNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -28,8 +28,8 @@ private:
 class LValueRefNode : public Node
 {
 public:
-    LValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    LValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -44,8 +44,8 @@ private:
 class RValueRefNode : public Node
 {
 public:
-    RValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    RValueRefNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -60,8 +60,8 @@ private:
 class PointerNode : public Node
 {
 public:
-    PointerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    PointerNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_);
+    PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -76,8 +76,8 @@ private:
 class ArrayNode : public Node
 {
 public:
-    ArrayNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    ArrayNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Node* subject_, Node* size_);
+    ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, Node* size_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

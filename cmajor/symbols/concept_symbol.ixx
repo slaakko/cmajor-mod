@@ -1,5 +1,3 @@
-module;
-#include <boost/uuid/uuid.hpp>
 export module cmajor.symbols.concept_.symbol;
 // =================================
 // Copyright (c) 2022 Seppo Laakko
@@ -29,7 +27,7 @@ class TemplateParameterSymbol;
 class ConceptGroupSymbol : public Symbol
 {
 public:
-    ConceptGroupSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ConceptGroupSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "concept_group"; }
     bool IsExportSymbol() const override { return false; }
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
@@ -53,7 +51,7 @@ private:
 class ConceptSymbol : public ContainerSymbol
 {
 public:
-    ConceptSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ConceptSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     bool IsParentSymbol() const override { return true; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
@@ -66,8 +64,8 @@ public:
     std::u32string SimpleName() const override { return groupName; }
     void ComputeName();
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
-    void SetTypeId(const boost::uuids::uuid& typeId_) { typeId = typeId_; }
-    const boost::uuids::uuid& TypeId() const { return typeId; }
+    void SetTypeId(const util::uuid& typeId_) { typeId = typeId_; }
+    const util::uuid& TypeId() const { return typeId; }
     const std::u32string& GroupName() const { return groupName; }
     void SetGroupName(const std::u32string& groupName_) { groupName = groupName_; }
     std::u32string CodeName() const override { return groupName; }
@@ -86,7 +84,7 @@ public:
     std::string GetSymbolCategoryStr() const override { return "CO"; }
     std::string GetSymbolCategoryDescription() const override { return "concept"; }
 private:
-    boost::uuids::uuid typeId;
+    util::uuid typeId;
     std::u32string groupName;
     std::vector<TemplateParameterSymbol*> templateParameters;
     std::unique_ptr<cmajor::ast::ConceptNode> conceptNode;
@@ -98,7 +96,7 @@ private:
 class AxiomSymbol : public ContainerSymbol
 {
 public:
-    AxiomSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId, const std::u32string& name_);
+    AxiomSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     bool IsExportSymbol() const override { return false; }
     std::u32string Info() const override { return Name(); }

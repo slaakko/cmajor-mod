@@ -16,8 +16,8 @@ class CompileUnitNode;
 class GlobalVariableNode : public Node
 {
 public:
-    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, CompileUnitNode* cu_);
+    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, CompileUnitNode* cu_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

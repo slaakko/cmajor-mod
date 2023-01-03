@@ -13,7 +13,7 @@ export namespace cmajor::ast {
 class SyncNode : public Node
 {
 public:
-    SyncNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
+    SyncNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
 };

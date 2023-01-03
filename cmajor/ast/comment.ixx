@@ -12,8 +12,8 @@ export namespace cmajor::ast {
 class CommentNode : public Node
 {
 public:
-    CommentNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_);
-    CommentNode(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& moduleId_, const std::u32string& comment_);
+    CommentNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    CommentNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& comment_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

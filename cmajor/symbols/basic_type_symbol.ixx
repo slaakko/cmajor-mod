@@ -16,7 +16,7 @@ export namespace cmajor::symbols {
 class BasicTypeSymbol : public TypeSymbol
 {
 public:
-    BasicTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    BasicTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "basic_type"; }
     bool IsBasicTypeSymbol() const override { return true; }
     void Write(SymbolWriter& writer) override;
@@ -55,7 +55,7 @@ private:
 class BoolTypeSymbol : public BasicTypeSymbol
 {
 public:
-    BoolTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    BoolTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "bool"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForBool(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForBool(); }
@@ -69,7 +69,7 @@ public:
 class SByteTypeSymbol : public BasicTypeSymbol
 {
 public:
-    SByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    SByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "sbyte"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForSByte(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForSByte(); }
@@ -84,7 +84,7 @@ public:
 class ByteTypeSymbol : public BasicTypeSymbol
 {
 public:
-    ByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "byte"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForByte(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForByte(); }
@@ -100,7 +100,7 @@ public:
 class ShortTypeSymbol : public BasicTypeSymbol
 {
 public:
-    ShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "short"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForShort(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForShort(); }
@@ -115,7 +115,7 @@ public:
 class UShortTypeSymbol : public BasicTypeSymbol
 {
 public:
-    UShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    UShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "ushort"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUShort(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUShort(); }
@@ -131,7 +131,7 @@ public:
 class IntTypeSymbol : public BasicTypeSymbol
 {
 public:
-    IntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    IntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "int"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForInt(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForInt(); }
@@ -146,7 +146,7 @@ public:
 class UIntTypeSymbol : public BasicTypeSymbol
 {
 public:
-    UIntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    UIntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "uint"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUInt(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUInt(); }
@@ -162,7 +162,7 @@ public:
 class LongTypeSymbol : public BasicTypeSymbol
 {
 public:
-    LongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    LongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "long"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForLong(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForLong(); }
@@ -177,7 +177,7 @@ public:
 class ULongTypeSymbol : public BasicTypeSymbol
 {
 public:
-    ULongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    ULongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "ulong"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForULong(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForULong(); }
@@ -193,7 +193,7 @@ public:
 class FloatTypeSymbol : public BasicTypeSymbol
 {
 public:
-    FloatTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    FloatTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "float"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForFloat(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForFloat(); }
@@ -207,7 +207,7 @@ public:
 class DoubleTypeSymbol : public BasicTypeSymbol
 {
 public:
-    DoubleTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    DoubleTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "double"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForDouble(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForDouble(); }
@@ -221,7 +221,7 @@ public:
 class CharTypeSymbol : public BasicTypeSymbol
 {
 public:
-    CharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    CharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "char"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForChar(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForChar(); }
@@ -237,7 +237,7 @@ public:
 class WCharTypeSymbol : public BasicTypeSymbol
 {
 public:
-    WCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    WCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "wchar"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForWChar(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForWChar(); }
@@ -253,7 +253,7 @@ public:
 class UCharTypeSymbol : public BasicTypeSymbol
 {
 public:
-    UCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    UCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "uchar"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForUChar(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { return emitter.CreateDefaultIrValueForUChar(); }
@@ -269,7 +269,7 @@ public:
 class VoidTypeSymbol : public BasicTypeSymbol
 {
 public:
-    VoidTypeSymbol(const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_);
+    VoidTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "void"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForVoid(); }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to create default value for void type");*/ return nullptr; }
