@@ -5,12 +5,6 @@ export module cmajor.symbols.enum_.symbol;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/Value.hpp>
-*/
-
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;
 import soul.ast.source.pos;

@@ -5,20 +5,6 @@ export module cmajor.symbols.symbol.collector;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/NamespaceSymbol.hpp>
-#include <cmajor/symbols/BasicTypeSymbol.hpp>
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/ConstantSymbol.hpp>
-#include <cmajor/symbols/ConceptSymbol.hpp>
-#include <cmajor/symbols/DelegateSymbol.hpp>
-#include <cmajor/symbols/EnumSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/InterfaceTypeSymbol.hpp>
-#include <cmajor/symbols/TypedefSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-*/
-
 import cmajor.symbols.symbol;
 import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.constant.symbol;
@@ -26,7 +12,6 @@ import cmajor.symbols.delegate_.symbol;
 import cmajor.symbols.enum_.symbol;
 import cmajor.symbols.typedef_.symbol;
 import cmajor.symbols.variable.symbol;
-
 import std.core;
 
 export namespace cmajor::symbols {

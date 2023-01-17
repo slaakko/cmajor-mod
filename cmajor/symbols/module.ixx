@@ -17,28 +17,6 @@ import util.code.formatter;
 import util.binary.stream.reader;
 import util.binary.stream.writer;
 
-/*
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/Warning.hpp>
-#include <cmajor/symbols/FileIndex.hpp>
-#include <cmajor/symbols/FunctionIndex.hpp>
-#include <cmajor/symbols/TypeIndex.hpp>
-#include <cmajor/symbols/Sources.hpp>
-#include <cmajor/cmdebug/Container.hpp>
-#include <cmajor/cmdebug/DebugInfo.hpp>
-#ifdef _WIN32
-#include <cmajor/symbols/ResourceTable.hpp>
-#endif
-#include <sngcm/ast/Project.hpp>
-#include <sngcm/cmlexer/CmajorLexer.hpp>
-#include <cmajor/cmtoolchain/ToolChains.hpp>
-#include <soulng/util/CodeFormatter.hpp>
-#include <mutex>
-#include <map>
-#include <set>
-#include <time.h>
-*/
-
 export namespace cmajor::symbols {
 
 bool IsSystemModule(const std::u32string& moduleName);

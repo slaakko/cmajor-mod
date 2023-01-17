@@ -4,7 +4,6 @@ export module cmajor.symbols.class_.template_specialization.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/ClassTypeSymbol.hpp>
 import cmajor.symbols.scope;
 import cmajor.symbols.class_.type.symbol;
 import cmajor.symbols.symbol.reader;
@@ -17,7 +16,7 @@ import std.core;
 export namespace cmajor::symbols {
 
 class ClassTypeSymbol;
-class TypeSymbol;
+//class TypeSymbol;
 
 enum class ClassTemplateSpecializationFlags : uint8_t
 {

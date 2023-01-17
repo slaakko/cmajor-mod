@@ -5,21 +5,9 @@ export module cmajor.symbols.symbol.creator.visitor;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <sngcm/ast/Visitor.hpp>
-#include <sngcm/ast/BasicType.hpp>
-#include <sngcm/ast/TypeExpr.hpp>
-#include <sngcm/ast/Comment.hpp>
-#include <stack>
-#include <stdint.h>
-*/
-
 import cmajor.ast;
 
 export namespace cmajor::symbols {
-
-//        using namespace sngcm::ast;
 
 class SymbolTable;
 class ClassTemplateSpecializationSymbol;

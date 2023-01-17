@@ -5,10 +5,7 @@ export module cmajor.symbols.constant.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Symbol.hpp>
-//#include <cmajor/symbols/Value.hpp>
 import cmajor.symbols.symbol;
-//import cmajor.symbols.value;
 import cmajor.ast.specifier;
 import soul.ast.source.pos;
 import util.code.formatter;

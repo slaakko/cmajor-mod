@@ -4,8 +4,6 @@ module cmajor.symbols.error;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Error.hpp>
-
 namespace cmajor::symbols {
 
 	Error::Error(const std::string& message_) : std::runtime_error(message_), message(message_)

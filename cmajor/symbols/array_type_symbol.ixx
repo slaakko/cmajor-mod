@@ -5,9 +5,6 @@ export module cmajor.symbols.array.type.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/TypeSymbol.hpp>
-//#include <cmajor/symbols/FunctionSymbol.hpp>
-
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;
 import soul.ast.source.pos;

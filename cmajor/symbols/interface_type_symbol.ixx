@@ -5,8 +5,6 @@ export module cmajor.symbols.interface_.type.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/FunctionSymbol.hpp>
-//#include <cmajor/symbols/ClassTypeSymbol.hpp>
 import cmajor.symbols.type.symbol;
 
 import cmajor.symbols.function.symbol;

@@ -4,12 +4,6 @@ export module cmajor.symbols.concept_.symbol;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/ContainerSymbol.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <unordered_map>
-*/
-
 import cmajor.ast.specifier;
 import cmajor.ast.concept_; 
 import cmajor.symbols.symbol;

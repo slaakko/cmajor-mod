@@ -5,7 +5,6 @@ export module cmajor.symbols.typedef_.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Symbol.hpp>
 import cmajor.symbols.symbol;
 import soul.ast.source.pos;
 import cmajor.ast.specifier;

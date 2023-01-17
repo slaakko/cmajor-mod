@@ -4,11 +4,8 @@ export module cmajor.symbols.value;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Symbol.hpp>
-
 import soul.ast.source.pos;
 import cmajor.ir.emitter;
-//import cmajor.symbols.symbol.table;
 import cmajor.symbols.type.symbol;
 import util.binary.stream.reader;
 import util.binary.stream.writer;
@@ -18,7 +15,6 @@ import std.core;
 
 export namespace cmajor::symbols {
 
-//class TypeSymbol;
 class SymbolTable;
 
 enum class ValueType : uint8_t

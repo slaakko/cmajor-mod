@@ -4,9 +4,6 @@ export module cmajor.symbols.delegate_.symbol;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/ClassTypeSymbol.hpp>
-//#include <cmajor/symbols/FunctionSymbol.hpp>
-
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;
 import cmajor.ast.specifier;

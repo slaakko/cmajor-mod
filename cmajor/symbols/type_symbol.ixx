@@ -5,12 +5,6 @@
 
 export module cmajor.symbols.type.symbol;
 
-/*
-#include <cmajor/symbols/ContainerSymbol.hpp>
-#include <cmajor/ir/cmajor::ir::Emitter.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/functional/hash.hpp>
-*/
 import cmajor.symbols.container.symbol;
 import soul.ast.source.pos;
 import cmajor.ir.emitter;

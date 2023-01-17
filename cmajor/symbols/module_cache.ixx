@@ -4,9 +4,6 @@ export module cmajor.symbols.module_.cache;
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/symbols/Module.hpp>
-//#include <sngcm/ast/Project.hpp>
-//import cmajor.symbols.module_;
 import cmajor.ast.project;
 import std.core;
 import util.uuid;

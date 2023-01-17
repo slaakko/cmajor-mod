@@ -14,18 +14,6 @@ import cmajor.ast.attribute;
 import cmajor.ast.specifier;
 import cmajor.ast.compile.unit;
 import util;
-/*
-#include <cmajor/symbols/SymbolsApi.hpp>
-#include <cmajor/symbols/TypeMap.hpp>
-#include <sngcm/ast/Attribute.hpp>
-#include <sngcm/ast/Specifier.hpp>
-#include <sngcm/ast/CompileUnit.hpp>
-#include <sngxml/dom/Element.hpp>
-#include <soulng/util/CodeFormatter.hpp>
-#include <cmajor/ir/Emitter.hpp>
-#include <unordered_set>
-#include <stdint.h>
-*/
 
 export namespace cmajor::symbols {
 

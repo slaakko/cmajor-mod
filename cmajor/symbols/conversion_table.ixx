@@ -5,12 +5,6 @@ export module cmajor.symbols.conversion.table;
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <boost/functional/hash.hpp>
-*/
-
 import cmajor.symbols.type.symbol;
 import soul.ast.source.pos;
 import std.core;
@@ -18,7 +12,6 @@ import std.core;
 export namespace cmajor::symbols {
 
 class Module;
-//class TypeSymbol;
 class FunctionSymbol;
 
 struct ConversionTableEntry

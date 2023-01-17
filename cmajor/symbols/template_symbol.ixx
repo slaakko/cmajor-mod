@@ -5,7 +5,6 @@
 
 export module cmajor.symbols.template_.symbol;
 
-//#include <cmajor/symbols/TypeSymbol.hpp>
 import cmajor.symbols.type.symbol;
 import soul.ast.source.pos;
 import soul.xml.element; 
