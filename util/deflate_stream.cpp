@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,6 @@ module;
 #else 
 #pragma comment(lib, "zlibstatd.lib")
 #endif
-
 
 module util.deflate.stream;
 

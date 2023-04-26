@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -117,7 +117,7 @@ std::string ToString(const uuid& uuid)
     int index = 0;
     for (uint8_t x : uuid)
     {
-        s.append(ToLower(ToHexString(x)));
+        s.append(ToLowerNarrow(ToHexString(x)));
         if (index == 3 || index == 5 || index == 7 || index == 9)
         {
             s.append(1, '-');

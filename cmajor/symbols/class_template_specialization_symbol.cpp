@@ -1,6 +1,6 @@
 module cmajor.symbols.class_.template_specialization.symbol;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 import cmajor.ast.reader;

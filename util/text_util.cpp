@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -374,7 +374,7 @@ std::string NarrowString(const char* str, int length)
 #endif
 }
 
-std::string ToUpper(const std::string& s)
+std::string ToUpperNarrow(const std::string& s)
 {
     std::string result;
     int n = int(s.size());
@@ -386,7 +386,7 @@ std::string ToUpper(const std::string& s)
     return result;
 }
 
-std::string ToLower(const std::string& s)
+std::string ToLowerNarrow(const std::string& s)
 {
     std::string result;
     int n = int(s.size());

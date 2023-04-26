@@ -155,10 +155,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="document_handler.cpp" />
-    <ClCompile Include="document_handler.ixx" />
+    <ClCompile Include="document_handler.cppm" />
     <ClCompile Include="dom_parser.cpp" />
-    <ClCompile Include="dom_parser.ixx" />
-    <ClCompile Include="parsing_flags.ixx" />
+    <ClCompile Include="dom_parser.cppm" />
+    <ClCompile Include="parsing_flags.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\util\util.vcxproj">

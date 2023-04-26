@@ -154,27 +154,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="base.ixx" />
-    <ClCompile Include="classmap.ixx" />
-    <ClCompile Include="concepts.ixx" />
+    <ClCompile Include="base.cppm" />
+    <ClCompile Include="classmap.cppm" />
+    <ClCompile Include="concepts.cppm" />
     <ClCompile Include="error.cpp" />
-    <ClCompile Include="error.ixx" />
+    <ClCompile Include="error.cppm" />
     <ClCompile Include="file_map.cpp" />
-    <ClCompile Include="file_map.ixx" />
-    <ClCompile Include="keyword.ixx" />
-    <ClCompile Include="lexeme.ixx" />
-    <ClCompile Include="lexer.ixx" />
-    <ClCompile Include="lexing_util.ixx" />
+    <ClCompile Include="file_map.cppm" />
+    <ClCompile Include="keyword.cppm" />
+    <ClCompile Include="lexeme.cppm" />
+    <ClCompile Include="lexer.cppm" />
+    <ClCompile Include="lexing_util.cppm" />
     <ClCompile Include="parsing_log.cpp" />
-    <ClCompile Include="parsing_log.ixx" />
-    <ClCompile Include="test_lexer.ixx" />
-    <ClCompile Include="token.ixx" />
-    <ClCompile Include="token_parser.ixx" />
-    <ClCompile Include="trivial_lexer.ixx" />
+    <ClCompile Include="parsing_log.cppm" />
+    <ClCompile Include="test_lexer.cppm" />
+    <ClCompile Include="token.cppm" />
+    <ClCompile Include="token_parser.cppm" />
+    <ClCompile Include="trivial_lexer.cppm" />
     <ClCompile Include="variables.cpp" />
-    <ClCompile Include="variables.ixx" />
+    <ClCompile Include="variables.cppm" />
     <ClCompile Include="xml_parsing_log.cpp" />
-    <ClCompile Include="xml_parsing_log.ixx" />
+    <ClCompile Include="xml_parsing_log.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\util\util.vcxproj">

@@ -152,10 +152,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="emitter.cpp" />
-    <ClCompile Include="emitter.ixx" />
-    <ClCompile Include="gen_object.ixx" />
+    <ClCompile Include="emitter.cppm" />
+    <ClCompile Include="gen_object.cppm" />
     <ClCompile Include="value_stack.cpp" />
-    <ClCompile Include="value_stack.ixx" />
+    <ClCompile Include="value_stack.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">

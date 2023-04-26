@@ -154,9 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="match.ixx" />
-    <ClCompile Include="parser.ixx" />
-    <ClCompile Include="value.ixx" />
+    <ClCompile Include="match.cppm" />
+    <ClCompile Include="parser.cppm" />
+    <ClCompile Include="value.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\util\util.vcxproj">

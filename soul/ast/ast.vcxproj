@@ -155,16 +155,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common.cpp" />
-    <ClCompile Include="common.ixx" />
+    <ClCompile Include="common.cppm" />
     <ClCompile Include="cpp.cpp" />
-    <ClCompile Include="cpp.ixx" />
+    <ClCompile Include="cpp.cppm" />
     <ClCompile Include="re.cpp" />
-    <ClCompile Include="re.ixx" />
+    <ClCompile Include="re.cppm" />
     <ClCompile Include="slg.cpp" />
-    <ClCompile Include="slg.ixx" />
-    <ClCompile Include="source_pos.ixx" />
+    <ClCompile Include="slg.cppm" />
+    <ClCompile Include="source_pos.cppm" />
     <ClCompile Include="spg.cpp" />
-    <ClCompile Include="spg.ixx" />
+    <ClCompile Include="spg.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\util\util.vcxproj">

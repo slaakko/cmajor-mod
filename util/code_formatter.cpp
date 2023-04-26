@@ -1,10 +1,9 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 module;
-
 #include <cstdio>
 #ifdef _WIN32
 #include <io.h>

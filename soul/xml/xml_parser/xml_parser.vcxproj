@@ -155,11 +155,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="xml_document_parser.cpp" />
-    <ClCompile Include="xml_document_parser.ixx" />
+    <ClCompile Include="xml_document_parser.cppm" />
     <ClCompile Include="xml_parser.cpp" />
-    <ClCompile Include="xml_parser.ixx" />
+    <ClCompile Include="xml_parser.cppm" />
     <ClCompile Include="xml_parser_rules.cpp" />
-    <ClCompile Include="xml_parser_rules.ixx" />
+    <ClCompile Include="xml_parser_rules.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ast\ast.vcxproj">

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,30 +14,30 @@ import std.filesystem;
 
 namespace util {
 
-std::string SoulVersionStr()
+std::string CmajorVersionStr()
 {
-    return "4.0.0";
+    return "5.0.0";
 }
 
-std::string SoulRoot()
+std::string CmajorRoot()
 {
-    std::string soulRoot;
+    std::string cmajorRoot;
 #pragma warning(suppress : 4996)
-    const char* soulRootEnv = std::getenv("SOUL_ROOT");
-    if (soulRootEnv)
+    const char* cmajorRootEnv = std::getenv("CMAJOR_ROOT");
+    if (cmajorRootEnv)
     {
-        soulRoot = soulRootEnv;
+        cmajorRoot = cmajorRootEnv;
     }
-    if (soulRoot.empty())
+    if (cmajorRoot.empty())
     {
-        throw UnicodeException("please set 'SOUL_ROOT' environment variable to contain /path/to/soul directory.");
+        throw UnicodeException("please set 'CMAJOR_ROOT' environment variable to contain /path/to/cmajor directory.");
     }
-    return soulRoot;
+    return cmajorRoot;
 }
 
-std::string SoulUcdFilePath()
+std::string CmajorUcdFilePath()
 {
-    return (std::filesystem::path(SoulRoot()) / std::filesystem::path("unicode") / std::filesystem::path("soul_ucd.bin")).generic_string();
+    return (std::filesystem::path(CmajorRoot()) / std::filesystem::path("unicode") / std::filesystem::path("cmajor_ucd.bin")).generic_string();
 }
 
 std::u32string ToUpper(const std::u32string& s)
@@ -70,7 +70,7 @@ std::string MakeCanonicalPropertyName(const std::string& s)
             propertyName.append(1, c);
         }
     }
-    return util::ToLower(propertyName);
+    return util::ToLowerNarrow(propertyName);
 }
 
 BinaryProperty::BinaryProperty(BinaryPropertyId id_, const std::string& shortName_, const std::string& longName_) : id(id_), shortName(shortName_), longName(longName_)
@@ -1548,7 +1548,7 @@ CharacterTable::CharacterTable() : dataSource(CharacterTableDataSource::file), d
 
 std::string CharacterTable::FilePath() const
 {
-    std::string ucdFilePath = SoulUcdFilePath();
+    std::string ucdFilePath = CmajorUcdFilePath();
     return ucdFilePath;
 }
 
