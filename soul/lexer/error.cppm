@@ -27,6 +27,6 @@ private:
     soul::ast::SourcePos sourcePos;
 };
 
-std::string MakeMessage(const std::string& msgClass, const std::string& msg, const soul::ast::SourcePos& sourcePos, const FileMap& fileMap);
+std::string MakeMessage(const std::string& msgClass, const std::string& msg, const soul::ast::SourcePos& sourcePos, FileMap& fileMap);
 
 } // namespace soul::lexer

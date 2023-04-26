@@ -12,15 +12,19 @@ export namespace soul::lexer {
 class FileMap
 {
 public:
-    int AddFilePath(const std::string& filePath);
-    const std::string& GetFilePath(int file) const;
-    void AddFileContent(std::u32string&& fileContent, std::vector<int>&& lineStartIndeces);
-    bool HasFileContent(int file) const;
-    const std::pair<std::u32string, std::vector<int>>& GetFileContent(int file) const;
-    std::u32string GetFileLine(int file, int line) const;
+    FileMap();
+    int32_t MapFile(const std::string& filePath);
+    void MapFile(const std::string& filePath, int32_t fileId);
+    const std::string& GetFilePath(int32_t fileId) const;
+    void AddFileContent(int32_t fileId, std::u32string&& fileContent, std::vector<int>&& lineStartIndeces);
+    bool HasFileContent(int32_t fileId) const;
+    void ReadFile(int32_t fileId);
+    const std::pair<std::u32string, std::vector<int>>& GetFileContent(int32_t file) const;
+    std::u32string GetFileLine(int32_t fileId, int line);
 private:
-    std::vector<std::string> filePaths;
-    std::vector<std::pair<std::u32string, std::vector<int>>> fileContents;
+    int32_t nextFileId;
+    std::map<int32_t, std::string> filePathMap;
+    std::map<int32_t, std::pair<std::u32string, std::vector<int>>> fileContentsMap;
 };
 
 FileMap* GetGlobalFileMap();

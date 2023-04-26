@@ -33,6 +33,20 @@ void Attributes::AddAttribute(Attribute* attribute)
     attributes.push_back(std::unique_ptr<Attribute>(attribute));
 }
 
+
+const std::string* Attributes::GetAttributeValue(const std::string& qualifiedName) const
+{
+    for (const auto& attribute : attributes)
+    {
+        if (attribute->QualifiedName() == qualifiedName)
+        {
+            const std::string& value = attribute->Value();
+            return &value;
+        }
+    }
+    return nullptr;
+}
+
 std::string Attributes::ToString() const
 {
     std::string str;

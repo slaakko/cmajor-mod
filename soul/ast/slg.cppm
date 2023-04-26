@@ -99,8 +99,8 @@ private:
 class Keyword
 {
 public:
-    Keyword(const std::string str_, const std::string& tokenName_, int64_t tokenId_);
-    Keyword(const std::string str_, const std::string& tokenName_);
+    Keyword(const std::string& str_, const std::string& tokenName_, int64_t tokenId_);
+    Keyword(const std::string& str_, const std::string& tokenName_);
     void SetCollection(Collection* collection_) { collection = collection_; }
     Collection* GetCollection() const { return collection; }
     const std::string& Str() const { return str; }

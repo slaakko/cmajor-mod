@@ -31,7 +31,7 @@ Token::Token(const std::string& name_, const std::string& info_) : id(-1), name(
 {
 }
 
-TokenCollection::TokenCollection(const std::string& name_) : Collection(CollectionKind::tokenCollection, name_), initialized(false), id(std::hash<std::string>{}(Name()) & 0x7FFFFFFF)
+TokenCollection::TokenCollection(const std::string& name_) : Collection(CollectionKind::tokenCollection, name_), initialized(false), id(std::hash<std::string>()(Name()) & 0x7FFFFFFF)
 {
 }
 
@@ -70,11 +70,11 @@ void TokenFile::SetTokenCollection(TokenCollection* tokenCollection_)
     tokenCollection->SetFile(this);
 }
 
-Keyword::Keyword(const std::string str_, const std::string& tokenName_, int64_t tokenId_) : str(str_), tokenName(tokenName_), tokenId(tokenId_), collection(nullptr)
+Keyword::Keyword(const std::string& str_, const std::string& tokenName_, int64_t tokenId_) : str(str_), tokenName(tokenName_), tokenId(tokenId_), collection(nullptr)
 {
 }
 
-Keyword::Keyword(const std::string str_, const std::string& tokenName_) : str(str_), tokenName(tokenName_), tokenId(-1), collection(nullptr)
+Keyword::Keyword(const std::string& str_, const std::string& tokenName_) : str(str_), tokenName(tokenName_), tokenId(-1), collection(nullptr)
 {
 }
 
@@ -254,7 +254,7 @@ void SlgFile::AddTokenFile(TokenFile* tokenFile)
     {
         throw std::runtime_error("token collection '" + tokenFile->GetTokenCollection()->Name() + "' already added to SLG file '" + FilePath() + "'");
     }
-    collectionMap[tokenFile->GetTokenCollection()->Name()] = tokenFile->GetTokenCollection();
+    collectionMap[tokenFile->GetTokenCollection()->Name()] = static_cast<Collection*>(tokenFile->GetTokenCollection());
     collections.push_back(tokenFile->GetTokenCollection());
 }
 
@@ -266,7 +266,7 @@ void SlgFile::AddKeywordFile(KeywordFile* keywordFile)
     {
         throw std::runtime_error("keyword collection '" + keywordFile->GetKeywordCollection()->Name() + "' already added to SLG file '" + FilePath() + "'");
     }
-    collectionMap[keywordFile->GetKeywordCollection()->Name()] = keywordFile->GetKeywordCollection();
+    collectionMap[keywordFile->GetKeywordCollection()->Name()] = static_cast<Collection*>(keywordFile->GetKeywordCollection());
     collections.push_back(keywordFile->GetKeywordCollection());
 }
 
@@ -278,7 +278,7 @@ void SlgFile::AddExpressionFile(ExpressionFile* expressionFile)
     {
         throw std::runtime_error("expression collection '" + expressionFile->GetExpressionCollection()->Name() + "' already added to SLG file '" + FilePath() + "'");
     }
-    collectionMap[expressionFile->GetExpressionCollection()->Name()] = expressionFile->GetExpressionCollection();
+    collectionMap[expressionFile->GetExpressionCollection()->Name()] = static_cast<Collection*>(expressionFile->GetExpressionCollection());
     collections.push_back(expressionFile->GetExpressionCollection());
 }
 
@@ -290,7 +290,7 @@ void SlgFile::AddLexerFile(LexerFile* lexerFile)
     {
         throw std::runtime_error("lexer '" + lexerFile->GetLexer()->Name() + "' already added to SLG file '" + FilePath() + "'");
     }
-    collectionMap[lexerFile->GetLexer()->Name()] = lexerFile->GetLexer();
+    collectionMap[lexerFile->GetLexer()->Name()] = static_cast<Collection*>(lexerFile->GetLexer());
     collections.push_back(lexerFile->GetLexer());
 }
 

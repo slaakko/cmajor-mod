@@ -6,6 +6,7 @@
 export module soul.lexer.test;
 
 import std.core;
+import util;
 import soul.lexer.base;
 import soul.lexer.token;
 import soul.ast.slg;
@@ -13,30 +14,31 @@ import soul.ast.slg;
 export namespace soul::lexer {
 
 template<typename Lexer>
-void TestLexer(Lexer& lexer)
+void TestLexer(Lexer& lexer, util::CodeFormatter& formatter)
 {
     soul::ast::slg::TokenCollection* tokens = lexer.GetTokenCollection();
     ++lexer;
     while (*lexer != soul::lexer::END_TOKEN && *lexer != soul::lexer::INVALID_TOKEN)
     {
-        auto token = tokens->GetToken(*lexer);
-        if (token)
+        auto token = lexer.CurrentToken();
+        auto tokenInfo = tokens->GetToken(token.id);
+        if (tokenInfo)
         {
-            std::cout << token->Name() << "(" << token->Id() << ")" << std::endl;
+            formatter.WriteLine(tokenInfo->Name() + "[" + util::ToUtf8(token.ToString()) + "]");
         }
         else
         {
-            std::cout << "<unknown token>" << std::endl;
+            formatter.WriteLine("<unknown token>");
         }
         ++lexer;
     }
     if (*lexer == soul::lexer::END_TOKEN)
     {
-        std::cout << "success" << std::endl;
+        formatter.WriteLine("success");
     }
     else
     {
-        std::cout << "failure" << std::endl;
+        formatter.WriteLine("failure");
     }
 }
 

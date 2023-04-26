@@ -1,2 +1,2 @@
 project soul.xml.parser;
-parser <xml_document_parser.parser>;
+parser <xml_document.parser>;

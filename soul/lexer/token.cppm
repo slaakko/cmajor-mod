@@ -7,7 +7,7 @@ export module soul.lexer.token;
 
 import std.core;
 import soul.lexer.lexeme;
-import soul.token.parser;
+import soul.lexer.token.parser;
 
 export namespace soul::lexer {
 

@@ -35,6 +35,7 @@ public:
     void Clear();
     void AddAttribute(Attribute* attribute);
     const std::vector<std::unique_ptr<Attribute>>& GetAttributes() const { return attributes; }
+    const std::string* GetAttributeValue(const std::string& qualifiedName) const;
     std::string ToString() const;
 private:
     std::vector<std::unique_ptr<Attribute>> attributes;

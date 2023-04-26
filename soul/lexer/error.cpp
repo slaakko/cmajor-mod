@@ -20,14 +20,11 @@ void ParsingException::SetProject(const std::string& project_)
     project = project_;
 }
 
-std::string MakeMessage(const std::string& msgClass, const std::string& msg, const soul::ast::SourcePos& sourcePos, const FileMap& fileMap)
+std::string MakeMessage(const std::string& msgClass, const std::string& msg, const soul::ast::SourcePos& sourcePos, FileMap& fileMap)
 {
     std::string message;
     message.append(msgClass).append(": ").append(msg).append(" in file '").append(fileMap.GetFilePath(sourcePos.file)).append("' line ").append(std::to_string(sourcePos.line));
-    if (fileMap.HasFileContent(sourcePos.file))
-    {
-        message.append(":\n").append(util::ToUtf8(fileMap.GetFileLine(sourcePos.file, sourcePos.line))).append("\n").append(sourcePos.col - 1, ' ').append(1, '^');
-    }
+    message.append(":\n").append(util::ToUtf8(fileMap.GetFileLine(sourcePos.file, sourcePos.line))).append("\n").append(sourcePos.col - 1, ' ').append(1, '^');
     return message;
 }
 

@@ -5,6 +5,7 @@
 
 export module soul.xml.element;
 
+import std.core;
 import soul.xml.parent.node;
 import soul.xml.attribute.node;
 
@@ -14,6 +15,7 @@ class Element : public ParentNode
 {
 public:
     Element(const soul::ast::SourcePos& sourcePos_, const std::string& name_);
+    const std::map<std::string, std::unique_ptr<AttributeNode>>& Attributes() const { return attributeMap; }
     AttributeNode* GetAttributeNode(const std::string& attributeName) const;
     std::string GetAttribute(const std::string& name) const;
     void AddAttribute(AttributeNode* attributeNode);
@@ -22,6 +24,7 @@ public:
     bool HasAttributes() const final { return !attributeMap.empty(); }
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
+    void WalkAttribute(NodeOperation& operation) override;
 private:
     void WriteAttributes(util::CodeFormatter& formatter);
     bool HasMultilineContent() const;

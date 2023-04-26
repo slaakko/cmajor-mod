@@ -5,6 +5,7 @@
 
 export module soul.xml.document;
 
+import std.core;
 import soul.xml.parent.node;
 import soul.xml.element;
 
@@ -13,7 +14,9 @@ export namespace soul::xml {
 class Document : public ParentNode
 {
 public:
+    Document();
     Document(const soul::ast::SourcePos& sourcePos_);
+    Element* DocumentElement() const { return documentElement; }
     bool XmlStandalone() const { return xmlStandalone; }
     void SetXmlStandalone(bool xmlStandalone_) { xmlStandalone = xmlStandalone_; }
     const std::string& XmlVersion() const { return xmlVersion; }

@@ -11,6 +11,7 @@ import soul.xml.error;
 import soul.lexer.error;
 import soul.lexer.file.map;
 import soul.xml.visitor;
+import soul.xml.node.operation;
 
 namespace soul::xml {
 
@@ -209,6 +210,57 @@ void ParentNode::Write(util::CodeFormatter& formatter)
     {
         child->Write(formatter);
         child = child->Next();
+    }
+}
+
+void ParentNode::WalkChildren(NodeOperation& operation)
+{
+    Node* child = firstChild;
+    while (child)
+    {
+        operation.Apply(child);
+        child = child->Next();
+    }
+}
+
+void ParentNode::WalkDescendant(NodeOperation& operation)
+{
+    Node* child = firstChild;
+    while (child)
+    {
+        child->WalkDescendantOrSelf(operation);
+        child = child->Next();
+    }
+}
+
+void ParentNode::WalkDescendantOrSelf(NodeOperation& operation)
+{
+    Node::WalkDescendantOrSelf(operation);
+    Node* child = firstChild;
+    while (child)
+    {
+        child->WalkDescendantOrSelf(operation);
+        child = child->Next();
+    }
+}
+
+void ParentNode::WalkPreceding(NodeOperation& operation)
+{
+    Node* preceding = Prev();
+    if (preceding)
+    {
+        preceding->WalkPrecedingOrSelf(operation);
+    }
+}
+
+void ParentNode::WalkPrecedingOrSelf(NodeOperation& operation)
+{
+    Node::WalkPrecedingOrSelf(operation);
+    Node* child = lastChild;
+    while (child)
+    {
+        child->WalkPrecedingOrSelf(operation);
+        child = child->Prev();
     }
 }
 

@@ -9,7 +9,108 @@ import util;
 
 namespace soul::ast::spg {
 
-ParamVar::ParamVar(const soul::ast::SourcePos& sourcePos_, Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
+std::string ParserKindStr(ParserKind kind)
+{
+    switch (kind)
+    {
+        case ParserKind::alternativeParser:
+        {
+            return "alternativeParser";
+        }
+        case ParserKind::sequenceParser:
+        {
+            return "sequenceParser";
+        }
+        case ParserKind::differenceParser:
+        {
+            return "differenceParser";
+        }
+        case ParserKind::listParser:
+        {
+            return "listParser";
+        }
+        case ParserKind::lookaheadParser:
+        {
+            return "lookaheadParser";
+        }
+        case ParserKind::kleeneParser:
+        {
+            return "kleeneParser";
+        }
+        case ParserKind::positiveParser:
+        {
+            return "positiveParser";
+        }
+        case ParserKind::optionalParser:
+        {
+            return "optionalParser";
+        }
+        case ParserKind::expectationParser:
+        {
+            return "expectationParser";
+        }
+        case ParserKind::actionParser:
+        {
+            return "actionParser";
+        }
+        case ParserKind::nonterminalParser:
+        {
+            return "nonterminalParser";
+        }
+        case ParserKind::emptyParser:
+        {
+            return "emptyParser";
+        }
+        case ParserKind::anyParser:
+        {
+            return "anyParser";
+        }
+        case ParserKind::tokenParser:
+        {
+            return "tokenParser";
+        }
+        case ParserKind::charParser:
+        {
+            return "charParser";
+        }
+        case ParserKind::stringParser:
+        {
+            return "stringParser";
+        }
+        case ParserKind::charSetParser:
+        {
+            return "charSetParser";
+        }
+        case ParserKind::groupParser:
+        {
+            return "groupParser";
+        }
+        case ParserKind::switchParser:
+        {
+            return "switchParser";
+        }
+        case ParserKind::caseParser:
+        {
+            return "caseParser";
+        }
+        case ParserKind::ruleParser:
+        {
+            return "ruleParser";
+        }
+        case ParserKind::grammarParser:
+        {
+            return "grammarParser";
+        }
+    }
+    return "<unknown parser kind>";
+}
+
+void ThrowCannotBeOptimized()
+{
+    throw std::runtime_error("grammars that contain character, string or character set parsers cannot be optimized currently");
+}
+
+ParamVar::ParamVar(const soul::ast::SourcePos& sourcePos_, ParamVarKind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) :
     sourcePos(sourcePos_), kind(kind_), type(type_), name(name_)
 {
 }
@@ -19,7 +120,7 @@ ParamVar::~ParamVar()
 }
 
 Parameter::Parameter(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
-    ParamVar(sourcePos_, ParamVar::Kind::parameter, type_, name_)
+    ParamVar(sourcePos_, ParamVarKind::parameter, type_, name_)
 {
 }
 
@@ -29,7 +130,7 @@ ParamVar* Parameter::Clone() const
 }
 
 Variable::Variable(const soul::ast::SourcePos& sourcePos_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_) : 
-    ParamVar(sourcePos_, ParamVar::Kind::variable, type_, name_)
+    ParamVar(sourcePos_, ParamVarKind::variable, type_, name_)
 {
 }
 
@@ -61,6 +162,74 @@ CharSet* CharSet::Clone() const
     return clone;
 }
 
+TokenSet::TokenSet()
+{
+}
+
+bool TokenSet::AddToken(const std::string& token)
+{
+    auto it = tokens.find(token);
+    if (it != tokens.cend())
+    {
+        return false;
+    }
+    else
+    {
+        tokens.insert(token);
+        return true;
+    }
+}
+
+bool TokenSet::Merge(const TokenSet& that)
+{
+    bool changed = false;
+    for (const auto& token : that.tokens)
+    {
+        if (AddToken(token))
+        {
+            changed = true;
+        }
+    }
+    return changed;
+}
+
+bool TokenSet::Contains(const std::string& token) const
+{
+    return tokens.find(token) != tokens.cend();
+}
+
+bool TokenSet::Intersects(const TokenSet& that) const
+{
+    for (const auto& token : that.tokens)
+    {
+        if (Contains(token))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string TokenSet::ToString() const
+{
+    std::string set("{");
+    bool first = true;
+    for (const auto& token : tokens)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            set.append(", ");
+        }
+        set.append(token);
+    }
+    set.append("}");
+    return set;
+}
+
 Parser::Parser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_) : parent(nullptr), sourcePos(sourcePos_), kind(kind_)
 {
 }
@@ -74,25 +243,135 @@ UnaryParser::UnaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind
     child->SetParent(this);
 }
 
+void UnaryParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        child->ComputeFirst(changed, visited);
+        if (First().Merge(child->First()))
+        {
+            changed = true;
+        }
+    }
+}
+
 BinaryParser::BinaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* left_, Parser* right_) : Parser(sourcePos_, kind_), left(left_), right(right_)
 {
     left->SetParent(this);
     right->SetParent(this);
 }
 
-AlternativeParser::AlternativeParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : 
-    BinaryParser(sourcePos_, ParserKind::alternativeParser, left_, right_)
+ChoiceParser::ChoiceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) :
+    BinaryParser(sourcePos_, ParserKind::alternativeParser, left_, right_), optimize(false)
 {
 }
 
-Parser* AlternativeParser::Clone() const
+Parser* ChoiceParser::Clone() const
 {
-    return new AlternativeParser(GetSourcePos(), Left()->Clone(), Right()->Clone());
+    return new ChoiceParser(GetSourcePos(), Left()->Clone(), Right()->Clone());
 }
 
-void AlternativeParser::Accept(Visitor& visitor)
+void ChoiceParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void ChoiceParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        Left()->ComputeFirst(changed, visited);
+        Right()->ComputeFirst(changed, visited);
+        if (First().Merge(Left()->First()))
+        {
+            changed = true;
+        }
+        if (First().Merge(Right()->First()))
+        {
+            changed = true;
+        }
+    }
+}
+
+void ChoiceParser::SetOptimizationFlag(int& count)
+{
+    Parser* parent = Parent();
+    while (parent)
+    {
+        if (parent->IsDifferenceParser())
+        {
+            return;
+        }
+        parent = parent->Parent();
+    }
+    if (!First().Contains("*"))
+    {
+        if (!Left()->First().Contains("#") && !Right()->First().Contains("#") &&!Left()->First().Contains("*") && !Right()->First().Contains("*"))
+        {
+            if (!Left()->First().Intersects(Right()->First()))
+            {
+                optimize = true;
+                ++count;
+            }
+        }
+    }
+}
+
+CaseParser::CaseParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::caseParser, child_)
+{
+}
+
+Parser* CaseParser::Clone() const
+{
+    CaseParser* clone = new CaseParser(GetSourcePos(), Child()->Clone());
+    return clone;
+}
+
+void CaseParser::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+SwitchParser::SwitchParser(const soul::ast::SourcePos& sourcePos_) : Parser(sourcePos_, ParserKind::switchParser)
+{
+}
+
+Parser* SwitchParser::Clone() const
+{
+    SwitchParser* clone = new SwitchParser(GetSourcePos());
+    for (const auto& caseParser : caseParsers)
+    {
+        clone->AddCaseParser(static_cast<CaseParser*>(caseParser->Clone()));
+    }
+    return clone;
+}
+
+void SwitchParser::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+void SwitchParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        for (const auto& caseParser : caseParsers)
+        {
+            caseParser->ComputeFirst(changed, visited);
+            if (First().Merge(caseParser->First()))
+            {
+                changed = true;
+            }
+        }
+    }
+}
+
+void SwitchParser::AddCaseParser(CaseParser* caseParser)
+{
+    caseParsers.push_back(std::unique_ptr<CaseParser>(caseParser));
 }
 
 SequenceParser::SequenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : BinaryParser(sourcePos_, ParserKind::sequenceParser, left_, right_)
@@ -109,6 +388,27 @@ void SequenceParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void SequenceParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        Left()->ComputeFirst(changed, visited);
+        Right()->ComputeFirst(changed, visited);
+        if (First().Merge(Left()->First()))
+        {
+            changed = true;
+        }
+        if (First().Contains("#"))
+        {
+            if (First().Merge(Right()->First()))
+            {
+                changed = true;
+            }
+        }
+    }
+}
+
 DifferenceParser::DifferenceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) : BinaryParser(sourcePos_, ParserKind::differenceParser, left_, right_)
 {
 }
@@ -121,6 +421,19 @@ Parser* DifferenceParser::Clone() const
 void DifferenceParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void DifferenceParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        Left()->ComputeFirst(changed, visited);
+        if (First().Merge(Left()->First()))
+        {
+            changed = true;
+        }
+    }
 }
 
 ListParser::ListParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_) :
@@ -170,6 +483,24 @@ void KleeneParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void KleeneParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        Child()->ComputeFirst(changed, visited);
+        if (First().Merge(Child()->First()))
+        {
+            changed = true;
+        }
+        bool epsilonAdded = First().AddToken("#");
+        if (epsilonAdded)
+        {
+            changed = true;
+        }
+    }
+}
+
 PositiveParser::PositiveParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::positiveParser, child_)
 {
 }
@@ -196,6 +527,24 @@ Parser* OptionalParser::Clone() const
 void OptionalParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void OptionalParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        Child()->ComputeFirst(changed, visited);
+        if (First().Merge(Child()->First()))
+        {
+            changed = true;
+        }
+        bool epsilonAdded = First().AddToken("#");
+        if (epsilonAdded)
+        {
+            changed = true;
+        }
+    }
 }
 
 ExpectationParser::ExpectationParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::expectationParser, child_)
@@ -246,7 +595,7 @@ bool ActionParser::IsActionToken() const
 }
 
 NonterminalParser::NonterminalParser(const soul::ast::SourcePos& sourcePos_, const std::string& ruleName_, const std::string& instanceName_, soul::ast::cpp::ExprListNode* args_) :
-    Parser(sourcePos_, ParserKind::nonterminalParser), ruleName(ruleName_), instanceName(instanceName_), arguments(args_), rule(nullptr)
+    Parser(sourcePos_, ParserKind::nonterminalParser), ruleName(ruleName_), instanceName(instanceName_), arguments(args_), rule(nullptr), recursive(false)
 {
 }
 
@@ -265,6 +614,19 @@ void NonterminalParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void NonterminalParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        rule->ComputeFirst(changed, visited);
+        if (First().Merge(rule->First()))
+        {
+            changed = true;
+        }
+    }
+}
+
 EmptyParser::EmptyParser(const soul::ast::SourcePos& sourcePos_) : Parser(sourcePos_, ParserKind::emptyParser)
 {
 }
@@ -277,6 +639,18 @@ Parser* EmptyParser::Clone() const
 void EmptyParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void EmptyParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        if (First().AddToken("#"))
+        {
+            changed = true;
+        }
+    }
 }
 
 AnyParser::AnyParser(const soul::ast::SourcePos& sourcePos_) : Parser(sourcePos_, ParserKind::anyParser)
@@ -293,6 +667,18 @@ void AnyParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void AnyParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        if (First().AddToken("*"))
+        {
+            changed = true;
+        }
+    }
+}
+
 TokenParser::TokenParser(const soul::ast::SourcePos& sourcePos_, const std::string& tokenName_) : Parser(sourcePos_, ParserKind::tokenParser), tokenName(tokenName_)
 {
 }
@@ -307,6 +693,18 @@ void TokenParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void TokenParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        if (First().AddToken(tokenName))
+        {
+            changed = true;
+        }
+    }
+}
+
 CharParser::CharParser(const soul::ast::SourcePos& sourcePos_, char32_t chr_) : Parser(sourcePos_, ParserKind::charParser), chr(chr_)
 {
 }
@@ -319,6 +717,11 @@ Parser* CharParser::Clone() const
 void CharParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void CharParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    ThrowCannotBeOptimized();
 }
 
 StringParser::StringParser(const soul::ast::SourcePos& sourcePos_, const std::u32string& str_) : Parser(sourcePos_, ParserKind::stringParser), str(str_)
@@ -340,6 +743,11 @@ void StringParser::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void StringParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    ThrowCannotBeOptimized();
+}
+
 CharSetParser::CharSetParser(const soul::ast::SourcePos& sourcePos_, CharSet* charSet_) : Parser(sourcePos_, ParserKind::charSetParser), charSet(charSet_)
 {
 }
@@ -354,27 +762,32 @@ Parser* CharSetParser::Clone() const
     return new CharSetParser(GetSourcePos(), charSet->Clone());
 }
 
+void CharSetParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    ThrowCannotBeOptimized();
+}
+
 void CharSetParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
 
-GroupingParser::GroupingParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::groupingParser, child_)
+GroupParser::GroupParser(const soul::ast::SourcePos& sourcePos_, Parser* child_) : UnaryParser(sourcePos_, ParserKind::groupParser, child_)
 {
 }
 
-Parser* GroupingParser::Clone() const
+Parser* GroupParser::Clone() const
 {
-    return new GroupingParser(GetSourcePos(), Child()->Clone());
+    return new GroupParser(GetSourcePos(), Child()->Clone());
 }
 
-void GroupingParser::Accept(Visitor& visitor)
+void GroupParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
 
 RuleParser::RuleParser(const soul::ast::SourcePos& sourcePos_, const std::string& name_) : 
-    Parser(sourcePos_, ParserKind::ruleParser), name(name_), id(-1), index(-1), grammar(nullptr), hasReturn(false)
+    Parser(sourcePos_, ParserKind::ruleParser), name(name_), id(-1), index(-1), grammar(nullptr), hasReturn(false), computingFirst(false)
 {
 }
 
@@ -385,11 +798,11 @@ void RuleParser::SetInfo(const std::string& info_)
 
 void RuleParser::AddParamOrVariable(ParamVar* paramVar)
 {
-    if (paramVar->GetKind() == ParamVar::Kind::parameter)
+    if (paramVar->Kind() == ParamVarKind::parameter)
     {
         params.push_back(std::unique_ptr<Parameter>(static_cast<Parameter*>(paramVar)));
     }
-    else if (paramVar->GetKind() == ParamVar::Kind::variable)
+    else if (paramVar->Kind() == ParamVarKind::variable)
     {
         vars.push_back(std::unique_ptr<Variable>(static_cast<Variable*>(paramVar)));
     }
@@ -435,7 +848,7 @@ Parser* RuleParser::Clone() const
     {
         clone->SetReturnType(static_cast<soul::ast::cpp::TypeIdNode*>(returnType->Clone()));
     }
-    for (const auto& nonterminal : nonterminals)
+    for (auto nonterminal : nonterminals)
     {
         clone->AddNonterminal(static_cast<NonterminalParser*>(nonterminal->Clone()));
     }
@@ -449,6 +862,19 @@ Parser* RuleParser::Clone() const
 void RuleParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void RuleParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        definition->ComputeFirst(changed, visited);
+        if (First().Merge(definition->First()))
+        {
+            changed = true;
+        }
+    }
 }
 
 Using::Using(const soul::ast::SourcePos& sourcePos_, const std::string& parserRuleId_) : sourcePos(sourcePos_), parserRuleId(parserRuleId_)
@@ -510,6 +936,18 @@ Parser* GrammarParser::Clone() const
 void GrammarParser::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void GrammarParser::ComputeFirst(bool& changed, std::set<Parser*>& visited)
+{
+    if (visited.find(this) == visited.cend())
+    {
+        visited.insert(this);
+        for (const auto& rule : rules)
+        {
+            rule->ComputeFirst(changed, visited);
+        }
+    }
 }
 
 File::File(FileKind kind_, const std::string& filePath_) : kind(kind_), filePath(filePath_)
@@ -607,10 +1045,23 @@ GrammarParser* SpgFile::GetParser(const std::string& name) const
     }
 }
 
-void DefaultVisitor::Visit(AlternativeParser& parser)
+void DefaultVisitor::Visit(ChoiceParser& parser)
 {
     parser.Left()->Accept(*this);
     parser.Right()->Accept(*this);
+}
+
+void DefaultVisitor::Visit(SwitchParser& parser)
+{
+    for (const auto& caseParser : parser.CaseParsers())
+    {
+        caseParser->Accept(*this);
+    }
+}
+
+void DefaultVisitor::Visit(CaseParser& parser)
+{
+    parser.Child()->Accept(*this);
 }
 
 void DefaultVisitor::Visit(SequenceParser& parser)
@@ -660,7 +1111,7 @@ void DefaultVisitor::Visit(ActionParser& parser)
     parser.Child()->Accept(*this);
 }
 
-void DefaultVisitor::Visit(GroupingParser& parser)
+void DefaultVisitor::Visit(GroupParser& parser)
 {
     parser.Child()->Accept(*this);
 }

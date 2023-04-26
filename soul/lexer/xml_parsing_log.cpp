@@ -54,7 +54,8 @@ void XmlParsingLog::WriteFail()
 
 void XmlParsingLog::WriteElement(const std::string& elementName, const std::string& elementContent)
 {
-    std::string converted = XmlEscape(elementContent.c_str(), elementContent.c_str() + elementContent.length());
+    std::u32string content = util::ToUtf32(elementContent);
+    std::string converted = XmlEscape(content.c_str(), content.c_str() + content.length());
     int convertedLength = static_cast<int>(converted.length());
     int lineLength = 2 * static_cast<int>(elementName.length()) + 5 + convertedLength;
     std::string s = converted;

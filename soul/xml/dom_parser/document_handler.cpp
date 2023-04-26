@@ -97,8 +97,11 @@ void DocumentHandler::SkippedEntity(const soul::ast::SourcePos& sourcePos, const
     {
         auto lexer = GetLexer();
         std::cout << "warning: skipped entity '" << entityName << "' in file " <<
+        
             lexer->FileName() << " line " << std::to_string(sourcePos.line) << ":\n" << lexer->ErrorLines(sourcePos.pos) << std::endl;
     }
+    AddTextContent();
+    currentParentNode->AppendChild(MakeEntityReference(entityName));
 }
 
 void DocumentHandler::AddTextContent()

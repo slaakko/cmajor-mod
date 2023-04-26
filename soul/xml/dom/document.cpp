@@ -13,6 +13,11 @@ import soul.lexer.error;
 
 namespace soul::xml {
 
+Document::Document() :
+    ParentNode(NodeKind::documentNode, soul::ast::SourcePos(), "document"), documentElement(nullptr), indexValid(false), xmlStandalone(false)
+{
+}
+
 Document::Document(const soul::ast::SourcePos& sourcePos_) : 
     ParentNode(NodeKind::documentNode, sourcePos_, "document"), documentElement(nullptr), indexValid(false), xmlStandalone(false)
 {

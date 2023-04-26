@@ -1588,9 +1588,9 @@ void ConditionWithDeclaratorNode::Write(CodeFormatter& formatter)
 }
 
 ForRangeDeclarationNode::ForRangeDeclarationNode(const soul::ast::SourcePos& sourcePos_) : 
-    Node(NodeKind::forRangeDeclarationNode, sourcePos_), typeId(new TypeIdNode(sourcePos_)), declarator()
+    Node(NodeKind::forRangeDeclarationNode, sourcePos_), declaration(new SimpleDeclarationNode(sourcePos_)), declarator()
 {
-    typeId->SetParent(this);
+    declaration->SetParent(this);
 }
 
 void ForRangeDeclarationNode::SetDeclarator(const std::string& declarator_)
@@ -1612,7 +1612,7 @@ void ForRangeDeclarationNode::Accept(Visitor& visitor)
 
 void ForRangeDeclarationNode::Write(CodeFormatter& formatter)
 {
-    typeId->Write(formatter);
+    declaration->Write(formatter);
     formatter.Write(" ");
     formatter.Write(declarator);
 }
@@ -1800,22 +1800,13 @@ void IfdefStatementNode::Write(CodeFormatter& formatter)
     formatter.WriteLine();
 }
 
-EndIfStatementNode::EndIfStatementNode(const soul::ast::SourcePos& sourcePos_, Node* comment_) : StatementNode(NodeKind::endIfStatementNode, sourcePos_), comment(comment_)
+EndIfStatementNode::EndIfStatementNode(const soul::ast::SourcePos& sourcePos_) : StatementNode(NodeKind::endIfStatementNode, sourcePos_)
 {
-    if (comment)
-    {
-        comment->SetParent(this);
-    }
 }
 
 Node* EndIfStatementNode::Clone() const
 {
-    Node* clonedComment = nullptr;
-    if (comment)
-    {
-        clonedComment = comment->Clone();
-    }
-    return new EndIfStatementNode(GetSourcePos(), clonedComment);
+    return new EndIfStatementNode(GetSourcePos());
 }
 
 void EndIfStatementNode::Accept(Visitor& visitor)
@@ -1825,16 +1816,7 @@ void EndIfStatementNode::Accept(Visitor& visitor)
 
 void EndIfStatementNode::Write(CodeFormatter& formatter)
 {
-    if (comment)
-    {
-        formatter.Write("#endif ");
-        comment->Write(formatter);
-        formatter.WriteLine();
-    }
-    else
-    {
-        formatter.WriteLine("#endif");
-    }
+    formatter.WriteLine("#endif");
 }
 
 AssignInitNode::AssignInitNode(const soul::ast::SourcePos& sourcePos_, Node* assignmentExpr_) : Node(NodeKind::assignInitNode, sourcePos_), assignmentExpr(assignmentExpr_)
@@ -2780,7 +2762,7 @@ void DefaultVisitor::Visit(ConditionWithDeclaratorNode& node)
 
 void DefaultVisitor::Visit(ForRangeDeclarationNode& node) 
 {
-    node.TypeId()->Accept(*this);
+    node.Declaration()->Accept(*this);
 }
 
 void DefaultVisitor::Visit(RangeForStatementNode& node)
@@ -2821,14 +2803,6 @@ void DefaultVisitor::Visit(TryStatementNode& node)
 void DefaultVisitor::Visit(IfdefStatementNode& node)
 {
     node.Symbol()->Accept(*this);
-}
-
-void DefaultVisitor::Visit(EndIfStatementNode& node)
-{
-    if (node.Comment())
-    {
-        node.Comment()->Accept(*this);
-    }
 }
 
 void DefaultVisitor::Visit(AssignInitNode& node)

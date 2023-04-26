@@ -5,13 +5,31 @@
 
 export module soul.xml.dom.parser;
 
-export import soul.xml.dom.parsing.flags;
-
 import std.core;
 import soul.xml.document;
 import soul.lexer.file.map;
 
 export namespace soul::xml {
+
+enum class ParsingFlags : int
+{
+    none = 0, generateWarnings = 1 << 0
+};
+
+constexpr ParsingFlags operator|(ParsingFlags left, ParsingFlags right)
+{
+    return ParsingFlags(int(left) | int(right));
+}
+
+constexpr ParsingFlags operator&(ParsingFlags left, ParsingFlags right)
+{
+    return ParsingFlags(int(left) & int(right));
+}
+
+constexpr ParsingFlags operator~(ParsingFlags flags)
+{
+    return ParsingFlags(~int(flags));
+}
 
 //  =======================================================================================================
 //  ParseXmlFile parses given UTF-8 encoded XML file to a DOM document.

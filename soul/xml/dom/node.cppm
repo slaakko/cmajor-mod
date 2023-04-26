@@ -8,6 +8,7 @@ export module soul.xml.node;
 import std.core;
 import util.code.formatter;
 import soul.ast.source.pos;
+import soul.xml.axis;
 
 export namespace soul::xml {
 
@@ -16,9 +17,12 @@ enum class NodeKind
     attributeNode, documentFragmentNode, documentNode, elementNode, entityNode, entityReferenceNode, notationNode, processingInstructionNode, textNode, cdataSectionNode, commentNode
 };
 
+std::string NodeKindStr(NodeKind nodeKind);
+
 class ParentNode;
 class Document;
 class Visitor;
+class NodeOperation;
 
 class Node
 {
@@ -41,6 +45,19 @@ public:
     bool IsTextNode() const { return kind == NodeKind::textNode; }
     bool IsCDataSectionNode() const { return kind == NodeKind::cdataSectionNode; }
     bool IsCommentNode() const { return kind == NodeKind::commentNode; }
+    void Walk(NodeOperation& operation, Axis axis);
+    virtual void WalkChildren(NodeOperation& operation);
+    virtual void WalkDescendant(NodeOperation& operation);
+    virtual void WalkDescendantOrSelf(NodeOperation& operation);
+    void WalkParent(NodeOperation& operation);
+    virtual void WalkFollowing(NodeOperation& operation);
+    virtual void WalkPreceding(NodeOperation& operation);
+    virtual void WalkPrecedingOrSelf(NodeOperation& operation);
+    void WalkAncestor(NodeOperation& operation);
+    void WalkAncestorOrSelf(NodeOperation& operation);
+    void WalkFollowingSibling(NodeOperation& operation);
+    void WalkPrecedingSibling(NodeOperation& operation);
+    virtual void WalkAttribute(NodeOperation& operation);
     ParentNode* Parent() const { return parent; }
     Node* Prev() const { return prev; }
     Node* Next() const { return next; }

@@ -158,6 +158,7 @@
     <ClCompile Include="common.cppm" />
     <ClCompile Include="cpp.cpp" />
     <ClCompile Include="cpp.cppm" />
+    <ClCompile Include="lexer_pos_pair.cppm" />
     <ClCompile Include="re.cpp" />
     <ClCompile Include="re.cppm" />
     <ClCompile Include="slg.cpp" />

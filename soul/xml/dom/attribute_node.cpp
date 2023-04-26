@@ -5,12 +5,15 @@
 
 module soul.xml.attribute.node;
 
+import util;
+
 namespace soul::xml {
 
 std::string AttrValueEscape(const std::string& attributeValue, char delimiter)
 {
     std::string result;
-    for (char c : attributeValue)
+    std::u32string attValue = util::ToUtf32(attributeValue);
+    for (char32_t c : attValue)
     {
         switch (c)
         {
@@ -18,7 +21,21 @@ std::string AttrValueEscape(const std::string& attributeValue, char delimiter)
             case '&': result.append("&amp;"); break;
             case '"': if (delimiter == '"') result.append("&quot;"); else result.append(1, '"'); break;
             case '\'': if (delimiter == '\'') result.append("&apos;"); else result.append(1, '\''); break;
-            default: result.append(1, c); break;
+            default:
+            {
+                if (c >= 32 && c < 127)
+                {
+                    result.append(1, static_cast<char>(c));
+                }
+                else
+                {
+                    int codePoint = static_cast<int>(c);
+                    std::string charText = "&#";
+                    charText.append(std::to_string(codePoint)).append(";");
+                    result.append(charText);
+                }
+                break;
+            }
         }
     }
     return result;

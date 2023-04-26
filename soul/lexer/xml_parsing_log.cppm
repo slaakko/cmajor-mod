@@ -33,9 +33,7 @@ private:
 template<typename Char>
 std::string XmlHexEscape(Char c)
 {
-    std::stringstream s;
-    s << "&#x" << std::hex << uint32_t(c) << ";";
-    return s.str();
+    return "&#x" + util::ToHexString(uint32_t(c)) + ";";
 }
 
 template<typename Char>

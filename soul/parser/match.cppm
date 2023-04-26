@@ -5,6 +5,8 @@
 
 export module soul.parser.match;
 
+import std.core;
+
 export namespace soul::parser {
 
 struct Match

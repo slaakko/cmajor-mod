@@ -34,9 +34,9 @@ template<typename Char>
 class KeywordMap
 {
 public:
-    constexpr KeywordMap(const Keyword<Char>* keywords_) : keywords(keywords_)
+    constexpr KeywordMap(const soul::lexer::Keyword<Char>* keywords_) : keywords(keywords_)
     {
-        const Keyword<Char>* kw = keywords;
+        const soul::lexer::Keyword<Char>* kw = keywords;
         while (kw->str)
         {
             Lexeme<Char> lexeme(kw->str, StrEnd(kw->str));
@@ -57,7 +57,7 @@ public:
         }
     }
 private:
-    const Keyword<Char>* keywords;
+    const soul::lexer::Keyword<Char>* keywords;
     std::map<Lexeme<Char>, int64_t, LexemeCompare<Char>> keywordMap;
 };
 

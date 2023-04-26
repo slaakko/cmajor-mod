@@ -5,6 +5,8 @@
 
 export module soul.parser.value;
 
+import std.core;
+
 export namespace soul::parser {
 
 template<class T>

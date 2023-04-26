@@ -18,20 +18,24 @@ struct Range
     int32_t last;
 };
 
+enum class ParamVarKind
+{
+    parameter, variable
+};
+
 class ParamVar
 {
 public:
-    enum class Kind { parameter, variable };
-    ParamVar(const soul::ast::SourcePos& sourcePos_, Kind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
+    ParamVar(const soul::ast::SourcePos& sourcePos_, ParamVarKind kind_, soul::ast::cpp::TypeIdNode* type_, const std::string& name_);
     virtual ~ParamVar();
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
-    Kind GetKind() const { return kind; }
+    ParamVarKind Kind() const { return kind; }
     soul::ast::cpp::TypeIdNode* Type() const { return type.get(); }
     const std::string& Name() const { return name; }
     virtual ParamVar* Clone() const = 0;
 private:
     soul::ast::SourcePos sourcePos;
-    Kind kind;
+    ParamVarKind kind;
     std::unique_ptr<soul::ast::cpp::TypeIdNode> type;
     std::string name;
 };
@@ -64,13 +68,29 @@ private:
     std::vector<Range> ranges;
 };
 
+class TokenSet
+{
+public:
+    TokenSet();
+    bool AddToken(const std::string& token);
+    bool Merge(const TokenSet& that);
+    bool Contains(const std::string& token) const;
+    bool Intersects(const TokenSet& that) const;
+    std::string ToString() const;
+    const std::set<std::string>& Tokens() const { return tokens; }
+private:
+    std::set<std::string> tokens;
+};
+
 class Visitor;
 
 enum class ParserKind
 {
     alternativeParser, sequenceParser, differenceParser, listParser, lookaheadParser, kleeneParser, positiveParser, optionalParser, expectationParser, actionParser,
-    nonterminalParser, emptyParser, anyParser, tokenParser, charParser, stringParser, charSetParser, groupingParser, ruleParser, grammarParser
+    nonterminalParser, emptyParser, anyParser, tokenParser, charParser, stringParser, charSetParser, groupParser, switchParser, caseParser, ruleParser, grammarParser
 };
+
+std::string ParserKindStr(ParserKind kind);
 
 class Parser
 {
@@ -85,14 +105,20 @@ public:
     virtual bool IsTokenSwitch() const { return false; }
     virtual bool IsActionToken() const { return false; }
     virtual std::string Name() const = 0;
+    virtual void ComputeFirst(bool& changed, std::set<Parser*>& visited) = 0;
     ParserKind Kind() const { return kind; }
     bool IsNonterminalParser() const { return kind == ParserKind::nonterminalParser; }
     bool IsTokenParser() const { return kind == ParserKind::tokenParser; }
     bool IsListParser() const { return kind == ParserKind::listParser; }
+    bool IsSwitchParser() const { return kind == ParserKind::switchParser; }
+    bool IsDifferenceParser() const { return kind == ParserKind::differenceParser; }
+    const TokenSet& First() const { return first; }
+    TokenSet& First() { return first; }
 private:
     Parser* parent;
     soul::ast::SourcePos sourcePos;
     ParserKind kind;
+    TokenSet first;
 };
 
 class UnaryParser : public Parser
@@ -100,6 +126,7 @@ class UnaryParser : public Parser
 public:
     UnaryParser(const soul::ast::SourcePos& sourcePos_, ParserKind kind_, Parser* child_);
     Parser* Child() const { return child.get(); }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::unique_ptr<Parser> child;
 };
@@ -115,14 +142,42 @@ private:
     std::unique_ptr<Parser> right;
 };
 
-class AlternativeParser : public BinaryParser
+class ChoiceParser : public BinaryParser
 {
 public:
-    AlternativeParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
+    ChoiceParser(const soul::ast::SourcePos& sourcePos_, Parser* left_, Parser* right_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::string Name() const override { return "alternative"; }
+    std::string Name() const override { return "choice"; }
     bool IsTokenSwitch() const override { return Left()->IsActionToken() && Right()->IsActionToken() || Left()->IsTokenSwitch() && Right()->IsActionToken(); }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
+    void SetOptimizationFlag(int& count);
+    bool Optimize() const { return optimize; }
+private:
+    bool optimize;
+};
+
+class CaseParser : public UnaryParser
+{
+public:
+    CaseParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
+    Parser* Clone() const override;
+    void Accept(Visitor& visitor) override;
+    std::string Name() const override { return "case"; }
+};
+
+class SwitchParser : public Parser
+{
+public:
+    SwitchParser(const soul::ast::SourcePos& sourcePos_);
+    Parser* Clone() const override;
+    void Accept(Visitor& visitor) override;
+    std::string Name() const override { return "switch"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
+    const std::vector<std::unique_ptr<CaseParser>>& CaseParsers() const { return caseParsers; }
+    void AddCaseParser(CaseParser* caseParser);
+private:
+    std::vector<std::unique_ptr<CaseParser>> caseParsers;
 };
 
 class SequenceParser : public BinaryParser
@@ -132,6 +187,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "sequence"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class DifferenceParser : public BinaryParser
@@ -141,6 +197,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "difference"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class ListParser : public UnaryParser
@@ -173,6 +230,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "kleene"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class PositiveParser : public UnaryParser
@@ -191,6 +249,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "optional"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class ExpectationParser : public UnaryParser
@@ -231,11 +290,13 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "nonterminal"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::string ruleName;
     std::string instanceName;
     std::unique_ptr<soul::ast::cpp::ExprListNode> arguments;
     RuleParser* rule;
+    bool recursive;
 };
 
 class EmptyParser : public Parser
@@ -245,6 +306,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "empty"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class AnyParser : public Parser
@@ -254,6 +316,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "any"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 };
 
 class TokenParser : public Parser
@@ -264,6 +327,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "token"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::string tokenName;
 };
@@ -276,6 +340,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "char"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     char32_t chr;
 };
@@ -290,6 +355,7 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "string"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::u32string str;
     std::string arrayName;
@@ -305,18 +371,19 @@ public:
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
     std::string Name() const override { return "charSet"; }
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::unique_ptr<CharSet> charSet;
     std::string arrayName;
 };
 
-class GroupingParser : public UnaryParser
+class GroupParser : public UnaryParser
 {
 public:
-    GroupingParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
+    GroupParser(const soul::ast::SourcePos& sourcePos_, Parser* child_);
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
-    std::string Name() const override { return "grouping"; }
+    std::string Name() const override { return "group"; }
 };
 
 class GrammarParser;
@@ -347,6 +414,7 @@ public:
     void SetHasReturn() { hasReturn = true; }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::string name;
     int32_t index;
@@ -359,6 +427,7 @@ private:
     std::vector<NonterminalParser*> nonterminals;
     GrammarParser* grammar;
     bool hasReturn;
+    bool computingFirst;
 };
 
 struct Using
@@ -391,6 +460,7 @@ public:
     const std::vector<std::unique_ptr<RuleParser>>& Rules() const { return rules; }
     Parser* Clone() const override;
     void Accept(Visitor& visitor) override;
+    void ComputeFirst(bool& changed, std::set<Parser*>& visited) override;
 private:
     std::string name;
     bool main;
@@ -487,7 +557,9 @@ private:
 class Visitor
 {
 public:
-    virtual void Visit(AlternativeParser& parser) {}
+    virtual void Visit(ChoiceParser& parser) {}
+    virtual void Visit(SwitchParser& parser) {}
+    virtual void Visit(CaseParser& parser) {}
     virtual void Visit(SequenceParser& parser) {}
     virtual void Visit(DifferenceParser& parser) {}
     virtual void Visit(ListParser& parser) {}
@@ -504,7 +576,7 @@ public:
     virtual void Visit(CharParser& parser) {}
     virtual void Visit(StringParser& parser) {}
     virtual void Visit(CharSetParser& parser) {}
-    virtual void Visit(GroupingParser& parser) {}
+    virtual void Visit(GroupParser& parser) {}
     virtual void Visit(RuleParser& parser) {}
     virtual void Visit(GrammarParser& parser) {}
     virtual void Visit(ParserFile& parserFile) {}
@@ -514,7 +586,9 @@ public:
 class DefaultVisitor : public Visitor
 {
 public:
-    void Visit(AlternativeParser& parser) override;
+    void Visit(ChoiceParser& parser) override;
+    void Visit(SwitchParser& parser) override;
+    void Visit(CaseParser& parser) override;
     void Visit(SequenceParser& parser) override;
     void Visit(DifferenceParser& parser) override;
     void Visit(ListParser& parser) override;
@@ -524,7 +598,7 @@ public:
     void Visit(OptionalParser& parser) override;
     void Visit(ExpectationParser& parser) override;
     void Visit(ActionParser& parser) override;
-    void Visit(GroupingParser& parser) override;
+    void Visit(GroupParser& parser) override;
     void Visit(RuleParser& parser) override;
     void Visit(GrammarParser& parser) override;
     void Visit(ParserFile& parserFile) override;

@@ -6,7 +6,8 @@
 export module soul.lexer.trivial;
 
 import std.core;
-import soul.lexer;
+import soul.lexer.cls;
+import soul.lexer.variables;
 
 export namespace soul::lexer::trivial {
 

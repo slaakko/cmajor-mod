@@ -23,22 +23,22 @@ void Symbol::SetName(const std::string& name_)
     name = name_;
 }
 
-Char::Char(char32_t chr_) : Symbol(SymbolKind::charSymbol), chr(chr_)
+CharSymbol::CharSymbol(char32_t chr_) : Symbol(SymbolKind::charSymbol), chr(chr_)
 {
     SetName("(" + util::ToUtf8(std::u32string(1, chr)) + ")");
 }
 
-bool Char::Match(char32_t c)
+bool CharSymbol::Match(char32_t c)
 {
     return chr == c;
 }
 
-void Char::Accept(Visitor& visitor)
+void CharSymbol::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
 
-void Char::Print(CodeFormatter& formatter)
+void CharSymbol::Print(CodeFormatter& formatter)
 {
     if (chr == eps)
     {
@@ -68,6 +68,10 @@ void Any::Accept(Visitor& visitor)
 void Any::Print(CodeFormatter& formatter)
 {
     formatter.Write(".");
+}
+
+Range::Range() : Symbol(SymbolKind::rangeSymbol), start(), end()
+{
 }
 
 Range::Range(char32_t start_, char32_t end_) : Symbol(SymbolKind::rangeSymbol), start(start_), end(end_)
@@ -179,7 +183,7 @@ Class* Class::MakeCanonical(LexerContext& lexerContext)
     {
         if (symbol->Kind() == SymbolKind::charSymbol)
         {
-            Char* chr = static_cast<Char*>(symbol);
+            CharSymbol* chr = static_cast<CharSymbol*>(symbol);
             rangeVec.push_back(Range(chr->Chr(), chr->Chr()));
         }
         else if (symbol->Kind() == SymbolKind::rangeSymbol)
@@ -816,7 +820,7 @@ void DfaState::Print(LexerContext& context, CodeFormatter& formatter)
             {
                 context.Partition()[i]->Print(formatter);
             }
-            formatter.WriteLine(+" -> " + std::to_string(next[i]->Id()));
+            formatter.WriteLine(" -> " + std::to_string(next[i]->Id()));
         }
     }
     formatter.DecIndent();
@@ -829,7 +833,7 @@ void Dfa::AddState(DfaState* state)
 
 void Dfa::Finalize(LexerContext& lexerContext)
 {
-    for (const auto& state : states)
+    for (auto state : states)
     {
         for (auto nfaStateId : state->NfaStateIds())
         {
@@ -954,9 +958,10 @@ ExprParser::~ExprParser()
 
 LexerContext::LexerContext() :
     nextNfaStateId(0), nextDfaStateId(0), ruleIndex(-1), classIndex(0), any(), epsilon(eps), 
-    asciiIdStart(new Class(classIndex++)), asciiIdCont(new Class(classIndex++)), unicodeIdStart(new Class(classIndex++)), unicodeIdCont(new Class(classIndex++)),
+    asciiIdStart(new Class(classIndex)), asciiIdCont(new Class(classIndex + 1)), unicodeIdStart(new Class(classIndex + 2)), unicodeIdCont(new Class(classIndex + 3)),
     tokens(nullptr), keywords(nullptr), expressions(nullptr), lexer(nullptr), currentExpression(nullptr), exprParser(nullptr), masterNfaIndex(-1)
 {
+    classIndex += 4;
     symbols.push_back(asciiIdStart);
     symbols.push_back(asciiIdCont);
     symbols.push_back(unicodeIdStart);
@@ -1854,7 +1859,7 @@ Symbol* LexerContext::MakeChar(char32_t c)
     {
         return it->second;
     }
-    Symbol* symbol = new Char(c);
+    Symbol* symbol = new CharSymbol(c);
     symbol->DontSetContained();
     symbols.push_back(symbol);
     charSymbols[c] = symbol;

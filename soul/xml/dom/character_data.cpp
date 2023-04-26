@@ -5,18 +5,36 @@
 
 module soul.xml.character.data;
 
+import util;
+
 namespace soul::xml {
 
 std::string XmlCharDataEscape(const std::string& text)
 {
     std::string result;
-    for (char c : text)
+    std::u32string value = util::ToUtf32(text);
+    for (char32_t c : value)
     {
         switch (c)
         {
             case '<': result.append("&lt;"); break;
             case '&': result.append("&amp;"); break;
-            default: result.append(1, c); break;
+            case '\r': case '\n': result.append(1, static_cast<char>(c)); break;
+            default: 
+            {
+                if (c >= 32 && c < 127)
+                {
+                    result.append(1, static_cast<char>(c));
+                }
+                else
+                {
+                    int codePoint = static_cast<int>(c);
+                    std::string charText = "&#";
+                    charText.append(std::to_string(codePoint)).append(";");
+                    result.append(charText);
+                }
+                break;
+            }
         }
     }
     return result;

@@ -164,6 +164,7 @@
     <ClCompile Include="keyword.cppm" />
     <ClCompile Include="lexeme.cppm" />
     <ClCompile Include="lexer.cppm" />
+    <ClCompile Include="lexer_class.cppm" />
     <ClCompile Include="lexing_util.cppm" />
     <ClCompile Include="parsing_log.cpp" />
     <ClCompile Include="parsing_log.cppm" />

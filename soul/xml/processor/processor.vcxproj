@@ -160,8 +160,9 @@
     <ClCompile Include="content_handler.cppm" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="entity.cppm" />
-    <ClCompile Include="processor.cpp" />
     <ClCompile Include="processor.cppm" />
+    <ClCompile Include="xml_processor.cpp" />
+    <ClCompile Include="xml_processor.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ast\ast.vcxproj">

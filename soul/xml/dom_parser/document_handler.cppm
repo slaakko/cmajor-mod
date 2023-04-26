@@ -5,10 +5,11 @@
 
 export module soul.xml.document.handler;
 
+import std.core;
 import soul.xml.document;
 import soul.xml.element;
 import soul.xml.content.handler;
-import soul.xml.dom.parsing.flags;
+import soul.xml.dom.parser;
 
 export namespace soul::xml {
 

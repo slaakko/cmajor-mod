@@ -6,6 +6,7 @@
 module soul.xml.element;
 
 import soul.xml.visitor;
+import soul.xml.node.operation;
 
 namespace soul::xml {
 
@@ -153,6 +154,14 @@ bool Element::HasMultilineContent() const
         }
     }
     return false;
+}
+
+void Element::WalkAttribute(NodeOperation& operation)
+{
+    for (const auto& attribute : attributeMap)
+    {
+        operation.Apply(attribute.second.get());
+    }
 }
 
 Element* MakeElement(const std::string& name)

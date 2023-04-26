@@ -19,3 +19,6 @@ export import soul.xml.processing.instruction;
 export import soul.xml.text;
 export import soul.xml.error;
 export import soul.xml.index;
+export import soul.xml.axis;
+export import soul.xml.node.operation;
+export import soul.xml.visitor;
