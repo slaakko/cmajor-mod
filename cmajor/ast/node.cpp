@@ -5,37 +5,66 @@
 
 module cmajor.ast.node;
 
-//import cmajor.ast.template_;
+import cmajor.ast.writer;
+import cmajor.ast.reader;
+import cmajor.ast.basic.type;
+import cmajor.ast.literal;
+import cmajor.ast.compile.unit;
+import cmajor.ast.classes;
+import cmajor.ast.interface;
+import cmajor.ast.delegate;
+import cmajor.ast.concepts;
+import cmajor.ast.statement;
+import cmajor.ast.typedefs;
+import cmajor.ast.constant;
+import cmajor.ast.enumeration;
+import cmajor.ast.type.expr;
+import cmajor.ast.expression;
+import cmajor.ast.global.variable;
+import cmajor.ast.comment;
+import cmajor.ast.templates;
+import cmajor.ast.attribute;
+import cmajor.ast.parameter;
 
 namespace cmajor::ast {
 
 const char* nodeTypeStr[] =
 {
-    "boolNode", "sbyteNode", "byteNode", "shortNode", "ushortNode", "intNode", "uintNode", "longNode", "ulongNode", "floatNode", "doubleNode", "charNode", "wcharNode", "ucharNode", "voidNode",
+    "autoNode", "boolNode", "sbyteNode", "byteNode", "shortNode", "ushortNode", "intNode", "uintNode", "longNode", "ulongNode", "floatNode", "doubleNode", "charNode", "wcharNode", 
+    "ucharNode", "voidNode",
     "booleanLiteralNode", "sbyteLiteralNode", "byteLiteralNode", "shortLiteralNode", "ushortLiteralNode", "intLiteralNode", "uintLiteralNode", "longLiteralNode", "ulongLiteralNode",
-    "floatLiteralNode", "doubleLiteralNode", "charLiteralNode", "wcharLiteralNode", "ucharLiteralNode", "stringLiteralNode", "wstringLiteralNode", "ustringLiteralNode", "nullLiteralNode", "arrayLiteralNode",
+    "floatLiteralNode", "doubleLiteralNode", "charLiteralNode", "wcharLiteralNode", "ucharLiteralNode", "stringLiteralNode", "wstringLiteralNode", 
+    "ustringLiteralNode", "nullLiteralNode", "arrayLiteralNode",
     "structuredLiteralNode",
     "compileUnitNode", "namespaceNode", "aliasNode", "namespaceImportNode", "identifierNode", "templateIdNode", "functionNode",
-    "classNode", "thisInitializerNode", "baseInitializerNode", "memberInitializerNode", "staticConstructorNode", "constructorNode", "destructorNode", "memberFunctionNode", "conversionFunctionNode",
+    "classNode", "thisInitializerNode", "baseInitializerNode", "memberInitializerNode", "staticConstructorNode", "constructorNode", "destructorNode", "memberFunctionNode", 
+    "conversionFunctionNode",
     "memberVariableNode",
     "interfaceNode", "delegateNode", "classDelegateNode",
-    "parenthesizedConstraintNode", "disjunctiveConstraintNode", "conjunctiveConstraintNode", "whereConstraintNode", "predicateConstraintNode", "isConstraintNode", "multiParamConstraintNode", "typeNameConstraintNode",
+    "parenthesizedConstraintNode", "disjunctiveConstraintNode", "conjunctiveConstraintNode", "whereConstraintNode", "predicateConstraintNode", "isConstraintNode", 
+    "multiParamConstraintNode", "typeNameConstraintNode",
     "constructorConstraintNode", "destructorConstraintNode", "memberFunctionConstraintNode", "functionConstraintNode",
     "sameConstraintNode", "derivedConstraintNode", "convertibleConstraintNode", "explicitlyConvertibleConstraintNode", "commonConstraintNode", "nonreferenceTypeConstraintNode",
     "axiomStatementNode", "axiomNode", "conceptIdNode", "conceptNode",
     "sameConceptNode", "derivedConceptNode", "convertibleConceptNode", "ecxplicitlyConvertibleConceptNode", "commonConceptNode", "nonreferenceTypeConceptNode",
-    "labelNode", "compoundStatementNode", "returnStatementNode", "ifStatementNode", "whileStatementNode", "doStatementNode", "forStatementNode", "breakStatementNode", "continueStatementNode",
+    "labelNode", "compoundStatementNode", "returnStatementNode", "ifStatementNode", "whileStatementNode", "doStatementNode", "forStatementNode", "breakStatementNode", 
+    "continueStatementNode",
     "gotoStatementNode", "constructionStatementNode", "deleteStatementNode", "destroyStatementNode", "assignmentStatementNode", "expressionStatementNode", "emptyStatementNode",
     "rangeForStatementNode", "switchStatementNode", "caseStatementNode", "defaultStatementNode", "gotoCaseStatementNode",
     "gotoDefaultStatementNode", "throwStatementNode", "catchNode", "tryStatementNode", "assertStatementNode",
     "typedefNode", "constantNode", "enumTypeNode", "enumConstantNode", "parameterNode", "templateParameterNode",
     "constNode", "refNode", "arrayNode",
-    "dotNode", "arrowNode", "equivalenceNode", "implicationNode", "disjunctionNode", "conjunctionNode", "bitOrNode", "bitXorNode", "bitAndNode", "equalNode", "notEqualNode", "lessNode", "greaterNode",
+    "dotNode", "arrowNode", "equivalenceNode", "implicationNode", "disjunctionNode", "conjunctionNode", "bitOrNode", "bitXorNode", "bitAndNode", "equalNode", 
+    "notEqualNode", "lessNode", "greaterNode",
     "lessOrEqualNode", "greaterOrEqualNode", "shiftLeftNode", "shiftRightNode",
-    "addNode", "subNode", "mulNode", "divNode", "remNode", "notNode", "unaryPlusNode", "unaryMinusNode", "prefixIncrementNode", "prefixDecrementNode", "complementNode", "derefNode", "addrOfNode",
-    "isNode", "asNode", "indexingNode", "invokeNode", "postfixIncrementNode", "postfixDecrementNode", "sizeOfNode", "typeNameNode", "typeIdNode", "castNode", "constructNode", "newNode", "thisNode", "baseNode",
-    "conditionalCompilationDisjunctionNode", "conditionalCompilationConjunctionNode", "conditionalCompilationNotNode", "conditionalCompilationPrimaryNode", "conditionalCompilationPartNode",
-    "conditionalCompilationStatementNode", "uuidLiteralNode", "cursorIdNode", "parenthesizedExpressionNode", "globalVariableNode", "parenthesizedCondCompExpressionNode", "labeledStatementNode",
+    "addNode", "subNode", "mulNode", "divNode", "remNode", "notNode", "unaryPlusNode", "unaryMinusNode", "prefixIncrementNode", "prefixDecrementNode", "complementNode", 
+    "derefNode", "addrOfNode",
+    "isNode", "asNode", "indexingNode", "invokeNode", "postfixIncrementNode", "postfixDecrementNode", "sizeOfNode", "typeNameNode", "typeIdNode", "castNode", 
+    "constructNode", "newNode", "thisNode", "baseNode",
+    "conditionalCompilationDisjunctionNode", "conditionalCompilationConjunctionNode", "conditionalCompilationNotNode", "conditionalCompilationPrimaryNode", 
+    "conditionalCompilationPartNode",
+    "conditionalCompilationStatementNode", "uuidLiteralNode", "cursorIdNode", "parenthesizedExpressionNode", "globalVariableNode", "parenthesizedCondCompExpressionNode", 
+    "labeledStatementNode",
     "commentNode", "functionPtrNode", "syncNode", "syncStatementNode", "attributeNode", "attributesNode", "fullInstantiationRequestNode",
     "maxNode"
 };
@@ -77,13 +106,9 @@ void Node::AddParameter(ParameterNode* parameter)
     throw std::runtime_error("Node::AddParameter not overridden");
 }
 
-// TODO:
-void Node::AddTemplateParameter(Node* templateParameter)
+void Node::AddTemplateParameter(TemplateParameterNode* templateParameter)
 {
-    if (templateParameter->nodeType == NodeType::templateParameterNode)
-    {
-        throw std::runtime_error("Node::AddTemplateParameter not overridden");
-    }
+    throw std::runtime_error("Node::AddTemplateParameter not overridden");
 }
 
 UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
@@ -99,13 +124,13 @@ UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_,
 void UnaryNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
-    // writer.Write(subject.get()); todo
+    writer.Write(subject.get()); 
 }
 
 void UnaryNode::Read(AstReader& reader)
 {
     Node::Read(reader);
-    // subject.reset(reader.ReadNode());  todo
+    subject.reset(reader.ReadNode());
     subject->SetParent(this);
 }
 
@@ -124,16 +149,16 @@ BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_
 void BinaryNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
-    // writer.Write(left.get()); todo
-    // writer.Write(right.get()); todo
+    writer.Write(left.get()); 
+    writer.Write(right.get()); 
 }
 
 void BinaryNode::Read(AstReader& reader)
 {
     Node::Read(reader);
-    // left.reset(reader.ReadNode()); todo
+    left.reset(reader.ReadNode());
     left->SetParent(this);
-    // right.reset(reader.ReadNode()); todo
+    right.reset(reader.ReadNode()); 
     right->SetParent(this);
 }
 
@@ -173,10 +198,7 @@ void NodeFactory::Done()
 NodeFactory::NodeFactory()
 {
     creators.resize(static_cast<size_t>(NodeType::maxNode));
-
-    // todo Register function calls
-
-/*
+    Register(NodeType::autoNode, new ConcreteNodeCreator<AutoNode>());
     Register(NodeType::boolNode, new ConcreteNodeCreator<BoolNode>());
     Register(NodeType::sbyteNode, new ConcreteNodeCreator<SByteNode>());
     Register(NodeType::byteNode, new ConcreteNodeCreator<ByteNode>());
@@ -218,9 +240,7 @@ NodeFactory::NodeFactory()
     Register(NodeType::namespaceNode, new ConcreteNodeCreator<NamespaceNode>());
     Register(NodeType::aliasNode, new ConcreteNodeCreator<AliasNode>());
     Register(NodeType::namespaceImportNode, new ConcreteNodeCreator<NamespaceImportNode>());
-*/
-    //Register(NodeType::identifierNode, new ConcreteNodeCreator<IdentifierNode>());
-/*
+    Register(NodeType::identifierNode, new ConcreteNodeCreator<IdentifierNode>());
     Register(NodeType::templateIdNode, new ConcreteNodeCreator<TemplateIdNode>());
     Register(NodeType::functionNode, new ConcreteNodeCreator<FunctionNode>());
     Register(NodeType::classNode, new ConcreteNodeCreator<ClassNode>());
@@ -367,7 +387,6 @@ NodeFactory::NodeFactory()
     Register(NodeType::attributeNode, new ConcreteNodeCreator<AttributeNode>());
     Register(NodeType::attributesNode, new ConcreteNodeCreator<AttributesNode>());
     Register(NodeType::fullInstantiationRequestNode, new ConcreteNodeCreator<FullInstantiationRequestNode>());
-*/
 }
 
 void NodeFactory::Register(NodeType nodeType, NodeCreator* creator)

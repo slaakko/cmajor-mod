@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.ast.typedef_;
+export module cmajor.ast.typedefs;
 
 import cmajor.ast.node;
 import cmajor.ast.specifier;

@@ -5,7 +5,7 @@ export module cmajor.symbols.concept_.symbol;
 // =================================
 
 import cmajor.ast.specifier;
-import cmajor.ast.concept_; 
+import cmajor.ast.concepts; 
 import cmajor.symbols.symbol;
 import cmajor.symbols.container.symbol;
 import soul.ast.source.pos;

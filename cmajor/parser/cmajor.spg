@@ -1,0 +1,8 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+project cmajor;
+parser <basic_type.parser>;
+parser <identifier.parser>;

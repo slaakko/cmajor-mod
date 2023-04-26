@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.identifier.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+
+parser IdentifierParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    Identifier(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= ID{ return new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
+        ;
+
+    QualifiedId(cmajor::parser::context::Context* context, var std::u32string value) : cmajor::ast::Node*
+        ::= 
+        (
+            ID{ value = lexer.GetToken(pos).ToString(); }
+            (DOT ID{ value.append(1, '.').append(lexer.GetToken(pos).ToString()); })*
+        )
+        {
+            return new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), value); 
+        }
+        ;
+}

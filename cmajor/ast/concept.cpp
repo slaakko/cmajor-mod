@@ -3,7 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.ast.concept_;
+module cmajor.ast.concepts;
+
 import std.core;
 import cmajor.ast.identifier;
 import cmajor.ast.parameter;

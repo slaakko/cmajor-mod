@@ -7,8 +7,8 @@ module cmajor.ast.merge;
 
 import std.core;
 import cmajor.ast.visitor;
-import cmajor.ast.namespace_;
-import cmajor.ast.class_;
+import cmajor.ast.namespaces;
+import cmajor.ast.classes;
 import cmajor.ast.compile.unit;
 import cmajor.ast.node;
 

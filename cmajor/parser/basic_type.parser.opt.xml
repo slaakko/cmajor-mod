@@ -1,0 +1,88 @@
+<parserFile>
+ <grammar name="BasicTypeParser">
+  <rule first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="BasicType">
+   <switch first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <case first="{AUTO}">
+     <action first="{AUTO}">
+      <token first="{AUTO}" name="AUTO"/>
+     </action>
+    </case>
+    <case first="{BOOL}">
+     <action first="{BOOL}">
+      <token first="{BOOL}" name="BOOL"/>
+     </action>
+    </case>
+    <case first="{SBYTE}">
+     <action first="{SBYTE}">
+      <token first="{SBYTE}" name="SBYTE"/>
+     </action>
+    </case>
+    <case first="{BYTE}">
+     <action first="{BYTE}">
+      <token first="{BYTE}" name="BYTE"/>
+     </action>
+    </case>
+    <case first="{SHORT}">
+     <action first="{SHORT}">
+      <token first="{SHORT}" name="SHORT"/>
+     </action>
+    </case>
+    <case first="{USHORT}">
+     <action first="{USHORT}">
+      <token first="{USHORT}" name="USHORT"/>
+     </action>
+    </case>
+    <case first="{INT}">
+     <action first="{INT}">
+      <token first="{INT}" name="INT"/>
+     </action>
+    </case>
+    <case first="{UINT}">
+     <action first="{UINT}">
+      <token first="{UINT}" name="UINT"/>
+     </action>
+    </case>
+    <case first="{LONG}">
+     <action first="{LONG}">
+      <token first="{LONG}" name="LONG"/>
+     </action>
+    </case>
+    <case first="{ULONG}">
+     <action first="{ULONG}">
+      <token first="{ULONG}" name="ULONG"/>
+     </action>
+    </case>
+    <case first="{FLOAT}">
+     <action first="{FLOAT}">
+      <token first="{FLOAT}" name="FLOAT"/>
+     </action>
+    </case>
+    <case first="{DOUBLE}">
+     <action first="{DOUBLE}">
+      <token first="{DOUBLE}" name="DOUBLE"/>
+     </action>
+    </case>
+    <case first="{CHAR}">
+     <action first="{CHAR}">
+      <token first="{CHAR}" name="CHAR"/>
+     </action>
+    </case>
+    <case first="{WCHAR}">
+     <action first="{WCHAR}">
+      <token first="{WCHAR}" name="WCHAR"/>
+     </action>
+    </case>
+    <case first="{UCHAR}">
+     <action first="{UCHAR}">
+      <token first="{UCHAR}" name="UCHAR"/>
+     </action>
+    </case>
+    <case first="{VOID}">
+     <action first="{VOID}">
+      <token first="{VOID}" name="VOID"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

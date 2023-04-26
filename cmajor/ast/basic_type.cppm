@@ -10,6 +10,15 @@ import cmajor.ast.clone;
 
 export namespace cmajor::ast {
 
+class AutoNode : public Node
+{
+public:
+    AutoNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    Node* Clone(CloneContext& cloneContext) const override;
+    void Accept(Visitor& visitor) override;
+    std::string ToString() const override { return "auto"; }
+};
+
 class BoolNode : public Node
 {
 public:

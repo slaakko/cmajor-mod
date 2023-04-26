@@ -16,14 +16,16 @@ export namespace cmajor::ast {
 
 enum class NodeType : uint8_t
 {
-    boolNode, sbyteNode, byteNode, shortNode, ushortNode, intNode, uintNode, longNode, ulongNode, floatNode, doubleNode, charNode, wcharNode, ucharNode, voidNode,
+    autoNode, boolNode, sbyteNode, byteNode, shortNode, ushortNode, intNode, uintNode, longNode, ulongNode, floatNode, doubleNode, charNode, wcharNode, ucharNode, voidNode,
     booleanLiteralNode, sbyteLiteralNode, byteLiteralNode, shortLiteralNode, ushortLiteralNode, intLiteralNode, uintLiteralNode, longLiteralNode, ulongLiteralNode,
-    floatLiteralNode, doubleLiteralNode, charLiteralNode, wcharLiteralNode, ucharLiteralNode, stringLiteralNode, wstringLiteralNode, ustringLiteralNode, nullLiteralNode, arrayLiteralNode, structuredLiteralNode,
+    floatLiteralNode, doubleLiteralNode, charLiteralNode, wcharLiteralNode, ucharLiteralNode, stringLiteralNode, wstringLiteralNode, ustringLiteralNode, nullLiteralNode, 
+    arrayLiteralNode, structuredLiteralNode,
     compileUnitNode, namespaceNode, aliasNode, namespaceImportNode, identifierNode, templateIdNode, functionNode,
     classNode, thisInitializerNode, baseInitializerNode, memberInitializerNode, staticConstructorNode, constructorNode, destructorNode, memberFunctionNode, conversionFunctionNode,
     memberVariableNode,
     interfaceNode, delegateNode, classDelegateNode,
-    parenthesizedConstraintNode, disjunctiveConstraintNode, conjunctiveConstraintNode, whereConstraintNode, predicateConstraintNode, isConstraintNode, multiParamConstraintNode, typeNameConstraintNode,
+    parenthesizedConstraintNode, disjunctiveConstraintNode, conjunctiveConstraintNode, whereConstraintNode, predicateConstraintNode, isConstraintNode, multiParamConstraintNode, 
+    typeNameConstraintNode,
     constructorConstraintNode, destructorConstraintNode, memberFunctionConstraintNode, functionConstraintNode,
     sameConstraintNode, derivedConstraintNode, convertibleConstraintNode, explicitlyConvertibleConstraintNode, commonConstraintNode, nonreferenceTypeConstraintNode,
     axiomStatementNode, axiomNode, conceptIdNode, conceptNode,
@@ -38,7 +40,8 @@ enum class NodeType : uint8_t
     equalNode, notEqualNode, lessNode, greaterNode, lessOrEqualNode, greaterOrEqualNode, shiftLeftNode, shiftRightNode,
     addNode, subNode, mulNode, divNode, remNode, notNode, unaryPlusNode, unaryMinusNode, prefixIncrementNode, prefixDecrementNode, complementNode, derefNode, addrOfNode,
     isNode, asNode, indexingNode, invokeNode, postfixIncrementNode, postfixDecrementNode, sizeOfNode, typeNameNode, typeIdNode, castNode, constructNode, newNode, thisNode, baseNode,
-    conditionalCompilationDisjunctionNode, conditionalCompilationConjunctionNode, conditionalCompilationNotNode, conditionalCompilationPrimaryNode, conditionalCompilationPartNode, conditionalCompilationStatementNode,
+    conditionalCompilationDisjunctionNode, conditionalCompilationConjunctionNode, conditionalCompilationNotNode, conditionalCompilationPrimaryNode, 
+    conditionalCompilationPartNode, conditionalCompilationStatementNode,
     uuidLiteralNode, cursorIdNode, parenthesizedExpressionNode, globalVariableNode, parenthesizedCondCompExpressionNode, labeledStatementNode, commentNode, functionPtrNode,
     syncNode, syncStatementNode, attributeNode, attributesNode, fullInstantiationRequestNode,
     maxNode
@@ -50,6 +53,7 @@ class Visitor;
 class AstWriter;
 class AstReader;
 class ParameterNode;
+class TemplateParameterNode;
 
 class Node
 {
@@ -66,7 +70,7 @@ public:
     virtual std::string ToString() const { return std::string(); }
     virtual void AddArgument(Node* argument);
     virtual void AddParameter(ParameterNode* parameter);
-    virtual void AddTemplateParameter(Node* templateParameter);
+    virtual void AddTemplateParameter(TemplateParameterNode* templateParameter);
     virtual bool IsUnsignedTypeNode() const { return false; }
     virtual bool IsStatementNode() const { return false; }
     virtual bool NodeIsConstraintNode() const { return false; }

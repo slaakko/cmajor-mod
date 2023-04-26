@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.ast.template_;
+module cmajor.ast.templates;
 
 import std.core;
 import cmajor.ast.reader;

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.ast.template_;
+export module cmajor.ast.templates;
 
 import cmajor.ast.node;
 import cmajor.ast.node.list;
@@ -61,4 +61,6 @@ public:
 private:
     std::unique_ptr<TemplateIdNode> templateId;
 };
+
 } // namespace cmajor::ast
+

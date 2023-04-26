@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.ast.namespace_;
+module cmajor.ast.namespaces;
 
 import cmajor.ast.reader;
 import cmajor.ast.writer;

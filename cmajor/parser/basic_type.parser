@@ -1,0 +1,36 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.basic.type.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+
+parser BasicTypeParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    BasicType(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= AUTO{ return new cmajor::ast::AutoNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   BOOL{ return new cmajor::ast::BoolNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   SBYTE{ return new cmajor::ast::SByteNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   BYTE{ return new cmajor::ast::ByteNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   SHORT{ return new cmajor::ast::ShortNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   USHORT{ return new cmajor::ast::UShortNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   INT{ return new cmajor::ast::IntNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   UINT{ return new cmajor::ast::UIntNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   LONG{ return new cmajor::ast::LongNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   ULONG{ return new cmajor::ast::ULongNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   FLOAT{ return new cmajor::ast::FloatNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   DOUBLE{ return new cmajor::ast::DoubleNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   CHAR{ return new cmajor::ast::CharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   WCHAR{ return new cmajor::ast::WCharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   UCHAR{ return new cmajor::ast::UCharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   VOID{ return new cmajor::ast::VoidNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        ;
+}

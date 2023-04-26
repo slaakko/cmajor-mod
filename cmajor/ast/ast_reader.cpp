@@ -6,12 +6,13 @@ module cmajor.ast.reader;
 
 import cmajor.ast.node;
 import cmajor.ast.attribute;
-import cmajor.ast.concept_;
-import cmajor.ast.template_;
+import cmajor.ast.concepts;
+import cmajor.ast.templates;
 import cmajor.ast.statement;
 import cmajor.ast.identifier;
 
 namespace cmajor::ast {
+
 AstReader::AstReader(const std::string& fileName_) :
     fileStream(fileName_, util::OpenMode::binary | util::OpenMode::read), bufferedStream(fileStream), binaryStreamReader(bufferedStream) 
 {
@@ -93,6 +94,7 @@ ConceptIdNode* AstReader::ReadConceptIdNode()
         throw std::runtime_error("concept id node expected");
     }
 }
+
 LabelNode* AstReader::ReadLabelNode()
 {
     Node* node = ReadNode();
@@ -219,11 +221,17 @@ Specifiers AstReader::ReadSpecifiers()
 
 soul::ast::SourcePos AstReader::ReadSourcePos()
 {
-        uint32_t file = binaryStreamReader.ReadULEB128UInt();
-        uint32_t line = binaryStreamReader.ReadULEB128UInt();
-        uint32_t col = binaryStreamReader.ReadULEB128UInt();
-        return soul::ast::SourcePos(static_cast<int32_t>(file), static_cast<int32_t>(line), static_cast<int32_t>(col));
+    int32_t file = -1;  
+    int32_t col = 0;
+    int32_t line = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
+    if (line)
+    {
+        int32_t file = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
+        int32_t col = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
+    }
+    return soul::ast::SourcePos(file, line, col);
 }
+
 /*
 void AstReader::SetModuleMaps(const util::uuid& rootModuleId_, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_)
 {

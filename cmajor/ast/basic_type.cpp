@@ -9,6 +9,10 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
+AutoNode::AutoNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::autoNode, sourcePos_, moduleId_)
+{
+}
+
 BoolNode::BoolNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::boolNode, sourcePos_, moduleId_)
 {
 }

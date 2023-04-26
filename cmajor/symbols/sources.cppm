@@ -7,7 +7,7 @@ export module cmajor.symbols.sources;
 
 import std.core;
 import cmajor.ast.compile.unit;
-import cmajor.ast.namespace_;
+import cmajor.ast.namespaces;
 import cmajor.symbols.scope;
 
 export namespace cmajor::symbols {

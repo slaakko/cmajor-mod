@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.ast.namespace_;
+export module cmajor.ast.namespaces;
 
 import std.core;
 import cmajor.ast.node;

@@ -7,7 +7,7 @@ export module cmajor.symbols.scope;
 
 import std.core;
 import soul.ast.source.pos;
-import cmajor.ast.namespace_;
+import cmajor.ast.namespaces;
 import util.uuid;
 
 export namespace cmajor::symbols {

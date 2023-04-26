@@ -7,7 +7,7 @@ module cmajor.ast.compile.unit;
 
 import cmajor.ast.identifier;
 import cmajor.ast.visitor;
-import cmajor.ast.class_;
+import cmajor.ast.classes;
 import std.core;
 import util;
 

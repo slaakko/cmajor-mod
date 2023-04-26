@@ -29,18 +29,18 @@ module cmajor.ast.source.writer;
 #include <iostream>
 */
 import cmajor.ast.compile.unit;
-import cmajor.ast.namespace_;
-import cmajor.ast.template_;
+import cmajor.ast.namespaces;
+import cmajor.ast.templates;
 import cmajor.ast.attribute;
 import cmajor.ast.identifier;
 import cmajor.ast.function;
-import cmajor.ast.class_;
+import cmajor.ast.classes;
 import cmajor.ast.parameter;
-import cmajor.ast.concept_;
+import cmajor.ast.concepts;
 import cmajor.ast.statement;
 import cmajor.ast.interface;
 import cmajor.ast.delegate;
-import cmajor.ast.typedef_;
+import cmajor.ast.typedefs;
 import cmajor.ast.constant;
 import cmajor.ast.enumeration;
 import cmajor.ast.type.expr;

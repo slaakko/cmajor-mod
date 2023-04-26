@@ -2,14 +2,16 @@
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-module cmajor.ast.class_;
+
+module cmajor.ast.classes;
 
 import std.core;
 import cmajor.ast.reader;
 import cmajor.ast.writer;
 import cmajor.ast.visitor;
 import cmajor.ast.attribute;
-import cmajor.ast.concept_;
+import cmajor.ast.concepts;
+import cmajor.ast.templates;
 import util;
 
 namespace cmajor::ast {
@@ -36,8 +38,7 @@ Node* ClassNode::Clone(CloneContext& cloneContext) const
         int tn = templateParameters.Count();
         for (int i = 0; i < tn; ++i)
         {
-            //clone->AddTemplateParameter(static_cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
-            clone->AddTemplateParameter(static_cast<Node*>(templateParameters[i]->Clone(cloneContext)));
+            clone->AddTemplateParameter(static_cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
         }
     }
     int bn = baseClassOrInterfaces.Count();
@@ -111,7 +112,7 @@ void ClassNode::Read(AstReader& reader)
     endBraceSourcePos = reader.ReadSourcePos();
 }
 
-void ClassNode::AddTemplateParameter(Node* templateParameter)
+void ClassNode::AddTemplateParameter(TemplateParameterNode* templateParameter)
 {
     templateParameter->SetParent(this);
     templateParameters.Add(templateParameter);

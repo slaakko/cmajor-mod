@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.ast.typedef_;
+module cmajor.ast.typedefs;
 
 import cmajor.ast.identifier;
 import cmajor.ast.visitor;

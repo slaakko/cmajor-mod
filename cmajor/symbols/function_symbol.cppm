@@ -1,11 +1,12 @@
-export module cmajor.symbols.function.symbol;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
+export module cmajor.symbols.function.symbol;
+
 import cmajor.ast.function;
-import cmajor.ast.concept_;
+import cmajor.ast.concepts;
 import cmajor.ast.specifier;
 import cmajor.ast.node;
 import cmajor.ast.node.list;

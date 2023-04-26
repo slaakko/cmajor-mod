@@ -5,18 +5,15 @@
 
 module cmajor.ast.function;
 
-//import std.core;
 import cmajor.ast.reader;
 import cmajor.ast.writer;
 import cmajor.ast.visitor;
 import cmajor.ast.attribute;
 import cmajor.ast.specifier;
-import cmajor.ast.template_;
-import cmajor.ast.concept_;
+import cmajor.ast.templates;
+import cmajor.ast.concepts;
 import cmajor.ast.parameter;
 import cmajor.ast.statement;
-//import cmajor.ast.identifier;
-//#include <sngcm/ast/Visitor.hpp>
 
 namespace cmajor::ast {
 
@@ -66,7 +63,7 @@ Node* FunctionNode::Clone(CloneContext& cloneContext) const
         int nt = templateParameters.Count();
         for (int i = 0; i < nt; ++i)
         {
-            clone->AddTemplateParameter(static_cast<Node*>(templateParameters[i]->Clone(cloneContext)));
+            clone->AddTemplateParameter(static_cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
         }
     }
     int np = parameters.Count();
@@ -112,8 +109,7 @@ void FunctionNode::CloneContent(FunctionNode* clone, CloneContext& cloneContext)
     int nt = templateParameters.Count();
     for (int i = 0; i < nt; ++i)
     {
-        //clone->AddTemplateParameter(static_cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
-        clone->AddTemplateParameter(static_cast<Node*>(templateParameters[i]->Clone(cloneContext)));
+        clone->AddTemplateParameter(static_cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
     }
     int np = parameters.Count();
     for (int i = 0; i < np; ++i)
@@ -229,8 +225,7 @@ void FunctionNode::Read(AstReader& reader)
     specifierSourcePos = reader.ReadSourcePos();
 }
 
-//void FunctionNode::AddTemplateParameter(TemplateParameterNode* templateParameter)
-void FunctionNode::AddTemplateParameter(Node* templateParameter)
+void FunctionNode::AddTemplateParameter(TemplateParameterNode* templateParameter)
 {
     templateParameter->SetParent(this);
     templateParameters.Add(templateParameter);

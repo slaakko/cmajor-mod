@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.ast.class_;
+export module cmajor.ast.classes;
 
 import cmajor.ast.function;
 import cmajor.ast.identifier;
@@ -12,7 +12,6 @@ import cmajor.ast.node.list;
 
 export namespace cmajor::ast {
 
-class TemplateParameterNode;
 class WhereConstraintNode;
 class AttributesNode;
 
@@ -25,7 +24,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
-    void AddTemplateParameter(Node* templateParameter) override;
+    void AddTemplateParameter(TemplateParameterNode* templateParameter) override;
     Specifiers GetSpecifiers() const override { return specifiers; }
     void SetSpecifiers(Specifiers specifiers_) { specifiers = specifiers_; }
     IdentifierNode* Id() const { return id.get(); }
@@ -34,8 +33,7 @@ public:
     WhereConstraintNode* WhereConstraint() { return constraint.get(); }
     void SetConstraint(WhereConstraintNode* whereConstraint);
     void AddMember(Node* member);
-    //const NodeList<TemplateParameterNode>& TemplateParameters() const { return templateParameters; }
-    const NodeList<Node>& TemplateParameters() const { return templateParameters; }
+    const NodeList<TemplateParameterNode>& TemplateParameters() const { return templateParameters; }
     const NodeList<Node>& BaseClassOrInterfaces() const { return baseClassOrInterfaces; }
     const NodeList<Node>& Members() const { return members; }
     AttributesNode* GetAttributes() const { return attributes.get(); }
@@ -56,8 +54,7 @@ private:
     soul::ast::SourcePos beginBraceSourcePos;
     soul::ast::SourcePos endBraceSourcePos;
     std::unique_ptr<IdentifierNode> id;
-    //NodeList<TemplateParameterNode> templateParameters;
-    NodeList<Node> templateParameters;
+    NodeList<TemplateParameterNode> templateParameters;
     NodeList<Node> baseClassOrInterfaces;
     std::unique_ptr<WhereConstraintNode> constraint;
     NodeList<Node> members;

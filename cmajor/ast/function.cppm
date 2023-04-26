@@ -32,7 +32,7 @@ export namespace cmajor::ast {
 class AttributesNode;
 class WhereConstraintNode;
 class CompoundStatementNode;
-//class TemplateParameterNode;
+class TemplateParameterNode;
 
 class FunctionNode : public Node
 {
@@ -49,15 +49,14 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
-    void AddTemplateParameter(Node* templateParameter) override;
+    void AddTemplateParameter(TemplateParameterNode* templateParameter) override;
     void AddParameter(ParameterNode* parameter) override;
     void SwitchToBody();
     Specifiers GetSpecifiers() const override { return specifiers; }
     const Node* ReturnTypeExpr() const { return returnTypeExpr.get(); }
     Node* ReturnTypeExpr() { return returnTypeExpr.get(); }
     const std::u32string& GroupId() const { return groupId; }
-    //const NodeList<TemplateParameterNode>& TemplateParameters() const { return templateParameters; }
-    const NodeList<Node>& TemplateParameters() const { return templateParameters; }
+    const NodeList<TemplateParameterNode>& TemplateParameters() const { return templateParameters; }
     const NodeList<ParameterNode>& Parameters() const { return parameters; }
     void SetReturnTypeExpr(Node* returnTypeExpr_);
     const WhereConstraintNode* WhereConstraint() const { return whereConstraint.get(); }
@@ -82,8 +81,7 @@ private:
     std::unique_ptr<Node> returnTypeExpr;
     std::u32string groupId;
     soul::ast::SourcePos groupIdSourcePos;
-    //NodeList<TemplateParameterNode> templateParameters;
-    NodeList<Node> templateParameters;
+    NodeList<TemplateParameterNode> templateParameters;
     NodeList<ParameterNode> parameters;
     std::unique_ptr<WhereConstraintNode> whereConstraint;
     std::unique_ptr<CompoundStatementNode> body;

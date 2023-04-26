@@ -1,0 +1,80 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.lexer;
+
+import cmajor.token;
+import cmajor.keyword;
+import cmajor.expr;
+
+lexer CmajorLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "{integer}" { return INTLIT; }
+        "{floating}" { return FLOATINGLIT; }
+        "{character}" { return CHARLIT; }
+        "{string}" { return STRINGLIT; }
+        "<=>" { return EQUIVALENCE; }
+        "=>" { return IMPLICATION; }
+        "\|\|" { return DISJUNCTION; }
+        "&&" { return AMPAMP; }
+        "\|" { return BITOR; }
+        "^" { return BITXOR; }
+        "&" { return AMP; }
+        "==" { return EQ; }
+        "!=" { return NEQ; }
+        "<=" { return LEQ; }
+        ">=" { return GEQ; }
+        "<" { return LANGLE; }
+        ">" { return RANGLE; }
+        "<<" $(0) { return SHIFTLEFT; }
+        ">>" $(1) { return SHIFTRIGHT; }
+        "\+" { return PLUS; }
+        "-" { return MINUS; }
+        "\*" { return STAR; }
+        "/" { return DIV; }
+        "%" { return REM; }
+        "\+\+" { return PLUSPLUS; }
+        "--" { return MINUSMINUS; }
+        "!" { return EXCLAMATION; }
+        "~" { return CPL; }
+        "\." { return DOT; }
+        "->" { return ARROW; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "," { return COMMA; }
+        "=" { return ASSIGN; }
+        ":" { return COLON; }
+        ";" { return SEMICOLON; }
+        "#" { return HASH; }
+    }
+
+    variables
+    {
+        double floatingLit;
+        bool floatingLitFloat;
+        uint64_t intLit;
+        bool intLitUnsigned;
+        char32_t chrLit;
+        int chrLitPrefix;
+        std::u32string strLit;
+        int strLitPrefix;
+        int leftAngleCount;
+        bool parsingOperatorFunctionGroupId;
+    }
+
+    actions
+    {
+        $(0)={ if (vars->parsingOperatorFunctionGroupId) return soul::lexer::INVALID_TOKEN; }
+        $(1)={ if (vars->leftAngleCount > 0) return soul::lexer::INVALID_TOKEN; }
+    }
+}

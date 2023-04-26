@@ -6,7 +6,7 @@ export module cmajor.ast.compile.unit;
 // Distributed under the MIT license
 // =================================
 
-import cmajor.ast.namespace_;
+import cmajor.ast.namespaces;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
 

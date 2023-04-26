@@ -1,0 +1,5 @@
+project cmajor;
+tokens <cmajor.token>;
+keywords <cmajor.keyword>;
+expressions <cmajor.expr>;
+lexer <cmajor.lexer>;
