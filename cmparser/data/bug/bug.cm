@@ -1,0 +1,4 @@
+void main()
+{
+    long half = len >> 1;
+}

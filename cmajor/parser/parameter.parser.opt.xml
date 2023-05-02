@@ -1,0 +1,49 @@
+<parserFile>
+ <grammar name="ParameterParser">
+  <rule first="{LPAREN}" name="ParameterList">
+   <group first="{LPAREN}">
+    <sequence first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <token first="{LPAREN}" name="LPAREN"/>
+      <optional first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <group first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <list first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <sequence first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <action first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+           <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Parameter"/>
+          </action>
+          <kleene first="{#, COMMA}">
+           <sequence first="{COMMA}">
+            <token first="{COMMA}" name="COMMA"/>
+            <action first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+             <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Parameter"/>
+            </action>
+           </sequence>
+          </kleene>
+         </sequence>
+        </list>
+       </group>
+      </optional>
+     </sequence>
+     <token first="{RPAREN}" name="RPAREN"/>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="Parameter">
+   <action first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+      </action>
+      <optional first="{#, ID}">
+       <group first="{ID}">
+        <nonterminal first="{ID}" ruleName="Identifier"/>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

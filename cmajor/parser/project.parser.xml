@@ -1,0 +1,200 @@
+<parserFile>
+ <grammar name="ProjectParser">
+  <rule first="{PROJECT}" name="Project">
+   <action first="{PROJECT}">
+    <group first="{PROJECT}">
+     <sequence first="{PROJECT}">
+      <sequence first="{PROJECT}">
+       <sequence first="{PROJECT}">
+        <token first="{PROJECT}" name="PROJECT"/>
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </sequence>
+       <action first="{SEMICOLON}">
+        <token first="{SEMICOLON}" name="SEMICOLON"/>
+       </action>
+      </sequence>
+      <kleene first="{#, ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+       <group first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+        <action first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+         <nonterminal first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" name="Declaration">
+   <choice first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+    <choice first="{ACTION, REFERENCE, RESOURCE, SOURCE, TEXT}">
+     <choice first="{REFERENCE, RESOURCE, SOURCE, TEXT}">
+      <choice first="{REFERENCE, RESOURCE, SOURCE}">
+       <choice first="{REFERENCE, SOURCE}">
+        <action first="{REFERENCE}">
+         <nonterminal first="{REFERENCE}" ruleName="ReferenceDeclaration"/>
+        </action>
+        <action first="{SOURCE}">
+         <nonterminal first="{SOURCE}" ruleName="SourceFileDeclaration"/>
+        </action>
+       </choice>
+       <action first="{RESOURCE}">
+        <nonterminal first="{RESOURCE}" ruleName="ResourceFileDeclaration"/>
+       </action>
+      </choice>
+      <action first="{TEXT}">
+       <nonterminal first="{TEXT}" ruleName="TextFileDeclaration"/>
+      </action>
+     </choice>
+     <action first="{ACTION}">
+      <nonterminal first="{ACTION}" ruleName="ActionFileDeclaration"/>
+     </action>
+    </choice>
+    <action first="{TARGET}">
+     <nonterminal first="{TARGET}" ruleName="TargetDeclaration"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{REFERENCE}" name="ReferenceDeclaration">
+   <action first="{REFERENCE}">
+    <group first="{REFERENCE}">
+     <sequence first="{REFERENCE}">
+      <sequence first="{REFERENCE}">
+       <token first="{REFERENCE}" name="REFERENCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SOURCE}" name="SourceFileDeclaration">
+   <action first="{SOURCE}">
+    <group first="{SOURCE}">
+     <sequence first="{SOURCE}">
+      <sequence first="{SOURCE}">
+       <token first="{SOURCE}" name="SOURCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{RESOURCE}" name="ResourceFileDeclaration">
+   <action first="{RESOURCE}">
+    <group first="{RESOURCE}">
+     <sequence first="{RESOURCE}">
+      <sequence first="{RESOURCE}">
+       <token first="{RESOURCE}" name="RESOURCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{TEXT}" name="TextFileDeclaration">
+   <action first="{TEXT}">
+    <group first="{TEXT}">
+     <sequence first="{TEXT}">
+      <sequence first="{TEXT}">
+       <token first="{TEXT}" name="TEXT"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTION}" name="ActionFileDeclaration">
+   <action first="{ACTION}">
+    <group first="{ACTION}">
+     <sequence first="{ACTION}">
+      <sequence first="{ACTION}">
+       <token first="{ACTION}" name="ACTION"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{TARGET}" name="TargetDeclaration">
+   <action first="{TARGET}">
+    <group first="{TARGET}">
+     <sequence first="{TARGET}">
+      <sequence first="{TARGET}">
+       <sequence first="{TARGET}">
+        <token first="{TARGET}" name="TARGET"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}" ruleName="Target"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}" name="Target">
+   <choice first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}">
+    <choice first="{LIBRARY, PROGRAM, WINAPP, WINGUIAPP, WINLIB}">
+     <choice first="{LIBRARY, PROGRAM, WINAPP, WINGUIAPP}">
+      <choice first="{PROGRAM, WINAPP, WINGUIAPP}">
+       <choice first="{PROGRAM, WINGUIAPP}">
+        <action first="{PROGRAM}">
+         <token first="{PROGRAM}" name="PROGRAM"/>
+        </action>
+        <action first="{WINGUIAPP}">
+         <token first="{WINGUIAPP}" name="WINGUIAPP"/>
+        </action>
+       </choice>
+       <action first="{WINAPP}">
+        <token first="{WINAPP}" name="WINAPP"/>
+       </action>
+      </choice>
+      <action first="{LIBRARY}">
+       <token first="{LIBRARY}" name="LIBRARY"/>
+      </action>
+     </choice>
+     <action first="{WINLIB}">
+      <token first="{WINLIB}" name="WINLIB"/>
+     </action>
+    </choice>
+    <action first="{UNITTEST}">
+     <token first="{UNITTEST}" name="UNITTEST"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

@@ -1,0 +1,123 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public class RandomAccessIter<T, R, P>
+    {
+        public typedef T ValueType;
+        public typedef R ReferenceType;
+        public typedef P PointerType;
+        private typedef RandomAccessIter<ValueType, ReferenceType, PointerType> Self;
+
+        public nothrow inline RandomAccessIter() : ptr(null)
+        {
+        }
+        public nothrow inline explicit RandomAccessIter(PointerType ptr_) : ptr(ptr_)
+        {
+        }
+        public inline Self& operator++()
+        {
+            if (ptr == null)
+            {
+                ThrowNullPointerException();
+            }
+            ++ptr;
+            return *this;
+        }
+        public inline Self& operator--()
+        {
+            if (ptr == null)
+            {
+                ThrowNullPointerException();
+            }
+            --ptr;
+            return *this;
+        }
+        public inline ReferenceType operator*()
+        {
+            if (ptr == null)
+            {
+                ThrowNullPointerException();
+            }
+            return *ptr;
+        }
+        public inline PointerType operator->()
+        {
+            if (ptr == null)
+            {
+                ThrowNullPointerException();
+            }
+            return ptr;
+        }
+        public inline ReferenceType operator[](long index)
+        {
+            if (ptr == null)
+            {
+                ThrowNullPointerException();
+            }
+            return ptr[index];
+        }
+        public nothrow inline PointerType Ptr() const
+        {
+            return ptr;
+        }
+        private PointerType ptr;
+    }
+
+    public inline RandomAccessIter<T, R, P> operator+<T, R, P>(const RandomAccessIter<T, R, P>& it, long offset)
+    {
+        if (it.Ptr() == null)
+        {
+            ThrowPreconditionViolationException();
+        }
+        return RandomAccessIter<T, R, P>(it.Ptr() + offset);
+    }
+
+    public inline RandomAccessIter<T, R, P> operator+<T, R, P>(long offset, const RandomAccessIter<T, R, P>& it)
+    {
+        if (it.Ptr() == null)
+        {
+            ThrowPreconditionViolationException();
+        }
+        return RandomAccessIter<T, R, P>(it.Ptr() + offset);
+    }
+
+    public inline RandomAccessIter<T, R, P> operator-<T, R, P>(const RandomAccessIter<T, R, P>& it, long offset)
+    {
+        if (it.Ptr() == null)
+        {
+            ThrowPreconditionViolationException();
+        }
+        return RandomAccessIter<T, R, P>(it.Ptr() - offset);
+    }
+
+    public inline long operator-<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
+    {
+        if (!(left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null))
+        {
+            ThrowPreconditionViolationException();
+        }
+        if (left.Ptr() == null && right.Ptr() == null)
+        {
+            return 0;
+        }
+        return left.Ptr() - right.Ptr();
+    }
+
+    public nothrow inline bool operator==<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
+    {
+        return left.Ptr() == right.Ptr();
+    }
+
+    public inline bool operator<<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
+    {
+        if (!(left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null))
+        {
+            ThrowPreconditionViolationException();
+        }
+        return left.Ptr() < right.Ptr();
+    }
+}

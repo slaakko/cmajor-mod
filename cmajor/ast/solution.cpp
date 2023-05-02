@@ -1,16 +1,10 @@
-module cmajor.ast.solution;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <sngcm/ast/Solution.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Path.hpp>
-#include <algorithm>
-#include <unordered_set>
-*/
+
+module cmajor.ast.solution;
+
 import std.core;
 import util;
 
@@ -48,7 +42,7 @@ void ProjectDependencyDeclaration::AddDependency(const std::u32string& dependsOn
 {
     dependsOnProjects.push_back(dependsOn);
 }
-/*
+
 Solution::Solution(const std::u32string& name_, const std::string& filePath_) : name(name_), filePath(filePath_), basePath(filePath), activeProject(nullptr)
 {
     basePath.remove_filename();
@@ -65,7 +59,7 @@ void Solution::ResolveDeclarations()
     {
         if (SolutionProjectDeclaration* solutionProjectDeclaration = dynamic_cast<SolutionProjectDeclaration*>(declaration.get()))
         {
-            boost::filesystem::path pp(solutionProjectDeclaration->FilePath());
+            std::filesystem::path pp(solutionProjectDeclaration->FilePath());
             relativeProjectFilePaths.push_back(pp.generic_string());
             if (pp.is_relative())
             {
@@ -75,11 +69,11 @@ void Solution::ResolveDeclarations()
             {
                 throw std::runtime_error("invalid project file extension '" + pp.generic_string() + "' (not .cmp)");
             }
-            if (!boost::filesystem::exists(pp))
+            if (!std::filesystem::exists(pp))
             {
-                throw std::runtime_error("project file '" + GetFullPath(pp.generic_string()) + "' not found");
+                throw std::runtime_error("project file '" + util::GetFullPath(pp.generic_string()) + "' not found");
             }
-            std::string projectFilePath = GetFullPath(pp.generic_string());
+            std::string projectFilePath = util::GetFullPath(pp.generic_string());
             if (std::find(projectFilePaths.cbegin(), projectFilePaths.cend(), projectFilePath) == projectFilePaths.cend())
             {
                 projectFilePaths.push_back(projectFilePath);
@@ -108,16 +102,16 @@ void Solution::SortByProjectName()
 void Solution::Save()
 {
     std::ofstream file(filePath);
-    CodeFormatter formatter(file);
-    formatter.WriteLine("solution " + ToUtf8(name) + ";");
-    std::string solutionDir = Path::GetDirectoryName(filePath);
+    util::CodeFormatter formatter(file);
+    formatter.WriteLine("solution " + util::ToUtf8(name) + ";");
+    std::string solutionDir = util::Path::GetDirectoryName(filePath);
     relativeProjectFilePaths.clear();
     for (const std::unique_ptr<Project>& project : projects)
     {
         std::string projectFilePath = project->FilePath();
-        std::string projectDir = Path::GetDirectoryName(projectFilePath);
-        std::string relativeProjectDir = MakeRelativeDirPath(projectDir, solutionDir);
-        std::string relativeProjectFilePath = Path::Combine(relativeProjectDir, Path::GetFileName(projectFilePath));
+        std::string projectDir = util::Path::GetDirectoryName(projectFilePath);
+        std::string relativeProjectDir = util::MakeRelativeDirPath(projectDir, solutionDir);
+        std::string relativeProjectFilePath = util::Path::Combine(relativeProjectDir, util::Path::GetFileName(projectFilePath));
         relativeProjectFilePaths.push_back(relativeProjectFilePath);
     }
     for (const std::string& relativeProjectFilePath : relativeProjectFilePaths)
@@ -126,7 +120,7 @@ void Solution::Save()
     }
     if (activeProject)
     {
-        formatter.WriteLine("activeProject " + ToUtf8(activeProject->Name()) + ";");
+        formatter.WriteLine("activeProject " + util::ToUtf8(activeProject->Name()) + ";");
     }
     for (const std::unique_ptr<Project>& project : projects)
     {
@@ -189,15 +183,15 @@ void Visit(std::vector<std::u32string>& order, const std::u32string& projectName
             }
             else
             {
-                throw std::runtime_error("project '" + ToUtf8(projectName) + "' not found in dependencies of solution '" + ToUtf8(solution->Name()) + "' (" +
-                    GetFullPath(solution->FilePath()) + ")");
+                throw std::runtime_error("project '" + util::ToUtf8(projectName) + "' not found in dependencies of solution '" + util::ToUtf8(solution->Name()) + "' (" +
+                    util::GetFullPath(solution->FilePath()) + ")");
             }
         }
     }
     else
     {
-        throw std::runtime_error("circular project dependency '" + ToUtf8(projectName) + "' detected in dependencies of solution '" + ToUtf8(solution->Name()) + "' (" +
-            GetFullPath(solution->FilePath()) + ")");
+        throw std::runtime_error("circular project dependency '" + util::ToUtf8(projectName) + "' detected in dependencies of solution '" + util::ToUtf8(solution->Name()) + "' (" +
+            util::GetFullPath(solution->FilePath()) + ")");
     }
 }
 
@@ -263,10 +257,10 @@ std::vector<Project*> Solution::CreateBuildOrder()
         }
         else
         {
-            throw std::runtime_error("project name '" + ToUtf8(projectName) + "' not found in solution '" + ToUtf8(Name()) + "' (" + GetFullPath(FilePath()) + ")");
+            throw std::runtime_error("project name '" + util::ToUtf8(projectName) + "' not found in solution '" + util::ToUtf8(Name()) + "' (" + util::GetFullPath(FilePath()) + ")");
         }
     }
     return buildOrder;
 }
-*/
+
 } // namespace cmajor::ast

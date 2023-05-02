@@ -1,0 +1,54 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.alias.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import soul.ast.source.pos;
+
+parser AliasParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+
+    UsingAlias(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            USING
+            Identifier(context):id
+            ASSIGN
+            TypeExpr(context):typeExpr
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::AliasNode(s, context->ModuleId(), specifiers, id, typeExpr);
+        }
+        ;
+
+    Typedef(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            TYPEDEF
+            TypeExpr(context):typeExpr
+            Identifier(context):id
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::TypedefNode(s, context->ModuleId(), specifiers, typeExpr, id);
+        }
+        ;
+}

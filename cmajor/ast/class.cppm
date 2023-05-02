@@ -37,22 +37,10 @@ public:
     const NodeList<Node>& BaseClassOrInterfaces() const { return baseClassOrInterfaces; }
     const NodeList<Node>& Members() const { return members; }
     AttributesNode* GetAttributes() const { return attributes.get(); }
-    void SetSpecifierSourcePos(const soul::ast::SourcePos& specifierSourcePos_) { specifierSourcePos = specifierSourcePos_; }
-    const soul::ast::SourcePos& SpecifierSourcePos() const { return specifierSourcePos; }
-    void SetClassSourcePos(const soul::ast::SourcePos& classSourcePos_) { classSourcePos = classSourcePos_; }
-    const soul::ast::SourcePos& ClassSourcePos() const { return classSourcePos; }
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
     void ArrangeMembers();
     int Level() const;
 private:
     Specifiers specifiers;
-    soul::ast::SourcePos specifierSourcePos;
-    soul::ast::SourcePos classSourcePos;
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
     std::unique_ptr<IdentifierNode> id;
     NodeList<TemplateParameterNode> templateParameters;
     NodeList<Node> baseClassOrInterfaces;

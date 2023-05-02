@@ -40,7 +40,7 @@ import cmajor.ast.concepts;
 import cmajor.ast.statement;
 import cmajor.ast.interface;
 import cmajor.ast.delegate;
-import cmajor.ast.typedefs;
+import cmajor.ast.alias;
 import cmajor.ast.constant;
 import cmajor.ast.enumeration;
 import cmajor.ast.type.expr;
@@ -337,7 +337,7 @@ void SourceWriter::Visit(AliasNode& aliasNode)
     formatter.Write("using ");
     aliasNode.Id()->Accept(*this);
     formatter.Write(" = ");
-    aliasNode.Qid()->Accept(*this);
+    aliasNode.TypeExpr()->Accept(*this);
     formatter.WriteLine(";");
 }
 

@@ -26,14 +26,6 @@ soul::ast::slg::TokenCollection* GetTokens();
 struct CmajorLexer_Variables : public soul::lexer::Variables
 {
     CmajorLexer_Variables();
-    double floatingLit;
-    bool floatingLitFloat;
-    uint64_t intLit;
-    bool intLitUnsigned;
-    char32_t chrLit;
-    int chrLitPrefix;
-    std::u32string strLit;
-    int strLitPrefix;
     int leftAngleCount;
     bool parsingOperatorFunctionGroupId;
 };

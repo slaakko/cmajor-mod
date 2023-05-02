@@ -10,6 +10,7 @@ import cmajor.ast.node;
 
 export namespace cmajor::ast {
 
+class AutoNode;
 class BoolNode;
 class SByteNode;
 class ByteNode;
@@ -201,6 +202,7 @@ class Visitor
 {
 public:
     virtual ~Visitor();
+    virtual void Visit(AutoNode& autoNode) {}
     virtual void Visit(BoolNode& boolNode) {}
     virtual void Visit(SByteNode& sbyteNode) {}
     virtual void Visit(ByteNode& byteNode) {}

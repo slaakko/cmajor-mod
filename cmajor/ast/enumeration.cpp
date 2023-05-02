@@ -56,10 +56,8 @@ void EnumTypeNode::Write(AstWriter& writer)
         writer.Write(underlyingType.get());
     }
     constants.Write(writer);
-    // Seppo
-    //bool convertExternal = ModuleId() == writer.SourcePosConversionModuleId(); TODO
-    //writer.Write(beginBraceSourcePos, convertExternal); TODO
-    //writer.Write(endBraceSourcePos, convertExternal); TODO
+    writer.Write(beginBraceSourcePos);
+    writer.Write(endBraceSourcePos);
 }
 
 void EnumTypeNode::Read(AstReader& reader)
@@ -77,6 +75,7 @@ void EnumTypeNode::Read(AstReader& reader)
     beginBraceSourcePos = reader.ReadSourcePos();
     endBraceSourcePos = reader.ReadSourcePos();
 }
+
 void EnumTypeNode::AddConstant(EnumConstantNode* constant)
 {
     constant->SetParent(this);

@@ -1,0 +1,54 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.attribute.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.token.value.parser;
+
+parser AttributeParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    Attributes(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::AttributesNode> attributesNode) : cmajor::ast::AttributesNode*
+        ::= 
+        (
+            LBRACKET
+            {
+                attributesNode.reset(new cmajor::ast::AttributesNode(lexer.GetSourcePos(pos), context->ModuleId()));
+            }
+            (
+                Attribute(context, attributesNode.get()):attribute % COMMA
+            )?
+            RBRACKET
+        )
+        {
+            return attributesNode.release();
+        }
+        ;
+
+    Attribute(cmajor::parser::context::Context* context, cmajor::ast::AttributesNode* attributes, var std::u32string value, var std::u32string name, var soul::ast::SourcePos s)
+        ::= 
+        (
+            empty{ value = U"true"; }
+            ID{ s = lexer.GetSourcePos(pos); name = lexer.GetToken(pos).ToString(); }
+            (
+                ASSIGN STRINGLIT
+                {
+                    cmajor::ast::StringLiteralPrefix prefix;
+                    value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                }
+            )?
+
+        )
+        {
+            attributes->AddAttribute(s, context->ModuleId(), name, value);
+        }
+        ;
+}

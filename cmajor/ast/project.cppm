@@ -8,16 +8,6 @@ export module cmajor.ast.project;
 import std.core;
 import std.filesystem;
 import util.code.formatter;
-/*
-#include <sngcm/ast/AstApi.hpp>
-#include <soulng/util/util::CodeFormatter.hpp>
-#include <boost/filesystem.hpp>
-#include <string>
-#include <vector>
-#include <memory>
-#include <set>
-#include <mutex>
-*/
 
 export namespace cmajor::ast {
 

@@ -7,6 +7,7 @@ module cmajor.ast.node;
 
 import cmajor.ast.writer;
 import cmajor.ast.reader;
+import cmajor.ast.alias;
 import cmajor.ast.basic.type;
 import cmajor.ast.literal;
 import cmajor.ast.compile.unit;
@@ -15,7 +16,6 @@ import cmajor.ast.interface;
 import cmajor.ast.delegate;
 import cmajor.ast.concepts;
 import cmajor.ast.statement;
-import cmajor.ast.typedefs;
 import cmajor.ast.constant;
 import cmajor.ast.enumeration;
 import cmajor.ast.type.expr;

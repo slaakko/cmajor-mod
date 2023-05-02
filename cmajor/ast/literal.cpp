@@ -70,47 +70,48 @@ LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, co
     }
 }
 
-LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, int chrLitPrefix)
+LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, CharLiteralPrefix prefix)
 {
-    switch (chrLitPrefix)
+    switch (prefix)
     {
-    case 0:
-    {
-        return new CharLiteralNode(sourcePos, moduleId, static_cast<char>(value));
-    }
-    case 1:
-    {
-        return new WCharLiteralNode(sourcePos, moduleId, static_cast<char16_t>(value));
-    }
-    case 2:
-    {
-        return new UCharLiteralNode(sourcePos, moduleId, value);
-    }
+        case CharLiteralPrefix::none:
+        {
+            return new CharLiteralNode(sourcePos, moduleId, static_cast<char>(value));
+        }
+        case CharLiteralPrefix::utf16Prefix:
+        {
+            return new WCharLiteralNode(sourcePos, moduleId, static_cast<char16_t>(value));
+        }
+        case CharLiteralPrefix::utf32Prefix:
+        {
+            return new UCharLiteralNode(sourcePos, moduleId, value);
+        }
     }
     return nullptr;
 }
 
-LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, int strLitPrefix)
+LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, StringLiteralPrefix prefix)
 {
-    switch (strLitPrefix)
+    switch (prefix)
     {
-    case 0:
-    {
-        return new StringLiteralNode(sourcePos, moduleId, util::ToUtf8(value));
-    }
-    case 1:
-    {
-        return new WStringLiteralNode(sourcePos, moduleId, util::ToUtf16(value));
-    }
-    case 2:
-    {
-        return new UStringLiteralNode(sourcePos, moduleId, value);
-    }
+        case StringLiteralPrefix::none:
+        {
+            return new StringLiteralNode(sourcePos, moduleId, util::ToUtf8(value));
+        }
+        case StringLiteralPrefix::utf16Prefix:
+        {
+            return new WStringLiteralNode(sourcePos, moduleId, util::ToUtf16(value));
+        }
+        case StringLiteralPrefix::utf32Prefix:
+        {
+            return new UStringLiteralNode(sourcePos, moduleId, value);
+        }
     }
     return nullptr;
 }
 
-BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(false)
+BooleanLiteralNode::BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    LiteralNode(NodeType::booleanLiteralNode, sourcePos_, moduleId_), value(false)
 {
 }
 
@@ -261,7 +262,8 @@ std::string ShortLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(0u)
+UShortLiteralNode::UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    LiteralNode(NodeType::ushortLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
@@ -412,7 +414,8 @@ std::string LongLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(0u)
+ULongLiteralNode::ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    LiteralNode(NodeType::ulongLiteralNode, sourcePos_, moduleId_), value(0u)
 {
 }
 
@@ -525,7 +528,8 @@ std::string DoubleLiteralNode::ToString() const
     return std::to_string(value);
 }
 
-CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value('\0')
+CharLiteralNode::CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    LiteralNode(NodeType::charLiteralNode, sourcePos_, moduleId_), value('\0')
 {
 }
 
@@ -878,6 +882,5 @@ void UuidLiteralNode::Read(AstReader& reader)
     LiteralNode::Read(reader);
     reader.GetBinaryStreamReader().ReadUuid(uuid);
 }
-
 
 } // namespace cmajor::ast

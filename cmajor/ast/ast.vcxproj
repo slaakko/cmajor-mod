@@ -121,7 +121,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
       <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
@@ -152,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="alias.cpp" />
+    <ClCompile Include="alias.cppm" />
     <ClCompile Include="ast.cppm" />
     <ClCompile Include="ast_reader.cpp" />
     <ClCompile Include="ast_reader.cppm" />
@@ -219,8 +221,6 @@
     <ClCompile Include="system_file_index.cppm" />
     <ClCompile Include="template.cpp" />
     <ClCompile Include="template.cppm" />
-    <ClCompile Include="typedef.cpp" />
-    <ClCompile Include="typedef.cppm" />
     <ClCompile Include="type_expr.cpp" />
     <ClCompile Include="type_expr.cppm" />
     <ClCompile Include="visitor.cpp" />

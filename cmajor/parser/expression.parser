@@ -1,0 +1,473 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.expression.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.parser.operators;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.literal.parser;
+[implementation]import cmajor.basic.type.parser;
+[implementation]import cmajor.templates.parser;
+
+parser ExpressionParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using TypeExprParser.TypeExpr;
+    using IdentifierParser.Identifier;
+    using LiteralParser.Literal;
+    using BasicTypeParser.BasicType;
+    using TemplateParser.TemplateId;
+
+    Expression(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= Equivalence(context):equivalence{ return equivalence; }
+        ;
+
+    Equivalence(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            Implication(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   EQUIVALENCE{ if (!context->ParsingConcept() || context->ParsingTemplateId()) pass = false; }
+                Implication(context):right{ expr.reset(new cmajor::ast::EquivalenceNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Implication(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Disjunction(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (
+                IMPLICATION{ if (!context->ParsingConcept() || context->ParsingTemplateId()) pass = false; }
+                Implication(context):right{ expr.reset(new cmajor::ast::ImplicationNode(s, context->ModuleId(), expr.release(), right)); }
+            )?
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Disjunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Conjunction(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   DISJUNCTION{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                Conjunction(context):right{ expr.reset(new cmajor::ast::DisjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Conjunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   BitOr(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   AMPAMP{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                BitOr(context):right{ expr.reset(new cmajor::ast::ConjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    BitOr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   BitXor(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   BITOR{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                BitXor(context):right{ expr.reset(new cmajor::ast::BitOrNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    BitXor(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   BitAnd(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   BITXOR{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                BitAnd(context):right{ expr.reset(new cmajor::ast::BitXorNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    BitAnd(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Equality(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   AMP{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                Equality(context):right{ expr.reset(new cmajor::ast::BitAndNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Equality(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Relational(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   EqOp:op{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                Relational(context):right
+                {
+                    switch (op)
+                    {
+                        case Operator::eq: expr.reset(new cmajor::ast::EqualNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::neq: expr.reset(new cmajor::ast::NotEqualNode(s, context->ModuleId(), expr.release(), right)); break;
+                    }
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    EqOp : cmajor::parser::operators::Operator
+        ::= EQ{ return Operator::eq; }
+        |   NEQ{ return Operator::neq; }
+        ;
+
+    Relational(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Shift(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   
+                (
+                    RelOp:op
+                    { 
+                        if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) 
+                        {
+                            pass = false; 
+                        }
+                        else 
+                        {
+                            context->PushParsingIsOrAs(false);
+                        }
+                    }
+                |   IS
+                    {
+                        if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) 
+                        {
+                            pass = false; 
+                        }
+                        else 
+                        {
+                            op = Operator::is;
+                            context->PushParsingIsOrAs(true);
+                        }
+                    }
+                    TypeExpr(context):isType
+                |   AS
+                    {
+                        if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) 
+                        {
+                            pass = false; 
+                        }
+                        else 
+                        {
+                            op = Operator::as;
+                            context->PushParsingIsOrAs(true);
+                        }
+                    }
+                    TypeExpr(context):asType
+                )
+                (   Shift(context):right | empty{ if (!context->ParsingIsOrAs()) pass = false; }    )
+                {
+                    context->PopParsingIsOrAs();
+                    switch (op)
+                    {
+                        case Operator::lessOrEq: expr.reset(new cmajor::ast::LessOrEqualNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::greaterOrEq: expr.reset(new cmajor::ast::GreaterOrEqualNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::less: expr.reset(new cmajor::ast::LessNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::greater: expr.reset(new cmajor::ast::GreaterNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::is: expr.reset(new cmajor::ast::IsNode(s, context->ModuleId(), expr.release(), isType)); break;
+                        case Operator::as: expr.reset(new cmajor::ast::AsNode(s, context->ModuleId(), expr.release(), asType)); break;
+                    }
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    RelOp : cmajor::parser::operators::Operator
+        ::= LEQ{ return Operator::lessOrEq; }
+        |   GEQ{ return Operator::greaterOrEq; }
+        |   LANGLE{ return Operator::less; }
+        |   RANGLE{ return Operator::greater; }
+        ;
+
+    Shift(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Additive(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   ShiftOp:op{ if (context->ParsingLvalue()) pass = false; }
+                empty{ context->BeginParsingArguments(); } 
+                Additive(context):right
+                {
+                    switch (op)
+                    {
+                        case Operator::shiftLeft: expr.reset(new cmajor::ast::ShiftLeftNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::shiftRight: expr.reset(new cmajor::ast::ShiftRightNode(s, context->ModuleId(), expr.release(), right)); break;
+                    }
+                    context->EndParsingArguments();
+                }
+                /
+                {
+                    context->EndParsingArguments();
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ShiftOp : cmajor::parser::operators::Operator
+        ::= SHIFTLEFT{ return Operator::shiftLeft; }
+        |   SHIFTRIGHT{ return Operator::shiftRight; }
+        ;
+
+    Additive(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Multiplicative(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   AddOp:op{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                Multiplicative(context):right
+                {
+                    switch (op)
+                    {
+                        case Operator::plus: expr.reset(new cmajor::ast::AddNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::minus: expr.reset(new cmajor::ast::SubNode(s, context->ModuleId(), expr.release(), right)); break;
+                    }
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AddOp : cmajor::parser::operators::Operator
+        ::= PLUS{ return Operator::plus; }
+        |   MINUS{ return Operator::minus; }
+        ;
+
+    Multiplicative(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   Prefix(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (   MulOp:op{ if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; }
+                Prefix(context):right
+                {
+                    switch (op)
+                    {
+                        case Operator::mul: expr.reset(new cmajor::ast::MulNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::div: expr.reset(new cmajor::ast::DivNode(s, context->ModuleId(), expr.release(), right)); break;
+                        case Operator::rem: expr.reset(new cmajor::ast::RemNode(s, context->ModuleId(), expr.release(), right)); break;
+                    }
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    MulOp : cmajor::parser::operators::Operator
+        ::= STAR{ return Operator::mul; }
+        |   DIV{ return Operator::div; }
+        |   REM{ return Operator::rem; }
+        ;
+
+    Prefix(cmajor::parser::context::Context* context, var Operator op, var std::unique_ptr<cmajor::ast::Node> prefix, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   PrefixOp:prefixOp
+            { 
+                op = prefixOp;
+                s = lexer.GetSourcePos(pos); 
+                if (op != Operator::plusplus && op != Operator::minusminus && context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; 
+            }
+            Prefix(context):p
+            {
+                prefix.reset(p);
+                switch (op)
+                {
+                    case Operator::plusplus: { return new cmajor::ast::PrefixIncrementNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::minusminus: { return new cmajor::ast::PrefixDecrementNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::plus: { return new cmajor::ast::UnaryPlusNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::minus: { return new cmajor::ast::UnaryMinusNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::not_: { return new cmajor::ast::NotNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::complement: { return new cmajor::ast::ComplementNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::deref: { return new cmajor::ast::DerefNode(s, context->ModuleId(), prefix.release()); }
+                    case Operator::addrOf: { return new cmajor::ast::AddrOfNode(s, context->ModuleId(), prefix.release()); }
+                }
+            }
+        )
+        |   Postfix(context):postfix{ return postfix; }
+        ;
+
+    PrefixOp : cmajor::parser::operators::Operator
+        ::= PLUSPLUS{ return Operator::plusplus; }
+        |   MINUSMINUS{ return Operator::minusminus; }
+        |   PLUS{ return Operator::plus; }
+        |   MINUS{ return Operator::minus; }
+        |   EXCLAMATION{ return Operator::not_; }
+        |   CPL{ return Operator::complement; }
+        |   STAR{ return Operator::deref; }
+        |   AMP{ return Operator::addrOf; }
+        ;
+
+    Postfix(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            Primary(context):primary{ s = lexer.GetSourcePos(pos); expr.reset(primary); }
+            (   PLUSPLUS{ expr.reset(new cmajor::ast::PostfixIncrementNode(s, context->ModuleId(), expr.release())); }
+            |   MINUSMINUS{ expr.reset(new cmajor::ast::PostfixDecrementNode(s, context->ModuleId(), expr.release())); }
+            |   DOT Identifier(context):dotMember{ expr.reset(new cmajor::ast::DotNode(s, context->ModuleId(), expr.release(), dotMember)); }
+            |   ARROW Identifier(context):arrowMember{ expr.reset(new cmajor::ast::ArrowNode(s, context->ModuleId(), expr.release(), arrowMember)); }
+            |   LBRACKET{ context->PushParsingLvalue(false); context->PushParsingExpressionStatement(false); }
+                Expression(context):index{ context->PopParsingExpressionStatement(); context->PopParsingLvalue(); }
+                RBRACKET{ expr.reset(new cmajor::ast::IndexingNode(s, context->ModuleId(), expr.release(), index)); }
+            |   LPAREN{ expr.reset(new cmajor::ast::InvokeNode(s, context->ModuleId(), expr.release())); } ArgumentList(context, expr.get()):args RPAREN
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Primary(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= LPAREN{ s = lexer.GetSourcePos(pos); } Expression(context):expr RPAREN{ return new cmajor::ast::ParenthesizedExpressionNode(s, context->ModuleId(), expr); }
+        |   Literal(context):literal{ return literal; }
+        |   BasicType(context):basicType{ return basicType; }
+        |   TemplateId(context):templateId{ return templateId; }
+        |   Identifier(context):id{ return id; }
+        |   THIS{ return new cmajor::ast::ThisNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   BASE{ return new cmajor::ast::BaseNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   SizeOfExpr(context):sizeOf{ return sizeOf; }
+        |   TypeNameExpr(context):typeName{ return typeName; }
+        |   TypeIdExpr(context):typeId{ return typeId; }
+        |   CastExpr(context):cast{ return cast; }
+        |   ConstructExpr(context):constructExpr{ return constructExpr; }
+        |   NewExpr(context):newExpr{ return newExpr; }
+        ;
+
+    ArgumentList(cmajor::parser::context::Context* context, cmajor::ast::Node* node)
+        ::= ExpressionList(context, node):exprList?
+        ;
+
+    ExpressionList(cmajor::parser::context::Context* context, cmajor::ast::Node* node)
+        ::= empty{ context->BeginParsingArguments(); }
+        (   
+            Expression(context):arg{ node->AddArgument(arg); } % COMMA
+        )
+        { 
+            context->EndParsingArguments(); 
+        }
+        / 
+        { 
+            context->EndParsingArguments(); 
+        }
+        ;
+
+    SizeOfExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            SIZEOF{ s = lexer.GetSourcePos(pos); } LPAREN Expression(context):expr RPAREN
+        )
+        {
+            return new cmajor::ast::SizeOfNode(s, context->ModuleId(), expr);
+        }
+        ;
+
+    TypeNameExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            TYPENAME{ s = lexer.GetSourcePos(pos); } LPAREN Expression(context):expr RPAREN
+        )
+        {
+            return new cmajor::ast::TypeNameNode(s, context->ModuleId(), expr);
+        }
+        ;
+
+    TypeIdExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            TYPEID{ s = lexer.GetSourcePos(pos); } LPAREN Expression(context):expr RPAREN
+        )
+        {
+            return new cmajor::ast::TypeIdNode(s, context->ModuleId(), expr);
+        }
+        ;
+
+    CastExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            CAST{ s = lexer.GetSourcePos(pos); }
+            LANGLE TypeExpr(context):typeExpr RANGLE LPAREN Expression(context):expr RPAREN
+        )
+        {
+            return new cmajor::ast::CastNode(s, context->ModuleId(), typeExpr, expr);
+        }
+        ;
+
+    ConstructExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            CONSTRUCT{ s = lexer.GetSourcePos(pos); }
+            (
+                LANGLE TypeExpr(context):typeExpr RANGLE
+            )
+            {
+                expr.reset(new cmajor::ast::ConstructNode(s, context->ModuleId(), typeExpr));
+            }
+            LPAREN ExpressionList(context, expr.get()):exprList RPAREN
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    NewExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            NEW{ s = lexer.GetSourcePos(pos); }
+            TypeExpr(context):typeExpr{ expr.reset(new cmajor::ast::NewNode(s, context->ModuleId(), typeExpr)); }
+            (LPAREN ArgumentList(context, expr.get()):args RPAREN)?
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    InvokeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   TemplateId(context):templateId{ s = lexer.GetSourcePos(pos); expr.reset(templateId); }
+        |   Identifier(context):id{ s = lexer.GetSourcePos(pos); expr.reset(id); }
+        )
+        (
+            DOT Identifier(context):dotMemberId{ expr.reset(new cmajor::ast::DotNode(s, context->ModuleId(), expr.release(), dotMemberId)); }
+        )*
+        (
+            LPAREN{ expr.reset(new cmajor::ast::InvokeNode(s, context->ModuleId(), expr.release())); }
+            ArgumentList(context, expr.get()):args
+            RPAREN
+        )
+        {
+            return expr.release();
+        }
+        ;
+}

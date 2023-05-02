@@ -145,16 +145,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="cmajor.container.file.expr" />
+    <None Include="cmajor.container.file.keyword" />
+    <None Include="cmajor.container.file.lexer" />
     <None Include="cmajor.expr" />
     <None Include="cmajor.keyword" />
     <None Include="cmajor.lexer" />
     <None Include="cmajor.slg" />
     <None Include="cmajor.token" />
+    <None Include="cmajor.container.file.token" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cmajor.container.file.lexer.cpp" />
+    <ClCompile Include="cmajor.container.file.lexer.cppm" />
+    <ClCompile Include="cmajor.container.file.token.cppm" />
     <ClCompile Include="cmajor.lexer.cpp" />
     <ClCompile Include="cmajor.lexer.cppm" />
     <ClCompile Include="cmajor.token.cppm" />
+    <ClCompile Include="lexer.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">

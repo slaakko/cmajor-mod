@@ -1,0 +1,92 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.templates.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+
+parser TemplateParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using IdentifierParser.Identifier;
+    using IdentifierParser.QualifiedId;
+    using TypeExprParser.TypeExpr;
+
+    TemplateId(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::TemplateIdNode> templateId) : cmajor::ast::TemplateIdNode*
+        ::= empty{ context->BeginParsingTemplateId(); }
+            (
+                QualifiedId(context):primary{ templateId.reset(new cmajor::ast::TemplateIdNode(lexer.GetSourcePos(pos), context->ModuleId(), primary)); }
+                LANGLE{ ++vars->leftAngleCount; }
+                (
+                    (
+                        TypeExpr(context):templateArg{ templateId->AddTemplateArgument(templateArg); } % COMMA
+                    )
+                    RANGLE
+                )
+                { 
+                    --vars->leftAngleCount; 
+                }
+                / 
+                { 
+                    --vars->leftAngleCount; 
+                }
+            )
+            {
+                context->EndParsingTemplateId();
+                return templateId.release();
+            }
+            /
+            {
+                context->EndParsingTemplateId();
+            }
+        ;
+
+    TemplateParameterList(cmajor::parser::context::Context* context, cmajor::ast::Node* owner)
+        ::= 
+        (
+            LANGLE 
+            (
+                TemplateParameter(context):tp{ owner->AddTemplateParameter(tp); } % COMMA
+            ) 
+            RANGLE
+        )
+        ;
+
+    TemplateParameter(cmajor::parser::context::Context* context) : cmajor::ast::TemplateParameterNode*
+        ::= 
+        (
+            Identifier(context):id
+            (
+                ASSIGN 
+                TypeExpr(context):type
+            )?
+        )
+        {
+            return new cmajor::ast::TemplateParameterNode(lexer.GetSourcePos(pos), context->ModuleId(), id, type);
+        }
+        ;
+
+    InstantiationRequest(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FullInstantiationRequestNode> requestNode, var soul::ast::SourcePos s) : 
+        cmajor::ast::FullInstantiationRequestNode*
+        ::= 
+        (
+            NEW{ s = lexer.GetSourcePos(pos); }
+            CLASS
+            TemplateId(context):templateId{ requestNode.reset(new cmajor::ast::FullInstantiationRequestNode(s, context->ModuleId(), templateId)); }
+            SEMICOLON
+        )
+        {
+            return requestNode.release();
+        }
+        ;
+    }

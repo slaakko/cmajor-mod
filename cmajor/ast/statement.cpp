@@ -1531,9 +1531,9 @@ void ConditionalCompilationStatementNode::AddIfStatement(StatementNode* statemen
     ifPart->AddStatement(statement);
 }
 
-void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& span, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
+void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
 {
-    elifParts.Add(new ConditionalCompilationPartNode(span, moduleId_, expr));
+    elifParts.Add(new ConditionalCompilationPartNode(sourcePos, moduleId_, expr));
 }
 
 void ConditionalCompilationStatementNode::AddElifStatement(StatementNode* statement)

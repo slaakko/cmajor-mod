@@ -1,0 +1,219 @@
+<parserFile>
+ <grammar name="FunctionParser">
+  <rule first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}" name="Function">
+   <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+    <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+     <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WINAPI}">
+      <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACKET, LONG, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WINAPI}">
+       <group first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LBRACKET, LONG, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WINAPI}">
+        <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LBRACKET, LONG, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WINAPI}">
+         <sequence first="{#, ABSTRACT, AMP, AMPAMP, AUTO, BOOL, BYTE, CDECL, CHAR, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LBRACKET, LONG, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, SBYTE, SHORT, STAR, STATIC, SUPPRESS, THROW, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WINAPI}">
+          <sequence first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, LBRACKET, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+           <sequence first="{#, LBRACKET}">
+            <action first="{#}">
+             <empty first="{#}"/>
+            </action>
+            <optional first="{#, LBRACKET}">
+             <nonterminal first="{LBRACKET}" ruleName="Attributes"/>
+            </optional>
+           </sequence>
+           <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+          </sequence>
+          <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+         </sequence>
+         <action first="{#, ID, OPERATOR}">
+          <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+         </action>
+        </sequence>
+       </group>
+       <optional first="{#, LANGLE}">
+        <nonterminal first="{LANGLE}" ruleName="TemplateParameterList"/>
+       </optional>
+      </sequence>
+      <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
+     </sequence>
+     <optional first="{#, WHERE}">
+      <group first="{WHERE}">
+       <action first="{WHERE}">
+        <nonterminal first="{WHERE}" ruleName="WhereConstraint"/>
+       </action>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{LBRACE, SEMICOLON}">
+     <group first="{LBRACE, SEMICOLON}">
+      <choice first="{LBRACE, SEMICOLON}">
+       <action first="{LBRACE}">
+        <nonterminal first="{LBRACE}" ruleName="CompoundStatement"/>
+       </action>
+       <token first="{SEMICOLON}" name="SEMICOLON"/>
+      </choice>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, ID, OPERATOR}" name="FunctionGroupId">
+   <choice first="{#, ID, OPERATOR}">
+    <action first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </action>
+    <action first="{#, OPERATOR}">
+     <nonterminal first="{#, OPERATOR}" ruleName="OperatorFunctionGroupId"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, OPERATOR}" name="OperatorFunctionGroupId">
+   <sequence first="{#, OPERATOR}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{OPERATOR}">
+     <group first="{OPERATOR}">
+      <sequence first="{OPERATOR}">
+       <token first="{OPERATOR}" name="OPERATOR"/>
+       <group first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, CPL, DIV, EQ, EXCLAMATION, LANGLE, LBRACKET, LPAREN, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+        <choice first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, CPL, DIV, EQ, EXCLAMATION, LANGLE, LBRACKET, LPAREN, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+         <choice first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, CPL, DIV, EQ, EXCLAMATION, LANGLE, LBRACKET, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+          <choice first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, CPL, DIV, EQ, EXCLAMATION, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+           <choice first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, DIV, EQ, EXCLAMATION, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+            <choice first="{AMP, ARROW, ASSIGN, BITOR, BITXOR, DIV, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+             <choice first="{AMP, ARROW, ASSIGN, BITOR, DIV, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+              <choice first="{AMP, ARROW, ASSIGN, DIV, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+               <choice first="{ARROW, ASSIGN, DIV, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, REM, SHIFTRIGHT, STAR}">
+                <choice first="{ARROW, ASSIGN, DIV, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, SHIFTRIGHT, STAR}">
+                 <choice first="{ARROW, ASSIGN, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, SHIFTRIGHT, STAR}">
+                  <choice first="{ARROW, ASSIGN, EQ, LANGLE, MINUS, MINUSMINUS, PLUS, PLUSPLUS, SHIFTRIGHT}">
+                   <choice first="{ARROW, ASSIGN, EQ, LANGLE, MINUSMINUS, PLUS, PLUSPLUS, SHIFTRIGHT}">
+                    <choice first="{ARROW, ASSIGN, EQ, LANGLE, MINUSMINUS, PLUSPLUS, SHIFTRIGHT}">
+                     <choice first="{ARROW, ASSIGN, EQ, LANGLE, PLUSPLUS, SHIFTRIGHT}">
+                      <choice first="{ARROW, ASSIGN, EQ, LANGLE, SHIFTRIGHT}">
+                       <choice first="{ASSIGN, EQ, LANGLE, SHIFTRIGHT}">
+                        <choice first="{ASSIGN, EQ, LANGLE, SHIFTRIGHT}">
+                         <choice first="{EQ, LANGLE, SHIFTRIGHT}">
+                          <choice first="{LANGLE, SHIFTRIGHT}">
+                           <action first="{LANGLE}">
+                            <group first="{LANGLE}">
+                             <difference first="{LANGLE}">
+                              <group first="{LANGLE}">
+                               <sequence first="{LANGLE}">
+                                <token first="{LANGLE}" name="LANGLE"/>
+                                <token first="{LANGLE}" name="LANGLE"/>
+                               </sequence>
+                              </group>
+                              <group first="{}">
+                               <sequence first="{}">
+                                <sequence first="{}">
+                                 <sequence first="{}">
+                                  <token first="{}" name="LANGLE"/>
+                                  <token first="{}" name="LANGLE"/>
+                                 </sequence>
+                                 <group first="{}">
+                                  <list first="{}">
+                                   <sequence first="{}">
+                                    <nonterminal first="{}" ruleName="TypeExpr"/>
+                                    <kleene first="{}">
+                                     <sequence first="{}">
+                                      <token first="{}" name="COMMA"/>
+                                      <nonterminal first="{}" ruleName="TypeExpr"/>
+                                     </sequence>
+                                    </kleene>
+                                   </sequence>
+                                  </list>
+                                 </group>
+                                </sequence>
+                                <token first="{}" name="RANGLE"/>
+                               </sequence>
+                              </group>
+                             </difference>
+                            </group>
+                           </action>
+                           <action first="{SHIFTRIGHT}">
+                            <token first="{SHIFTRIGHT}" name="SHIFTRIGHT"/>
+                           </action>
+                          </choice>
+                          <action first="{EQ}">
+                           <token first="{EQ}" name="EQ"/>
+                          </action>
+                         </choice>
+                         <action first="{ASSIGN}">
+                          <token first="{ASSIGN}" name="ASSIGN"/>
+                         </action>
+                        </choice>
+                        <action first="{LANGLE}">
+                         <token first="{LANGLE}" name="LANGLE"/>
+                        </action>
+                       </choice>
+                       <action first="{ARROW}">
+                        <token first="{ARROW}" name="ARROW"/>
+                       </action>
+                      </choice>
+                      <action first="{PLUSPLUS}">
+                       <token first="{PLUSPLUS}" name="PLUSPLUS"/>
+                      </action>
+                     </choice>
+                     <action first="{MINUSMINUS}">
+                      <token first="{MINUSMINUS}" name="MINUSMINUS"/>
+                     </action>
+                    </choice>
+                    <action first="{PLUS}">
+                     <token first="{PLUS}" name="PLUS"/>
+                    </action>
+                   </choice>
+                   <action first="{MINUS}">
+                    <token first="{MINUS}" name="MINUS"/>
+                   </action>
+                  </choice>
+                  <action first="{STAR}">
+                   <token first="{STAR}" name="STAR"/>
+                  </action>
+                 </choice>
+                 <action first="{DIV}">
+                  <token first="{DIV}" name="DIV"/>
+                 </action>
+                </choice>
+                <action first="{REM}">
+                 <token first="{REM}" name="REM"/>
+                </action>
+               </choice>
+               <action first="{AMP}">
+                <token first="{AMP}" name="AMP"/>
+               </action>
+              </choice>
+              <action first="{BITOR}">
+               <token first="{BITOR}" name="BITOR"/>
+              </action>
+             </choice>
+             <action first="{BITXOR}">
+              <token first="{BITXOR}" name="BITXOR"/>
+             </action>
+            </choice>
+            <action first="{EXCLAMATION}">
+             <token first="{EXCLAMATION}" name="EXCLAMATION"/>
+            </action>
+           </choice>
+           <action first="{CPL}">
+            <token first="{CPL}" name="CPL"/>
+           </action>
+          </choice>
+          <sequence first="{LBRACKET}">
+           <token first="{LBRACKET}" name="LBRACKET"/>
+           <action first="{RBRACKET}">
+            <token first="{RBRACKET}" name="RBRACKET"/>
+           </action>
+          </sequence>
+         </choice>
+         <sequence first="{LPAREN}">
+          <token first="{LPAREN}" name="LPAREN"/>
+          <action first="{RPAREN}">
+           <token first="{RPAREN}" name="RPAREN"/>
+          </action>
+         </sequence>
+        </choice>
+       </group>
+      </sequence>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

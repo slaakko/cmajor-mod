@@ -1,0 +1,69 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    internal class WindowManager
+    {
+        public WindowManager()
+        {
+            systemClassNames.Insert("BUTTON");
+            systemClassNames.Insert("STATIC");
+            systemClassNames.Insert("EDIT");
+            systemClassNames.Insert("LISTBOX");
+        }
+        public ushort RegisterWindowClass(const char* windowClassName, WindowClassStyle windowClassStyle, int windowClassBackgroundColor)
+        {
+            string className = windowClassName;
+            HashMap<string, ushort>.ConstIterator it = registeredWindowClasses.CFind(className);
+            if (it != registeredWindowClasses.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                ushort windowClass = System.Windows.API.RegisterWindowClass(windowClassName, windowClassStyle, windowClassBackgroundColor);
+                registeredWindowClasses[className] = windowClass;
+                return windowClass;
+            }        
+        }
+        public nothrow bool IsSystemClassName(const char* windowClassName)
+        {
+            string className = windowClassName;
+            HashSet<string>.ConstIterator it = systemClassNames.CFind(className);
+            if (it != systemClassNames.CEnd())
+            {
+                return true;
+            }
+            return false;
+        }
+        public nothrow void AddWindow(Control* window)
+        {
+            windowMap[window->Handle()] = window;
+        }
+        public nothrow void RemoveWindow(Control* window)
+        {
+            windowMap.Remove(window->Handle());
+        }
+        public nothrow Control* GetWindow(void* handle) const
+        {
+            HashMap<void*, Control*>.ConstIterator it = windowMap.CFind(handle);
+            if (it != windowMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private HashMap<string, ushort> registeredWindowClasses;
+        private HashMap<void*, Control*> windowMap;
+        private HashSet<string> systemClassNames;
+    }
+}

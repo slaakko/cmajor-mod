@@ -1,0 +1,44 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.constant.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.expression.parser;
+[implementation]import soul.ast.source.pos;
+
+parser ConstantParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ExpressionParser.Expression;
+
+    Constant(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            CONST
+            TypeExpr(context):type
+            Identifier(context):id
+            ASSIGN 
+            Expression(context):expr
+            SEMICOLON
+        )
+        {
+            cmajor::ast::ConstantNode* node = new cmajor::ast::ConstantNode(s, context->ModuleId(), specifiers, type, id, expr);
+            return node;
+        }
+        ;
+}

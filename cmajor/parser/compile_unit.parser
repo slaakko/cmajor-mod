@@ -1,0 +1,116 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.compile.unit.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.concepts.parser;
+[implementation]import cmajor.function.parser;
+[implementation]import cmajor.classes.parser;
+[implementation]import cmajor.interface.parser;
+[implementation]import cmajor.alias.parser;
+[implementation]import cmajor.enumeration.parser;
+[implementation]import cmajor.constant.parser;
+[implementation]import cmajor.delegate.parser;
+[implementation]import cmajor.global.variable.parser;
+[implementation]import cmajor.templates.parser;
+
+parser CompileUnitParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+    main;
+
+    using IdentifierParser.Identifier;
+    using IdentifierParser.QualifiedId;
+    using ConceptParser.Concept;
+    using FunctionParser.Function;
+    using ClassParser.Class;
+    using InterfaceParser.Interface;
+    using AliasParser.UsingAlias;
+    using AliasParser.Typedef;
+    using EnumerationParser.EnumType;
+    using ConstantParser.Constant;
+    using DelegateParser.Delegate;
+    using DelegateParser.ClassDelegate;
+    using GlobalVariableParser.GlobalVariable;
+    using TemplateParser.InstantiationRequest;
+
+    CompileUnit(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnitNode) : cmajor::ast::CompileUnitNode*
+        ::= empty{ compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName())); }
+        (
+            NamespaceContent(context, compileUnitNode->GlobalNs()):content
+        )
+        {
+            return compileUnitNode.release();
+        }
+        ;
+
+    NamespaceContent(cmajor::parser::context::Context* context, cmajor::ast::NamespaceNode* ns)
+        ::= 
+        (
+            UsingDirectives(context, ns):usingDirectives
+            Definitions(context, ns):definitions
+        )
+        ;
+
+    UsingDirectives(cmajor::parser::context::Context* context, cmajor::ast::NamespaceNode* ns, var soul::ast::SourcePos s)
+        ::= 
+        (
+            USING{ s = lexer.GetSourcePos(pos); }
+            QualifiedId(context):usingNs
+            SEMICOLON
+            {
+                ns->AddMember(new cmajor::ast::NamespaceImportNode(s, context->ModuleId(), usingNs));
+            }
+        )*
+        ;
+
+    Definitions(cmajor::parser::context::Context* context, cmajor::ast::NamespaceNode* ns)
+        ::= 
+        (
+            Definition(context):definition{ ns->AddMember(definition); }
+        )*
+        ;
+
+    Definition(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= 
+        (   Namespace(context):nsDefinition{ return nsDefinition; }
+        |   UsingAlias(context):usingAlias{ return usingAlias; }
+        |   Typedef(context):typedefDeclaration{ return typedefDeclaration; }
+        |   Concept(context):conceptDefinition{ return conceptDefinition; }
+        |   Function(context):functionDefinition{ return functionDefinition; }
+        |   Class(context):classDefinition{ return classDefinition; }
+        |   Interface(context):interfaceDefinition{ return interfaceDefinition; }
+        |   EnumType(context):enumTypeDefinition{ return enumTypeDefinition; }
+        |   Constant(context):constantDefinition{ return constantDefinition; }
+        |   Delegate(context):delegateDefinition{ return delegateDefinition; }
+        |   ClassDelegate(context):classDelegateDefinition{ return classDelegateDefinition; }
+        |   GlobalVariable(context):globalVariableDefinition{ return globalVariableDefinition; }
+        |   InstantiationRequest(context):instantiationRequest{ return instantiationRequest; }
+        )
+        ;
+
+    Namespace(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::NamespaceNode> namespaceNode, var soul::ast::SourcePos s) : cmajor::ast::NamespaceNode*
+        ::= 
+        (
+            NAMESPACE{ s = lexer.GetSourcePos(pos); }
+            (   QualifiedId(context):nsName{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nsName)); }
+            |   empty{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nullptr)); }
+            )
+            LBRACE
+            NamespaceContent(context, namespaceNode.get()):namespaceContent
+            RBRACE
+        )
+        {
+            return namespaceNode.release();
+        }
+        ;
+}

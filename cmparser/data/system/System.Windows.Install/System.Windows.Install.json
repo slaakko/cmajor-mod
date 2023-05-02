@@ -1,0 +1,25 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_System.Windows_37F54B27DC62EFD707EDE3102560558DD028326A"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "3284CEBBBD5A0768A903F05C004BBF3F4FFB7916", 
+            "fileId" : "WindowsInstall_3466729424EB814F790C546207EB7A26A1A1EC9C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows.Install\/WindowsInstall.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows.Install\/System.Windows.Install.cmp", 
+    "projectHash" : "A454EF6A51376AA3E81FBFB19D6229915071AA3B", 
+    "projectId" : "project_System.Windows.Install_CA4DDA5E50B39A0B5D02FCE50C02018871BD2412", 
+    "projectName" : "System.Windows.Install", 
+    "target" : "library"
+}

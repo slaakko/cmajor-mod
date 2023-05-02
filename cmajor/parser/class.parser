@@ -1,0 +1,317 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.classes.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.attribute.parser;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.concepts.parser;
+[implementation]import cmajor.expression.parser;
+[implementation]import cmajor.statement.parser;
+[implementation]import cmajor.parameter.parser;
+[implementation]import cmajor.function.parser;
+[implementation]import cmajor.templates.parser;
+[implementation]import cmajor.alias.parser;
+[implementation]import cmajor.enumeration.parser;
+[implementation]import cmajor.constant.parser;
+[implementation]import cmajor.delegate.parser;
+
+parser ClassParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using AttributeParser.Attributes;
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using IdentifierParser.QualifiedId;
+    using TypeExprParser.TypeExpr;
+    using ConceptParser.WhereConstraint;
+    using ExpressionParser.ArgumentList;
+    using StatementParser.CompoundStatement;
+    using ParameterParser.ParameterList;
+    using FunctionParser.FunctionGroupId;
+    using TemplateParser.TemplateId;
+    using TemplateParser.TemplateParameterList;
+    using AliasParser.UsingAlias;
+    using AliasParser.Typedef;
+    using EnumerationParser.EnumType;
+    using ConstantParser.Constant;
+    using DelegateParser.Delegate;
+    using DelegateParser.ClassDelegate;
+
+    Class(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::ClassNode> classNode) : cmajor::ast::ClassNode*
+        ::= 
+        (
+            Attributes(context):attrs?
+            (Specifiers:specifiers - NEW)
+            CLASS
+            Identifier(context):id
+            {
+                classNode.reset(new cmajor::ast::ClassNode(s, context->ModuleId(), specifiers, id, attrs));
+            }
+            TemplateParameterList(context, classNode.get()):templateParams?
+            InheritanceAndInterfaces(context, classNode.get()):inheritance?
+            (WhereConstraint(context):constraint{ classNode->SetConstraint(constraint); })?
+            LBRACE
+            ClassContent(context, classNode.get()):content
+            RBRACE
+        )
+        {
+            return classNode.release();
+        }
+        ;
+
+    InheritanceAndInterfaces(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode)
+        ::= 
+        (
+            COLON
+            (
+                empty{ context->BeginParsingTypeExpr(); }
+                BaseClassOrInterface(context):baseOrInterface
+                { 
+                    classNode->AddBaseClassOrInterface(baseOrInterface); 
+                    context->EndParsingTypeExpr();
+                }
+                /
+                {
+                    context->EndParsingTypeExpr();
+                }
+            ) % COMMA
+        )
+        ;
+
+    BaseClassOrInterface(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= 
+        (   TemplateId(context):templateId{ return templateId; }
+        |   QualifiedId(context):qualifiedId{ return qualifiedId; }
+        )
+        ;
+
+    ClassContent(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode)
+        ::= 
+        (
+            ClassMember(context, classNode):classMember{ classNode->AddMember(classMember); }
+        )*
+        ;
+
+    ClassMember(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode) : cmajor::ast::Node*
+        ::= StaticConstructor(context, classNode):staticConstructor{ return staticConstructor; }
+        |   Constructor(context, classNode):constructor{ return constructor; }
+        |   Destructor(context, classNode):destructor{ return destructor; }
+        |   MemberFunction(context):memberFunction{ return memberFunction; }
+        |   ConversionFunction(context):conversionFunction{ return conversionFunction; }
+        |   MemberVariable(context):memberVariable{ return memberVariable; }
+        |   UsingAlias(context):usingAlias{ return usingAlias; }
+        |   Typedef(context):typedefinition{ return typedefinition; }
+        |   Class(context):cls{ return cls; }
+        |   EnumType(context):enumType{ return enumType; }
+        |   Constant(context):constant{ return constant; }
+        |   Delegate(context):delegate{ return delegate; }
+        |   ClassDelegate(context):classDelegate{ return classDelegate; }
+        ;
+
+    StaticConstructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::SourcePos s,
+        var std::unique_ptr<cmajor::ast::StaticConstructorNode> staticConstructorNode, var std::u32string className) : cmajor::ast::StaticConstructorNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):id{ className = lexer.GetToken(pos).ToString(); }
+            LPAREN
+            RPAREN
+            {
+                if (className != classNode->Id()->Str() || !cmajor::ast::StaticConstructorSpecifiers(specifiers))
+                {
+                    pass = false;
+                }
+                else
+                {
+                    staticConstructorNode.reset(new cmajor::ast::StaticConstructorNode(s, context->ModuleId(), specifiers, attrs));
+                    staticConstructorNode->SetClassId(id);
+                }
+            }
+            (
+                COLON (Initializer(context):initializer{ staticConstructorNode->AddInitializer(initializer); } % COMMA)
+            )?
+            (
+                WhereConstraint(context):constraint{ staticConstructorNode->SetConstraint(constraint); }
+            )?
+            (   CompoundStatement(context):body{ staticConstructorNode->SetBody(body); } 
+            |   SEMICOLON
+            )
+        )
+        {
+            return staticConstructorNode.release();
+        }
+        ;
+
+    Constructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::SourcePos s, 
+        var std::unique_ptr<cmajor::ast::ConstructorNode> constructorNode) : cmajor::ast::ConstructorNode*
+        ::= 
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):id
+            { 
+                std::u32string className = lexer.GetToken(pos).ToString(); 
+                if (className != classNode->Id()->Str())
+                {
+                    pass = false;
+                }
+                else
+                {
+                    constructorNode.reset(new cmajor::ast::ConstructorNode(s, context->ModuleId(), specifiers, attrs));
+                    constructorNode->SetClassId(id);
+                }
+            }
+            ParameterList(context, constructorNode.get()):paramList
+            (
+                COLON (Initializer(context):initializer{ constructorNode->AddInitializer(initializer); } % COMMA)
+            )?
+            (
+                WhereConstraint(context):constraint{ constructorNode->SetConstraint(constraint); }
+            )?
+            (   CompoundStatement(context):body{ constructorNode->SetBody(body); } 
+            |   SEMICOLON
+            )
+        )
+        {
+            return constructorNode.release();
+        }
+        ;
+
+    Destructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::SourcePos s, 
+        var std::unique_ptr<cmajor::ast::DestructorNode> destructorNode, var std::u32string className) : cmajor::ast::DestructorNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            CPL
+            Identifier(context):id
+            {
+                className = lexer.GetToken(pos).ToString();
+            }
+            LPAREN
+            RPAREN
+            {
+                if (className != classNode->Id()->Str()) 
+                {
+                    pass = false; 
+                }
+                else
+                {
+                    destructorNode.reset(new cmajor::ast::DestructorNode(s, context->ModuleId(), specifiers, attrs));
+                    destructorNode->SetClassId(id);
+                }
+            }
+            (
+                WhereConstraint(context):contraint{ destructorNode->SetConstraint(contraint); }
+            )?
+            (   CompoundStatement(context):body{ destructorNode->SetBody(body); } 
+            |   SEMICOLON
+            )
+        )
+        {
+            return destructorNode.release();
+        }
+        ;
+
+    Initializer(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::InitializerNode> initializerNode) : cmajor::ast::InitializerNode*
+        ::= 
+        (   THIS{ initializerNode.reset(new cmajor::ast::ThisInitializerNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            LPAREN
+            ArgumentList(context, initializerNode.get()):thisArgs
+            RPAREN
+        |   BASE{ initializerNode.reset(new cmajor::ast::BaseInitializerNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            LPAREN
+            ArgumentList(context, initializerNode.get()):baseArgs
+            RPAREN
+        |   Identifier(context):id{ initializerNode.reset(new cmajor::ast::MemberInitializerNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            LPAREN
+            ArgumentList(context, initializerNode.get()):memberArgs
+            RPAREN
+        )
+        {
+            return initializerNode.release();
+        }
+        ;
+
+    MemberFunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::MemberFunctionNode> memberFunctionNode, 
+        var soul::ast::SourcePos s) : cmajor::ast::MemberFunctionNode*
+        ::= 
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            TypeExpr(context):returnType
+            FunctionGroupId(context):groupId
+            {
+                memberFunctionNode.reset(new cmajor::ast::MemberFunctionNode(s, context->ModuleId(), specifiers, returnType, groupId, attrs));
+            }
+            ParameterList(context, memberFunctionNode.get()):paramList 
+            (
+                CONST{ memberFunctionNode->SetConst(); }
+            )?
+            (
+                WhereConstraint(context):constraint{ memberFunctionNode->SetConstraint(constraint); }
+            )?
+            (   CompoundStatement(context):body{ memberFunctionNode->SetBody(body); } 
+            |   SEMICOLON
+            )
+        )
+        {
+            return memberFunctionNode.release();
+        }
+        ;
+
+    ConversionFunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ConversionFunctionNode> conversionFunctionNode, 
+        var soul::ast::SourcePos s) : cmajor::ast::ConversionFunctionNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            OPERATOR
+            TypeExpr(context):type
+            LPAREN
+            RPAREN
+            {
+                conversionFunctionNode.reset(new cmajor::ast::ConversionFunctionNode(s, context->ModuleId(), specifiers, type, attrs));
+            }
+            (
+                CONST{ conversionFunctionNode->SetConst(); }
+            )?
+            (
+                WhereConstraint(context):constraint{ conversionFunctionNode->SetConstraint(constraint); }
+            )?
+            (   CompoundStatement(context):body{ conversionFunctionNode->SetBody(body); } 
+            |   SEMICOLON
+            )
+        )
+        {
+            return conversionFunctionNode.release();
+        }
+        ;
+
+    MemberVariable(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::MemberVariableNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            TypeExpr(context):type
+            Identifier(context):id
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::MemberVariableNode(s, context->ModuleId(), specifiers, type, id, attrs);
+        }
+        ;
+}

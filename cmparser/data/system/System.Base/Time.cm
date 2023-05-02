@@ -1,0 +1,571 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public class TimePoint
+    {
+        public nothrow TimePoint() : nanosecs(0)
+        {
+        }
+        public explicit nothrow TimePoint(long nanosecs_) : nanosecs(nanosecs_)
+        {
+        }
+        public nothrow inline long Rep() const
+        {
+            return nanosecs;
+        }
+        private long nanosecs;
+    }
+
+    public class Duration
+    {
+        public nothrow Duration() : nanosecs(0)
+        {
+        }
+        public explicit nothrow Duration(long nanosecs_) : nanosecs(nanosecs_)
+        {
+        }
+        public nothrow long Hours() const
+        {
+            return nanosecs / (3600 * long(1000000000));
+        }
+        public nothrow long Minutes() const
+        {
+            return nanosecs / (60 * long(1000000000));
+        }
+        public nothrow long Seconds() const
+        {
+            return nanosecs / long(1000000000);
+        }
+        public nothrow long Milliseconds() const
+        {
+            return nanosecs / long(1000000);
+        }
+        public nothrow long Microseconds() const
+        {
+            return nanosecs / long(1000);
+        }
+        public nothrow long Nanoseconds() const
+        {
+            return nanosecs;
+        }
+        public static nothrow Duration FromHours(long hours)
+        {
+            return Duration(3600 * long(1000000000) * hours);
+        }
+        public static nothrow Duration FromMinutes(long minutes)
+        {
+            return Duration(60 * long(1000000000) * minutes);
+        }
+        public static nothrow Duration FromSeconds(long seconds)
+        {
+            return Duration(long(1000000000) * seconds);
+        }
+        public static nothrow Duration FromMilliseconds(long milliseconds)
+        {
+            return Duration(long(1000000) * milliseconds);
+        }
+        public static nothrow Duration FromMicroseconds(long microseconds)
+        {
+            return Duration(long(1000) * microseconds);
+        }
+        public static nothrow Duration FromNanoseconds(long nanoseconds)
+        {
+            return Duration(nanoseconds);
+        }
+        public nothrow inline long Rep() const
+        {
+            return nanosecs;
+        }
+        private long nanosecs;
+    }
+
+    public nothrow inline bool operator==(const Duration& left, const Duration& right)
+    {
+        return left.Rep() == right.Rep();
+    }
+
+    public nothrow inline bool operator<(const Duration& left, const Duration& right)
+    {
+        return left.Rep() < right.Rep();
+    }
+
+    public nothrow inline bool operator==(const TimePoint& left, const TimePoint& right)
+    {
+        return left.Rep() == right.Rep();
+    }
+
+    public nothrow inline bool operator<(const TimePoint& left, const TimePoint& right)
+    {
+        return left.Rep() < right.Rep();
+    }
+
+    public nothrow inline Duration operator+(const Duration& left, const Duration& right)
+    {
+        return Duration(left.Rep() + right.Rep());
+    }
+
+    public nothrow inline Duration operator-(const Duration& left, const Duration& right)
+    {
+        return Duration(left.Rep() - right.Rep());
+    }
+
+    public nothrow inline Duration operator*(const Duration& left, const Duration& right)
+    {
+        return Duration(left.Rep() * right.Rep());
+    }
+
+    public nothrow inline Duration operator/(const Duration& left, const Duration& right)
+    {
+        return Duration(left.Rep() / right.Rep());
+    }
+
+    public nothrow inline Duration operator%(const Duration& left, const Duration& right)
+    {
+        return left.Rep() % right.Rep();
+    }
+
+    public nothrow inline Duration operator-(const TimePoint& left, const TimePoint& right)
+    {
+        long diff = left.Rep() - right.Rep();
+        return Duration(diff);
+    }
+
+    public nothrow inline TimePoint operator+(const TimePoint& tp, const Duration& d)
+    {
+        return TimePoint(tp.Rep() + d.Rep());
+    }
+
+    public nothrow inline TimePoint operator+(const Duration& d, const TimePoint& tp)
+    {
+        return TimePoint(tp.Rep() + d.Rep());
+    }
+
+    public nothrow inline TimePoint operator-(const TimePoint& tp, const Duration& d)
+    {
+        return TimePoint(tp.Rep() - d.Rep());
+    }
+
+    public nothrow TimePoint Now()
+    {
+        return TimePoint(RtNow());
+    }
+
+    public nothrow void Sleep(const Duration& duration)
+    {
+        RtSleep(duration.Rep());
+    }
+
+    public nothrow string DurationStr(const Duration& duration)
+    {
+        string s;
+        long hh = duration.Hours() % 24;
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(hh / 10 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(hh % 10)));
+        s.Append(':');
+        long mm = duration.Minutes() % 60;
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(mm / 10 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(mm % 10)));
+        s.Append(':');
+        long ss = duration.Seconds() % 60;
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(ss / 10 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(ss % 10)));
+        s.Append('.');
+        long ms = duration.Milliseconds() % 1000;
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(ms / 100 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(ms / 10 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(ms % 10)));
+        s.Append('.');
+        long us = duration.Microseconds() % 1000;
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(us / 100 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(us / 10 % 10)));
+        s.Append(cast<char>(cast<byte>('0') + cast<byte>(us % 10)));
+        return s;
+    }
+
+    public enum Month : sbyte
+    {
+         january = 1, february, march, april, may, june, july, august, september, october, november, december
+    }
+
+    public const int[] monthDays = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    
+    public nothrow int GetMonthDays(Month month, int year)
+    {
+        if (month == Month.february && ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0))
+        {
+            return 29;
+        }
+        return monthDays[cast<sbyte>(month)];
+    }
+
+    public class Date
+    {
+        public nothrow Date() : year(0), month(Month.january), day(1)
+        {
+        }
+        public nothrow Date(short year_, Month month_, sbyte day_) : year(year_), month(month_), day(day_)
+        {
+        }
+        public nothrow inline short Year() const
+        {
+            return year;
+        }
+        public nothrow inline Month GetMonth() const
+        {
+            return month;
+        }
+        public nothrow inline sbyte Day() const
+        {
+            return day;
+        }
+        public nothrow Date AddDays(int n)
+        {
+            if (n > 0)
+            {
+                int d = day + n;
+                Month m = month;
+                short y = year;
+                int md = GetMonthDays(m, y);
+                while (d > md)
+                {
+                    d = d - md;
+                    if (m == Month.december)
+                    {
+                        m = Month.january;
+                        ++y;
+                    }
+                    else
+                    {
+                        m = cast<Month>(cast<sbyte>(m) + 1);
+                    }
+                    md = GetMonthDays(m, y);
+                }
+                return Date(y, m, cast<sbyte>(d));
+            }
+            else if (n < 0)
+            {
+                int d = day + n;
+                Month m = month;
+                short y = year;
+                while (d < 1)
+                {
+                    if (m == Month.january)
+                    {
+                        m = Month.december;
+                        --y;
+                    }
+                    else
+                    {
+                        m = cast<Month>(cast<sbyte>(m) - 1);
+                    }
+                    d = d + GetMonthDays(m, y);
+                }
+                return Date(y, m, cast<sbyte>(d));
+            }
+            else
+            {
+                return *this;
+            }
+        }
+        public nothrow Date AddMonths(int n)
+        {
+            if (n > 0)
+            {
+                int m = cast<int>(cast<sbyte>(month)) + n;
+                short y = year;
+                int d = day;
+                while (m > 12)
+                {
+                    m = m - 12;
+                    ++y;
+                }
+                Month mnth = cast<Month>(cast<sbyte>(m));
+                int md = GetMonthDays(mnth, y);
+                if (d > md)
+                {
+                    d = md;
+                }
+                return Date(y, mnth, cast<sbyte>(d));
+            }
+            else if (n < 0)
+            {
+                int m = cast<int>(cast<sbyte>(month)) + n;
+                short y = year;
+                int d = day;
+                while (m < 1)
+                {
+                    m = m + 12;
+                    --y;
+                }
+                Month mnth = cast<Month>(cast<sbyte>(m));
+                int md = GetMonthDays(mnth, y);
+                if (d > md)
+                {
+                    d = md;
+                }
+                return Date(y, mnth, cast<sbyte>(d));
+            }
+            else
+            {
+                return *this;
+            }
+        }
+        public nothrow Date AddYears(short n)
+        {
+            short y = year + n;
+            int d = day;
+            int md = GetMonthDays(month, y);
+            if (d > md)
+            {
+                d = md;
+            }
+            return Date(y, month, cast<sbyte>(d));
+        }
+        public nothrow string ToString() const
+        {
+            return this->ToString(false);
+        }
+        public nothrow string ToString(bool omitDashes) const
+        {
+            string date;
+            date.Append(cast<char>(cast<short>('0') + ((year / 1000) % 10)));
+            date.Append(cast<char>(cast<short>('0') + ((year / 100) % 10)));
+            date.Append(cast<char>(cast<short>('0') + ((year / 10) % 10)));
+            date.Append(cast<char>(cast<short>('0') + (year % 10)));
+            if (!omitDashes)
+            {
+                date.Append('-');
+            }
+            date.Append(cast<char>(cast<sbyte>('0') + ((cast<sbyte>(month) / 10) % 10)));
+            date.Append(cast<char>(cast<sbyte>('0') + (cast<sbyte>(month) % 10)));
+            if (!omitDashes)
+            {
+                date.Append('-');
+            }
+            date.Append(cast<char>(cast<sbyte>('0') + ((day / 10) % 10)));
+            date.Append(cast<char>(cast<sbyte>('0') + (day % 10)));
+            return date;
+        }
+        private short year;
+        private Month month;
+        private sbyte day;
+    }
+
+    public nothrow Date GetCurrentDate()
+    {
+        short y;
+        sbyte m;
+        sbyte d;
+        RtGetCurrentDate(&y, &m, &d);
+        return Date(y, cast<Month>(m), d);
+    }
+
+    public nothrow bool operator==(const Date& left, const Date& right)
+    {
+        return left.Year() == right.Year() && left.GetMonth() == right.GetMonth() && left.Day() == right.Day();
+    }
+
+    public nothrow bool operator<(const Date& left, const Date& right)
+    {
+        if (left.Year() < right.Year()) return true;
+        if (left.Year() > right.Year()) return false;
+        if (left.GetMonth() < right.GetMonth()) return true;
+        if (left.GetMonth() > right.GetMonth()) return false;
+        return left.Day() < right.Day();
+    }
+
+    public class DateTime
+    {
+        public nothrow DateTime() : date(), secs(0)
+        {
+        }
+        public nothrow DateTime(Date date_) : date(date_), secs(0)
+        {
+        }
+        public nothrow DateTime(Date date_, int secs_) : date(date_), secs(secs_)
+        {
+        }
+        public nothrow inline Date GetDate() const
+        {
+            return date;
+        }
+        public nothrow inline int Hours() const
+        {
+            return secs / 3600;
+        }
+        public nothrow inline int Minutes() const
+        {
+            return secs / 60;
+        }
+        public nothrow inline int Seconds() const
+        {
+            return secs;
+        }
+        public nothrow string TimeString() const
+        {
+            string timeString;
+            int hh = Hours() % 24;
+            int mm = Minutes() % 60;
+            int ss = Seconds() % 60;
+            timeString.Append(cast<char>(cast<int>('0') + ((hh / 10) % 10)));
+            timeString.Append(cast<char>(cast<int>('0') + (hh % 10)));
+            timeString.Append(':');
+            timeString.Append(cast<char>(cast<int>('0') + ((mm / 10) % 10)));
+            timeString.Append(cast<char>(cast<int>('0') + (mm % 10)));
+            timeString.Append(':');
+            timeString.Append(cast<char>(cast<int>('0') + ((ss / 10) % 10)));
+            timeString.Append(cast<char>(cast<int>('0') + (ss % 10)));
+            return timeString;
+        }
+        public nothrow string ToString()
+        {
+            return this->ToString(false, false, false, false);
+        }
+        public nothrow string ToString(bool omitDashes, bool omitColons, bool omitMins, bool omitSecs)
+        {
+            string dateTime;
+            dateTime.Append(date.ToString(omitDashes));
+            dateTime.Append('T');
+            int hh = Hours() % 24;
+            int mm = Minutes() % 60;
+            int ss = Seconds() % 60;
+            dateTime.Append(cast<char>(cast<int>('0') + ((hh / 10) % 10)));
+            dateTime.Append(cast<char>(cast<int>('0') + (hh % 10)));
+            if (!omitMins)
+            {
+                if (!omitColons)
+                {
+                    dateTime.Append(':');
+                }
+                dateTime.Append(cast<char>(cast<int>('0') + ((mm / 10) % 10)));
+                dateTime.Append(cast<char>(cast<int>('0') + (mm % 10)));
+                if (!omitSecs)
+                {
+                    if (!omitColons)
+                    {
+                        dateTime.Append(':');
+                    }
+                    dateTime.Append(cast<char>(cast<int>('0') + ((ss / 10) % 10)));
+                    dateTime.Append(cast<char>(cast<int>('0') + (ss % 10)));
+                }
+            }
+            return dateTime;
+        }
+        private Date date;
+        private int secs;
+    }
+
+    public const int secsInDay = cast<int>(24) * 3600;
+
+    public nothrow DateTime GetCurrentDateTime()
+    {
+        short y;
+        sbyte m;
+        sbyte d;
+        int secs;
+        RtGetCurrentDateTime(&y, &m, &d, &secs);
+        return DateTime(Date(y, cast<Month>(m), d), secs);
+    }
+
+    public nothrow bool operator==(const DateTime& left, const DateTime& right)
+    {
+        return left.GetDate() == right.GetDate() && left.Seconds() == right.Seconds();
+    }
+
+    public nothrow bool operator<(const DateTime& left, const DateTime& right)
+    {
+        if (left.GetDate() < right.GetDate()) return true;
+        if (left.GetDate() > right.GetDate()) return false;
+        return left.Seconds() < right.Seconds();
+    }
+
+    public class Timestamp
+    {
+        public nothrow Timestamp() : dateTime(), nanosecs()
+        {
+        }
+        public nothrow Timestamp(const DateTime& dateTime_, int nanosecs_) : dateTime(dateTime_), nanosecs(nanosecs_)
+        {
+        }
+        public nothrow const DateTime& GetDateTime() const
+        {
+            return dateTime;
+        }
+        public nothrow int GetNanoseconds() const
+        {
+            return nanosecs;
+        }
+        public nothrow string ToString() const
+        {
+            string s(dateTime.ToString());
+            s.Append('.').Append(Format(ToString(nanosecs), 9, FormatWidth.exact, FormatJustify.right, '0'));
+            return s;
+        }
+        private DateTime dateTime;
+        private int nanosecs;
+    }
+
+    public nothrow bool operator==(const Timestamp& left, const Timestamp& right)
+    {
+        return left.GetDateTime() == right.GetDateTime() && left.GetNanoseconds() == right.GetNanoseconds();
+    }
+
+    public nothrow bool operator<(const Timestamp& left, const Timestamp& right)
+    {
+        if (left.GetDateTime() < right.GetDateTime()) return true;
+        if (left.GetDateTime() > right.GetDateTime()) return false;
+        return left.GetNanoseconds() < right.GetNanoseconds();
+    }
+
+    public class TimestampProvider
+    {
+        static nothrow TimestampProvider() : instance(new TimestampProvider())
+        {
+        }
+        public static nothrow TimestampProvider& Instance()
+        {
+            return *instance;
+        }
+        private nothrow TimestampProvider()
+        {
+            Reset();
+        }
+        public nothrow Timestamp GetCurrentTimestamp()
+        {
+            if (GetCurrentDate() != startDateTime.GetDate())
+            {
+                Reset();
+            }
+            Duration elapsed = Now() - startTimePoint;
+            long elapsedNanosecs = elapsed.Nanoseconds();
+            int elapsedSecs = cast<int>(elapsedNanosecs / cast<long>(1000000000));
+            int nanosecs = cast<int>(elapsedNanosecs % cast<long>(1000000000));
+            Date date = startDateTime.GetDate();
+            int secs = startDateTime.Seconds() + elapsedSecs;
+            if (secs >= secsInDay)
+            {
+                date = date.AddDays(1);
+                secs = secs - secsInDay; 
+            }
+            Timestamp timestamp(DateTime(date, secs), nanosecs);
+            return timestamp;
+        }
+        private nothrow void Reset()
+        {
+            startDateTime = GetCurrentDateTime();
+            startTimePoint = Now();
+        }
+        private static UniquePtr<TimestampProvider> instance;
+        private DateTime startDateTime;
+        private TimePoint startTimePoint;
+    }
+
+    public nothrow Timestamp GetCurrentTimestamp()
+    {
+        return TimestampProvider.Instance().GetCurrentTimestamp();
+    }
+}

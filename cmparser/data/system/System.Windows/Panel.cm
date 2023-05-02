@@ -1,0 +1,101 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public nothrow ControlCreateParams& PanelControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassName("System.Windows.Panel");
+    }
+    
+    public class PanelCreateParams
+    {
+        public nothrow PanelCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        {
+        }
+        public nothrow PanelCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+    }
+    
+    public class Panel : ContainerControl
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, dontPaint = 1 << 0
+        }
+        public Panel(const string& windowClassName, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors,
+            const Color& backgroundColor) :
+            base(windowClassName, DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(),
+            backgroundColor, text, location, size, dock, anchors)
+        {
+        }
+        public Panel(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this("System.Windows.Panel", "panel", location, size, dock, anchors, DefaultControlBackgroundColor())
+        {
+        }
+        public Panel(PanelCreateParams& createParams) : base(createParams.controlCreateParams)
+        {
+        }
+        public override void PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                log->WriteLine(string(' ', level) + "Panel." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+            }
+            Component* child = Children().FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    childControl->PrintWindowTree(level + 1);
+                }
+                child = child->NextSibling();
+            }
+        }
+        protected override void OnPaint(PaintEventArgs& args)
+        {
+            try
+            {
+                if (DontPaint()) return;
+                if (Debug.Paint())
+                {
+                    Rect r(Location(), GetSize());
+                    LogView* log = Application.GetLogView();
+                    if (log != null)
+                    {
+                        log->WriteLine("Panel.OnPaint: " + r.ToString());
+                    }
+                }
+                args.graphics.Clear(BackgroundColor());
+                base->OnPaint(args);
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show(ex.Message());
+            }
+        }
+        public nothrow inline bool DontPaint() const
+        {
+            return (flags & Flags.dontPaint) != Flags.none;
+        }
+        public nothrow void SetDontPaint()
+        {
+            flags = cast<Flags>(flags | Flags.dontPaint);
+        }
+        public nothrow void ResetDontPaint()
+        {
+            flags = cast<Flags>(flags & ~Flags.dontPaint);
+        }
+        private Flags flags;
+    }
+}

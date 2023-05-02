@@ -60,14 +60,6 @@ lexer CmajorLexer
 
     variables
     {
-        double floatingLit;
-        bool floatingLitFloat;
-        uint64_t intLit;
-        bool intLitUnsigned;
-        char32_t chrLit;
-        int chrLitPrefix;
-        std::u32string strLit;
-        int strLitPrefix;
         int leftAngleCount;
         bool parsingOperatorFunctionGroupId;
     }

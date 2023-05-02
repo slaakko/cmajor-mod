@@ -1,0 +1,208 @@
+<parserFile>
+ <grammar name="ProjectParser">
+  <rule first="{PROJECT}" name="Project">
+   <action first="{PROJECT}">
+    <group first="{PROJECT}">
+     <sequence first="{PROJECT}">
+      <sequence first="{PROJECT}">
+       <sequence first="{PROJECT}">
+        <token first="{PROJECT}" name="PROJECT"/>
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </sequence>
+       <action first="{SEMICOLON}">
+        <token first="{SEMICOLON}" name="SEMICOLON"/>
+       </action>
+      </sequence>
+      <kleene first="{#, ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+       <group first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+        <action first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+         <nonterminal first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" name="Declaration">
+   <switch first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+    <case first="{REFERENCE}">
+     <action first="{REFERENCE}">
+      <nonterminal first="{REFERENCE}" ruleName="ReferenceDeclaration"/>
+     </action>
+    </case>
+    <case first="{SOURCE}">
+     <action first="{SOURCE}">
+      <nonterminal first="{SOURCE}" ruleName="SourceFileDeclaration"/>
+     </action>
+    </case>
+    <case first="{RESOURCE}">
+     <action first="{RESOURCE}">
+      <nonterminal first="{RESOURCE}" ruleName="ResourceFileDeclaration"/>
+     </action>
+    </case>
+    <case first="{TEXT}">
+     <action first="{TEXT}">
+      <nonterminal first="{TEXT}" ruleName="TextFileDeclaration"/>
+     </action>
+    </case>
+    <case first="{ACTION}">
+     <action first="{ACTION}">
+      <nonterminal first="{ACTION}" ruleName="ActionFileDeclaration"/>
+     </action>
+    </case>
+    <case first="{TARGET}">
+     <action first="{TARGET}">
+      <nonterminal first="{TARGET}" ruleName="TargetDeclaration"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{REFERENCE}" name="ReferenceDeclaration">
+   <action first="{REFERENCE}">
+    <group first="{REFERENCE}">
+     <sequence first="{REFERENCE}">
+      <sequence first="{REFERENCE}">
+       <token first="{REFERENCE}" name="REFERENCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SOURCE}" name="SourceFileDeclaration">
+   <action first="{SOURCE}">
+    <group first="{SOURCE}">
+     <sequence first="{SOURCE}">
+      <sequence first="{SOURCE}">
+       <token first="{SOURCE}" name="SOURCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{RESOURCE}" name="ResourceFileDeclaration">
+   <action first="{RESOURCE}">
+    <group first="{RESOURCE}">
+     <sequence first="{RESOURCE}">
+      <sequence first="{RESOURCE}">
+       <token first="{RESOURCE}" name="RESOURCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{TEXT}" name="TextFileDeclaration">
+   <action first="{TEXT}">
+    <group first="{TEXT}">
+     <sequence first="{TEXT}">
+      <sequence first="{TEXT}">
+       <token first="{TEXT}" name="TEXT"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTION}" name="ActionFileDeclaration">
+   <action first="{ACTION}">
+    <group first="{ACTION}">
+     <sequence first="{ACTION}">
+      <sequence first="{ACTION}">
+       <token first="{ACTION}" name="ACTION"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{TARGET}" name="TargetDeclaration">
+   <action first="{TARGET}">
+    <group first="{TARGET}">
+     <sequence first="{TARGET}">
+      <sequence first="{TARGET}">
+       <sequence first="{TARGET}">
+        <token first="{TARGET}" name="TARGET"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}" ruleName="Target"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}" name="Target">
+   <switch first="{LIBRARY, PROGRAM, UNITTEST, WINAPP, WINGUIAPP, WINLIB}">
+    <case first="{PROGRAM}">
+     <action first="{PROGRAM}">
+      <token first="{PROGRAM}" name="PROGRAM"/>
+     </action>
+    </case>
+    <case first="{WINGUIAPP}">
+     <action first="{WINGUIAPP}">
+      <token first="{WINGUIAPP}" name="WINGUIAPP"/>
+     </action>
+    </case>
+    <case first="{WINAPP}">
+     <action first="{WINAPP}">
+      <token first="{WINAPP}" name="WINAPP"/>
+     </action>
+    </case>
+    <case first="{LIBRARY}">
+     <action first="{LIBRARY}">
+      <token first="{LIBRARY}" name="LIBRARY"/>
+     </action>
+    </case>
+    <case first="{WINLIB}">
+     <action first="{WINLIB}">
+      <token first="{WINLIB}" name="WINLIB"/>
+     </action>
+    </case>
+    <case first="{UNITTEST}">
+     <action first="{UNITTEST}">
+      <token first="{UNITTEST}" name="UNITTEST"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

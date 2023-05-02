@@ -1,0 +1,59 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.delegate.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.parameter.parser;
+[implementation]import soul.ast.source.pos;
+
+parser DelegateParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ParameterParser.ParameterList;
+
+    Delegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::DelegateNode> delegateNode, var soul::ast::SourcePos s) : cmajor::ast::DelegateNode*
+        ::= 
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            DELEGATE
+            TypeExpr(context):type
+            Identifier(context):id{ delegateNode.reset(new cmajor::ast::DelegateNode(s, context->ModuleId(), specifiers, type, id)); }
+            ParameterList(context, delegateNode.get()):parameters
+            SEMICOLON
+        )
+        {
+            return delegateNode.release();
+        }
+        ;
+
+    ClassDelegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ClassDelegateNode> classDelegateNode, var soul::ast::SourcePos s) : 
+        cmajor::ast::ClassDelegateNode*
+        ::= 
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            CLASS
+            DELEGATE
+            TypeExpr(context):type
+            Identifier(context):id{ classDelegateNode.reset(new cmajor::ast::ClassDelegateNode(s, context->ModuleId(), specifiers, type, id)); }
+            ParameterList(context, classDelegateNode.get()):parameters
+            SEMICOLON
+        )
+        {
+            return classDelegateNode.release();
+        }
+        ;
+}

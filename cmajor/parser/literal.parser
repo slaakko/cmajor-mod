@@ -1,0 +1,93 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.literal.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.expression.parser;
+[implementation]import cmajor.token.value.parser;
+
+parser LiteralParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using ExpressionParser.Expression;
+
+    Literal(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= SimpleLiteral(context):simpleLiteral{ return simpleLiteral; }
+        |   ComplexLiteral(context):complexLiteral{ return complexLiteral; }
+        ;
+
+
+    SimpleLiteral(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= TRUE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), true); }
+        |   FALSE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), false); }
+        |   FLOATINGLIT
+            { 
+                bool floatLiteral = false;
+                double value = ParseFloatingLiteral(lexer.FileName(), lexer.GetToken(pos), floatLiteral);
+                return cmajor::ast::CreateFloatingLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, floatLiteral);
+            }
+        |   INTLIT
+            {
+                bool isUnsigned = false;
+                uint64_t value = ParseIntegerLiteral(lexer.FileName(), lexer.GetToken(pos), isUnsigned);
+                return cmajor::ast::CreateIntegerLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, isUnsigned);
+            }
+        |   CHARLIT
+            {
+                cmajor::ast::CharLiteralPrefix prefix = cmajor::ast::CharLiteralPrefix::none;
+                char32_t value = ParseCharacterLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                return cmajor::ast::CreateCharacterLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix);
+            }
+        |   STRINGLIT
+            {
+                cmajor::ast::StringLiteralPrefix prefix = cmajor::ast::StringLiteralPrefix::none;
+                std::u32string value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                return cmajor::ast::CreateStringLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix);
+            }
+        |   NULLLIT
+            {
+                return new cmajor::ast::NullLiteralNode(lexer.GetSourcePos(pos), context->ModuleId());
+            }
+        ;
+
+    ComplexLiteral(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= ArrayLiteral(context):arrayLiteral{ return arrayLiteral; }
+        |   StructuredLiteral(context):structuredLiteral{ return structuredLiteral; }
+        ;
+
+    ArrayLiteral(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ArrayLiteralNode> literalNode) : cmajor::ast::Node*
+        ::= 
+        (
+            LBRACKET{ literalNode.reset(new cmajor::ast::ArrayLiteralNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            (
+                Expression(context):expr{ literalNode->AddValue(expr); } % COMMA
+            )?
+            RBRACKET
+        )
+        {
+            return literalNode.release();
+        }
+        ;
+
+    StructuredLiteral(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::StructuredLiteralNode> literalNode) : cmajor::ast::Node*
+        ::= 
+        (
+            LBRACE{ literalNode.reset(new cmajor::ast::StructuredLiteralNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            (
+                Expression(context):expr{ literalNode->AddMember(expr); } % COMMA
+            )?
+            RBRACE
+        )
+        {
+            return literalNode.release();
+        }
+        ;
+}

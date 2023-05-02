@@ -1,0 +1,84 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.enumeration.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.expression.parser;
+
+parser EnumerationParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ExpressionParser.Expression;
+
+    EnumType(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode, var soul::ast::SourcePos s, 
+        var soul::ast::SourcePos bbs, var soul::ast::SourcePos ebs) : cmajor::ast::EnumTypeNode*
+        ::= 
+        (   
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            ENUM 
+            Identifier(context):enumTypeId{ enumTypeNode.reset(new cmajor::ast::EnumTypeNode(s, context->ModuleId(), specifiers, enumTypeId)); }
+            (
+                UnderlyingType(context):underlyingType{ enumTypeNode->SetUnderlyingType(underlyingType); }
+            )?
+            LBRACE{ bbs = lexer.GetSourcePos(pos); }
+            EnumConstants(context, enumTypeNode.get()):enumConstants
+            RBRACE{ ebs = lexer.GetSourcePos(pos); }
+        )
+        {
+            enumTypeNode->SetBeginBraceSourcePos(bbs);
+            enumTypeNode->SetEndBraceSourcePos(ebs);
+            return enumTypeNode.release();
+        }
+        ;
+
+    UnderlyingType(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= 
+        (
+            COLON 
+            TypeExpr(context):type
+        )
+        {
+            return type;
+        }
+        ;
+
+    EnumConstants(cmajor::parser::context::Context* context, cmajor::ast::EnumTypeNode* enumType) 
+        ::= 
+        (
+            EnumConstant(context, enumType):enumConstant{ enumType->AddConstant(enumConstant); } % COMMA
+        )
+        ;
+
+    EnumConstant(cmajor::parser::context::Context* context, cmajor::ast::EnumTypeNode* enumType, var soul::ast::SourcePos s) : cmajor::ast::EnumConstantNode*
+        ::= 
+        (   Identifier(context):constantId{ s = lexer.GetSourcePos(pos); }
+            (
+                ASSIGN Expression(context):constantValue
+                { 
+                    cmajor::ast::EnumConstantNode* enumConstant = new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId, constantValue);
+                    enumConstant->SetHasValue();
+                    return enumConstant;
+                }
+            |   empty
+                {
+                    return new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId, cmajor::ast::MakeNextEnumConstantValue(s, context->ModuleId(), enumType));
+                }
+            )
+        )
+        ;
+}

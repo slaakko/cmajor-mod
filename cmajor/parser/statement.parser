@@ -1,0 +1,577 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.statement.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.expression.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.identifier.parser;
+
+parser StatementParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using ExpressionParser.Expression;
+    using ExpressionParser.ArgumentList;
+    using TypeExprParser.TypeExpr;
+    using IdentifierParser.Identifier;
+
+    Statement(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
+        ::= 
+        (   LabeledStatement(context):labeledStatement{ return labeledStatement; }
+        |   ControlStatement(context):controlStatement{ return controlStatement; }
+        |   ExpressionStatement(context):expressionStatement{ return expressionStatement; }
+        |   AssignmentStatement(context):assignmentStatement{ return assignmentStatement; }
+        |   ConstructionStatement(context):constructionStatement{ return constructionStatement; }
+        |   DeleteStatement(context):deleteStatement{ return deleteStatement; }
+        |   DestroyStatement(context):destroyStatement{ return destroyStatement; }
+        |   EmptyStatement(context):emptyStatement{ return emptyStatement; }
+        |   ThrowStatement(context):throwStatement{ return throwStatement; }
+        |   TryStatement(context):tryStatement{ return tryStatement; }
+        |   AssertStatement(context):assertStatement{ return assertStatement; }
+        |   ConditionalCompilationStatement(context):condCompStatement{ return condCompStatement; }
+        )
+        ;
+
+    Label(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::u32string label) : cmajor::ast::LabelNode*
+        ::= 
+        (
+            ID{ s = lexer.GetSourcePos(pos); label = lexer.GetToken(pos).ToString(); }
+            COLON
+        )
+        {
+            return new cmajor::ast::LabelNode(s, context->ModuleId(), label);
+        }
+        ;
+
+    LabeledStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::LabeledStatementNode> statementNode) : 
+        cmajor::ast::StatementNode*
+        ::= 
+        (
+            Label(context):lbl{ s = lexer.GetSourcePos(pos); }
+            Statement(context):stmt
+        )
+        {
+            statementNode.reset(new cmajor::ast::LabeledStatementNode(s, context->ModuleId(), stmt));
+            statementNode->SetLabelNode(lbl);
+            return statementNode.release();
+        }
+        ;
+
+    ControlStatement(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
+        ::= 
+        (   CompoundStatement(context):compoundStatement{ return compoundStatement; }
+        |   ReturnStatement(context):returnStatement{ return returnStatement; }
+        |   IfStatement(context):ifStatement{ return ifStatement; }
+        |   WhileStatement(context):whileStatement{ return whileStatement; }
+        |   DoStatement(context):doStatement{ return doStatement; }
+        |   RangeForStatement(context):rangeForStatement{ return rangeForStatement; }
+        |   ForStatement(context):forStatement{ return forStatement; }
+        |   BreakStatement(context):breakStatement{ return breakStatement; }
+        |   ContinueStatement(context):continueStatement{ return continueStatement; }
+        |   GotoStatement(context):gotoStatement{ return gotoStatement; }
+        |   SwitchStatement(context):switchStatement{ return switchStatement; }
+        |   GotoCaseStatement(context):gotoCaseStatement{ return gotoCaseStatement; }
+        |   GotoDefaultStatement(context):gotoDefaultStatement{ return gotoDefaultStatement; }
+        )
+        ;
+
+    CompoundStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode) : 
+        cmajor::ast::CompoundStatementNode*
+        ::= 
+        (  
+            LBRACE
+            { 
+                s = lexer.GetSourcePos(pos); 
+                compoundStatementNode.reset(new cmajor::ast::CompoundStatementNode(s, context->ModuleId())); 
+            }
+            (
+                Statement(context):stmt{ compoundStatementNode->AddStatement(stmt); }
+            )*
+            RBRACE
+        )
+        {
+            return compoundStatementNode.release();
+        }
+        ;
+
+    ReturnStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            RETURN{ s = lexer.GetSourcePos(pos); }
+            Expression(context):expr?
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ReturnStatementNode(s, context->ModuleId(), expr);
+        }
+        ;
+
+    IfStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            IF{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            Statement(context):thenS
+            (   ELSE
+                Statement(context):elseS
+            )?
+        )
+        {
+            return new cmajor::ast::IfStatementNode(s, context->ModuleId(), cond, thenS, elseS);
+        }
+        ;
+
+    WhileStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            WHILE{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cmajor::ast::WhileStatementNode(s, context->ModuleId(), cond, stmt);
+        }
+        ;
+
+    DoStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            DO{ s = lexer.GetSourcePos(pos); }
+            Statement(context):stmt
+            WHILE
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::DoStatementNode(s, context->ModuleId(), stmt, cond);
+        }
+        ;
+
+    RangeForStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            FOR{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            TypeExpr(context):type
+            Identifier(context):id
+            COLON
+            Expression(context):container
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cmajor::ast::RangeForStatementNode(s, context->ModuleId(), type, id, container, stmt);
+        }
+        ;
+
+    ForStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            FOR{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            ForInitStatement(context):init
+            Expression(context):cond?
+            SEMICOLON
+            ForLoopStatementExpr(context):loop
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cmajor::ast::ForStatementNode(s, context->ModuleId(), init, cond, loop, stmt);
+        }
+        ;
+
+    ForInitStatement(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
+        ::= 
+        (   AssignmentStatement(context):assignmentStatement{ return assignmentStatement; }
+        |   ConstructionStatement(context):constructionStatement{ return constructionStatement; }
+        |   EmptyStatement(context):emptyStatement{ return emptyStatement; }
+        )
+        ;
+
+    ForLoopStatementExpr(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
+        ::= 
+        (   AssignmentStatementExpr(context):assignmentStatementExpr{ return assignmentStatementExpr; }
+        |   Expression(context):expr{ return new cmajor::ast::ExpressionStatementNode(lexer.GetSourcePos(pos), context->ModuleId(), expr); }
+        |   empty{ return new cmajor::ast::EmptyStatementNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        )
+        ;
+
+    BreakStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            BREAK{ s = lexer.GetSourcePos(pos); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::BreakStatementNode(s, context->ModuleId());
+        }
+        ;
+
+    ContinueStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            CONTINUE{ s = lexer.GetSourcePos(pos); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ContinueStatementNode(s, context->ModuleId());
+        }
+        ;
+
+    GotoStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::u32string target) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            GOTO{ s = lexer.GetSourcePos(pos); }
+            ID{ target = lexer.GetToken(pos).ToString(); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::GotoStatementNode(s, context->ModuleId(), target);
+        }
+        ;
+
+    SwitchStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::SwitchStatementNode> switchStatementNode) : 
+        cmajor::ast::StatementNode*
+        ::= 
+        (   
+            SWITCH{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            {
+                switchStatementNode.reset(new cmajor::ast::SwitchStatementNode(s, context->ModuleId(), cond));
+            }
+            LBRACE
+            (   CaseStatement(context):caseStatement{ switchStatementNode->AddCase(caseStatement); }
+            |   DefaultStatement(context):defaultStatement{ switchStatementNode->SetDefault(defaultStatement); }
+            )*
+            RBRACE
+        )
+        {
+            return switchStatementNode.release();
+        }
+        ;
+
+    CaseStatement(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::CaseStatementNode> caseStatementNode) : cmajor::ast::CaseStatementNode*
+        ::= 
+        (   
+            empty{ caseStatementNode.reset(new cmajor::ast::CaseStatementNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            (   CASE
+                Expression(context):caseExpr{ caseStatementNode->AddCaseExpr(caseExpr); }
+                COLON
+            )+
+            (   
+                Statement(context):stmt{ caseStatementNode->AddStatement(stmt); }
+            )*
+        )
+        {
+            return caseStatementNode.release();
+        }
+        ;
+
+    DefaultStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::DefaultStatementNode> defaultStatementNode) : 
+        cmajor::ast::DefaultStatementNode* 
+        ::= 
+        (   
+            DEFAULT{ s = lexer.GetSourcePos(pos); }
+            COLON{ defaultStatementNode.reset(new cmajor::ast::DefaultStatementNode(s, context->ModuleId())); }
+            (   
+                Statement(context):stmt{ defaultStatementNode->AddStatement(stmt); }
+            )*
+
+        )
+        {
+            return defaultStatementNode.release();
+        }
+        ;
+
+    GotoCaseStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            GOTO{ s = lexer.GetSourcePos(pos); }
+            CASE 
+            Expression(context):caseExpr
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::GotoCaseStatementNode(s, context->ModuleId(), caseExpr);
+        }
+        ;
+
+    GotoDefaultStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            GOTO{ s = lexer.GetSourcePos(pos); }
+            DEFAULT
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::GotoDefaultStatementNode(s, context->ModuleId()); 
+        }
+        ;
+
+    ExpressionStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            empty{ context->PushParsingExpressionStatement(true); }
+            Expression(context):expr{ s = lexer.GetSourcePos(pos); }
+            SEMICOLON
+        )
+        {
+            context->PopParsingExpressionStatement();
+            return new cmajor::ast::ExpressionStatementNode(s, context->ModuleId(), expr);
+        }
+        /
+        {
+            context->PopParsingExpressionStatement();
+        }
+        ;
+
+    AssignmentStatement(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
+        ::= 
+        (   AssignmentStatementExpr(context):stmt 
+            SEMICOLON
+        )
+        {
+            return stmt;
+        }
+        ;
+
+    AssignmentStatementExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (   empty{ context->PushParsingLvalue(true); }
+            Expression(context):target{ s = lexer.GetSourcePos(pos); context->PopParsingLvalue(); } / { context->PopParsingLvalue(); }
+            ASSIGN
+            Expression(context):source
+        )
+        {
+            return new cmajor::ast::AssignmentStatementNode(s, context->ModuleId(), target, source);
+        }
+        ;
+
+    ConstructionStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, 
+        var std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructionStatementNode) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            TypeExpr(context):type{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):id
+            {
+                constructionStatementNode.reset(new cmajor::ast::ConstructionStatementNode(s, context->ModuleId(), type, id));
+            }
+            (   ASSIGN Expression(context):value{ constructionStatementNode->AddArgument(value); constructionStatementNode->SetAssignment(); }
+            |   LPAREN ArgumentList(context, constructionStatementNode.get()):args RPAREN
+            |   empty{ constructionStatementNode->SetEmpty(); }
+            )
+            SEMICOLON
+        )
+        {
+            return constructionStatementNode.release();
+        }
+        ;
+
+    DeleteStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            DELETE{ s = lexer.GetSourcePos(pos); }
+            Expression(context):ptr
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::DeleteStatementNode(s, context->ModuleId(), ptr);
+        }
+        ;
+
+    DestroyStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            DESTROY{ s = lexer.GetSourcePos(pos); }
+            Expression(context):ptr
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::DestroyStatementNode(s, context->ModuleId(), ptr);
+        }
+        ;
+
+    EmptyStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            SEMICOLON{ s = lexer.GetSourcePos(pos); }
+        )
+        {
+            return new cmajor::ast::EmptyStatementNode(s, context->ModuleId());
+        }
+        ;
+
+    ThrowStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            THROW{ s = lexer.GetSourcePos(pos); }
+            Expression(context):exception?
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ThrowStatementNode(s, context->ModuleId(), exception);
+        }
+        ;
+
+    TryStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::TryStatementNode> tryStatementNode) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            TRY{ s = lexer.GetSourcePos(pos); }
+            CompoundStatement(context):tryBlock{ tryStatementNode.reset(new cmajor::ast::TryStatementNode(s, context->ModuleId(), tryBlock)); }
+            (
+                Catch(context):handler{ tryStatementNode->AddCatch(handler); }
+            )+
+        )
+        {
+            return tryStatementNode.release();
+        }
+        ;
+
+    Catch(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::CatchNode*
+        ::= 
+        (
+            CATCH{ s = lexer.GetSourcePos(pos); }
+            LPAREN
+            TypeExpr(context):catchType
+            Identifier(context):catchId
+            RPAREN
+            CompoundStatement(context):catchBlock
+        )
+        {
+            return new cmajor::ast::CatchNode(s, context->ModuleId(), catchType, catchId, catchBlock);
+        }
+        ;
+
+    AssertStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+        ::= 
+        (
+            HASH{ s = lexer.GetSourcePos(pos); } 
+            ASSERT
+            Expression(context):expr
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::AssertStatementNode(s, context->ModuleId(), expr);
+        }
+        ;
+
+    ConditionalCompilationStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var soul::ast::SourcePos elifPos, var soul::ast::SourcePos elsePos,
+        var std::unique_ptr<cmajor::ast::ConditionalCompilationStatementNode> condCompStmt) : cmajor::ast::StatementNode*
+        ::= 
+        (   
+            HASH{ s = lexer.GetSourcePos(pos); }
+            IF
+            LPAREN
+            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.reset(new cmajor::ast::ConditionalCompilationStatementNode(s, context->ModuleId(), ifExpr)); }
+            RPAREN
+            (
+                Statement(context):ifs{ condCompStmt->AddIfStatement(ifs); }
+            )*
+            (
+                HASH{ elifPos = lexer.GetSourcePos(pos); } 
+                ELIF
+                LPAREN
+                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifPos, context->ModuleId(), elifExpr); }
+                RPAREN
+                (
+                    Statement(context):elifs{ condCompStmt->AddElifStatement(elifs); }
+                )*
+            )*
+            (
+                HASH{ elsePos = lexer.GetSourcePos(pos); }
+                ELSE
+                (
+                    Statement(context):elses{ condCompStmt->AddElseStatement(elsePos, context->ModuleId(), elses); }
+                )*
+            )?
+            (
+                HASH 
+                ENDIF
+            )
+        )
+        {
+            return condCompStmt.release();
+        }
+        ;
+
+    ConditionalCompilationExpression(cmajor::parser::context::Context* context) : cmajor::ast::ConditionalCompilationExpressionNode*
+        ::= 
+        (
+            ConditionalCompilationDisjunction(context):disjunction
+        )
+        {
+            return disjunction;
+        }
+        ;
+
+    ConditionalCompilationDisjunction(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+        var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
+        ::=
+        (
+            ConditionalCompilationConjunction(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (
+                DISJUNCTION 
+                ConditionalCompilationConjunction(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationDisjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ConditionalCompilationConjunction(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+        var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
+        ::=
+        (
+            ConditionalCompilationPrefix(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            (
+                AMPAMP
+                ConditionalCompilationPrefix(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+            )
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ConditionalCompilationPrefix(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+        var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
+        ::=
+        (
+            (   EXCLAMATION{ s = lexer.GetSourcePos(pos); } 
+                ConditionalCompilationPrefix(context):prefix{ expr.reset(new cmajor::ast::ConditionalCompilationNotNode(s, context->ModuleId(), prefix)); }
+            |   ConditionalCompilationPrimary(context):primary{ expr.reset(primary); }
+            )
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    ConditionalCompilationPrimary(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::ConditionalCompilationExpressionNode*
+        ::= 
+        (   ID{ return new cmajor::ast::ConditionalCompilationPrimaryNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
+        |   LPAREN{ s = lexer.GetSourcePos(pos); }
+            ConditionalCompilationExpression(context):expr
+            RPAREN{ return new cmajor::ast::ParenthesizedConditionalCompilationExpressionNode(s, context->ModuleId(), expr); }
+        )
+        ;
+}
