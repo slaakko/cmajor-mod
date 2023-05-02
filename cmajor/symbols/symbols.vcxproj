@@ -163,6 +163,7 @@
     <ClCompile Include="class_type_symbol.cpp" />
     <ClCompile Include="class_type_symbol.cppm" />
     <ClCompile Include="concept_symbol.cppm" />
+    <ClCompile Include="constant_symbol.cpp" />
     <ClCompile Include="constant_symbol.cppm" />
     <ClCompile Include="container_symbol.cppm" />
     <ClCompile Include="conversion_table.cppm" />
@@ -175,6 +176,7 @@
     <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.cppm" />
     <ClCompile Include="function_index.ixx" />
+    <ClCompile Include="function_symbol.cpp" />
     <ClCompile Include="function_symbol.cppm" />
     <ClCompile Include="global_flags.cppm" />
     <ClCompile Include="init_done.cppm" />

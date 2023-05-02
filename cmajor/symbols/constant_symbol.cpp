@@ -1,0 +1,1 @@
+module cmajor.symbols.constant.symbol;
