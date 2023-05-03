@@ -1,0 +1,56 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.type.expr.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.basic.type.parser;
+[implementation]import cmajor.templates.parser;
+[implementation]import cmajor.expression.parser;
+[implementation]import soul.ast.source.pos;
+
+parser TypeExprParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using BasicTypeParser.BasicType;
+    using ExpressionParser.Expression;
+    using TemplateParser.TemplateId;
+
+    TypeExpr(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= PrefixTypeExpr(context):prefixTypeExpr{ return prefixTypeExpr; }
+        ;
+
+    PrefixTypeExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= CONST{ s = lexer.GetSourcePos(pos); } PostfixTypeExpr(context):constTypeExpr{ return new cmajor::ast::ConstNode(s, context->ModuleId(), constTypeExpr); }
+        |   PostfixTypeExpr(context):postfixTypeExpr{ return postfixTypeExpr; }
+        ;
+
+    PostfixTypeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> typeExpr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (   PrimaryTypeExpr(context):primaryTypeExpr{ s = lexer.GetSourcePos(pos); typeExpr.reset(primaryTypeExpr); }
+            (   DOT ID{ typeExpr.reset(new cmajor::ast::DotNode(s, context->ModuleId(), typeExpr.release(), 
+                    new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()))); }
+            |   STAR{ typeExpr.reset(new cmajor::ast::PointerNode(s, context->ModuleId(), typeExpr.release())); }
+            |   AMPAMP{ typeExpr.reset(new cmajor::ast::RValueRefNode(s, context->ModuleId(), typeExpr.release())); }
+            |   AMP{ typeExpr.reset(new cmajor::ast::LValueRefNode(s, context->ModuleId(), typeExpr.release())); }
+            |   LBRACKET Expression(context):size? RBRACKET{ typeExpr.reset(new cmajor::ast::ArrayNode(s, context->ModuleId(), typeExpr.release(), size)); }
+            )*
+        )
+        {
+            return typeExpr.release();
+        }
+        ;
+
+    PrimaryTypeExpr(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= BasicType(context):basicType{ return basicType; }
+        |   TemplateId(context):templateId{ return templateId; }
+        |   ID{ return new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
+        ;
+}

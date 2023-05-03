@@ -1,0 +1,91 @@
+<parserFile>
+ <grammar name="SolutionParser">
+  <rule first="{SOLUTION}" name="Solution">
+   <action first="{SOLUTION}">
+    <group first="{SOLUTION}">
+     <sequence first="{SOLUTION}">
+      <sequence first="{SOLUTION}">
+       <sequence first="{SOLUTION}">
+        <token first="{SOLUTION}" name="SOLUTION"/>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="QualifiedId"/>
+        </action>
+       </sequence>
+       <token first="{SEMICOLON}" name="SEMICOLON"/>
+      </sequence>
+      <kleene first="{#, ACTIVEPROJECT, PROJECT}">
+       <group first="{ACTIVEPROJECT, PROJECT}">
+        <action first="{ACTIVEPROJECT, PROJECT}">
+         <nonterminal first="{ACTIVEPROJECT, PROJECT}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVEPROJECT, PROJECT}" name="Declaration">
+   <switch first="{ACTIVEPROJECT, PROJECT}">
+    <case first="{PROJECT}">
+     <action first="{PROJECT}">
+      <nonterminal first="{PROJECT}" ruleName="SolutionProjectDeclaration"/>
+     </action>
+    </case>
+    <case first="{ACTIVEPROJECT}">
+     <action first="{ACTIVEPROJECT}">
+      <nonterminal first="{ACTIVEPROJECT}" ruleName="ActiveProjectDeclaration"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{PROJECT}" name="SolutionProjectDeclaration">
+   <action first="{PROJECT}">
+    <group first="{PROJECT}">
+     <sequence first="{PROJECT}">
+      <sequence first="{PROJECT}">
+       <token first="{PROJECT}" name="PROJECT"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVEPROJECT}" name="ActiveProjectDeclaration">
+   <action first="{ACTIVEPROJECT}">
+    <group first="{ACTIVEPROJECT}">
+     <sequence first="{ACTIVEPROJECT}">
+      <sequence first="{ACTIVEPROJECT}">
+       <token first="{ACTIVEPROJECT}" name="ACTIVEPROJECT"/>
+       <nonterminal first="{ID}" ruleName="QualifiedId"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

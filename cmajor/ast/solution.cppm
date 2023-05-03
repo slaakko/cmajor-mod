@@ -1,13 +1,9 @@
-export module cmajor.ast.solution;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <sngcm/ast/Project.hpp>
-#include <unordered_map>
-*/
+export module cmajor.ast.solution;
 
 import cmajor.ast.project;
 import std.core;
@@ -65,7 +61,6 @@ public:
     const std::u32string& Name() const { return name; }
     const std::string& FilePath() const { return filePath; }
     const std::vector<std::unique_ptr<Project>>& Projects() const { return projects; }
-    //const boost::filesystem::path& BasePath() const { return basePath; }
     const std::filesystem::path& BasePath() const { return basePath; }
     const std::vector<std::string>& ProjectFilePaths() const { return projectFilePaths; }
     const std::vector<std::string>& RelativeProjectFilePaths() const { return relativeProjectFilePaths; }
@@ -83,7 +78,6 @@ public:
 private:
     std::u32string name;
     std::string filePath;
-    //boost::filesystem::path basePath;
     std::filesystem::path basePath;
     std::vector<std::unique_ptr<SolutionDeclaration>> declarations;
     std::vector<std::string> projectFilePaths;
@@ -95,4 +89,5 @@ private:
     std::unordered_map<std::u32string, ProjectDependencyDeclaration*> dependencyMap;
     void AddDependencies();
 };
+
 } // namespace cmajor::ast

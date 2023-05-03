@@ -1,0 +1,98 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.function.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.attribute.parser;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.templates.parser;
+[implementation]import cmajor.concepts.parser;
+[implementation]import cmajor.parameter.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.statement.parser;
+
+parser FunctionParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using AttributeParser.Attributes;
+    using SpecifierParser.Specifiers;
+    using TypeExprParser.TypeExpr;
+    using TemplateParser.TemplateParameterList;
+    using ConceptParser.WhereConstraint;
+    using ParameterParser.ParameterList;
+    using IdentifierParser.Identifier;
+    using StatementParser.CompoundStatement;
+
+    Function(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FunctionNode> functionNode, var soul::ast::SourcePos s) : cmajor::ast::Node*
+        ::= 
+        (
+            empty{ s = lexer.GetSourcePos(pos); }
+            Attributes(context):attributes?
+            Specifiers:specifiers
+            TypeExpr(context):returnType
+            FunctionGroupId(context):functionGroupId
+            {
+                functionNode.reset(new cmajor::ast::FunctionNode(s, context->ModuleId(), specifiers, returnType, functionGroupId, attributes));
+            }
+        )
+        TemplateParameterList(context, functionNode.get()):templateParameterList? 
+        ParameterList(context, functionNode.get()):parameterList
+        (WhereConstraint(context):constraint{ functionNode->SetConstraint(constraint); })?
+        (   CompoundStatement(context):body{ functionNode->SetBody(body); }
+        |   SEMICOLON
+        )
+        {
+            return functionNode.release();
+        }
+        ;
+
+    FunctionGroupId(cmajor::parser::context::Context* context) : std::u32string
+        ::= ID{ return lexer.GetToken(pos).ToString(); }
+        |   OperatorFunctionGroupId(context):operatorFunctionGroupId{ return operatorFunctionGroupId; }
+        ;
+
+    OperatorFunctionGroupId(cmajor::parser::context::Context* context) : std::u32string
+        ::= empty{ vars->parsingOperatorFunctionGroupId = true; }
+        (
+            OPERATOR
+            (   ((LANGLE LANGLE) - (LANGLE LANGLE (TypeExpr(context):typeExpr % COMMA) RANGLE)){ vars->parsingOperatorFunctionGroupId = false; return U"operator<<"; }
+            |   SHIFTRIGHT{ vars->parsingOperatorFunctionGroupId = false; return U"operator>>"; }
+            |   EQ{ vars->parsingOperatorFunctionGroupId = false; return U"operator=="; }
+            |   ASSIGN{ vars->parsingOperatorFunctionGroupId = false; return U"operator="; }
+            |   LANGLE{ vars->parsingOperatorFunctionGroupId = false; return U"operator<"; }
+            |   ARROW{ vars->parsingOperatorFunctionGroupId = false; return U"operator->"; }
+            |   PLUSPLUS{ vars->parsingOperatorFunctionGroupId = false; return U"operator++"; }
+            |   MINUSMINUS{ vars->parsingOperatorFunctionGroupId = false; return U"operator--"; }
+            |   PLUS{ vars->parsingOperatorFunctionGroupId = false; return U"operator+"; }
+            |   MINUS{ vars->parsingOperatorFunctionGroupId = false; return U"operator-"; }
+            |   STAR{ vars->parsingOperatorFunctionGroupId = false; return U"operator*"; }
+            |   DIV{ vars->parsingOperatorFunctionGroupId = false; return U"operator/"; }
+            |   REM{ vars->parsingOperatorFunctionGroupId = false; return U"operator%"; }
+            |   AMP{ vars->parsingOperatorFunctionGroupId = false; return U"operator&"; }
+            |   BITOR{ vars->parsingOperatorFunctionGroupId = false; return U"operator|"; }
+            |   BITXOR{ vars->parsingOperatorFunctionGroupId = false; return U"operator^"; }
+            |   EXCLAMATION{ vars->parsingOperatorFunctionGroupId = false; return U"operator!"; }
+            |   CPL{ vars->parsingOperatorFunctionGroupId = false; return U"operator~"; }
+            |   LBRACKET RBRACKET{ vars->parsingOperatorFunctionGroupId = false; return U"operator[]"; }
+            |   LPAREN RPAREN{ vars->parsingOperatorFunctionGroupId = false; return U"operator()"; }
+            )
+        )
+        {
+            vars->parsingOperatorFunctionGroupId = false;
+        }
+        /
+        {
+            vars->parsingOperatorFunctionGroupId = false;
+        }
+        ;
+}

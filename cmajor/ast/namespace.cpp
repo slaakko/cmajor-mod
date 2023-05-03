@@ -106,53 +106,6 @@ void NamespaceNode::AddMember(Node* member)
     }
 }
 
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(), qid()
-{
-}
-
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), id(id_), qid(qid_)
-{
-    id->SetParent(this);
-    qid->SetParent(this);
-}
-
-Node* AliasNode::Clone(CloneContext& cloneContext) const
-{
-    AliasNode* clone = new AliasNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), static_cast<IdentifierNode*>(qid->Clone(cloneContext)));
-    return clone;
-}
-
-void AliasNode::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
-void AliasNode::Write(AstWriter& writer)
-{
-    Node::Write(writer);
-    writer.Write(id.get());
-    writer.Write(qid.get());
-}
-
-void AliasNode::Read(AstReader& reader)
-{
-    Node::Read(reader);
-    id.reset(reader.ReadIdentifierNode());
-    id->SetParent(this);
-    qid.reset(reader.ReadIdentifierNode());
-    qid->SetParent(this);
-}
-
-IdentifierNode* AliasNode::Id() const
-{
-    return id.get();
-}
-
-IdentifierNode* AliasNode::Qid() const
-{
-    return qid.get();
-}
-
 NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
 {
 }

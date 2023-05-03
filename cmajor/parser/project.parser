@@ -1,0 +1,143 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.projects.parser;
+
+[interface]import cmajor.ast;
+[implementation]import cmajor.container.file.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.container.file.lexer;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.token.value.parser;
+[implementation]import soul.ast.source.pos;
+[implementation]import util;
+
+parser ProjectParser
+{
+    lexer cmajor::container::file::lexer::CmajorContainerFileLexer<char32_t>;
+    main;
+
+    Project(std::string config, cmajor::ast::BackEnd backend, std::string toolChain, var std::unique_ptr<cmajor::ast::Project> projectFile) : cmajor::ast::Project* 
+        ::=
+        (
+            PROJECT
+            QualifiedId:name
+            SEMICOLON
+            {
+                projectFile.reset(new cmajor::ast::Project(name, lexer.FileName(), config, backend, toolChain, cmajor::ast::SystemDirKind::regular));
+            }
+            (
+                Declaration:declaration{ projectFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return projectFile.release();
+        }
+        ;
+
+    QualifiedId(var std::u32string qualifiedId) : std::u32string
+        ::= 
+        (
+            ID{ qualifiedId = lexer.GetToken(pos).ToString(); }
+            (
+                DOT ID{ qualifiedId.append(1, '.').append(lexer.GetToken(pos).ToString()); }
+            )*
+        )
+        {
+            return qualifiedId;
+        }
+        ;
+
+    Declaration : cmajor::ast::ProjectDeclaration*
+        ::= ReferenceDeclaration:referenceDeclaration{ return referenceDeclaration; }
+        |   SourceFileDeclaration:sourceFileDeclaration{ return sourceFileDeclaration; }
+        |   ResourceFileDeclaration:resourceFileDeclaration{ return resourceFileDeclaration; }
+        |   TextFileDeclaration:textFileDeclaration{ return textFileDeclaration; }
+        |   ActionFileDeclaration:actionFileDeclaration{ return actionFileDeclaration; }
+        |   TargetDeclaration:targetDeclaration{ return targetDeclaration; }
+        ;
+
+    ReferenceDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            REFERENCE
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ReferenceDeclaration(filePath);
+        }
+        ;
+
+    SourceFileDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            SOURCE
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SourceFileDeclaration(filePath);
+        }
+        ;
+
+    ResourceFileDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            RESOURCE
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ResourceFileDeclaration(filePath);
+        }
+        ;
+
+    TextFileDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            TEXT
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::TextFileDeclaration(filePath);
+        }
+        ;
+
+    ActionFileDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            ACTION
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ActionFileDeclaration(filePath);
+        }
+        ;
+
+    TargetDeclaration : cmajor::ast::ProjectDeclaration*
+        ::= 
+        (
+            TARGET
+            ASSIGN
+            Target:target
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::TargetDeclaration(target);
+        }
+        ;
+
+    Target : cmajor::ast::Target
+        ::= PROGRAM{ return cmajor::ast::Target::program; }
+        |   WINGUIAPP{ return cmajor::ast::Target::winguiapp; }
+        |   WINAPP{ return cmajor::ast::Target::winapp; }
+        |   LIBRARY{ return cmajor::ast::Target::library; }
+        |   WINLIB{ return cmajor::ast::Target::winlib; }
+        |   UNITTEST{ return cmajor::ast::Target::unitTest; }
+        ;
+}

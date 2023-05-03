@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.parameter.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import soul.ast.source.pos;
+
+parser ParameterParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+
+    ParameterList(cmajor::parser::context::Context* context, cmajor::ast::Node* owner) 
+        ::= 
+        (
+            LPAREN
+            (
+                Parameter(context):parameter{ owner->AddParameter(parameter); } % COMMA
+            )?
+            RPAREN
+        )
+        ;
+
+    Parameter(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::ParameterNode*
+        ::= 
+        (
+            TypeExpr(context):type{ s = lexer.GetSourcePos(pos); }
+            (
+                Identifier(context):id
+            )?
+        )
+        {
+            return new cmajor::ast::ParameterNode(s, context->ModuleId(), type, id);
+        }
+        ;
+}

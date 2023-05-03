@@ -1,0 +1,121 @@
+<parserFile>
+ <grammar name="SpecifierParser">
+  <rule first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" name="Specifiers">
+   <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+    <group first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+     <kleene first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+      <group first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+       <action first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+        <nonterminal first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifier"/>
+       </action>
+      </group>
+     </kleene>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" name="Specifier">
+   <switch first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+    <case first="{PUBLIC}">
+     <action first="{PUBLIC}">
+      <token first="{PUBLIC}" name="PUBLIC"/>
+     </action>
+    </case>
+    <case first="{PROTECTED}">
+     <action first="{PROTECTED}">
+      <token first="{PROTECTED}" name="PROTECTED"/>
+     </action>
+    </case>
+    <case first="{PRIVATE}">
+     <action first="{PRIVATE}">
+      <token first="{PRIVATE}" name="PRIVATE"/>
+     </action>
+    </case>
+    <case first="{INTERNAL}">
+     <action first="{INTERNAL}">
+      <token first="{INTERNAL}" name="INTERNAL"/>
+     </action>
+    </case>
+    <case first="{STATIC}">
+     <action first="{STATIC}">
+      <token first="{STATIC}" name="STATIC"/>
+     </action>
+    </case>
+    <case first="{VIRTUAL}">
+     <action first="{VIRTUAL}">
+      <token first="{VIRTUAL}" name="VIRTUAL"/>
+     </action>
+    </case>
+    <case first="{OVERRIDE}">
+     <action first="{OVERRIDE}">
+      <token first="{OVERRIDE}" name="OVERRIDE"/>
+     </action>
+    </case>
+    <case first="{ABSTRACT}">
+     <action first="{ABSTRACT}">
+      <token first="{ABSTRACT}" name="ABSTRACT"/>
+     </action>
+    </case>
+    <case first="{INLINE}">
+     <action first="{INLINE}">
+      <token first="{INLINE}" name="INLINE"/>
+     </action>
+    </case>
+    <case first="{EXPLICIT}">
+     <action first="{EXPLICIT}">
+      <token first="{EXPLICIT}" name="EXPLICIT"/>
+     </action>
+    </case>
+    <case first="{EXTERN}">
+     <action first="{EXTERN}">
+      <token first="{EXTERN}" name="EXTERN"/>
+     </action>
+    </case>
+    <case first="{SUPPRESS}">
+     <action first="{SUPPRESS}">
+      <token first="{SUPPRESS}" name="SUPPRESS"/>
+     </action>
+    </case>
+    <case first="{DEFAULT}">
+     <action first="{DEFAULT}">
+      <token first="{DEFAULT}" name="DEFAULT"/>
+     </action>
+    </case>
+    <case first="{CONSTEXPR}">
+     <action first="{CONSTEXPR}">
+      <token first="{CONSTEXPR}" name="CONSTEXPR"/>
+     </action>
+    </case>
+    <case first="{CDECL}">
+     <action first="{CDECL}">
+      <token first="{CDECL}" name="CDECL"/>
+     </action>
+    </case>
+    <case first="{NOTHROW}">
+     <action first="{NOTHROW}">
+      <token first="{NOTHROW}" name="NOTHROW"/>
+     </action>
+    </case>
+    <case first="{THROW}">
+     <action first="{THROW}">
+      <token first="{THROW}" name="THROW"/>
+     </action>
+    </case>
+    <case first="{NEW}">
+     <action first="{NEW}">
+      <token first="{NEW}" name="NEW"/>
+     </action>
+    </case>
+    <case first="{UNIT_TEST}">
+     <action first="{UNIT_TEST}">
+      <token first="{UNIT_TEST}" name="UNIT_TEST"/>
+     </action>
+    </case>
+    <case first="{WINAPI}">
+     <action first="{WINAPI}">
+      <token first="{WINAPI}" name="WINAPI"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+ </grammar>
+</parserFile>

@@ -13,6 +13,16 @@ AutoNode::AutoNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& mod
 {
 }
 
+Node* AutoNode::Clone(CloneContext& cloneContext) const
+{
+    return new AutoNode(GetSourcePos(), ModuleId());
+}
+
+void AutoNode::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
 BoolNode::BoolNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::boolNode, sourcePos_, moduleId_)
 {
 }

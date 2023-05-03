@@ -1,0 +1,117 @@
+<parserFile>
+ <grammar name="SpecifierParser">
+  <rule first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" name="Specifiers">
+   <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+    <group first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+     <kleene first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+      <group first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+       <action first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+        <nonterminal first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifier"/>
+       </action>
+      </group>
+     </kleene>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" name="Specifier">
+   <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+    <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL}">
+     <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, VIRTUAL}">
+      <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, VIRTUAL}">
+       <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, VIRTUAL}">
+        <choice first="{ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, VIRTUAL}">
+         <choice first="{ABSTRACT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, VIRTUAL}">
+          <choice first="{ABSTRACT, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, VIRTUAL}">
+           <choice first="{ABSTRACT, EXPLICIT, EXTERN, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, VIRTUAL}">
+            <choice first="{ABSTRACT, EXPLICIT, EXTERN, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+             <choice first="{ABSTRACT, EXPLICIT, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+              <choice first="{ABSTRACT, INLINE, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+               <choice first="{ABSTRACT, INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+                <choice first="{INTERNAL, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+                 <choice first="{INTERNAL, PRIVATE, PROTECTED, PUBLIC, STATIC, VIRTUAL}">
+                  <choice first="{INTERNAL, PRIVATE, PROTECTED, PUBLIC, STATIC}">
+                   <choice first="{INTERNAL, PRIVATE, PROTECTED, PUBLIC}">
+                    <choice first="{PRIVATE, PROTECTED, PUBLIC}">
+                     <choice first="{PROTECTED, PUBLIC}">
+                      <action first="{PUBLIC}">
+                       <token first="{PUBLIC}" name="PUBLIC"/>
+                      </action>
+                      <action first="{PROTECTED}">
+                       <token first="{PROTECTED}" name="PROTECTED"/>
+                      </action>
+                     </choice>
+                     <action first="{PRIVATE}">
+                      <token first="{PRIVATE}" name="PRIVATE"/>
+                     </action>
+                    </choice>
+                    <action first="{INTERNAL}">
+                     <token first="{INTERNAL}" name="INTERNAL"/>
+                    </action>
+                   </choice>
+                   <action first="{STATIC}">
+                    <token first="{STATIC}" name="STATIC"/>
+                   </action>
+                  </choice>
+                  <action first="{VIRTUAL}">
+                   <token first="{VIRTUAL}" name="VIRTUAL"/>
+                  </action>
+                 </choice>
+                 <action first="{OVERRIDE}">
+                  <token first="{OVERRIDE}" name="OVERRIDE"/>
+                 </action>
+                </choice>
+                <action first="{ABSTRACT}">
+                 <token first="{ABSTRACT}" name="ABSTRACT"/>
+                </action>
+               </choice>
+               <action first="{INLINE}">
+                <token first="{INLINE}" name="INLINE"/>
+               </action>
+              </choice>
+              <action first="{EXPLICIT}">
+               <token first="{EXPLICIT}" name="EXPLICIT"/>
+              </action>
+             </choice>
+             <action first="{EXTERN}">
+              <token first="{EXTERN}" name="EXTERN"/>
+             </action>
+            </choice>
+            <action first="{SUPPRESS}">
+             <token first="{SUPPRESS}" name="SUPPRESS"/>
+            </action>
+           </choice>
+           <action first="{DEFAULT}">
+            <token first="{DEFAULT}" name="DEFAULT"/>
+           </action>
+          </choice>
+          <action first="{CONSTEXPR}">
+           <token first="{CONSTEXPR}" name="CONSTEXPR"/>
+          </action>
+         </choice>
+         <action first="{CDECL}">
+          <token first="{CDECL}" name="CDECL"/>
+         </action>
+        </choice>
+        <action first="{NOTHROW}">
+         <token first="{NOTHROW}" name="NOTHROW"/>
+        </action>
+       </choice>
+       <action first="{THROW}">
+        <token first="{THROW}" name="THROW"/>
+       </action>
+      </choice>
+      <action first="{NEW}">
+       <token first="{NEW}" name="NEW"/>
+      </action>
+     </choice>
+     <action first="{UNIT_TEST}">
+      <token first="{UNIT_TEST}" name="UNIT_TEST"/>
+     </action>
+    </choice>
+    <action first="{WINAPI}">
+     <token first="{WINAPI}" name="WINAPI"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

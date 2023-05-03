@@ -254,18 +254,16 @@ class AxiomStatementNode : public Node
 {
 public:
     AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_, const std::u32string& text_);
+    AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const Node* Expression() const { return expression.get(); }
     Node* Expression() { return expression.get(); }
-    const std::u32string& Text() const { return text; }
     std::string ToString() const override;
 private:
     std::unique_ptr<Node> expression;
-    std::u32string text;
 };
 
 class AxiomNode : public Node

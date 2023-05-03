@@ -1,0 +1,77 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.interface.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.attribute.parser;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.parameter.parser;
+
+parser InterfaceParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using AttributeParser.Attributes;
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ParameterParser.ParameterList;
+
+    Interface(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::InterfaceNode> interfaceNode) : cmajor::ast::InterfaceNode*
+        ::= 
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            INTERFACE 
+            Identifier(context):id
+            {
+                interfaceNode.reset(new cmajor::ast::InterfaceNode(s, context->ModuleId(), specifiers, id, attrs));
+            }
+            LBRACE
+            InterfaceContent(context, interfaceNode.get()):interfaceContent
+            RBRACE
+        )
+        {
+            return interfaceNode.release();
+        }
+        ;
+
+    InterfaceContent(cmajor::parser::context::Context* context, cmajor::ast::InterfaceNode* interfaceNode)
+        ::= 
+        (
+            InterfaceMemberFunction(context):interfaceMemberFunction{ interfaceNode->AddMember(interfaceMemberFunction); }
+        )*
+        ;
+
+    InterfaceMemberFunction(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, 
+        var std::unique_ptr<cmajor::ast::MemberFunctionNode> memberFunctionNode) : cmajor::ast::MemberFunctionNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            TypeExpr(context):returnType{ s = lexer.GetSourcePos(pos); }
+            InterfaceFunctionGroupId(context):groupId
+            {
+                memberFunctionNode.reset(new cmajor::ast::MemberFunctionNode(s, context->ModuleId(), cmajor::ast::Specifiers(), returnType, groupId, attrs));
+            }
+            ParameterList(context, memberFunctionNode.get()):paramList 
+            SEMICOLON
+        )
+        {
+            return memberFunctionNode.release();
+        }
+        ;
+
+    InterfaceFunctionGroupId(cmajor::parser::context::Context* context) : std::u32string
+        ::= ID{ return lexer.GetToken(pos).ToString(); }
+        ;
+}

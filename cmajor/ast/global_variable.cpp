@@ -12,24 +12,32 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(Specifiers::none), cu(nullptr)
+GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(Specifiers::none)
 {
 }
 
-GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, CompileUnitNode* cu_) :
-    Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), cu(cu_)
+GlobalVariableNode::GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, 
+    Node* initializer_) :
+    Node(NodeType::globalVariableNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), initializer(initializer_)
 {
     typeExpr->SetParent(this);
     id->SetParent(this);
+    if (initializer)
+    {
+        initializer->SetParent(this);
+    }
 }
 
 Node* GlobalVariableNode::Clone(CloneContext& cloneContext) const
 {
-    GlobalVariableNode* clone = new GlobalVariableNode(GetSourcePos(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), cu);
+    Node* clonedInitializer = nullptr;
     if (initializer)
     {
-        clone->SetInitializer(initializer->Clone(cloneContext));
+        clonedInitializer = initializer->Clone(cloneContext);
     }
+    GlobalVariableNode* clone = new GlobalVariableNode(GetSourcePos(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), 
+        static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedInitializer);
     return clone;
 }
 
@@ -68,12 +76,4 @@ void GlobalVariableNode::Read(AstReader& reader)
     }
 }
 
-void GlobalVariableNode::SetInitializer(Node* initializer_)
-{
-    initializer.reset(initializer_);
-    if (initializer)
-    {
-        initializer->SetParent(this);
-    }
-}
 } // namespace cmajor::ast

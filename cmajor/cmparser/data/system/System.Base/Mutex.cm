@@ -1,0 +1,92 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Concepts;
+
+namespace System.Threading
+{
+    public class Mutex
+    {
+        public nothrow Mutex() : nativeHandle(RtAllocateMutex())
+        {
+        }
+        public ~Mutex()
+        {
+            if (nativeHandle != null)
+            {
+                RtFreeMutex(nativeHandle);
+            }
+        }
+        suppress Mutex(const Mutex&);
+        suppress void operator=(Mutex&);
+        suppress Mutex(Mutex&&);
+        suppress void operator=(Mutex&&);
+        public nothrow void Lock()
+        {
+            RtLockMutex(nativeHandle);
+        }
+        public nothrow void Unlock()
+        {
+            RtUnlockMutex(nativeHandle);
+        }
+        private void* nativeHandle;
+    }
+    
+    public class RecursiveMutex
+    {
+        public nothrow RecursiveMutex() : nativeHandle(RtAllocateRecursiveMutex())
+        {
+        }
+        public ~RecursiveMutex()
+        {
+            if (nativeHandle != null)
+            {
+                RtFreeRecursiveMutex(nativeHandle);
+            }
+        }
+        suppress RecursiveMutex(const RecursiveMutex&);
+        suppress void operator=(RecursiveMutex&);
+        suppress RecursiveMutex(RecursiveMutex&&);
+        suppress void operator=(RecursiveMutex&&);
+        public nothrow void Lock()
+        {
+            RtLockRecursiveMutex(nativeHandle);
+        }
+        public nothrow void Unlock()
+        {
+            RtUnlockRecursiveMutex(nativeHandle);
+        }
+        public nothrow void* NativeHandle() const
+        {
+            return nativeHandle;
+        }
+        private void* nativeHandle;
+    }
+    
+    public concept Lockable<T>
+    {
+        void T.Lock();
+        void T.Unlock();
+    }
+    
+    public class LockGuard<Mtx> where Mtx is Lockable
+    {
+        private typedef LockGuard<Mtx> Self;
+        public nothrow LockGuard(Mtx& mtx_) : mtx(mtx_)
+        {
+            mtx.Lock();
+        }
+        public ~LockGuard()
+        {
+            mtx.Unlock();
+        }
+        suppress LockGuard(const Self&);
+        suppress void operator=(const Self&);
+        suppress LockGuard(Self&&);
+        suppress void operator=(Self&&);
+        private Mtx& mtx;
+    }
+}

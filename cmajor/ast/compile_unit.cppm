@@ -12,7 +12,7 @@ import cmajor.ast.node.list;
 
 export namespace cmajor::ast {
 
-class CompileUnitNode : public Node//, public cmajor::common::ColumnSpanProvider
+class CompileUnitNode : public Node
 {
 public:
     CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -27,7 +27,6 @@ public:
     const std::vector<int32_t>& LineStarts() { return lineStarts; }
     void SetSynthesizedUnit() { isSynthesizedUnit = true; }
     bool IsSynthesizedUnit() const { return isSynthesizedUnit; }
-    //int GetColumn(const SourcePos& sourcePos) const override;
     int GetColumn(const soul::ast::SourcePos& sourcePos) const;
     const std::string& Id();
     const std::string& Hash() const { return hash; }

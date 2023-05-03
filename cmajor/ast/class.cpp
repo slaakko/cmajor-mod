@@ -12,6 +12,8 @@ import cmajor.ast.visitor;
 import cmajor.ast.attribute;
 import cmajor.ast.concepts;
 import cmajor.ast.templates;
+import cmajor.ast.statement;
+import cmajor.ast.parameter;
 import util;
 
 namespace cmajor::ast {
@@ -55,10 +57,6 @@ Node* ClassNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddMember(members[i]->Clone(cloneContext));
     }
-    clone->SetSpecifierSourcePos(specifierSourcePos);
-    clone->SetClassSourcePos(classSourcePos);
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -81,12 +79,6 @@ void ClassNode::Write(AstWriter& writer)
     templateParameters.Write(writer);
     baseClassOrInterfaces.Write(writer);
     members.Write(writer);
-    // TODO
-    //bool convertExternal = ModuleId() == writer.SourcePosConversionModuleId();
-    //writer.Write(specifierSourcePos, convertExternal);
-    //writer.Write(classSourcePos, convertExternal);
-    //writer.Write(beginBraceSourcePos, convertExternal);
-    //writer.Write(endBraceSourcePos, convertExternal);
 }
 
 void ClassNode::Read(AstReader& reader)
@@ -106,10 +98,6 @@ void ClassNode::Read(AstReader& reader)
     baseClassOrInterfaces.SetParent(this);
     members.Read(reader);
     members.SetParent(this);
-    specifierSourcePos = reader.ReadSourcePos();
-    classSourcePos = reader.ReadSourcePos();
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void ClassNode::AddTemplateParameter(TemplateParameterNode* templateParameter)
@@ -331,11 +319,11 @@ void MemberInitializerNode::Read(AstReader& reader)
     memberId->SetParent(this);
 }
 
-/*
 StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
     FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@static_constructor", nullptr), initializers()
 {
 }
+
 StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
     FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@static_constructor", attributes_), initializers()
 {
@@ -379,7 +367,6 @@ void StaticConstructorNode::AddInitializer(InitializerNode* initializer)
     initializer->SetParent(this);
     initializers.Add(initializer);
 }
-
 
 ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@constructor", nullptr), initializers()
 {
@@ -552,8 +539,6 @@ void MemberVariableNode::Write(AstWriter& writer)
     writer.Write(specifiers);
     writer.Write(typeExpr.get());
     writer.Write(id.get());
-    bool convertExternal = ModuleId() == writer.SourcePosConversionModuleId();
-    writer.Write(specifierSourcePos, convertExternal);
 }
 
 void MemberVariableNode::Read(AstReader& reader)
@@ -569,6 +554,6 @@ void MemberVariableNode::Read(AstReader& reader)
     typeExpr->SetParent(this);
     id.reset(reader.ReadIdentifierNode());
     id->SetParent(this);
-    specifierSourcePos = reader.ReadSourcePos();
-}*/
-} // namespace cmajor::ast
+}
+
+}  // namespace cmajor::ast

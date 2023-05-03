@@ -64,7 +64,6 @@ private:
     bool synchronized;
     std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit;
     std::vector<Symbol*> symbols;
-    std::vector<cmajor::ast::AliasNode*> aliasNodes;
     std::vector<cmajor::ast::NamespaceImportNode*> namespaceImports;
     ContainerSymbol* cursorContainer;
     ContainerScope* cursorScope;

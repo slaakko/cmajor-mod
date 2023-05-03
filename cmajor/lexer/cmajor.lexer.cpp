@@ -141,7 +141,7 @@ soul::ast::slg::TokenCollection* GetTokens()
 }
 
 CmajorLexer_Variables::CmajorLexer_Variables() :
-    floatingLit(), floatingLitFloat(), intLit(), intLitUnsigned(), chrLit(), chrLitPrefix(), strLit(), strLitPrefix(), leftAngleCount(), parsingOperatorFunctionGroupId()
+    leftAngleCount(), parsingOperatorFunctionGroupId()
 {
 }
 

@@ -145,9 +145,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="alias.parser" />
+    <None Include="attribute.parser" />
     <None Include="basic_type.parser" />
+    <None Include="class.parser" />
     <None Include="cmajor.spg" />
+    <None Include="compile_unit.parser" />
+    <None Include="concept.parser" />
+    <None Include="constant.parser" />
+    <None Include="delegate.parser" />
+    <None Include="enumeration.parser" />
+    <None Include="expression.parser" />
+    <None Include="function.parser" />
+    <None Include="global_variable.parser" />
     <None Include="identifier.parser" />
+    <None Include="interface.parser" />
+    <None Include="literal.parser" />
+    <None Include="parameter.parser" />
+    <None Include="project.parser" />
+    <None Include="solution.parser" />
+    <None Include="specifier.parser" />
+    <None Include="statement.parser" />
+    <None Include="template.parser" />
+    <None Include="type_expr.parser" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">
@@ -170,14 +190,57 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="alias.parser.cpp" />
+    <ClCompile Include="alias.parser.cppm" />
+    <ClCompile Include="attribute.parser.cpp" />
+    <ClCompile Include="attribute.parser.cppm" />
     <ClCompile Include="basic_type.parser.cpp" />
     <ClCompile Include="basic_type.parser.cppm" />
+    <ClCompile Include="class.parser.cpp" />
+    <ClCompile Include="class.parser.cppm" />
     <ClCompile Include="cmajor_rules.cpp" />
     <ClCompile Include="cmajor_rules.cppm" />
+    <ClCompile Include="compile_unit.parser.cpp" />
+    <ClCompile Include="compile_unit.parser.cppm" />
+    <ClCompile Include="concept.parser.cpp" />
+    <ClCompile Include="concept.parser.cppm" />
+    <ClCompile Include="constant.parser.cpp" />
+    <ClCompile Include="constant.parser.cppm" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="context.cppm" />
+    <ClCompile Include="delegate.parser.cpp" />
+    <ClCompile Include="delegate.parser.cppm" />
+    <ClCompile Include="enumeration.parser.cpp" />
+    <ClCompile Include="enumeration.parser.cppm" />
+    <ClCompile Include="expression.parser.cpp" />
+    <ClCompile Include="expression.parser.cppm" />
+    <ClCompile Include="function.parser.cpp" />
+    <ClCompile Include="function.parser.cppm" />
+    <ClCompile Include="global_variable.parser.cpp" />
+    <ClCompile Include="global_variable.parser.cppm" />
     <ClCompile Include="identifier.parser.cpp" />
     <ClCompile Include="identifier.parser.cppm" />
+    <ClCompile Include="interface.parser.cpp" />
+    <ClCompile Include="interface.parser.cppm" />
+    <ClCompile Include="literal.parser.cpp" />
+    <ClCompile Include="literal.parser.cppm" />
+    <ClCompile Include="operator.cppm" />
+    <ClCompile Include="parameter.parser.cpp" />
+    <ClCompile Include="parameter.parser.cppm" />
+    <ClCompile Include="parser.cppm" />
+    <ClCompile Include="project.parser.cpp" />
+    <ClCompile Include="project.parser.cppm" />
+    <ClCompile Include="solution.parser.cpp" />
+    <ClCompile Include="solution.parser.cppm" />
+    <ClCompile Include="specifier.parser.cpp" />
+    <ClCompile Include="specifier.parser.cppm" />
+    <ClCompile Include="statement.parser.cpp" />
+    <ClCompile Include="statement.parser.cppm" />
+    <ClCompile Include="template.parser.cpp" />
+    <ClCompile Include="template.parser.cppm" />
+    <ClCompile Include="token_value_parser.cppm" />
+    <ClCompile Include="type_expr.parser.cpp" />
+    <ClCompile Include="type_expr.parser.cppm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

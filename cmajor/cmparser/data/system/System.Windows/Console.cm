@@ -1,0 +1,456 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public class ColorCount
+    {
+        public nothrow ColorCount() : color(System.Color.Constant.black), count(0)
+        {
+        }
+        public nothrow ColorCount(System.Color.Constant color_, int count_) : color(color_), count(count_)
+        {
+        }
+        public nothrow inline void IncrementCount()
+        {
+            ++count;
+        }
+        public nothrow inline void DecrementCount()
+        {
+            --count;
+        }
+        public System.Color.Constant color;
+        public int count;
+    }
+
+    public Padding DefaultConsolePadding()
+    {
+        return Padding(4, 4, 4, 4);
+    }
+
+    public class delegate void ConsoleInputReadyEventHandler();
+
+    public class Console : TextView
+    {
+        public Console(const FontFamily& fontFamily, float fontSize, System.Color.Constant backColor, System.Color.Constant textColor,
+            const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base(fontFamily, fontSize, GetColor(backColor), GetColor(textColor), location, size, dock, anchors),
+            defaultBackColor(backColor), defaultTextColor(textColor), inputLine(), eof(false)
+        {
+            SetReadOnly();
+            SetPadding(DefaultConsolePadding());
+            AnsiEngine.Out().SetDefaultBackColor(defaultBackColor);
+            AnsiEngine.Error().SetDefaultBackColor(defaultBackColor);
+            AnsiEngine.Out().SetDefaultTextColor(defaultTextColor);
+            AnsiEngine.Error().SetDefaultTextColor(defaultTextColor);
+        }
+        public Console(System.Color.Constant backColor, System.Color.Constant textColor, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(FontFamily("Cascadia Code"), 12.0f, backColor, textColor, location, size, dock, anchors)
+        {
+        }
+        public Console(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(System.Color.Constant.black, System.Color.Constant.gray, location, size, dock, anchors)
+        {
+        }
+        public void Write(int handle, const string& text)
+        {
+            if (text.IsEmpty()) return;
+            ColorCharOutputMethod outputCharMethod = OutputChar;
+            AnsiProcess(handle, text, outputCharMethod);
+            const List<ustring>& lines = Lines();
+            if (!lines.IsEmpty())
+            {
+                int line = cast<int>(lines.Count());
+                int col = cast<int>(lines.Back().Length() + 1);
+                SetCaretLineCol(line, col);
+                SetTextExtent();
+                ScrollToCaret();
+                SetChanged();
+                Invalidate();
+            }
+        }
+        public void StartReadLine()
+        {
+            inputLine.Clear();
+            eof = false;
+            startInputCol = CaretColumn();
+        }
+        protected override void OnKeyDown(KeyEventArgs& args)
+        {
+            int caretCol = CaretColumn();
+            int caretLine = CaretLine();
+            switch (args.key)
+            {
+                case cast<Keys>(Keys.controlModifier | Keys.z):
+                {
+                    eof = true;
+                    Write(1, "^Z\n");
+                    OnConsoleInputReady();
+                    args.handled = true;
+                    break;
+                }
+                case Keys.enter:
+                {
+                    eof = false;
+                    Write(1, "\n");
+                    OnConsoleInputReady();
+                    args.handled = true;
+                    break;
+                }
+                case Keys.delete_:
+                {
+                    int index = caretCol - startInputCol;
+                    if (index < inputLine.Length())
+                    {
+                        DeleteChar();
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.back:
+                {
+                    if (caretCol > startInputCol)
+                    {
+                        --caretCol;
+                        SetCaretLineCol(caretLine, caretCol);
+                        DeleteChar();
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.left:
+                {
+                    if (caretCol > startInputCol)
+                    {
+                        --caretCol;
+                        SetCaretLineCol(caretLine, caretCol);
+                        Invalidate();
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.right:
+                {
+                    int index = caretCol - startInputCol;
+                    if (index < inputLine.Length())
+                    {
+                        ++caretCol;
+                        SetCaretLineCol(caretLine, caretCol);
+                        Invalidate();
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.home:
+                {
+                    caretCol = startInputCol;
+                    SetCaretLineCol(caretLine, caretCol);
+                    Invalidate();
+                    args.handled = true;
+                    break;
+                }
+                case Keys.end:
+                {
+                    caretCol = startInputCol + cast<int>(inputLine.Length());
+                    SetCaretLineCol(caretLine, caretCol);
+                    Invalidate();
+                    args.handled = true;
+                    break;
+                }
+            }
+        }
+        protected override void OnKeyPress(KeyPressEventArgs& keyPressEventArgs)
+        {
+            if (eof) return;
+            base->OnKeyPress(keyPressEventArgs);
+            if (!keyPressEventArgs.handled)
+            {
+                uchar ch = keyPressEventArgs.keyChar;
+                InsertChar(ch);
+                keyPressEventArgs.handled = true;
+            }
+        }
+        private nothrow void InsertChar(uchar ch)
+        {
+            int caretCol = CaretColumn();
+            int caretLine = CaretLine();
+            int index = caretCol - startInputCol;
+            if (index < inputLine.Length())
+            {
+                inputLine = inputLine.Substring(0, index) + ustring(ch) + inputLine.Substring(index);
+            }
+            else
+            {
+                inputLine.Append(ch);
+            }
+            List<ustring>& lines = Lines();
+            ustring line = lines[caretLine - 1];
+            if (caretCol < line.Length())
+            {
+                line = line.Substring(0, caretCol - 1) + ustring(ch) + line.Substring(caretCol - 1);
+            }
+            else
+            {
+                line.Append(ch);
+            }
+            lines[caretLine - 1] = line;
+            IncrementCaretColorCount();
+            ++caretCol;
+            SetCaretLineCol(caretLine, caretCol);
+            SetTextExtent();
+            Invalidate();
+        }
+        private nothrow void DeleteChar()
+        {
+            int caretCol = CaretColumn();
+            int caretLine = CaretLine();
+            int index = caretCol - startInputCol;
+            inputLine = inputLine.Substring(0, index) + inputLine.Substring(index + 1);
+            List<ustring>& lines = Lines();
+            ustring line = lines[caretLine - 1];
+            line = line.Substring(0, caretCol - 1) + line.Substring(caretCol);
+            lines[caretLine - 1] = line;
+            DecrementCaretColorCount();
+            Invalidate();
+        }
+        public override void Clear()
+        {
+            base->Clear();
+            textColorLines.Clear();
+            backColorLines.Clear();
+        }
+        protected override void PaintContent(Graphics& graphics, const Rect& clipRect)
+        {
+            TextRenderingHint prevRenderingHint = graphics.GetTextRenderingHint();
+            graphics.SetTextRenderingHintChecked(TextRenderingHint.clearTypeGridFit);
+            if (Changed())
+            {
+                ResetChanged();
+                SetMaxLineLength();
+                Measure(graphics);
+            }
+            graphics.ClearChecked(BackgroundColor());
+            const List<ustring>& lines = Lines();
+            int n = cast<int>(lines.Count());
+            Padding padding = GetPadding();
+            PointF origin(padding.left, padding.top);
+            for (int i = 0; i < n; ++i)
+            {
+                if (IsLinePartiallyVisible(i + 1))
+                {
+                    List<ColorCount>& backColorLine = backColorLines[i];
+                    PaintLineBackground(graphics, backColorLine, origin);
+                    List<ColorCount>& textColorLine = textColorLines[i];
+                    const ustring& line = lines[i];
+                    DrawLineText(graphics, line, textColorLine, origin);
+                }
+                origin.y = origin.y + CharHeight();
+            }
+            graphics.SetTextRenderingHintChecked(prevRenderingHint);
+        }
+        private void PaintLineBackground(Graphics& graphics, const List<ColorCount>& backColorLine, const PointF& origin)
+        {
+            int n = cast<int>(backColorLine.Count());
+            if (n == 1 && backColorLine[0].color == defaultBackColor) return;
+            PointF loc = origin;
+            for (int i = 0; i < n; ++i)
+            {
+                const ColorCount& colorCount = backColorLine[i];
+                SizeF size(colorCount.count * CharWidth(), CharHeight());
+                if (colorCount.color != defaultBackColor)
+                {
+                    SolidBrush* brush = GetOrInsertBrush(colorCount.color);
+                    RectF rect(loc, size);
+                    graphics.FillRectangleChecked(*brush, rect);
+                }
+                loc.x = loc.x + size.w;
+            }
+        }
+        private void DrawLineText(Graphics& graphics, const ustring& line, const List<ColorCount>& textColorLine, const PointF& origin)
+        {
+            PointF loc = origin;
+            long start = 0;
+            int n = cast<int>(textColorLine.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                const ColorCount& colorCount = textColorLine[i];
+                SolidBrush* brush = GetOrInsertBrush(colorCount.color);
+                long length = colorCount.count;
+                ustring s = line.Substring(start, length);
+                graphics.DrawStringChecked(ToUtf8(s), *Fonts()[0], loc, *brush);
+                loc.x = loc.x + length * CharWidth();
+                start = start + length;
+            }
+        }
+        private nothrow void IncrementCaretColorCount()
+        {
+            int caretCol = CaretColumn();
+            int caretLine = CaretLine();
+            List<ColorCount>& textColorLine = textColorLines[caretLine - 1];
+            IncrementColorCount(textColorLine, caretCol);
+            List<ColorCount>& backColorLine = backColorLines[caretLine - 1];
+            IncrementColorCount(backColorLine, caretCol);
+        }
+        private nothrow void IncrementColorCount(List<ColorCount>& colorLine, int caretCol)
+        {
+            int count = 0;
+            bool incremented = false;
+            for (ColorCount& colorCount : colorLine)
+            {
+                if (caretCol >= count && caretCol < count + colorCount.count)
+                {
+                    colorCount.IncrementCount();
+                    incremented = true;
+                    break;
+                }
+                count = count + colorCount.count;
+            }
+            if (!incremented)
+            {
+                colorLine.Back().IncrementCount();
+            }
+        }
+        private nothrow void DecrementCaretColorCount()
+        {
+            int caretCol = CaretColumn();
+            int caretLine = CaretLine();
+            List<ColorCount>& textColorLine = textColorLines[caretLine - 1];
+            DecrementColorCount(textColorLine, caretCol);
+            List<ColorCount>& backColorLine = backColorLines[caretLine - 1];
+            DecrementColorCount(backColorLine, caretCol);
+        }
+        private nothrow void DecrementColorCount(List<ColorCount>& colorLine, int caretCol)
+        {
+            int count = 0;
+            bool decremented = false;
+            for (ColorCount& colorCount : colorLine)
+            {
+                if (caretCol >= count && caretCol < count + colorCount.count)
+                {
+                    colorCount.DecrementCount();
+                    decremented = true;
+                    break;
+                }
+                count = count + colorCount.count;
+            }
+            if (!decremented)
+            {
+                colorLine.Back().DecrementCount();
+            }
+        }
+        private void OutputChar(System.Color.Constant textColor, System.Color.Constant backColor, int handle, uchar c)
+        {
+            List<ustring>& lines = Lines();
+            if (lines.IsEmpty() || c == '\n')
+            {
+                ustring line;
+                AddLine(line);
+                List<ColorCount> colorLine;
+                textColorLines.Add(colorLine);
+                backColorLines.Add(colorLine);
+            }
+            if (c != '\n')
+            {
+                ustring& lastLine = lines.Back();
+                lastLine.Append(c);
+                AddColor(textColor, textColorLines.Back());
+                AddColor(backColor, backColorLines.Back());
+                if (lastLine.Length() > MaxLineLength())
+                {
+                    SetMaxLineLength();
+                }
+            }
+        }
+        private nothrow void AddColor(System.Color.Constant color, List<ColorCount>& colorLine)
+        {
+            if (colorLine.IsEmpty() || color != colorLine.Back().color)
+            {
+                ColorCount colorCount(color, 1);
+                colorLine.Add(colorCount);
+            }
+            else
+            {
+                colorLine.Back().IncrementCount();
+            }
+        }
+        private SolidBrush* GetOrInsertBrush(System.Color.Constant color)
+        {
+            HashMap<sbyte, SolidBrush*>.ConstIterator it = brushMap.CFind(cast<sbyte>(color));
+            if (it != brushMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                SolidBrush* solidBrush = new SolidBrush(GetColor(color));
+                brushes.Add(UniquePtr<SolidBrush>(solidBrush));
+                brushMap[cast<sbyte>(color)] = solidBrush;
+                return solidBrush;
+            }
+        }
+        public nothrow inline System.Color.Constant DefaultBackColor() const
+        {
+            return defaultBackColor;
+        }
+        public nothrow void SetDefaultBackColor(System.Color.Constant color)
+        {
+            if (defaultBackColor != color)
+            {
+                defaultBackColor = color;
+                AnsiEngine.Out().SetDefaultBackColor(defaultBackColor);
+                AnsiEngine.Error().SetDefaultBackColor(defaultBackColor);
+                SetBackgroundColor(GetColor(defaultBackColor));
+                Invalidate();
+            }
+        }
+        public nothrow inline System.Color.Constant DefaultTextColor() const
+        {
+            return defaultTextColor;
+        }
+        public nothrow void SetDefaultTextColor(System.Color.Constant color)
+        {
+            if (defaultTextColor != color)
+            {
+                defaultTextColor = color;
+                AnsiEngine.Out().SetDefaultTextColor(defaultTextColor);
+                AnsiEngine.Error().SetDefaultTextColor(defaultTextColor);
+                Invalidate();
+            }
+        }
+        public nothrow const ustring& InputLine() const
+        {
+            return inputLine;
+        }
+        public nothrow bool Eof() const
+        {
+            return eof;
+        }
+        public void SetEof()
+        {
+            eof = true;
+            OnConsoleInputReady();
+        }
+        protected virtual void OnConsoleInputReady()
+        {
+            consoleInputReadyEvent.Fire();
+        }
+        public nothrow Event<ConsoleInputReadyEventHandler>& ConsoleInputReadyEvent()
+        {
+            return consoleInputReadyEvent;
+        }
+        private System.Color.Constant defaultBackColor;
+        private System.Color.Constant defaultTextColor;
+        private List<List<ColorCount>> textColorLines;
+        private List<List<ColorCount>> backColorLines;
+        private HashMap<sbyte, SolidBrush*> brushMap;
+        private List<UniquePtr<SolidBrush>> brushes;
+        private Event<ConsoleInputReadyEventHandler> consoleInputReadyEvent;
+        private ustring inputLine;
+        private bool eof;
+        private int startInputCol;
+    }
+}

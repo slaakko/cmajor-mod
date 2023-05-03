@@ -113,7 +113,6 @@ class FileScope : public Scope
 {
 public:
     FileScope();
-    void InstallAlias(ContainerScope* containerScope, cmajor::ast::AliasNode* aliasNode);
     void AddContainerScope(ContainerScope* containerScope);
     void InstallNamespaceImport(ContainerScope* containerScope, cmajor::ast::NamespaceImportNode* namespaceImportNode);
     Symbol* Lookup(const std::u32string& name) const override;
@@ -124,7 +123,6 @@ public:
         Module* module);
 private:
     std::vector<ContainerScope*> containerScopes;
-    std::map<std::u32string, Symbol*> aliasSymbolMap;
 };
 
 } // namespace cmajor::symbols

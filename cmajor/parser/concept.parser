@@ -1,0 +1,354 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.concepts.parser;
+
+[interface]import cmajor.parser.context;
+[interface]import cmajor.ast;
+[implementation]import cmajor.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.lexer;
+[implementation]import soul.ast.source.pos;
+[implementation]import cmajor.specifier.parser;
+[implementation]import cmajor.identifier.parser;
+[implementation]import cmajor.parameter.parser;
+[implementation]import cmajor.expression.parser;
+[implementation]import cmajor.type.expr.parser;
+[implementation]import cmajor.function.parser;
+
+parser ConceptParser
+{
+    lexer cmajor::lexer::CmajorLexer<char32_t>;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using IdentifierParser.QualifiedId;
+    using ParameterParser.ParameterList;
+    using ExpressionParser.Expression;
+    using ExpressionParser.InvokeExpr;
+    using TypeExprParser.TypeExpr;
+    using FunctionParser.FunctionGroupId;
+
+    Concept(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::ConceptNode> conceptNode,
+        var std::unique_ptr<cmajor::ast::WhereConstraintNode> constraintNode) : cmajor::ast::Node*
+        ::= empty{ context->BeginParsingConcept(); }
+        (
+            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            CONCEPT
+            Identifier(context):conceptName{ conceptNode.reset(new cmajor::ast::ConceptNode(s, context->ModuleId(), specifiers, conceptName)); }
+            LANGLE
+            (
+                Identifier(context):typeParam{ conceptNode->AddTypeParameter(typeParam); } % COMMA
+            )
+            RANGLE
+            (
+                Refinement(context):refinement{ conceptNode->SetRefinement(refinement); }
+            )?
+            (
+                WhereConstraint(context):whereConstraint
+                { 
+                    constraintNode.reset(whereConstraint); 
+                    constraintNode->SetHeaderConstraint(); 
+                    conceptNode->AddConstraint(constraintNode.release());
+                }
+            )?
+            LBRACE
+            ConceptBody(context, conceptNode.get()):body
+            RBRACE
+        )
+        {
+            context->EndParsingConcept();
+            return conceptNode.release();
+        }
+        /
+        {
+            context->EndParsingConcept();
+        }
+        ;
+
+    Refinement(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ConceptIdNode> conceptIdNode) : cmajor::ast::ConceptIdNode*
+        ::= 
+        (
+            COLON 
+            QualifiedId(context):refinedConcept{ conceptIdNode.reset(new cmajor::ast::ConceptIdNode(lexer.GetSourcePos(pos), context->ModuleId(), refinedConcept)); }
+            LANGLE
+            (
+                Identifier(context):typeParam{ conceptIdNode->AddTypeParameter(typeParam); } % COMMA
+            )
+            RANGLE
+        )
+        {
+            return conceptIdNode.release();
+        }
+        ;
+
+    ConceptBody(cmajor::parser::context::Context* context, cmajor::ast::ConceptNode* conceptNode) 
+        ::=
+        (   ConceptBodyConstraint(context, conceptNode):bodyConstraint
+        |   Axiom(context, conceptNode):axiom
+        )*
+        ;
+
+    ConceptBodyConstraint(cmajor::parser::context::Context* context, cmajor::ast::ConceptNode* conceptNode) 
+        ::= TypeNameConstraint(context):typeNameConstraint{ conceptNode->AddConstraint(typeNameConstraint); }
+        |   SignatureConstraint(context, conceptNode->TypeParameters()[0]):signatureConstraint{ conceptNode->AddConstraint(signatureConstraint); }
+        |   EmbeddedConstraint(context):embeddedConstraint{ conceptNode->AddConstraint(embeddedConstraint); }
+        ;
+
+    TypeNameConstraint(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            TYPENAME{ s = lexer.GetSourcePos(pos); }
+            TypeExpr(context):type
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::TypeNameConstraintNode(s, context->ModuleId(), type);
+        }
+        ;
+
+    SignatureConstraint(cmajor::parser::context::Context* context, cmajor::ast::IdentifierNode* firstTypeParameter) : cmajor::ast::ConstraintNode*
+        ::= ConstructorConstraint(context, firstTypeParameter):constructorConstraint{ return constructorConstraint; }
+        |   DestructorConstraint(context, firstTypeParameter):destructorConstraint{ return destructorConstraint; }
+        |   MemberFunctionConstraint(context):memberFunctionConstraint{ return memberFunctionConstraint; }
+        |   FunctionConstraint(context):functionConstraint{ return functionConstraint; }
+        ;
+
+    ConstructorConstraint(cmajor::parser::context::Context* context, cmajor::ast::IdentifierNode* firstTypeParameter,
+        var std::unique_ptr<cmajor::ast::ConstraintNode> ctorConstraintNode) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            EXPLICIT?
+            Identifier(context):id
+            { 
+                std::u32string className = lexer.GetToken(pos).ToString(); 
+                pass = className == firstTypeParameter->Str();
+                if (pass)
+                {
+                    ctorConstraintNode.reset(new cmajor::ast::ConstructorConstraintNode(lexer.GetSourcePos(pos), context->ModuleId(), id));
+                }
+            }
+            ParameterList(context, ctorConstraintNode.get()):paramList
+            SEMICOLON
+        )
+        {
+            return ctorConstraintNode.release();
+        }
+        ;
+
+    DestructorConstraint(cmajor::parser::context::Context* context, cmajor::ast::IdentifierNode* firstTypeParameter, var soul::ast::SourcePos s) : cmajor::ast::ConstraintNode*
+        ::=
+        (
+            CPL{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):id
+            {
+                std::u32string className = lexer.GetToken(pos).ToString(); 
+                pass = className == firstTypeParameter->Str();
+            }
+            LPAREN
+            RPAREN
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::DestructorConstraintNode(s, context->ModuleId(), id);
+        }
+        ;
+
+    MemberFunctionConstraint(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ConstraintNode> memberFunctionConstraintNode, 
+        var soul::ast::SourcePos s) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            TypeExpr(context):returnType{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):typeParam
+            DOT
+            FunctionGroupId(context):functionGroupId
+            {
+                memberFunctionConstraintNode.reset(new cmajor::ast::MemberFunctionConstraintNode(s, context->ModuleId(), returnType, typeParam, functionGroupId));
+            }
+            ParameterList(context, memberFunctionConstraintNode.get()):paramList
+            SEMICOLON
+        )
+        {
+            return memberFunctionConstraintNode.release();
+        }
+        ;
+
+    FunctionConstraint(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ConstraintNode> functionConstraintNode,
+        var soul::ast::SourcePos s) : cmajor::ast::ConstraintNode*
+        ::=
+        (
+            TypeExpr(context):returnType{ s = lexer.GetSourcePos(pos); }
+            FunctionGroupId(context):functionGroupId
+            {
+                functionConstraintNode.reset(new cmajor::ast::FunctionConstraintNode(s, context->ModuleId(), returnType, functionGroupId));
+            }
+            ParameterList(context, functionConstraintNode.get()):paramList
+            SEMICOLON
+        )
+        {
+            return functionConstraintNode.release();
+        }
+        ;
+
+    EmbeddedConstraint(cmajor::parser::context::Context* context) : cmajor::ast::WhereConstraintNode*
+        ::= 
+        (
+            WhereConstraint(context):constraint
+            SEMICOLON
+        )
+        {
+            return constraint;
+        }
+        ;
+
+    WhereConstraint(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::WhereConstraintNode*
+        ::= 
+        (
+            WHERE{ s = lexer.GetSourcePos(pos); }
+            ConstraintExpr(context):constraint
+        )
+        {
+            return new cmajor::ast::WhereConstraintNode(s, context->ModuleId(), constraint);
+        }
+        ;
+
+    ConstraintExpr(cmajor::parser::context::Context* context) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            DisjunctiveConstraintExpr(context):disjunctiveConstraint
+        )
+        {
+            return disjunctiveConstraint;
+        }
+        ;
+
+    DisjunctiveConstraintExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::ConstraintNode> constraintNode) : 
+        cmajor::ast::ConstraintNode*
+        ::=
+        (
+            ConjunctiveConstraintExpr(context):left{ constraintNode.reset(left); s = lexer.GetSourcePos(pos); }
+            (
+                OR
+                ConjunctiveConstraintExpr(context):right{ constraintNode.reset(new cmajor::ast::DisjunctiveConstraintNode(s, context->ModuleId(), constraintNode.release(), right)); }
+            )*
+        )
+        {
+            return constraintNode.release();
+        }
+        ;
+
+    ConjunctiveConstraintExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::ConstraintNode> constraintNode) : 
+        cmajor::ast::ConstraintNode*
+        ::=
+        (
+            PrimaryConstraintExpr(context):left{ constraintNode.reset(left); s = lexer.GetSourcePos(pos); }
+            (
+                AND
+                PrimaryConstraintExpr(context):right{ constraintNode.reset(new cmajor::ast::ConjunctiveConstraintNode(s, context->ModuleId(), constraintNode.release(), right)); }
+            )*
+        )
+        {
+            return constraintNode.release();
+        }
+        ;
+
+    PrimaryConstraintExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::ConstraintNode> constraintNode) : 
+        cmajor::ast::ConstraintNode*
+        ::=
+        (
+            LPAREN{ s = lexer.GetSourcePos(pos); }
+            ConstraintExpr(context):constraint
+            RPAREN
+            {
+                return new cmajor::ast::ParenthesizedConstraintNode(s, context->ModuleId(), constraint);
+            }
+        |   AtomicConstraintExpr(context):atomicConstraint{ return atomicConstraint; }
+        )
+        ;
+
+    AtomicConstraintExpr(cmajor::parser::context::Context* context) : cmajor::ast::ConstraintNode*
+        ::=
+        (   PredicateConstraint(context):predicateConstraint{ return predicateConstraint; }
+        |   IsConstraint(context):isConstraint{ return isConstraint; }
+        |   MultiParamConstraint(context):multiParamConstraint{ return multiParamConstraint; }
+        )
+        ;
+
+    PredicateConstraint(cmajor::parser::context::Context* context) : cmajor::ast::ConstraintNode*
+        ::=
+        (
+            InvokeExpr(context):invokeExpr{ return new cmajor::ast::PredicateConstraintNode(lexer.GetSourcePos(pos), context->ModuleId(), invokeExpr); }
+        )
+        ;
+
+    IsConstraint(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            TypeExpr(context):type{ s = lexer.GetSourcePos(pos); }
+            IS
+            ConceptOrTypeName(context):conceptOrTypeName
+        )
+        {
+            return new cmajor::ast::IsConstraintNode(s, context->ModuleId(), type, conceptOrTypeName);
+        }
+        ;
+
+    ConceptOrTypeName(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+        ::= 
+        (
+            TypeExpr(context):conceptOrTypeName{ return conceptOrTypeName; }
+        )
+        ;
+
+    MultiParamConstraint(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::MultiParamConstraintNode> constraintNode) : cmajor::ast::ConstraintNode*
+        ::= 
+        (
+            QualifiedId(context):id{ constraintNode.reset(new cmajor::ast::MultiParamConstraintNode(lexer.GetSourcePos(pos), context->ModuleId(), id)); }
+            LANGLE 
+            (
+                TypeExpr(context):typeExpr{ constraintNode->AddTypeExpr(typeExpr); } % COMMA
+            )
+            RANGLE
+        )
+        {
+            return constraintNode.release();
+        }
+        ;
+
+    Axiom(cmajor::parser::context::Context* context, cmajor::ast::ConceptNode* conceptNode, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::AxiomNode> axiomNode)
+        ::= 
+        (
+            AXIOM{ s = lexer.GetSourcePos(pos); }
+            Identifier(context):id?
+            empty{ axiomNode.reset(new cmajor::ast::AxiomNode(s, context->ModuleId(), id)); }
+            ParameterList(context, axiomNode.get()):paramList?
+            LBRACE
+            AxiomBody(context, axiomNode.get()):axiomBody
+            RBRACE
+
+        )
+        {
+            conceptNode->AddAxiom(axiomNode.release());
+        }
+        ;
+
+    AxiomBody(cmajor::parser::context::Context* context, cmajor::ast::AxiomNode* axiomNode)
+        ::= 
+        (
+            AxiomStatement(context):axiomStatement{ axiomNode->AddStatement(axiomStatement); }
+        )*
+        ;
+
+    AxiomStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::AxiomStatementNode*
+        ::= 
+        (
+            Expression(context):expr{ s = lexer.GetSourcePos(pos); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::AxiomStatementNode(s, context->ModuleId(), expr);
+        }
+        ;
+}

@@ -51,22 +51,6 @@ private:
     NsFlags flags;
 };
 
-class AliasNode : public Node
-{
-public:
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, IdentifierNode* qid_);
-    Node* Clone(CloneContext& cloneContext) const override;
-    void Accept(Visitor& visitor) override;
-    void Write(AstWriter& writer) override;
-    void Read(AstReader& reader) override;
-    IdentifierNode* Id() const;
-    IdentifierNode* Qid() const;
-private:
-    std::unique_ptr<IdentifierNode> id;
-    std::unique_ptr<IdentifierNode> qid;
-};
-
 class NamespaceImportNode : public Node
 {
 public:

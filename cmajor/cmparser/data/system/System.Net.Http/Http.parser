@@ -1,0 +1,77 @@
+using System.Net.Http;
+using HttpTokens;
+
+parser Http
+{
+    uselexer HttpLexer;
+    
+    token(var string s) : string
+        ::= (((chr:ch - (ctl:c | tspecial:t)){ s.Append(ch); })+){ return s; }
+        ;
+        
+    comment(var string s) : string
+        ::= (LPAREN (ctext:ct{ s.Append(ct); } quoted_pair:qp{ s.Append(qp); } | comment:c{ s.Append(c); })* RPAREN){ return s; }
+        ;
+        
+    parameter : Pair<string, string>
+        ::= (attribute:a EQ attrval:av){ return MakePair(a, av); }
+        ;
+        
+    attribute : string
+        ::= token:t{ return t; }
+        ;
+        
+    attrval : string
+        ::= token:t{ return t; } | quoted_string:qs{ return qs; }
+        ;
+
+    hex : char
+        ::= DIGIT{ return lexer.GetChar(pos); } | HEX{ return lexer.GetChar(pos); }
+        ;
+        
+    chr : char
+        ::= DIGIT{ return lexer.GetChar(pos); } | HEX{ return lexer.GetChar(pos); } | 
+            ALPHA{ return lexer.GetChar(pos); } | HT{ return '\t'; } | DQ{ return '"'; } | CR{ return '\r'; } | LF{ return '\n'; } | 
+            CTL{ return lexer.GetChar(pos); } | SP{ return ' '; } | COLON{ return ':'; } | SEMICOLON{ return ';'; } | COMMA{ return ','; } | DOT{ return '.'; } |
+            LPAREN{ return '('; } | RPAREN{ return ')'; } | LANGLE{ return '<'; } | RANGLE{ return '>'; } | LBRACKET{ return '['; } | RBRACKET{ return ']'; } |
+            LBRACE{ return '{'; } | RBRACE{ return '}'; } | SLASH{ return '/'; } | BACKSLASH{ return '\\'; } | EQ{ return '='; } | CHAR{ return lexer.GetChar(pos); }
+        ;
+        
+    text : char
+        ::= (octet:o - ctl:c){ return o; }
+        ;
+        
+    ctext : char
+        ::= (text:t - (LPAREN | RPAREN)){ return t; }
+        ;
+        
+    quoted_string(var string s) : string
+        ::= (DQ (qdtext:qdt{ s.Append(qdt); } | quoted_pair:qp{ s.Append(qp); })* DQ){ return s; }
+        ;
+
+    qdtext : char
+        ::= (text:t - DQ){ return t; }
+        ;
+        
+    quoted_pair : char
+        ::= BACKSLASH chr:ch{ return ch; }
+        ;
+
+    ctl : char
+        ::= HT{ return '\t'; } | CR{ return '\r'; } | LF{ return '\n'; } | CTL{ return lexer.GetChar(pos); }
+        ;
+        
+    tspecial : char
+        ::= LPAREN{ return '('; } | RPAREN{ return ')'; } | LANGLE{ return '<'; } | RANGLE{ return '>'; } | AT{ return '@'; } | COMMA{ return ','; } | SEMICOLON{ return ';'; } | COLON{ return ':'; } |
+            BACKSLASH{ return '\\'; } | DQ{ return '"'; } | SLASH{ return '/'; } | LBRACKET{ return '['; } | RBRACKET{ return ']'; } | QUEST{ return '?'; } | EQ{ return '='; } |
+            LBRACE{ return '{'; } | RBRACE{ return '}'; } | SP{ return ' '; } | HT{ return '\t'; } 
+        ;
+                        
+    octet : char
+        ::= chr:c{ return c; } | OCTET{ return lexer.GetChar(pos); }
+        ;
+
+    lws
+        ::= ((CR | LF)? (SP | HT))+
+        ;
+}

@@ -1,0 +1,80 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum MessageBoxType : uint
+    {
+        MB_ABORTRETRYIGNORE = 0x00000002u,
+        MB_CANCELTRYCONTINUE = 0x00000006u,
+        MB_HELP = 0x00004000u,
+        MB_OK = 0x00000000u,
+        MB_OKCANCEL = 0x00000001u,
+        MB_RETRYCANCEL = 0x00000005u,
+        MB_YESNO = 0x00000004u,
+        MB_YESNOCANCEL = 0x00000003u,
+        MB_ICONEXCLAMATION = 0x00000030u,
+        MB_ICONWARNING = 0x00000030u,
+        MB_ICONINFORMATION = 0x00000040u,
+        MB_ICONASTERISK = 0x00000040u,
+        MB_ICONQUESTION = 0x00000020u,
+        MB_ICONSTOP = 0x00000010u,
+        MB_ICONERROR = 0x00000010u,
+        MB_ICONHAND = 0x00000010u
+    }
+
+    public enum MessageBoxResult : int
+    {
+        ok = 1,
+        cancel = 2,
+        abort = 3,
+        retry = 4,
+        ignore = 5,
+        yes = 6,
+        no = 7,
+        tryAgain = 10,
+        continue_ = 11
+    }
+
+    public static class MessageBox
+    {
+        public static void Show(const string& message)
+        {
+            int result = WinShowMessageBox(message.Chars(), null);
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+        }
+        public static void Show(const string& message, const string& caption)
+        {
+            int result = WinShowMessageBox(message.Chars(), caption.Chars());
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+        }
+        public static MessageBoxResult Show(const string& message, const string& caption, Control* owner, MessageBoxType type)
+        {
+            void* ownerWindowHandle = null;
+            if (owner != null)
+            {
+                ownerWindowHandle = owner->Handle();
+            }
+            int result = WinShowMessageBoxWithType(message.Chars(), caption.Chars(), ownerWindowHandle, type);
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+            else
+            {
+                return cast<MessageBoxResult>(result);
+            }
+        }
+    }
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>9fa35216-b237-45dc-8de6-5ea2ea5fc612</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>library</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="Algorithm.cm"/>
+  <CmCompile Include="Context.cm"/>
+  <CmCompile Include="Match.cm"/>
+  <CmCompile Include="Nfa.cm"/>
+  <CmCompile Include="RexApi.cm"/>
+  <CmCompile Include="RexClassMap.cm"/>
+  <CmCompile Include="RexLexer.cm"/>
+  <CmCompile Include="RexParser.cm"/>
+  <CmCompile Include="RexTokens.cm"/>
+  <CmCompile Include="Symbol.cm"/>
+  <CmCompile Include="TokenValueParsers.cm"/>
+ </ItemGroup>
+ <ItemGroup>
+  <None Include="RexLexer.lexer"/>
+  <None Include="RexParser.parser"/>
+  <None Include="RexParser.spg"/>
+ </ItemGroup>
+ <ItemGroup>
+  <ProjectReference Include="../System.Lex/System.Lex.cmproj"/>
+  <ProjectReference Include="../System.Parsing/System.Parsing.cmproj"/>
+ </ItemGroup>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

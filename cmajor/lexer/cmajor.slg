@@ -3,3 +3,7 @@ tokens <cmajor.token>;
 keywords <cmajor.keyword>;
 expressions <cmajor.expr>;
 lexer <cmajor.lexer>;
+tokens <cmajor.container.file.token>;
+keywords <cmajor.container.file.keyword>;
+expressions <cmajor.container.file.expr>;
+lexer <cmajor.container.file.lexer>;

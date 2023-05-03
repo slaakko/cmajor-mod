@@ -175,8 +175,7 @@
     <ClCompile Include="error.cppm" />
     <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.cppm" />
-    <ClCompile Include="function_index.ixx" />
-    <ClCompile Include="function_symbol.cpp" />
+    <ClCompile Include="function_index.cppm" />
     <ClCompile Include="function_symbol.cppm" />
     <ClCompile Include="global_flags.cppm" />
     <ClCompile Include="init_done.cppm" />

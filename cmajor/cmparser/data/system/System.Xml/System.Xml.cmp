@@ -1,0 +1,13 @@
+project System.Xml;
+target=library;
+reference <../System.Base/System.Base.cmp>;
+reference <../System.Lex/System.Lex.cmp>;
+reference <../System.Parsing/System.Parsing.cmp>;
+source <XmlApi.cm>;
+source <XmlContentHandler.cm>;
+source <XmlParser.cm>;
+source <XmlParserInterface.cm>;
+source <XmlProcessor.cm>;
+source <XmlParserRules.cm>;
+text <XmlParser.parser>;
+text <XmlParser.spg>;

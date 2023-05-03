@@ -39,5 +39,5 @@ export import cmajor.ast.sync.node;
 export import cmajor.ast.system.file.index;
 export import cmajor.ast.templates;
 export import cmajor.ast.type.expr;
-export import cmajor.ast.typedefs;
+export import cmajor.ast.alias;
 export import cmajor.ast.visitor;

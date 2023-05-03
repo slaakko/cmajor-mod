@@ -15,11 +15,11 @@ parser IdentifierParser
 {
     lexer cmajor::lexer::CmajorLexer<char32_t>;
 
-    Identifier(cmajor::parser::context::Context* context) : cmajor::ast::Node*
+    Identifier(cmajor::parser::context::Context* context) : cmajor::ast::IdentifierNode*
         ::= ID{ return new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
         ;
 
-    QualifiedId(cmajor::parser::context::Context* context, var std::u32string value) : cmajor::ast::Node*
+    QualifiedId(cmajor::parser::context::Context* context, var std::u32string value) : cmajor::ast::IdentifierNode*
         ::= 
         (
             ID{ value = lexer.GetToken(pos).ToString(); }

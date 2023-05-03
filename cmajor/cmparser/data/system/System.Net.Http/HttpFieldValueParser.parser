@@ -1,0 +1,25 @@
+using System.Net.Http;
+using HttpTokens;
+
+parser HttpFieldValueParser
+{
+    uselexer HttpLexer;
+    main;
+    
+    using Http.token;
+    using Http.attribute;
+    using Http.attrval;
+    using Http.lws;
+ 
+    CommaSeparatedFieldValue(List<HttpFieldValue>* values)
+        ::= GeneralFieldValue(values):gfv1 (lws:lws1? COMMA lws:lws2? GeneralFieldValue(values):gfv2)*
+        ;
+    
+    GeneralFieldValue(List<HttpFieldValue>* values, var HttpFieldValue fieldValue)
+        ::= (token:t{ fieldValue.SetFieldValue(t); } (SEMICOLON lws:lws1? GeneralParameter(&fieldValue):gp)*){ values->Add(fieldValue); }
+        ;
+    
+    GeneralParameter(HttpFieldValue* fieldValue)
+        ::= (attribute:a (EQ attrval:av)?){ fieldValue->SetParameter(a, av); }
+        ;
+}

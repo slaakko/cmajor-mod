@@ -9,7 +9,21 @@ import cmajor.ast.node;
 import cmajor.ast.node.list;
 
 export namespace cmajor::ast {
-    
+
+enum class CharLiteralPrefix
+{
+    none = 0,
+    utf16Prefix = 1,
+    utf32Prefix = 2
+};
+
+enum class StringLiteralPrefix
+{
+    none = 0,
+    utf16Prefix = 1,
+    utf32Prefix = 2
+};
+
 class LiteralNode : public Node
 {
 public:
@@ -24,8 +38,8 @@ private:
 
  LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t value, bool unsignedSuffix);
  LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, double value, bool float_);
- LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, int chrLitPrefix);
- LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, int strLitPrefix);
+ LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, CharLiteralPrefix prefix);
+ LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, StringLiteralPrefix prefix);
 
 class  BooleanLiteralNode : public LiteralNode
 {

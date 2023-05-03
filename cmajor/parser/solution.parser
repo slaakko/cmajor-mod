@@ -1,0 +1,80 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.solutions.parser;
+
+[interface]import cmajor.ast;
+[implementation]import cmajor.container.file.token;
+[implementation]import soul.lexer;
+[implementation]import cmajor.container.file.lexer;
+[implementation]import cmajor.token.value.parser;
+[implementation]import soul.ast.source.pos;
+[implementation]import util;
+
+parser SolutionParser
+{
+    lexer cmajor::container::file::lexer::CmajorContainerFileLexer<char32_t>;
+    main;
+
+    Solution(var std::unique_ptr<cmajor::ast::Solution> solutionFile) : cmajor::ast::Solution*
+        ::= 
+        (
+            SOLUTION 
+            QualifiedId:name
+            {
+                solutionFile.reset(new cmajor::ast::Solution(name, lexer.FileName()));
+            }
+            SEMICOLON
+            (
+                Declaration:declaration{ solutionFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return solutionFile.release();
+        }
+        ;
+
+    QualifiedId(var std::u32string qualifiedId) : std::u32string
+        ::= 
+        (
+            ID{ qualifiedId = lexer.GetToken(pos).ToString(); }
+            (
+                DOT ID{ qualifiedId.append(1, '.').append(lexer.GetToken(pos).ToString()); }
+            )*
+        )
+        {
+            return qualifiedId;
+        }
+        ;
+
+    Declaration : cmajor::ast::SolutionDeclaration*
+        ::= SolutionProjectDeclaration:solutionProjectDeclaration{ return solutionProjectDeclaration; }
+        |   ActiveProjectDeclaration:activeProjectDeclaration{ return activeProjectDeclaration; }
+        ;
+
+    SolutionProjectDeclaration(var std::string filePath) : cmajor::ast::SolutionDeclaration*
+        ::= 
+        (
+            PROJECT
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SolutionProjectDeclaration(filePath);
+        }
+        ;
+
+    ActiveProjectDeclaration : cmajor::ast::SolutionDeclaration*
+        ::= 
+        (
+            ACTIVEPROJECT 
+            QualifiedId:activeProjectName 
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SolutionActiveProjectDeclaration(activeProjectName);
+        }
+        ;
+}

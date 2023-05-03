@@ -1,0 +1,700 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Concepts;
+using System.Collections;
+using System.Dom;
+using System.XPath;
+
+namespace System.Xml.Serialization
+{
+    public concept XmlConstructible<T>
+    {
+        where DefaultConstructible<T>;
+        void T.FromXml(Element* element);
+    }
+
+    public concept XmlImportableScalarType<T>
+    {
+        where
+            T is bool or
+            T is sbyte or
+            T is byte or
+            T is short or
+            T is ushort or
+            T is int or
+            T is uint or
+            T is long or
+            T is ulong or
+            T is float or
+            T is double or
+            T is char or
+            T is wchar or
+            T is uchar or
+            T is string or
+            T is wstring or
+            T is ustring or
+            T is System.Uuid or
+            T is System.Date or
+            T is System.DateTime or
+            T is System.Timestamp or
+            T is System.TimePoint or
+            T is System.Duration;
+    }
+
+    public concept XmlImportableEnumeratedType<T>
+    {
+        where System.Meta.IsEnumeratedType<T>();
+    }
+
+    public nothrow Element* GetXmlFieldElement(const string& fieldName, Element* fromElement)
+    {
+        UniquePtr<XPathObject> result = Evaluate(ToUtf32(fieldName), fromElement);
+        if (!result.IsNull())
+        {
+            if (result.Get() is XPathNodeSet*)
+            {
+                XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                if (nodeSet->Length() == 1)
+                {
+                    Node* node = (*nodeSet)[0];
+                    if (node is Element*)
+                    {
+                        Element* fieldElement = cast<Element*>(node);
+                        return fieldElement;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public void FromXml(Element* element, bool& value)
+    {
+        if (element != null)
+        {
+            value = ParseBool(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, bool& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, sbyte& value)
+    {
+        if (element != null)
+        {
+            value = ParseSByte(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, sbyte& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, byte& value)
+    {
+        if (element != null)
+        {
+            value = ParseByte(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, byte& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, short& value)
+    {
+        if (element != null)
+        {
+            value = ParseShort(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, short& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, ushort& value)
+    {
+        if (element != null)
+        {
+            value = ParseUShort(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, ushort& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, int& value)
+    {
+        if (element != null)
+        {
+            value = ParseInt(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, int& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, uint& value)
+    {
+        if (element != null)
+        {
+            value = ParseUInt(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, uint& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, long& value)
+    {
+        if (element != null)
+        {
+            value = ParseLong(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, long& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, ulong& value)
+    {
+        if (element != null)
+        {
+            value = ParseULong(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, ulong& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, float& value)
+    {
+        if (element != null)
+        {
+            value = ParseFloat(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, float& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, double& value)
+    {
+        if (element != null)
+        {
+            value = ParseDouble(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, double& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, char& value)
+    {
+        if (element != null)
+        {
+            value = ToUtf8(element->GetAttribute(u"value"))[0];
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, char& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, wchar& value)
+    {
+        if (element != null)
+        {
+            value = ToUtf16(element->GetAttribute(u"value"))[0];
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, wchar& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, uchar& value)
+    {
+        if (element != null)
+        {
+            value = element->GetAttribute(u"value")[0];
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, uchar& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml<T>(Element* element, T& value)
+        where T is XmlImportableEnumeratedType
+    {
+        if (element != null)
+        {
+            value = cast<T>(cast<T.UnderlyingType>(ParseLong(ToUtf8(element->GetAttribute(u"value")))));
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, T& value)
+        where T is XmlImportableEnumeratedType
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.Date& value)
+    {
+        if (element != null)
+        {
+            value = ParseDate(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.Date& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.DateTime& value)
+    {
+        if (element != null)
+        {
+            value = ParseDateTime(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.DateTime& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.Timestamp& value)
+    {
+        if (element != null)
+        {
+            value = ParseTimestamp(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.Timestamp& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, string& value)
+    {
+        if (element != null)
+        {
+            value = ToUtf8(element->GetAttribute(u"value"));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, string& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, wstring& value)
+    {
+        if (element != null)
+        {
+            value = ToUtf16(element->GetAttribute(u"value"));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, wstring& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, ustring& value)
+    {
+        if (element != null)
+        {
+            value = element->GetAttribute(u"value");
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, ustring& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.TimePoint& value)
+    {
+        if (element != null)
+        {
+            value = TimePoint(ParseLong(ToUtf8(element->GetAttribute(u"value"))));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.TimePoint& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.Duration& value)
+    {
+        if (element != null)
+        {
+            value = Duration(ParseLong(ToUtf8(element->GetAttribute(u"value"))));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.Duration& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml(Element* element, System.Uuid& value)
+    {
+        if (element != null)
+        {
+            value = ParseUuid(ToUtf8(element->GetAttribute(u"value")));
+        }
+    }
+
+    public void FromXml(Element* parentElement, const string& fieldName, System.Uuid& value)
+    {
+        FromXml(GetXmlFieldElement(fieldName, parentElement), value);
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, T& object)
+        where T is XmlConstructible
+    {
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            object.FromXml(element);
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, UniquePtr<T>& object)
+        where T is XmlConstructible
+    {
+        object.Reset();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            ustring value = element->GetAttribute(u"value");
+            if (value != u"null")
+            {
+                ustring classIdAttr = element->GetAttribute(u"classId");
+                if (!classIdAttr.IsEmpty())
+                {
+                    int classId = ParseInt(ToUtf8(classIdAttr));
+                    object.Reset(cast<T*>(XmlClassRegistry.Instance().Create(classId)));
+                    object->FromXml(element);
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, SharedPtr<T>& object)
+        where T is XmlConstructible
+    {
+        object.Reset();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            ustring value = element->GetAttribute(u"value");
+            if (value != u"null")
+            {
+                ustring classIdAttr = element->GetAttribute(u"classId");
+                if (!classIdAttr.IsEmpty())
+                {
+                    int classId = ParseInt(ToUtf8(classIdAttr));
+                    object.Reset(cast<T*>(XmlClassRegistry.Instance().Create(classId)));
+                    object->FromXml(element);
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, XmlPtr<T>& ptr)
+        where T is XmlConstructible
+    {
+        ptr.Reset();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            ustring value = element->GetAttribute(u"value");
+            if (value != u"null")
+            {
+                ustring objectIdAttr = element->GetAttribute(u"objectId");
+                if (!objectIdAttr.IsEmpty())
+                {
+                    Uuid objectId = ParseUuid(ToUtf8(objectIdAttr));
+                    ptr.SetTargetObjectId(objectId);
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, UniqueXmlPtr<T>& ptr)
+        where T is XmlConstructible
+    {
+        ptr.Reset();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            ustring value = element->GetAttribute(u"value");
+            if (value != u"null")
+            {
+                ustring objectIdAttr = element->GetAttribute(u"objectId");
+                if (!objectIdAttr.IsEmpty())
+                {
+                    Uuid objectId = ParseUuid(ToUtf8(objectIdAttr));
+                    ptr.SetTargetObjectId(objectId);
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<T>& list)
+        where T is XmlImportableScalarType
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            T value;
+                            FromXml(element, value);
+                            list.Add(Rvalue(value));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<T>& list)
+        where T is XmlConstructible
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            T object;
+                            object.FromXml(element);
+                            list.Add(Rvalue(object));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<UniquePtr<T>>& list)
+        where T is XmlConstructible
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            UniquePtr<T> object;
+                            ustring value = element->GetAttribute(u"value");
+                            if (value != u"null")
+                            {
+                                ustring classIdAttr = element->GetAttribute(u"classId");
+                                if (!classIdAttr.IsEmpty())
+                                {
+                                    int classId = ParseInt(ToUtf8(classIdAttr));
+                                    object.Reset(cast<T*>(XmlClassRegistry.Instance().Create(classId)));
+                                    object->FromXml(element);
+                                }
+                            }
+                            list.Add(Rvalue(object));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<SharedPtr<T>>& list)
+        where T is XmlConstructible
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            SharedPtr<T> object;
+                            ustring value = element->GetAttribute(u"value");
+                            if (value != u"null")
+                            {
+                                ustring classIdAttr = element->GetAttribute(u"classId");
+                                if (!classIdAttr.IsEmpty())
+                                {
+                                    int classId = ParseInt(ToUtf8(classIdAttr));
+                                    object.Reset(cast<T*>(XmlClassRegistry.Instance().Create(classId)));
+                                    object->FromXml(element);
+                                }
+                            }
+                            list.Add(Rvalue(object));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<XmlPtr<T>>& list)
+        where T is XmlConstructible
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            list.Add(XmlPtr<T>());
+                            XmlPtr<T>& ptr = list.Back();
+                            ustring value = element->GetAttribute(u"value");
+                            if (value != u"null")
+                            {
+                                ustring objectIdAttr = element->GetAttribute(u"objectId");
+                                if (!objectIdAttr.IsEmpty())
+                                {
+                                    Uuid objectId = ParseUuid(ToUtf8(objectIdAttr));
+                                    ptr.SetTargetObjectId(objectId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void FromXml<T>(Element* parentElement, const string& fieldName, List<UniqueXmlPtr<T>>& list)
+        where T is XmlConstructible
+    {
+        list.Clear();
+        Element* element = GetXmlFieldElement(fieldName, parentElement);
+        if (element != null)
+        {
+            UniquePtr<XPathObject> result = Evaluate(u"item", element);
+            if (!result.IsNull())
+            {
+                if (result.Get() is XPathNodeSet*)
+                {
+                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
+                    int n = nodeSet->Length();
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* node = (*nodeSet)[i];
+                        if (node is Element*)
+                        {
+                            Element* element = cast<Element*>(node);
+                            list.Add(UniqueXmlPtr<T>());
+                            UniqueXmlPtr<T>& ptr = list.Back();
+                            ustring value = element->GetAttribute(u"value");
+                            if (value != u"null")
+                            {
+                                ustring objectIdAttr = element->GetAttribute(u"objectId");
+                                if (!objectIdAttr.IsEmpty())
+                                {
+                                    Uuid objectId = ParseUuid(ToUtf8(objectIdAttr));
+                                    ptr.SetTargetObjectId(objectId);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+

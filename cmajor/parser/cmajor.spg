@@ -4,5 +4,25 @@
 // =================================
 
 project cmajor;
+parser <alias.parser>;
+parser <attribute.parser>;
 parser <basic_type.parser>;
+parser <class.parser>;
+parser <compile_unit.parser>;
+parser <concept.parser>;
+parser <constant.parser>;
+parser <delegate.parser>;
+parser <enumeration.parser>;
+parser <expression.parser>;
+parser <function.parser>;
+parser <global_variable.parser>;
 parser <identifier.parser>;
+parser <interface.parser>;
+parser <literal.parser>;
+parser <parameter.parser>;
+parser <project.parser>;
+parser <solution.parser>;
+parser <specifier.parser>;
+parser <statement.parser>;
+parser <template.parser>;
+parser <type_expr.parser>;

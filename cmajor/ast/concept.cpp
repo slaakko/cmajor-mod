@@ -642,19 +642,19 @@ std::string FunctionConstraintNode::ToString() const
     return s;
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(), text()
+AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression()
 {
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_, const std::u32string& text_) :
-    Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(expression_), text(text_)
+AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
+    Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(expression_)
 {
     expression->SetParent(this);
 }
 
 Node* AxiomStatementNode::Clone(CloneContext& cloneContext) const
 {
-    AxiomStatementNode* clone = new AxiomStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext), text);
+    AxiomStatementNode* clone = new AxiomStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext));
     return clone;
 }
 
@@ -667,7 +667,6 @@ void AxiomStatementNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
     writer.Write(expression.get());
-    writer.GetBinaryStreamWriter().Write(text);
 }
 
 void AxiomStatementNode::Read(AstReader& reader)
@@ -675,12 +674,11 @@ void AxiomStatementNode::Read(AstReader& reader)
     Node::Read(reader);
     expression.reset(reader.ReadNode());
     expression->SetParent(this);
-    text = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
 std::string AxiomStatementNode::ToString() const
 {
-    return util::ToUtf8(text);
+    return expression->ToString();
 }
 
 AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomNode, sourcePos_, moduleId_), id(), parameters(), statements()
@@ -706,8 +704,6 @@ Node* AxiomNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddStatement(static_cast<AxiomStatementNode*>(statements[i]->Clone(cloneContext)));
     }
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -722,9 +718,6 @@ void AxiomNode::Write(AstWriter& writer)
     writer.Write(id.get());
     parameters.Write(writer);
     statements.Write(writer);
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(beginBraceSpan, convertExternal);
-    //writer.Write(endBraceSpan, convertExternal);
 }
 
 void AxiomNode::Read(AstReader& reader)
@@ -736,8 +729,6 @@ void AxiomNode::Read(AstReader& reader)
     parameters.SetParent(this);
     statements.Read(reader);
     statements.SetParent(this);
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void AxiomNode::AddParameter(ParameterNode* parameter)
@@ -858,8 +849,6 @@ Node* ConceptNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddAxiom(static_cast<AxiomNode*>(axioms[i]->Clone(cloneContext)));
     }
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -882,9 +871,6 @@ void ConceptNode::Write(AstWriter& writer)
     }
     constraints.Write(writer);
     axioms.Write(writer);
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(beginBraceSpan, convertExternal);
-    //writer.Write(endBraceSpan, convertExternal);
 }
 
 void ConceptNode::Read(AstReader& reader)
@@ -905,8 +891,6 @@ void ConceptNode::Read(AstReader& reader)
     constraints.SetParent(this);
     axioms.Read(reader);
     axioms.SetParent(this);
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void ConceptNode::AddTypeParameter(IdentifierNode* typeParameter)
