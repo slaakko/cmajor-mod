@@ -4804,8 +4804,21 @@ soul::parser::Match StatementParser<LexerT>::Catch(LexerT& lexer, cmajor::parser
                         soul::parser::Match match(false);
                         soul::parser::Match* parentMatch10 = &match;
                         {
-                            soul::parser::Match match = IdentifierParser<LexerT>::Identifier(lexer, context);
-                            catchId.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
+                            soul::parser::Match match(true);
+                            int64_t save = lexer.GetPos();
+                            soul::parser::Match* parentMatch11 = &match;
+                            {
+                                soul::parser::Match match = IdentifierParser<LexerT>::Identifier(lexer, context);
+                                catchId.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
+                                if (match.hit)
+                                {
+                                    *parentMatch11 = match;
+                                }
+                                else
+                                {
+                                    lexer.SetPos(save);
+                                }
+                            }
                             *parentMatch10 = match;
                         }
                         *parentMatch4 = match;
@@ -4815,7 +4828,7 @@ soul::parser::Match StatementParser<LexerT>::Catch(LexerT& lexer, cmajor::parser
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch11 = &match;
+                    soul::parser::Match* parentMatch12 = &match;
                     {
                         soul::parser::Match match(false);
                         if (*lexer == RPAREN)
@@ -4823,7 +4836,7 @@ soul::parser::Match StatementParser<LexerT>::Catch(LexerT& lexer, cmajor::parser
                             ++lexer;
                             match.hit = true;
                         }
-                        *parentMatch11 = match;
+                        *parentMatch12 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -4832,11 +4845,11 @@ soul::parser::Match StatementParser<LexerT>::Catch(LexerT& lexer, cmajor::parser
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch12 = &match;
+                soul::parser::Match* parentMatch13 = &match;
                 {
                     soul::parser::Match match = StatementParser<LexerT>::CompoundStatement(lexer, context);
                     catchBlock.reset(static_cast<cmajor::ast::CompoundStatementNode*>(match.value));
-                    *parentMatch12 = match;
+                    *parentMatch13 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -5780,42 +5793,61 @@ soul::parser::Match StatementParser<LexerT>::ConditionalCompilationConjunction(L
                 soul::parser::Match match(false);
                 soul::parser::Match* parentMatch4 = &match;
                 {
-                    soul::parser::Match match(false);
+                    soul::parser::Match match(true);
                     soul::parser::Match* parentMatch5 = &match;
                     {
-                        soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch6 = &match;
+                        while (true)
                         {
-                            soul::parser::Match match(false);
-                            if (*lexer == AMPAMP)
-                            {
-                                ++lexer;
-                                match.hit = true;
-                            }
-                            *parentMatch6 = match;
-                        }
-                        if (match.hit)
-                        {
-                            soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch7 = &match;
+                            int64_t save = lexer.GetPos();
                             {
                                 soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch8 = &match;
+                                soul::parser::Match* parentMatch6 = &match;
                                 {
-                                    int64_t pos = lexer.GetPos();
-                                    soul::parser::Match match = StatementParser<LexerT>::ConditionalCompilationPrefix(lexer, context);
-                                    right.reset(static_cast<cmajor::ast::ConditionalCompilationExpressionNode*>(match.value));
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch7 = &match;
+                                    {
+                                        soul::parser::Match match(false);
+                                        if (*lexer == AMPAMP)
+                                        {
+                                            ++lexer;
+                                            match.hit = true;
+                                        }
+                                        *parentMatch7 = match;
+                                    }
                                     if (match.hit)
                                     {
-                                        expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, context->ModuleId(), expr.release(), right.release()));
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch8 = &match;
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch9 = &match;
+                                            {
+                                                int64_t pos = lexer.GetPos();
+                                                soul::parser::Match match = StatementParser<LexerT>::ConditionalCompilationPrefix(lexer, context);
+                                                right.reset(static_cast<cmajor::ast::ConditionalCompilationExpressionNode*>(match.value));
+                                                if (match.hit)
+                                                {
+                                                    expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, context->ModuleId(), expr.release(), right.release()));
+                                                }
+                                                *parentMatch9 = match;
+                                            }
+                                            *parentMatch8 = match;
+                                        }
+                                        *parentMatch7 = match;
                                     }
-                                    *parentMatch8 = match;
+                                    *parentMatch6 = match;
                                 }
-                                *parentMatch7 = match;
+                                if (match.hit)
+                                {
+                                    *parentMatch5 = match;
+                                }
+                                else
+                                {
+                                    lexer.SetPos(save);
+                                    break;
+                                }
                             }
-                            *parentMatch6 = match;
                         }
-                        *parentMatch5 = match;
                     }
                     *parentMatch4 = match;
                 }

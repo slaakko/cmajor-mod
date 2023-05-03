@@ -36,6 +36,7 @@ enum class SystemDirKind : int
 
 class Project;
 class Solution;
+class CompileUnitNode;
 
 std::string CmajorRootDir();
 std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const std::string& toolChain, SystemDirKind systemDirKind);
@@ -203,6 +204,8 @@ public:
     void AddTextFileName(const std::string& textFileName, const std::string& textFilePath);
     void RemoveFile(const std::string& filePath, const std::string& fileName);
     void Save();
+    void AddCompileUnit(CompileUnitNode* compileUnit);
+    const std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() const { return compileUnits; }
 private:
     BackEnd backend;
     std::string toolChain;
@@ -238,6 +241,7 @@ private:
     std::string hash;
     std::vector<std::string> dependsOnIds;
     std::mutex mtx;
+    std::vector<std::unique_ptr<CompileUnitNode>> compileUnits;
 };
 
 } // namespace cmajor::ast

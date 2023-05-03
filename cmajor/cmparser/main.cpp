@@ -20,15 +20,18 @@ void PrintHelp()
     std::cout << "usage: cmparser [options] { FILE.cmp | FILE.sln | FILE.cm }" << "\n";
     std::cout << "options:" << "\n";
     std::cout << "--help | -h" << "\n";
-    std::cout << "  Print help and exit" << "\n";
+    std::cout << "  Print help and exit." << "\n";
     std::cout << "--verbose | -v" << "\n";
-    std::cout << "  Be verbose" << "\n";
+    std::cout << "  Be verbose." << "\n";
+    std::cout << "--single-threaded | -s" << "\n";
+    std::cout << "  Parse single-threaded." << "\n";
 }
 
 int main(int argc, const char** argv)
 {
     try
     {
+        cmajor::build::Flags flags = cmajor::build::Flags::none;
         std::vector<std::string> files;
         bool verbose = false;
         for (int i = 1; i < argc; ++i)
@@ -44,6 +47,10 @@ int main(int argc, const char** argv)
                 {
                     PrintHelp();
                     return 1;
+                }
+                else if (arg == "--single-threaded")
+                {
+                    flags = flags | cmajor::build::Flags::singleThreaded;
                 }
                 else
                 {
@@ -67,6 +74,11 @@ int main(int argc, const char** argv)
                             verbose = true;
                             break;
                         }
+                        case 's':
+                        {
+                            flags = flags | cmajor::build::Flags::singleThreaded;
+                            break;
+                        }
                         default:
                         {
                             throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
@@ -88,7 +100,8 @@ int main(int argc, const char** argv)
                 {
                     std::cout << ">>> " << file << "\n";
                 }
-                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(file, fileMap);
+                int fileIndex = fileMap.MapFile(file);
+                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, fileMap);
             }
             else if (file.ends_with(".cmp"))
             {
@@ -96,7 +109,7 @@ int main(int argc, const char** argv)
                 {
                     std::cout << ">> " << file << "\n";
                 }
-                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProjectFile(file, "debug", cmajor::ast::BackEnd::llvm, "llvm");
+                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(flags, file, "debug", cmajor::ast::BackEnd::llvm, "llvm", fileMap);
             }
             else if (file.ends_with(".cms"))
             {

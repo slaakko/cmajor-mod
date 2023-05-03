@@ -5,6 +5,7 @@
 
 export module cmajor.ast.solution;
 
+import cmajor.ast.compile.unit;
 import cmajor.ast.project;
 import std.core;
 import std.filesystem;

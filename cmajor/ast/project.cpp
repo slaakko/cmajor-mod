@@ -6,6 +6,7 @@
 module cmajor.ast.project;
 
 import cmajor.ast.solution;
+import cmajor.ast.compile.unit;
 import std.core;
 import std.filesystem;
 import util;
@@ -798,6 +799,11 @@ void Project::Save()
     {
         formatter.WriteLine("action <" + relativeActionFilePath + ">;");
     }
+}
+
+void Project::AddCompileUnit(CompileUnitNode* compileUnit)
+{
+    compileUnits.push_back(std::unique_ptr<CompileUnitNode>(compileUnit));
 }
 
 } // namespace cmajor::ast

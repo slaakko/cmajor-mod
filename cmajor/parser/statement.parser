@@ -451,7 +451,7 @@ parser StatementParser
             CATCH{ s = lexer.GetSourcePos(pos); }
             LPAREN
             TypeExpr(context):catchType
-            Identifier(context):catchId
+            Identifier(context):catchId?
             RPAREN
             CompoundStatement(context):catchBlock
         )
@@ -545,7 +545,7 @@ parser StatementParser
             (
                 AMPAMP
                 ConditionalCompilationPrefix(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, context->ModuleId(), expr.release(), right)); }
-            )
+            )*
         )
         {
             return expr.release();

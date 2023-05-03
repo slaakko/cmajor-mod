@@ -734,7 +734,9 @@
          </sequence>
          <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
         </sequence>
-        <nonterminal first="{ID}" ruleName="Identifier"/>
+        <optional first="{#, ID}">
+         <nonterminal first="{ID}" ruleName="Identifier"/>
+        </optional>
        </sequence>
        <token first="{RPAREN}" name="RPAREN"/>
       </sequence>
@@ -889,14 +891,16 @@
       <action first="{EXCLAMATION, ID, LPAREN}">
        <nonterminal first="{EXCLAMATION, ID, LPAREN}" ruleName="ConditionalCompilationPrefix"/>
       </action>
-      <group first="{AMPAMP}">
-       <sequence first="{AMPAMP}">
-        <token first="{AMPAMP}" name="AMPAMP"/>
-        <action first="{EXCLAMATION, ID, LPAREN}">
-         <nonterminal first="{EXCLAMATION, ID, LPAREN}" ruleName="ConditionalCompilationPrefix"/>
-        </action>
-       </sequence>
-      </group>
+      <kleene first="{#, AMPAMP}">
+       <group first="{AMPAMP}">
+        <sequence first="{AMPAMP}">
+         <token first="{AMPAMP}" name="AMPAMP"/>
+         <action first="{EXCLAMATION, ID, LPAREN}">
+          <nonterminal first="{EXCLAMATION, ID, LPAREN}" ruleName="ConditionalCompilationPrefix"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
      </sequence>
     </group>
    </action>
