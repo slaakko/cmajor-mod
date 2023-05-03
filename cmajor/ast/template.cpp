@@ -79,7 +79,8 @@ void TemplateIdNode::AddTemplateArgument(Node* templateArgument)
     templateArguments.Add(templateArgument);
 }
 
-TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
+TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
 {
 }
 
@@ -134,7 +135,8 @@ void TemplateParameterNode::Read(AstReader& reader)
     }
 }
 
-FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId()
+FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId()
 {
 }
 
@@ -164,4 +166,5 @@ void FullInstantiationRequestNode::Read(AstReader& reader)
     Node::Read(reader);
     templateId.reset(reader.ReadTemplateIdNode());
 }
+
 } // namespace cmajor::ast

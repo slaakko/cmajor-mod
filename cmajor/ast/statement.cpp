@@ -117,7 +117,7 @@ void SyncStatementNode::Accept(Visitor& visitor)
 }
 
 CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), beginBraceSourcePos(), endBraceSourcePos(), tracerInserted(false)
+    StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), tracerInserted(false)
 {
 }
 
@@ -130,8 +130,6 @@ Node* CompoundStatementNode::Clone(CloneContext& cloneContext) const
         StatementNode* statement = statements[i];
         clone->AddStatement(static_cast<StatementNode*>(statement->Clone(cloneContext)));
     }
-    clone->beginBraceSourcePos = beginBraceSourcePos;
-    clone->endBraceSourcePos = endBraceSourcePos;
     return clone;
 }
 
@@ -144,9 +142,6 @@ void CompoundStatementNode::Write(AstWriter& writer)
 {
     StatementNode::Write(writer);
     statements.Write(writer);
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(beginBraceSourcePos, convertExternal);
-    //writer.Write(endBraceSourcePos, convertExternal);
 }
 
 void CompoundStatementNode::Read(AstReader& reader)
@@ -154,8 +149,6 @@ void CompoundStatementNode::Read(AstReader& reader)
     StatementNode::Read(reader);
     statements.Read(reader);
     statements.SetParent(this);
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void CompoundStatementNode::AddStatement(StatementNode* statement)
@@ -254,9 +247,6 @@ Node* IfStatementNode::Clone(CloneContext& cloneContext) const
         clonedElseS = static_cast<StatementNode*>(elseS->Clone(cloneContext));
     }
     IfStatementNode* clone = new IfStatementNode(GetSourcePos(), ModuleId(), condition->Clone(cloneContext), static_cast<StatementNode*>(thenS->Clone(cloneContext)), clonedElseS);
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
-    clone->SetElseSourcePos(elseSourcePos);
     return clone;
 }
 
@@ -276,10 +266,6 @@ void IfStatementNode::Write(AstWriter& writer)
     {
         writer.Write(elseS.get());
     }
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
-    //writer.Write(elseSourcePos, convertExternal);
 }
 
 void IfStatementNode::Read(AstReader& reader)
@@ -295,9 +281,6 @@ void IfStatementNode::Read(AstReader& reader)
         elseS.reset(reader.ReadStatementNode());
         elseS->SetParent(this);
     }
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
-    elseSourcePos = reader.ReadSourcePos();
 }
 
 WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -315,8 +298,6 @@ WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, c
 Node* WhileStatementNode::Clone(CloneContext& cloneContext) const
 {
     WhileStatementNode* clone = new WhileStatementNode(GetSourcePos(), ModuleId(), condition->Clone(cloneContext), static_cast<StatementNode*>(statement->Clone(cloneContext)));
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
     return clone;
 }
 
@@ -330,9 +311,6 @@ void WhileStatementNode::Write(AstWriter& writer)
     StatementNode::Write(writer);
     writer.Write(condition.get());
     writer.Write(statement.get());
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
 }
 
 void WhileStatementNode::Read(AstReader& reader)
@@ -342,8 +320,6 @@ void WhileStatementNode::Read(AstReader& reader)
     condition->SetParent(this);
     statement.reset(reader.ReadStatementNode());
     statement->SetParent(this);
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
 }
 
 DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -361,9 +337,6 @@ DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const u
 Node* DoStatementNode::Clone(CloneContext& cloneContext) const
 {
     DoStatementNode* clone = new DoStatementNode(GetSourcePos(), ModuleId(), static_cast<StatementNode*>(statement->Clone(cloneContext)), condition->Clone(cloneContext));
-    clone->SetWhileSourcePos(whileSourcePos);
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
     return clone;
 }
 
@@ -377,10 +350,6 @@ void DoStatementNode::Write(AstWriter& writer)
     StatementNode::Write(writer);
     writer.Write(statement.get());
     writer.Write(condition.get());
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(whileSourcePos, convertExternal);
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
 }
 
 void DoStatementNode::Read(AstReader& reader)
@@ -390,9 +359,6 @@ void DoStatementNode::Read(AstReader& reader)
     statement->SetParent(this);
     condition.reset(reader.ReadNode());
     condition->SetParent(this);
-    whileSourcePos = reader.ReadSourcePos();
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
 }
 
 ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -427,8 +393,6 @@ Node* ForStatementNode::Clone(CloneContext& cloneContext) const
     }
     ForStatementNode* clone = new ForStatementNode(GetSourcePos(), ModuleId(), static_cast<StatementNode*>(initS->Clone(cloneContext)), clonedCondition, static_cast<StatementNode*>(loopS->Clone(cloneContext)),
         static_cast<StatementNode*>(actionS->Clone(cloneContext)));
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
     return clone;
 }
 
@@ -449,9 +413,6 @@ void ForStatementNode::Write(AstWriter& writer)
     }
     writer.Write(loopS.get());
     writer.Write(actionS.get());
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
 }
 
 void ForStatementNode::Read(AstReader& reader)
@@ -469,8 +430,6 @@ void ForStatementNode::Read(AstReader& reader)
     loopS->SetParent(this);
     actionS.reset(reader.ReadStatementNode());
     actionS->SetParent(this);
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
 }
 
 BreakStatementNode::BreakStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::breakStatementNode, sourcePos_, moduleId_)
@@ -777,9 +736,6 @@ Node* RangeForStatementNode::Clone(CloneContext& cloneContext) const
 {
     RangeForStatementNode* clone = new RangeForStatementNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), container->Clone(cloneContext),
         static_cast<StatementNode*>(action->Clone(cloneContext)));
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
-    clone->SetColonSourcePos(colonSourcePos);
     return clone;
 }
 
@@ -795,10 +751,6 @@ void RangeForStatementNode::Write(AstWriter& writer)
     writer.Write(id.get());
     writer.Write(container.get());
     writer.Write(action.get());
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
-    //writer.Write(colonSourcePos, convertExternal);
 }
 
 void RangeForStatementNode::Read(AstReader& reader)
@@ -812,9 +764,6 @@ void RangeForStatementNode::Read(AstReader& reader)
     container->SetParent(this);
     action.reset(reader.ReadStatementNode());
     action->SetParent(this);
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
-    colonSourcePos = reader.ReadSourcePos();
 }
 
 SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -840,10 +789,6 @@ Node* SwitchStatementNode::Clone(CloneContext& cloneContext) const
     {
         clone->SetDefault(static_cast<DefaultStatementNode*>(defaultS->Clone(cloneContext)));
     }
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -863,11 +808,6 @@ void SwitchStatementNode::Write(AstWriter& writer)
     {
         writer.Write(defaultS.get());
     }
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
-    //writer.Write(beginBraceSourcePos, convertExternal);
-    //writer.Write(endBraceSourcePos, convertExternal);
 }
 
 void SwitchStatementNode::Read(AstReader& reader)
@@ -883,10 +823,6 @@ void SwitchStatementNode::Read(AstReader& reader)
         defaultS.reset(reader.ReadDefaultStatementNode());
         defaultS->SetParent(this);
     }
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void SwitchStatementNode::AddCase(CaseStatementNode* caseS)
@@ -919,7 +855,6 @@ Node* CaseStatementNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddStatement(static_cast<StatementNode*>(statements[i]->Clone(cloneContext)));
     }
-    clone->caseSourcePoses = caseSourcePoses;
     return clone;
 }
 
@@ -933,13 +868,6 @@ void CaseStatementNode::Write(AstWriter& writer)
     StatementNode::Write(writer);
     caseExprs.Write(writer);
     statements.Write(writer);
-    uint32_t n = static_cast<uint32_t>(caseSourcePoses.size());
-    writer.GetBinaryStreamWriter().WriteULEB128UInt(n);
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //for (uint32_t i = 0u; i < n; ++i)
-    //{
-    //    writer.Write(caseSpans[i], convertExternal);
-    //}
 }
 
 void CaseStatementNode::Read(AstReader& reader)
@@ -949,22 +877,12 @@ void CaseStatementNode::Read(AstReader& reader)
     caseExprs.SetParent(this);
     statements.Read(reader);
     statements.SetParent(this);
-    uint32_t n = reader.GetBinaryStreamReader().ReadULEB128UInt();
-    for (uint32_t i = 0u; i < n; ++i)
-    {
-        caseSourcePoses.push_back(reader.ReadSourcePos());
-    }
 }
 
 void CaseStatementNode::AddCaseExpr(Node* caseExpr)
 {
     caseExpr->SetParent(this);
     caseExprs.Add(caseExpr);
-}
-
-void CaseStatementNode::AddCaseSourcePos(const soul::ast::SourcePos& caseSourcePos)
-{
-    caseSourcePoses.push_back(caseSourcePos);
 }
 
 void CaseStatementNode::AddStatement(StatementNode* statement)
@@ -1136,8 +1054,6 @@ Node* CatchNode::Clone(CloneContext& cloneContext) const
         clonedId = static_cast<IdentifierNode*>(id->Clone(cloneContext));
     }
     CatchNode* clone = new CatchNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), clonedId, static_cast<CompoundStatementNode*>(catchBlock->Clone(cloneContext)));
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
     return clone;
 }
 
@@ -1157,9 +1073,6 @@ void CatchNode::Write(AstWriter& writer)
         writer.Write(id.get());
     }
     writer.Write(catchBlock.get());
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
 }
 
 void CatchNode::Read(AstReader& reader)
@@ -1175,8 +1088,6 @@ void CatchNode::Read(AstReader& reader)
     }
     catchBlock.reset(reader.ReadCompoundStatementNode());
     catchBlock->SetParent(this);
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
 }
 
 TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -1473,9 +1384,6 @@ Node* ConditionalCompilationPartNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddStatement(static_cast<StatementNode*>(statements[i]->Clone(cloneContext)));
     }
-    clone->SetKeywordSourcePos(keywordSourcePos);
-    clone->SetLeftParenSourcePos(leftParenSourcePos);
-    clone->SetRightParenSourcePos(rightParenSourcePos);
     return clone;
 }
 
@@ -1494,10 +1402,6 @@ void ConditionalCompilationPartNode::Write(AstWriter& writer)
         writer.Write(expr.get());
     }
     statements.Write(writer);
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(keywordSourcePos, convertExternal);
-    //writer.Write(leftParenSourcePos, convertExternal);
-    //writer.Write(rightParenSourcePos, convertExternal);
 }
 
 void ConditionalCompilationPartNode::Read(AstReader& reader)
@@ -1511,9 +1415,6 @@ void ConditionalCompilationPartNode::Read(AstReader& reader)
     }
     statements.Read(reader);
     statements.SetParent(this);
-    keywordSourcePos = reader.ReadSourcePos();
-    leftParenSourcePos = reader.ReadSourcePos();
-    rightParenSourcePos = reader.ReadSourcePos();
 }
 
 ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
@@ -1539,21 +1440,6 @@ void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos
 void ConditionalCompilationStatementNode::AddElifStatement(StatementNode* statement)
 {
     elifParts[elifParts.Count() - 1]->AddStatement(statement);
-}
-
-void ConditionalCompilationStatementNode::SetElifLeftParenSourcePos(const soul::ast::SourcePos& span)
-{
-    elifParts[elifParts.Count() - 1]->SetLeftParenSourcePos(span);
-}
-
-void ConditionalCompilationStatementNode::SetElifRightParenSourcePos(const soul::ast::SourcePos& span)
-{
-    elifParts[elifParts.Count() - 1]->SetRightParenSourcePos(span);
-}
-
-void ConditionalCompilationStatementNode::SetElifKeywordSourcePos(const soul::ast::SourcePos& span)
-{
-    elifParts[elifParts.Count() - 1]->SetKeywordSourcePos(span);
 }
 
 void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::SourcePos& span, const util::uuid& moduleId_, StatementNode* statement)
@@ -1582,7 +1468,6 @@ Node* ConditionalCompilationStatementNode::Clone(CloneContext& cloneContext) con
         ConditionalCompilationPartNode* clonedElsePart = static_cast<ConditionalCompilationPartNode*>(elsePart->Clone(cloneContext));
         clone->elsePart.reset(clonedElsePart);
     }
-    clone->SetEndIfSourcePos(endifSourcePos);
     return clone;
 }
 
@@ -1602,8 +1487,6 @@ void ConditionalCompilationStatementNode::Write(AstWriter& writer)
     {
         writer.Write(elsePart.get());
     }
-    //bool convertExternal = ModuleId() == writer.SpanConversionModuleId();
-    //writer.Write(endifSpan, convertExternal);
 }
 
 void ConditionalCompilationStatementNode::Read(AstReader& reader)
@@ -1619,7 +1502,6 @@ void ConditionalCompilationStatementNode::Read(AstReader& reader)
         elsePart.reset(reader.ReadConditionalCompilationPartNode());
         elsePart->SetParent(this);
     }
-    endifSourcePos = reader.ReadSourcePos();
 }
 
 void ConditionalCompilationStatementNode::SetIfPart(ConditionalCompilationPartNode* ifPart_)
@@ -1636,4 +1518,5 @@ void ConditionalCompilationStatementNode::SetElsePart(ConditionalCompilationPart
 {
     elsePart.reset(elsePart_);
 }
+
 } // namespace cmajor::ast

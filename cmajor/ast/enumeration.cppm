@@ -29,17 +29,11 @@ public:
     void SetUnderlyingType(Node* underlyingType_);
     Node* GetUnderlyingType() const { return underlyingType.get(); }
     const NodeList<EnumConstantNode>& Constants() const { return constants; }
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
 private:
     Specifiers specifiers;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> underlyingType;
     NodeList<EnumConstantNode> constants;
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
 };
 
 class EnumConstantNode : public Node

@@ -91,4 +91,5 @@ private:
     std::unique_ptr<Node> subject;
     std::unique_ptr<Node> size;
 };
+
 } // namespace cmajor::ast

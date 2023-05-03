@@ -41,7 +41,7 @@ private:
  LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, CharLiteralPrefix prefix);
  LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, StringLiteralPrefix prefix);
 
-class  BooleanLiteralNode : public LiteralNode
+class BooleanLiteralNode : public LiteralNode
 {
 public:
     BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -56,7 +56,7 @@ private:
     bool value;
 };
 
-class  SByteLiteralNode : public LiteralNode
+class SByteLiteralNode : public LiteralNode
 {
 public:
     SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -71,7 +71,7 @@ private:
     int8_t value;
 };
 
-class  ByteLiteralNode : public LiteralNode
+class ByteLiteralNode : public LiteralNode
 {
 public:
     ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -86,7 +86,7 @@ private:
     uint8_t value;
 };
 
-class  ShortLiteralNode : public LiteralNode
+class ShortLiteralNode : public LiteralNode
 {
 public:
     ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -101,7 +101,7 @@ private:
     int16_t value;
 };
 
-class  UShortLiteralNode : public LiteralNode
+class UShortLiteralNode : public LiteralNode
 {
 public:
     UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -116,7 +116,7 @@ private:
     uint16_t value;
 };
 
-class  IntLiteralNode : public LiteralNode
+class IntLiteralNode : public LiteralNode
 {
 public:
     IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -132,7 +132,7 @@ private:
     int32_t value;
 };
 
-class  UIntLiteralNode : public LiteralNode
+class UIntLiteralNode : public LiteralNode
 {
 public:
     UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -147,7 +147,7 @@ private:
     uint32_t value;
 };
 
-class  LongLiteralNode : public LiteralNode
+class LongLiteralNode : public LiteralNode
 {
 public:
     LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -162,7 +162,7 @@ private:
     int64_t value;
 };
 
-class  ULongLiteralNode : public LiteralNode
+class ULongLiteralNode : public LiteralNode
 {
 public:
     ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -177,7 +177,7 @@ private:
     uint64_t value;
 };
 
-class  FloatLiteralNode : public LiteralNode
+class FloatLiteralNode : public LiteralNode
 {
 public:
     FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -192,7 +192,7 @@ private:
     float value;
 };
 
-class  DoubleLiteralNode : public LiteralNode
+class DoubleLiteralNode : public LiteralNode
 {
 public:
     DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -207,7 +207,7 @@ private:
     double value;
 };
 
-class  CharLiteralNode : public LiteralNode
+class CharLiteralNode : public LiteralNode
 {
 public:
     CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -222,7 +222,7 @@ private:
     char value;
 };
 
-class  WCharLiteralNode : public LiteralNode
+class WCharLiteralNode : public LiteralNode
 {
 public:
     WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -237,7 +237,7 @@ private:
     char16_t value;
 };
 
-class  UCharLiteralNode : public LiteralNode
+class UCharLiteralNode : public LiteralNode
 {
 public:
     UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -252,7 +252,7 @@ private:
     char32_t value;
 };
 
-class  StringLiteralNode : public LiteralNode
+class StringLiteralNode : public LiteralNode
 {
 public:
     StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -267,7 +267,7 @@ private:
     std::string value;
 };
 
-class  WStringLiteralNode : public LiteralNode
+class WStringLiteralNode : public LiteralNode
 {
 public:
     WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -282,7 +282,7 @@ private:
     std::u16string value;
 };
 
-class  UStringLiteralNode : public LiteralNode
+class UStringLiteralNode : public LiteralNode
 {
 public:
     UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -297,7 +297,7 @@ private:
     std::u32string value;
 };
 
-class  NullLiteralNode : public LiteralNode
+class NullLiteralNode : public LiteralNode
 {
 public:
     NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -306,7 +306,7 @@ public:
     std::string ToString() const override { return "null"; }
 };
 
-class  ArrayLiteralNode : public LiteralNode
+class ArrayLiteralNode : public LiteralNode
 {
 public:
     ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -322,7 +322,7 @@ private:
     NodeList<Node> values;
 };
 
-class  StructuredLiteralNode : public LiteralNode
+class StructuredLiteralNode : public LiteralNode
 {
 public:
     StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -338,7 +338,7 @@ private:
     NodeList<Node> members;
 };
 
-class  UuidLiteralNode : public LiteralNode
+class UuidLiteralNode : public LiteralNode
 {
 public:
     UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
@@ -352,8 +352,5 @@ public:
 private:
     util::uuid uuid;
 };
-
     
 } // namespace cmajor::ast
-
-

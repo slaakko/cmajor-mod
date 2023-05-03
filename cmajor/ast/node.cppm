@@ -78,6 +78,7 @@ public:
     virtual bool IsFunctionNode() const { return false; }
     virtual bool IsIntrinsicConceptNode() const { return false; }
     virtual bool IsConditionalCompilationExpressionNode() const { return false; }
+    bool IsNamespaceNode() const { return nodeType == NodeType::namespaceNode; }
     virtual Specifiers GetSpecifiers() const { return Specifiers::none; }
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     void SetSourcePos(const soul::ast::SourcePos& sourcePos_) { sourcePos = sourcePos_; }
@@ -139,9 +140,7 @@ class NodeFactory
 public:
     NodeFactory(const NodeFactory&) = delete;
     NodeFactory& operator=(const NodeFactory&) = delete;
-    static NodeFactory& Instance() { return *instance; }
-    static void Init();
-    static void Done();
+    static NodeFactory& Instance();
     void Register(NodeType nodeType, NodeCreator* creator);
     Node* CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
 private:
@@ -149,8 +148,5 @@ private:
     std::vector<std::unique_ptr<NodeCreator>> creators;
     NodeFactory();
 };
-
-void InitNode();
-void DoneNode();
 
 } // namespace cmajor::ast

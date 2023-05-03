@@ -21,15 +21,10 @@ public:
     void Write(Node* node);
     void Write(Specifiers specifiers);
     void Write(const soul::ast::SourcePos& sourcePos);
-    //void SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_); TODO
-    void SetSourcePosConversionModuleId(const util::uuid& sourcePosConversionModuleId_); 
-    const util::uuid& SourcePosConversionModuleId() const { return sourcePosConversionModuleId; } 
 private:
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;
     util::BinaryStreamWriter binaryStreamWriter;
-    //std::vector<soulng::lexer::Lexer*>* lexers;
-    util::uuid sourcePosConversionModuleId;
 };
 
 } // namespace cmajor::ast

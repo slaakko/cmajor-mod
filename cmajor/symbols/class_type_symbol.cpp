@@ -2,7 +2,7 @@ module;
 #include <boost/multiprecision/integer.hpp>
 module cmajor.symbols.class_.type.symbol;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 /*

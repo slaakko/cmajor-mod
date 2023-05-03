@@ -1,10 +1,10 @@
-export module cmajor.ast.sync.node;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-//#include <sngcm/ast/Node.hpp>
+export module cmajor.ast.sync.node;
+
 import cmajor.ast.node;
 import soul.ast.source.pos;
 
@@ -17,4 +17,5 @@ public:
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
 };
+
 } // namespace cmajor::ast

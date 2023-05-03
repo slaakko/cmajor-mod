@@ -16,13 +16,18 @@ namespace cmajor::ast {
 IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier()
 {
 }
+
 IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_) : Node(nodeType_, sourcePos_, moduleId_), identifier()
 {
 }
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier(identifier_)
+
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : 
+    Node(NodeType::identifierNode, sourcePos_, moduleId_), identifier(identifier_)
 {
 }
-IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_, const std::u32string& identifier_) : Node(nodeType_, sourcePos_, moduleId_), identifier(identifier_)
+
+IdentifierNode::IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_, const std::u32string& identifier_) : 
+    Node(nodeType_, sourcePos_, moduleId_), identifier(identifier_)
 {
     std::u32string result;
     for (char32_t c : identifier)
@@ -77,7 +82,8 @@ CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::u
 {
 }
 
-CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode, identifier_)
+CursorIdNode::CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_) : 
+    IdentifierNode(sourcePos_, moduleId_, NodeType::cursorIdNode, identifier_)
 {
 }
 

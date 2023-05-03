@@ -3,7 +3,6 @@
 // Distributed under the MIT license
 // =================================
 
-
 export module cmajor.ast.visitor;
 
 import cmajor.ast.node;

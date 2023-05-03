@@ -21,7 +21,6 @@ export import cmajor.ast.expression;
 export import cmajor.ast.function;
 export import cmajor.ast.global.variable;
 export import cmajor.ast.identifier;
-export import cmajor.ast.init.done;
 export import cmajor.ast.interface;
 export import cmajor.ast.literal;
 export import cmajor.ast.merge;

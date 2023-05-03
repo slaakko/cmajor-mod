@@ -18,7 +18,8 @@ DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& modul
 {
 }
 
-DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) : UnaryNode(NodeType::dotNode, sourcePos_, moduleId_, subject_), memberId(memberId_)
+DotNode::DotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, IdentifierNode* memberId_) : 
+    UnaryNode(NodeType::dotNode, sourcePos_, moduleId_, subject_), memberId(memberId_)
 {
     memberId->SetParent(this);
 }
@@ -1394,4 +1395,5 @@ std::string ParenthesizedExpressionNode::ToString() const
 {
     return "(" + Subject()->ToString() + ")";
 }
+
 } // namespace cmajor::ast

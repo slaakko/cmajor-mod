@@ -34,8 +34,6 @@ Node* EnumTypeNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddConstant(static_cast<EnumConstantNode*>(constants[i]->Clone(cloneContext)));
     }
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -56,8 +54,6 @@ void EnumTypeNode::Write(AstWriter& writer)
         writer.Write(underlyingType.get());
     }
     constants.Write(writer);
-    writer.Write(beginBraceSourcePos);
-    writer.Write(endBraceSourcePos);
 }
 
 void EnumTypeNode::Read(AstReader& reader)
@@ -72,8 +68,6 @@ void EnumTypeNode::Read(AstReader& reader)
     }
     constants.Read(reader);
     constants.SetParent(this);
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void EnumTypeNode::AddConstant(EnumConstantNode* constant)
@@ -184,4 +178,5 @@ Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uu
         return new SByteLiteralNode(span, moduleId, 0);
     }
 }
+
 } // namespace cmajor::ast

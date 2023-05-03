@@ -2483,7 +2483,7 @@ soul::parser::Match ClassParser<LexerT>::Initializer(LexerT& lexer, cmajor::pars
                                     id.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                                     if (match.hit)
                                     {
-                                        initializerNode.reset(new cmajor::ast::MemberInitializerNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                                        initializerNode.reset(new cmajor::ast::MemberInitializerNode(lexer.GetSourcePos(pos), context->ModuleId(), id.release()));
                                     }
                                     *parentMatch20 = match;
                                 }

@@ -1,16 +1,10 @@
-module cmajor.ast.system.file.index;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-/*
-#include <sngcm/ast/Project.hpp>
-#include <soulng/util/Path.hpp>
-#include <soulng/util/BinaryWriter.hpp>
-#include <soulng/util/BinaryReader.hpp>
-#include <mutex>
-*/
+module cmajor.ast.system.file.index;
+
 import cmajor.ast.project;
 import util.binary.stream.writer;
 import util.binary.stream.reader;
@@ -22,15 +16,14 @@ import std.filesystem;
 
 namespace cmajor::ast {
 
-std::unique_ptr<SystemFileIndex> SystemFileIndex::instance;
-
-void SystemFileIndex::Init()
-{
-    instance.reset(new SystemFileIndex());
-}
-
 SystemFileIndex::SystemFileIndex() : nextSystemFileIndex(firstSystemFileIndex), cmajorRootDir(util::GetFullPath(CmajorRootDir()))
 {
+}
+
+SystemFileIndex& SystemFileIndex::Instance()
+{
+    static SystemFileIndex instance;
+    return instance;
 }
 
 std::mutex mtx;
@@ -106,8 +99,4 @@ void SystemFileIndex::Read(const std::string& systemFileIndexFilePath)
     }
 }
 
-void SystemFileIndexInit()
-{
-    SystemFileIndex::Init();
-}
 } // namespace cmajor::ast

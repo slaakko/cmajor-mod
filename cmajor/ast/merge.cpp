@@ -27,7 +27,6 @@ private:
     Node* selectedNode;
 };
 
-
 NodeSelectorVisitor::NodeSelectorVisitor(const std::u32string& nodeName_, NodeType nodeType_) : nodeName(nodeName_), nodeType(nodeType_), selectedNode(nullptr)
 {
 }

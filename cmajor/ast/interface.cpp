@@ -35,9 +35,6 @@ Node* InterfaceNode::Clone(CloneContext& cloneContext) const
     {
         clone->AddMember(members[i]->Clone(cloneContext));
     }
-    clone->SetSpecifierSourcePos(specifierSourcePos);
-    clone->SetBeginBraceSourcePos(beginBraceSourcePos);
-    clone->SetEndBraceSourcePos(endBraceSourcePos);
     return clone;
 }
 
@@ -57,11 +54,6 @@ void InterfaceNode::Write(AstWriter& writer)
     }
     writer.Write(id.get());
     members.Write(writer);
-    // Seppo
-    //bool convertExternal = ModuleId() == writer.SourcePosConversionModuleId(); TODO
-    //writer.Write(specifierSourcePos, convertExternal); TODO
-    //writer.Write(beginBraceSourcePos, convertExternal); TODO
-    //writer.Write(endBraceSourcePos, convertExternal); TODO
 }
 
 void InterfaceNode::Read(AstReader& reader)
@@ -76,9 +68,6 @@ void InterfaceNode::Read(AstReader& reader)
     id->SetParent(this);
     members.Read(reader);
     members.SetParent(this);
-    specifierSourcePos = reader.ReadSourcePos();
-    beginBraceSourcePos = reader.ReadSourcePos();
-    endBraceSourcePos = reader.ReadSourcePos();
 }
 
 void InterfaceNode::AddMember(Node* member)
@@ -86,4 +75,5 @@ void InterfaceNode::AddMember(Node* member)
     member->SetParent(this);
     members.Add(member);
 }
+
 } // namespace cmajor::ast

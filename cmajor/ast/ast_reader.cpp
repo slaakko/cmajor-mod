@@ -10,6 +10,7 @@ import cmajor.ast.concepts;
 import cmajor.ast.templates;
 import cmajor.ast.statement;
 import cmajor.ast.identifier;
+import cmajor.ast.namespaces;
 
 namespace cmajor::ast {
 
@@ -22,7 +23,6 @@ Node* AstReader::ReadNode()
 {
     NodeType nodeType = static_cast<NodeType>(binaryStreamReader.ReadByte());
     soul::ast::SourcePos sourcePos = ReadSourcePos();
-
     util::uuid moduleId;
     binaryStreamReader.ReadUuid(moduleId);
     Node* node = NodeFactory::Instance().CreateNode(nodeType, sourcePos, moduleId);
@@ -214,6 +214,19 @@ ConceptNode* AstReader::ReadConceptNode()
     }
 }
 
+NamespaceNode* AstReader::ReadNamespaceNode()
+{
+    Node* node = ReadNode();
+    if (node->IsNamespaceNode())
+    {
+        return static_cast<NamespaceNode*>(node);
+    }
+    else
+    {
+        throw std::runtime_error("namespace node expected");
+    }
+}
+
 Specifiers AstReader::ReadSpecifiers()
 {
     return static_cast<Specifiers>(binaryStreamReader.ReadUInt());
@@ -232,12 +245,4 @@ soul::ast::SourcePos AstReader::ReadSourcePos()
     return soul::ast::SourcePos(file, line, col);
 }
 
-/*
-void AstReader::SetModuleMaps(const util::uuid& rootModuleId_, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_)
-{
-    rootModuleId = rootModuleId_;
-    moduleNameTable = moduleNameTable_;
-    moduleIdMap = moduleIdMap_;
-}
-*/
 } // namespace cmajor::ast

@@ -557,4 +557,5 @@ public:
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
 };
+
 } // namespace cmajor::ast

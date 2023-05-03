@@ -91,7 +91,6 @@ public:
         {
             Node* node = reader.ReadNode();
             T* asTPtrNode = dynamic_cast<T*>(node);
-            // Assert(asTPtrNode, "wrong node type"); TODO
             nodes.push_back(std::unique_ptr<T>(asTPtrNode));
         }
     }
@@ -102,5 +101,5 @@ private:
     std::vector<std::unique_ptr<T>> nodes;
 };
 
-} // namespace sngcm::ast
+} // namespace cmajor::ast
 

@@ -1,0 +1,62 @@
+namespace System
+{
+    public static class Color
+    {
+        public enum Constant : sbyte
+        {
+            black, darkRed, darkGreen, darkYellow, darkBlue, darkGray, darkCyan, gray, red, green, yellow, blue, magenta, cyan, white
+        }
+        static nothrow Color() :
+            reset("\U0000001B[0m")
+        {
+        }
+        public static string reset;
+    }
+
+    public static class TextColor
+    {
+        static nothrow TextColor() :
+            black("\U0000001B[30m"), darkRed("\U0000001B[31m"), darkGreen("\U0000001B[32m"), darkYellow("\U0000001B[33m"), darkBlue("\U0000001B[34m"), darkMagenta("\U0000001B[35m"), darkCyan("\U0000001B[36m"), gray("\U0000001B[37m"), red("\U0000001B[91m"), green("\U0000001B[92m"), yellow("\U0000001B[93m"), blue("\U0000001B[94m"), magenta("\U0000001B[95m"), cyan("\U0000001B[96m"), white("\U0000001B[97m")
+        {
+        }
+        public static string black;
+        public static string darkRed;
+        public static string darkGreen;
+        public static string darkYellow;
+        public static string darkBlue;
+        public static string darkMagenta;
+        public static string darkCyan;
+        public static string gray;
+        public static string red;
+        public static string green;
+        public static string yellow;
+        public static string blue;
+        public static string magenta;
+        public static string cyan;
+        public static string white;
+    }
+
+    public static class BackColor
+    {
+        static nothrow BackColor() :
+            black("\U0000001B[40m"), darkRed("\U0000001B[41m"), darkGreen("\U0000001B[42m"), darkYellow("\U0000001B[43m"), darkBlue("\U0000001B[44m"), darkMagenta("\U0000001B[45m"), darkCyan("\U0000001B[46m"), gray("\U0000001B[47m"), red("\U0000001B[101m"), green("\U0000001B[102m"), yellow("\U0000001B[103m"), blue("\U0000001B[104m"), magenta("\U0000001B[105m"), cyan("\U0000001B[106m"), white("\U0000001B[107m")
+        {
+        }
+        public static string black;
+        public static string darkRed;
+        public static string darkGreen;
+        public static string darkYellow;
+        public static string darkBlue;
+        public static string darkMagenta;
+        public static string darkCyan;
+        public static string gray;
+        public static string red;
+        public static string green;
+        public static string yellow;
+        public static string blue;
+        public static string magenta;
+        public static string cyan;
+        public static string white;
+    }
+
+} // namespace System
