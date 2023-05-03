@@ -8,24 +8,6 @@ export module cmajor.ast.function;
 import std.core;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
-/*
-import cmajor.ast.attribute;
-import cmajor.ast.specifier;
-import cmajor.ast.template_;
-import cmajor.ast.concept_;
-import cmajor.ast.parameter;
-import cmajor.ast.statement;
-import cmajor.ast.identifier;
-*/
-/*
-#include <sngcm/ast/Attribute.hpp>
-#include <sngcm/ast/Specifier.hpp>
-#include <sngcm/ast/Template.hpp>
-#include <sngcm/ast/Concept.hpp>
-#include <sngcm/ast/Parameter.hpp>
-#include <sngcm/ast/Statement.hpp>
-#include <sngcm/ast/Identifier.hpp>
-*/
 
 export namespace cmajor::ast {
 
@@ -71,16 +53,10 @@ public:
     bool IsProgramMain() const { return programMain; }
     void SetProgramMain() { programMain = true; }
     AttributesNode* GetAttributes() const { return attributes.get(); }
-    void SetSpecifierSourcePos(const soul::ast::SourcePos& specifierSourcePos_) { specifierSourcePos = specifierSourcePos_; }
-    const soul::ast::SourcePos& SpecifierSourcePos() const { return specifierSourcePos; }
-    void SetGroupIdSourcePos(const soul::ast::SourcePos& groupIdSourcePos_) { groupIdSourcePos = groupIdSourcePos_; }
-    const soul::ast::SourcePos& GroupIdSourcePos() const { return groupIdSourcePos; }
 private:
     Specifiers specifiers;
-    soul::ast::SourcePos specifierSourcePos;
     std::unique_ptr<Node> returnTypeExpr;
     std::u32string groupId;
-    soul::ast::SourcePos groupIdSourcePos;
     NodeList<TemplateParameterNode> templateParameters;
     NodeList<ParameterNode> parameters;
     std::unique_ptr<WhereConstraintNode> whereConstraint;

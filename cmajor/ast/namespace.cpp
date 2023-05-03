@@ -14,11 +14,13 @@ import util;
 
 namespace cmajor::ast {
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(), flags()
+NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(), flags()
 {
 }
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(id_), flags()
+NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : 
+    Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(id_), flags()
 {
     if (id == nullptr)
     {
@@ -55,7 +57,8 @@ Node* NamespaceNode::Clone(CloneContext& cloneContext) const
     for (int i = 0; i < n; ++i)
     {
         Node* member = members[i];
-        if (cloneContext.MakeTestUnits() && member->GetNodeType() == NodeType::functionNode && (static_cast<FunctionNode*>(member)->GetSpecifiers() & Specifiers::unit_test_) != Specifiers::none)
+        if (cloneContext.MakeTestUnits() && member->GetNodeType() == NodeType::functionNode && 
+            (static_cast<FunctionNode*>(member)->GetSpecifiers() & Specifiers::unit_test_) != Specifiers::none)
         {
             FunctionNode* unitTestFunction = static_cast<FunctionNode*>(member->Clone(cloneContext));
             unitTestFunction->SetParent(const_cast<NamespaceNode*>(this));
@@ -106,11 +109,13 @@ void NamespaceNode::AddMember(Node* member)
     }
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
+NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
 {
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_) : Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns(ns_)
+NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_) : 
+    Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns(ns_)
 {
     ns->SetParent(this);
 }

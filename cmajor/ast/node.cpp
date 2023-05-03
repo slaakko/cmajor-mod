@@ -185,14 +185,10 @@ public:
 
 std::unique_ptr<NodeFactory> NodeFactory::instance;
 
-void NodeFactory::Init()
+NodeFactory& NodeFactory::Instance()
 {
-    instance.reset(new NodeFactory());
-}
-
-void NodeFactory::Done()
-{
-    instance.reset();
+    static NodeFactory instance;
+    return instance;
 }
 
 NodeFactory::NodeFactory()
@@ -413,16 +409,6 @@ Node* NodeFactory::CreateNode(NodeType nodeType, const soul::ast::SourcePos& sou
     {
         throw std::runtime_error("no creator for node type '" + NodeTypeStr(nodeType) + "'");
     }
-}
-
-void InitNode()
-{
-    NodeFactory::Init();
-}
-
-void DoneNode()
-{
-    NodeFactory::Done();
 }
 
 } // namespace cmajor::ast

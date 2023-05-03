@@ -1,33 +1,10 @@
-module cmajor.ast.source.writer;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <sngcm/ast/SourceWriter.hpp>
-#include <sngcm/ast/Literal.hpp>
-#include <sngcm/ast/CompileUnit.hpp>
-#include <sngcm/ast/Namespace.hpp>
-#include <sngcm/ast/Identifier.hpp>
-#include <sngcm/ast/Template.hpp>
-#include <sngcm/ast/Attribute.hpp>
-#include <sngcm/ast/Function.hpp>
-#include <sngcm/ast/Class.hpp>
-#include <sngcm/ast/Interface.hpp>
-#include <sngcm/ast/Delegate.hpp>
-#include <sngcm/ast/Concept.hpp>
-#include <sngcm/ast/Typedef.hpp>
-#include <sngcm/ast/Constant.hpp>
-#include <sngcm/ast/Enumeration.hpp>
-#include <sngcm/ast/TypeExpr.hpp>
-#include <sngcm/ast/Expression.hpp>
-#include <sngcm/ast/GlobalVariable.hpp>
-#include <sngcm/ast/Comment.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <iostream>
-*/
+
+module cmajor.ast.source.writer;
+
 import cmajor.ast.compile.unit;
 import cmajor.ast.namespaces;
 import cmajor.ast.templates;
@@ -56,6 +33,11 @@ namespace cmajor::ast {
 
 SourceWriter::SourceWriter(util::CodeFormatter& formatter_) : formatter(formatter_), omitNewLine(false), omitSemicolon(false), emptyLine(false)
 {
+}
+
+void SourceWriter::Visit(AutoNode& autoNode)
+{
+    formatter.Write("auto");
 }
 
 void SourceWriter::Visit(BoolNode& boolNode)
@@ -320,6 +302,7 @@ void SourceWriter::Visit(NamespaceNode& namespaceNode)
     if (!namespaceNode.Id()->Str().empty())
     {
         formatter.DecIndent();
+        WriteEmptyLine();
         if (namespaceNode.IsUnnamedNs())
         {
             formatter.WriteLine("} // namespace");
@@ -1092,6 +1075,10 @@ void SourceWriter::Visit(ConceptNode& conceptNode)
         ConstraintNode* constraintNode = conceptNode.Constraints()[i];
         if (constraintNode->IsHeaderConstraint()) continue;
         constraintNode->Accept(*this);
+        if (constraintNode->IsWhereConstraintNode())
+        {
+            formatter.WriteLine();
+        }
     }
     int na = conceptNode.Axioms().Count();
     for (int i = 0; i < na; ++i)

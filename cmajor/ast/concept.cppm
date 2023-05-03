@@ -19,6 +19,7 @@ public:
     ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
     bool NodeIsConstraintNode() const override { return true; }
     virtual bool IsHeaderConstraint() const { return false; }
+    bool IsWhereConstraintNode() const { return GetNodeType() == NodeType::whereConstraintNode; }
 };
 
 class ParenthesizedConstraintNode : public ConstraintNode

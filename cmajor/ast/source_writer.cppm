@@ -5,9 +5,6 @@ export module cmajor.ast.source.writer;
 // Distributed under the MIT license
 // =================================
 
-//#include <sngcm/ast/Visitor.hpp>
-//#include <soulng/util/CodeFormatter.hpp>
-
 import cmajor.ast.visitor;
 import util.code.formatter;
 
@@ -17,6 +14,7 @@ class SourceWriter : public Visitor
 {
 public:
     SourceWriter(util::CodeFormatter& formatter_);
+    void Visit(AutoNode& autoNode) override;
     void Visit(BoolNode& boolNode) override;
     void Visit(SByteNode& sbyteNode) override;
     void Visit(ByteNode& byteNode) override;

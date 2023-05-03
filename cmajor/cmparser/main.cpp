@@ -25,6 +25,10 @@ void PrintHelp()
     std::cout << "  Be verbose." << "\n";
     std::cout << "--single-threaded | -s" << "\n";
     std::cout << "  Parse single-threaded." << "\n";
+    std::cout << "--ast | -a" << "\n";
+    std::cout << "  Write FILE.ast for each FILE.cm." << "\n";
+    std::cout << "--print | -p" << "\n";
+    std::cout << "  Print source code from FILE.ast." << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -51,6 +55,14 @@ int main(int argc, const char** argv)
                 else if (arg == "--single-threaded")
                 {
                     flags = flags | cmajor::build::Flags::singleThreaded;
+                }
+                else if (arg == "--ast")
+                {
+                    flags = flags | cmajor::build::Flags::ast;
+                }
+                else if (arg == "--print")
+                {
+                    flags = flags | cmajor::build::Flags::print;
                 }
                 else
                 {
@@ -79,6 +91,16 @@ int main(int argc, const char** argv)
                             flags = flags | cmajor::build::Flags::singleThreaded;
                             break;
                         }
+                        case 'a':
+                        {
+                            flags = flags | cmajor::build::Flags::ast;
+                            break;
+                        }
+                        case 'p':
+                        {
+                            flags = flags | cmajor::build::Flags::print;
+                            break;
+                        }
                         default:
                         {
                             throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
@@ -101,7 +123,7 @@ int main(int argc, const char** argv)
                     std::cout << ">>> " << file << "\n";
                 }
                 int fileIndex = fileMap.MapFile(file);
-                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, fileMap);
+                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(flags, fileIndex, fileMap);
             }
             else if (file.ends_with(".cmp"))
             {

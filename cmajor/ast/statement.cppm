@@ -66,7 +66,6 @@ public:
     void Accept(Visitor& visitor) override;
 };
 
-
 class CompoundStatementNode : public StatementNode
 {
 public:
@@ -77,17 +76,11 @@ public:
     void Read(AstReader& reader) override;
     void AddStatement(StatementNode* statement);
     NodeList<StatementNode>& Statements() { return statements; }
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
     bool TracerInserted() const { return tracerInserted; }
     void SetTracerInserted() { tracerInserted = true; }
     int Level() const;
 private:
     NodeList<StatementNode> statements;
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
     bool tracerInserted;
 };
 
@@ -124,19 +117,10 @@ public:
     StatementNode* ThenS() { return thenS.get(); }
     const StatementNode* ElseS() const { return elseS.get(); }
     StatementNode* ElseS() { return elseS.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
-    void SetElseSourcePos(const soul::ast::SourcePos& elseSourcePos_) { elseSourcePos = elseSourcePos_; }
-    const soul::ast::SourcePos& ElseSourcePos() const { return elseSourcePos; }
 private:
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> thenS;
     std::unique_ptr<StatementNode> elseS;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
-    soul::ast::SourcePos elseSourcePos;
 };
 
 class WhileStatementNode : public StatementNode
@@ -154,15 +138,9 @@ public:
     Node* Condition() { return condition.get(); }
     const StatementNode* Statement() const { return statement.get(); }
     StatementNode* Statement() { return statement.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
 private:
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> statement;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
 };
 
 class DoStatementNode : public StatementNode
@@ -180,18 +158,9 @@ public:
     StatementNode* Statement() { return statement.get(); }
     const Node* Condition() const { return condition.get(); }
     Node* Condition() { return condition.get(); }
-    void SetWhileSourcePos(const soul::ast::SourcePos& whileSourcePos_) { whileSourcePos = whileSourcePos_; }
-    const soul::ast::SourcePos& WhileSourcePos() const { return whileSourcePos; }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
 private:
     std::unique_ptr<StatementNode> statement;
     std::unique_ptr<Node> condition;
-    soul::ast::SourcePos whileSourcePos;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
 };
 
 class ForStatementNode : public StatementNode
@@ -213,17 +182,11 @@ public:
     StatementNode* LoopS() { return loopS.get(); }
     const StatementNode* ActionS() const { return actionS.get(); }
     StatementNode* ActionS() { return actionS.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
 private:
     std::unique_ptr<StatementNode> initS;
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> loopS;
     std::unique_ptr<StatementNode> actionS;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
 };
 
 class BreakStatementNode : public StatementNode
@@ -377,20 +340,11 @@ public:
     Node* Container() { return container.get(); }
     const StatementNode* Action() const { return action.get(); }
     StatementNode* Action() { return action.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
-    void SetColonSourcePos(const soul::ast::SourcePos& colonSourcePos_) { colonSourcePos = colonSourcePos_; }
-    const soul::ast::SourcePos& ColonSourcePos() const { return colonSourcePos; }
 private:
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> container;
     std::unique_ptr<StatementNode> action;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
-    soul::ast::SourcePos colonSourcePos;
 };
 
 class CaseStatementNode;
@@ -413,22 +367,10 @@ public:
     void SetDefault(DefaultStatementNode* defaultS_);
     const DefaultStatementNode* Default() const { return defaultS.get(); }
     DefaultStatementNode* Default() { return defaultS.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
 private:
     std::unique_ptr<Node> condition;
     NodeList<CaseStatementNode> cases;
     std::unique_ptr<DefaultStatementNode> defaultS;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
 };
 
 class CaseStatementNode : public StatementNode
@@ -443,12 +385,9 @@ public:
     const NodeList<Node>& CaseExprs() const { return caseExprs; }
     void AddStatement(StatementNode* statement);
     const NodeList<StatementNode>& Statements() const { return statements; }
-    void AddCaseSourcePos(const soul::ast::SourcePos& caseSourcePos);
-    const std::vector<soul::ast::SourcePos>& CaseSourcePoses() const { return caseSourcePoses; }
 private:
     NodeList<Node> caseExprs;
     NodeList<StatementNode> statements;
-    std::vector<soul::ast::SourcePos> caseSourcePoses;
 };
 
 class DefaultStatementNode : public StatementNode
@@ -544,16 +483,10 @@ public:
     IdentifierNode* Id() { return id.get(); }
     const CompoundStatementNode* CatchBlock() const { return catchBlock.get(); }
     CompoundStatementNode* CatchBlock() { return catchBlock.get(); }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
 private:
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<CompoundStatementNode> catchBlock;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
 };
 
 class AssertStatementNode : public StatementNode
@@ -664,18 +597,9 @@ public:
     void Read(AstReader& reader) override;
     ConditionalCompilationExpressionNode* Expr() const { return expr.get(); }
     const NodeList<StatementNode>& Statements() const { return statements; }
-    void SetKeywordSourcePos(const soul::ast::SourcePos& keywordSourcePos_) { keywordSourcePos = keywordSourcePos_; }
-    const soul::ast::SourcePos& KeywordSourcePos() const { return keywordSourcePos; }
-    void SetLeftParenSourcePos(const soul::ast::SourcePos& leftParenSourcePos_) { leftParenSourcePos = leftParenSourcePos_; }
-    const soul::ast::SourcePos& LeftParenSourcePos() const { return leftParenSourcePos; }
-    void SetRightParenSourcePos(const soul::ast::SourcePos& rightParenSourcePos_) { rightParenSourcePos = rightParenSourcePos_; }
-    const soul::ast::SourcePos& RightParenSourcePos() const { return rightParenSourcePos; }
 private:
     std::unique_ptr<ConditionalCompilationExpressionNode> expr;
     NodeList<StatementNode> statements;
-    soul::ast::SourcePos keywordSourcePos;
-    soul::ast::SourcePos leftParenSourcePos;
-    soul::ast::SourcePos rightParenSourcePos;
 };
 
 class ConditionalCompilationStatementNode : public StatementNode
@@ -694,11 +618,6 @@ public:
     ConditionalCompilationPartNode* IfPart() { return ifPart.get(); }
     const NodeList<ConditionalCompilationPartNode>& ElifParts() const { return elifParts; }
     ConditionalCompilationPartNode* ElsePart() { return elsePart.get(); }
-    void SetElifLeftParenSourcePos(const soul::ast::SourcePos& sourcePos);
-    void SetElifRightParenSourcePos(const soul::ast::SourcePos& sourcePos);
-    void SetElifKeywordSourcePos(const soul::ast::SourcePos& sourcePos);
-    void SetEndIfSourcePos(const soul::ast::SourcePos& endifSourcePos_) { endifSourcePos = endifSourcePos_; }
-    const soul::ast::SourcePos& EndIfSourcePos() const { return endifSourcePos; }
     void SetIfPart(ConditionalCompilationPartNode* ifPart_);
     void AddElifPart(ConditionalCompilationPartNode* elifPart);
     void SetElsePart(ConditionalCompilationPartNode* elsePart_);
@@ -706,6 +625,6 @@ private:
     std::unique_ptr<ConditionalCompilationPartNode> ifPart;
     NodeList<ConditionalCompilationPartNode> elifParts;
     std::unique_ptr<ConditionalCompilationPartNode> elsePart;
-    soul::ast::SourcePos endifSourcePos;
 };
+
 } // namespace cmajor::ast

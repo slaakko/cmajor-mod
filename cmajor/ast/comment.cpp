@@ -43,4 +43,5 @@ void CommentNode::Read(AstReader& reader)
     Node::Read(reader);
     comment = reader.GetBinaryStreamReader().ReadUtf32String();
 }
+
 } // namespace cmajor::ast

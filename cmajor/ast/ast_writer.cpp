@@ -8,13 +8,14 @@ module cmajor.ast.writer;
 namespace cmajor::ast {
 
 AstWriter::AstWriter(const std::string& fileName_) : 
-    fileStream(fileName_,util::OpenMode::binary| util::OpenMode::write), bufferedStream(fileStream), binaryStreamWriter(bufferedStream)
+    fileStream(fileName_,util::OpenMode::binary | util::OpenMode::write), bufferedStream(fileStream), binaryStreamWriter(bufferedStream)
 {
 }
 
 void AstWriter::Write(Node* node)
 {
     binaryStreamWriter.Write(static_cast<uint8_t>(node->GetNodeType()));
+    Write(node->GetSourcePos());
     binaryStreamWriter.Write(node->ModuleId());
     node->Write(*this);
 }
@@ -37,17 +38,5 @@ void AstWriter::Write(const soul::ast::SourcePos& sourcePos)
         binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(0));
     }
 }
-
-/*
-void AstWriter::SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_)
-{
-    lexers = lexers_;
-}
-
-void AstWriter::SetSpanConversionModuleId(const util::uuid& spanConversionModuleId_)
-{
-    spanConversionModuleId = spanConversionModuleId_;
-}
-*/
 
 } // namespace cmajor::ast

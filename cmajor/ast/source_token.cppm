@@ -1,9 +1,9 @@
-export module cmajor.ast.source.token;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.ast.source.token;
 
 import std.core;
 

@@ -25,8 +25,7 @@ parser EnumerationParser
     using TypeExprParser.TypeExpr;
     using ExpressionParser.Expression;
 
-    EnumType(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode, var soul::ast::SourcePos s, 
-        var soul::ast::SourcePos bbs, var soul::ast::SourcePos ebs) : cmajor::ast::EnumTypeNode*
+    EnumType(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode, var soul::ast::SourcePos s) : cmajor::ast::EnumTypeNode*
         ::= 
         (   
             Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
@@ -35,13 +34,11 @@ parser EnumerationParser
             (
                 UnderlyingType(context):underlyingType{ enumTypeNode->SetUnderlyingType(underlyingType); }
             )?
-            LBRACE{ bbs = lexer.GetSourcePos(pos); }
+            LBRACE
             EnumConstants(context, enumTypeNode.get()):enumConstants
-            RBRACE{ ebs = lexer.GetSourcePos(pos); }
+            RBRACE
         )
         {
-            enumTypeNode->SetBeginBraceSourcePos(bbs);
-            enumTypeNode->SetEndBraceSourcePos(ebs);
             return enumTypeNode.release();
         }
         ;

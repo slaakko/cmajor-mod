@@ -19,6 +19,8 @@ public:
     CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& filePath_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
+    void Write(AstWriter& writer) override;
+    void Read(AstReader& reader) override;
     const std::string& FilePath() const { return filePath; }
     const NamespaceNode* GlobalNs() const { return globalNs.get(); }
     NamespaceNode* GlobalNs() { return globalNs.get(); }

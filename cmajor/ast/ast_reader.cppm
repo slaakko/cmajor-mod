@@ -28,6 +28,7 @@ class ConditionalCompilationExpressionNode;
 class ConditionalCompilationPartNode;
 class AttributesNode;
 class AttributeNode;
+class NamespaceNode;
 
 class AstReader
 {
@@ -49,16 +50,13 @@ public:
     TemplateIdNode* ReadTemplateIdNode();
     WhereConstraintNode* ReadWhereConstraintNode();
     ConceptNode* ReadConceptNode();
+    NamespaceNode* ReadNamespaceNode();
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();
-    //void SetModuleMaps(const util::uuid& rootModuleId, std::unordered_map<int16_t, std::string>* moduleNameTable_, std::unordered_map<std::string, int16_t>* moduleIdMap_); TODO
 private:
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;
     util::BinaryStreamReader binaryStreamReader;
-    //util::uuid rootModuleId; TODO
-    //std::unordered_map<int16_t, std::string>* moduleNameTable; TODO
-    //std::unordered_map<std::string, int16_t>* moduleIdMap; TODO
 };
 
 } // namespace cmajor::ast

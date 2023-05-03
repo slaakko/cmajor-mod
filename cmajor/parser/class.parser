@@ -236,7 +236,7 @@ parser ClassParser
             LPAREN
             ArgumentList(context, initializerNode.get()):baseArgs
             RPAREN
-        |   Identifier(context):id{ initializerNode.reset(new cmajor::ast::MemberInitializerNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+        |   Identifier(context):id{ initializerNode.reset(new cmajor::ast::MemberInitializerNode(lexer.GetSourcePos(pos), context->ModuleId(), id)); }
             LPAREN
             ArgumentList(context, initializerNode.get()):memberArgs
             RPAREN

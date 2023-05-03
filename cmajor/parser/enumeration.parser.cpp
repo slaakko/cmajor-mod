@@ -40,8 +40,6 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2745111412182351873);
     std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode = std::unique_ptr<cmajor::ast::EnumTypeNode>();
     soul::ast::SourcePos s = soul::ast::SourcePos();
-    soul::ast::SourcePos bbs = soul::ast::SourcePos();
-    soul::ast::SourcePos ebs = soul::ast::SourcePos();
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::IdentifierNode> enumTypeId;
     std::unique_ptr<cmajor::ast::Node> underlyingType;
@@ -171,20 +169,10 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                         soul::parser::Match* parentMatch16 = &match;
                         {
                             soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch17 = &match;
+                            if (*lexer == LBRACE)
                             {
-                                int64_t pos = lexer.GetPos();
-                                soul::parser::Match match(false);
-                                if (*lexer == LBRACE)
-                                {
-                                    ++lexer;
-                                    match.hit = true;
-                                }
-                                if (match.hit)
-                                {
-                                    bbs = lexer.GetSourcePos(pos);
-                                }
-                                *parentMatch17 = match;
+                                ++lexer;
+                                match.hit = true;
                             }
                             *parentMatch16 = match;
                         }
@@ -195,10 +183,10 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch18 = &match;
+                    soul::parser::Match* parentMatch17 = &match;
                     {
                         soul::parser::Match match = EnumerationParser<LexerT>::EnumConstants(lexer, context, enumTypeNode.get());
-                        *parentMatch18 = match;
+                        *parentMatch17 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -207,25 +195,15 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch19 = &match;
+                soul::parser::Match* parentMatch18 = &match;
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch20 = &match;
+                    if (*lexer == RBRACE)
                     {
-                        int64_t pos = lexer.GetPos();
-                        soul::parser::Match match(false);
-                        if (*lexer == RBRACE)
-                        {
-                            ++lexer;
-                            match.hit = true;
-                        }
-                        if (match.hit)
-                        {
-                            ebs = lexer.GetSourcePos(pos);
-                        }
-                        *parentMatch20 = match;
+                        ++lexer;
+                        match.hit = true;
                     }
-                    *parentMatch19 = match;
+                    *parentMatch18 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -233,8 +211,6 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
         }
         if (match.hit)
         {
-            enumTypeNode->SetBeginBraceSourcePos(bbs);
-            enumTypeNode->SetEndBraceSourcePos(ebs);
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "EnumType");

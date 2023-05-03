@@ -48,7 +48,7 @@ void AliasNode::Read(AstReader& reader)
     specifiers = reader.ReadSpecifiers();
     id.reset(reader.ReadIdentifierNode());
     id->SetParent(this);
-    typeExpr.reset(reader.ReadIdentifierNode());
+    typeExpr.reset(reader.ReadNode());
     typeExpr->SetParent(this);
 }
 

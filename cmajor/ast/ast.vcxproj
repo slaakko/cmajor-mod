@@ -187,8 +187,6 @@
     <ClCompile Include="global_variable.cppm" />
     <ClCompile Include="identifier.cpp" />
     <ClCompile Include="identifier.cppm" />
-    <ClCompile Include="init_done.cpp" />
-    <ClCompile Include="init_done.cppm" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="interface.cppm" />
     <ClCompile Include="literal.cpp" />

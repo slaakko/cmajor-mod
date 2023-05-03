@@ -1,10 +1,10 @@
-module cmajor.ast.sync.node;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-//#include <sngcm/ast/Visitor.hpp>
+module cmajor.ast.sync.node;
+
 import cmajor.ast.visitor;
 
 namespace cmajor::ast {
@@ -22,4 +22,5 @@ void SyncNode::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
+
 } // namespace cmajor::ast

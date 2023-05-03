@@ -1,0 +1,197 @@
+using System;
+
+namespace System.IO
+{
+    public class StringWriter : TextWriter
+    {
+        public nothrow StringWriter() :
+            str()
+        {
+        }
+        public nothrow string GetString()
+        {
+            return Rvalue(str);
+        }
+        public nothrow const string& Str() const
+        {
+            return str;
+        }
+        public override void Write(const string& x)
+        {
+            str.Append(x);
+        }
+        public override void Write(const wstring& x)
+        {
+            Write(ToUtf8(x));
+        }
+        public override void Write(const ustring& x)
+        {
+            Write(ToUtf8(x));
+        }
+        public override void Write(bool x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(char x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(wchar x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(uchar x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(sbyte x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(byte x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(short x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(ushort x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(int x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(uint x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(long x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(ulong x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(float x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(double x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(const Date& date)
+        {
+            Write(date.ToString());
+        }
+        public override void Write(const DateTime& dateTime)
+        {
+            Write(dateTime.ToString());
+        }
+        public override void WriteLine()
+        {
+            str.Append('\n');
+        }
+        public override void WriteLine(const string& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const wstring& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const ustring& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(bool x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(char x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(wchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(uchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(sbyte x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(byte x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(short x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(ushort x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(int x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(uint x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(long x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(ulong x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(float x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(double x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const Date& date)
+        {
+            Write(date);
+            WriteLine();
+        }
+        public override void WriteLine(const DateTime& dateTime)
+        {
+            Write(dateTime);
+            WriteLine();
+        }
+        private string str;
+    }
+
+} // namespace System.IO

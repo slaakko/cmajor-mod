@@ -34,6 +34,39 @@ void CompileUnitNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+void CompileUnitNode::Write(AstWriter& writer)
+{
+    Node::Write(writer);
+    writer.GetBinaryStreamWriter().Write(filePath);
+    writer.Write(globalNs.get());
+    int32_t n = lineStarts.size();
+    writer.GetBinaryStreamWriter().Write(n);
+    for (auto s : lineStarts)
+    {
+        writer.GetBinaryStreamWriter().Write(s);
+    }
+    writer.GetBinaryStreamWriter().Write(isSynthesizedUnit);
+    writer.GetBinaryStreamWriter().Write(id);
+    writer.GetBinaryStreamWriter().Write(hash);
+    writer.GetBinaryStreamWriter().Write(isProgramMainUnit);
+}
+
+void CompileUnitNode::Read(AstReader& reader)
+{
+    Node::Read(reader);
+    filePath = reader.GetBinaryStreamReader().ReadUtf8String();
+    globalNs.reset(reader.ReadNamespaceNode());
+    int32_t n = reader.GetBinaryStreamReader().ReadInt();
+    for (int32_t i = 0; i < n; ++i)
+    {
+        lineStarts.push_back(reader.GetBinaryStreamReader().ReadInt());
+    }
+    isSynthesizedUnit = reader.GetBinaryStreamReader().ReadBool();
+    id = reader.GetBinaryStreamReader().ReadUtf8String();
+    hash = reader.GetBinaryStreamReader().ReadUtf8String();
+    isProgramMainUnit = reader.GetBinaryStreamReader().ReadBool();
+}
+
 void CompileUnitNode::ResetGlobalNs(NamespaceNode* ns)
 {
     globalNs.reset(ns);

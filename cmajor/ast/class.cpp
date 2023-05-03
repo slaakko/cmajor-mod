@@ -22,6 +22,7 @@ ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& m
     Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), templateParameters(), baseClassOrInterfaces(), members()
 {
 }
+
 ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
     Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), templateParameters(), baseClassOrInterfaces(), members(), attributes(attributes_)
 {

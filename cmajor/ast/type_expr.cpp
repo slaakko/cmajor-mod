@@ -232,4 +232,5 @@ std::string ArrayNode::ToString() const
     s.append("]");
     return s;
 }
+
 } // namespace cmajor::ast

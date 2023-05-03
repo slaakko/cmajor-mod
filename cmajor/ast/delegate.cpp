@@ -14,7 +14,8 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
+DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
 {
 }
 
