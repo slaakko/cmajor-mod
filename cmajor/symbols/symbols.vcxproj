@@ -170,6 +170,7 @@
     <ClCompile Include="delegate_symbol.cppm" />
     <ClCompile Include="derived_type_symbol.cppm" />
     <ClCompile Include="edit_module_cache.cppm" />
+    <ClCompile Include="enum_symbol.cpp" />
     <ClCompile Include="enum_symbol.cppm" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.cppm" />
