@@ -32,7 +32,7 @@ int TypeMap::GetOrInsertType(TypeSymbol* type)
             typeId = nextOtherTypeId++;
         }
         typeMap[type] = typeId;
-        std::unique_ptr<sngxml::dom::Element> typeElement(new sngxml::dom::Element(U"type"));
+        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
         typeElement->SetAttribute(U"id", U"type_" + ToUtf32(std::to_string(typeId)));
         typeElement->AppendChild(std::move(type->ToDomElement(*this)));
         typeIdTypeElementMap[typeId] = std::move(typeElement);
