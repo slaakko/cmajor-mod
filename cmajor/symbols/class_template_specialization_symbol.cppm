@@ -15,7 +15,7 @@ import std.core;
 
 export namespace cmajor::symbols {
 
-class ClassTypeSymbol;
+//class ClassTypeSymbol;
 //class TypeSymbol;
 
 enum class ClassTemplateSpecializationFlags : uint8_t
