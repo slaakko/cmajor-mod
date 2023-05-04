@@ -1,0 +1,346 @@
+// =================================
+// Copyright (c) 2020 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+public const byte sys_exit = 0u;
+public const byte sys_wait = 1u;
+public const byte sys_fork = 2u;
+public const byte sys_exec = 3u;
+public const byte sys_kill = 4u;
+public const byte sys_create = 5u;
+public const byte sys_open = 6u;
+public const byte sys_close = 7u;
+public const byte sys_read = 8u;
+public const byte sys_write = 9u;
+public const byte sys_seek = 10u;
+public const byte sys_tell = 11u;
+public const byte sys_pool_end = 12u;
+public const byte sys_set_pool_end = 13u;
+public const byte sys_debug_break = 14u;
+public const byte sys_stack_trace = 15u;
+public const byte sys_throw = 16u;
+public const byte sys_catch = 17u;
+public const byte sys_resume = 18u;
+public const byte sys_get_system_error = 19u;
+public const byte sys_get_current_time_point = 20u;
+public const byte sys_sleep = 21u;
+public const byte sys_get_current_date = 22u;
+public const byte sys_get_current_date_time = 23u;
+public const byte sys_pow = 24u;
+public const byte sys_get_random_seed = 25u;
+public const byte sys_link = 26u;
+public const byte sys_unlink = 27u;
+public const byte sys_rename = 28u;
+public const byte sys_mkdir = 29u;
+public const byte sys_opendir = 30u;
+public const byte sys_readdir = 31u;
+public const byte sys_closedir = 32u;
+public const byte sys_getcwd = 33u;
+public const byte sys_chdir = 34u;
+public const byte sys_stat = 35u;
+public const byte sys_umask = 36u;
+public const byte sys_ioctl = 37u;
+public const byte sys_chmod = 38u;
+public const byte sys_chown = 39u;
+public const byte sys_utime = 40u;
+public const byte sys_getuid = 41u;
+public const byte sys_setuid = 42u;
+public const byte sys_getgid = 43u;
+public const byte sys_setgid = 44u;
+public const byte sys_getpid = 45u;
+public const byte sys_getpgid = 46u;
+public const byte sys_setpgid = 47u;
+public const byte sys_getfgpid = 48u;
+public const byte sys_setfgpid = 49u;
+public const byte sys_sync = 50u;
+public const byte sys_times = 51u;
+public const byte sys_get_host_name = 52u;
+public const byte sys_dup = 53u;
+public const byte sys_pipe = 54u;
+public const byte sys_log = 55u;
+public const byte sys_log_message = 56u;
+
+public cdecl nothrow void exit(byte exitCode)
+{
+    run_at_exits();
+    trap(0u, sys_exit, 0u, exitCode);
+}
+
+public cdecl nothrow int wait(ushort* exitCodeAddress)
+{
+    return cast<int>(trap(0u, sys_wait, 0u, exitCodeAddress));
+}
+
+public cdecl nothrow int fork()
+{
+    return cast<int>(trap(0u, sys_fork, 0u));
+}
+
+public cdecl nothrow int exec(int argc, int envc, byte* buffer, long bufSize)
+{
+    return cast<int>(trap(0u, sys_exec, 0u, argc, envc, buffer, bufSize));
+}
+
+public cdecl nothrow int kill(int pid, int sig)
+{
+    return cast<int>(trap(0u, sys_kill, 0u, pid, sig));
+}
+
+public cdecl nothrow int create(const char* path, int mode)
+{
+    return cast<int>(trap(0u, sys_create, 0u, path, mode));
+}
+
+public cdecl nothrow int open(const char* path, int flags, int mode)
+{
+    return cast<int>(trap(0u, sys_open, 0u, path, flags, mode));
+}
+
+public cdecl nothrow int close(int fd)
+{
+    return cast<int>(trap(0u, sys_close, 0u, fd));
+}
+
+public cdecl nothrow long read(int fd, void* buffer, long count)
+{
+    return trap(0u, sys_read, 0u, fd, buffer, count);
+}
+
+public cdecl nothrow long write(int fd, void* buffer, long count)
+{
+    return trap(0u, sys_write, 0u, fd, buffer, count);
+}
+
+public cdecl nothrow long seek(int fd, long pos, byte origin)
+{
+    return trap(0u, sys_seek, 0u, fd, pos, origin);
+}
+
+public cdecl nothrow long tell(int fd)
+{
+    return trap(0u, sys_tell, 0u, fd);
+}
+
+public cdecl nothrow void* pool_end()
+{
+    return cast<void*>(cast<ulong>(trap(0u, sys_pool_end, 0u)));
+}
+
+public cdecl nothrow int set_pool_end(void* poolEnd)
+{
+    return cast<int>(trap(0u, sys_set_pool_end, 0u, poolEnd));
+}
+
+public cdecl nothrow int stack_trace(void* buffer, long count)
+{
+    return cast<int>(trap(0u, sys_stack_trace, 0u, buffer, count));
+}
+
+public cdecl void do_throw(void* ex, ulong exTypeId)
+{
+    trap(0u, sys_throw, 0u, ex, exTypeId);
+}
+
+public cdecl nothrow void* do_catch()
+{
+    return cast<void*>(cast<ulong>(trap(0u, sys_catch, 0u)));
+}
+
+public cdecl nothrow void do_resume()
+{
+    trap(0u, sys_resume, 0u);
+}
+
+public cdecl nothrow int get_system_error(int* errorCode, void* buffer, long count)
+{
+    return cast<int>(trap(0u, sys_get_system_error, 0u, errorCode, buffer, count));
+}
+
+public cdecl nothrow long get_current_time_point()
+{
+    return trap(0u, sys_get_current_time_point, 0u);
+}
+
+public cdecl nothrow int sleep(long duration)
+{
+    return cast<int>(trap(0u, sys_sleep, 0u, duration));
+}
+
+public cdecl nothrow int get_current_date(short* y, sbyte* m, sbyte* d)
+{
+    return cast<int>(trap(0u, sys_get_current_date, 0u, y, m, d));
+}
+
+public cdecl nothrow int get_current_date_time(short* y, sbyte* m, sbyte* d, int* secs)
+{
+    return cast<int>(trap(0u, sys_get_current_date_time, 0u, y, m, d, secs));
+}
+
+public cdecl nothrow double pow(double x, double y)
+{
+    long lx = *cast<long*>(cast<void*>(&x));
+    long ly = *cast<long*>(cast<void*>(&y));
+    long result = trap(0u, sys_pow, 0u, lx, ly);
+    return *cast<double*>(cast<void*>(&result));
+}
+
+public cdecl nothrow long get_random_seed()
+{
+    return trap(0u, sys_get_random_seed, 0u);
+}
+
+public cdecl nothrow int link(const char* sourcePath, const char* targetPath)
+{
+    return cast<int>(trap(0u, sys_link, 0u, sourcePath, targetPath));
+}
+
+public cdecl nothrow int unlink(const char* path)
+{
+    return cast<int>(trap(0u, sys_unlink, 0u, path));
+}
+
+public cdecl nothrow int rename(const char* sourcePath, const char* targetPath)
+{
+    return cast<int>(trap(0u, sys_rename, 0u, sourcePath, targetPath));
+}
+
+public cdecl nothrow int mkdir(const char* path, int mode)
+{
+    return cast<int>(trap(0u, sys_mkdir, 0u, path, mode));
+}
+
+public cdecl nothrow int opendir(const char* dirPath)
+{
+    return cast<int>(trap(0u, sys_opendir, 0u, dirPath));
+}
+
+public cdecl nothrow int readdir(int dd, int* inodeNumber, char* entryName)
+{
+    return cast<int>(trap(0u, sys_readdir, 0u, dd, inodeNumber, entryName));
+}
+
+public cdecl nothrow int closedir(int dd)
+{
+    return cast<int>(trap(0u, sys_closedir, 0u, dd));
+}
+
+public cdecl nothrow int getcwd(char* buffer, long count)
+{
+    return cast<int>(trap(0u, sys_getcwd, 0u, buffer, count));
+}
+
+public cdecl nothrow int chdir(const char* path)
+{
+    return cast<int>(trap(0u, sys_chdir, 0u, path));
+}
+
+public cdecl nothrow int stat(const char* path, byte* statBuf)
+{
+    return cast<int>(trap(0u, sys_stat, 0u, path, statBuf));
+}
+
+public cdecl nothrow int umask(int mask)
+{
+    return cast<int>(trap(0u, sys_umask, 0u, mask));
+}
+
+public cdecl nothrow int ioctl(int fd, int item, byte* buffer, long count)
+{
+    return cast<int>(trap(0u, sys_ioctl, 0u, fd, item, buffer, count));
+}
+
+public cdecl nothrow int chmod(const char* path, int mode)
+{
+    return cast<int>(trap(0u, sys_chmod, 0u, path, mode));
+}
+
+public cdecl nothrow int chown(const char* path, int uid, int gid)
+{
+    return cast<int>(trap(0u, sys_chown, 0u, path, uid, gid));
+}
+
+public cdecl nothrow int utime(const char* path, byte* timeBuf)
+{
+    return cast<int>(trap(0u, sys_utime, 0u, path, timeBuf));
+}
+
+public cdecl nothrow int getuid()
+{
+    return cast<int>(trap(0u, sys_getuid, 0u));
+}
+
+public cdecl nothrow int setuid(int uid)
+{
+    return cast<int>(trap(0u, sys_setuid, 0u, uid));
+}
+
+public cdecl nothrow int getgid()
+{
+    return cast<int>(trap(0u, sys_getgid, 0u));
+}
+
+public cdecl nothrow int setgid(int gid)
+{
+    return cast<int>(trap(0u, sys_setgid, 0u, gid));
+}
+
+public cdecl nothrow int getpid()
+{
+    return cast<int>(trap(0u, sys_getpid, 0u));
+}
+
+public cdecl nothrow int getpgid()
+{
+    return cast<int>(trap(0u, sys_getpgid, 0u));
+}
+
+public cdecl nothrow int setpgid(int pgid)
+{
+    return cast<int>(trap(0u, sys_setpgid, 0u, pgid));
+}
+
+public cdecl nothrow int getfgpid(int fd)
+{
+    return cast<int>(trap(0u, sys_getfgpid, 0u, fd));
+}
+
+public cdecl nothrow int setfgpid(int fd, int pid)
+{
+    return cast<int>(trap(0u, sys_setfgpid, 0u, fd, pid));
+}
+
+public cdecl nothrow int sync()
+{
+    return cast<int>(trap(0u, sys_sync, 0u));
+}
+
+public cdecl nothrow int times(long* kernelTime, long* userTime, long* childKernelTime, long* childUserTime)
+{
+    return cast<int>(trap(0u, sys_times, 0u, kernelTime, userTime, childKernelTime, childUserTime));
+}
+
+public cdecl nothrow int get_host_name(char* buffer, int size)
+{
+    return cast<int>(trap(0u, sys_get_host_name, 0u, buffer, size));
+}
+
+public cdecl nothrow int dup(int fd)
+{
+    return cast<int>(trap(0u, sys_dup, 0u, fd));
+}
+
+public cdecl nothrow int pipe(int* readFD, int* writeFD)
+{
+    return cast<int>(trap(0u, sys_pipe, 0u, readFD, writeFD));
+}
+
+public cdecl nothrow int log()
+{
+    return cast<int>(trap(0u, sys_log, 0u));
+}
+
+public cdecl nothrow int log_message(const char* method, const char* msg)
+{
+    return cast<int>(trap(0u, sys_log_message, 0u, method, msg));
+}

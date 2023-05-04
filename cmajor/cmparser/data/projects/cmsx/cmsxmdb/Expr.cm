@@ -1,0 +1,1309 @@
+using System;
+using System.Collections;
+using System.Lex;
+using System.Parsing;
+using System;
+using MdbTokens;
+
+// this file has been automatically generated from 'D:/work/cmajorm/cmajor/projects/cmsx/cmsxmdb/Expr.parser' using soulcm parser generator scmpg version 3.0.0
+
+public static class MdbExprParser
+{
+    public static UniquePtr<cmsx.debug.Node> Parse(MdbLexer& lexer)
+    {
+        UniquePtr<cmsx.debug.Node> value;
+        #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                lexer.Log()->WriteBeginRule(u"parse");
+                lexer.Log()->IncIndent();
+            }
+        #endif
+        ++lexer;
+        System.Lex.Span span = lexer.GetSpan();
+        Match match = Expression(lexer);
+        value.Reset(cast<cmsx.debug.Node*>(match.value));
+        #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                lexer.Log()->DecIndent();
+                lexer.Log()->WriteEndRule(u"parse");
+            }
+        #endif
+        if (match.hit)
+        {
+            if (*lexer == System.Lex.END_TOKEN)
+            {
+                return value;
+            }
+            else
+            {
+                lexer.ThrowExpectationFailure(lexer.GetSpan(), GetEndTokenInfo());
+            }
+        }
+        else
+        {
+            lexer.ThrowExpectationFailure(span, u"Expression");
+        }
+        return value;
+    }
+    public static Match Expression(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"Expression");
+            }
+        #endif
+        UniquePtr<cmsx.debug.Node> formatExpr;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long pos = lexer.GetPos();
+            Match match = MdbExprParser.FormatExpression(lexer);
+            formatExpr.Reset(cast<cmsx.debug.Node*>(match.value));
+            if (match.hit)
+            {
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Expression");
+                    #endif
+                    return Match(true, formatExpr.Release());
+                }
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Expression");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"Expression");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match FormatExpression(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"FormatExpression");
+            }
+        #endif
+        UniquePtr<cmsx.debug.Node> node;
+        UniquePtr<cmsx.debug.Node> binaryExpr;
+        UniquePtr<Value<cmsx.debug.ResultFormat>> f;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long pos = lexer.GetPos();
+            Match match(false);
+            Match* parentMatch1 = &match;
+            {
+                Match match(false);
+                Match* parentMatch2 = &match;
+                {
+                    Match match(false);
+                    Match* parentMatch3 = &match;
+                    {
+                        long pos = lexer.GetPos();
+                        Match match = MdbExprParser.BinaryExpression(lexer);
+                        binaryExpr.Reset(cast<cmsx.debug.Node*>(match.value));
+                        if (match.hit)
+                        {
+                            node.Reset(binaryExpr.Release());
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    Match match(false);
+                    Match* parentMatch4 = &match;
+                    {
+                        Match match(true);
+                        long save = lexer.GetPos();
+                        Match* parentMatch5 = &match;
+                        {
+                            Match match(false);
+                            Match* parentMatch6 = &match;
+                            {
+                                Match match(false);
+                                Match* parentMatch7 = &match;
+                                {
+                                    Match match(false);
+                                    if (*lexer == DOT)
+                                    {
+                                        ++lexer;
+                                        match.hit = true;
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    Match match(false);
+                                    Match* parentMatch8 = &match;
+                                    {
+                                        Match match(false);
+                                        Match* parentMatch9 = &match;
+                                        {
+                                            long pos = lexer.GetPos();
+                                            Span span = lexer.GetSpan();
+                                            Match match = MdbExprParser.Format(lexer);
+                                            f.Reset(cast<Value<cmsx.debug.ResultFormat>*>(match.value));
+                                            if (match.hit)
+                                            {
+                                                node.Reset(new cmsx.debug.FormatExpressionNode(span, node.Release(), f->value));
+                                            }
+                                            *parentMatch9 = match;
+                                        }
+                                        *parentMatch8 = match;
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            if (match.hit)
+                            {
+                                *parentMatch5 = match;
+                            }
+                            else
+                            {
+                                lexer.SetPos(save);
+                            }
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"FormatExpression");
+                    #endif
+                    return Match(true, node.Release());
+                }
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"FormatExpression");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"FormatExpression");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match Format(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"Format");
+            }
+        #endif
+        Span s;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long save = lexer.GetPos();
+            Match match(false);
+            Match* parentMatch1 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                Match match(false);
+                if (*lexer == ID)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = true;
+                    cmsx.debug.ResultFormat format;
+                    string f = ToUtf8(lexer.GetToken(pos).match.ToString());
+                    switch (cast<char>(f[0]))
+                    {
+                        case 'b': format.type = cmsx.debug.Type.byte_;
+                        break;
+                        case 'w': format.type = cmsx.debug.Type.wyde;
+                        break;
+                        case 't': format.type = cmsx.debug.Type.tetra;
+                        break;
+                        case 'o': format.type = cmsx.debug.Type.octa;
+                        break;
+                        case 'c': format.type = cmsx.debug.Type.char_;
+                        break;
+                        case 's': format.type = cmsx.debug.Type.string;
+                        break;
+                        default: pass = false;
+                        break;
+                    }
+                    if (pass == true)
+                    {
+                        if (f.Length() == 2)
+                        {
+                            switch (cast<char>(f[1]))
+                            {
+                                case 's': format.modifier = cmsx.debug.Modifier.signed;
+                                break;
+                                case 'x': format.modifier = cmsx.debug.Modifier.hex;
+                                break;
+                                default: pass = false;
+                                break;
+                            }
+                        }
+                        else if (f.Length() > 2)
+                        {
+                            pass = false;
+                        }
+                    }
+                    if (pass)
+                    {
+                        {
+                            #if (DEBUG)
+                                if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Format");
+                            #endif
+                            return Match(true, new Value<cmsx.debug.ResultFormat>(format));
+                        }
+                    }
+                }
+                if (match.hit && !pass)
+                {
+                    match = Match(false);
+                }
+                *parentMatch1 = match;
+            }
+            *parentMatch0 = match;
+            if (!match.hit)
+            {
+                Match match(false);
+                Match* parentMatch2 = &match;
+                lexer.SetPos(save);
+                {
+                    Match match(false);
+                    Match* parentMatch3 = &match;
+                    {
+                        long pos = lexer.GetPos();
+                        bool pass = true;
+                        Match match(false);
+                        Match* parentMatch4 = &match;
+                        {
+                            Match match(false);
+                            Match* parentMatch5 = &match;
+                            {
+                                Match match(false);
+                                Match* parentMatch6 = &match;
+                                {
+                                    long pos = lexer.GetPos();
+                                    Span span = lexer.GetSpan();
+                                    Match match(false);
+                                    if (*lexer == DEC)
+                                    {
+                                        ++lexer;
+                                        match.hit = true;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        s = span;
+                                    }
+                                    *parentMatch6 = match;
+                                }
+                                *parentMatch5 = match;
+                            }
+                            if (match.hit)
+                            {
+                                Match match(false);
+                                Match* parentMatch7 = &match;
+                                {
+                                    Match match(true);
+                                    long save = lexer.GetPos();
+                                    Match* parentMatch8 = &match;
+                                    {
+                                        Match match(false);
+                                        Match* parentMatch9 = &match;
+                                        {
+                                            Match match(false);
+                                            Match* parentMatch10 = &match;
+                                            {
+                                                long pos = lexer.GetPos();
+                                                Span span = lexer.GetSpan();
+                                                Match match(false);
+                                                if (*lexer == ID)
+                                                {
+                                                    ++lexer;
+                                                    match.hit = true;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    s.end = span.end;
+                                                }
+                                                *parentMatch10 = match;
+                                            }
+                                            *parentMatch9 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch8 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                        }
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch5 = match;
+                            }
+                            *parentMatch4 = match;
+                        }
+                        if (match.hit)
+                        {
+                            pass = true;
+                            cmsx.debug.ResultFormat format;
+                            string f = ToUtf8(lexer.GetMatch(s));
+                            switch (cast<char>(f[0]))
+                            {
+                                case '1': format.type = cmsx.debug.Type.byte_;
+                                break;
+                                case '2': format.type = cmsx.debug.Type.wyde;
+                                break;
+                                case '4': format.type = cmsx.debug.Type.tetra;
+                                break;
+                                case '8': format.type = cmsx.debug.Type.octa;
+                                break;
+                                default: pass = false;
+                                break;
+                            }
+                            if (pass == true)
+                            {
+                                if (f.Length() == 2)
+                                {
+                                    switch (cast<char>(f[1]))
+                                    {
+                                        case 's': format.modifier = cmsx.debug.Modifier.signed;
+                                        break;
+                                        case 'x': format.modifier = cmsx.debug.Modifier.hex;
+                                        break;
+                                        default: pass = false;
+                                        break;
+                                    }
+                                }
+                                else if (f.Length() > 2)
+                                {
+                                    pass = false;
+                                }
+                            }
+                            if (pass)
+                            {
+                                {
+                                    #if (DEBUG)
+                                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Format");
+                                    #endif
+                                    return Match(true, new Value<cmsx.debug.ResultFormat>(format));
+                                }
+                            }
+                        }
+                        if (match.hit && !pass)
+                        {
+                            match = Match(false);
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch0 = match;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Format");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"Format");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match BinaryExpression(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"BinaryExpression");
+            }
+        #endif
+        UniquePtr<cmsx.debug.Node> node;
+        UniquePtr<cmsx.debug.Node> left;
+        UniquePtr<Value<cmsx.debug.Operator>> op;
+        UniquePtr<cmsx.debug.Node> right;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long pos = lexer.GetPos();
+            Match match(false);
+            Match* parentMatch1 = &match;
+            {
+                Match match(false);
+                Match* parentMatch2 = &match;
+                {
+                    Match match(false);
+                    Match* parentMatch3 = &match;
+                    {
+                        long pos = lexer.GetPos();
+                        Match match = MdbExprParser.Term(lexer);
+                        left.Reset(cast<cmsx.debug.Node*>(match.value));
+                        if (match.hit)
+                        {
+                            node.Reset(left.Release());
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    Match match(false);
+                    Match* parentMatch4 = &match;
+                    {
+                        Match match(true);
+                        Match* parentMatch5 = &match;
+                        {
+                            while (true)
+                            {
+                                long save = lexer.GetPos();
+                                {
+                                    Match match(false);
+                                    Match* parentMatch6 = &match;
+                                    {
+                                        Match match(false);
+                                        Match* parentMatch7 = &match;
+                                        {
+                                            Match match = MdbExprParser.WeakOperator(lexer);
+                                            op.Reset(cast<Value<cmsx.debug.Operator>*>(match.value));
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            Match match(false);
+                                            Match* parentMatch8 = &match;
+                                            {
+                                                Match match(false);
+                                                Match* parentMatch9 = &match;
+                                                {
+                                                    long pos = lexer.GetPos();
+                                                    Span span = lexer.GetSpan();
+                                                    Match match = MdbExprParser.Term(lexer);
+                                                    right.Reset(cast<cmsx.debug.Node*>(match.value));
+                                                    if (match.hit)
+                                                    {
+                                                        node.Reset(new cmsx.debug.BinaryExpressionNode(span, node.Release(), right.Release(), op->value));
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        *parentMatch5 = match;
+                                    }
+                                    else
+                                    {
+                                        lexer.SetPos(save);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BinaryExpression");
+                    #endif
+                    return Match(true, node.Release());
+                }
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BinaryExpression");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"BinaryExpression");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match WeakOperator(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"WeakOperator");
+            }
+        #endif
+        Match match(false);
+        long pos = lexer.GetPos();
+        Span span = lexer.GetSpan();
+        switch (*lexer)
+        {
+            case PLUS: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"WeakOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.add));
+                }
+                break;
+            }
+            case MINUS: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"WeakOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.sub));
+                }
+                break;
+            }
+            case BAR: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"WeakOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.or_));
+                }
+                break;
+            }
+            case CARET: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"WeakOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.xor_));
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"WeakOperator");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"WeakOperator");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match Term(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"Term");
+            }
+        #endif
+        UniquePtr<cmsx.debug.Node> node;
+        UniquePtr<cmsx.debug.Node> left;
+        UniquePtr<Value<cmsx.debug.Operator>> op;
+        UniquePtr<cmsx.debug.Node> right;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long pos = lexer.GetPos();
+            Match match(false);
+            Match* parentMatch1 = &match;
+            {
+                Match match(false);
+                Match* parentMatch2 = &match;
+                {
+                    Match match(false);
+                    Match* parentMatch3 = &match;
+                    {
+                        long pos = lexer.GetPos();
+                        Match match = MdbExprParser.UnaryExpression(lexer);
+                        left.Reset(cast<cmsx.debug.Node*>(match.value));
+                        if (match.hit)
+                        {
+                            node.Reset(left.Release());
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    Match match(false);
+                    Match* parentMatch4 = &match;
+                    {
+                        Match match(true);
+                        Match* parentMatch5 = &match;
+                        {
+                            while (true)
+                            {
+                                long save = lexer.GetPos();
+                                {
+                                    Match match(false);
+                                    Match* parentMatch6 = &match;
+                                    {
+                                        Match match(false);
+                                        Match* parentMatch7 = &match;
+                                        {
+                                            Match match = MdbExprParser.StrongOperator(lexer);
+                                            op.Reset(cast<Value<cmsx.debug.Operator>*>(match.value));
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            Match match(false);
+                                            Match* parentMatch8 = &match;
+                                            {
+                                                Match match(false);
+                                                Match* parentMatch9 = &match;
+                                                {
+                                                    long pos = lexer.GetPos();
+                                                    Span span = lexer.GetSpan();
+                                                    Match match = MdbExprParser.UnaryExpression(lexer);
+                                                    right.Reset(cast<cmsx.debug.Node*>(match.value));
+                                                    if (match.hit)
+                                                    {
+                                                        node.Reset(new cmsx.debug.BinaryExpressionNode(span, node.Release(), right.Release(), op->value));
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        *parentMatch5 = match;
+                                    }
+                                    else
+                                    {
+                                        lexer.SetPos(save);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Term");
+                    #endif
+                    return Match(true, node.Release());
+                }
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"Term");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"Term");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match StrongOperator(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"StrongOperator");
+            }
+        #endif
+        Match match(false);
+        long pos = lexer.GetPos();
+        Span span = lexer.GetSpan();
+        switch (*lexer)
+        {
+            case AST: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.mul));
+                }
+                break;
+            }
+            case SLASH: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.div));
+                }
+                break;
+            }
+            case PERCENT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.mod));
+                }
+                break;
+            }
+            case SHIFT_LEFT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.shiftLeft));
+                }
+                break;
+            }
+            case SHIFT_RIGHT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.shiftRight));
+                }
+                break;
+            }
+            case AMP: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.and_));
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"StrongOperator");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"StrongOperator");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match UnaryExpression(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"UnaryExpression");
+            }
+        #endif
+        UniquePtr<cmsx.debug.Node> expr;
+        UniquePtr<Value<cmsx.debug.Operator>> op;
+        UniquePtr<cmsx.debug.Node> child;
+        UniquePtr<cmsx.debug.Node> primary;
+        Match match(false);
+        Match* parentMatch0 = &match;
+        {
+            long save = lexer.GetPos();
+            Match match(false);
+            Match* parentMatch1 = &match;
+            {
+                long save = lexer.GetPos();
+                Match match(false);
+                Match* parentMatch2 = &match;
+                {
+                    Match match(false);
+                    Match* parentMatch3 = &match;
+                    {
+                        Match match(false);
+                        if (*lexer == LPAREN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        *parentMatch3 = match;
+                    }
+                    if (match.hit)
+                    {
+                        Match match(false);
+                        Match* parentMatch4 = &match;
+                        {
+                            Match match = MdbExprParser.Expression(lexer);
+                            expr.Reset(cast<cmsx.debug.Node*>(match.value));
+                            *parentMatch4 = match;
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    Match match(false);
+                    Match* parentMatch5 = &match;
+                    {
+                        Match match(false);
+                        Match* parentMatch6 = &match;
+                        {
+                            long pos = lexer.GetPos();
+                            Span span = lexer.GetSpan();
+                            Match match(false);
+                            if (*lexer == RPAREN)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            if (match.hit)
+                            {
+                                {
+                                    #if (DEBUG)
+                                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryExpression");
+                                    #endif
+                                    return Match(true, new cmsx.debug.ParenthesizedExpressionNode(span, expr.Release()));
+                                }
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch5 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+                if (!match.hit)
+                {
+                    Match match(false);
+                    Match* parentMatch7 = &match;
+                    lexer.SetPos(save);
+                    {
+                        Match match(false);
+                        Match* parentMatch8 = &match;
+                        {
+                            Match match = MdbExprParser.UnaryOperator(lexer);
+                            op.Reset(cast<Value<cmsx.debug.Operator>*>(match.value));
+                            *parentMatch8 = match;
+                        }
+                        if (match.hit)
+                        {
+                            Match match(false);
+                            Match* parentMatch9 = &match;
+                            {
+                                Match match(false);
+                                Match* parentMatch10 = &match;
+                                {
+                                    long pos = lexer.GetPos();
+                                    Span span = lexer.GetSpan();
+                                    Match match = MdbExprParser.UnaryExpression(lexer);
+                                    child.Reset(cast<cmsx.debug.Node*>(match.value));
+                                    if (match.hit)
+                                    {
+                                        {
+                                            #if (DEBUG)
+                                                if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryExpression");
+                                            #endif
+                                            return Match(true, new cmsx.debug.UnaryExpressionNode(span, child.Release(), op->value));
+                                        }
+                                    }
+                                    *parentMatch10 = match;
+                                }
+                                *parentMatch9 = match;
+                            }
+                            *parentMatch8 = match;
+                        }
+                        *parentMatch7 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+            }
+            *parentMatch0 = match;
+            if (!match.hit)
+            {
+                Match match(false);
+                Match* parentMatch11 = &match;
+                lexer.SetPos(save);
+                {
+                    Match match(false);
+                    Match* parentMatch12 = &match;
+                    {
+                        long pos = lexer.GetPos();
+                        Match match = MdbExprParser.PrimaryExpression(lexer);
+                        primary.Reset(cast<cmsx.debug.Node*>(match.value));
+                        if (match.hit)
+                        {
+                            {
+                                #if (DEBUG)
+                                    if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryExpression");
+                                #endif
+                                return Match(true, primary.Release());
+                            }
+                        }
+                        *parentMatch12 = match;
+                    }
+                    *parentMatch11 = match;
+                }
+                *parentMatch0 = match;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryExpression");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"UnaryExpression");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match UnaryOperator(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"UnaryOperator");
+            }
+        #endif
+        Match match(false);
+        long pos = lexer.GetPos();
+        Span span = lexer.GetSpan();
+        switch (*lexer)
+        {
+            case PLUS: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.unaryPlus));
+                }
+                break;
+            }
+            case MINUS: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.unaryMinus));
+                }
+                break;
+            }
+            case TILDE: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.complement));
+                }
+                break;
+            }
+            case AST: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryOperator");
+                    #endif
+                    return Match(true, new Value<cmsx.debug.Operator>(cmsx.debug.Operator.deref));
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"UnaryOperator");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"UnaryOperator");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+    public static Match PrimaryExpression(MdbLexer& lexer)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"PrimaryExpression");
+            }
+        #endif
+        Match match(false);
+        long pos = lexer.GetPos();
+        Span span = lexer.GetSpan();
+        switch (*lexer)
+        {
+            case SEG: 
+            {
+                ++lexer;
+                uchar s = lexer.GetToken(pos).match.ToString()[1];
+                switch (s)
+                {
+                    case 't': 
+                    {
+                        #if (DEBUG)
+                            if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                        #endif
+                        return Match(true, new cmsx.debug.SegmentNode(span, cmsx.machine.textSegmentIndex));
+                    }
+                    case 'd': 
+                    {
+                        #if (DEBUG)
+                            if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                        #endif
+                        return Match(true, new cmsx.debug.SegmentNode(span, cmsx.machine.dataSegmentIndex));
+                    }
+                    case 'p': 
+                    {
+                        #if (DEBUG)
+                            if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                        #endif
+                        return Match(true, new cmsx.debug.SegmentNode(span, cmsx.machine.poolSegmentIndex));
+                    }
+                    case 's': 
+                    {
+                        #if (DEBUG)
+                            if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                        #endif
+                        return Match(true, new cmsx.debug.SegmentNode(span, cmsx.machine.stackSegmentIndex));
+                    }
+                    case 'k': 
+                    {
+                        #if (DEBUG)
+                            if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                        #endif
+                        return Match(true, new cmsx.debug.SegmentNode(span, cmsx.machine.numSegments));
+                    }
+                }
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                    #endif
+                    return Match(true, null);
+                }
+                break;
+            }
+            case REG: 
+            {
+                ++lexer;
+                byte x = ParseByte(ToUtf8(lexer.GetToken(pos).match.ToString().Substring(1)));
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                    #endif
+                    return Match(true, new cmsx.debug.RegNumberNode(span, x));
+                }
+                break;
+            }
+            case HEX: 
+            {
+                ++lexer;
+                ulong x = ParseHexULong(ToUtf8(lexer.GetToken(pos).match.ToString().Substring(1)));
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                    #endif
+                    return Match(true, new cmsx.debug.HexNumberNode(span, x));
+                }
+                break;
+            }
+            case DEC: 
+            {
+                ++lexer;
+                ulong x = ParseULong(ToUtf8(lexer.GetToken(pos).match.ToString()));
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                    #endif
+                    return Match(true, new cmsx.debug.DecNumberNode(span, x));
+                }
+                break;
+            }
+            case ID: 
+            {
+                ++lexer;
+                ustring id = lexer.GetToken(pos).match.ToString();
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                    #endif
+                    return Match(true, new cmsx.debug.SymbolNode(span, id));
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"PrimaryExpression");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"PrimaryExpression");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_cmsxm_82C9CC1C53E5721D5B6172A94D7F9F0F0323CD67", 
+        "project_cmsxo_3EC397B51356C3E57AF7DEC60034106388F5327F", 
+        "project_cmsxu_54A022E66935CE7C2FA74D7BFABE7FAB63C3494F"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "0475998779E11BF7C6FD297926B1B91E9E3BC488", 
+            "fileId" : "Main_2395792A9D2E18A872CDC979CA43BC8DE3C0D81E", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cmsx\/cmsxlink\/Main.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cmsx\/cmsxlink\/cmsxlink.cmp", 
+    "projectHash" : "689AB458D810BAED833C2FCEE6F6C100D00B2E58", 
+    "projectId" : "project_cmsxlink_33AE432B967976AB878ED0AC721B7046EAAABA19", 
+    "projectName" : "cmsxlink", 
+    "target" : "program"
+}

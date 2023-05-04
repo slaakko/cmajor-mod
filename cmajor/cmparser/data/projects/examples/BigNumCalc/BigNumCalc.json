@@ -1,0 +1,80 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "D53E8BBB40C9FA76EEAD70C075DDCA1292CC2834", 
+            "fileId" : "BigNumClassMap_A9D10FF17436476ED5E0D4BE30ACD782101271AE", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumClassMap.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "9E5886AA369523ECE1A29E5E2103910E24B84322", 
+            "fileId" : "BigNumExpressionParser_4277A817C549E717F75ABA4B2F2E22724DF316B7", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumExpressionParser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "B4E0C5AAF35B72196A0CF48F132AB1D400B062EE", 
+            "fileId" : "BigNumLexer_92018217654A46B65DC6C2020B3293C724C7BA0C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumLexer.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "FCEF28197676D944AF272D2B0713ED6A924802C7", 
+            "fileId" : "BigNumParser_033F081796CE9EF2FD55F5B1250C1EAB26B09162", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumParser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5E3B128D0876D1712BBB7970E5F52DB4F2AC5EB3", 
+            "fileId" : "BigNumTokens_576391D8AAA70C0C5A1D441602339449EA8CCB52", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumTokens.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "CAD49280422BACD55FE90CFC3B8D27661A32BDF1", 
+            "fileId" : "BigValue_27E4C7F77786083DE3E4B456848A8A6A11708507", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigValue.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "BF61AB6EDD2EF64F905D5E828489E2BA0668DCC7", 
+            "fileId" : "Evaluator_0F7F46E23FC2840EA0D0043C5A735CEAB27DB695", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/Evaluator.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5C8492D0746F0AA4D2F629739A2392B79F835895", 
+            "fileId" : "Main_B8353F4EF5066692EC37000E7480E7E861C202EF", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/Main.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/BigNumCalc\/BigNumCalc.cmp", 
+    "projectHash" : "2D1A0A34B3B75D383FDC09359986E691A220D497", 
+    "projectId" : "project_BigNumCalc_5ACF5008990CCBDD2C5D5917CFC46897BAD0138F", 
+    "projectName" : "BigNumCalc", 
+    "target" : "program"
+}

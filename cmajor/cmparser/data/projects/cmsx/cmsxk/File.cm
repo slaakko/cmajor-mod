@@ -1,0 +1,1727 @@
+using System;
+using System.IO;
+using System.Collections;
+using cmsx.machine;
+using cmsx.util;
+
+namespace cmsx.kernel
+{
+    public const long openFileMax = 32;
+
+    public enum Origin : byte
+    {
+        seekSet, seekCur, seekEnd
+    }
+
+    public const int IOCTL_IS_CONSOLE_ITEM = 1;
+    public const int IOCTL_IS_HOST_TEXT_FILE_ITEM = 2;
+    public const int IOCTL_HAS_COLORS_ITEM = 3;
+    public const int IOCTL_GET_WINDOW_SIZE_ITEM = 4;
+    public const int IOCTL_GET_COLORS_ITEM = 5;
+    public const int IOCTL_SET_COLORS_ITEM = 6;
+    public const int IOCTL_BEGIN_OBEY_COLOR_STRINGS_ITEM = 7;
+    public const int IOCTL_END_OBEY_COLOR_STRINGS_ITEM = 8;
+    public const int IOCTL_GET_ECHO_ITEM = 9;
+    public const int IOCTL_SET_ECHO_ITEM = 10;
+
+    public enum OpenFlags : int
+    {
+        none = 0u,
+        read = 1u << 0u,
+        write = 1u << 1u,
+        create = 1 << 2u,
+        append = 1u << 3u,
+        truncate = 1u << 4u,
+        text = 1u << 5u
+    }
+
+    public int Create(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, int mode)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path address is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        return fs->Create(process, path, mode, true);
+    }
+
+    public int Open(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, OpenFlags flags, int mode)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        return fs->Open(process, path, flags, mode);
+    }
+
+    public void Close(Machine& machine, cmsx.kernel.Process* process, int fd)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        if (file != null)
+        {
+            file->Release(fd);
+            process->fileTable.SetFile(fd, null);
+        }
+        else
+        {
+            throw SystemError(EBADF, "file '" + ToString(fd) + "' not open");
+        }
+    }
+
+    public long Read(Machine& machine, cmsx.kernel.Process* process, int fd, ulong bufferAddress, long count)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        if (count > 0)
+        {
+            return file->Read(machine, process, bufferAddress, count);
+        }
+        return 0;
+    }
+
+    public long Write(Machine& machine, cmsx.kernel.Process* process, int fd, ulong bufferAddress, long count)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        if (count > 0)
+        {
+            return file->Write(machine, process, bufferAddress, count);
+        }
+        return 0;
+    }
+
+    public long Seek(Machine& machine, cmsx.kernel.Process* process, int fd, long pos, Origin origin)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        return file->Seek(pos, origin);
+    }
+
+    public long Tell(Machine& machine, cmsx.kernel.Process* process, int fd)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        return file->Tell();
+    }
+
+    public int Dup(cmsx.kernel.Process* process, int fd)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        File* shared = file->Share();
+        int duplicate = process->fileTable.GetEmptyFileSlot();
+        process->fileTable.SetFile(duplicate, shared);
+        return duplicate;
+    }
+
+    public void Pipe(Machine& machine, cmsx.kernel.Process* process, ulong readFDAddress, ulong writeFDAddress)
+    {
+        if (readFDAddress == 0u)
+        {
+            throw SystemError(EINVAL, "read file descriptor address is null");
+        }
+        if (writeFDAddress == 0u)
+        {
+            throw SystemError(EINVAL, "write file descriptor address is null");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        int inodeNumber = fs->GetFreeINodeNumber();
+        INodeKey key(inodeNumber, 0);
+        INode* inode = fs->GetINodeManager()->GetINode(key);
+        INodePutter inodePutter(inode);
+        inode->SetType(FileType.fifo);
+        inode->SetFlag(INode.Flags.pipeEmpty);
+        Fifo* fifo = new Fifo(inode);
+        int readFD = process->fileTable.GetEmptyFileSlot();
+        PipeInputFile* pipeInput = new PipeInputFile(fifo);
+        process->fileTable.SetFile(readFD, pipeInput);
+        int writeFD = process->fileTable.GetEmptyFileSlot();
+        PipeOutputFile* pipeOutput = new PipeOutputFile(fifo);
+        process->fileTable.SetFile(writeFD, pipeOutput);
+        WriteProcessMemory(machine, process, readFDAddress, cast<ulong>(readFD), 4u, Protection.write);
+        WriteProcessMemory(machine, process, writeFDAddress, cast<ulong>(writeFD), 4u, Protection.write);
+        inodePutter.ResetINode();
+    }
+
+    public void Link(Machine& machine, cmsx.kernel.Process* process, ulong sourcePathAddress, ulong targetPathAddress)
+    {
+        if (sourcePathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "source path address is null");
+        }
+        if (targetPathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "target path address is null");
+        }
+        string sourcePath;
+        ReadStringFromProcessMemory(machine, process, sourcePathAddress, sourcePath);
+        if (sourcePath.IsEmpty())
+        {
+            throw SystemError(EINVAL, "source path is empty");
+        }
+        string targetPath;
+        ReadStringFromProcessMemory(machine, process, targetPathAddress, targetPath);
+        if (targetPath.IsEmpty())
+        {
+            throw SystemError(EINVAL, "target path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->Link(process, sourcePath, targetPath);
+    }
+
+    public void Unlink(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->Unlink(process, path);
+    }
+
+    public void Rename(Machine& machine, cmsx.kernel.Process* process, ulong sourcePathAddress, ulong targetPathAddress)
+    {
+        if (sourcePathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "source path address is null");
+        }
+        if (targetPathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "target path address is null");
+        }
+        string sourcePath;
+        ReadStringFromProcessMemory(machine, process, sourcePathAddress, sourcePath);
+        if (sourcePath.IsEmpty())
+        {
+            throw SystemError(EINVAL, "source path is empty");
+        }
+        string targetPath;
+        ReadStringFromProcessMemory(machine, process, targetPathAddress, targetPath);
+        if (targetPath.IsEmpty())
+        {
+            throw SystemError(EINVAL, "target path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->Rename(process, sourcePath, targetPath);
+    }
+
+    public void Mkdir(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, int mode)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->MakeDirectory(process, path, mode);
+    }
+
+    public int OpenDir(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        return fs->OpenDirectory(process, path);
+    }
+
+    public int ReadDir(Machine& machine, cmsx.kernel.Process* process, int fd, ulong inodeNumberAddress, ulong entryNameAddress)
+    {
+        if (inodeNumberAddress == 0u)
+        {
+            throw SystemError(EINVAL, "inode number address is null");
+        }
+        if (entryNameAddress == 0u)
+        {
+            throw SystemError(EINVAL, "entry name address is null");
+        }
+        File* file = process->fileTable.GetFile(fd);
+        if (file != null)
+        {
+            if (file is DirectoryFile*)
+            {
+                DirectoryFile* dir = cast<DirectoryFile*>(file);
+                return dir->Read(process, inodeNumberAddress, entryNameAddress);
+            }
+            else
+            {
+                throw SystemError(EBADF, "file descriptor '" + ToString(fd) + "' does not denote a directory");
+            }
+        }
+        else
+        {
+            throw SystemError(EBADF, "directory '" + ToString(fd) + "' not open");
+        }
+    }
+
+    public void CloseDir(Machine& machine, cmsx.kernel.Process* process, int fd)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        if (file != null)
+        {
+            if (file is DirectoryFile*)
+            {
+                file->Release(fd);
+                process->fileTable.SetFile(fd, null);
+            }
+            else
+            {
+                throw SystemError(EBADF, "file descriptor '" + ToString(fd) + "' does not denote a directory");
+            }
+        }
+        else
+        {
+            throw SystemError(EBADF, "directory '" + ToString(fd) + "' not open");
+        }
+    }
+
+    public void GetCWD(Machine& machine, cmsx.kernel.Process* process, ulong pathBufferAddress, long count)
+    {
+        if (pathBufferAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path buffer address is null");
+        }
+        if (count < 0)
+        {
+            throw SystemError(EINVAL, "invalid count");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(process->workingDirINodeKey.fsNumber);
+        string currentWorkindDirectory = fs->GetCurrentWorkingDirectory(process);
+        if (currentWorkindDirectory.Length() >= count)
+        {
+            throw SystemError(ERANGE, "path buffer not big enough");
+        }
+        WriteProcessMemory(machine, process, pathBufferAddress, cast<byte*>(cast<void*>(currentWorkindDirectory.Chars())), cast<ulong>(currentWorkindDirectory.Length() + 1), Protection.write);
+    }
+
+    public void ChDir(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->ChDir(process, path);
+    }
+
+    public void Stat(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, ulong statBufAddress)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->Stat(process, path, statBufAddress);
+    }
+
+    public int UMask(Machine& machine, cmsx.kernel.Process* process, int mask)
+    {
+        int prevUMask = process->umask;
+        process->umask = mask & cast<int>(ParseOctal("777"));
+        return prevUMask;
+    }
+
+    public void IOCtl(Machine& machine, cmsx.kernel.Process* process, int fd, int item, ulong bufferAddress, long count)
+    {
+        if (bufferAddress == 0u)
+        {
+            throw SystemError(EINVAL, "buffer address is null");
+        }
+        if (count < 0)
+        {
+            throw SystemError(EINVAL, "invalid count");
+        }
+        File* file = process->fileTable.GetFile(fd);
+        file->IOCtl(machine, process, item, bufferAddress, count);
+    }
+
+    public int GetFGPID(cmsx.kernel.Process* process, int fd)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        return file->GetFGPID();
+    }
+
+    public void SetFGPID(cmsx.kernel.Process* process, int fd, int pid)
+    {
+        File* file = process->fileTable.GetFile(fd);
+        file->SetFGPID(pid);
+    }
+
+    public void Chmod(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, int mode)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->ChangeMode(process, path, mode);
+    }
+
+    public void Chown(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress,  int uid, int gid)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->ChangeOwner(process, path, uid, gid);
+    }
+
+    public void UTime(Machine& machine, cmsx.kernel.Process* process, ulong pathAddress, ulong timeBufAddress)
+    {
+        if (pathAddress == 0u)
+        {
+            throw SystemError(EINVAL, "path address is null");
+        }
+        if (timeBufAddress == 0u)
+        {
+            throw SystemError(EINVAL, "time buffer address is null");
+        }
+        string path;
+        ReadStringFromProcessMemory(machine, process, pathAddress, path);
+        if (path.IsEmpty())
+        {
+            throw SystemError(EINVAL, "path is empty");
+        }
+        byte[16] buffer;
+        ReadProcessMemory(machine, process, timeBufAddress, &buffer[0], cast<ulong>(buffer.Length()));
+        MemoryReader reader(&buffer[0], buffer.Length());
+        DateTime atime = reader.ReadDateTime();
+        DateTime mtime = reader.ReadDateTime();
+        FileSystem* fs = GetMountTable().GetFileSystem(0);
+        fs->UpdateFileTimes(process, path, atime, mtime);
+    }
+
+    public abstract class File
+    {
+        public nothrow File(const string& name_) : name(name_)
+        {
+        }
+        public virtual long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            throw SystemError(EBADF, name + " not open for writing");
+        }
+        public virtual long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            throw SystemError(EBADF, name + " not open for reading");
+        }
+        public virtual long Seek(long pos, Origin origin)
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support seek");
+        }
+        public virtual long Tell()
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support tell");
+        }
+        public virtual nothrow bool IsConsole() const
+        {
+            return false;
+        }
+        public virtual nothrow bool IsHostTextFile() const
+        {
+            return false;
+        }
+        public virtual nothrow bool HasColors() const
+        {
+            return false;
+        }
+        public virtual bool Echo() const
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support ioctl(echo)");
+        }
+        public virtual void SetEcho(bool echo)
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support ioctl(setecho)");
+        }
+        public virtual void IOCtl(Machine& machine, cmsx.kernel.Process* process, int item, ulong bufferAddress, long count)
+        {
+            bool itemFound = true;
+            switch (item)
+            {
+                case IOCTL_IS_CONSOLE_ITEM:
+                {
+                    GetConsoleStatus(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_IS_HOST_TEXT_FILE_ITEM:
+                {
+                    GetHostTextFileStatus(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_HAS_COLORS_ITEM:
+                {
+                    GetColorStatus(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_GET_WINDOW_SIZE_ITEM:
+                {
+                    GetWindowDimensions(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_GET_COLORS_ITEM:
+                {
+                    GetConsoleColors(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_SET_COLORS_ITEM:
+                {
+                    SetConsoleColors(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_BEGIN_OBEY_COLOR_STRINGS_ITEM:
+                {
+                    BeginObeyColorStrings();
+                    break;
+                }
+                case IOCTL_END_OBEY_COLOR_STRINGS_ITEM:
+                {
+                    EndObeyColorStrings();
+                    break;
+                }
+                case IOCTL_GET_ECHO_ITEM:
+                {
+                    GetEcho(machine, process, bufferAddress, count);
+                    break;
+                }
+                case IOCTL_SET_ECHO_ITEM:
+                {
+                    SetEcho(machine, process, bufferAddress, count);
+                    break;
+                }
+                default:
+                {
+                    itemFound = false;
+                    break;
+                }
+            }
+            if (!itemFound)
+            {
+                throw SystemError(EINVAL, "unknown ioctl item " + ToString(item) + " for " + name);
+            }
+        }
+        public virtual int GetFGPID()
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support getfgpid()");
+        }
+        public virtual void SetFGPID(int pid)
+        {
+            throw SystemError(ENOTSUPPORTED, name + " does not support setfgpid()");
+        }
+        public virtual File* Share()
+        {
+            return this;
+        }
+        public virtual void Release(int fd)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "release.fd=" + ToString(fd));
+            }
+        }
+        private void GetConsoleStatus(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 1)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_IS_CONSOLE_ITEM must be at least 1 byte");
+            }
+            byte[1] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            writer.Write(cast<byte>(IsConsole()));
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void GetHostTextFileStatus(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 1)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_IS_HOST_TEXT_FILE_ITEM must be at least 1 byte");
+            }
+            byte[1] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            writer.Write(cast<byte>(IsHostTextFile()));
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void GetColorStatus(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 1)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_HAS_COLORS_ITEM must be at least 1 byte");
+            }
+            byte[1] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            writer.Write(cast<byte>(HasColors()));
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void GetEcho(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 1)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_GET_ECHO_ITEM must be at least 1 byte");
+            }
+            byte[1] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            bool echo = Echo();
+            writer.Write(cast<byte>(echo));
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void SetEcho(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 1)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_SET_ECHO_ITEM must be at least 1 byte");
+            }
+            byte[1] buffer;
+            ReadProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()));
+            MemoryReader reader(&buffer[0], buffer.Length());
+            bool echo = cast<bool>(reader.ReadByte());
+            SetEcho(echo);
+        }
+        private void GetWindowDimensions(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 8)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_GET_WINDOW_SIZE_ITEM must be at least 8 bytes");
+            }
+            int rows = 0;
+            int cols = 0;
+            if (IsConsole())
+            {
+                GetConsoleDriver().GetDimensions(rows, cols);
+            }
+            byte[8] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            writer.Write(rows);
+            writer.Write(cols);
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void GetConsoleColors(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 2)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_GET_COLORS_ITEM must be at least 2 bytes");
+            }
+            byte[2] buffer;
+            MemoryWriter writer(&buffer[0], buffer.Length());
+            if (IsConsole())
+            {
+                ConsoleColor foregroundColor;
+                ConsoleColor backgroundColor;
+                GetConsoleDriver().GetConsoleColors(foregroundColor, backgroundColor);
+                writer.Write(cast<byte>(foregroundColor));
+                writer.Write(cast<byte>(backgroundColor));
+            }
+            else
+            {
+                writer.Write(cast<byte>(0u));
+                writer.Write(cast<byte>(0u));
+            }
+            WriteProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()), Protection.write);
+        }
+        private void SetConsoleColors(Machine& machine, cmsx.kernel.Process* process, ulong bufferAddress, long count)
+        {
+            if (count < 2)
+            {
+                throw SystemError(ERANGE, "buffer size for IOCTL_SET_COLORS_ITEM must be at least 2 bytes");
+            }
+            if (IsConsole())
+            {
+                byte[2] buffer;
+                ReadProcessMemory(machine, process, bufferAddress, &buffer[0], cast<ulong>(buffer.Length()));
+                MemoryReader reader(&buffer[0], buffer.Length());
+                ConsoleColor foregroundColor = cast<ConsoleColor>(reader.ReadByte());
+                ConsoleColor backgroundColor = cast<ConsoleColor>(reader.ReadByte());
+                GetConsoleDriver().SetConsoleColors(foregroundColor, backgroundColor);
+            }
+        }
+        private void BeginObeyColorStrings()
+        {
+            if (IsConsole())
+            {
+                GetConsoleDriver().BeginObeyColorStrings();
+            }
+        }
+        private void EndObeyColorStrings()
+        {
+            if (IsConsole())
+            {
+                GetConsoleDriver().EndObeyColorStrings();
+            }
+        }
+        public string name;
+    }
+
+    public class DebuggerInputFile : File
+    {
+        public nothrow DebuggerInputFile() : base("CONSOLE INPUT (DEBUGGER)")
+        {
+        }
+        public override long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            try
+            {
+                if (bufferedInput.IsEmpty())
+                {
+                    Kernel& kernel = Kernel.Instance();
+                    Debugger* debugger = kernel.GetDebugger();
+                    bufferedInput = debugger->ReadInputLine();
+                    if (bufferedInput.IsEmpty())
+                    {
+                        if (debugger->Eof())
+                        {
+                            debugger->ResetEof();
+                            return 0;
+                        }
+                    }
+                }
+                long n = Min(count, bufferedInput.Length());
+                WriteProcessMemory(machine, reader, bufferAddress, cast<byte*>(cast<void*>(bufferedInput.Chars())), cast<ulong>(n), Protection.write);
+                bufferedInput = bufferedInput.Substring(n);
+                return n;
+            }
+            catch (const Exception& ex)
+            {
+                throw SystemError(EFAIL, ex.Message());
+            }
+            return -1;
+        }
+        public override nothrow bool IsConsole() const
+        {
+            return true;
+        }
+        public override bool Echo() const
+        {
+            return true;
+        }
+        public override void SetEcho(bool echo)
+        {
+        }
+        public override int GetFGPID()
+        {
+            Kernel& kernel = GetKernel();
+            Session* currentSession = kernel.CurrentSession();
+            return currentSession->fgpid;
+        }
+        public override void SetFGPID(int pid)
+        {
+            Kernel& kernel = GetKernel();
+            Session* currentSession = kernel.CurrentSession();
+            currentSession->fgpid = pid;
+        }
+        private string bufferedInput;
+    }
+
+    public class DebuggerOutputFile : File
+    {
+        public nothrow DebuggerOutputFile() : base("CONSOLE OUTPUT (DEBUGGER)")
+        {
+        }
+        public override long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            try
+            {
+                Kernel& kernel = Kernel.Instance();
+                Debugger* debugger = kernel.GetDebugger();
+                UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(count)));
+                ReadProcessMemory(machine, writer, bufferAddress, buffer.Get(), cast<ulong>(count));
+                debugger->WriteOutput(buffer.Get(), count);
+                return count;
+            }
+            catch (const Exception& ex)
+            {
+                throw SystemError(EFAIL, ex.Message());
+            }
+            return -1;
+        }
+        public override nothrow bool IsConsole() const
+        {
+            return true;
+        }
+    }
+
+    public class ConsoleInputFile : File
+    {
+        public nothrow ConsoleInputFile() : base("CONSOLE INPUT")
+        {
+        }
+        public override long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            try
+            {
+                while (true)
+                {
+                    if (Log())
+                    {
+                        LogMessage("fs.file", "console.input.begin.read.count=" + ToString(count));
+                    }
+                    Kernel& kernel = Kernel.Instance();
+                    Session* session = kernel.CurrentSession();
+                    if (bufferedInput.IsEmpty())
+                    {
+                        ConsoleDriver* consoleDriver = kernel.GetConsoleDriver();
+                        if (consoleDriver->HasLine())
+                        {
+                            bufferedInput = consoleDriver->GetLine();
+                        }
+                        else if (consoleDriver->Eof())
+                        {
+                            consoleDriver->ResetEof();
+                            return 0;
+                        }
+                        else
+                        {
+                            EnqueueReadRequest(reader, bufferAddress, count);
+                        }
+                    }
+                    long n = Min(count, bufferedInput.Length());
+                    WriteProcessMemory(machine, reader, bufferAddress, cast<byte*>(cast<void*>(bufferedInput.Chars())), cast<ulong>(n), Protection.write);
+                    bufferedInput = bufferedInput.Substring(n);
+                    if (Log())
+                    {
+                        LogMessage("fs.file", "console.input.end.read.count=" + ToString(n));
+                    }
+                    return n;
+                }
+            }
+            catch (const Exception& ex)
+            {
+                throw SystemError(EFAIL, ex.Message());
+            }
+            return -1;
+        }
+        public override nothrow bool IsConsole() const
+        {
+            return true;
+        }
+        public nothrow inline bool HasBufferedInput() const
+        {
+            return !bufferedInput.IsEmpty();
+        }
+        public nothrow void SetBufferedInput(const string& line)
+        {
+            bufferedInput = line;
+        }
+        private void EnqueueReadRequest(cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            SleepProcess(reader, consoleInputEvent, bufferAddress, cast<ulong>(count));
+        }
+        public override bool Echo() const
+        {
+            return GetConsoleDriver().Echo();
+        }
+        public override void SetEcho(bool echo)
+        {
+            GetConsoleDriver().SetEcho(echo);
+        }
+        public override int GetFGPID()
+        {
+            Kernel& kernel = GetKernel();
+            Session* currentSession = kernel.CurrentSession();
+            return currentSession->fgpid;
+        }
+        public override void SetFGPID(int pid)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "console.input.setfgpid=" + ToString(pid));
+            }
+            Kernel& kernel = GetKernel();
+            Session* currentSession = kernel.CurrentSession();
+            currentSession->fgpid = pid;
+        }
+        private string bufferedInput;
+    }
+
+    public class ConsoleOutputFile : File
+    {
+        public nothrow ConsoleOutputFile() : base("CONSOLE OUTPUT")
+        {
+        }
+        public override long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            try
+            {
+                UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(count)));
+                ReadProcessMemory(machine, writer, bufferAddress, buffer.Get(), cast<ulong>(count));
+                Kernel& kernel = Kernel.Instance();
+                ConsoleDriver* consoleDriver = kernel.GetConsoleDriver();
+                consoleDriver->WriteToConsole(buffer.Get(), count);
+                return count;
+            }
+            catch (const Exception& ex)
+            {
+                throw SystemError(EFAIL, ex.Message());
+            }
+            return -1;
+        }
+        public override nothrow bool IsConsole() const
+        {
+            return true;
+        }
+        public override nothrow bool HasColors() const
+        {
+            return true;
+        }
+    }
+
+    public class RegularFile : File
+    {
+        public nothrow RegularFile(const string& name_, FilePtr* filePtr_) : base(name_), filePtr(filePtr_)
+        {
+        }
+        public override long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            if ((filePtr->Flags() & OpenFlags.write) == OpenFlags.none)
+            {
+                throw SystemError(EBADF, name + " not open for writing");
+            }
+            return filePtr->Write(machine, writer, bufferAddress, count);
+        }
+        public override long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            if ((filePtr->Flags() & OpenFlags.read) == OpenFlags.none)
+            {
+                throw SystemError(EBADF, name + " not open for reading");
+            }
+            return filePtr->Read(machine, reader, bufferAddress, count);
+        }
+        public override long Seek(long pos, Origin origin)
+        {
+            return filePtr->Seek(pos, origin);
+        }
+        public override long Tell()
+        {
+            return filePtr->Tell();
+        }
+        public override nothrow bool IsHostTextFile() const
+        {
+            return filePtr->IsHostTextFile();
+        }
+        public override File* Share()
+        {
+            return new RegularFile(name, filePtr->Share());
+        }
+        public override void Release(int fd)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "regular.release.begin.fd=" + ToString(fd));
+            }
+            filePtr->Release();
+            delete this;
+            if (Log())
+            {
+                LogMessage("fs.file", "regular.release.end");
+            }
+        }
+        private FilePtr* filePtr;
+    }
+
+    public class DirectoryFile : File
+    {
+        public nothrow DirectoryFile(INode* dirINode_) : base("dir"), dirINode(dirINode_), offset(0)
+        {
+        }
+        public virtual int Read(cmsx.kernel.Process* process, ulong inodeNumberAddress, ulong entryNameAddress)
+        {
+            if (dirINode == null)
+            {
+                throw SystemError(EINVAL, "directory inode is null");
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(dirINode->Key().fsNumber);
+            return fs->ReadDirectory(process, this, inodeNumberAddress, entryNameAddress);
+        }
+        public inline nothrow INode* DirINode() const
+        {
+            return dirINode;
+        }
+        public inline nothrow long Offset() const
+        {
+            return offset;
+        }
+        public inline nothrow void SetOffset(long offset_)
+        {
+            offset = offset_;
+        }
+        public override File* Share()
+        {
+            if (dirINode != null)
+            {
+                dirINode->SetUseCount(dirINode->GetUseCount() + 1);
+            }
+            return new DirectoryFile(dirINode);
+        }
+        public override void Release(int fd)
+        {
+            if (dirINode != null)
+            {
+                dirINode->Manager()->PutINode(dirINode);
+            }
+            delete this;
+        }
+        private INode* dirINode;
+        private long offset;
+    }
+
+    public class HostDirectoryFile : DirectoryFile
+    {
+        public nothrow HostDirectoryFile(INode* dirINode_) : base(dirINode_), findHandle(null)
+        {
+        }
+        public override int Read(cmsx.kernel.Process* process, ulong inodeNumberAddress, ulong entryNameAddress)
+        {
+            FileSystem* fs = GetMountTable().GetFileSystem(DirINode()->Key().fsNumber);
+            return fs->ReadDirectory(process, this, inodeNumberAddress, entryNameAddress);
+        }
+        public void* GetFindHandle() const
+        {
+            return findHandle;
+        }
+        public void SetFindHandle(void* findHandle_)
+        {
+            findHandle = findHandle_;
+        }
+        public override File* Share()
+        {
+            if (DirINode() != null)
+            {
+                DirINode()->SetUseCount(DirINode()->GetUseCount() + 1);
+            }
+            return new HostDirectoryFile(DirINode());
+        }
+        public override void Release(int fd)
+        {
+            if (findHandle != null)
+            {
+                OsFindClose(findHandle);
+                findHandle = null;
+            }
+            base->Release(fd);
+        }
+        private void* findHandle;
+    }
+
+    public class PipeInputFile : File
+    {
+        public nothrow PipeInputFile(Fifo* fifo_) : base("PIPE INPUT"), fifo(fifo_)
+        {
+            fifo->Share();
+        }
+        public override long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            return fifo->Read(machine, reader, bufferAddress, count);
+        }
+        public override File* Share()
+        {
+            return new PipeInputFile(fifo);
+        }
+        public override void Release(int fd)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "pipe.input.release.begin.fd=" + ToString(fd));
+            }
+            fifo->Release();
+            delete this;
+            if (Log())
+            {
+                LogMessage("fs.file", "pipe.input.release.end");
+            }
+        }
+        private Fifo* fifo;
+    }
+
+    public class PipeOutputFile : File
+    {
+        public nothrow PipeOutputFile(Fifo* fifo_) : base("PIPE OUTPUT"), fifo(fifo_)
+        {
+            fifo->Share();
+            fifo->AddWriter();
+        }
+        public override long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            return fifo->Write(machine, writer, bufferAddress, count);
+        }
+        public override File* Share()
+        {
+            return new PipeOutputFile(fifo);
+        }
+        public override void Release(int fd)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "pipe.output.release.begin.fd=" + ToString(fd));
+            }
+            fifo->RemoveWriter();
+            fifo->Release();
+            delete this;
+            if (Log())
+            {
+                LogMessage("fs.file", "pipe.output.release.end");
+            }
+        }
+        private Fifo* fifo;
+    }
+
+    public class FilePtr
+    {
+        public nothrow FilePtr(INode* inode_, OpenFlags flags_) : inode(inode_), pos(0), flags(flags_), useCount(1)
+        {
+            if ((flags& OpenFlags.append) != OpenFlags.none)
+            {
+                pos = inode->GetFileSize();
+            }
+        }
+        public long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "fileptr.write.begin");
+            }
+            while (inode->GetFlag(INode.Flags.locked))
+            {
+                inode->AddWaitingProcess(writer);
+                SleepProcess(writer, inodeUnlockedEvent, cast<ulong>(cast<void*>(inode)), 0u);
+            }
+            long bytesWritten = 0;
+            {
+                FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+                INodeLock lock(inode);
+                ulong offset = 0u;
+                while (count > 0)
+                {
+                    int logicalBlockNumber = cast<int>(pos / blockSize);
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    fs->GetBlockManager()->GetBlockNumber(inode, pos, blockNumber, blockOffset, true);
+                    long bytesToWrite = Min(count, blockSize - blockOffset);
+                    Block* block = null;
+                    bool clearBlock = false;
+                    if (inode->GetNumBlocks() > logicalBlockNumber && (blockOffset != 0 || bytesToWrite != blockSize))
+                    {
+                        block = fs->GetBlockManager()->ReadBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+                    }
+                    else
+                    {
+                        block = fs->GetBlockManager()->GetBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+                        block->Clear();
+                    }
+                    BlockPutter blockPutter(block);
+                    FileBlock* fileBlock = cast<FileBlock*>(block);
+                    UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(bytesToWrite)));
+                    ReadProcessMemory(machine, writer, bufferAddress + offset, buffer.Get(), cast<ulong>(bytesToWrite));
+                    MemoryReader reader(buffer.Get(), bytesToWrite);
+                    for (long i = 0; i < bytesToWrite; ++i)
+                    {
+                        byte x = reader.ReadByte();
+                        fileBlock->SetByte(blockOffset + i, x);
+                    }
+                    fileBlock->SetFlag(Block.Flags.dirty);
+                    fs->GetBlockManager()->WriteBlock(block, null);
+                    count = count - bytesToWrite;
+                    pos = pos + bytesToWrite;
+                    offset = offset + cast<ulong>(bytesToWrite);
+                    bytesWritten = bytesWritten + bytesToWrite;
+                }
+                if (pos > inode->GetFileSize())
+                {
+                    inode->SetFileSize(pos);
+                }
+            }
+            inode->SetMTime();
+            if (Log())
+            {
+                LogMessage("fs.file", "fileptr.write.end.written=" + ToString(bytesWritten));
+            }
+            return bytesWritten;
+        }
+        public long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            while (inode->GetFlag(INode.Flags.locked))
+            {
+                inode->AddWaitingProcess(reader);
+                SleepProcess(reader, inodeUnlockedEvent, cast<ulong>(cast<void*>(inode)), 0u);
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            long bytesRead = 0;
+            {
+                INodeLock lock(inode);
+                ulong offset = 0u;
+                while (count > 0)
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    fs->GetBlockManager()->GetBlockNumber(inode, pos, blockNumber, blockOffset, false);
+                    long bytesToRead = Min(count, blockSize - blockOffset);
+                    long bytesLeft = Max(inode->GetFileSize() - pos, 0);
+                    bytesToRead = Min(bytesToRead, bytesLeft);
+                    if (bytesToRead == 0)
+                    {
+                        break;
+                    }
+                    Block* block = null;
+                    UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(bytesToRead)));
+                    MemoryWriter writer(buffer.Get(), bytesToRead);
+                    if (!fs->IsRootFileSystem() || blockNumber != 0)
+                    {
+                        block = fs->GetBlockManager()->ReadBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+                        BlockPutter blockPutter(block);
+                        FileBlock* fileBlock = cast<FileBlock*>(block);
+                        for (long i = 0; i < bytesToRead; ++i)
+                        {
+                            byte x = fileBlock->GetByte(blockOffset + i);
+                            writer.Write(x);
+                        }
+                    }
+                    else
+                    {
+                        for (long i = 0; i < bytesToRead; ++i)
+                        {
+                            byte x = 0u;
+                            writer.Write(x);
+                        }
+                    }
+                    WriteProcessMemory(machine, reader, bufferAddress + offset, buffer.Get(), cast<ulong>(bytesToRead), Protection.write);
+                    count = count - bytesToRead;
+                    pos = pos + bytesToRead;
+                    offset = offset + cast<ulong>(bytesToRead);
+                    bytesRead = bytesRead + bytesToRead;
+                }
+            }
+            inode->SetATime();
+            return bytesRead;
+        }
+        public long Seek(long p, Origin origin)
+        {
+            switch (origin)
+            {
+                case Origin.seekSet: pos = p; return pos;
+                case Origin.seekCur: pos = pos + p; return pos;
+                case Origin.seekEnd: pos = inode->GetFileSize() + p; return pos;
+            }
+            return -1;
+        }
+        public long Tell()
+        {
+            return pos;
+        }
+        public nothrow bool IsHostTextFile() const
+        {
+            if ((flags & OpenFlags.text) != OpenFlags.none)
+            {
+                FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+                return fs->IsHostFileSystem();
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public FilePtr* Share()
+        {
+            ++useCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fileptr.share.useCount=" + ToString(useCount));
+            }
+            return this;
+        }
+        public void Release()
+        {
+            --useCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fileptr.release.begin.useCount=" + ToString(useCount));
+            }
+            if (useCount == 0)
+            {
+                if (inode != null)
+                {
+                    inode->Manager()->PutINode(inode);
+                }
+                delete this;
+            }
+            if (Log())
+            {
+                LogMessage("fs.file", "fileptr.release.end");
+            }
+        }
+        public nothrow inline OpenFlags Flags() const
+        {
+            return flags;
+        }
+        private INode* inode;
+        private long pos;
+        private OpenFlags flags;
+        private int useCount;
+    }
+
+    public class Fifo
+    {
+        public nothrow Fifo(INode* inode_) : inode(inode_), useCount(0), writerCount(0)
+        {
+        }
+        public nothrow inline void AddWriter()
+        {
+            ++writerCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.addwriter.writers=" + ToString(writerCount));
+            }
+        }
+        public nothrow inline void RemoveWriter()
+        {
+            --writerCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.removewriter.writers=" + ToString(writerCount));
+            }
+        }
+        public long Write(Machine& machine, cmsx.kernel.Process* writer, ulong bufferAddress, long count)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.write.begin");
+            }
+            long bytesWritten = 0;
+            {
+                FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+                long pipeBlockSize = maxPipeSize % blockSize;
+                if (pipeBlockSize == 0)
+                {
+                    pipeBlockSize = blockSize;
+                }
+                ulong offset = 0u;
+                long writePos = inode->WritePos();
+                long readPos = inode->ReadPos();
+                long room = 0;
+                if (writePos > readPos)
+                {
+                    room = maxPipeSize - (writePos - readPos);
+                }
+                else if (inode->GetFlag(INode.Flags.pipeFull))
+                {
+                    room = 0;
+                }
+                else if (inode->GetFlag(INode.Flags.pipeEmpty))
+                {
+                    room = maxPipeSize;
+                }
+                else
+                {
+                    room = readPos - writePos;
+                }
+                while (count > 0)
+                {
+                    while (room == 0)
+                    {
+                        if (Log())
+                        {
+                            LogMessage("fs.file", "fifo.write.sleep");
+                        }
+                        inode->AddWaitingPipeWriter(writer);
+                        SleepProcess(writer, pipeNotFullEvent, 0u, 0u);
+                        if (Log())
+                        {
+                            LogMessage("fs.file", "fifo.write.wakeup");
+                        }
+                        writePos = inode->WritePos();
+                        readPos = inode->ReadPos();
+                        if (writePos > readPos)
+                        {
+                            room = maxPipeSize - (writePos - readPos);
+                        }
+                        else if (inode->GetFlag(INode.Flags.pipeFull))
+                        {
+                            room = 0;
+                        }
+                        else if (inode->GetFlag(INode.Flags.pipeEmpty))
+                        {
+                            room = maxPipeSize;
+                        }
+                        else
+                        {
+                            room = readPos - writePos;
+                        }
+                    }
+                    int logicalBlockNumber = cast<int>(writePos / blockSize);
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    fs->GetBlockManager()->GetBlockNumber(inode, writePos, blockNumber, blockOffset, true);
+                    long bytesToWrite = Min(room, Min(count, pipeBlockSize - blockOffset));
+                    Block* block = fs->GetBlockManager()->GetBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+                    BlockPutter blockPutter(block);
+                    FileBlock* fileBlock = cast<FileBlock*>(block);
+                    UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(bytesToWrite)));
+                    ReadProcessMemory(machine, writer, bufferAddress + offset, buffer.Get(), cast<ulong>(bytesToWrite));
+                    MemoryReader reader(buffer.Get(), bytesToWrite);
+                    for (long i = 0; i < bytesToWrite; ++i)
+                    {
+                        byte x = reader.ReadByte();
+                        fileBlock->SetByte(blockOffset + i, x);
+                    }
+                    fileBlock->SetFlag(Block.Flags.dirty);
+                    fileBlock->SetFlag(Block.Flags.valid);
+                    fs->GetBlockManager()->WriteBlock(block, null);
+                    count = count - bytesToWrite;
+                    writePos = (writePos + bytesToWrite) % maxPipeSize;
+                    inode->SetWritePos(writePos);
+                    offset = offset + cast<ulong>(bytesToWrite);
+                    room = room - bytesToWrite;
+                    inode->ResetFlag(INode.Flags.pipeEmpty);
+                    if (room == 0)
+                    {
+                        inode->SetFlag(INode.Flags.pipeFull);
+                    }
+                    WakeUpPipeReaders();
+                    bytesWritten = bytesWritten + bytesToWrite;
+                }
+            }
+            inode->SetMTime();
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.write.end.written=" + ToString(bytesWritten));
+            }
+            return bytesWritten;
+        }
+        public long Read(Machine& machine, cmsx.kernel.Process* reader, ulong bufferAddress, long count)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.read.begin");
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            long bytesRead = 0;
+            {
+                long pipeBlockSize = maxPipeSize % blockSize;
+                if (pipeBlockSize == 0)
+                {
+                    pipeBlockSize = blockSize;
+                }
+                ulong offset = 0u;
+                long writePos = inode->WritePos();
+                long readPos = inode->ReadPos();
+                long bytesAvailable = 0;
+                if (writePos > readPos)
+                {
+                    bytesAvailable = writePos - readPos;
+                }
+                else if (inode->GetFlag(INode.Flags.pipeFull))
+                {
+                    bytesAvailable = maxPipeSize;
+                }
+                else if (inode->GetFlag(INode.Flags.pipeEmpty))
+                {
+                    bytesAvailable = 0;
+                }
+                else
+                {
+                    bytesAvailable = maxPipeSize - (readPos - writePos);
+                }
+                while (count > 0)
+                {
+                    while (bytesAvailable == 0 && writerCount > 0)
+                    {
+                        if (Log())
+                        {
+                            LogMessage("fs.file", "fifo.read.sleep");
+                        }
+                        inode->AddWaitingPipeReader(reader);
+                        SleepProcess(reader, pipeNotEmptyEvent, 0u, 0u);
+                        if (Log())
+                        {
+                            LogMessage("fs.file", "fifo.read.wakeup");
+                        }
+                        writePos = inode->WritePos();
+                        readPos = inode->ReadPos();
+                        if (writePos > readPos)
+                        {
+                            bytesAvailable = writePos - readPos;
+                        }
+                        else if (inode->GetFlag(INode.Flags.pipeFull))
+                        {
+                            bytesAvailable = maxPipeSize;
+                        }
+                        else if (inode->GetFlag(INode.Flags.pipeEmpty))
+                        {
+                            bytesAvailable = 0;
+                        }
+                        else
+                        {
+                            bytesAvailable = maxPipeSize - (readPos - writePos);
+                        }
+                    }
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    fs->GetBlockManager()->GetBlockNumber(inode, readPos, blockNumber, blockOffset, false);
+                    long bytesToRead = Min(bytesAvailable, Min(count, pipeBlockSize - blockOffset));
+                    if (bytesToRead == 0 && writerCount == 0)
+                    {
+                        break;
+                    }
+                    UniquePtr<byte> buffer(cast<byte*>(RtMemAlloc(bytesToRead)));
+                    MemoryWriter writer(buffer.Get(), bytesToRead);
+                    Block* block = fs->GetBlockManager()->ReadBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+                    BlockPutter blockPutter(block);
+                    FileBlock* fileBlock = cast<FileBlock*>(block);
+                    for (long i = 0; i < bytesToRead; ++i)
+                    {
+                        byte x = fileBlock->GetByte(blockOffset + i);
+                        writer.Write(x);
+                    }
+                    WriteProcessMemory(machine, reader, bufferAddress + offset, buffer.Get(), cast<ulong>(bytesToRead), Protection.write);
+                    count = count - bytesToRead;
+                    readPos = (readPos + bytesToRead) % maxPipeSize;
+                    inode->SetReadPos(readPos);
+                    offset = offset + cast<ulong>(bytesToRead);
+                    bytesAvailable = bytesAvailable - bytesToRead;
+                    inode->ResetFlag(INode.Flags.pipeFull);
+                    if (bytesAvailable == 0)
+                    {
+                        inode->SetFlag(INode.Flags.pipeEmpty);
+                    }
+                    WakeUpPipeWriters();
+                    bytesRead = bytesRead + bytesToRead;
+                }
+            }
+            inode->SetATime();
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.read.end.read=" + ToString(bytesRead));
+            }
+            return bytesRead;
+        }
+        public Fifo* Share()
+        {
+            ++useCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.share.useCount=" + ToString(useCount));
+            }
+            return this;
+        }
+        public void Release()
+        {
+            --useCount;
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.release.useCount=" + ToString(useCount));
+            }
+            if (useCount == 0)
+            {
+                if (inode != null)
+                {
+                    inode->SetNumLinks(inode->GetNumLinks() - 1);
+                    inode->Manager()->PutINode(inode);
+                }
+                delete this;
+            }
+            if (Log())
+            {
+                LogMessage("fs.file", "fifo.release.end");
+            }
+        }
+        private nothrow void WakeUpPipeWriters()
+        {
+            Kernel& kernel = GetKernel();
+            ProcessTable& processTable = kernel.GetProcessTable();
+            List<cmsx.kernel.Process*> waitingPipeWriters = inode->GetWaitingPipeWriters();
+            for (cmsx.kernel.Process* writer : waitingPipeWriters)
+            {
+                WakeUpProcess(processTable, writer);
+            }
+        }
+        private nothrow void WakeUpPipeReaders()
+        {
+            Kernel& kernel = GetKernel();
+            ProcessTable& processTable = kernel.GetProcessTable();
+            List<cmsx.kernel.Process*> waitingPipeReaders = inode->GetWaitingPipeReaders();
+            for (cmsx.kernel.Process* reader : waitingPipeReaders)
+            {
+                WakeUpProcess(processTable, reader);
+            }
+        }
+        private INode* inode;
+        private int useCount;
+        private int writerCount;
+    }
+
+    public class ProcessFileTable
+    {
+        public void SetFile(int fd, File* file)
+        {
+            if (fd < 0)
+            {
+                throw SystemError(EBADF, "value negative");
+            }
+            else if (fd >= openFileMax)
+            {
+                throw SystemError(EBADF, "value exceeds max number of open files");
+            }
+            files[fd] = file;
+        }
+        public File* GetFile(int fd)
+        {
+            if (fd < 0)
+            {
+                throw SystemError(EBADF, "descriptor value is negative");
+            }
+            else if (fd >= openFileMax)
+            {
+                throw SystemError(EBADF, "descriptor value (" + ToString(fd) + ") exceeds maximum number of open files");
+            }
+            File* file = files[fd];
+            if (file == null)
+            {
+                throw SystemError(EBADF, "file " + ToString(fd) + " not open");
+            }
+            return file;
+        }
+        public int GetEmptyFileSlot()
+        {
+            for (long i = 0; i < openFileMax; ++i)
+            {
+                File* file = files[i];
+                if (file == null)
+                {
+                    return cast<int>(i);
+                }
+            }
+            throw SystemError(ERLIMITEXCEEDED, "maximum number of open files (" + ToString(openFileMax) + ") exceeded");
+        }
+        public void ShareFilesTo(ProcessFileTable& that)
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "share.files.begin");
+            }
+            for (long i = 0; i < openFileMax; ++i)
+            {
+                File* file = files[i];
+                if (file != null)
+                {
+                    that.files[i] = file->Share();
+                }
+                else
+                {
+                    that.files[i] = null;
+                }
+            }
+            if (Log())
+            {
+                LogMessage("fs.file", "share.files.end");
+            }
+        }
+        public void ReleaseFiles()
+        {
+            if (Log())
+            {
+                LogMessage("fs.file", "release.files.begin");
+            }
+            for (long i = 0; i < openFileMax; ++i)
+            {
+                File* file = files[i];
+                if (file != null)
+                {
+                    file->Release(cast<int>(i));
+                    files[i] = null;
+                }
+            }
+            if (Log())
+            {
+                LogMessage("fs.file", "release.files.end");
+            }
+        }
+        private File*[openFileMax] files;
+    }
+
+    public class GlobalFileTable
+    {
+        public nothrow inline DebuggerInputFile* GetDebuggerInputFile()
+        {
+            return &debuggerInputFile;
+        }
+        public nothrow inline DebuggerOutputFile* GetDebuggerOutputFile()
+        {
+            return &debuggerOutputFile;
+        }
+        public nothrow inline ConsoleInputFile* GetConsoleInputFile()
+        {
+            return &consoleInputFile;
+        }
+        public nothrow inline ConsoleOutputFile* GetConsoleOutputFile()
+        {
+            return &consoleOutputFile;
+        }
+        private DebuggerInputFile debuggerInputFile;
+        private DebuggerOutputFile debuggerOutputFile;
+        private ConsoleInputFile consoleInputFile;
+        private ConsoleOutputFile consoleOutputFile;
+    }
+
+    public void InitializeFileTable(Machine& machine, ProcessFileTable& fileTable)
+    {
+        Kernel& kernel = Kernel.Instance();
+        GlobalFileTable& globalFileTable = kernel.FileTable();
+        if (kernel.HasUserDebugger())
+        {
+            fileTable.SetFile(0, globalFileTable.GetDebuggerInputFile());
+            fileTable.SetFile(1, globalFileTable.GetDebuggerOutputFile());
+            fileTable.SetFile(2, globalFileTable.GetDebuggerOutputFile());
+        }
+        else
+        {
+            fileTable.SetFile(0, globalFileTable.GetConsoleInputFile());
+            fileTable.SetFile(1, globalFileTable.GetConsoleOutputFile());
+            fileTable.SetFile(2, globalFileTable.GetConsoleOutputFile());
+        }
+    }
+}

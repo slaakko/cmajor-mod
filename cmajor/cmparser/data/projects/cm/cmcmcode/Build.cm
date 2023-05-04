@@ -1,0 +1,48 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using Cm.Service.Build;
+
+namespace cmcode
+{
+    enum BuildRequestKind
+    {
+        none = 0, build = 1 << 0, clean = 1 << 1, rebuild = 1 << 2, buildDependencies = 1 << 3
+    }
+
+    BuildRequest MakeBuildRequest(const string& backend, const string& config, const string& filePath, BuildRequestKind buildRequestKind)
+    {
+        const BuildSettings& buildSettings = MainConfiguration.Instance().GetBuildSettings();
+        BuildRequest buildRequest;
+        buildRequest.backend = backend;
+        buildRequest.config = config;
+        buildRequest.optimizationLevel = "default";
+        buildRequest.filePath = filePath;
+        buildRequest.numBuildThreads = "default";
+        if (buildSettings.numberOfProjectBuildThreads != 0)
+        {
+            buildRequest.numBuildThreads = ToString(buildSettings.numberOfProjectBuildThreads);
+        }
+        buildRequest.singleThreadedCompile = buildSettings.singleThreadedCompile;
+        buildRequest.emitIR = buildSettings.generateIntermediateCodeFiles;
+        buildRequest.emitOptIR = buildSettings.generateOptimizedIntermediateCodeFiles;
+        buildRequest.toolChain = "default";
+        buildRequest.verbose = true;
+        if ((buildRequestKind & BuildRequestKind.clean) != BuildRequestKind.none)
+        {
+            buildRequest.clean = true;
+        }
+        if ((buildRequestKind & BuildRequestKind.rebuild) != BuildRequestKind.none)
+        {
+            buildRequest.rebuild = true;
+        }
+        if ((buildRequestKind & BuildRequestKind.buildDependencies) != BuildRequestKind.none)
+        {
+            buildRequest.buildAllDependencies = true;
+        }
+        return buildRequest;
+    }
+}

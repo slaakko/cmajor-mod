@@ -1,0 +1,373 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace Cm.Views
+{
+    public class UpdateLocalsEventArgs
+    {
+        public bool debugging;
+        public bool targetStopped;
+        public Cm.Service.Debug.DebugService* debugService;
+    }
+
+    public class delegate void UpdateLocalsEventHandler(UpdateLocalsEventArgs& args);
+
+    public class NodeDataVisitor
+    {
+        public default ~NodeDataVisitor();
+        public virtual void Visit(ChildResultNodeData& childResultNodeData) {}
+    }
+
+    public abstract class NodeData
+    {
+        public default virtual ~NodeData();
+        public abstract void Accept(NodeDataVisitor& visitor);
+    }
+
+    public class ChildResultNodeData : NodeData
+    {
+        public nothrow ChildResultNodeData(const Cm.Service.Debug.ChildResult& result_) : result(result_)
+        {
+        }
+        public override void Accept(NodeDataVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public nothrow const Cm.Service.Debug.ChildResult& Result() const
+        {
+            return result;
+        }
+        private Cm.Service.Debug.ChildResult result;
+    }
+
+    public abstract class Query
+    {
+        public default virtual ~Query();
+        public virtual void Init(Cm.Service.Debug.DebugService* debugService) {}
+        public abstract void Execute(Cm.Service.Debug.DebugService* debugService);
+    }
+
+    public class LocalQuery : Query
+    {
+        public nothrow LocalQuery(TreeView* treeView_, TreeViewNode* root_) : treeView(treeView_), root(root_), localCount(-1)
+        {
+        }
+        public override void Init(Cm.Service.Debug.DebugService* debugService)
+        {
+            if (localCount == -1)
+            {
+                localCount = debugService->LocalVariableCount();
+                root->RemoveChildren();
+                for (int i = 0; i < localCount; ++i)
+                {
+                    string nodeText = System.ToString(i);
+                    TreeViewNode* node = new TreeViewNode(nodeText);
+                    node->SetIndex(i);
+                    TreeViewNode* dummyNode = new TreeViewNode();
+                    dummyNode->SetIndex(-1);
+                    node->AddChild(dummyNode);
+                    root->AddChild(node);
+                    childResultData.Clear();
+                }
+                root->Expand();
+                treeView->Invalidate();
+            }
+        }
+        public override void Execute(Cm.Service.Debug.DebugService* debugService)
+        {
+            List<TreeViewNode*> visibleNodes = treeView->GetVisibleNodes(1);
+            if (visibleNodes.IsEmpty()) return;
+            TreeViewNode* first = visibleNodes.Front();
+            TreeViewNode* last = visibleNodes.Back();
+            while (first->Data() != null && first != last)
+            {
+                first = cast<TreeViewNode*>(first->NextSibling());
+            }
+            while (last->Data() != null && last != first)
+            {
+                last = cast<TreeViewNode*>(last->PrevSibling());
+            }
+            int start = first->Index();
+            int count = last->Index() - start + 1;
+            if (count == 1 && first->Data() != null)
+            {
+                return;
+            }
+            Pair<List<Cm.Service.Debug.ChildResult>, bool> localVariablesSuccess = debugService->LocalVariables(start, count);
+            if (!localVariablesSuccess.second)
+            {
+                return;
+            }
+            List<Cm.Service.Debug.ChildResult>& localVariables = localVariablesSuccess.first;
+            childResultData.Resize(start + count);
+            for (int i = start; i < start + count; ++i)
+            {
+                childResultData[i].Reset(new ChildResultNodeData(localVariables[i - start]));
+            }
+            int n = cast<int>(visibleNodes.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                TreeViewNode* node = visibleNodes[i];
+                ChildResultNodeData* nodeData = childResultData[node->Index()].Get();
+                node->SetData(nodeData);
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                TreeViewNode* node = visibleNodes[i];
+                ChildResultNodeData* data = cast<ChildResultNodeData*>(node->Data());
+                string text = data->Result().name;
+                if (!data->Result().value.IsEmpty())
+                {
+                    text.Append(" = ").Append(data->Result().value);
+                }
+                node->SetText(text);
+                int count = data->Result().count;
+                if (count == 0)
+                {
+                    node->RemoveChildren();
+                }
+            }
+            treeView->Invalidate();
+        }
+        private int localCount;
+        private TreeView* treeView;
+        private TreeViewNode* root;
+        private List<UniquePtr<ChildResultNodeData>> childResultData;
+    }
+
+    public class Locals : Control
+    {
+        public Locals() : base("Cm.Views.Locals", DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(), Color.White(),
+            "locals", Point(), Size(), Dock.fill, Anchors.none), container(this), treeView(null), child(null), debugService(null)
+        {
+            UniquePtr<TreeView> treeViewPtr(new TreeView(Point(), Size(), Dock.none, Anchors.none));
+            treeView = treeViewPtr.Get();
+            treeView->SetScrollSubject();
+            treeView->SetDoubleBuffered();
+            treeView->NodeLeaveEvent().AddHandler(TreeViewNodeLeave);
+            treeView->NodeExpandedEvent().AddHandler(TreeViewNodeExpanded);
+            treeView->NodeHoveredEvent().AddHandler(TreeViewNodeHovered);
+            treeView->ContentLocationChangedEvent().AddHandler(TreeViewContentLocationChanged);
+            UniquePtr<Control> paddedTreeView(new PaddedControl(treeViewPtr.Release(), Padding(4, 4, 4, 4), Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+            UniquePtr<Control> scrollableTreeView(new ScrollableControl(paddedTreeView.Release(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            child = scrollableTreeView.Get();
+            container.AddChild(scrollableTreeView.Release());
+            Clear();
+        }
+        public void Clear()
+        {
+            treeView->SetRoot(new TreeViewNode("Locals"));
+            localQuery.Reset();
+            localQuery.Reset(new LocalQuery(treeView, treeView->Root()));
+            child->Invalidate();
+        }
+        private void TreeViewContentLocationChanged()
+        {
+            Invalidate();
+        }
+        protected override void OnLocationChanged()
+        {
+            base->OnLocationChanged();
+            SetChildPos();
+        }
+        protected override void OnSizeChanged(uint windowState)
+        {
+            base->OnSizeChanged(windowState);
+            SetChildPos();
+        }
+        private void SetChildPos()
+        {
+            Point loc;
+            Size size = GetSize();
+            Rect childRect(loc, size);
+            child->SetLocation(childRect.location);
+            child->SetSize(childRect.size);
+        }
+        private void TreeViewNodeHovered(TreeViewNodeEventArgs& args)
+        {
+            TreeViewNode* treeViewNode = args.node;
+            if (treeViewNode->Data() != null)
+            {
+                NodeData* nodeData = cast<NodeData*>(treeViewNode->Data());
+                if (nodeData is ChildResultNodeData*)
+                {
+                    ChildResultNodeData* childNodeData = cast<ChildResultNodeData*>(nodeData);
+                    string typeStr;
+                    if (!childNodeData->Result().dynType.IsEmpty())
+                    {
+                        typeStr.Append("[").Append(childNodeData->Result().dynType).Append("] ");
+                    }
+                    typeStr.Append(childNodeData->Result().type);
+                    treeView->ShowToolTipWindow(typeStr, treeViewNode);
+                }
+            }
+        }
+        private void TreeViewNodeLeave(TreeViewNodeEventArgs& args)
+        {
+            treeView->HideToolTipWindow();
+        }
+        private void TreeViewNodeExpanded(TreeViewNodeEventArgs& args)
+        {
+            TreeViewNode* treeViewNode = args.node;
+            if (treeViewNode->Data() != null)
+            {
+                NodeData* nodeData = cast<NodeData*>(treeViewNode->Data());
+                if (nodeData is ChildResultNodeData*)
+                {
+                    ChildResultNodeData* childNodeData = cast<ChildResultNodeData*>(nodeData);
+                    treeViewNode->RemoveChildren();
+                    int count = childNodeData->Result().count;
+                    for (int i = 0; i < count; ++i)
+                    {
+                        string nodeText = ToString(i);
+                        TreeViewNode* childNode = new TreeViewNode(nodeText);
+                        childNode->SetIndex(i);
+                        treeViewNode->AddChild(childNode);
+                    }
+                }
+            }
+            Invalidate();
+        }
+        protected override void OnPaint(PaintEventArgs& args)
+        {
+            try
+            {
+                UpdateLocalsEventArgs updateArgs;
+                updateArgs.debugging = false;
+                updateArgs.targetStopped = false;
+                OnUpdateLocals(updateArgs);
+                if (updateArgs.debugging && updateArgs.targetStopped)
+                {
+                    debugService = updateArgs.debugService;
+                    TreeViewNode* root = treeView->Root();
+                    Size size = root->GetSize();
+                    if (size.h == 0)
+                    {
+                        root->MeasureSize(args.graphics, treeView);
+                        size = root->GetSize();
+                    }
+                    if (debugService != null)
+                    {
+                        localQuery->Init(debugService);
+                        localQuery->Execute(debugService);
+                    }
+                    List<TreeViewNode*> visibleNodes = treeView->GetVisibleNodes();
+                    for (TreeViewNode* node : visibleNodes)
+                    {
+                        if (node->Data() == null)
+                        {
+                            TreeViewNode* parent = node->Parent();
+                            if (parent != null)
+                            {
+                                if (parent->Data() != null)
+                                {
+                                    NodeData* nodeData = cast<NodeData*>(parent->Data());
+                                    if (nodeData is ChildResultNodeData*)
+                                    {
+                                        ChildResultNodeData* resultNodeData = cast<ChildResultNodeData*>(nodeData);
+                                        List<TreeViewNode*> visibleChildren;
+                                        parent->GetVisibleNodes(visibleChildren, treeView, parent->Level() + 1);
+                                        FetchChildData(visibleChildren, resultNodeData->Result().expr);
+                                        treeView->Invalidate();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show(ex.Message());
+            }
+        }
+        private void FetchChildData(const List<TreeViewNode*>& childNodes, const string& expression)
+        {
+            if (childNodes.IsEmpty()) return;
+            TreeViewNode* first = childNodes.Front();
+            TreeViewNode* last = childNodes.Back();
+            int firstIndex = first->Index();
+            while (first != last && first->Data() != null)
+            {
+                first = cast<TreeViewNode*>(first->NextSibling());
+                firstIndex = first->Index();
+            }
+            int lastIndex = last->Index();
+            while (last != first && last->Data() != null)
+            {
+                last = cast<TreeViewNode*>(last->PrevSibling());
+                lastIndex = last->Index();
+            }
+            if (firstIndex == lastIndex && first->Data() != null)
+            {
+                return;
+            }
+            int count = lastIndex - firstIndex + 1;
+            Pair<List<Cm.Service.Debug.ChildResult>, bool> resultsSuccess = debugService->Children(expression, firstIndex, count);
+            if (!resultsSuccess.second)
+            {
+                return;
+            }
+            const List<Cm.Service.Debug.ChildResult>& childResults = resultsSuccess.first;
+            long start = childResultData.Count();
+            long n = childResults.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                childResultData.Add(UniquePtr<ChildResultNodeData>(new ChildResultNodeData(childResults[i])));
+            }
+            for (TreeViewNode* node : childNodes)
+            {
+                if (node->Data() == null)
+                {
+                    int index = node->Index();
+                    int i = index - firstIndex;
+                    if (i >= 0)
+                    {
+                        long dataIndex = start + i;
+                        ChildResultNodeData* nodeData = childResultData[dataIndex].Get();
+                        node->SetData(nodeData);
+                        string nodeText = nodeData->Result().name;
+                        if (!nodeData->Result().value.IsEmpty())
+                        {
+                            nodeText.Append(" = ").Append(nodeData->Result().value);
+                        }
+                        node->SetText(nodeText);
+                        int cnt = nodeData->Result().count;
+                        if (cnt > 0)
+                        {
+                            TreeViewNode* dummyNode = new TreeViewNode();
+                            dummyNode->SetIndex(-1);
+                            node->AddChild(dummyNode);
+                        }
+                    }
+                }
+            }
+        }
+        public nothrow void SetDebugService(Cm.Service.Debug.DebugService* debugService_)
+        {
+            debugService = debugService_;
+        }
+        protected virtual void OnUpdateLocals(UpdateLocalsEventArgs& args)
+        {
+            updateLocalsEvent.Fire(args);
+        }
+        public nothrow Event<UpdateLocalsEventHandler, UpdateLocalsEventArgs>& UpdateLocalsEvent()
+        {
+            return updateLocalsEvent;
+        }
+        private Container container;
+        private TreeView* treeView;
+        private Control* child;
+        private Cm.Service.Debug.DebugService* debugService;
+        private UniquePtr<Query> localQuery;
+        private Event<UpdateLocalsEventHandler, UpdateLocalsEventArgs> updateLocalsEvent;
+        private List<UniquePtr<ChildResultNodeData>> childResultData;
+        private bool invalidateLocals;
+    }
+}

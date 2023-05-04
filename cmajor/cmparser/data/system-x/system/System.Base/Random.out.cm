@@ -1,0 +1,88 @@
+namespace System
+{
+    internal class MT
+    {
+        public const int n = 624;
+        public const int m = 397;
+        public const uint matrixA = 2567483615u;
+        public const uint upperMask = 2147483648u;
+        public const uint lowerMask = 2147483647u;
+        public nothrow MT() :
+            initialized(false), mti(0), mt(), mag()
+        {
+        }
+        public inline nothrow bool Initialized()
+        {
+            return initialized;
+        }
+        public void InitWithRandomSeed()
+        {
+            uint seed = random_seed();
+            Init(seed);
+        }
+        public nothrow void Init(uint seed)
+        {
+            initialized = true;
+            mt[0] = seed;
+            for (mti = 1; mti < n; ++mti)
+            {
+                mt[mti] = 1812433253u * (mt[mti - 1] ^ (mt[mti - 1] >> 30u)) + cast<uint>(mti);
+            }
+            mag[0] = 0u;
+            mag[1] = matrixA;
+        }
+        public nothrow uint GenRand()
+        {
+            uint y = 0u;
+            if (mti >= n)
+            {
+                int kk;
+                for (kk = 0; kk < n - m; ++kk)
+                {
+                    y = (mt[kk] & upperMask) | (mt[kk + 1] & lowerMask);
+                    mt[kk] = mt[kk + m] ^ (y >> 1u) ^ mag[cast<int>(y & 1u)];
+                }
+                for (; kk < n - 1; ++kk)
+                {
+                    y = (mt[kk] & upperMask) | (mt[kk + 1] & lowerMask);
+                    mt[kk] = mt[kk + (m - n)] ^ (y >> 1u) ^ mag[cast<int>(y & 1u)];
+                }
+                y = (mt[n - 1] & upperMask) | (mt[0] & lowerMask);
+                mt[n - 1] = mt[m - 1] ^ (y >> 1u) ^ mag[cast<int>(y & 1u)];
+                mti = 0;
+            }
+            y = mt[mti++];
+            y = y ^ (y >> 11u);
+            y = y ^ ((y << 7u) & 2636928640u);
+            y = y ^ ((y << 15u) & 4022730752u);
+            y = y ^ (y >> 18u);
+            return y;
+        }
+        private bool initialized;
+        private int mti;
+        private uint[n] mt;
+        private uint[2] mag;
+    }
+
+    private MT mt;
+
+    public void InitRand(uint seed)
+    {
+        mt.Init(seed);
+    }
+
+    public uint Random()
+    {
+        if (!mt.Initialized())
+        {
+            mt.InitWithRandomSeed();
+        }
+        return mt.GenRand();
+    }
+
+    public ulong Random64()
+    {
+        return cast<ulong>(Random()) << 32u | cast<ulong>(Random());
+    }
+
+} // namespace System

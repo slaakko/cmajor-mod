@@ -1,0 +1,2658 @@
+using System;
+using System.Collections;
+using System.Windows;
+using System.Lex;
+using Cm.Ast;
+
+class SyntaxTreeBuilder : Visitor
+{
+    public nothrow SyntaxTreeBuilder(CmajorLexer& lexer_) : lexer(lexer_)
+    {
+    }
+    public TreeViewNode* GetRoot() const
+    {
+        return node.Release();
+    }
+    public HashMap<int, TreeViewNode*> GetIndexNodeMap()
+    {
+        return Rvalue(indexNodeMap);
+    }
+    public HashMap<TreeViewNode*, int> GetNodeIndexMap()
+    {
+        return Rvalue(nodeIndexMap);
+    }
+    public override void Visit(BoolNode& boolNode)
+    {
+        node.Reset(new TreeViewNode(typename(BoolNode)));
+        node->SetData(&boolNode);
+        Span span = boolNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SByteNode& sbyteNode)
+    {
+        node.Reset(new TreeViewNode(typename(SByteNode)));
+        node->SetData(&sbyteNode);
+        Span span = sbyteNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ByteNode& byteNode)
+    {
+        node.Reset(new TreeViewNode(typename(ByteNode)));
+        node->SetData(&byteNode);
+        Span span = byteNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ShortNode& shortNode)
+    {
+        node.Reset(new TreeViewNode(typename(ShortNode)));
+        node->SetData(&shortNode);
+        Span span = shortNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UShortNode& ushortNode)
+    {
+        node.Reset(new TreeViewNode(typename(UShortNode)));
+        node->SetData(&ushortNode);
+        Span span = ushortNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IntNode& intNode)
+    {
+        node.Reset(new TreeViewNode(typename(IntNode)));
+        node->SetData(&intNode);
+        Span span = intNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UIntNode& uintNode)
+    {
+        node.Reset(new TreeViewNode(typename(UIntNode)));
+        node->SetData(&uintNode);
+        Span span = uintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LongNode& longNode)
+    {
+        node.Reset(new TreeViewNode(typename(LongNode)));
+        node->SetData(&longNode);
+        Span span = longNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ULongNode& ulongNode)
+    {
+        node.Reset(new TreeViewNode(typename(ULongNode)));
+        node->SetData(&ulongNode);
+        Span span = ulongNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(FloatNode& floatNode)
+    {
+        node.Reset(new TreeViewNode(typename(FloatNode)));
+        node->SetData(&floatNode);
+        Span span = floatNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DoubleNode& doubleNode)
+    {
+        node.Reset(new TreeViewNode(typename(DoubleNode)));
+        node->SetData(&doubleNode);
+        Span span = doubleNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CharNode& charNode)
+    {
+        node.Reset(new TreeViewNode(typename(CharNode)));
+        node->SetData(&charNode);
+        Span span = charNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(WCharNode& wcharNode)
+    {
+        node.Reset(new TreeViewNode(typename(WCharNode)));
+        node->SetData(&wcharNode);
+        Span span = wcharNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UCharNode& ucharNode)
+    {
+        node.Reset(new TreeViewNode(typename(UCharNode)));
+        node->SetData(&ucharNode);
+        Span span = ucharNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(VoidNode& voidNode)
+    {
+        node.Reset(new TreeViewNode(typename(VoidNode)));
+        node->SetData(&voidNode);
+        Span span = voidNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BooleanLiteralNode& booleanLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(BooleanLiteralNode)));
+        node->SetData(&booleanLiteralNode);
+        Span span = booleanLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SByteLiteralNode& sbyteLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(SByteLiteralNode)));
+        node->SetData(&sbyteLiteralNode);
+        Span span = sbyteLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ByteLiteralNode& byteLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(ByteLiteralNode)));
+        node->SetData(&byteLiteralNode);
+        Span span = byteLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ShortLiteralNode& shortLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(ShortLiteralNode)));
+        node->SetData(&shortLiteralNode);
+        Span span = shortLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UShortLiteralNode& ushortLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(UShortLiteralNode)));
+        node->SetData(&ushortLiteralNode);
+        Span span = ushortLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IntLiteralNode& intLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(IntLiteralNode)));
+        node->SetData(&intLiteralNode);
+        Span span = intLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UIntLiteralNode& uintLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(UIntLiteralNode)));
+        node->SetData(&uintLiteralNode);
+        Span span = uintLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LongLiteralNode& longLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(LongLiteralNode)));
+        node->SetData(&longLiteralNode);
+        Span span = longLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ULongLiteralNode& ulongLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(ULongLiteralNode)));
+        node->SetData(&ulongLiteralNode);
+        Span span = ulongLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(FloatLiteralNode& floatLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(FloatLiteralNode)));
+        node->SetData(&floatLiteralNode);
+        Span span = floatLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DoubleLiteralNode& doubleLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(DoubleLiteralNode)));
+        node->SetData(&doubleLiteralNode);
+        Span span = doubleLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CharLiteralNode& charLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(CharLiteralNode)));
+        node->SetData(&charLiteralNode);
+        Span span = charLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(WCharLiteralNode& wcharLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(WCharLiteralNode)));
+        node->SetData(&wcharLiteralNode);
+        Span span = wcharLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UCharLiteralNode& ucharLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(UCharLiteralNode)));
+        node->SetData(&ucharLiteralNode);
+        Span span = ucharLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(StringLiteralNode& stringLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(StringLiteralNode)));
+        node->SetData(&stringLiteralNode);
+        Span span = stringLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(WStringLiteralNode& wstringLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(WStringLiteralNode)));
+        node->SetData(&wstringLiteralNode);
+        Span span = wstringLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UStringLiteralNode& ustringLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(UStringLiteralNode)));
+        node->SetData(&ustringLiteralNode);
+        Span span = ustringLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NullLiteralNode& nullLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(NullLiteralNode)));
+        node->SetData(&nullLiteralNode);
+        Span span = nullLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ArrayLiteralNode& arrayLiteralNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ArrayLiteralNode)));
+        int n = arrayLiteralNode.Values().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            arrayLiteralNode.Values()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&arrayLiteralNode);
+        Span span = arrayLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(StructuredLiteralNode& structuredLiteralNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(StructuredLiteralNode)));
+        int n = structuredLiteralNode.Members().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            structuredLiteralNode.Members()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&structuredLiteralNode);
+        Span span = structuredLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UuidLiteralNode& uuidLiteralNode)
+    {
+        node.Reset(new TreeViewNode(typename(UuidLiteralNode)));
+        node->SetData(&uuidLiteralNode);
+        Span span = uuidLiteralNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CompileUnitNode& compileUnitNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CompileUnitNode)));
+        compileUnitNode.GlobalNs()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&compileUnitNode);
+        Span span = compileUnitNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NamespaceNode& namespaceNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NamespaceNode)));
+        if (namespaceNode.Id() != null)
+        {
+            namespaceNode.Id()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int n = namespaceNode.Members().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            namespaceNode.Members()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&namespaceNode);
+        Span span = namespaceNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AliasNode& aliasNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AliasNode)));
+        aliasNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        aliasNode.Qid()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&aliasNode);
+        Span span = aliasNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NamespaceImportNode& namespaceImportNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NamespaceImportNode)));
+        namespaceImportNode.Ns()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&namespaceImportNode);
+        Span span = namespaceImportNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IdentifierNode& identifierNode)
+    {
+        node.Reset(new TreeViewNode(typename(IdentifierNode)));
+        node->SetData(&identifierNode);
+        Span span = identifierNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TemplateIdNode& templateIdNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TemplateIdNode)));
+        templateIdNode.Primary()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = templateIdNode.TemplateArguments().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            templateIdNode.TemplateArguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&templateIdNode);
+        Span span = templateIdNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(FunctionNode& functionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(FunctionNode)));
+        if (functionNode.GetAttributes() != null)
+        {
+            functionNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        functionNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int nt = functionNode.TemplateParameters().Count();
+        for (int i = 0; i < nt; ++i)
+        {
+            functionNode.TemplateParameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int np = functionNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            functionNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (functionNode.WhereConstraint() != null)
+        {
+            functionNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (functionNode.Body() != null)
+        {
+            functionNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&functionNode);
+        Span span = functionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ClassNode& classNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ClassNode)));
+        if (classNode.GetAttributes() != null)
+        {
+            classNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        classNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int nt = classNode.TemplateParameters().Count();
+        for (int i = 0; i < nt; ++i)
+        {
+            classNode.TemplateParameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int nb = classNode.BaseClassOrInterfaces().Count();
+        for (int i = 0; i < nb; ++i)
+        {
+            classNode.BaseClassOrInterfaces()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (classNode.WhereConstraint() != null)
+        {
+            classNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int nm = classNode.Members().Count();
+        for (int i = 0; i < nm; ++i)
+        {
+            classNode.Members()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&classNode);
+        Span span = classNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ThisInitializerNode& thisInitializerNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ThisInitializerNode)));
+        int na = thisInitializerNode.Arguments().Count();
+        for (int i = 0; i < na; ++i)
+        {
+            thisInitializerNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&thisInitializerNode);
+        Span span = thisInitializerNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BaseInitializerNode& baseInitializerNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BaseInitializerNode)));
+        int na = baseInitializerNode.Arguments().Count();
+        for (int i = 0; i < na; ++i)
+        {
+            baseInitializerNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&baseInitializerNode);
+        Span span = baseInitializerNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MemberInitializerNode& memberInitializerNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MemberInitializerNode)));
+        memberInitializerNode.MemberId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int na = memberInitializerNode.Arguments().Count();
+        for (int i = 0; i < na; ++i)
+        {
+            memberInitializerNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&memberInitializerNode);
+        Span span = memberInitializerNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(StaticConstructorNode& staticConstructorNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(StaticConstructorNode)));
+        if (staticConstructorNode.GetAttributes() != null)
+        {
+            staticConstructorNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        staticConstructorNode.ClassId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int ni = staticConstructorNode.Initializers().Count();
+        for (int i = 0; i < ni; ++i)
+        {
+            staticConstructorNode.Initializers()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (staticConstructorNode.WhereConstraint() != null)
+        {
+            staticConstructorNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (staticConstructorNode.Body() != null)
+        {
+            staticConstructorNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&staticConstructorNode);
+        Span span = staticConstructorNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstructorNode& constructorNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstructorNode)));
+        if (constructorNode.GetAttributes() != null)
+        {
+            constructorNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        constructorNode.ClassId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = constructorNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            constructorNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int ni = constructorNode.Initializers().Count();
+        for (int i = 0; i < ni; ++i)
+        {
+            constructorNode.Initializers()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (constructorNode.WhereConstraint() != null)
+        {
+            constructorNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (constructorNode.Body() != null)
+        {
+            constructorNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constructorNode);
+        Span span = constructorNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DestructorNode& destructorNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DestructorNode)));
+        if (destructorNode.GetAttributes() != null)
+        {
+            destructorNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        destructorNode.ClassId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (destructorNode.WhereConstraint() != null)
+        {
+            destructorNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (destructorNode.Body() != null)
+        {
+            destructorNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&destructorNode);
+        Span span = destructorNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MemberFunctionNode& memberFunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MemberFunctionNode)));
+        if (memberFunctionNode.GetAttributes() != null)
+        {
+            memberFunctionNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        memberFunctionNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = memberFunctionNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            memberFunctionNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (memberFunctionNode.WhereConstraint() != null)
+        {
+            memberFunctionNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (memberFunctionNode.Body() != null)
+        {
+            memberFunctionNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&memberFunctionNode);
+        Span span = memberFunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConversionFunctionNode& conversionFunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConversionFunctionNode)));
+        if (conversionFunctionNode.GetAttributes() != null)
+        {
+            conversionFunctionNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        conversionFunctionNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (conversionFunctionNode.WhereConstraint() != null)
+        {
+            conversionFunctionNode.WhereConstraint()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (conversionFunctionNode.Body() != null)
+        {
+            conversionFunctionNode.Body()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conversionFunctionNode);
+        Span span = conversionFunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MemberVariableNode& memberVariableNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MemberVariableNode)));
+        if (memberVariableNode.GetAttributes() != null)
+        {
+            memberVariableNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        memberVariableNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        memberVariableNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&memberVariableNode);
+        Span span = memberVariableNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(InterfaceNode& interfaceNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(InterfaceNode)));
+        if (interfaceNode.GetAttributes() != null)
+        {
+            interfaceNode.GetAttributes()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        interfaceNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int nm = interfaceNode.Members().Count();
+        for (int i = 0; i < nm; ++i)
+        {
+            interfaceNode.Members()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&interfaceNode);
+        Span span = interfaceNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DelegateNode& delegateNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DelegateNode)));
+        delegateNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        delegateNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = delegateNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            delegateNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&delegateNode);
+        Span span = delegateNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ClassDelegateNode& classDelegateNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ClassDelegateNode)));
+        classDelegateNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        classDelegateNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = classDelegateNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            classDelegateNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&classDelegateNode);
+        Span span = classDelegateNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ParenthesizedConstraintNode& parenthesizedConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ParenthesizedConstraintNode)));
+        parenthesizedConstraintNode.Constraint()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&parenthesizedConstraintNode);
+        Span span = parenthesizedConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DisjunctiveConstraintNode& disjunctiveConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DisjunctiveConstraintNode)));
+        disjunctiveConstraintNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        disjunctiveConstraintNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&disjunctiveConstraintNode);
+        Span span = disjunctiveConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConjunctiveConstraintNode& conjunctiveConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConjunctiveConstraintNode)));
+        conjunctiveConstraintNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        conjunctiveConstraintNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conjunctiveConstraintNode);
+        Span span = conjunctiveConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(WhereConstraintNode& whereConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(WhereConstraintNode)));
+        whereConstraintNode.Constraint()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&whereConstraintNode);
+        Span span = whereConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PredicateConstraintNode& predicateConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PredicateConstraintNode)));
+        predicateConstraintNode.InvokeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&predicateConstraintNode);
+        Span span = predicateConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IsConstraintNode& isConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(IsConstraintNode)));
+        isConstraintNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        isConstraintNode.ConceptOrTypeName()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&isConstraintNode);
+        Span span = isConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MultiParamConstraintNode& multiParamConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MultiParamConstraintNode)));
+        multiParamConstraintNode.ConceptId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int nt = multiParamConstraintNode.TypeExprs().Count();
+        for (int i = 0; i < nt; ++i)
+        {
+            multiParamConstraintNode.TypeExprs()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&multiParamConstraintNode);
+        Span span = multiParamConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TypeNameConstraintNode& typeNameConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TypeNameConstraintNode)));
+        typeNameConstraintNode.TypeId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&typeNameConstraintNode);
+        Span span = typeNameConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstructorConstraintNode& constructorConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstructorConstraintNode)));
+        constructorConstraintNode.TypeParamId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = constructorConstraintNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            constructorConstraintNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constructorConstraintNode);
+        Span span = constructorConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DestructorConstraintNode& destructorConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DestructorConstraintNode)));
+        destructorConstraintNode.TypeParamId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&destructorConstraintNode);
+        Span span = destructorConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MemberFunctionConstraintNode& memberFunctionConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MemberFunctionConstraintNode)));
+        memberFunctionConstraintNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        memberFunctionConstraintNode.TypeParamId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = memberFunctionConstraintNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            memberFunctionConstraintNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&memberFunctionConstraintNode);
+        Span span = memberFunctionConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(FunctionConstraintNode& functionConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(FunctionConstraintNode)));
+        functionConstraintNode.ReturnTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = functionConstraintNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            functionConstraintNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&functionConstraintNode);
+        Span span = functionConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AxiomStatementNode& axiomStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AxiomStatementNode)));
+        axiomStatementNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&axiomStatementNode);
+        Span span = axiomStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AxiomNode& axiomNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AxiomNode)));
+        if (axiomNode.Id() != null)
+        {
+            axiomNode.Id()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int np = axiomNode.Parameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            axiomNode.Parameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int ns = axiomNode.Statements().Count();
+        for (int i = 0; i < ns; ++i)
+        {
+            axiomNode.Statements()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&axiomNode);
+        Span span = axiomNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConceptIdNode& conceptIdNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConceptIdNode)));
+        conceptIdNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int np = conceptIdNode.TypeParameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            conceptIdNode.TypeParameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conceptIdNode);
+        Span span = conceptIdNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConceptNode& conceptNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConceptNode)));
+        conceptNode.Id()->Accept(*this);
+        int np = conceptNode.TypeParameters().Count();
+        for (int i = 0; i < np; ++i)
+        {
+            conceptNode.TypeParameters()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (conceptNode.Refinement() != null)
+        {
+            conceptNode.Refinement()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int nc = conceptNode.Constraints().Count();
+        for (int i = 0; i < nc; ++i)
+        {
+            conceptNode.Constraints()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int na = conceptNode.Axioms().Count();
+        for (int i = 0; i < na; ++i)
+        {
+            conceptNode.Axioms()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conceptNode);
+        Span span = conceptNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SameConstraintNode& sameConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(SameConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&sameConstraintNode);
+        Span span = sameConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DerivedConstraintNode& derivedConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DerivedConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&derivedConstraintNode);
+        Span span = derivedConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConvertibleConstraintNode& convertibleConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConvertibleConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&convertibleConstraintNode);
+        Span span = convertibleConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ExplicitlyConvertibleConstraintNode& explicitlyConvertibleConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ExplicitlyConvertibleConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&explicitlyConvertibleConstraintNode);
+        Span span = explicitlyConvertibleConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CommonConstraintNode& commonConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CommonConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&commonConstraintNode);
+        Span span = commonConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NonreferenceTypeConstraintNode& nonreferenceTypeConstraintNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NonreferenceTypeConstraintNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&nonreferenceTypeConstraintNode);
+        Span span = nonreferenceTypeConstraintNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LabelNode& labelNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(LabelNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&labelNode);
+        Span span = labelNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LabeledStatementNode& labeledStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(LabeledStatementNode)));
+        labeledStatementNode.Label()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        labeledStatementNode.Stmt()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&labeledStatementNode);
+        Span span = labeledStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CompoundStatementNode& compoundStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CompoundStatementNode)));
+        int ns = compoundStatementNode.Statements().Count();
+        for (int i = 0; i < ns; ++i)
+        {
+            compoundStatementNode.Statements()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&compoundStatementNode);
+        Span span = compoundStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ReturnStatementNode& returnStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ReturnStatementNode)));
+        if (returnStatementNode.Expression() != null)
+        {
+            returnStatementNode.Expression()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&returnStatementNode);
+        Span span = returnStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IfStatementNode& ifStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(IfStatementNode)));
+        ifStatementNode.Condition()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        ifStatementNode.ThenS()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (ifStatementNode.ElseS() != null)
+        {
+            ifStatementNode.ElseS()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&ifStatementNode);
+        Span span = ifStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(WhileStatementNode& whileStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(WhileStatementNode)));
+        whileStatementNode.Condition()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        whileStatementNode.Statement()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&whileStatementNode);
+        Span span = whileStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DoStatementNode& doStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DoStatementNode)));
+        doStatementNode.Statement()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        doStatementNode.Condition()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&doStatementNode);
+        Span span = doStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ForStatementNode& forStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ForStatementNode)));
+        forStatementNode.InitS()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (forStatementNode.Condition() != null)
+        {
+            forStatementNode.Condition()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        forStatementNode.LoopS()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        forStatementNode.ActionS()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&forStatementNode);
+        Span span = forStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BreakStatementNode& breakStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BreakStatementNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&breakStatementNode);
+        Span span = breakStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ContinueStatementNode& continueStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ContinueStatementNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&continueStatementNode);
+        Span span = continueStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GotoStatementNode& gotoStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GotoStatementNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&gotoStatementNode);
+        Span span = gotoStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstructionStatementNode& constructionStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstructionStatementNode)));
+        constructionStatementNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        constructionStatementNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int na = constructionStatementNode.Arguments().Count();
+        for (int i = 0; i < na; ++i)
+        {
+            constructionStatementNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constructionStatementNode);
+        Span span = constructionStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DeleteStatementNode& deleteStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DeleteStatementNode)));
+        deleteStatementNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&deleteStatementNode);
+        Span span = deleteStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DestroyStatementNode& destroyStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DestroyStatementNode)));
+        destroyStatementNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&destroyStatementNode);
+        Span span = destroyStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AssignmentStatementNode& assignmentStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AssignmentStatementNode)));
+        assignmentStatementNode.TargetExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        assignmentStatementNode.SourceExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&assignmentStatementNode);
+        Span span = assignmentStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ExpressionStatementNode& expressionStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ExpressionStatementNode)));
+        expressionStatementNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&expressionStatementNode);
+        Span span = expressionStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(EmptyStatementNode& emptyStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(EmptyStatementNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&emptyStatementNode);
+        Span span = emptyStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(RangeForStatementNode& rangeForStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(RangeForStatementNode)));
+        rangeForStatementNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        rangeForStatementNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        rangeForStatementNode.Container()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        rangeForStatementNode.Action()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&rangeForStatementNode);
+        Span span = rangeForStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SwitchStatementNode& switchStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(SwitchStatementNode)));
+        switchStatementNode.Condition()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int nc = switchStatementNode.Cases().Count();
+        for (int i = 0; i < nc; ++i)
+        {
+            switchStatementNode.Cases()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (switchStatementNode.Default() != null)
+        {
+            switchStatementNode.Default()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&switchStatementNode);
+        Span span = switchStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CaseStatementNode& caseStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CaseStatementNode)));
+        int nc = caseStatementNode.CaseExprs().Count();
+        for (int i = 0; i < nc; ++i)
+        {
+            caseStatementNode.CaseExprs()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int ns = caseStatementNode.Statements().Count();
+        for (int i = 0; i < ns; ++i)
+        {
+            caseStatementNode.Statements()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&caseStatementNode);
+        Span span = caseStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DefaultStatementNode& defaultStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DefaultStatementNode)));
+        int ns = defaultStatementNode.Statements().Count();
+        for (int i = 0; i < ns; ++i)
+        {
+            defaultStatementNode.Statements()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&defaultStatementNode);
+        Span span = defaultStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GotoCaseStatementNode& gotoCaseStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GotoCaseStatementNode)));
+        gotoCaseStatementNode.CaseExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&gotoCaseStatementNode);
+        Span span = gotoCaseStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GotoDefaultStatementNode& gotoDefaultStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GotoDefaultStatementNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&gotoDefaultStatementNode);
+        Span span = gotoDefaultStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ThrowStatementNode& throwStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ThrowStatementNode)));
+        if (throwStatementNode.Expression() != null)
+        {
+            throwStatementNode.Expression()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&throwStatementNode);
+        Span span = throwStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TryStatementNode& tryStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TryStatementNode)));
+        tryStatementNode.TryBlock()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = tryStatementNode.Catches().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            tryStatementNode.Catches()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&tryStatementNode);
+        Span span = tryStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CatchNode& catchNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CatchNode)));
+        catchNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (catchNode.Id() != null)
+        {
+            catchNode.Id()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        catchNode.CatchBlock()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&catchNode);
+        Span span = catchNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AssertStatementNode& assertStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AssertStatementNode)));
+        assertStatementNode.AssertExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&assertStatementNode);
+        Span span = assertStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationPartNode)));
+        if (conditionalCompilationPartNode.Expr() != null)
+        {
+            conditionalCompilationPartNode.Expr()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int n = conditionalCompilationPartNode.Statements().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            conditionalCompilationPartNode.Statements()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationPartNode);
+        Span span = conditionalCompilationPartNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationDisjunctionNode)));
+        conditionalCompilationDisjunctionNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        conditionalCompilationDisjunctionNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationDisjunctionNode);
+        Span span = conditionalCompilationDisjunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationConjunctionNode)));
+        conditionalCompilationConjunctionNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        conditionalCompilationConjunctionNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationConjunctionNode);
+        Span span = conditionalCompilationConjunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationNotNode)));
+        conditionalCompilationNotNode.Expr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationNotNode);
+        Span span = conditionalCompilationNotNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationPrimaryNode& conditionalCompilationPrimaryNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationPrimaryNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationPrimaryNode);
+        Span span = conditionalCompilationPrimaryNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ParenthesizedConditionalCompilationExpressionNode& parenthesizeCondCompExprNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ParenthesizedConditionalCompilationExpressionNode)));
+        parenthesizeCondCompExprNode.Expr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&parenthesizeCondCompExprNode);
+        Span span = parenthesizeCondCompExprNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConditionalCompilationStatementNode& conditionalCompilationStatementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConditionalCompilationStatementNode)));
+        conditionalCompilationStatementNode.IfPart()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = conditionalCompilationStatementNode.ElifParts().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            conditionalCompilationStatementNode.ElifParts()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        if (conditionalCompilationStatementNode.ElsePart() != null)
+        {
+            conditionalCompilationStatementNode.ElsePart()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conditionalCompilationStatementNode);
+        Span span = conditionalCompilationStatementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TypedefNode& typedefNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TypedefNode)));
+        typedefNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        typedefNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&typedefNode);
+        Span span = typedefNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstantNode& constantNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstantNode)));
+        constantNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        constantNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        constantNode.Value()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constantNode);
+        Span span = constantNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(EnumTypeNode& enumTypeNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(EnumTypeNode)));
+        enumTypeNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (enumTypeNode.GetUnderlyingType() != null)
+        {
+            enumTypeNode.GetUnderlyingType()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        int n = enumTypeNode.Constants().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            enumTypeNode.Constants()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&enumTypeNode);
+        Span span = enumTypeNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(EnumConstantNode& enumConstantNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(EnumConstantNode)));
+        if (enumConstantNode.HasValue())
+        {
+            if (enumConstantNode.GetValue() != null)
+            {
+                enumConstantNode.GetValue()->Accept(*this);
+                treeViewNode->AddChild(node.Release());
+            }
+        }
+        enumConstantNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&enumConstantNode);
+        Span span = enumConstantNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ParameterNode& parameterNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ParameterNode)));
+        parameterNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (parameterNode.Id() != null)
+        {
+            parameterNode.Id()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&parameterNode);
+        Span span = parameterNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TemplateParameterNode& templateParameterNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TemplateParameterNode)));
+        templateParameterNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (templateParameterNode.DefaultTemplateArgument() != null)
+        {
+            templateParameterNode.DefaultTemplateArgument()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&templateParameterNode);
+        Span span = templateParameterNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstNode& constNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstNode)));
+        constNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constNode);
+        Span span = constNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LValueRefNode& lvalueRefNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(LValueRefNode)));
+        lvalueRefNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&lvalueRefNode);
+        Span span = lvalueRefNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(RValueRefNode& rvalueRefNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(RValueRefNode)));
+        rvalueRefNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&rvalueRefNode);
+        Span span = rvalueRefNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PointerNode& pointerNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PointerNode)));
+        pointerNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&pointerNode);
+        Span span = pointerNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ArrayNode& arrayNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ArrayNode)));
+        arrayNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (arrayNode.Size() != null)
+        {
+            arrayNode.Size()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&arrayNode);
+        Span span = arrayNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DotNode& dotNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DotNode)));
+        dotNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        dotNode.MemberId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&dotNode);
+        Span span = dotNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ArrowNode& arrowNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ArrowNode)));
+        arrowNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        arrowNode.MemberId()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&arrowNode);
+        Span span = arrowNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(EquivalenceNode& equivalenceNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(EquivalenceNode)));
+        equivalenceNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        equivalenceNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&equivalenceNode);
+        Span span = equivalenceNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ImplicationNode& implicationNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ImplicationNode)));
+        implicationNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        implicationNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&implicationNode);
+        Span span = implicationNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DisjunctionNode& disjunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DisjunctionNode)));
+        disjunctionNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        disjunctionNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&disjunctionNode);
+        Span span = disjunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConjunctionNode& conjunctionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConjunctionNode)));
+        conjunctionNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        conjunctionNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&conjunctionNode);
+        Span span = conjunctionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BitOrNode& bitOrNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BitOrNode)));
+        bitOrNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        bitOrNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&bitOrNode);
+        Span span = bitOrNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BitXorNode& bitXorNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BitXorNode)));
+        bitXorNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        bitXorNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&bitXorNode);
+        Span span = bitXorNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BitAndNode& bitAndNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BitAndNode)));
+        bitAndNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        bitAndNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&bitAndNode);
+        Span span = bitAndNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(EqualNode& equalNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(EqualNode)));
+        equalNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        equalNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&equalNode);
+        Span span = equalNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NotEqualNode& notEqualNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NotEqualNode)));
+        notEqualNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        notEqualNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&notEqualNode);
+        Span span = notEqualNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LessNode& lessNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(LessNode)));
+        lessNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        lessNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&lessNode);
+        Span span = lessNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GreaterNode& greaterNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GreaterNode)));
+        greaterNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        greaterNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&greaterNode);
+        Span span = greaterNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(LessOrEqualNode& lessOrEqualNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(LessOrEqualNode)));
+        lessOrEqualNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        lessOrEqualNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&lessOrEqualNode);
+        Span span = lessOrEqualNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GreaterOrEqualNode& greaterOrEqualNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GreaterOrEqualNode)));
+        greaterOrEqualNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        greaterOrEqualNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&greaterOrEqualNode);
+        Span span = greaterOrEqualNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ShiftLeftNode& shiftLeftNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ShiftLeftNode)));
+        shiftLeftNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        shiftLeftNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&shiftLeftNode);
+        Span span = shiftLeftNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ShiftRightNode& shiftRightNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ShiftRightNode)));
+        shiftRightNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        shiftRightNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&shiftRightNode);
+        Span span = shiftRightNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AddNode& addNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AddNode)));
+        addNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        addNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&addNode);
+        Span span = addNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SubNode& subNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(SubNode)));
+        subNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        subNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&subNode);
+        Span span = subNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(MulNode& mulNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(MulNode)));
+        mulNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        mulNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&mulNode);
+        Span span = mulNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DivNode& divNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DivNode)));
+        divNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        divNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&divNode);
+        Span span = divNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(RemNode& remNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(RemNode)));
+        remNode.Left()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        remNode.Right()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&remNode);
+        Span span = remNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NotNode& notNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NotNode)));
+        notNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&notNode);
+        Span span = notNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UnaryPlusNode& unaryPlusNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(UnaryPlusNode)));
+        unaryPlusNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&unaryPlusNode);
+        Span span = unaryPlusNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(UnaryMinusNode& unaryMinusNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(UnaryMinusNode)));
+        unaryMinusNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&unaryMinusNode);
+        Span span = unaryMinusNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PrefixIncrementNode& prefixIncrementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PrefixIncrementNode)));
+        prefixIncrementNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&prefixIncrementNode);
+        Span span = prefixIncrementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PrefixDecrementNode& prefixDecrementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PrefixDecrementNode)));
+        prefixDecrementNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&prefixDecrementNode);
+        Span span = prefixDecrementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(DerefNode& derefNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(DerefNode)));
+        derefNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&derefNode);
+        Span span = derefNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AddrOfNode& addrOfNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AddrOfNode)));
+        addrOfNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&addrOfNode);
+        Span span = addrOfNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ComplementNode& complementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ComplementNode)));
+        complementNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&complementNode);
+        Span span = complementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IsNode& isNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(IsNode)));
+        isNode.Expr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        isNode.TargetTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&isNode);
+        Span span = isNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AsNode& asNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AsNode)));
+        asNode.Expr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        asNode.TargetTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&asNode);
+        Span span = asNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(IndexingNode& indexingNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(IndexingNode)));
+        indexingNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        indexingNode.Index()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&indexingNode);
+        Span span = indexingNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(InvokeNode& invokeNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(InvokeNode)));
+        invokeNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = invokeNode.Arguments().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            invokeNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&invokeNode);
+        Span span = invokeNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PostfixIncrementNode& postfixIncrementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PostfixIncrementNode)));
+        postfixIncrementNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&postfixIncrementNode);
+        Span span = postfixIncrementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(PostfixDecrementNode& postfixDecrementNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(PostfixDecrementNode)));
+        postfixDecrementNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&postfixDecrementNode);
+        Span span = postfixDecrementNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(SizeOfNode& sizeOfNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(SizeOfNode)));
+        sizeOfNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&sizeOfNode);
+        Span span = sizeOfNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TypeNameNode& typeNameNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TypeNameNode)));
+        typeNameNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&typeNameNode);
+        Span span = typeNameNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(TypeIdNode& typeIdNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(TypeIdNode)));
+        typeIdNode.Expression()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&typeIdNode);
+        Span span = typeIdNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CastNode& castNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CastNode)));
+        castNode.TargetTypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        castNode.SourceExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&castNode);
+        Span span = castNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ConstructNode& constructNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ConstructNode)));
+        constructNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = constructNode.Arguments().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            constructNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&constructNode);
+        Span span = constructNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(NewNode& newNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(NewNode)));
+        newNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        int n = newNode.Arguments().Count();
+        for (int i = 0; i < n; ++i)
+        {
+            newNode.Arguments()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&newNode);
+        Span span = newNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ThisNode& thisNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ThisNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&thisNode);
+        Span span = thisNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(BaseNode& baseNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(BaseNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&baseNode);
+        Span span = baseNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(ParenthesizedExpressionNode& parenthesizedExpressionNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(ParenthesizedExpressionNode)));
+        parenthesizedExpressionNode.Subject()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        node.Reset(treeViewNode.Release());
+        node->SetData(&parenthesizedExpressionNode);
+        Span span = parenthesizedExpressionNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(GlobalVariableNode& globalVariableNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(GlobalVariableNode)));
+        globalVariableNode.TypeExpr()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        globalVariableNode.Id()->Accept(*this);
+        treeViewNode->AddChild(node.Release());
+        if (globalVariableNode.Initializer() != null)
+        {
+            globalVariableNode.Initializer()->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&globalVariableNode);
+        Span span = globalVariableNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AttributeNode& attribute)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AttributeNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&attribute);
+        Span span = attribute.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(AttributesNode& attributes)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(AttributesNode)));
+        long n = attributes.GetAttributes().Count();
+        for (long i = 0; i < n; ++i)
+        {
+            attributes.GetAttributes()[i]->Accept(*this);
+            treeViewNode->AddChild(node.Release());
+        }
+        node.Reset(treeViewNode.Release());
+        node->SetData(&attributes);
+        Span span = attributes.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    public override void Visit(CommentNode& commentNode)
+    {
+        UniquePtr<TreeViewNode> treeViewNode(new TreeViewNode(typename(CommentNode)));
+        node.Reset(treeViewNode.Release());
+        node->SetData(&commentNode);
+        Span span = commentNode.GetSpan();
+        lexer.ConvertExternal(span);
+        int index = span.start;
+        indexNodeMap[index] = node.Get();
+        nodeIndexMap[node.Get()] = index;
+    }
+    private CmajorLexer& lexer;
+    private UniquePtr<TreeViewNode> node;
+    private HashMap<int, TreeViewNode*> indexNodeMap;
+    private HashMap<TreeViewNode*, int> nodeIndexMap;
+}

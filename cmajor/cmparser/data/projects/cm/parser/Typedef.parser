@@ -1,0 +1,28 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using Cm.Ast;
+using Cm.Lexer;
+using Cm.Parser;
+using CmajorTokens;
+
+parser TypedefParser
+{
+    uselexer CmajorLexer;
+
+    using SpecifierParser.Specifiers;
+    using TypeExprParser.TypeExpr;
+    using IdentifierParser.Identifier;
+
+    Typedef(ParsingContext* ctx, var Span s) : TypedefNode*
+        ::= Specifiers:specifiers{ s = span; } TYPEDEF TypeExpr(ctx):type! Identifier(ctx):id! SEMICOLON!
+        {
+            s.end = span.end;
+            TypedefNode* node = new TypedefNode(s, ctx->ModuleId(), specifiers, type, id);
+            return node;
+        }
+        ;
+}

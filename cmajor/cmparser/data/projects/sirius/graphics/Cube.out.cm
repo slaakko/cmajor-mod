@@ -1,0 +1,100 @@
+using System;
+using System.Collections;
+using Sirius.Math;
+
+namespace Sirius.Graphics
+{
+    public class Cube : PolygonMeshObject
+    {
+        public nothrow Cube() :
+            this(1)
+        {
+        }
+        public explicit nothrow Cube(float sideLength) :
+            this(sideLength, 0, 0, 0)
+        {
+        }
+        public nothrow Cube(float sideLength, float roll, float pitch, float yaw) :
+            this(sideLength, roll, pitch, yaw, Vector(0, 0, 0))
+        {
+        }
+        public nothrow Cube(float sideLength, float roll, float pitch, float yaw, const Vector& location) :
+            base()
+        {
+            AddVertex(Vertex(Vector(0, 0, 0)));
+            AddVertex(Vertex(Vector(1, 0, 0)));
+            AddVertex(Vertex(Vector(1, 1, 0)));
+            AddVertex(Vertex(Vector(0, 1, 0)));
+            AddVertex(Vertex(Vector(0, 0, 1)));
+            AddVertex(Vertex(Vector(1, 0, 1)));
+            AddVertex(Vertex(Vector(1, 1, 1)));
+            AddVertex(Vertex(Vector(0, 1, 1)));
+            AddEdge(Edge(0, 1));
+            AddEdge(Edge(1, 2));
+            AddEdge(Edge(2, 3));
+            AddEdge(Edge(3, 0));
+            Polygon back;
+            back.AddVertex(0);
+            back.AddVertex(3);
+            back.AddVertex(2);
+            back.AddVertex(1);
+            AddPolygon(Rvalue(back));
+            AddEdge(Edge(0, 4));
+            AddEdge(Edge(4, 5));
+            AddEdge(Edge(5, 1));
+            Polygon bottom;
+            bottom.AddVertex(0);
+            bottom.AddVertex(1);
+            bottom.AddVertex(5);
+            bottom.AddVertex(4);
+            AddPolygon(Rvalue(bottom));
+            AddEdge(Edge(5, 6));
+            AddEdge(Edge(6, 7));
+            AddEdge(Edge(7, 4));
+            Polygon front;
+            front.AddVertex(4);
+            front.AddVertex(5);
+            front.AddVertex(6);
+            front.AddVertex(7);
+            AddPolygon(Rvalue(front));
+            AddEdge(Edge(3, 7));
+            AddEdge(Edge(6, 2));
+            Polygon top;
+            top.AddVertex(3);
+            top.AddVertex(7);
+            top.AddVertex(6);
+            top.AddVertex(2);
+            AddPolygon(Rvalue(top));
+            Polygon right;
+            right.AddVertex(1);
+            right.AddVertex(2);
+            right.AddVertex(6);
+            right.AddVertex(5);
+            AddPolygon(Rvalue(right));
+            Polygon left;
+            left.AddVertex(0);
+            left.AddVertex(4);
+            left.AddVertex(7);
+            left.AddVertex(3);
+            AddPolygon(Rvalue(left));
+            AddPolygonsToVertices();
+            CalculatePolygonNormals();
+            CalculateVertexNormals();
+            Matrix moveToOrigin = Translation(-0.500000f, -0.500000f, -0.500000f);
+            Matrix scaling = Scaling(sideLength, sideLength, sideLength);
+            Matrix orientation = Rotation(roll, pitch, yaw);
+            Matrix moveToLocation = Translation(location.x, location.y, location.z);
+            Matrix transformation = moveToLocation * orientation * scaling * moveToOrigin;
+            TransformLocal(transformation);
+        }
+        public nothrow Cube(const Cube& that) :
+            base(that.Vertices(), that.Edges(), that.Polygons(), that.GetColor())
+        {
+        }
+        public override nothrow Object* Clone() const
+        {
+            return new Cube(*this);
+        }
+    }
+
+} // namespace Sirius.Graphics

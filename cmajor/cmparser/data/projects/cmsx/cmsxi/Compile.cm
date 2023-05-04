@@ -1,0 +1,34 @@
+using System;
+using System.IO;
+
+namespace cmsx.intermediate
+{
+    public void Compile(const string& intermediateCodeFileName)
+    {
+        try
+        {
+            Context context;
+            IntermediateCodeLexer lexer(ToUtf32(File.ReadAllText(intermediateCodeFileName)), intermediateCodeFileName, 0);
+            IntermediateCodeFileParser.Parse(lexer, &context);
+            context.compileUnit.MapInstructions();
+            context.compileUnit.Validate();
+            context.compileUnit.CombineBasicBlocks();
+            //context.compileUnit.ComputeLivenessAndNextUse();
+            if (Flags.Get(Flag.stages))
+            {
+                context.compileUnit.Print(0);
+            }
+            MachineCode machineCode(context);
+            context.compileUnit.GenerateCode(machineCode);
+            if (Flags.Get(Flag.stages))
+            {
+                context.compileUnit.Print(printMachineCodeStage);
+            }
+            machineCode.Print(Path.ChangeExtension(context.compileUnit.fileName, ".s"));
+        }
+        catch (const Exception& ex)
+        {
+            throw Exception(ex.Message() + " in file '" + intermediateCodeFileName + "'");
+        }
+    }
+}

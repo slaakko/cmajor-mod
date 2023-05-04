@@ -1,0 +1,510 @@
+using System;
+using System.Collections;
+using cmsx.util;
+
+namespace cmsx.kernel
+{
+    public const int blockSize = 4096;
+    public const int numBitsInBitmapBlock = blockSize * 8;
+    public const int numULongsInBitmapBlock = blockSize / 8;
+    public const int numBlockNumbersInBlock = blockSize / 4;
+    public const int invalidBlockNumber = 0;
+    public const int maxCachedBlocks = 1024;
+    public const int nameMax = 252;
+
+    public class BlockKey
+    {
+        public nothrow BlockKey() : blockNumber(-1), fsNumber(-1)
+        {
+        }
+        public nothrow BlockKey(int blockNumber_, int fsNumber_) : blockNumber(blockNumber_), fsNumber(fsNumber_)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            string s;
+            s.Append("block.").Append(ToString(fsNumber)).Append('.').Append(ToString(blockNumber));
+            return s;
+        }
+        public int blockNumber;
+        public int fsNumber;
+    }
+
+    public nothrow bool operator==(const BlockKey& left, const BlockKey& right)
+    {
+        return left.blockNumber == right.blockNumber && left.fsNumber == right.fsNumber;
+    }
+
+    public class BlockKeyHash : UnaryFun<BlockKey, ulong>
+    {
+        public nothrow inline ulong operator()(const BlockKey& key) const
+        {
+            return cast<ulong>(1099511628211 * key.fsNumber + key.blockNumber);
+        }
+    }
+
+    public class Block
+    {
+        public enum Flags : byte
+        {
+            none = 0u,
+            locked = 1u << 0u,
+            valid = 1u << 1u,
+            dirty = 1u << 2u,
+            old = 1u << 3u
+        }
+        public nothrow string BlockFlagStr(Flags flags)
+        {
+            string s = "flags";
+            if ((flags & Flags.locked) != Flags.none)
+            {
+                s.Append(".locked");
+            }
+            if ((flags & Flags.valid) != Flags.none)
+            {
+                s.Append(".valid");
+            }
+            if ((flags & Flags.dirty) != Flags.none)
+            {
+                s.Append(".dirty");
+            }
+            if ((flags & Flags.old) != Flags.none)
+            {
+                s.Append(".old");
+            }
+            return s;
+        }
+        public nothrow Block(const BlockKey& key_, BlockManager* manager_, BlockCache* cache_) : key(key_), manager(manager_), cache(cache_), flags(Flags.none), iterator(), owner(null)
+        {
+        }
+        public nothrow inline cmsx.kernel.Process* Owner() const
+        {
+            return owner;
+        }
+        public nothrow inline void SetOwner(cmsx.kernel.Process* owner_)
+        {
+            owner = owner_;
+        }
+        public nothrow inline void ResetOwner()
+        {
+            owner = null;
+        }
+        public default virtual ~Block();
+        public nothrow string ToString() const
+        {
+            string s;
+            s.Append(key.ToString());
+            s.Append('.').Append(BlockFlagStr(flags));
+            return s;
+        }
+        public nothrow void Read(MemoryReader& reader)
+        {
+            for (int i = 0; i < blockSize; ++i)
+            {
+                data[i] = reader.ReadByte();
+            }
+        }
+        public nothrow void Write(MemoryWriter& writer)
+        {
+            for (int i = 0; i < blockSize; ++i)
+            {
+                writer.Write(data[i]);
+            }
+            ResetFlag(Flags.dirty);
+        }
+        public nothrow void Clear()
+        {
+            for (int i = 0; i < data.Length(); ++i)
+            {
+                data[i] = 0u;
+            }
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline bool GetFlag(Flags flag) const
+        {
+            return (flags & flag) != Flags.none;
+        }
+        public nothrow inline void SetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags | flag);
+            if (flag == Flags.dirty)
+            {
+                cache->AddDirtyBlock(this);
+            }
+        }
+        public nothrow inline void ResetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags & ~flag);
+        }
+        public nothrow inline void ResetFlags()
+        {
+            flags = Flags.none;
+        }
+        public nothrow inline BlockKey& Key() const
+        {
+            return key;
+        }
+        public nothrow void SetKey(const BlockKey& key_)
+        {
+            key = key_;
+        }
+        public void AddWaitingProcess(cmsx.kernel.Process* process)
+        {
+            waitingProcesses.Add(process);
+        }
+        public nothrow List<cmsx.kernel.Process*> GetWaitingProcesses()
+        {
+            List<cmsx.kernel.Process*> processes;
+            Swap(processes, waitingProcesses);
+            return processes;
+        }
+        public nothrow LinkedList<Block*>.Iterator GetIterator() const
+        {
+            return iterator;
+        }
+        public nothrow void SetIterator(LinkedList<Block*>.Iterator iterator_)
+        {
+            iterator = iterator_;
+        }
+        public nothrow inline BlockManager* Manager()
+        {
+            return manager;
+        }
+        public byte[blockSize] data;
+        private BlockKey key;
+        private BlockManager* manager;
+        private BlockCache* cache;
+        private Flags flags;
+        private List<cmsx.kernel.Process*> waitingProcesses;
+        private LinkedList<Block*>.Iterator iterator;
+        private cmsx.kernel.Process* owner;
+    }
+
+    public class SuperBlock : Block
+    {
+        public nothrow SuperBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow int GetFirstINodeBitmapBlockNumber() const
+        {
+            MemoryReader reader(&data[firstINodeBitmapBlockNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetFirstINodeBitmapBlockNumber(int firstINodeBitmapBlockNumber)
+        {
+            MemoryWriter writer(&data[firstINodeBitmapBlockNumberOffset], 4);
+            writer.Write(firstINodeBitmapBlockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetNumINodeBitmapBlocks() const
+        {
+            MemoryReader reader(&data[numINodeBitmapBlocksOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetNumINodeBitmapBlocks(int numINodeBitmapBlocks)
+        {
+            MemoryWriter writer(&data[numINodeBitmapBlocksOffset], 4);
+            writer.Write(numINodeBitmapBlocks);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetFirstBlockBitmapBlockNumber() const
+        {
+            MemoryReader reader(&data[firstBlockBitmapBlockNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetFirstBlockBitmapBlockNumber(int firstBlockBitmapBlockNumber)
+        {
+            MemoryWriter writer(&data[firstBlockBitmapBlockNumberOffset], 4);
+            writer.Write(firstBlockBitmapBlockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetNumBlockBitmapBlocks() const
+        {
+            MemoryReader reader(&data[numBlockBitmapBlocksOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetNumBlockBitmapBlocks(int numBlockBitmapBlocks)
+        {
+            MemoryWriter writer(&data[numBlockBitmapBlocksOffset], 4);
+            writer.Write(numBlockBitmapBlocks);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetFirstINodeBlockNumber() const
+        {
+            MemoryReader reader(&data[firstINodeBlockNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetFirstINodeBlockNumber(int firstINodeBlockNumber)
+        {
+            MemoryWriter writer(&data[firstINodeBlockNumberOffset], 4);
+            writer.Write(firstINodeBlockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetNumINodeBlocks() const
+        {
+            MemoryReader reader(&data[numINodeBlocksOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetNumINodeBlocks(int numINodeBlocks)
+        {
+            MemoryWriter writer(&data[numINodeBlocksOffset], 4);
+            writer.Write(numINodeBlocks);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetFirstDataBlockNumber() const
+        {
+            MemoryReader reader(&data[firstDataBlockNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetFirstDataBlockNumber(int firstDataBlockNumber)
+        {
+            MemoryWriter writer(&data[firstDataBlockNumberOffset], 4);
+            writer.Write(firstDataBlockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetRootDirINodeNumber() const
+        {
+            MemoryReader reader(&data[rootDirINodeNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetRootDirINodeNumber(int rootDirINodeNumber)
+        {
+            MemoryWriter writer(&data[rootDirINodeNumberOffset], 4);
+            writer.Write(rootDirINodeNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        public nothrow int GetLastBlockNumber() const
+        {
+            MemoryReader reader(&data[lastBlockNumberOffset], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetLastBlockNumber(int lastBlockNumber)
+        {
+            MemoryWriter writer(&data[lastBlockNumberOffset], 4);
+            writer.Write(lastBlockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+        private const int firstINodeBitmapBlockNumberOffset = 4 * 0;
+        private const int numINodeBitmapBlocksOffset = 4 * 1;
+        private const int firstBlockBitmapBlockNumberOffset = 4 * 2;
+        private const int numBlockBitmapBlocksOffset = 4 * 3;
+        private const int firstINodeBlockNumberOffset = 4 * 4;
+        private const int numINodeBlocksOffset = 4 * 5;
+        private const int firstDataBlockNumberOffset = 4 * 6;
+        private const int rootDirINodeNumberOffset = 4 * 7;
+        private const int lastBlockNumberOffset = 4 * 8;
+    }
+
+    public class BitmapBlock : Block
+    {
+        public nothrow BitmapBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow ulong GetBitChunk(int i) const
+        {
+            MemoryReader reader(&data[i * 8], 8);
+            return reader.ReadULong();
+        }
+        public nothrow void SetBitChunk(int i, ulong chunk)
+        {
+            MemoryWriter writer(&data[i * 8], 8);
+            writer.Write(chunk);
+            SetFlag(Flags.dirty);
+        }
+        public nothrow int GetFirstZeroBitIndex() const
+        {
+            long n = numULongsInBitmapBlock;
+            for (long i = 0; i < n; ++i)
+            {
+                ulong chunk = GetBitChunk(cast<int>(i));
+                if (chunk != MaxValue<ulong>())
+                {
+                    for (byte j = 0u; j < 64u; ++j)
+                    {
+                        if ((chunk & (cast<ulong>(1u) << j)) == 0u)
+                        {
+                            return cast<int>(i) * 64 + j;
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+        public nothrow bool GetBit(int index) const
+        {
+            int i = index / 64;
+            byte j = cast<byte>(index % 64);
+            ulong chunk = GetBitChunk(i);
+            return (chunk & (cast<ulong>(1u) << j)) != 0u;
+        }
+        public nothrow void SetBit(int index)
+        {
+            int i = index / 64;
+            byte j = cast<byte>(index % 64);
+            ulong chunk = GetBitChunk(i);
+            chunk = chunk | (cast<ulong>(1u) << j);
+            SetBitChunk(i, chunk);
+            SetFlag(Flags.dirty);
+        }
+        public nothrow void ResetBit(int index)
+        {
+            int i = index / 64;
+            byte j = cast<byte>(index % 64);
+            ulong chunk = GetBitChunk(i);
+            chunk = chunk & ~(cast<ulong>(1u) << j);
+            SetBitChunk(i, chunk);
+            SetFlag(Flags.dirty);
+        }
+    }
+
+    public class BlockNumberBlock : Block
+    {
+        public nothrow BlockNumberBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow int GetBlockNumber(int index) const
+        {
+            #assert(index >= 0 && index < numBlockNumbersInBlock);
+            MemoryReader reader(&data[index * 4], 4);
+            return reader.ReadInt();
+        }
+        public nothrow void SetBlockNumber(int index, int blockNumber)
+        {
+            #assert(index >= 0 && index < numBlockNumbersInBlock);
+            MemoryWriter writer(&data[index * 4], 4);
+            writer.Write(blockNumber);
+            SetFlag(Block.Flags.dirty);
+        }
+    }
+
+    public class FileBlock : Block
+    {
+        public nothrow FileBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow inline byte GetByte(long index) const
+        {
+            return data[index];
+        }
+        public nothrow inline void SetByte(long index, byte x)
+        {
+            data[index] = x;
+        }
+    }
+
+    public class DirectoryEntry
+    {
+        public nothrow DirectoryEntry(int inodeNumber_, const string& name_) : inodeNumber(inodeNumber_), name(name_)
+        {
+            #assert(name.Length() < nameMax);
+        }
+        public void Read(MemoryReader& reader)
+        {
+            inodeNumber = reader.ReadInt();
+            name = reader.ReadString();
+        }
+        public void Write(MemoryWriter& writer)
+        {
+            writer.Write(inodeNumber);
+            writer.Write(name);
+        }
+        public int inodeNumber;
+        public string name;
+    }
+
+    public const int directoryEntrySize = 4 + nameMax;
+    public const int numDirectoryEntriesInBlock = blockSize / directoryEntrySize;
+
+    public class DirectorySlot
+    {
+        public nothrow DirectorySlot() : blockNumber(invalidBlockNumber), fsNumber(0), offset(-1)
+        {
+        }
+        public nothrow DirectorySlot(int blockNumber_, int fsNumber_, long offset_) : blockNumber(blockNumber_), fsNumber(fsNumber_), offset(offset_)
+        {
+        }
+        public int blockNumber;
+        public int fsNumber;
+        public long offset;
+    }
+
+    public class DirectoryBlock : Block
+    {
+        public nothrow DirectoryBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow DirectoryEntry GetDirectoryEntry(int index) const
+        {
+            #assert(index >= 0 && index < numDirectoryEntriesInBlock);
+            DirectoryEntry entry;
+            MemoryReader reader(&data[index * directoryEntrySize], directoryEntrySize);
+            entry.Read(reader);
+            return entry;
+        }
+        public nothrow void SetDirectoryEntry(int index, const DirectoryEntry& entry)
+        {
+            #assert(index >= 0 && index < numDirectoryEntriesInBlock);
+            MemoryWriter writer(&data[index * directoryEntrySize], directoryEntrySize);
+            entry.Write(writer);
+        }
+    }
+
+    public const int inodeSize = 128;
+    public const int numINodesInBlock = blockSize / inodeSize;
+
+    public class INodeBlock : Block
+    {
+        public nothrow INodeBlock(BlockManager* manager_, BlockCache* cache_) : base(BlockKey(0, 0), manager_, cache_)
+        {
+        }
+        public nothrow INode GetINode(int index) const
+        {
+            #assert(index >= 0 && index < numINodesInBlock);
+            INode inode;
+            MemoryReader reader(&data[index * inodeSize], inodeSize);
+            inode.Read(reader);
+            return inode;
+        }
+        public nothrow void SetINode(int index, const INode& inode) const
+        {
+            #assert(index >= 0 && index < numINodesInBlock);
+            MemoryWriter writer(&data[index * inodeSize], inodeSize);
+            inode.Write(writer);
+        }
+    }
+
+    public class BlockPutter
+    {
+        public nothrow BlockPutter() : block(null)
+        {
+        }
+        public nothrow BlockPutter(Block* block_) : block(block_)
+        {
+        }
+        public nothrow void Reset(Block* block_)
+        {
+            if (block != block_)
+            {
+                if (block != null)
+                {
+                    block->Manager()->PutBlock(block);
+                }
+                block = block_;
+            }
+        }
+        public nothrow Block* Release()
+        {
+            Block* result = block;
+            block = null;
+            return result;
+        }
+        public ~BlockPutter()
+        {
+            if (block != null)
+            {
+                block->Manager()->PutBlock(block);
+            }
+        }
+        private Block* block;
+    }
+}

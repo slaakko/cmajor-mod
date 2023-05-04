@@ -1,0 +1,47 @@
+using System;
+
+namespace cmsx.kernel
+{
+    public ulong hostFileCompletionKey = 0u;
+
+    public class HostFile
+    {
+        public HostFile(const string& hostFilePath_, ulong key_, bool randomAccess) : hostFilePath(hostFilePath_), fileHandle(null), key(key_)
+        {
+            if (System.IO.File.Exists(hostFilePath))
+            {
+                fileHandle = OsOpenHostFile(hostFilePath.Chars(), randomAccess);
+            }
+            else
+            {
+                fileHandle = OsCreateHostFile(hostFilePath.Chars(), randomAccess);
+            }
+            if (fileHandle == null)
+            {
+                throw Exception("error opening host file '" + hostFilePath + "': open failed");
+            }
+        }
+        public ~HostFile()
+        {
+            if (fileHandle != null)
+            {
+                OsCloseHostFile(fileHandle);
+            }
+        }
+        public inline nothrow const string& GetHostFilePath() const
+        {
+            return hostFilePath;
+        }
+        public inline nothrow void* GetFileHandle() const
+        {
+            return fileHandle;
+        }
+        public nothrow inline ulong Key() const
+        {
+            return key;
+        }
+        private string hostFilePath;
+        private void* fileHandle;
+        private ulong key;
+    }
+}

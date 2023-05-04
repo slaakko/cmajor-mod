@@ -1,0 +1,53 @@
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum MessageBoxType : uint
+    {
+        MB_ABORTRETRYIGNORE = 2u, MB_CANCELTRYCONTINUE = 6u, MB_HELP = 16384u, MB_OK = 0u, MB_OKCANCEL = 1u, MB_RETRYCANCEL = 5u, MB_YESNO = 4u, MB_YESNOCANCEL = 3u, MB_ICONEXCLAMATION = 48u, MB_ICONWARNING = 48u, MB_ICONINFORMATION = 64u, MB_ICONASTERISK = 64u, MB_ICONQUESTION = 32u, MB_ICONSTOP = 16u, MB_ICONERROR = 16u, MB_ICONHAND = 16u
+    }
+
+    public enum MessageBoxResult : int
+    {
+        ok = 1, cancel = 2, abort = 3, retry = 4, ignore = 5, yes = 6, no = 7, tryAgain = 10, continue_ = 11
+    }
+
+    public static class MessageBox
+    {
+        public static void Show(const string& message)
+        {
+            int result = WinShowMessageBox(message.Chars(), null);
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+        }
+        public static void Show(const string& message, const string& caption)
+        {
+            int result = WinShowMessageBox(message.Chars(), caption.Chars());
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+        }
+        public static MessageBoxResult Show(const string& message, const string& caption, Control* owner, MessageBoxType type)
+        {
+            void* ownerWindowHandle = null;
+            if (owner != null)
+            {
+                ownerWindowHandle = owner->Handle();
+            }
+            int result = WinShowMessageBoxWithType(message.Chars(), caption.Chars(), ownerWindowHandle, type);
+            if (result == 0)
+            {
+                throw WindowsAPIException(WinGetLastError());
+            }
+            else
+            {
+                return cast<MessageBoxResult>(result);
+            }
+        }
+    }
+
+} // namespace System.Windows

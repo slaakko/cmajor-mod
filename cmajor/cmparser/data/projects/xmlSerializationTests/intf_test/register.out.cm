@@ -1,0 +1,16 @@
+using System;
+using System.Xml.Serialization;
+using model;
+
+public const int carClassId = 0;
+
+public const int bicycleClassId = 1;
+
+public const int personClassId = 2;
+
+public void Register()
+{
+    Car.Register(carClassId);
+    Bicycle.Register(bicycleClassId);
+    Person.Register(personClassId);
+}

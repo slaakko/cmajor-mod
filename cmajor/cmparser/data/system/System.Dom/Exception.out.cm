@@ -1,0 +1,14 @@
+using System;
+using System.Collections;
+
+namespace System.Dom
+{
+    public class DomException : Exception
+    {
+        public DomException(const string& message_) :
+            base(message_)
+        {
+        }
+    }
+
+} // namespace System.Dom

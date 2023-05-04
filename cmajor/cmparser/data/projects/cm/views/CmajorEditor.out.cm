@@ -1,0 +1,84 @@
+using System;
+using System.Windows;
+using Cm.Service.Debug;
+
+namespace Cm.Views
+{
+    public nothrow int DefaultDebugStripWidth()
+    {
+        return 20;
+    }
+
+    public nothrow System.Windows.Color DefaultDebugStripBackgroundColor()
+    {
+        return System.Windows.Color(230u, 231u, 232u);
+    }
+
+    public class CmajorEditor : Editor
+    {
+        public CmajorEditor(const string& filePath, BreakpointList& breakpointList, int debugStripWidth, const System.Windows.Color& debugStripBackgroundColor) :
+            base(filePath)
+        {
+            UniquePtr<CmajorSourceCodeView> sourceCodeViewPtr(new CmajorSourceCodeView(Point(), Size(), Dock.none, Anchors.none));
+            sourceCodeView = sourceCodeViewPtr.Get();
+            UniquePtr<DebugStrip> debugStripPtr(new DebugStrip(debugStripWidth, debugStripBackgroundColor, breakpointList, sourceCodeView));
+            DebugStrip* debugStrip = debugStripPtr.Get();
+            sourceCodeView->SetScrollSubject();
+            sourceCodeView->SetDebugStrip(debugStrip);
+            sourceCodeView->SetEditor(this);
+            AddChild(debugStripPtr.Release());
+            UniquePtr<ScrollableControl> scrollableSourceCodeView(new ScrollableControl(sourceCodeViewPtr.Release(), Point(), Size(), Dock.fill, Anchors.none));
+            AddChild(scrollableSourceCodeView.Release());
+            ustring content = ToUtf32(File.ReadAllText(filePath));
+            sourceCodeView->SetTextContent(content);
+            sourceCodeView->SetIndentSize(4);
+            sourceCodeView->SetFilePath(filePath);
+        }
+        public CmajorEditor(const string& filePath, BreakpointList& breakpointList) :
+            this(filePath, breakpointList, DefaultDebugStripWidth(), DefaultDebugStripBackgroundColor())
+        {
+        }
+        public inline nothrow CmajorSourceCodeView* GetSourceCodeView() const
+        {
+            return sourceCodeView;
+        }
+        public override nothrow TextView* GetTextView() const
+        {
+            return sourceCodeView;
+        }
+        public override void SaveTo(const string& filePath)
+        {
+            sourceCodeView->SaveText(filePath);
+        }
+        public override nothrow bool IsDirty() const
+        {
+            return sourceCodeView->IsDirty();
+        }
+        public override nothrow void ResetDirty()
+        {
+            sourceCodeView->ResetDirty();
+        }
+        public override nothrow bool IsCCDirty() const
+        {
+            return sourceCodeView->IsCCDirty();
+        }
+        public override nothrow void ResetCCDirty()
+        {
+            sourceCodeView->ResetCCDirty();
+        }
+        public override nothrow void Select()
+        {
+            sourceCodeView->Select();
+        }
+        public override nothrow void Undo()
+        {
+            sourceCodeView->Undo();
+        }
+        public override nothrow void Redo()
+        {
+            sourceCodeView->Redo();
+        }
+        private CmajorSourceCodeView* sourceCodeView;
+    }
+
+} // namespace Cm.Views

@@ -1,0 +1,6 @@
+using System;
+using System.Collections;
+
+namespace System.XPath
+{
+} // namespace System.XPath

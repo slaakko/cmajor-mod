@@ -1,0 +1,593 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using System.Net.Sockets;
+using System.Dom;
+using System.Text;
+using System.IO;
+using Cm.Service;
+
+namespace Cm.Service.Build
+{
+    public const int defaultPort = 54325;
+    public const int defaultKeepAliveServerPort = 54329;
+    public const int defaultKeepAliveIntervalSeconds = 60;
+
+    public class delegate void ProgressNotificationFunction();
+    public class delegate void BuildServerStartNotificationFunction();
+    public class delegate void BuildServerStopNotificationFunction();
+
+    public class BuildServiceArgs
+    {
+        public BuildServiceArgs() :
+            port(defaultPort), keepAliveServerPort(defaultKeepAliveServerPort), log(false), wait(false), progress(true),
+            serverStartWaitSeconds(1), serverStopWaitSeconds(10), saveRequestOnly(false), debugServer(false)
+        {
+        }
+        public nothrow BuildServiceArgs& ProgramName(const string& programName_)
+        {
+            programName = programName_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& Pid(int pid_)
+        {
+            pid = pid_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& Port(int port_)
+        {
+            port = port_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& KeepAliveServerPort(int keepAliveServerPort_)
+        {
+            keepAliveServerPort = keepAliveServerPort_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& Log(bool log_)
+        {
+            log = log_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& Wait(bool wait_)
+        {
+            wait = wait_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& Progress(bool progress_)
+        {
+            progress = progress_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& ServerStartWaitSeconds(int serverStartWaitSeconds_)
+        {
+            serverStartWaitSeconds = serverStartWaitSeconds_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& ServerStopWaitSeconds(int serverStopWaitSeconds_)
+        {
+            serverStopWaitSeconds = serverStopWaitSeconds_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& SaveRequestOnly(bool saveRequestOnly_)
+        {
+            saveRequestOnly = saveRequestOnly_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& TraceServer(bool traceServer_)
+        {
+            traceServer = traceServer_;
+            return *this;
+        }
+        public nothrow BuildServiceArgs& DebugServer(bool debugServer_)
+        {
+            debugServer = debugServer_;
+            return *this;
+        }
+        public string programName;
+        public int pid;
+        public int port;
+        public int keepAliveServerPort;
+        public bool log;
+        public bool wait;
+        public bool progress;
+        public bool saveRequestOnly;
+        public int serverStartWaitSeconds;
+        public int serverStopWaitSeconds;
+        public bool traceServer;
+        public bool debugServer;
+    }
+
+    public class KeepAliveServerGuard
+    {
+        public nothrow KeepAliveServerGuard(bool& keepAliveServerRunning_) : keepAliveServerRunning(keepAliveServerRunning_)
+        {
+            keepAliveServerRunning = true;
+        }
+        public ~KeepAliveServerGuard()
+        {
+            keepAliveServerRunning = false;
+        }
+        private bool& keepAliveServerRunning;
+    }
+
+    public class BuildService : ServiceBase
+    {
+        public nothrow BuildService(BuildServiceArgs& args_) :
+            base(), args(args_), notifyProgress(), terminating(false), stopKeepAlives(false), keepAliveServerRunning(false)
+        {
+        }
+        private string MakeServerStartCommand()
+        {
+            string serverStartCommand = "cmbs";
+            if (args.traceServer)
+            {
+                serverStartCommand = "cmbst";
+            }
+            else if (args.debugServer)
+            {
+                serverStartCommand = "cmbsd";
+            }
+            port = Cm.Service.PortMap.GetFreePortNumber(args.programName, args.pid, portMapServicePortNumber);
+            bool gotNoPort = false;
+            if (port == -1)
+            {
+                port = args.port;
+                LogMessage("BuildService: got no port from port map server, resorting to default port " + ToString(port));
+                gotNoPort = true;
+            }
+            serverStartCommand.Append(" --port=" + ToString(port));
+            if (!gotNoPort)
+            {
+                keepAliveServerPort = Cm.Service.PortMap.GetFreePortNumber(args.programName, args.pid, portMapServicePortNumber);
+            }
+            serverStartCommand.Append(" --keepAliveServerPort=" + ToString(keepAliveServerPort));
+            if (keepAliveServerPort == -1)
+            {
+                keepAliveServerPort = args.keepAliveServerPort;
+                LogMessage("BuildService: got no port from port map server, resorting to default keep alive server port " + ToString(keepAliveServerPort));
+            }
+            if (portMapServicePortNumber != -1)
+            {
+                serverStartCommand.Append(" --portMapServicePort=" + ToString(portMapServicePortNumber));
+            }
+            if (args.log)
+            {
+                serverStartCommand.Append(" --log");
+            }
+            if (args.wait)
+            {
+                serverStartCommand.Append(" --wait");
+            }
+            if (args.progress)
+            {
+                serverStartCommand.Append(" --progress");
+            }
+            return serverStartCommand;
+        }
+        public nothrow void SetProgressNotificationFunction(const ProgressNotificationFunction& notifyProgress_)
+        {
+            notifyProgress = notifyProgress_;
+        }
+        public nothrow void SetBuildServerStartNotificationFunction(const BuildServerStartNotificationFunction& notifyBuildServerStart_)
+        {
+            notifyBuildServerStart = notifyBuildServerStart_;
+        }
+        public nothrow void SetBuildServerStopNotificationFunction(const BuildServerStopNotificationFunction& notifyBuildServerStop_)
+        {
+            notifyBuildServerStop = notifyBuildServerStop_;
+        }
+        public nothrow bool ServerRunning() const
+        {
+            if (buildServer.IsNull()) return false;
+            return buildServer->Running();
+        }
+        public bool StartServer()
+        {
+            try
+            {
+                if (ServerRunning())
+                {
+                    StopServer(true);
+                }
+                string serverStartCommand = MakeServerStartCommand();
+                LogMessage("BuildService: Starting Build Server (port=" + ToString(port) + ", keep alive server port=" + ToString(keepAliveServerPort) + ")...");
+                buildServer.Reset(
+                    new Process(serverStartCommand,
+                    cast<Process.Redirections>(Process.Redirections.processStdIn | Process.Redirections.processStdOut | Process.Redirections.processStdErr)));
+                string line = buildServer->ReadLine(Process.StdHandle.stdOut);
+                if (line == "build-server-error")
+                {
+                    line = buildServer->ReadLine(Process.StdHandle.stdOut);
+                    throw Exception("BuildServer failed: " + line);
+                }
+                LogMessage(line);
+                Sleep(Duration.FromSeconds(args.serverStartWaitSeconds));
+                if (!keepAliveServerRunning)
+                {
+                    keepAliveThread = Thread.StartMethod(KeepAliveServer);
+                }
+                LogMessage("BuildService: Build Server started.");
+                notifyBuildServerStart();
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+                LogMessage("BuildService: " + ex.Message());
+                return false;
+            }
+            return true;
+        }
+        public void StopServer(bool log)
+        {
+            try
+            {
+                if (!ServerRunning()) return;
+                if (keepAliveServerRunning)
+                {
+                    stopKeepAlives = true;
+                    stopKeepAlivesVar.NotifyOne();
+                    keepAliveThread.Join();
+                }
+                if (log)
+                {
+                    LogMessage("BuildService: Stopping Build Server...");
+                }
+                SendReceiveStopRequest();
+                bool serverStopped = false;
+                for (int i = 0; i < args.serverStopWaitSeconds; ++i)
+                {
+                    if (buildServer->Running())
+                    {
+                        Sleep(Duration.FromSeconds(1));
+                    }
+                    else
+                    {
+                        serverStopped = true;
+                        break;
+                    }
+                }
+                if (!serverStopped)
+                {
+                    if (log)
+                    {
+                        LogMessage("BuildService: Build Server not stopped after " + ToString(args.serverStopWaitSeconds) + " seconds, terminating server process...");
+                    }
+                    buildServer->Terminate();
+                }
+                int exitCode = buildServer->ExitCode();
+                string exitCodeStr;
+                if (exitCode != 0)
+                {
+                    exitCodeStr.Append(" Exit code=" + ToString(exitCode));
+                }
+                if (log)
+                {
+                    LogMessage("BuildService: Build Server stopped." + exitCodeStr);
+                }
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+                if (log)
+                {
+                    LogMessage("BuildService: StopServer: " + ex.Message());
+                }
+            }
+        }
+        public void TerminateServer(bool logTerminate)
+        {
+            try
+            {
+                if (!ServerRunning()) return;
+                terminating = true;
+                if (keepAliveServerRunning)
+                {
+                    stopKeepAlives = true;
+                    stopKeepAlivesVar.NotifyOne();
+                    keepAliveThread.Join();
+                }
+                buildServer->Terminate();
+                terminatingVar.NotifyOne();
+                if (logTerminate)
+                {
+                    LogMessage("BuildService: Build Server stopped.");
+                }
+                notifyBuildServerStop();
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+                if (logTerminate && log)
+                {
+                    LogMessage("BuildService: TerminateServer: " + ex.Message());
+                }
+            }
+        }
+        public void Quit()
+        {
+            TerminateServer(false);
+            if (keepAliveServerRunning)
+            {
+                stopKeepAlives = true;
+                stopKeepAlivesVar.NotifyOne();
+                keepAliveThread.Join();
+            }
+        }
+        private nothrow bool StopKeepAlives(void* arg)
+        {
+            return stopKeepAlives;
+        }
+        public void KeepAliveServer()
+        {
+            KeepAliveServerGuard keepAliveServerGuard(keepAliveServerRunning);
+            try
+            {
+                RtSetThreadId('K');
+                stopKeepAlives = false;
+                while (!stopKeepAlives)
+                {
+                    if (stopKeepAlivesVar.WaitFor(keepAliveMutex, StopKeepAlives, null, Duration.FromSeconds(defaultKeepAliveIntervalSeconds)))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        SendReceiveKeepAliveRequest();
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+            }
+        }
+        private void SendReceiveStopRequest()
+        {
+            TcpSocket socket("localhost", ToString(port));
+            StopBuildRequest stopBuildRequest;
+            UniquePtr<Element> requestElement = stopBuildRequest.ToXml("stopBuildRequest");
+            string requestStr = ElementToString(requestElement.Release());
+            Write(socket, requestStr);
+            string replyStr = ReadStr(socket);
+            UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+            string messageKind = GetMessageKind(replyDoc->DocumentElement());
+            if (messageKind == "stopBuildReply")
+            {
+                StopBuildReply reply;
+                reply.FromXml(replyDoc->DocumentElement());
+            }
+            else
+            {
+                throw Exception("stopBuildReply expected, unknown reply message kind '" + messageKind + "' received");
+            }
+        }
+        private void SendReceiveKeepAliveRequest()
+        {
+            TcpSocket socket("localhost", ToString(keepAliveServerPort));
+            KeepAliveBuildRequest keepAliveBuildRequest;
+            UniquePtr<Element> requestElement = keepAliveBuildRequest.ToXml("keepAliveBuildRequest");
+            string requestStr = ElementToString(requestElement.Release());
+            Write(socket, requestStr);
+            string replyStr = ReadStr(socket);
+            UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+            string messageKind = GetMessageKind(replyDoc->DocumentElement());
+            if (messageKind == "keepAliveBuildReply")
+            {
+                KeepAliveBuildReply reply;
+                reply.FromXml(replyDoc->DocumentElement());
+            }
+            else
+            {
+                throw Exception("keepAliveBuildReply expected, unknown reply message kind '" + messageKind + "' received");
+            }
+        }
+        public List<CompileError> ProcessBuildRequest(const BuildRequest& request)
+        {
+            try
+            {
+                terminating = false;
+                if (!ServerRunning())
+                {
+                    if (!StartServer())
+                    {
+                        return List<CompileError>();
+                    }
+                }
+                UniquePtr<Element> requestElement = request.ToXml("buildRequest");
+                Document requestDoc;
+                requestDoc.AppendChild(UniquePtr<System.Dom.Node>(requestElement.Release()));
+                StreamWriter requestWriter(File.CreateText(Path.Combine(CmCodeLogDir(), "build-request.xml")));
+                CodeFormatter requestFormatter(requestWriter);
+                requestDoc.Write(requestFormatter);
+                if (saveRequestOnly) return List<CompileError>();
+                TcpSocket socket("localhost", ToString(port));
+                StringWriter writer;
+                CodeFormatter formatter(writer);
+                requestDoc.Write(formatter);
+                string requestStr = writer.GetString();
+                Write(socket, requestStr);
+                string replyStr = ReadStr(socket);
+                UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+                string messageKind = GetMessageKind(replyDoc->DocumentElement());
+                while (messageKind == "logBuildMessageRequest" || messageKind == "buildProgressMessage")
+                {
+                    if (messageKind == "logBuildMessageRequest")
+                    {
+                        LogBuildMessageRequest logBuildMessageRequest;
+                        logBuildMessageRequest.FromXml(replyDoc->DocumentElement());
+                        string message = logBuildMessageRequest.message;
+                        LogMessage(message);
+                        LogBuildMessageReply logBuildMessageReply;
+                        logBuildMessageReply.ok = true;
+                        UniquePtr<Element> logBuildMessageReplyElement = logBuildMessageReply.ToXml("logBuildMessageReply");
+                        string logBuildMessageReplyStr = ElementToString(logBuildMessageReplyElement.Release());
+                        Write(socket, logBuildMessageReplyStr);
+                    }
+                    else if (messageKind == "buildProgressMessage")
+                    {
+                        BuildProgressMessage buildProgressMessage;
+                        buildProgressMessage.FromXml(replyDoc->DocumentElement());
+                        notifyProgress();
+                    }
+                    replyStr = ReadStr(socket);
+                    replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+                    messageKind = GetMessageKind(replyDoc->DocumentElement());
+                }
+                if (messageKind == "buildReply")
+                {
+                    StreamWriter replyWriter(File.CreateText(Path.Combine(CmCodeLogDir(), "build-reply.xml")));
+                    CodeFormatter replyFormatter(replyWriter);
+                    replyDoc->Write(replyFormatter);
+                    BuildReply buildReply;
+                    buildReply.FromXml(replyDoc->DocumentElement());
+                    return ProcessBuildReply(buildReply);
+                }
+                else if (messageKind == "genericBuildErrorReply")
+                {
+                    GenericBuildErrorReply genericBuildErrorReply;
+                    genericBuildErrorReply.FromXml(replyDoc->DocumentElement());
+                    LogMessage("BuildService: ProcessBuildRequest: generic error reply received: " + genericBuildErrorReply.error);
+                }
+                else
+                {
+                    throw Exception("unknown reply message kind received");
+                }
+            }
+            catch (const Exception& ex)
+            {
+                if (!terminating)
+                {
+                    LogException(ex);
+                    LogMessage("BuildService: ProcessBuildRequest: " + ex.Message());
+                }
+            }
+            return List<CompileError>();
+        }
+        private List<CompileError> ProcessBuildReply(const BuildReply& buildReply)
+        {
+            if (buildReply.success)
+            {
+                LogMessage("BuildService: build successful, time=" + buildReply.time);
+            }
+            else
+            {
+                LogMessage("BuildService: build unsuccessful");
+            }
+            if (!buildReply.requestValid)
+            {
+                throw Exception("server claims build request not valid: " + buildReply.requestErrorMessage);
+            }
+            if (!buildReply.logException.IsEmpty())
+            {
+                throw Exception("server log exception: " + buildReply.logException);
+            }
+            return Rvalue(buildReply.errors);
+        }
+        public void ProcessCacheModuleRequest(const CacheModuleRequest& cacheModuleRequest)
+        {
+            try
+            {
+                if (!ServerRunning())
+                {
+                    if (!StartServer())
+                    {
+                        return;
+                    }
+                }
+                UniquePtr<Element> requestElement = cacheModuleRequest.ToXml("cacheModuleRequest");
+                TcpSocket socket("localhost", ToString(port));
+                string requestStr = ElementToString(requestElement.Release());
+                Write(socket, requestStr);
+                string replyStr = ReadStr(socket);
+                UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+                string messageKind = GetMessageKind(replyDoc->DocumentElement());
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+                LogMessage("BuildService: ProcessCacheModuleRequest: " + ex.Message());
+            }
+        }
+        public GetDefinitionReply ProcessGetDefinitionRequest(const GetDefinitionRequest& request)
+        {
+            GetDefinitionReply reply;
+            try
+            {
+                if (!ServerRunning())
+                {
+                    if (!StartServer())
+                    {
+                        reply.ok = false;
+                        reply.error = "could not start server";
+                        return reply;
+                    }
+                }
+                UniquePtr<Element> requestElement = request.ToXml("getDefinitionRequest");
+                TcpSocket socket("localhost", ToString(port));
+                string requestStr = ElementToString(requestElement.Release());
+                Write(socket, requestStr);
+                string replyStr = ReadStr(socket);
+                UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+                string messageKind = GetMessageKind(replyDoc->DocumentElement());
+                if (messageKind == "getDefinitionReply")
+                {
+                    reply = GetDefinitionReply(replyDoc->DocumentElement());
+                }
+                else
+                {
+                    throw Exception("'getDefinitionReply' expected");
+                }
+            }
+            catch (const Exception& ex)
+            {
+                LogException(ex);
+                LogMessage("BuildService: ProcessGetDefinitionRequest: " + ex.Message());
+                reply.ok = false;
+                reply.error = ex.Message();
+            }
+            return reply;
+        }
+        private string GetMessageKind(Element* element)
+        {
+            string messageKind = ToUtf8(element->Name());
+            return messageKind;
+        }
+        private string ElementToString(Element* element)
+        {
+            Document doc;
+            doc.AppendChild(UniquePtr<System.Dom.Node>(element));
+            StringWriter writer;
+            CodeFormatter formatter(writer);
+            doc.Write(formatter);
+            return writer.GetString();
+        }
+        private void Progress()
+        {
+            notifyProgress();
+        }
+        private BuildServiceArgs args;
+        private int port;
+        private int keepAliveServerPort;
+        private int portMapServicePortNumber;
+        private bool log;
+        private bool saveRequestOnly;
+        private bool terminating;
+        private bool stopKeepAlives;
+        private bool keepAliveServerRunning;
+        private ConditionVariable terminatingVar;
+        private ConditionVariable stopKeepAlivesVar;
+        private ProgressNotificationFunction notifyProgress;
+        private BuildServerStartNotificationFunction notifyBuildServerStart;
+        private BuildServerStopNotificationFunction notifyBuildServerStop;
+        private string serverStartCommand;
+        private UniquePtr<Process> buildServer;
+        private Thread keepAliveThread;
+        private RecursiveMutex keepAliveMutex;
+    }
+}

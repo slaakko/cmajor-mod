@@ -1,0 +1,569 @@
+public delegate void GlobalInitFunctionType();
+
+public extern cdecl nothrow void RtInit(long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray, GlobalInitFunctionType globalInitFunction);
+
+public extern cdecl nothrow void RtDone();
+
+public extern cdecl nothrow ulong RtDynamicInitVmt(void* vmt);
+
+public extern cdecl nothrow int RtArgc();
+
+public extern cdecl nothrow const char** RtArgv();
+
+public extern cdecl nothrow void RtExit(int exitCode);
+
+public extern cdecl nothrow void* RtMemAlloc(long size);
+
+public extern cdecl nothrow void* RtMemAllocInfo(long size, const char* info);
+
+public extern cdecl nothrow void RtDispose(void* ptr);
+
+public extern cdecl nothrow void RtMemFree(void* ptr);
+
+public extern cdecl nothrow void RtMemZero(void* ptr, long size);
+
+public extern cdecl nothrow void RtBeginStaticInitCriticalSection(void* staticClassId);
+
+public extern cdecl nothrow void RtEndStaticInitCriticalSection(void* staticClassId);
+
+public extern cdecl nothrow void RtEnqueueDestruction(void* destructor, void* arg);
+
+public delegate void AssertionFailureFunction(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
+
+public extern cdecl nothrow bool RtIsUserAssertionFailureFunctionSet();
+
+public extern cdecl nothrow void RtSetUserAssertionFailureFunction(AssertionFailureFunction userAssertionFailureFunc);
+
+public extern cdecl nothrow void RtFailAssertion(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
+
+public extern cdecl void RtThrowException(void* exception, void* exceptionTypeId);
+
+public extern cdecl nothrow bool RtHandleException(void* exceptionTypeId);
+
+public extern cdecl nothrow void* RtGetException();
+
+public extern cdecl nothrow void RtCaptureException(void*& exception, ulong& exceptionClassIdHi, ulong& exceptionClassIdLo);
+
+public extern cdecl nothrow void RtThrowCapturedException(void* exception, ulong exceptionClassIdHi, ulong exceptionClassIdLo);
+
+public extern cdecl nothrow const char* RtGetError(int errorId);
+
+public extern cdecl nothrow void RtDisposeError(int errorId);
+
+public extern cdecl nothrow const char* RtGetStackTrace();
+
+public extern cdecl nothrow void RtDisposeStackTrace();
+
+public extern cdecl nothrow void* RtOpen(const char* filePath, byte openMode, int& errorStringHandle);
+
+public extern cdecl nothrow void* RtOpenStdFile(int handle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtClose(void* fileHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtDisposeFile(void* fileHandle, int& errorStringHandle);
+
+public extern cdecl nothrow long RtWrite(void* fileHandle, const byte* buffer, long count, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtWriteByte(void* fileHandle, byte x, int& errorStringHandle);
+
+public extern cdecl nothrow long RtRead(void* fileHandle, byte* buffer, long bufferSize, int& errorStringHandle);
+
+public extern cdecl nothrow int RtReadByte(void* fileHandle);
+
+public extern cdecl nothrow bool RtEof(void* fileHandle);
+
+public extern cdecl nothrow bool RtGetFileError(void* fileHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtSeek(void* fileHandle, long pos, byte origin, int& errorStringHandle);
+
+public extern cdecl nothrow long RtTell(void* fileHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtFlush(void* fileHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtFileExists(const char* filePath);
+
+public extern cdecl nothrow bool RtLastWriteTimeLess(const char* filePath1, const char* filePath2);
+
+public extern cdecl nothrow long RtGetFileSize(const char* filePath, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtRemoveFile(const char* filePath, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtCopyFile(const char* sourcFilePath, const char* targetFilePath, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtMoveFile(const char* sourcFilePath, const char* targetFilePath, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtIsConsoleHandle(int handle);
+
+public extern cdecl nothrow bool RtDirectoryExists(const char* directoryPath);
+
+public extern cdecl nothrow void RtCreateDirectories(const char* directoryPath);
+
+public extern cdecl nothrow int RtBeginIterateDirectory(const char* directoryPath);
+
+public extern cdecl nothrow const char* RtGetNextFilePath(int directoryIterationHandle);
+
+public extern cdecl nothrow const char* RtGetNextDirectoryPath(int directoryIterationHandle);
+
+public extern cdecl nothrow void RtEndIterateDirectory(int directoryIterationHandle);
+
+public extern cdecl nothrow double RtPow(double x, int exponent);
+
+public extern cdecl nothrow double Pow(double x, double y);
+
+public extern cdecl nothrow double RtSqrt(double x);
+
+public extern cdecl nothrow double RtPi();
+
+public extern cdecl nothrow double RtCos(double x);
+
+public extern cdecl nothrow double RtSin(double x);
+
+public extern cdecl nothrow double RtArcCos(double x);
+
+public extern cdecl nothrow double RtArcSin(double x);
+
+public extern cdecl nothrow double RtAtan2(double y, double x);
+
+public extern cdecl nothrow double RtEpsilon();
+
+public extern cdecl nothrow const char* RtGetEnvironmentVariable(const char* environmentVariableName);
+
+public extern cdecl nothrow int RtGetCurrentWorkingDirectoryHandle();
+
+public extern cdecl nothrow const char* RtGetCurrentWorkingDirectory(int currentWorkingDirectoryHandle);
+
+public extern cdecl nothrow void RtFreeCurrentWorkingDirectoryHandle(int currentWorkingDirectoryHandle);
+
+public extern cdecl nothrow void* RtAllocateMutex();
+
+public extern cdecl nothrow void RtFreeMutex(void* nativeHandle);
+
+public extern cdecl nothrow void RtLockMutex(void* nativeHandle);
+
+public extern cdecl nothrow void RtUnlockMutex(void* nativeHandle);
+
+public extern cdecl nothrow void* RtAllocateRecursiveMutex();
+
+public extern cdecl nothrow void RtFreeRecursiveMutex(void* nativeHandle);
+
+public extern cdecl nothrow void RtLockRecursiveMutex(void* nativeHandle);
+
+public extern cdecl nothrow void RtUnlockRecursiveMutex(void* nativeHandle);
+
+public extern cdecl nothrow void* RtAllocateConditionVariable();
+
+public extern cdecl nothrow void RtFreeConditionVariable(void* nativeHandle);
+
+public extern cdecl nothrow int RtNotifyOne(void* nativeHandle);
+
+public extern cdecl nothrow int RtNotifyAll(void* nativeHandle);
+
+public extern cdecl nothrow int RtWaitConditionVariable(void* nativeHandle, void* recursiveMutexHandle);
+
+public extern cdecl nothrow int RtWaitConditionVariableDuration(void* nativeHandle, void* recursiveMutexHandle, long duration);
+
+public extern cdecl nothrow void* RtCreateSocket(int& errorStringHandle);
+
+public extern cdecl nothrow bool RtBindSocket(void* socketHandle, int port, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtListenSocket(void* socketHandle, int backLog, int& errorStringHandle);
+
+public extern cdecl nothrow void* RtAcceptSocket(void* socketHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtCloseSocket(void* socketHandle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtShutdownSocket(void* socketHandle, int mode, int& errorStringHandle);
+
+public extern cdecl nothrow void* RtConnectSocket(const char* node, const char* service, int options, int& errorStringHandle);
+
+public extern cdecl nothrow int RtSendSocket(void* socketHandle, byte* buf, int len, int flags, int& errorStringHandle);
+
+public extern cdecl nothrow int RtReceiveSocket(void* socketHandle, byte* buf, int len, int flags, int& errorStringHandle);
+
+public extern cdecl nothrow void RtDestroySocket(void* socketHandle);
+
+public extern cdecl nothrow long RtNow();
+
+public extern cdecl nothrow void RtGetCurrentDate(short* year, sbyte* month, sbyte* day);
+
+public extern cdecl nothrow int RtGetCurrentDateTime(short* year, sbyte* month, sbyte* day, int* secs);
+
+public extern cdecl nothrow long RtGetCurrentTime();
+
+public extern cdecl nothrow void RtSleep(long nanoseconds);
+
+public extern cdecl nothrow uint RtGetRandomSeed();
+
+public extern cdecl nothrow void RtInitRand(uint seed);
+
+public extern cdecl nothrow uint RtRandom();
+
+public extern cdecl nothrow ulong RtRandom64();
+
+public extern cdecl nothrow void* RtCreateDefaultBigInt(int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromInt(int v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromUInt(uint v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromLong(long v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromULong(ulong v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromStr(const char* v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigIntFromCopy(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void RtDestroyBigInt(void* handle);
+
+public extern cdecl nothrow const char* RtBigIntToCharPtr(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void RtDeleteCharPtr(const char* ptr);
+
+public extern cdecl nothrow int RtBigIntToInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow uint RtBigIntToUInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow long RtBigIntToLong(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow ulong RtBigIntToULong(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtNegBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtPosBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCplBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtAddBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtSubBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtMulBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtDivBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtModBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtAndBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtOrBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtXorBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtShiftLeftBigInt(void* left, int right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtShiftRightBigInt(void* left, int right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtEqualBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtNotEqualBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessEqualBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterEqualBigInt(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateDefaultBigRational(int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromInt(int v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromUInt(uint v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromLong(long v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromULong(ulong v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromStr(const char* v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromCopy(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigRationalFromBigInts(void* numerator, void* denominator, int& errorStrHandle);
+
+public extern cdecl nothrow void RtDestroyBigRational(void* handle);
+
+public extern cdecl nothrow const char* RtBigRationalToCharPtr(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtBigRationalToBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtNegBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtPosBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtAddBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtSubBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtMulBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtDivBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtEqualBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtNotEqualBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessEqualBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterEqualBigRational(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtNumeratorBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtDenominatorBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateDefaultBigFloat(int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromInt(int v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromUInt(uint v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromLong(long v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromULong(ulong v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromDouble(double v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromStr(const char* v, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromCopy(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtCreateBigFloatFromBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void RtDestroyBigFloat(void* handle);
+
+public extern cdecl nothrow const char* RtBigFloatToCharPtr(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow double RtBigFloatToDouble(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtBigFloatToBigInt(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtBigFloatToBigRational(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtNegBigFloat(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtPosBigFloat(void* handle, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtAddBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtSubBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtMulBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow void* RtDivBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtEqualBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtNotEqualBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtLessEqualBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow bool RtGreaterEqualBigFloat(void* left, void* right, int& errorStrHandle);
+
+public extern cdecl nothrow int RtInitZlib(int mode, int level, void** handle);
+
+public extern cdecl nothrow void RtDoneZlib(int mode, void* handle);
+
+public extern cdecl nothrow void RtSetInputZlib(void* inChunck, uint inAvail, void* handle);
+
+public extern cdecl nothrow int RtDeflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int flush);
+
+public extern cdecl nothrow int RtInflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle);
+
+public extern cdecl nothrow const char* RtRetvalStrZlib(int retVal);
+
+public extern cdecl nothrow int RtInitBZip2(int mode, int compressionLevel, int compressionWorkFactor, void** handle);
+
+public extern cdecl nothrow void RtDoneBZip2(int mode, void* handle);
+
+public extern cdecl nothrow void RtSetInputBZip2(void* inChunk, uint inAvail, void* handle);
+
+public extern cdecl nothrow int RtCompressBZip2(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int action);
+
+public extern cdecl nothrow int RtDecompressBZip2(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle);
+
+public extern cdecl nothrow const char* RtRetvalStrBZip2(int retVal);
+
+public extern cdecl nothrow void RtStartUnitTest(int numAssertions, const char* unitTestFilePath, long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray);
+
+public extern cdecl nothrow void RtEndUnitTest(const char* testName, int exitCode);
+
+public extern cdecl nothrow void RtSetUnitTestAssertionResult(int assertionIndex, bool assertionResult, int lineNumber);
+
+public extern cdecl nothrow void RtSetUnitTestException(const char* exceptionStr);
+
+public extern cdecl nothrow void RtProfileStartFunction(void* functionId);
+
+public extern cdecl nothrow void RtProfileEndFunction(void* functionId);
+
+public extern cdecl nothrow void RtStartProfiling(long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray);
+
+public extern cdecl nothrow void RtEndProfiling();
+
+public extern cdecl nothrow int RtExecute(const char* command);
+
+public extern cdecl nothrow int RtBeginExec(const char* command);
+
+public extern cdecl nothrow void RtAddRedirection(int execHandle, int handle, const char* file);
+
+public extern cdecl nothrow int RtEndExec(int execHandle);
+
+public extern cdecl nothrow int RtBeginGetPathToExecutable();
+
+public extern cdecl nothrow const char* RtGetPathToExecutable(int pathHandle);
+
+public extern cdecl nothrow void RtEndGetPathToExecutable(int pathHandle);
+
+public extern cdecl nothrow const char* RtGetOsInfo();
+
+public extern cdecl nothrow char RtAsciiToUpper(char c);
+
+public extern cdecl nothrow char RtAsciiToLower(char c);
+
+public extern cdecl nothrow void RtInitScreen();
+
+public extern cdecl nothrow void RtDoneScreen();
+
+public extern cdecl nothrow void RtRaw();
+
+public extern cdecl nothrow void RtNoRaw();
+
+public extern cdecl nothrow void RtCBreak();
+
+public extern cdecl nothrow void RtNoCBreak();
+
+public extern cdecl nothrow void RtKeyPad();
+
+public extern cdecl nothrow void RtEcho();
+
+public extern cdecl nothrow void RtNoEcho();
+
+public extern cdecl nothrow void RtCursSet(int visibility);
+
+public extern cdecl nothrow void RtRefresh();
+
+public extern cdecl nothrow void RtGetMaxYX(int* rows, int* cols);
+
+public extern cdecl nothrow void RtErase();
+
+public extern cdecl nothrow void RtClear();
+
+public extern cdecl nothrow void RtClearToEol();
+
+public extern cdecl nothrow void RtGetYX(int* row, int* col);
+
+public extern cdecl nothrow void RtMove(int row, int col);
+
+public extern cdecl nothrow void RtAddCh(int ch);
+
+public extern cdecl nothrow void RtAddStr(const char* str);
+
+public extern cdecl nothrow int RtGetCh();
+
+public extern cdecl nothrow int RtGetRawCh();
+
+public extern cdecl nothrow int RtTranslateCh(int ch);
+
+public extern cdecl nothrow void RtGetNStr(char* str, int size);
+
+public extern cdecl nothrow void RtAttrOn(int attrs);
+
+public extern cdecl nothrow void RtAttrOff(int attrs);
+
+public extern cdecl nothrow void RtAttrSet(int attrs);
+
+public extern cdecl nothrow void RtStartColor();
+
+public extern cdecl nothrow void RtInitPair(short n, short foregroundColor, short backgroundColor);
+
+public extern cdecl nothrow int RtColorPair(short n);
+
+public extern cdecl nothrow short RtWhite();
+
+public extern cdecl nothrow short RtBlack();
+
+public extern cdecl nothrow short RtBlue();
+
+public extern cdecl nothrow short RtGreen();
+
+public extern cdecl nothrow short RtRed();
+
+public extern cdecl nothrow short RtCyan();
+
+public extern cdecl nothrow short RtMagenta();
+
+public extern cdecl nothrow short RtYellow();
+
+public extern cdecl nothrow bool RtRunningOnWsl();
+
+public extern cdecl nothrow void RtBeginUnwindInfoInit();
+
+public extern cdecl nothrow void RtEndUnwindInfoInit();
+
+public extern cdecl nothrow void RtAddCompileUnitFunction(void* functionAddress, const char* functionName, const char* sourceFilePath);
+
+public extern cdecl nothrow void* RtPushUnwindInfo(void* unwindInfo);
+
+public extern cdecl nothrow void RtPopUnwindInfo(void* prevUnwindInfo);
+
+public extern cdecl nothrow const char* RtGetCallStack();
+
+public extern cdecl nothrow void RtDisposeCallStack();
+
+public extern cdecl nothrow void* RtConvertThreadToFiber(void* param);
+
+public extern cdecl nothrow void* RtCreateFiber(ulong stackSize, void* startAddress, void* param);
+
+public extern cdecl nothrow void RtSwitchToFiber(void* fiber);
+
+public extern cdecl nothrow void* RtGetFiberData();
+
+public extern cdecl nothrow void RtDeleteFiber(void* fiber);
+
+public extern cdecl nothrow void* RtCreateProcess(const char* command, int redirections, int& errorStringHandle);
+
+public extern cdecl nothrow void RtDeleteProcess(void* process);
+
+public extern cdecl nothrow const char* RtGetString(int stringHandle);
+
+public extern cdecl nothrow void RtDisposeString(int stringHandle);
+
+public extern cdecl nothrow bool RtProcessRunning(void* process, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtProcessWaitForExit(void* process, int& errorStringHandle);
+
+public extern cdecl nothrow int RtProcessExitCode(void* process, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtProcessTerminate(void* process, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtProcessEof(void* process, int handle, int& errorStringHandle);
+
+public extern cdecl nothrow int RtProcessReadLine(void* process, int handle, int& errorStringHandle);
+
+public extern cdecl nothrow int RtProcessReadToEnd(void* process, int handle, int& errorStringHandle);
+
+public extern cdecl nothrow bool RtProcessWriteLine(void* process, const char* line, int& errorStringHandle);
+
+public extern cdecl nothrow void RtBeginTracing();
+
+public extern cdecl nothrow void RtEndTracing();
+
+public extern cdecl nothrow void RtSetThreadId(char threadId);
+
+public extern cdecl nothrow void RtBeginTraceFunction(int traceFunctionId);
+
+public extern cdecl nothrow void RtEndTraceFunction(int traceFunctionId);
+
+public extern cdecl nothrow void RtWindowsMessage(int messageId);

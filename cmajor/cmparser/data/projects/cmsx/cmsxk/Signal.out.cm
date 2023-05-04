@@ -1,0 +1,7 @@
+using System;
+
+namespace cmsx.kernel
+{
+    public const int SIGKILL = 9;
+
+} // namespace cmsx.kernel

@@ -1,0 +1,23 @@
+using System;
+using System.Collections;
+
+namespace soulcm.scmlg
+{
+    public class RegularExpressionParser : Parser
+    {
+        public override Nfa Parse(const ustring& expression, LexerContext* lexerContext, int line)
+        {
+            try
+            {
+                RegExLexer lexer(expression, lexerContext->FileName(), 0);
+                return RegExParser.Parse(lexer, lexerContext);
+            }
+            catch (const Exception& ex)
+            {
+                throw Exception("error parsing regular expression at " + lexerContext->FileName() + ":" + ToString(line) + ": " + ex.Message());
+            }
+            return Nfa();
+        }
+    }
+
+} // namespace soulcm.scmlg

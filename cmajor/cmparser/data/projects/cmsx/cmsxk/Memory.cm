@@ -1,0 +1,1554 @@
+using System;
+using System.Collections;
+using cmsx.machine;
+
+namespace cmsx.kernel
+{
+    public class AddressSpace
+    {
+        static nothrow AddressSpace() : nextAddressSpaceNumber(kernelAddressSpaceNumber + 1u)
+        {
+        }
+        public static nothrow ushort GetNextAddressSpaceNumber()
+        {
+            if (nextAddressSpaceNumber == kernelAddressSpaceNumber)
+            {
+                ++nextAddressSpaceNumber;
+            }
+            return nextAddressSpaceNumber++;
+        }
+        static ushort nextAddressSpaceNumber;
+    }
+
+    public nothrow ushort GetNextAddressSpaceNumber()
+    {
+        return AddressSpace.GetNextAddressSpaceNumber();
+    }
+
+    public class GlobalMemoryTable
+    {
+        static GlobalMemoryTable() : instance(new GlobalMemoryTable())
+        {
+        }
+        public static GlobalMemoryTable& Instance()
+        {
+            return *instance;
+        }
+        private GlobalMemoryTable()
+        {
+        }
+        public void AddMemoryTable(MemoryTable* memoryTable)
+        {
+            addressSpaceMemoryTableMap[memoryTable->addressSpaceNumber] = memoryTable;
+        }
+        public void RemoveMemoryTable(MemoryTable* memoryTable)
+        {
+            addressSpaceMemoryTableMap.Remove(memoryTable->addressSpaceNumber);
+        }
+        public nothrow MemoryTable* GetMemoryTable(ushort addressSpaceNumber) const
+        {
+            HashMap<ushort, MemoryTable*>.ConstIterator it = addressSpaceMemoryTableMap.CFind(addressSpaceNumber);
+            if (it != addressSpaceMemoryTableMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private static UniquePtr<GlobalMemoryTable> instance;
+        private HashMap<ushort, MemoryTable*> addressSpaceMemoryTableMap;
+    }
+
+    public class MemoryTable
+    {
+        public ulong rootPageAddress;
+        public ushort addressSpaceNumber;
+        public SegmentDescriptor*[numSegments] segmentDescriptors;
+        public ulong virtualTranslationRegisterValue;
+    }
+
+    public nothrow ulong KernelGetMaxStackSize(ushort addressSpaceNumber)
+    {
+        MemoryTable* memoryTable = GlobalMemoryTable.Instance().GetMemoryTable(addressSpaceNumber);
+        if (memoryTable != null)
+        {
+            SegmentDescriptor* stackSegmentDescriptor = memoryTable->segmentDescriptors[stackSegmentIndex];
+            if (stackSegmentDescriptor != null)
+            {
+                return stackSegmentDescriptor->maxLength;
+            }
+            else
+            {
+                return 0u;
+            }
+        }
+        else
+        {
+            return 0u;
+        }
+    }
+
+    public nothrow bool KernelGrowStack(ushort addressSpaceNumber)
+    {
+        try
+        {
+            MemoryTable* memoryTable = GlobalMemoryTable.Instance().GetMemoryTable(addressSpaceNumber);
+            if (memoryTable != null)
+            {
+                SegmentDescriptor* stackSegmentDescriptor = memoryTable->segmentDescriptors[stackSegmentIndex];
+                if (stackSegmentDescriptor != null)
+                {
+                    if (stackSegmentDescriptor->increment == 0u)
+                    {
+                        return false;
+                    }
+                    else if (stackSegmentDescriptor->length + stackSegmentDescriptor->increment <= stackSegmentDescriptor->maxLength)
+                    {
+                        GrowSegment(GetMachine().GetMemory(),  *memoryTable, stackSegmentIndex, stackSegmentDescriptor->increment);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        catch (const Exception& ex)
+        {
+            Kernel& kernel = Kernel.Instance();
+            ProcessTable& processTable = kernel.GetProcessTable();
+            Process* process = processTable.GetRunning();
+            Debugger* debugger = kernel.GetDebugger();
+            string errorlf = "KernelGrowStack failed: " + ex.Message() + "\n";
+            debugger->WriteOutput(cast<byte*>(cast<void*>(errorlf.Chars())), errorlf.Length());
+            debugger->Run(process);
+            return false;
+        }
+        return false;
+    }
+
+    public nothrow void DefaultInitializeMemoryTable(Machine& machine, MemoryTable& memoryTable)
+    {
+        Memory& mem = machine.GetMemory();
+        memoryTable.rootPageAddress = mem.AllocateRootPage();
+        memoryTable.addressSpaceNumber = GetNextAddressSpaceNumber();
+        memoryTable.segmentDescriptors[textSegmentIndex] = CreateSegmentDescriptor(pageSize, textSegmentBaseAddress, pageSize);
+        memoryTable.segmentDescriptors[dataSegmentIndex] = CreateSegmentDescriptor(0u, dataSegmentBaseAddress, pageSize);
+        memoryTable.segmentDescriptors[poolSegmentIndex] = CreateSegmentDescriptor(0u, poolSegmentBaseAddress, pageSize);
+        memoryTable.segmentDescriptors[stackSegmentIndex] = CreateSegmentDescriptor(0u, stackSegmentBaseAddress, pageSize);
+        memoryTable.virtualTranslationRegisterValue = MakeVirtualTranslationRegisterValue(memoryTable.rootPageAddress, memoryTable.addressSpaceNumber);
+        GlobalMemoryTable.Instance().AddMemoryTable(&memoryTable);
+    }
+
+    public nothrow void InitializeMemoryTable(Machine& machine, MemoryTable& memoryTable,
+        ulong textSegmentStartAddress, ulong textSegmentSize, ulong dataSegmentSize, ulong poolSegmentSize, ulong minStackSegmentSize, ulong maxStackSegmentSize, ulong stackSegmentIncrement)
+    {
+        Memory& mem = machine.GetMemory();
+        memoryTable.rootPageAddress = mem.AllocateRootPage();
+        memoryTable.addressSpaceNumber = GetNextAddressSpaceNumber();
+        if (textSegmentStartAddress == 0u)
+        {
+            textSegmentStartAddress = pageSize;
+        }
+        memoryTable.segmentDescriptors[textSegmentIndex] = CreateSegmentDescriptor(textSegmentStartAddress, textSegmentBaseAddress, textSegmentSize);
+        memoryTable.segmentDescriptors[dataSegmentIndex] = CreateSegmentDescriptor(0u, dataSegmentBaseAddress, dataSegmentSize);
+        memoryTable.segmentDescriptors[poolSegmentIndex] = CreateSegmentDescriptor(0u, poolSegmentBaseAddress, poolSegmentSize);
+        memoryTable.segmentDescriptors[stackSegmentIndex] = CreateSegmentDescriptor(0u, stackSegmentBaseAddress, minStackSegmentSize, maxStackSegmentSize, stackSegmentIncrement);
+        memoryTable.virtualTranslationRegisterValue = MakeVirtualTranslationRegisterValue(memoryTable.rootPageAddress, memoryTable.addressSpaceNumber);
+        GlobalMemoryTable.Instance().AddMemoryTable(&memoryTable);
+    }
+
+    public nothrow void InitializeMemoryTable(Machine& machine, MemoryTable& targetMemoryTable, const MemoryTable& sourceMemoryTable, ulong poolSegmentSize)
+    {
+        Memory& mem = machine.GetMemory();
+        targetMemoryTable.rootPageAddress = mem.AllocateRootPage();
+        targetMemoryTable.addressSpaceNumber = GetNextAddressSpaceNumber();
+        ShareSegment(mem, textSegmentIndex, targetMemoryTable, sourceMemoryTable, Protection.execute);
+        targetMemoryTable.segmentDescriptors[dataSegmentIndex] = CreateSegmentDescriptor(
+            sourceMemoryTable.segmentDescriptors[dataSegmentIndex]->startAddress,
+            sourceMemoryTable.segmentDescriptors[dataSegmentIndex]->baseAddress,
+            sourceMemoryTable.segmentDescriptors[dataSegmentIndex]->length);
+        targetMemoryTable.segmentDescriptors[poolSegmentIndex] = CreateSegmentDescriptor(0u, poolSegmentBaseAddress, poolSegmentSize);
+        targetMemoryTable.segmentDescriptors[stackSegmentIndex] = CreateSegmentDescriptor(
+            sourceMemoryTable.segmentDescriptors[stackSegmentIndex]->startAddress,
+            sourceMemoryTable.segmentDescriptors[stackSegmentIndex]->baseAddress,
+            sourceMemoryTable.segmentDescriptors[stackSegmentIndex]->length,
+            sourceMemoryTable.segmentDescriptors[stackSegmentIndex]->maxLength,
+            sourceMemoryTable.segmentDescriptors[stackSegmentIndex]->increment);
+        targetMemoryTable.virtualTranslationRegisterValue = MakeVirtualTranslationRegisterValue(targetMemoryTable.rootPageAddress, targetMemoryTable.addressSpaceNumber);
+        GlobalMemoryTable.Instance().AddMemoryTable(&targetMemoryTable);
+    }
+
+    public nothrow void InitializeMemoryTableForCloning(Machine& machine, MemoryTable& memoryTable)
+    {
+        Memory& mem = machine.GetMemory();
+        memoryTable.rootPageAddress = mem.AllocateRootPage();
+        memoryTable.addressSpaceNumber = GetNextAddressSpaceNumber();
+        memoryTable.segmentDescriptors[textSegmentIndex] = null;
+        memoryTable.segmentDescriptors[dataSegmentIndex] = null;
+        memoryTable.segmentDescriptors[poolSegmentIndex] = null;
+        memoryTable.segmentDescriptors[stackSegmentIndex] = null;
+        memoryTable.virtualTranslationRegisterValue = MakeVirtualTranslationRegisterValue(memoryTable.rootPageAddress, memoryTable.addressSpaceNumber);
+        GlobalMemoryTable.Instance().AddMemoryTable(&memoryTable);
+    }
+
+    public nothrow void CalculatePageNumbers(const SegmentDescriptor& sd, ulong& startPageNumber, ulong& numPages)
+    {
+        ulong startAddress = sd.startAddress;
+        startPageNumber = GetPageNumber(startAddress);
+        ulong length = sd.length;
+        ulong segmentStart = startPageNumber * pageSize;
+        ulong segmentEnd = startAddress + length;
+        ulong segmentSize = segmentEnd - segmentStart;
+        numPages = 0u;
+        if (segmentSize > 0u)
+        {
+            numPages = (segmentSize - 1u) / pageSize + 1u;
+        }
+    }
+
+    public void AllocateMemoryPages(Memory& mem, ulong rootPageAddress, byte segmentIndex, ulong startPageNumber, ulong numPages, ushort addressSpaceNumber)
+    {
+        Protection protection = MakeDefaultPageProtection(segmentIndex);
+        ulong firstRootPageEntryNumber = MakeSegmentOffset(segmentIndex);
+        ulong lastDirectRootPageEntryNumber = firstRootPageEntryNumber + numDirectEntries - 1u;
+        ulong firstIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong singleIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong doubleIndirectEntryNumber = lastDirectRootPageEntryNumber + 2u;
+        ulong tripleIndirectEntryNumber = lastDirectRootPageEntryNumber + 3u;
+        ulong singleIndirectPageAddress = 0u;
+        ulong doubleIndirectPageAddress = 0u;
+        ulong tripleIndirectPageAddress = 0u;
+        ulong entryNumber = firstRootPageEntryNumber + startPageNumber;
+        ulong pagesLeft = numPages;
+        ushort prevDigit0 = 0u;
+        ushort prevDigit1 = 0u;
+        ushort prevDigit2 = 0u;
+        while (pagesLeft > 0u)
+        {
+            if (entryNumber >= firstRootPageEntryNumber && entryNumber <= lastDirectRootPageEntryNumber)
+            {
+                ulong entryAddress = rootPageAddress + 8u * entryNumber;
+                ulong pageAddress = mem.AllocatePage();
+                ulong pte = MakePageTableEntry(pageAddress, addressSpaceNumber, protection);
+                WriteMemoryULong(entryAddress, pte);
+                #if (MEMORY_DEBUG)
+                    Console.Out() << "entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                #endif
+            }
+            else 
+            {
+                if (singleIndirectEntryNumber != 0u)
+                {
+                    #if (MEMORY_DEBUG)
+                        Console.Out() << "indirect entries:" << endl();
+                    #endif
+                    ulong entryAddress = rootPageAddress + 8u * singleIndirectEntryNumber;
+                    ulong pte = ReadMemoryULong(entryAddress);
+                    singleIndirectPageAddress = 0u;
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            singleIndirectPageAddress = pageAddress;
+                        }
+                    }
+                    if (singleIndirectPageAddress == 0u)
+                    {
+                        singleIndirectPageAddress = mem.AllocatePage();
+                        pte = MakePageTableEntry(singleIndirectPageAddress, addressSpaceNumber, protection);
+                        WriteMemoryULong(entryAddress, pte);
+                    }
+                    #if (MEMORY_DEBUG)
+                        Console.Out() << "single indirect entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                    #endif
+                    singleIndirectEntryNumber = 0u;
+                }
+                ulong pageNum = entryNumber - firstIndirectEntryNumber;
+                ushort digit0 = 0u;
+                ushort digit1 = 0u;
+                ushort digit2 = 0u;
+                ExtractDigitsFromPageNumber(pageNum, digit0, digit1, digit2);
+                #if (MEMORY_DEBUG)
+                    Console.Out() << "page number: " << ToHexString(pageNum) << ", d0: " << ToHexString(digit0) << ", d1: " << ToHexString(digit1) <<
+                        ", d2: " << ToHexString(digit2) << endl();
+                #endif
+                if (digit2 == 0u && digit1 == 0u)
+                {
+                    ulong entryAddress = singleIndirectPageAddress + 8u * digit0;
+                    ulong pageAddress = mem.AllocatePage();
+                    ulong pte = MakePageTableEntry(pageAddress, addressSpaceNumber, protection);
+                    WriteMemoryULong(entryAddress, pte);
+                    #if (MEMORY_DEBUG)
+                        Console.Out() << "si-entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                    #endif
+                }
+                else if (digit2 == 0u && digit1 > 0u)
+                {
+                    if (doubleIndirectEntryNumber != 0u)
+                    {
+                        ulong entryAddress = rootPageAddress + 8u * doubleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        doubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                doubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (doubleIndirectPageAddress == 0u)
+                        {
+                            doubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(doubleIndirectPageAddress, addressSpaceNumber, protection);
+                            WriteMemoryULong(entryAddress, pte);
+                        }
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "double indirect entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                        doubleIndirectEntryNumber = 0u;
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong entryAddress = doubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        singleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                singleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (singleIndirectPageAddress == 0u)
+                        {
+                            singleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(singleIndirectPageAddress, addressSpaceNumber, protection);
+                            WriteMemoryULong(entryAddress, pte);
+                        }
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "di-entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                    }
+                    ulong siEntryAddress = singleIndirectPageAddress + 8u * digit0;
+                    ulong siPageAddress = mem.AllocatePage();
+                    ulong siPte = MakePageTableEntry(siPageAddress, addressSpaceNumber, protection);
+                    WriteMemoryULong(siEntryAddress, siPte);
+                    #if (MEMORY_DEBUG)
+                        Console.Out() << "di-si-entry address: " << ToHexString(siEntryAddress) << ", page address: " << ToHexString(siPageAddress) << ", pte: " << ToHexString(siPte) << endl();
+                    #endif
+                }
+                else if (digit2 > 0u)
+                {
+                    if (tripleIndirectEntryNumber != 0u)
+                    {
+                        ulong entryAddress = rootPageAddress + 8u * tripleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        tripleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                tripleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (tripleIndirectPageAddress == 0u)
+                        {
+                            tripleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(tripleIndirectPageAddress, addressSpaceNumber, protection);
+                            WriteMemoryULong(entryAddress, pte);
+                        }
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "triple indirect entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                        tripleIndirectEntryNumber = 0u;
+                    }
+                    if (digit2 != prevDigit2)
+                    {
+                        ulong entryAddress = tripleIndirectPageAddress + 8u * digit2;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        doubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                doubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (doubleIndirectPageAddress == 0u)
+                        {
+                            doubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(doubleIndirectPageAddress, addressSpaceNumber, protection);
+                            WriteMemoryULong(entryAddress, pte);
+                        }
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "ti-entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong entryAddress = doubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        singleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                singleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (singleIndirectPageAddress == 0u)
+                        {
+                            singleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(singleIndirectPageAddress, addressSpaceNumber, protection);
+                            WriteMemoryULong(entryAddress, pte);
+                        }
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "ti-di-entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                    }
+                    ulong siEntryAddress = singleIndirectPageAddress + 8u * digit0;
+                    ulong siPageAddress = mem.AllocatePage();
+                    ulong siPte = MakePageTableEntry(siPageAddress, addressSpaceNumber, protection);
+                    WriteMemoryULong(siEntryAddress, siPte);
+                    #if (MEMORY_DEBUG)
+                        Console.Out() << "ti-di-si-entry address: " << ToHexString(siEntryAddress) << ", page address: " << ToHexString(siPageAddress) << ", pte: " << ToHexString(siPte) << endl();
+                    #endif
+                }
+                prevDigit0 = digit0;
+                prevDigit1 = digit1;
+                prevDigit2 = digit2;
+            }
+            ++entryNumber;
+            --pagesLeft;
+        }
+    }
+
+    public void FreeMemoryPages(Memory& mem, ulong rootPageAddress, byte segmentIndex, ulong startPageNumber, ulong numPages)
+    {
+        ulong firstRootPageEntryNumber = MakeSegmentOffset(segmentIndex);
+        ulong lastDirectRootPageEntryNumber = firstRootPageEntryNumber + numDirectEntries - 1u;
+        ulong firstIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong singleIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong doubleIndirectEntryNumber = lastDirectRootPageEntryNumber + 2u;
+        ulong tripleIndirectEntryNumber = lastDirectRootPageEntryNumber + 3u;
+        bool singleIndirectEntryAddressInitialized = false;
+        bool doubleIndirectEntryAddressInitialized = false;
+        bool tripleIndirectEntryAddressInitialized = false;
+        ulong singleIndirectPageAddress = 0u;
+        ulong singleIndirectEntryAddress = 0u;
+        ulong doubleIndirectPageAddress = 0u;
+        ulong doubleIndirectEntryAddress = 0u;
+        ulong diSingleIndirectPageAddress = 0u;
+        ulong diSingleIndirectEntryAddress = 0u;
+        ulong diSingleIndirectEntryNumber = 0u;
+        ulong tripleIndirectPageAddress = 0u;
+        ulong tripleIndirectEntryAddress = 0u;
+        ulong tiDoubleIndirectPageAddress = 0u;
+        ulong tiDoubleIndirectEntryAddress = 0u;
+        ulong tiDoubleIndirectEntryNumber = 0u;
+        ulong tiSingleIndirectPageAddress = 0u;
+        ulong tiSingleIndirectEntryAddress = 0u;
+        ulong tiSingleIndirectEntryNumber = 0u;
+        bool freeSingleIndirectPage = false;
+        bool freeDoubleIndirectPage = false;
+        bool freeTripleIndirectPage = false;
+        bool freeDiSingleIndirectPage = false;
+        bool freeTiDoubleIndirectPage = false;
+        bool freeTiSingleIndirectPage = false;
+        ulong entryNumber = firstRootPageEntryNumber + startPageNumber;
+        ulong pagesLeft = numPages;
+        ushort prevDigit0 = 0u;
+        ushort prevDigit1 = 0u;
+        ushort prevDigit2 = 0u;
+        while (pagesLeft > 0u)
+        {
+            if (entryNumber >= firstRootPageEntryNumber && entryNumber <= lastDirectRootPageEntryNumber)
+            {
+                ulong entryAddress = rootPageAddress + 8u * entryNumber;
+                ulong pte = ReadMemoryULong(entryAddress);
+                if (pte != 0u)
+                {
+                    ulong pageAddress = 0u;
+                    ushort pteAddressSpaceNumber = 0u;
+                    Protection protection = Protection.notPresent;
+                    UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                    if (protection != Protection.notPresent && pageAddress != 0u)
+                    {
+                        #if (MEMORY_DEBUG)
+                            Console.Out() << "entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                        #endif
+                        mem.FreePage(pageAddress);
+                        WriteMemoryULong(entryAddress, 0u);
+                    }
+                }
+            }
+            else
+            {
+                if (!singleIndirectEntryAddressInitialized)
+                {
+                    ulong entryAddress = rootPageAddress + 8u * singleIndirectEntryNumber;
+                    singleIndirectEntryAddress = entryAddress;
+                    ulong pte = ReadMemoryULong(entryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            singleIndirectPageAddress = pageAddress;
+                        }
+                        else
+                        {
+                            singleIndirectPageAddress = 0u;
+                        }
+                    }
+                    else
+                    {
+                        singleIndirectPageAddress = 0u;
+                    }
+                    singleIndirectEntryAddressInitialized = true;
+                }
+                ulong pageNum = entryNumber - firstIndirectEntryNumber;
+                ushort digit0 = 0u;
+                ushort digit1 = 0u;
+                ushort digit2 = 0u;
+                ExtractDigitsFromPageNumber(pageNum, digit0, digit1, digit2);
+                #if (MEMORY_DEBUG)
+                    Console.Out() << "page number: " << ToHexString(pageNum) << ", d0: " << ToHexString(digit0) << ", d1: " << ToHexString(digit1) <<
+                        ", d2: " << ToHexString(digit2) << endl();
+                #endif
+                if (digit2 == 0u && digit1 == 0u && singleIndirectPageAddress != 0u)
+                {
+                    if (digit0 == 0u)
+                    {
+                        freeSingleIndirectPage = true;
+                    }
+                    ulong entryAddress = singleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(entryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            #if (MEMORY_DEBUG)
+                                Console.Out() << "entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                            #endif
+                            mem.FreePage(pageAddress);
+                            WriteMemoryULong(entryAddress, 0u);
+                        }
+                    }
+                    if (digit0 == maxDigit && freeSingleIndirectPage)
+                    {
+                        mem.FreePage(singleIndirectPageAddress);
+                        WriteMemoryULong(singleIndirectEntryAddress, 0u);
+                        freeSingleIndirectPage = false;
+                    }
+                }
+                else if (digit2 == 0u && digit1 > 0u)
+                {
+                    if (digit1 == 1u && digit0 == 0u)
+                    {
+                        freeDoubleIndirectPage = true;
+                    }
+                    if (!doubleIndirectEntryAddressInitialized)
+                    {
+                        ulong entryAddress = rootPageAddress + 8u * doubleIndirectEntryNumber;
+                        doubleIndirectEntryAddress = entryAddress;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                doubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        doubleIndirectEntryAddressInitialized = true;
+                    }
+                    if (doubleIndirectPageAddress != 0u)
+                    {
+                        if (digit1 != prevDigit1)
+                        {
+                            ulong entryAddress = doubleIndirectPageAddress + 8u * digit1;
+                            diSingleIndirectEntryAddress = entryAddress;
+                            diSingleIndirectEntryNumber = entryNumber;
+                            ulong pte = ReadMemoryULong(entryAddress);
+                            if (pte != 0u)
+                            {
+                                ulong pageAddress = 0u;
+                                ushort pteAddressSpaceNumber = 0u;
+                                Protection protection = Protection.notPresent;
+                                UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                                if (protection != Protection.notPresent && pageAddress != 0u)
+                                {
+                                    diSingleIndirectPageAddress = pageAddress;
+                                }
+                                else
+                                {
+                                    diSingleIndirectPageAddress = 0u;
+                                }
+                            }
+                            else
+                            {
+                                diSingleIndirectPageAddress = 0u;
+                            }
+                        }
+                        if (diSingleIndirectPageAddress != 0u)
+                        {
+                            if (digit0 == 0u)
+                            {
+                                freeDiSingleIndirectPage = true;
+                            }
+                            ulong entryAddress = diSingleIndirectPageAddress + 8u * digit0;
+                            ulong pte = ReadMemoryULong(entryAddress);
+                            if (pte != 0u)
+                            {
+                                ulong pageAddress = 0u;
+                                ushort pteAddressSpaceNumber = 0u;
+                                Protection protection = Protection.notPresent;
+                                UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                                if (protection != Protection.notPresent && pageAddress != 0u)
+                                {
+                                #if (MEMORY_DEBUG)
+                                    Console.Out() << "entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                                #endif
+                                    mem.FreePage(pageAddress);
+                                    WriteMemoryULong(entryAddress, 0u);
+                                }
+                            }
+                            if (digit0 == maxDigit && freeDiSingleIndirectPage)
+                            {
+                                mem.FreePage(diSingleIndirectPageAddress);
+                                WriteMemoryULong(diSingleIndirectEntryAddress, 0u);
+                                freeDiSingleIndirectPage = false;
+                            }
+                        }
+                        if (digit1 == maxDigit && digit0 == maxDigit && freeDoubleIndirectPage)
+                        {
+                            mem.FreePage(doubleIndirectPageAddress);
+                            WriteMemoryULong(doubleIndirectEntryAddress, 0u);
+                            freeDoubleIndirectPage = false;
+                        }
+                    }
+                }
+                else if (digit2 > 0u)
+                {
+                    if (digit2 == 1u && digit1 == 0u && digit0 == 0u)
+                    {
+                        freeTripleIndirectPage = true;
+                    }
+                    if (!tripleIndirectEntryAddressInitialized)
+                    {
+                        ulong entryAddress = rootPageAddress + 8u * tripleIndirectEntryNumber;
+                        tripleIndirectEntryAddress = entryAddress;
+                        ulong pte = ReadMemoryULong(entryAddress);
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                tripleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        tripleIndirectEntryAddressInitialized = true;
+                    }
+                    if (tripleIndirectPageAddress != 0u)
+                    {
+                        if (digit2 != prevDigit2)
+                        {
+                            ulong entryAddress = tripleIndirectPageAddress + 8u * digit2;
+                            tiDoubleIndirectEntryAddress = entryAddress;
+                            tiDoubleIndirectEntryNumber = entryNumber;
+                            ulong pte = ReadMemoryULong(entryAddress);
+                            if (pte != 0u)
+                            {
+                                ulong pageAddress = 0u;
+                                ushort pteAddressSpaceNumber = 0u;
+                                Protection protection = Protection.notPresent;
+                                UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                                if (protection != Protection.notPresent && pageAddress != 0u)
+                                {
+                                    tiDoubleIndirectPageAddress = pageAddress;
+                                }
+                                else
+                                {
+                                    tiDoubleIndirectPageAddress = 0u;
+                                }
+                            }
+                            else
+                            {
+                                tiDoubleIndirectPageAddress = 0u;
+                            }
+                        }
+                        if (tiDoubleIndirectPageAddress != 0u)
+                        {
+                            if (digit1 == 0u)
+                            {
+                                freeTiDoubleIndirectPage = true;
+                            }
+                            if (digit1 != prevDigit1)
+                            {
+                                ulong entryAddress = tiDoubleIndirectPageAddress + 8u * digit1;
+                                tiSingleIndirectEntryAddress = entryAddress;
+                                tiSingleIndirectEntryNumber = entryNumber;
+                                ulong pte = ReadMemoryULong(entryAddress);
+                                if (pte != 0u)
+                                {
+                                    ulong pageAddress = 0u;
+                                    ushort pteAddressSpaceNumber = 0u;
+                                    Protection protection = Protection.notPresent;
+                                    UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                                    if (protection != Protection.notPresent && pageAddress != 0u)
+                                    {
+                                        tiSingleIndirectPageAddress = pageAddress;
+                                    }
+                                    else
+                                    {
+                                        tiSingleIndirectPageAddress = 0u;
+                                    }
+                                }
+                                else
+                                {
+                                    tiSingleIndirectPageAddress = 0u;
+                                }
+                            }
+                            if (tiSingleIndirectPageAddress != 0u)
+                            {
+                                if (digit0 == 0u)
+                                {
+                                    freeTiSingleIndirectPage = true;
+                                }
+                                ulong entryAddress = tiSingleIndirectPageAddress + 8u * digit0;
+                                ulong pte = ReadMemoryULong(entryAddress);
+                                if (pte != 0u)
+                                {
+                                    ulong pageAddress = 0u;
+                                    ushort pteAddressSpaceNumber = 0u;
+                                    Protection protection = Protection.notPresent;
+                                    UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                                    if (protection != Protection.notPresent && pageAddress != 0u)
+                                    {
+                                    #if (MEMORY_DEBUG)
+                                        Console.Out() << "entry address: " << ToHexString(entryAddress) << ", page address: " << ToHexString(pageAddress) << ", pte: " << ToHexString(pte) << endl();
+                                    #endif
+                                        mem.FreePage(pageAddress);
+                                        WriteMemoryULong(entryAddress, 0u);
+                                    }
+                                }
+                                if (digit0 == maxDigit && freeTiSingleIndirectPage)
+                                {
+                                    mem.FreePage(tiSingleIndirectPageAddress);
+                                    WriteMemoryULong(tiSingleIndirectEntryAddress, 0u);
+                                    freeTiSingleIndirectPage = false;
+                                }
+                            }
+                            if (digit1 == maxDigit && digit0 == maxDigit && freeTiDoubleIndirectPage)
+                            {
+                                mem.FreePage(tiDoubleIndirectPageAddress);
+                                WriteMemoryULong(tiDoubleIndirectEntryAddress, 0u);
+                                freeTiDoubleIndirectPage = false;
+                            }
+                        }
+                        if (pagesLeft == 1u && freeTripleIndirectPage)
+                        {
+                            mem.FreePage(tripleIndirectPageAddress);
+                            WriteMemoryULong(tripleIndirectEntryAddress, 0u);
+                            freeTripleIndirectPage = false;
+                        }
+                    }
+                }
+                prevDigit0 = digit0;
+                prevDigit1 = digit1;
+                prevDigit2 = digit2;
+            }
+            ++entryNumber;
+            --pagesLeft;
+        }
+    }
+
+    public void ShareMemoryPages(Memory& mem, ulong targetRootPageAddress, byte segmentIndex, ulong startPageNumber, ulong numPages, ushort targetAddressSpaceNumber,
+        ulong sourceRootPageAddress, ushort sourceAddressSpaceNumber, Protection pageProtection)
+    {
+        ulong firstRootPageEntryNumber = MakeSegmentOffset(segmentIndex);
+        ulong lastDirectRootPageEntryNumber = firstRootPageEntryNumber + numDirectEntries - 1u;
+        ulong firstIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong singleIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong doubleIndirectEntryNumber = lastDirectRootPageEntryNumber + 2u;
+        ulong tripleIndirectEntryNumber = lastDirectRootPageEntryNumber + 3u;
+        ulong sourceSingleIndirectPageAddress = 0u;
+        ulong targetSingleIndirectPageAddress = 0u;
+        ulong sourceDoubleIndirectPageAddress = 0u;
+        ulong targetDoubleIndirectPageAddress = 0u;
+        ulong sourceTripleIndirectPageAddress = 0u;
+        ulong targetTripleIndirectPageAddress = 0u;
+        ulong entryNumber = firstRootPageEntryNumber + startPageNumber;
+        ulong pagesLeft = numPages;
+        ushort prevDigit0 = 0u;
+        ushort prevDigit1 = 0u;
+        ushort prevDigit2 = 0u;
+        while (pagesLeft > 0u)
+        {
+            if (entryNumber >= firstRootPageEntryNumber && entryNumber <= lastDirectRootPageEntryNumber)
+            {
+                ulong targetEntryAddress = targetRootPageAddress + 8u * entryNumber;
+                ulong sourceEntryAddress = sourceRootPageAddress + 8u * entryNumber;
+                ulong pte = ReadMemoryULong(sourceEntryAddress);
+                if (pte != 0u)
+                {
+                    ulong pageAddress = 0u;
+                    ushort pteAddressSpaceNumber = 0u;
+                    Protection protection = Protection.notPresent;
+                    UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                    if (protection != Protection.notPresent && pageAddress != 0u)
+                    {
+                        mem.SharePage(pageAddress);
+                        if (pageProtection == Protection.copyOnWrite)
+                        {
+                            pte = MakePageTableEntry(pageAddress, sourceAddressSpaceNumber, Protection.copyOnWrite);
+                            WriteMemoryULong(sourceEntryAddress, pte);
+                        }
+                        pte = MakePageTableEntry(pageAddress, targetAddressSpaceNumber, pageProtection);
+                        WriteMemoryULong(targetEntryAddress, pte);
+                    }
+                }
+            }
+            else
+            {
+                if (singleIndirectEntryNumber != 0u)
+                {
+                    ulong targetEntryAddress = targetRootPageAddress + 8u * singleIndirectEntryNumber;
+                    ulong sourceEntryAddress = sourceRootPageAddress + 8u * singleIndirectEntryNumber;
+                    ulong pte = ReadMemoryULong(sourceEntryAddress);
+                    sourceSingleIndirectPageAddress = 0u;
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            sourceSingleIndirectPageAddress = pageAddress;
+                        }
+                    }
+                    if (sourceSingleIndirectPageAddress != 0u)
+                    {
+                        targetSingleIndirectPageAddress = mem.AllocatePage();
+                        pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                        WriteMemoryULong(targetEntryAddress, pte);
+                    }
+                    singleIndirectEntryNumber = 0u;
+                }
+                ulong pageNum = entryNumber - firstIndirectEntryNumber;
+                ushort digit0 = 0u;
+                ushort digit1 = 0u;
+                ushort digit2 = 0u;
+                ExtractDigitsFromPageNumber(pageNum, digit0, digit1, digit2);
+                if (digit2 == 0u && digit1 == 0u)
+                {
+                    ulong sourceEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            mem.SharePage(pageAddress);
+                            if (pageProtection == Protection.copyOnWrite)
+                            {
+                                pte = MakePageTableEntry(pageAddress, sourceAddressSpaceNumber, Protection.copyOnWrite);
+                                WriteMemoryULong(sourceEntryAddress, pte);
+                            }
+                            pte = MakePageTableEntry(pageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                }
+                else if (digit2 == 0u && digit1 > 0u)
+                {
+                    if (doubleIndirectEntryNumber != 0u)
+                    {
+                        ulong targetEntryAddress = targetRootPageAddress + 8u * doubleIndirectEntryNumber;
+                        ulong sourceEntryAddress = sourceRootPageAddress + 8u * doubleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceDoubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceDoubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceDoubleIndirectPageAddress != 0u)
+                        {
+                            targetDoubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetDoubleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                        doubleIndirectEntryNumber = 0u;
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong targetEntryAddress = targetDoubleIndirectPageAddress + 8u * digit1;
+                        ulong sourceEntryAddress = sourceDoubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceSingleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceSingleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceSingleIndirectPageAddress != 0u)
+                        {
+                            targetSingleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    ulong sourceSiEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetSiEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceSiEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            mem.SharePage(pageAddress);
+                            if (pageProtection == Protection.copyOnWrite)
+                            {
+                                pte = MakePageTableEntry(pageAddress, sourceAddressSpaceNumber, Protection.copyOnWrite);
+                                WriteMemoryULong(sourceSiEntryAddress, pte);
+                            }
+                            pte = MakePageTableEntry(pageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetSiEntryAddress, pte);
+                        }
+                    }
+                }
+                else if (digit2 > 0u)
+                {
+                    if (tripleIndirectEntryNumber != 0u)
+                    {
+                        ulong targetEntryAddress = targetRootPageAddress + 8u * tripleIndirectEntryNumber;
+                        ulong sourceEntryAddress = sourceRootPageAddress + 8u * tripleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceTripleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceTripleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceTripleIndirectPageAddress != 0u)
+                        {
+                            targetTripleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetTripleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                        tripleIndirectEntryNumber = 0u;
+                    }
+                    if (digit2 != prevDigit2) 
+                    {
+                        ulong targetEntryAddress = targetTripleIndirectPageAddress + 8u * digit2;
+                        ulong sourceEntryAddress = sourceTripleIndirectPageAddress + 8u * digit2;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceDoubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceDoubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceDoubleIndirectPageAddress != 0u)
+                        {
+                            targetDoubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetDoubleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong targetEntryAddress = targetDoubleIndirectPageAddress + 8u * digit1;
+                        ulong sourceEntryAddress = sourceDoubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceSingleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceSingleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceSingleIndirectPageAddress != 0u)
+                        {
+                            targetSingleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    ulong sourceSiEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetSiEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceSiEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            mem.SharePage(pageAddress);
+                            if (pageProtection == Protection.copyOnWrite)
+                            {
+                                pte = MakePageTableEntry(pageAddress, sourceAddressSpaceNumber, Protection.copyOnWrite);
+                                WriteMemoryULong(sourceSiEntryAddress, pte);
+                            }
+                            pte = MakePageTableEntry(pageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetSiEntryAddress, pte);
+                        }
+                    }
+                }
+                prevDigit0 = digit0;
+                prevDigit1 = digit1;
+                prevDigit2 = digit2;
+            }
+            ++entryNumber;
+            --pagesLeft;
+        }
+    }
+
+    public void CopyMemoryPages(Memory& mem, ulong targetRootPageAddress, byte segmentIndex, ulong startPageNumber, ulong numPages, ushort targetAddressSpaceNumber,
+        ulong sourceRootPageAddress, ushort sourceAddressSpaceNumber, Protection pageProtection)
+    {
+        ulong firstRootPageEntryNumber = MakeSegmentOffset(segmentIndex);
+        ulong lastDirectRootPageEntryNumber = firstRootPageEntryNumber + numDirectEntries - 1u;
+        ulong firstIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong singleIndirectEntryNumber = lastDirectRootPageEntryNumber + 1u;
+        ulong doubleIndirectEntryNumber = lastDirectRootPageEntryNumber + 2u;
+        ulong tripleIndirectEntryNumber = lastDirectRootPageEntryNumber + 3u;
+        ulong sourceSingleIndirectPageAddress = 0u;
+        ulong targetSingleIndirectPageAddress = 0u;
+        ulong sourceDoubleIndirectPageAddress = 0u;
+        ulong targetDoubleIndirectPageAddress = 0u;
+        ulong sourceTripleIndirectPageAddress = 0u;
+        ulong targetTripleIndirectPageAddress = 0u;
+        ulong entryNumber = firstRootPageEntryNumber + startPageNumber;
+        ulong pagesLeft = numPages;
+        ushort prevDigit0 = 0u;
+        ushort prevDigit1 = 0u;
+        ushort prevDigit2 = 0u;
+        while (pagesLeft > 0u)
+        {
+            if (entryNumber >= firstRootPageEntryNumber && entryNumber <= lastDirectRootPageEntryNumber)
+            {
+                ulong targetEntryAddress = targetRootPageAddress + 8u * entryNumber;
+                ulong sourceEntryAddress = sourceRootPageAddress + 8u* entryNumber;
+                ulong pte = ReadMemoryULong(sourceEntryAddress);
+                if (pte != 0u)
+                {
+                    ulong sourcePageAddress = 0u;
+                    ushort pteAddressSpaceNumber = 0u;
+                    Protection protection = Protection.notPresent;
+                    UnpackPageTableEntry(pte, sourcePageAddress, pteAddressSpaceNumber, protection);
+                    if (protection != Protection.notPresent && sourcePageAddress != 0u)
+                    {
+                        ulong targetPageAddress = mem.AllocatePage();
+                        mem.CopyPage(sourcePageAddress, targetPageAddress);
+                        pte = MakePageTableEntry(targetPageAddress, targetAddressSpaceNumber, protection);
+                        WriteMemoryULong(targetEntryAddress, pte);
+                    }
+                }
+            }
+            else
+            {
+                if (singleIndirectEntryNumber != 0u)
+                {
+                    ulong targetEntryAddress = targetRootPageAddress + 8u * singleIndirectEntryNumber;
+                    ulong sourceEntryAddress = sourceRootPageAddress + 8u * singleIndirectEntryNumber;
+                    ulong pte = ReadMemoryULong(sourceEntryAddress);
+                    sourceSingleIndirectPageAddress = 0u;
+                    if (pte != 0u)
+                    {
+                        ulong pageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && pageAddress != 0u)
+                        {
+                            sourceSingleIndirectPageAddress = pageAddress;
+                        }
+                    }
+                    if (sourceSingleIndirectPageAddress != 0u)
+                    {
+                        targetSingleIndirectPageAddress = mem.AllocatePage();
+                        pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                        WriteMemoryULong(targetEntryAddress, pte);
+                    }
+                    singleIndirectEntryNumber = 0u;
+                }
+                ulong pageNum = entryNumber - firstIndirectEntryNumber;
+                ushort digit0 = 0u;
+                ushort digit1 = 0u;
+                ushort digit2 = 0u;
+                ExtractDigitsFromPageNumber(pageNum, digit0, digit1, digit2);
+                if (digit2 == 0u && digit1 == 0u)
+                {
+                    ulong sourceEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong sourcePageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, sourcePageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && sourcePageAddress != 0u)
+                        {
+                            ulong targetPageAddress = mem.AllocatePage();
+                            mem.CopyPage(sourcePageAddress, targetPageAddress);
+                            pte = MakePageTableEntry(targetPageAddress, targetAddressSpaceNumber, protection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                }
+                else if (digit2 == 0u && digit1 > 0u)
+                {
+                    if (doubleIndirectEntryNumber != 0u)
+                    {
+                        ulong targetEntryAddress = targetRootPageAddress + 8u * doubleIndirectEntryNumber;
+                        ulong sourceEntryAddress = sourceRootPageAddress + 8u * doubleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceDoubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceDoubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceDoubleIndirectPageAddress != 0u)
+                        {
+                            targetDoubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetDoubleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                        doubleIndirectEntryNumber = 0u;
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong targetEntryAddress = targetDoubleIndirectPageAddress + 8u * digit1;
+                        ulong sourceEntryAddress = sourceDoubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceSingleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceSingleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceSingleIndirectPageAddress != 0u)
+                        {
+                            targetSingleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    ulong sourceSiEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetSiEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceSiEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong sourcePageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, sourcePageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && sourcePageAddress != 0u)
+                        {
+                            ulong targetPageAddress = mem.AllocatePage();
+                            mem.CopyPage(sourcePageAddress, targetPageAddress);
+                            pte = MakePageTableEntry(targetPageAddress, targetAddressSpaceNumber, protection);
+                            WriteMemoryULong(targetSiEntryAddress, pte);
+                        }
+                    }
+                }
+                else if (digit2 > 0u)
+                {
+                    if (tripleIndirectEntryNumber != 0u)
+                    {
+                        ulong targetEntryAddress = targetRootPageAddress + 8u * tripleIndirectEntryNumber;
+                        ulong sourceEntryAddress = sourceRootPageAddress + 8u * tripleIndirectEntryNumber;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceTripleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceTripleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceTripleIndirectPageAddress != 0u)
+                        {
+                            targetTripleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetTripleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                        tripleIndirectEntryNumber = 0u;
+                    }
+                    if (digit2 != prevDigit2) 
+                    {
+                        ulong targetEntryAddress = targetTripleIndirectPageAddress + 8u * digit2;
+                        ulong sourceEntryAddress = sourceTripleIndirectPageAddress + 8u * digit2;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceDoubleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceDoubleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceDoubleIndirectPageAddress != 0u)
+                        {
+                            targetDoubleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetDoubleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    if (digit1 != prevDigit1)
+                    {
+                        ulong targetEntryAddress = targetDoubleIndirectPageAddress + 8u * digit1;
+                        ulong sourceEntryAddress = sourceDoubleIndirectPageAddress + 8u * digit1;
+                        ulong pte = ReadMemoryULong(sourceEntryAddress);
+                        sourceSingleIndirectPageAddress = 0u;
+                        if (pte != 0u)
+                        {
+                            ulong pageAddress = 0u;
+                            ushort pteAddressSpaceNumber = 0u;
+                            Protection protection = Protection.notPresent;
+                            UnpackPageTableEntry(pte, pageAddress, pteAddressSpaceNumber, protection);
+                            if (protection != Protection.notPresent && pageAddress != 0u)
+                            {
+                                sourceSingleIndirectPageAddress = pageAddress;
+                            }
+                        }
+                        if (sourceSingleIndirectPageAddress != 0u)
+                        {
+                            targetSingleIndirectPageAddress = mem.AllocatePage();
+                            pte = MakePageTableEntry(targetSingleIndirectPageAddress, targetAddressSpaceNumber, pageProtection);
+                            WriteMemoryULong(targetEntryAddress, pte);
+                        }
+                    }
+                    ulong sourceSiEntryAddress = sourceSingleIndirectPageAddress + 8u * digit0;
+                    ulong targetSiEntryAddress = targetSingleIndirectPageAddress + 8u * digit0;
+                    ulong pte = ReadMemoryULong(sourceSiEntryAddress);
+                    if (pte != 0u)
+                    {
+                        ulong sourcePageAddress = 0u;
+                        ushort pteAddressSpaceNumber = 0u;
+                        Protection protection = Protection.notPresent;
+                        UnpackPageTableEntry(pte, sourcePageAddress, pteAddressSpaceNumber, protection);
+                        if (protection != Protection.notPresent && sourcePageAddress != 0u)
+                        {
+                            ulong targetPageAddress = mem.AllocatePage();
+                            mem.CopyPage(sourcePageAddress, targetPageAddress);
+                            pte = MakePageTableEntry(targetPageAddress, targetAddressSpaceNumber, protection);
+                            WriteMemoryULong(targetSiEntryAddress, pte);
+                        }
+                    }
+                }
+                prevDigit0 = digit0;
+                prevDigit1 = digit1;
+                prevDigit2 = digit2;
+            }
+            ++entryNumber;
+            --pagesLeft;
+        }
+    }
+
+    public void AllocateMemory(Memory& mem, const MemoryTable& memoryTable, bool skipTextSegment)
+    {
+        mem.ClearTranslationCache(memoryTable.addressSpaceNumber);
+        for (byte i = 0u; i < numSegments; ++i)
+        {
+            if (skipTextSegment && i == textSegmentIndex) continue;
+            SegmentDescriptor* sd = memoryTable.segmentDescriptors[i];
+            if (sd != null)
+            {
+                ulong startPageNumber = 0u;
+                ulong numPages = 0u;
+                CalculatePageNumbers(*sd, startPageNumber, numPages);
+                AllocateMemoryPages(mem, memoryTable.rootPageAddress, i, startPageNumber, numPages, memoryTable.addressSpaceNumber);
+            }
+        }
+    }
+
+    public void FreeMemory(Memory& mem, MemoryTable& memoryTable)
+    {
+        for (byte i = 0u; i < numSegments; ++i)
+        {
+            SegmentDescriptor* sd = memoryTable.segmentDescriptors[i];
+            if (sd != null)
+            {
+                #assert(sd->useCount > 0);
+                sd->useCount = sd->useCount - 1u;
+                if (sd->useCount == 0u)
+                {
+                    ulong startPageNumber = 0u;
+                    ulong numPages = 0u;
+                    CalculatePageNumbers(*sd, startPageNumber, numPages);
+                    FreeMemoryPages(mem, memoryTable.rootPageAddress, i, startPageNumber, numPages);
+                    FreeSegmentDescriptor(sd);
+                }
+                memoryTable.segmentDescriptors[i] = null;
+            }
+        }
+        mem.FreeRootPage(memoryTable.rootPageAddress);
+        memoryTable.rootPageAddress = 0u;
+        mem.DisposeTranslationCache(memoryTable.addressSpaceNumber);
+        GlobalMemoryTable.Instance().RemoveMemoryTable(&memoryTable);
+    }
+
+    public void CloneMemory(Memory& mem, MemoryTable& targetMemoryTable, MemoryTable& sourceMemoryTable)
+    {
+        mem.ClearTranslationCache(sourceMemoryTable.addressSpaceNumber);
+        mem.ClearTranslationCache(targetMemoryTable.addressSpaceNumber);
+        for (byte i = 0u; i < numSegments; ++i)
+        {
+            SegmentDescriptor* sd = sourceMemoryTable.segmentDescriptors[i];
+            if (sd != null)
+            {
+                if (i == textSegmentIndex)
+                {
+                    ShareSegment(mem, i, targetMemoryTable, sourceMemoryTable, MakeDefaultPageProtection(i));
+                }
+                else
+                {
+                    CopySegment(mem, i, targetMemoryTable, sourceMemoryTable, MakeDefaultPageProtection(i));
+                }
+            }
+        }
+    }
+
+    public void GrowSegment(Memory& mem, MemoryTable& memoryTable, byte segmentIndex, ulong numBytes)
+    {
+        if (segmentIndex >= numSegments)
+        {
+            throw Exception("invalid segment index " + ToString(segmentIndex));
+        }
+        if (numBytes > 0u)
+        {
+            SegmentDescriptor* sd = memoryTable.segmentDescriptors[segmentIndex];
+            if (sd == null)
+            {
+                throw Exception("segment desciptor for segment index " + ToString(segmentIndex) + " is null");
+            }
+            ulong startPageNumber = 0u;
+            ulong numPages = 0u;
+            CalculatePageNumbers(*sd, startPageNumber, numPages);
+            startPageNumber = startPageNumber + numPages;
+            numPages = 0u;
+            if (numBytes > 0)
+            {
+                numPages = (numBytes - 1u) / pageSize + 1u;
+            }
+            AllocateMemoryPages(mem, memoryTable.rootPageAddress, segmentIndex, startPageNumber, numPages, memoryTable.addressSpaceNumber);
+            ulong oldLength = sd->length;
+            ulong newLength = oldLength + numPages * pageSize;
+            sd->length = newLength;
+            mem.ClearTranslationCache(memoryTable.addressSpaceNumber);
+        }
+    }
+
+    public void ShrinkSegment(Memory& mem, MemoryTable& memoryTable, byte segmentIndex, ulong numBytes)
+    {
+        if (segmentIndex >= numSegments)
+        {
+            throw Exception("invalid segment index " + ToString(segmentIndex));
+        }
+        if (numBytes >= 0)
+        {
+            SegmentDescriptor* sd = memoryTable.segmentDescriptors[segmentIndex];
+            if (sd == null)
+            {
+                throw Exception("segment descriptor for segment index " + ToString(segmentIndex) + " is null");
+            }
+            ulong startPageNumber = 0u;
+            ulong numPages = 0u;
+            CalculatePageNumbers(*sd, startPageNumber, numPages);
+            startPageNumber = startPageNumber + numPages;
+            numPages = 0u;
+            if (numBytes > 0)
+            {
+                numPages = (numBytes - 1u) / pageSize + 1u;
+            }
+            if (startPageNumber < numPages)
+            {
+                throw Exception("internal error: start page number less than number of pages");
+            }
+            startPageNumber = startPageNumber - numPages;
+            FreeMemoryPages(mem, memoryTable.rootPageAddress, segmentIndex, startPageNumber, numPages);
+            ulong oldLength = sd->length;
+            ulong newLength = oldLength - numPages * pageSize;
+            sd->length = newLength;
+            mem.ClearTranslationCache(memoryTable.addressSpaceNumber);
+        }
+    }
+
+    public void ShareSegment(Memory& mem, byte segmentIndex, MemoryTable& targetMemoryTable, const MemoryTable& sourceMemoryTable, Protection protection)
+    {
+        if (segmentIndex >= numSegments)
+        {
+            throw Exception("share segment: invalid segment index " + ToString(segmentIndex));
+        }
+        if (targetMemoryTable.segmentDescriptors[segmentIndex] != null)
+        {
+            throw Exception("internal error: share segment: target segment descriptor not null"); 
+        }
+        SegmentDescriptor* sourceSegmentDescriptor = sourceMemoryTable.segmentDescriptors[segmentIndex];
+        if (sourceSegmentDescriptor == null)
+        {
+            throw Exception("internal error: share segment: source segment descriptor is null"); 
+        }
+        if (targetMemoryTable.rootPageAddress == 0u)
+        {
+            targetMemoryTable.rootPageAddress = mem.AllocateRootPage();
+        }
+        SegmentDescriptor* targetSegmentDescriptor = CreateSegmentDescriptor(sourceSegmentDescriptor->startAddress, sourceSegmentDescriptor->baseAddress, sourceSegmentDescriptor->length);
+        if (targetSegmentDescriptor == null)
+        {
+            throw Exception("internal error: share segment: target segment descriptor is null"); 
+        }
+        targetMemoryTable.segmentDescriptors[segmentIndex] = targetSegmentDescriptor;
+        ulong startPageNumber = 0u;
+        ulong numPages = 0u;
+        CalculatePageNumbers(*targetSegmentDescriptor, startPageNumber, numPages);
+        ShareMemoryPages(mem, targetMemoryTable.rootPageAddress, segmentIndex, startPageNumber, numPages, targetMemoryTable.addressSpaceNumber,
+            sourceMemoryTable.rootPageAddress, sourceMemoryTable.addressSpaceNumber, protection);
+    }
+
+    public void CopySegment(Memory& mem, byte segmentIndex, MemoryTable& targetMemoryTable, const MemoryTable& sourceMemoryTable, Protection protection)
+    {
+        if (segmentIndex >= numSegments)
+        {
+            throw Exception("copy segment: invalid segment index " + ToString(segmentIndex));
+        }
+        if (targetMemoryTable.segmentDescriptors[segmentIndex] != null)
+        {
+            throw Exception("internal error: copy segment: target segment descriptor not null"); 
+        }
+        SegmentDescriptor* sourceSegmentDescriptor = sourceMemoryTable.segmentDescriptors[segmentIndex];
+        if (sourceSegmentDescriptor == null)
+        {
+            throw Exception("internal error: copy segment: source segment descriptor is null"); 
+        }
+        if (targetMemoryTable.rootPageAddress == 0u)
+        {
+            targetMemoryTable.rootPageAddress = mem.AllocateRootPage();
+        }
+        SegmentDescriptor* targetSegmentDescriptor = CreateSegmentDescriptor(sourceSegmentDescriptor->startAddress, sourceSegmentDescriptor->baseAddress, sourceSegmentDescriptor->length);
+        if (targetSegmentDescriptor == null)
+        {
+            throw Exception("internal error: copy segment: target segment descriptor is null"); 
+        }
+        targetMemoryTable.segmentDescriptors[segmentIndex] = targetSegmentDescriptor;
+        ulong startPageNumber = 0u;
+        ulong numPages = 0u;
+        CalculatePageNumbers(*targetSegmentDescriptor, startPageNumber, numPages);
+        CopyMemoryPages(mem, targetMemoryTable.rootPageAddress, segmentIndex, startPageNumber, numPages, targetMemoryTable.addressSpaceNumber,
+            sourceMemoryTable.rootPageAddress, sourceMemoryTable.addressSpaceNumber, protection);
+    }
+}

@@ -1,0 +1,10 @@
+using System;
+
+namespace System.Screen
+{
+    public enum DialogResult
+    {
+        none, ok, cancel, yes, no, quit
+    }
+
+} // namespace System.Screen

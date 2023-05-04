@@ -1,0 +1,683 @@
+using System;
+using System.IO;
+using System.Collections;
+
+namespace System.Net.Http
+{
+    public class HttpException : Exception
+    {
+        public HttpException(const HttpStatus& httpStatus_) :
+            base(httpStatus_.ToString()), httpStatus(httpStatus_)
+        {
+        }
+        public nothrow const HttpStatus& Status() const
+        {
+            return httpStatus;
+        }
+        private HttpStatus httpStatus;
+    }
+
+    public class HttpVersion
+    {
+        public nothrow HttpVersion(const string& version_) :
+            version(version_)
+        {
+        }
+        public virtual default ~HttpVersion();
+        public inline nothrow const string& Version() const
+        {
+            return version;
+        }
+        private string version;
+    }
+
+    public class Http_1_1_Version : HttpVersion
+    {
+        public nothrow Http_1_1_Version() :
+            base("HTTP/1.1")
+        {
+        }
+    }
+
+    public class HttpStatus
+    {
+        public nothrow HttpStatus()
+        {
+        }
+        public nothrow HttpStatus(const string& httpVersion_, ushort statusCode_, const string& reasonPhrase_) :
+            httpVersion(httpVersion_), statusCode(statusCode_), reasonPhrase(reasonPhrase_)
+        {
+        }
+        public inline nothrow const string& HttpVersion() const
+        {
+            return httpVersion;
+        }
+        public inline nothrow ushort StatusCode() const
+        {
+            return statusCode;
+        }
+        public inline nothrow const string& ReasonPhrase() const
+        {
+            return reasonPhrase;
+        }
+        public string ToString() const
+        {
+            return httpVersion + " " + ToString(statusCode) + " " + reasonPhrase;
+        }
+        private string httpVersion;
+        private ushort statusCode;
+        private string reasonPhrase;
+    }
+
+    public const ushort statusInfoStart = 100u;
+
+    public const ushort statusInfoEnd = 199u;
+
+    public const ushort statusInfoContinue = 100u;
+
+    public const ushort statusInfoSwitchingProtocols = 101u;
+
+    public const ushort statusSuccessStart = 200u;
+
+    public const ushort statusSuccessEnd = 299u;
+
+    public const ushort statusSuccessOK = 200u;
+
+    public const ushort statusSuccessCreated = 201u;
+
+    public const ushort statusSuccessAccepted = 202u;
+
+    public const ushort statusSuccessNonAuthoritativeInformation = 203u;
+
+    public const ushort statusSuccessNoContent = 204u;
+
+    public const ushort statusSuccessResetContent = 205u;
+
+    public const ushort statusSuccessPartialContent = 206u;
+
+    public const ushort statusRedirectionStart = 300u;
+
+    public const ushort statusRedirectionEnd = 399u;
+
+    public const ushort statusRedirectionMultipleChoices = 300u;
+
+    public const ushort statusRedirectionMovedPermanently = 301u;
+
+    public const ushort statusRedirectionFound = 302u;
+
+    public const ushort statusRedirectionSeeOther = 303u;
+
+    public const ushort statusRedirectionNotModified = 304u;
+
+    public const ushort statusRedirectionUseProxy = 305u;
+
+    public const ushort statusRedirectionUnused = 306u;
+
+    public const ushort statusRedirectionTemporaryRedirect = 307u;
+
+    public const ushort statusClientErrorStart = 400u;
+
+    public const ushort statusClientErrorEnd = 499u;
+
+    public const ushort statusClientErrorBadRequest = 400u;
+
+    public const ushort statusClientErrorUnauthorized = 401u;
+
+    public const ushort statusClientErrorPaymentRequired = 402u;
+
+    public const ushort statusClientErrorForbidden = 403u;
+
+    public const ushort statusClientErrorNotFound = 404u;
+
+    public const ushort statusClientErrorMethodNotAllowed = 405u;
+
+    public const ushort statusClientErrorNotAcceptable = 406u;
+
+    public const ushort statusClientErrorProxyAuthenticationRequired = 407u;
+
+    public const ushort statusClientErrorRequestTimeout = 408u;
+
+    public const ushort statusClientErrorConflict = 409u;
+
+    public const ushort statusClientErrorGone = 410u;
+
+    public const ushort statusClientErrorLengthRequired = 411u;
+
+    public const ushort statusClientErrorPreconditionFailed = 412u;
+
+    public const ushort statusClientErrorRequestEntityTooLarge = 413u;
+
+    public const ushort statusClientErrorRequestURITooLong = 414u;
+
+    public const ushort statusClientErrorUnsupportedMediaType = 415u;
+
+    public const ushort statusClientErrorRequestedRangeNotSatisfiable = 416u;
+
+    public const ushort statusClientErrorExpectationFailed = 417u;
+
+    public const ushort statusServerErrorStart = 500u;
+
+    public const ushort statusServerErrorEnd = 599u;
+
+    public const ushort statusServerInternalServerError = 500u;
+
+    public const ushort statusServerNotImplemented = 501u;
+
+    public const ushort statusServerBadGateway = 502u;
+
+    public const ushort statusServerServiceUnavailable = 503u;
+
+    public const ushort statusServerGatewayTimeout = 504u;
+
+    public const ushort statusServerHttpVersionNotSupported = 505u;
+
+    public class HttpFieldValue
+    {
+        public HttpFieldValue() :
+            fieldValue()
+        {
+        }
+        public default HttpFieldValue(const HttpFieldValue&);
+        public default void operator=(const HttpFieldValue&);
+        public HttpFieldValue(const string& fieldValue_) :
+            fieldValue(fieldValue_)
+        {
+        }
+        public inline nothrow const string& FieldValue() const
+        {
+            return fieldValue;
+        }
+        public string ToString() const
+        {
+            string value = fieldValue;
+            for (const Pair<string, string>& p : parameters)
+            {
+                value.Append(';').Append(p.first);
+                if (!p.second.IsEmpty())
+                {
+                    value.Append('=');
+                    string paramValue = p.second;
+                    if (paramValue.Find('\"') != -1 || paramValue.Find(' ') != -1)
+                    {
+                        paramValue = MakeStringLiteral(paramValue);
+                    }
+                    value.Append(paramValue);
+                }
+            }
+            return value;
+        }
+        public void SetFieldValue(const string& fieldValue_)
+        {
+            fieldValue = fieldValue_;
+        }
+        public void SetParameter(const string& paramName, const string& paramValue)
+        {
+            parameters[ToLower(paramName)] = paramValue;
+        }
+        public string GetParameter(const string& paramName) const
+        {
+            string pn = ToLower(paramName);
+            Map<string, string>.ConstIterator it = parameters.CFind(pn);
+            if (it != parameters.CEnd())
+            {
+                return it->second;
+            }
+            return string();
+        }
+        private string fieldValue;
+        private Map<string, string> parameters;
+    }
+
+    public class HttpHeader
+    {
+        public nothrow HttpHeader()
+        {
+        }
+        public HttpHeader(const string& fieldName_, const string& fieldValue_) :
+            fieldName(fieldName_), fieldValueList(1, HttpFieldValue(Trim(fieldValue_))), combineWithSpace(false)
+        {
+        }
+        public HttpHeader(const string& fieldName_, HttpFieldValue&& fieldValue_) :
+            fieldName(fieldName_), fieldValueList(), combineWithSpace(false)
+        {
+            fieldValueList.Add(fieldValue_);
+        }
+        public HttpHeader(const string& fieldName_, List<HttpFieldValue>&& fieldValueList_) :
+            fieldName(fieldName_), fieldValueList(fieldValueList_), combineWithSpace(false)
+        {
+        }
+        public HttpHeader(const string& fieldName_, List<HttpFieldValue>&& fieldValueList_, bool combineWithSpace_) :
+            fieldName(fieldName_), fieldValueList(fieldValueList_), combineWithSpace(combineWithSpace_)
+        {
+        }
+        public virtual default ~HttpHeader();
+        public string CombinedFieldValue() const
+        {
+            string combinedFieldValue;
+            bool first = true;
+            for (const HttpFieldValue& fieldValue : fieldValueList)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    if (combineWithSpace)
+                    {
+                        combinedFieldValue.Append(' ');
+                    }
+                    else
+                    {
+                        combinedFieldValue.Append(", ");
+                    }
+                }
+                combinedFieldValue.Append(fieldValue.ToString());
+            }
+            return combinedFieldValue;
+        }
+        public string ToString() const
+        {
+            return fieldName + ": " + CombinedFieldValue();
+        }
+        public string FieldName() const
+        {
+            return ToLower(fieldName);
+        }
+        public inline const HttpFieldValue& SingleFieldValue() const
+        {
+            if (fieldValueList.IsEmpty())
+            {
+                ThrowPreconditionViolationException();
+            }
+            return fieldValueList.Front();
+        }
+        public void AddFieldValue(const HttpFieldValue& fieldValue)
+        {
+            fieldValueList.Add(fieldValue);
+        }
+        public void SetCombineWithSpace()
+        {
+            combineWithSpace = true;
+        }
+        private string fieldName;
+        private List<HttpFieldValue> fieldValueList;
+        private bool combineWithSpace;
+    }
+
+    public class HttpHeaderCollection
+    {
+        public void Add(UniquePtr<HttpHeader>&& header)
+        {
+            HttpHeader* prev = GetHeader(header->FieldName());
+            if (prev != null)
+            {
+                prev->AddFieldValue(header->SingleFieldValue());
+            }
+            else
+            {
+                headerMap[header->FieldName()] = header.Get();
+                headers.Add(header);
+            }
+        }
+        public HttpHeader* GetHeader(const string& fieldName) const
+        {
+            HashMap<string, HttpHeader*>.ConstIterator it = headerMap.CFind(ToLower(fieldName));
+            if (it != headerMap.CEnd())
+            {
+                return it->second;
+            }
+            return null;
+        }
+        public inline nothrow const List<UniquePtr<HttpHeader>>& Headers() const
+        {
+            return headers;
+        }
+        public nothrow void Clear()
+        {
+            headers.Clear();
+            headerMap.Clear();
+        }
+        public ulong GetContentLength() const
+        {
+            HttpHeader* contentLengthHeader = GetHeader("content-length");
+            if (contentLengthHeader != null)
+            {
+                string contentLength = contentLengthHeader->SingleFieldValue().FieldValue();
+                if (!contentLength.IsEmpty())
+                {
+                    return ParseULong(contentLength);
+                }
+            }
+            return 0u;
+        }
+        public MimeType GetContentType() const
+        {
+            HttpHeader* contentTypeHeader = GetHeader("content-type");
+            if (contentTypeHeader != null)
+            {
+                string fieldValue = contentTypeHeader->SingleFieldValue().FieldValue();
+                MimeType mimeType = HttpParser.ParseMediaType(fieldValue);
+                return mimeType;
+            }
+            return MimeType();
+        }
+        public DateTime GetDate() const
+        {
+            HttpHeader* dateHeader = GetHeader("date");
+            if (dateHeader != null)
+            {
+                string fieldValue = dateHeader->SingleFieldValue().FieldValue();
+                DateTime date = HttpParser.ParseDate(fieldValue);
+                return date;
+            }
+            return DateTime();
+        }
+        private List<UniquePtr<HttpHeader>> headers;
+        private HashMap<string, HttpHeader*> headerMap;
+    }
+
+    public string MakeHttpHostValue(const string& host, int port)
+    {
+        if (port == -1)
+        {
+            port = 80;
+        }
+        if (port != 80)
+        {
+            return host + ":" + ToString(port);
+        }
+        else
+        {
+            return host;
+        }
+    }
+
+    public class HttpHostHeader : HttpHeader
+    {
+        public HttpHostHeader(const string& host_) :
+            this(host_, 80)
+        {
+        }
+        public HttpHostHeader(const string& host_, int port_) :
+            base("Host", MakeHttpHostValue(host_, port_))
+        {
+        }
+    }
+
+    public class HttpContentLengthHeader : HttpHeader
+    {
+        public HttpContentLengthHeader(int contentLength_) :
+            base("Content-Length", ToString(contentLength_))
+        {
+        }
+    }
+
+    public List<HttpFieldValue> MakeProductListValue(const List<string>& products)
+    {
+        List<HttpFieldValue> fieldValueList;
+        for (const string& product : products)
+        {
+            fieldValueList.Add(HttpFieldValue(product));
+        }
+        return fieldValueList;
+    }
+
+    public class HttpUserAgentHeader : HttpHeader
+    {
+        public HttpUserAgentHeader() :
+            this("Cmajor-http-client/3.3.0")
+        {
+        }
+        public HttpUserAgentHeader(const string& product_) :
+            base("User-Agent", product_)
+        {
+        }
+        public HttpUserAgentHeader(const List<string>& products_) :
+            base("User-Agent", MakeProductListValue(products_), true)
+        {
+        }
+    }
+
+    public List<HttpFieldValue> MakeMediaRangeListValue(const List<MediaRange>& mediaRanges)
+    {
+        List<HttpFieldValue> fieldValueList;
+        for (const MediaRange& mediaRange : mediaRanges)
+        {
+            fieldValueList.Add(mediaRange.ToHttpFieldValue());
+        }
+        return fieldValueList;
+    }
+
+    public class HttpAcceptHeader : HttpHeader
+    {
+        public HttpAcceptHeader(const MediaRange& mediaRange) :
+            base("Accept", mediaRange.ToHttpFieldValue())
+        {
+        }
+        public HttpAcceptHeader(const List<MediaRange>& mediaRanges) :
+            base("Accept", MakeMediaRangeListValue(mediaRanges))
+        {
+        }
+    }
+
+    public class Coding
+    {
+        public nothrow Coding(const string& coding_) :
+            coding(coding_), quality(1)
+        {
+        }
+        public nothrow Coding(const string& coding_, double quality_) :
+            coding(coding_), quality(quality_)
+        {
+        }
+        public virtual default ~Coding();
+        public HttpFieldValue ToHttpFieldValue() const
+        {
+            if (quality == 1)
+            {
+                return HttpFieldValue(coding);
+            }
+            else
+            {
+                HttpFieldValue result(coding);
+                result.SetParameter("q", ToString(quality, 3));
+                return result;
+            }
+        }
+        private string coding;
+        private double quality;
+    }
+
+    public class ChunkedTransferCoding : Coding
+    {
+        public nothrow ChunkedTransferCoding() :
+            base("chunked")
+        {
+        }
+    }
+
+    public class DeflateCoding : Coding
+    {
+        public nothrow DeflateCoding() :
+            base("deflate")
+        {
+        }
+        public nothrow DeflateCoding(double quality) :
+            base("deflate", quality)
+        {
+        }
+    }
+
+    public List<HttpFieldValue> MakeCodingListValue(const List<Coding>& codings)
+    {
+        List<HttpFieldValue> fieldValueList;
+        for (const Coding& coding : codings)
+        {
+            fieldValueList.Add(coding.ToHttpFieldValue());
+        }
+        return fieldValueList;
+    }
+
+    public class HttpTEHeader : HttpHeader
+    {
+        public HttpTEHeader(const Coding& transferCoding) :
+            base("TE", transferCoding.ToHttpFieldValue())
+        {
+        }
+        public HttpTEHeader(const List<Coding>& transferCodings) :
+            base("TE", MakeCodingListValue(transferCodings))
+        {
+        }
+    }
+
+    public class HttpAcceptEncodingHeader : HttpHeader
+    {
+        public HttpAcceptEncodingHeader(const Coding& encoding) :
+            base("Accept-Encoding", encoding.ToHttpFieldValue())
+        {
+        }
+        public HttpAcceptEncodingHeader(const List<Coding>& encodings) :
+            base("Accept-Encoding", MakeCodingListValue(encodings))
+        {
+        }
+    }
+
+    public class HttpMethod
+    {
+        public nothrow HttpMethod(const string& methodName_) :
+            methodName(methodName_)
+        {
+        }
+        public virtual default ~HttpMethod();
+        public inline nothrow const string& MethodName() const
+        {
+            return methodName;
+        }
+        private string methodName;
+    }
+
+    public class HttpOptionsMethod : HttpMethod
+    {
+        public nothrow HttpOptionsMethod() :
+            base("OPTIONS")
+        {
+        }
+    }
+
+    public class HttpGetMethod : HttpMethod
+    {
+        public nothrow HttpGetMethod() :
+            base("GET")
+        {
+        }
+    }
+
+    public class HttpHeadMethod : HttpMethod
+    {
+        public nothrow HttpHeadMethod() :
+            base("HEAD")
+        {
+        }
+    }
+
+    public class HttpPostMethod : HttpMethod
+    {
+        public nothrow HttpPostMethod() :
+            base("POST")
+        {
+        }
+    }
+
+    public class HttpPutMethod : HttpMethod
+    {
+        public nothrow HttpPutMethod() :
+            base("PUT")
+        {
+        }
+    }
+
+    public class HttpDeleteMethod : HttpMethod
+    {
+        public nothrow HttpDeleteMethod() :
+            base("DELETE")
+        {
+        }
+    }
+
+    public class HttpTraceMethod : HttpMethod
+    {
+        public nothrow HttpTraceMethod() :
+            base("TRACE")
+        {
+        }
+    }
+
+    public class HttpConnectMethod : HttpMethod
+    {
+        public nothrow HttpConnectMethod() :
+            base("CONNECT")
+        {
+        }
+    }
+
+    public class HttpRequest
+    {
+        public HttpRequest(const UriReference& absoluteUri_, HttpHeaderCollection& headers_) :
+            this(UniquePtr<HttpMethod>(new HttpGetMethod()), absoluteUri_, UniquePtr<HttpVersion>(new Http_1_1_Version()), headers_)
+        {
+        }
+        public HttpRequest(UniquePtr<HttpMethod>&& method_, const UriReference& absoluteUri_, UniquePtr<HttpVersion>&& httpVersion_, HttpHeaderCollection& headers_) :
+            method(method_), absoluteUri(absoluteUri_), httpVersion(httpVersion_), headers(headers_)
+        {
+        }
+        public void Write(StreamWriter& writer)
+        {
+            Write(writer, null);
+        }
+        public void Write(StreamWriter& writer, StreamWriter* log)
+        {
+            string requestLine = method->MethodName();
+            UriReference requestUri;
+            requestUri.SetPath(absoluteUri.Path());
+            requestLine.Append(' ');
+            requestLine.Append(requestUri.ToString());
+            requestLine.Append(' ');
+            requestLine.Append(httpVersion->Version());
+            if (log != null)
+            {
+                log->WriteLine("REQUEST:");
+                log->WriteLine(requestLine);
+            }
+            writer.Write(requestLine);
+            writer.Write("\r\n");
+            HttpHeader* hostHeader = headers.GetHeader("host");
+            if (hostHeader == null)
+            {
+                headers.Add(UniquePtr<HttpHeader>(new HttpHostHeader(absoluteUri.GetAuthority().Host(), absoluteUri.GetAuthority().Port())));
+            }
+            HttpHeader* userAgentHeader = headers.GetHeader("user-agent");
+            if (userAgentHeader == null)
+            {
+                headers.Add(UniquePtr<HttpHeader>(new HttpUserAgentHeader()));
+            }
+            for (const UniquePtr<HttpHeader>& header : headers.Headers())
+            {
+                string headerStr = header->ToString();
+                if (log != null)
+                {
+                    log->WriteLine(headerStr);
+                }
+                writer.Write(headerStr);
+                writer.Write("\r\n");
+            }
+            writer.Write("\r\n");
+            writer.ContainedStream()->Flush();
+        }
+        private UniquePtr<HttpMethod> method;
+        private UriReference absoluteUri;
+        private UniquePtr<HttpVersion> httpVersion;
+        private HttpHeaderCollection& headers;
+    }
+
+} // namespace System.Net.Http

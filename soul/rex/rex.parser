@@ -1,0 +1,130 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.rex.parser;
+
+[interface]import soul.rex.context;
+[interface]import soul.rex.nfa;
+[implementation]import soul.rex.token;
+[implementation]import soul.rex.lexer;
+[implementation]import soul.rex.token.parser;
+
+parser RexParser
+{
+    lexer soul::rex::lexer::RexLexer<char32_t>;
+    main;
+
+    RegularExpression(soul::rex::context::Context* context) : soul::rex::nfa::Nfa
+        ::= 
+        (
+            Alternative(context):alternative
+        )
+        {
+            return alternative;
+        }
+        ;
+
+    Alternative(soul::rex::context::Context* context, var soul::rex::nfa::Nfa value) : soul::rex::nfa::Nfa
+        ::= 
+        (
+            Catenation(context):left{ value = left; }
+            (
+                ALT Catenation(context):right!{ value = soul::rex::nfa::Alt(*context, value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Catenation(soul::rex::context::Context* context, var soul::rex::nfa::Nfa value) : soul::rex::nfa::Nfa
+        ::=
+        (
+            Repetition(context):left{ value = left; }
+            (
+                Repetition(context):right{ value = soul::rex::nfa::Cat(value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Repetition(soul::rex::context::Context* context, var soul::rex::nfa::Nfa value) : soul::rex::nfa::Nfa
+        ::=
+        (
+            Primary(context):left{ value = left; }
+            (   STAR{ value = soul::rex::nfa::Kleene(*context, value); }
+            |   PLUS{ value = soul::rex::nfa::Pos(*context, value); }
+            |   QUEST{ value = soul::rex::nfa::Opt(*context, value); }
+            )?
+        )
+        {
+            return value;
+        }
+        ;
+
+    Primary(soul::rex::context::Context* context, var soul::rex::nfa::Nfa value) : soul::rex::nfa::Nfa
+        ::= 
+        (   LPAREN Alternative(context):alt!{ value = alt; } RPAREN!
+        |   ESCAPE{ value = soul::rex::nfa::MakeNfa(*context, context->MakeChar(soul::rex::token::parser::MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos)))); }
+        |   INVERSE{ value = soul::rex::nfa::MakeNfa(*context, context->MakeChar('^')); }
+        |   MINUS{ value = soul::rex::nfa::MakeNfa(*context, context->MakeChar('-')); }
+        |   CHAR{ auto token = lexer.GetToken(pos); value = soul::rex::nfa::MakeNfa(*context, context->MakeChar(token.Chr())); }
+        |   DOT{ value = soul::rex::nfa::MakeNfa(*context, context->MakeAny()); }
+        |   Class(context):cls{ value = soul::rex::nfa::MakeNfa(*context, cls); }
+        )
+        {
+            return value;
+        }
+        ;
+
+    Class(soul::rex::context::Context* context, var soul::rex::symbol::Class* cls) : soul::rex::symbol::Class*
+        ::= 
+        (
+            LBRACKET{ cls = context->MakeClass(); }
+            (
+                (
+                    INVERSE{ cls->SetInverse(); }
+                )?
+                (
+                    Range(context):r{ cls->AddSymbol(r); }
+                )*
+            )
+            RBRACKET!
+        )
+        {
+            return cls;
+        }
+        ;
+
+    Range(soul::rex::context::Context* context, var soul::rex::symbol::Symbol* symbol) : soul::rex::symbol::Symbol*
+        ::= 
+        (
+            Char:s 
+            (   MINUS Char:e{ symbol = context->MakeRange(s, e); } 
+            |   empty{ symbol = context->MakeChar(s); }
+            )
+        )
+        {
+            return symbol;
+        }
+        ;
+
+    Char : char32_t
+        ::= LPAREN{ return '('; }
+        |   RPAREN{ return ')'; }
+        |   LBRACKET{ return '['; }
+        |   ALT{ return '|'; }
+        |   STAR{ return '*'; }
+        |   PLUS{ return '+'; }
+        |   QUEST{ return '?'; }
+        |   DOT{ return '.'; }
+        |   ESCAPE{ return soul::rex::token::parser::MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos)); }
+        |   INVERSE{ return '^'; }
+        |   MINUS{ return '-'; }
+        |   CHAR{ auto token = lexer.GetToken(pos); return token.Chr(); }
+        ;
+}

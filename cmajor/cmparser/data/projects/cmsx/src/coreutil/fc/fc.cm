@@ -1,0 +1,150 @@
+// =================================
+// Copyright (c) 2020 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+
+void PrintHelp()
+{
+    Console.Out() <<
+        "Usage: fc [options] SOURCEFILE TARGETFILE" << endl() << endl() <<
+        "Compare contents of files SOURCEFILE and TARGETFILE" << endl() << endl() <<
+        "Options:" << endl() << endl() <<
+        "--help | -h" << endl() <<
+        "   Print help." << endl() << endl() <<
+        "--verbose | -v" << endl() <<
+        "   Be verbose." << endl() << endl() <<
+        "--diagnostics | -d" << endl() <<
+        "   Show stack trace in case of error." << endl() << endl();
+}
+
+void CompareFiles(const string& sourceFilePath, const string& targetFilePath, bool verbose)
+{
+    if (verbose)
+    {
+        Console.Out() << "comparing contents of files '" + sourceFilePath + "' and '" + targetFilePath + "'..." << endl();
+    }
+    if (!File.Exists(sourceFilePath))
+    {
+        throw Exception("source file '" + sourceFilePath + "' does not exist");
+    }
+    if (!File.Exists(targetFilePath))
+    {
+        throw Exception("target file '" + targetFilePath + "' does not exist");
+    }
+    long ns = File.Size(sourceFilePath);
+    long nt = File.Size(targetFilePath);
+    if (ns != nt)
+    {
+        throw Exception("file sizes differ: size of '" + sourceFilePath + "' is " + ToString(ns) + " and size of '" + targetFilePath + "' is " + ToString(nt));
+    }
+    BinaryReader sourceReader = File.OpenBinary(sourceFilePath);
+    BinaryReader targetReader = File.OpenBinary(targetFilePath);
+    for (long i = 0; i < ns; ++i)
+    {
+        byte sb = sourceReader.ReadByte();
+        byte tb = targetReader.ReadByte();
+        if (sb != tb)
+        {
+            throw Exception("source file index " + ToString(i) + " byte " + ToString(sb) + " differs from target file byte " + ToString(tb));
+        }
+    }
+    if (verbose)
+    {
+        Console.Out() << "contents of files '" + sourceFilePath + "' and '" + targetFilePath + "' are identical" << endl();
+    }
+}
+
+int main(int argc, const char** argv)
+{
+    bool diagnostics = false;
+    try
+    {
+        bool verbose = false;
+        List<string> files;
+        for (int i = 1; i < argc; ++i)
+        {
+            string arg = argv[i];
+            if (arg.StartsWith("--"))
+            {
+                if (arg == "--help")
+                {
+                    PrintHelp();
+                    return 1;
+                }
+                else if (arg == "--verbose")
+                {
+                    verbose = true;
+                }
+                else if (arg == "--diagnostics")
+                {
+                    diagnostics = true;
+                }
+                else
+                {
+                    throw Exception("unknown option '" + arg + "'");
+                }
+            }
+            else if (arg.StartsWith("-"))
+            {
+                string options = arg.Substring(1);
+                if (options.IsEmpty())
+                {
+                    throw Exception("unknown option '" + arg + "'");
+                }
+                else
+                {
+                    for (char o : options)
+                    {
+                        if (o == 'h')
+                        {
+                            PrintHelp();
+                            return 1;
+                        }
+                        else if (o == 'v')
+                        {
+                            verbose = true;
+                        }
+                        else if (o == 'd')
+                        {
+                            diagnostics = true;
+                        }
+                        else
+                        {
+                            throw Exception("unknown option '-" + string(o) + "'");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                files.Add(arg);
+            }
+        }
+        if (files.Count() != 2)
+        {
+            PrintHelp();
+            throw Exception("number of files must be 2");
+        }
+        else
+        {
+            CompareFiles(files[0], files[1], verbose);
+        }
+    }
+    catch (const Exception& ex)
+    {
+        if (diagnostics)
+        {
+            Console.Error() << ex.ToString() << endl();
+        }
+        else
+        {
+            Console.Error() << ex.Message() << endl();
+        }
+        return 1;
+    }
+    return 0;
+}

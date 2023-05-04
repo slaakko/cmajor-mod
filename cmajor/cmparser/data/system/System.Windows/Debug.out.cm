@@ -1,0 +1,62 @@
+using System;
+
+namespace System.Windows
+{
+    public class Debug
+    {
+        public static nothrow bool Docking()
+        {
+            return (flags & Flags.docking) != Flags.none;
+        }
+        public static nothrow void SetDocking()
+        {
+            flags = cast<Flags>(flags | Flags.docking);
+        }
+        public static nothrow bool WindowTree()
+        {
+            return (flags & Flags.windowTree) != Flags.none;
+        }
+        public static nothrow void SetWindowTree()
+        {
+            flags = cast<Flags>(flags | Flags.windowTree);
+        }
+        public static nothrow bool Log()
+        {
+            return (flags & Flags.log) != Flags.none;
+        }
+        public static nothrow void SetLog()
+        {
+            flags = cast<Flags>(flags | Flags.log);
+        }
+        public static nothrow bool Paint()
+        {
+            return (flags & Flags.paint) != Flags.none;
+        }
+        public static nothrow void SetPaint()
+        {
+            flags = cast<Flags>(flags | Flags.paint);
+        }
+        public static nothrow bool Messages()
+        {
+            return (flags & Flags.messages) != Flags.none;
+        }
+        public static nothrow void SetMessages()
+        {
+            flags = cast<Flags>(flags | Flags.messages);
+        }
+        public static nothrow bool TreeView()
+        {
+            return (flags & Flags.treeView) != Flags.none;
+        }
+        public static nothrow void SetTreeView()
+        {
+            flags = cast<Flags>(flags | Flags.treeView);
+        }
+        private enum Flags : sbyte
+        {
+            none = 0, log = 1 << 0, paint = 1 << 1, windowTree = 1 << 2, docking = 1 << 3, messages = 1 << 4, treeView = 1 << 5
+        }
+        private static Flags flags;
+    }
+
+} // namespace System.Windows

@@ -1,0 +1,15 @@
+using System;
+using System.Collections;
+
+namespace System.Parsing
+{
+    public class Value<T>
+    {
+        public Value(const T& value_) :
+            value(value_)
+        {
+        }
+        public T value;
+    }
+
+} // namespace System.Parsing

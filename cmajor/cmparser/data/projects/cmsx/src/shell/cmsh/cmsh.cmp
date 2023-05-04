@@ -1,0 +1,16 @@
+project cmsh;
+target=program;
+source <BraceExpansion.cm>;
+source <Command.cm>;
+source <CommandProcessor.cm>;
+source <EnvironmentParser.cm>;
+source <Expand.cm>;
+source <FileNameExpansion.cm>;
+source <Main.cm>;
+source <ParameterExpansion.cm>;
+source <QuoteRemoval.cm>;
+source <Redirection.cm>;
+source <ShellEnvironment.cm>;
+source <TildeExpansion.cm>;
+source <Tokenizer.cm>;
+source <VariableAssignmentParser.cm>;

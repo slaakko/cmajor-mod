@@ -1,0 +1,201 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Os;
+using System.Message;
+
+namespace System.Screen
+{
+    string MakeApplicationMessageQueueName()
+    {
+        return "system.screen.msg.queue." + ToString(GetPid());
+    }
+
+    public class Application
+    {
+        static Application() : instance(new Application())
+        {
+        }
+        public ~Application()
+        {
+            try
+            {
+                UnbindTerminal();
+                CloseMsgQ(msgQ);
+            }
+            catch (const Exception& ex)
+            {
+            }
+        }
+        public static Application& Instance() 
+        {
+            return *instance;
+        }
+        private Application() : msgQ(MsgQ(MakeApplicationMessageQueueName().Chars())), menuBar(null), focusedControl(null), lastDefaultWriteScreenMessageWindow(-1)
+        {
+            RegisterMessage<KeyPressedMessage>(systemScreenKeyPressedMessageId);
+            BindTerminal(msgQ);
+        }
+        public nothrow Window* MainWindow() 
+        {
+            return mainWindow;
+        }
+        public nothrow MenuBar* GetMenuBar() const
+        {
+            return menuBar;
+        }
+        public nothrow void SetMenuBar(MenuBar* menuBar_)
+        {
+            menuBar = menuBar_;
+            menuBarWindowHandle = menuBar->Handle();
+        }
+        public nothrow void SetStatusBar(StatusBar* statusBar_)
+        {
+            statusBar = statusBar_;
+            statusBarWindowHandle = statusBar->Handle();
+        }
+        public WindowManager& GetWindowManager() const
+        {
+            return windowManager;
+        }
+        public void Run(Window& mainWindow_)
+        {
+            mainWindow = &mainWindow_;
+            mainWindow->SetMainWindow();
+            mainWindow->SetLocation(Point(0, 0));
+            mainWindow->SetSize(Size(TerminalWindowWidth(), TerminalWindowHeight()));
+            mainWindow->Invalidate();
+            UniquePtr<Message> message = ReadMessage();
+            while (!(message.Get() is QuitMessage*))
+            {
+                bool handled = false;
+                if (message->TargetWindowHandle() != -1)
+                {
+                    Control* control = windowManager.GetWindow(message->TargetWindowHandle());
+                    if (control != null)
+                    {
+                        handled = control->HandleMessage(message.Get());
+                    }
+                }
+                if (!handled)
+                {
+                    handled = mainWindow->HandleMessage(message.Get());
+                }
+                message = ReadMessage();
+            }
+            Terminal.Out() << ResetColors();
+            ClearScreen(TerminalWindowWidth(), TerminalWindowHeight());
+            SetCursorPos(0, 0);
+        }
+        public void RunDialog(Window* window)
+        {
+            WriteScreenMessage writeScreenMessage(Rect.Default(), InvalidateKind.invalidateIfNotDefault);
+            mainWindow->HandleWriteScreen(&writeScreenMessage);
+            UniquePtr<Message> message = ReadMessage();
+            while (!(message.Get() is QuitMessage*))
+            {
+                bool handled = window->HandleMessage(message.Get());
+                if (handled)
+                {
+                    if (window->GetDialogResult() != DialogResult.none)
+                    {
+                        WriteScreenMessage writeScreenMessage(window->GetRect(), InvalidateKind.invalidateIfNotDefault);
+                        mainWindow->HandleWriteScreen(&writeScreenMessage);
+                        return;
+                    }
+                }
+                message = ReadMessage();
+            }
+        }
+        public void Exit()
+        {
+            QuitMessage quitMessage;
+            PostMessage(quitMessage);
+        }
+        public void PostMessage(Message& message)
+        {
+            if (message.TargetWindowHandle() != menuBarWindowHandle && message.TargetWindowHandle() != statusBarWindowHandle)
+            {
+                if (message.IsDefaultWriteScreenMessage())
+                {
+                    if (lastDefaultWriteScreenMessageWindow == message.TargetWindowHandle())
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        lastDefaultWriteScreenMessageWindow = message.TargetWindowHandle();
+                    }
+                }
+                else
+                {
+                    lastDefaultWriteScreenMessageWindow = -1;
+                }
+            }
+            int msgSize = message.Size();
+            UniquePtr<byte> msg(cast<byte*>(MemAlloc(msgSize)));
+            MemoryWriter writer(msg.Get(), msgSize);
+            message.Write(writer);
+            PutMsg(msgQ, msg.Get(), msgSize);
+        }
+        public UniquePtr<Message> ReadMessage()
+        {
+            WaitMsg(msgQ);
+            return GetMessage();
+        }
+        public void Timer(const Duration& duration, Control* control, int timerId)
+        {
+            TimerMessage message(timerId);
+            message.SetTargetWindowHandle(control->Handle());
+            int msgSize = message.Size();
+            UniquePtr<byte> msg(cast<byte*>(MemAlloc(msgSize)));
+            MemoryWriter writer(msg.Get(), msgSize);
+            message.Write(writer);
+            TimerMsg(duration, msgQ, msg.Get(), msgSize);
+        }
+        public nothrow Control* FocusedControl() const
+        {
+            return focusedControl;
+        }
+        public nothrow void SetFocusedControl(Control* focusedControl_) 
+        {
+            focusedControl = focusedControl_;
+        }
+        private UniquePtr<Message> GetMessage()
+        {
+            int qlen = GetMsgQLength(msgQ);
+            if (qlen > 0)
+            {
+                int msgSize = GetMsgSize(msgQ);
+                if (msgSize > 0)
+                {
+                    UniquePtr<byte> msgData(cast<byte*>(MemAlloc(msgSize)));
+                    GetMsg(msgQ, msgData.Get());
+                    UniquePtr<Message> message(ReadMessage(msgData.Get(), msgSize));
+                    return message;
+                }
+                else
+                {
+                    throw Exception("invalid message size 0");
+                }
+            }
+            else
+            {
+                throw Exception("message queue " + ToString(msgQ) + " is empty");
+            }
+        }
+        private static UniquePtr<Application> instance;
+        private int msgQ;
+        private Window* mainWindow;
+        private WindowManager windowManager;
+        private MenuBar* menuBar;
+        private StatusBar* statusBar;
+        private Control* focusedControl;
+        private int lastDefaultWriteScreenMessageWindow;
+        private int menuBarWindowHandle;
+        private int statusBarWindowHandle;
+    }
+}

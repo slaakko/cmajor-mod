@@ -1,0 +1,44 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_Cm.Ast_BFF232E4680A917E861A5833139E3F88D9862A65", 
+        "project_Cm.Lexer_92C01C794B73F04FF007899BCA62F79FA431A0A7", 
+        "project_Cm.Parser_22189DE9798383C617CD1600E8D95C8F0A8B3C41", 
+        "project_Cm.Views_1A8722F018A7EAE36A61C7D85ACF39EDE6A7342B"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "E57BF707ACC2DEDD83DE74BAFF7BAE04B18AC6C2", 
+            "fileId" : "Main_34CE1410BD0786DD27E02545A71B1D9264FD6F65", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/ASTViewer\/Main.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "1CA43079A77D255ABADE0D9D67E2F45E406226F8", 
+            "fileId" : "SyntaxNodeAttributeExtractor_09137F7FDF95FC236A53A230D715BD6D5DB88AF1", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/ASTViewer\/SyntaxNodeAttributeExtractor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "F3F1B81CAF0F324A16EC925EC865F27EBA34385F", 
+            "fileId" : "SyntaxTreeBuilder_548B937B2DA92874CA32564719775C2A80A4C847", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/ASTViewer\/SyntaxTreeBuilder.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/ASTViewer\/ASTViewer.cmp", 
+    "projectHash" : "B8E0D5CFB7B618B97128C083BA32D7FC53829AF5", 
+    "projectId" : "project_ASTViewer_B7A07D8D11A72C078503210FD07C1D7E3D13FEFF", 
+    "projectName" : "ASTViewer", 
+    "target" : "winguiapp"
+}

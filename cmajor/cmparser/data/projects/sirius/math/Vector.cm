@@ -1,0 +1,110 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+
+namespace Sirius.Math
+{
+    public const float epsilon = 0.001f;
+
+    public class Vector
+    {
+        public nothrow Vector() : x(0), y(0), z(0), w(1)
+        {
+        }
+        public nothrow Vector(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_)
+        {
+        }
+        public nothrow Vector(float x, float y, float z) : this(x, y, z, 1)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + System.ToString(x) + ", " + System.ToString(y) + ", " + System.ToString(z) + ", " + System.ToString(w) + ")";
+        }
+        public float x;
+        public float y;
+        public float z;
+        public float w;
+    }
+
+    public nothrow bool operator==(const Vector& left, const Vector& right)
+    {
+        Vector d = left - right;
+        return Dot(d, d) < epsilon * epsilon;
+    }
+
+    public TextWriter& operator<<(TextWriter& w, const Vector& v)
+    {
+        return w << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+    }
+
+    public nothrow Vector I()
+    {
+        return Vector(1, 0, 0);
+    }
+
+    public nothrow Vector J()
+    {
+        return Vector(0, 1, 0);
+    }
+
+    public nothrow Vector K()
+    {
+        return Vector(0, 0, 1);
+    }
+
+    // I x J = K
+    // J x K = I
+    // K x I = J
+
+    public nothrow inline float Norm(const Vector& v)
+    {
+        return cast<float>(Sqrt(v.x * v.x + v.y * v.y + v.z * v.z));
+    }
+
+    public nothrow inline Vector operator+(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x + right.x, left.y + right.y, left.z + right.z, 1);
+    }
+
+    public nothrow inline Vector operator-(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x - right.x, left.y - right.y, left.z - right.z, 1);
+    }
+
+    public nothrow inline Vector operator*(float a, const Vector& v)
+    {
+        return Vector(a * v.x, a * v.y, a * v.z, 1);
+    }
+
+    public nothrow inline Vector Normalize(const Vector& v)
+    {
+        Vector n = v;
+        float length = Norm(n);
+        if (length != 0)
+        {
+            n = (1 / length) * n;
+        }
+        n.w = 1;
+        return n;
+    }
+
+    public nothrow inline float Dot(const Vector& left, const Vector& right)
+    {
+        return left.x * right.x + left.y * right.y + left.z * right.z;
+    }
+
+    public nothrow inline Vector Cross(const Vector& left, const Vector& right)
+    {
+        return Vector(left.y * right.z - left.z * right.y, left.z * right.x - left.x * right.z, left.x * right.y - left.y * right.x);
+    }
+
+    public nothrow float AngleBetweenLineAndPlane(const Vector& v, const Vector& n)
+    {
+        return cast<float>(ArcCos(Dot(n, v) / (Norm(n) * Norm(v))));
+    }
+}

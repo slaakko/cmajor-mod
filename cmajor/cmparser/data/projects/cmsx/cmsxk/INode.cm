@@ -1,0 +1,680 @@
+using System;
+using System.IO;
+using System.Collections;
+using cmsx.util;
+
+namespace cmsx.kernel
+{
+    public const int invalidINodeNumber = 0;
+    public const int maxCachedINodes = 1024;
+    public const int numDirectBlockNumbers = 17;
+    //public const int maxPipeSize = 256;
+    public const int maxPipeSize = numDirectBlockNumbers * blockSize;
+
+    public enum FileType : int
+    {
+        free = 0, regular = 1, directory = 2, characterSpecial = 3, blockSpecial = 4, fifo = 5, symlink = 6
+    }
+
+    public nothrow string FileTypeStr(FileType fileType)
+    {
+        switch (fileType)
+        {
+            case FileType.free: return "free";
+            case FileType.regular: return "regular";
+            case FileType.directory: return "directory";
+            case FileType.characterSpecial: return "characterSpecial";
+            case FileType.blockSpecial: return "blockSpecial";
+            case FileType.fifo: return "fifo";
+            case FileType.symlink: return "symlink";
+        }
+        return string();
+    }
+
+    public enum Access : int
+    {
+        none =  0,
+        read = 1 << 2,
+        write = 1 << 1,
+        execute = 1 << 0
+    }
+
+    public nothrow string AccessStr(Access access)
+    {
+        string s;
+        if ((access & Access.read) != Access.none)
+        {
+            s.Append("read");
+        }
+        if ((access & Access.write) != Access.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append('-');
+            }
+            s.Append("write");
+        }
+        if ((access & Access.execute) != Access.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append('-');
+            }
+            s.Append("execute");
+        }
+        if (s.IsEmpty())
+        {
+            s.Append("-");
+        }
+        return s;
+    }
+
+    public nothrow inline int EncodeMode(INode.Flags flags, FileType fileType, Access ownerAccess, Access groupAccess, Access otherAccess)
+    {
+        int mntpnt = cast<int>((flags & INode.Flags.mountPoint) != INode.Flags.none);
+        return (mntpnt << 12) | (cast<int>(fileType) << 9) | (cast<int>(ownerAccess) << 6) | (cast<int>(groupAccess) << 3) | (cast<int>(otherAccess));
+    }
+
+    public nothrow inline void DecodeMode(int mode, INode.Flags& flags, FileType& fileType, Access& ownerAccess, Access& groupAccess, Access& otherAccess)
+    {
+        if (((mode >> 12) & 1) != 0)
+        {
+            flags = cast<INode.Flags>(flags | INode.Flags.mountPoint);
+        }
+        else
+        {
+            flags = cast<INode.Flags>(flags & ~INode.Flags.mountPoint);
+        }
+        fileType = cast<FileType>((mode >> 9) & 7);
+        ownerAccess = cast<Access>((mode >> 6) & 7);
+        groupAccess = cast<Access>((mode >> 3) & 7);
+        otherAccess = cast<Access>(mode & 7);
+    }
+
+    public nothrow inline int GetINodeBlockNumber(int inodeNumber, int firstINodeBlockNumber)
+    {
+        return (inodeNumber - 1) / numINodesInBlock + firstINodeBlockNumber;
+    }
+
+    public nothrow inline int GetINodeIndex(int inodeNumber)
+    {
+        return (inodeNumber - 1) % numINodesInBlock;
+    }
+
+    public nothrow inline int GetFileSystemIndex(int fsNumber)
+    {
+        return (fsNumber >> 24) & 0x7F;
+    }
+
+    public nothrow inline int GetHostFileIndex(int fsNumber)
+    {
+        return fsNumber & 0x00FFFFFF;
+    }
+
+    public nothrow inline int MakeFSNumber(int fileSystemIndex, int hostFileIndex)
+    {
+        return ((fileSystemIndex & 0x7F) << 24) | (hostFileIndex & 0x00FFFFFF);
+    }
+
+    public class INodeKey
+    {
+        public nothrow INodeKey(int inodeNumber_, int fsNumber_) : inodeNumber(inodeNumber_), fsNumber(fsNumber_)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            string s;
+            s.Append("inode.").Append(ToString(fsNumber)).Append('.').Append(ToString(inodeNumber));
+            return s;
+        }
+        public int inodeNumber;
+        public int fsNumber;
+    }
+
+    public nothrow bool operator==(const INodeKey& left, const INodeKey& right)
+    {
+        return left.inodeNumber == right.inodeNumber && left.fsNumber == right.fsNumber;
+    }
+
+    public class INodeKeyHash : UnaryFun<INodeKey, ulong>
+    {
+        public nothrow inline ulong operator()(const INodeKey& key) const
+        {
+            return cast<ulong>(1099511628211 * key.fsNumber + key.inodeNumber);
+        }
+    }
+
+    public class INode
+    {
+        public enum Flags : byte
+        {
+            none = 0u,
+            locked = 1u << 0u,
+            dirty = 1u << 1u,
+            mountPoint = 1u << 2u,
+            pipeFull = 1u << 3u,
+            pipeEmpty = 1u << 4u
+        }
+        public nothrow string FlagStr(Flags flags)
+        {
+            string s = "flags";
+            if ((flags & Flags.locked) != Flags.none)
+            {
+                s.Append(".locked");
+            }
+            if ((flags & Flags.dirty) != Flags.none)
+            {
+                s.Append(".dirty");
+            }
+            if ((flags & Flags.mountPoint) != Flags.none)
+            {
+                s.Append(".mountPoint");
+            }
+            return s;
+        }
+        public nothrow INode(INodeManager* manager_) : manager(manager_), key(INodeKey(invalidINodeNumber, 0)), flags(Flags.none), useCount(0), iterator(),
+            mode(0), uid(-1), gid(-1), fileSize(0), ctime(), mtime(), atime(), nlinks(1u), 
+            singleIndirectBlockNumber(invalidBlockNumber), doubleIndirectBlockNumber(invalidBlockNumber), tripleIndirectBlockNumber(invalidBlockNumber), owner(null)
+        {
+            long n = directBlockNumbers.Length();
+            for (long i = 0; i < n; ++i)
+            {
+                directBlockNumbers[i] = invalidBlockNumber;
+            }
+        }
+        public nothrow inline Process* Owner() const
+        {
+            return owner;
+        }
+        public nothrow inline void SetOwner(Process* owner_)
+        {
+            owner = owner_;
+        }
+        public nothrow inline void ResetOwner()
+        {
+            owner = null;
+        }
+        public nothrow string ToString() const
+        {
+            string s;
+            s.Append(key.ToString()).Append('.').Append(FlagStr(flags)).Append(".count=").Append(ToString(useCount)).Append(".nlinks=").Append(ToString(nlinks));
+            return s;
+        }
+        public nothrow inline const INodeKey& Key() const
+        {
+            return key;
+        }
+        public nothrow void SetKey(const INodeKey& key_)
+        {
+            key = key_;
+        }
+        public nothrow inline bool GetFlag(Flags flag) const
+        {
+            return (flags & flag) != Flags.none;
+        }
+        public nothrow inline void SetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags | flag);
+        }
+        public nothrow inline void ResetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags & ~flag);
+        }
+        public nothrow inline void ResetFlags()
+        {
+            flags = Flags.none;
+        }
+        public nothrow inline int GetUseCount() const
+        {
+            return useCount;
+        }
+        public nothrow inline void SetUseCount(int useCount_)
+        {
+            useCount = useCount_;
+        }
+        public void Read(MemoryReader& reader)
+        {
+            mode = reader.ReadInt();
+            DecodeMode(mode, flags, fileType, ownerAccess, groupAccess, otherAccess);
+            uid = reader.ReadInt();
+            gid = reader.ReadInt();
+            fileSize = reader.ReadLong();
+            ctime = reader.ReadDateTime();
+            mtime = reader.ReadDateTime();
+            atime = reader.ReadDateTime();
+            nlinks = reader.ReadInt();
+            long n = directBlockNumbers.Length();
+            for (long i = 0; i < n; ++i)
+            {
+                directBlockNumbers[i] = reader.ReadInt();
+            }
+            singleIndirectBlockNumber = reader.ReadInt();
+            doubleIndirectBlockNumber = reader.ReadInt();
+            tripleIndirectBlockNumber = reader.ReadInt();
+        }
+        public void Write(MemoryWriter& writer)
+        {
+            mode = EncodeMode(flags, fileType, ownerAccess, groupAccess, otherAccess);
+            writer.Write(mode);
+            writer.Write(uid);
+            writer.Write(gid);
+            writer.Write(fileSize);
+            writer.Write(ctime);
+            writer.Write(mtime);
+            writer.Write(atime);
+            writer.Write(nlinks);
+            long n = directBlockNumbers.Length();
+            for (long i = 0; i < n; ++i)
+            {
+                writer.Write(directBlockNumbers[i]);
+            }
+            writer.Write(singleIndirectBlockNumber);
+            writer.Write(doubleIndirectBlockNumber);
+            writer.Write(tripleIndirectBlockNumber);
+        }
+        public nothrow inline FileType Type() const
+        {
+            return fileType;
+        }
+        public nothrow inline void SetType(FileType fileType_)
+        {
+            fileType = fileType_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int Mode() const
+        {
+            return mode;
+        }
+        public nothrow void SetMode()
+        {
+            mode = EncodeMode(flags, fileType, ownerAccess, groupAccess, otherAccess);
+        }
+        public void SetAccessMode(int accessMode)
+        {
+            Flags f;
+            FileType t;
+            DecodeMode(accessMode, f, t, ownerAccess, groupAccess, otherAccess);
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int UID() const
+        {
+            return uid;
+        }
+        public nothrow inline void SetUID(int uid_)
+        {
+            uid = uid_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GID() const
+        {
+            return gid;
+        }
+        public nothrow inline void SetGID(int gid_)
+        {
+            gid = gid_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline Access OwnerAccess() const
+        {
+            return ownerAccess;
+        }
+        public nothrow inline void SetOwnerAccess(Access ownerAccess_)
+        {
+            ownerAccess = ownerAccess_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline Access GroupAccess() const
+        {
+            return groupAccess;
+        }
+        public nothrow inline void SetGroupAccess(Access groupAccess_)
+        {
+            groupAccess = groupAccess_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline Access OtherAccess() const
+        {
+            return otherAccess;
+        }
+        public nothrow inline void SetOtherAccess(Access otherAccess_)
+        {
+            otherAccess = otherAccess_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public inline nothrow const DateTime& CTime() const
+        {
+            return ctime;
+        }
+        public nothrow void SetCTime()
+        {
+            ctime = GetCurrentDateTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow void SetCTime(const DateTime& ctime_)
+        {
+            ctime = ctime_;
+            SetFlag(Flags.dirty);
+        }
+        public inline nothrow const DateTime& MTime() const
+        {
+            return mtime;
+        }
+        public nothrow void SetMTime()
+        {
+            mtime = GetCurrentDateTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow void SetMTime(const DateTime& mtime_)
+        {
+            mtime = mtime_;
+            SetFlag(Flags.dirty);
+        }
+        public inline nothrow const DateTime& ATime() const
+        {
+            return atime;
+        }
+        public nothrow void SetATime()
+        {
+            atime = GetCurrentDateTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow void SetATime(const DateTime& atime_)
+        {
+            atime = atime_;
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GetNumLinks() const
+        {
+            return nlinks;
+        }
+        public nothrow inline void SetNumLinks(int nlinks_)
+        {
+            nlinks = nlinks_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow void AddWaitingProcess(Process* process)
+        {
+            waitingProcesses.Add(process);
+        }
+        public nothrow List<Process*> GetWaitingProcesses()
+        {
+            List<Process*> processes;
+            Swap(processes, waitingProcesses);
+            return processes;
+        }
+        public nothrow void AddWaitingPipeReader(Process* reader)
+        {
+            waitingPipeReaders.Add(reader);
+        }
+        public nothrow List<Process*> GetWaitingPipeReaders()
+        {
+            List<Process*> processes;
+            Swap(processes, waitingPipeReaders);
+            return processes;
+        }
+        public nothrow void AddWaitingPipeWriter(Process* writer)
+        {
+            waitingPipeWriters.Add(writer);
+        }
+        public nothrow List<Process*> GetWaitingPipeWriters()
+        {
+            List<Process*> processes;
+            Swap(processes, waitingPipeWriters);
+            return processes;
+        }
+        public nothrow LinkedList<INode*>.Iterator GetIterator() const
+        {
+            return iterator;
+        }
+        public nothrow void SetIterator(LinkedList<INode*>.Iterator iterator_)
+        {
+            iterator = iterator_;
+        }
+        public nothrow inline int GetDirectBlockNumber(int index) const
+        {
+            #assert(index >= 0 && index < numDirectBlockNumbers);
+            return directBlockNumbers[index];
+        }
+        public nothrow inline void SetDirectBlockNumber(int index, int blockNumber)
+        {
+            directBlockNumbers[index] = blockNumber;
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GetSingleIndirectBlockNumber() const
+        {
+            return singleIndirectBlockNumber;
+        }
+        public nothrow inline void SetSingleIndirectBlockNumber(int singleIndirectBlockNumber_)
+        {
+            singleIndirectBlockNumber = singleIndirectBlockNumber_;
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GetDoubleIndirectBlockNumber() const
+        {
+            return doubleIndirectBlockNumber;
+        }
+        public nothrow inline void SetDoubleIndirectBlockNumber(int doubleIndirectBlockNumber_)
+        {
+            doubleIndirectBlockNumber = doubleIndirectBlockNumber_;
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GetTripleIndirectBlockNumber() const
+        {
+            return tripleIndirectBlockNumber;
+        }
+        public nothrow inline void SetTripleIndirectBlockNumber(int tripleIndirectBlockNumber_)
+        {
+            tripleIndirectBlockNumber = tripleIndirectBlockNumber_;
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline long GetFileSize() const
+        {
+            return fileSize;
+        }
+        public nothrow inline void SetFileSize(long fileSize_)
+        {
+            fileSize = fileSize_;
+            SetCTime();
+            SetFlag(Flags.dirty);
+        }
+        public nothrow inline int GetNumBlocks() const
+        {
+            if (fileSize == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return cast<int>((fileSize - 1) / blockSize + 1);
+            }
+        }
+        public void CheckPermissions(int uid, int gid, Access access)
+        {
+            if (this->uid == uid)
+            {
+                if ((access & ownerAccess) == access)
+                {
+                    return;
+                }
+                else
+                {
+                    throw SystemError(EPERM, "no " + AccessStr(access) + " access");
+                }
+            }
+            if (this->gid == gid)
+            {
+                if ((access & groupAccess) == access)
+                {
+                    return;
+                }
+                else
+                {
+                    throw SystemError(EPERM, "no " + AccessStr(access) + " access");
+                }
+            }
+            if ((access & otherAccess) == access)
+            {
+                return;
+            }
+            else
+            {
+                throw SystemError(EPERM, "no " + AccessStr(access) + " access");
+            }
+        }
+        public nothrow void Clear()
+        {
+            ResetFlags();
+            useCount = 1;
+            mode = 0;
+            uid = -1;
+            gid = -1;
+            fileSize = 0;
+            ctime = DateTime();
+            mtime = DateTime();
+            atime = DateTime();
+            nlinks = 0;
+            long n = directBlockNumbers.Length();
+            for (long i = 0; i < n; ++i)
+            {
+                directBlockNumbers[i] = 0;
+            }
+            singleIndirectBlockNumber = 0;
+            doubleIndirectBlockNumber = 0;
+            tripleIndirectBlockNumber = 0;
+            fileType = FileType.free;
+            ownerAccess = Access.none;
+            groupAccess = Access.none;
+            otherAccess = Access.none;
+        }
+        public nothrow inline INodeManager* Manager()
+        {
+            return manager;
+        }
+        public nothrow inline long ReadPos() const
+        {
+            return readPos;
+        }
+        public nothrow inline long WritePos() const
+        {
+            return writePos;
+        }
+        public nothrow inline void SetReadPos(long readPos_)
+        {
+            readPos = readPos_;
+        }
+        public nothrow inline void SetWritePos(long writePos_)
+        {
+            writePos = writePos_;
+        }
+        private INodeKey key;
+        private Flags flags;
+        private int useCount;
+        private List<Process*> waitingProcesses;
+        private List<Process*> waitingPipeReaders;
+        private List<Process*> waitingPipeWriters;
+        private LinkedList<INode*>.Iterator iterator;
+        private int mode;
+        private int uid;
+        private int gid;
+        private long fileSize;
+        private DateTime ctime;
+        private DateTime mtime;
+        private DateTime atime;
+        private int nlinks;
+        private int[numDirectBlockNumbers] directBlockNumbers; 
+        private int singleIndirectBlockNumber;
+        private int doubleIndirectBlockNumber;
+        private int tripleIndirectBlockNumber;
+        private FileType fileType;
+        private Access ownerAccess;
+        private Access groupAccess;
+        private Access otherAccess;
+        private INodeManager* manager;
+        private Process* owner;
+        private long readPos;
+        private long writePos;
+    }
+
+    public class INodePutter
+    {
+        public nothrow INodePutter() : inode(null)
+        {
+        }
+        public nothrow INodePutter(INode* inode_) : inode(inode_)
+        {
+        }
+        public nothrow inline void ResetINode()
+        {
+            inode = null;
+        }
+        public nothrow void ResetINode(INode* newINode)
+        {
+            if (inode != newINode)
+            {
+                if (inode != null)
+                {
+                    inode->Manager()->PutINode(inode);
+                }
+                inode = newINode;
+            }
+        }
+        public ~INodePutter()
+        {
+            if (inode != null)
+            {
+                inode->Manager()->PutINode(inode);
+            }
+        }
+        private SuperBlock* sb;
+        private INode* inode;
+    }
+
+    public class INodeLock
+    {
+        public nothrow INodeLock() : inode(null)
+        {
+        }
+        public nothrow INodeLock(INode* inode_) : inode(inode_)
+        {
+            inode->SetFlag(INode.Flags.locked);
+        }
+        public nothrow void Reset(INode* inode_)
+        {
+            if (inode != null)
+            {
+                inode->ResetFlag(INode.Flags.locked);
+                Kernel& kernel = GetKernel();
+                ProcessTable& processTable = kernel.GetProcessTable();
+                List<Process*> waitingProcesses = inode->GetWaitingProcesses();
+                for (Process* process : waitingProcesses)
+                {
+                    WakeUpProcess(processTable, process);
+                }
+            }
+            inode = inode_;
+        }
+        public ~INodeLock()
+        {
+            if (inode != null)
+            {
+                inode->ResetFlag(INode.Flags.locked);
+                Kernel& kernel = GetKernel();
+                ProcessTable& processTable = kernel.GetProcessTable();
+                List<Process*> waitingProcesses = inode->GetWaitingProcesses();
+                for (Process* process : waitingProcesses)
+                {
+                    WakeUpProcess(processTable, process);
+                }
+            }
+        }
+        private INode* inode;
+    }
+}

@@ -1,0 +1,14 @@
+using System;
+using System.Collections;
+using System.IO;
+
+namespace System.Lex
+{
+    public int* ReadClassMap(const string& classMapResourceName)
+    {
+        ResourcePtr classMapResource = GetResource(classMapResourceName.Chars());
+        DecompressedDataPtr decompressedDataPtr = Decompress(classMapResource.Data(), classMapResource.Size());
+        return cast<int*>(cast<void*>(decompressedDataPtr.ReleaseData()));
+    }
+
+} // namespace System.Lex

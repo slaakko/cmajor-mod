@@ -1,0 +1,148 @@
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum LabelStyle : long
+    {
+        SS_BITMAP = 14, SS_BLACKFRAME = 7, SS_BLACKRECT = 4, SS_CENTER = 1, SS_CENTERIMAGE = 512, SS_EDITCONTROL = 8192, SS_ENDELLIPSIS = 16384, SS_ENHMETAFILE = 15, SS_ETCHEDFRAME = 18, SS_ETCHEDHORZ = 16, SS_ETCHEDVERT = 17, SS_GRAYFRAME = 8, SS_GRAYRECT = 5, SS_ICON = 3, SS_LEFT = 0, SS_LEFTNOWORDWRAP = 12, SS_NOPREFIX = 128u, SS_NOTIFY = 256, SS_OWNERDRAW = 13, SS_PATHELLIPSIS = 32768u, SS_REALSIZECONTROL = 64, SS_REALSIZEIMAGE = 2048, SS_RIGHT = 2, SS_RIGHTJUST = 1024, SS_SIMPLE = 11, SS_SUNKEN = 4096, SS_TYPEMASK = 31, SS_WHITEFRAME = 9, SS_WHITERECT = 6, SS_WORDELLIPSIS = 49152u
+    }
+
+    public nothrow ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams, LabelStyle labelStyle)
+    {
+        return controlCreateParams.SetWindowClassName("STATIC").SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | labelStyle));
+    }
+
+    public nothrow ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return LabelControlCreateParams(controlCreateParams, LabelStyle.SS_LEFT);
+    }
+
+    public class LabelCreateParams
+    {
+        public nothrow LabelCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_), autoSize(true)
+        {
+        }
+        public nothrow LabelCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public nothrow LabelCreateParams& SetAutoSize(bool autoSize_)
+        {
+            autoSize = autoSize_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public bool autoSize;
+    }
+
+    public class Label : Control
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, autoSize = 1 << 0, autoSized = 1 << 1
+        }
+        public Label(LabelStyle labelStyle, const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors, bool autoSize) :
+            base("STATIC", DefaultWindowClassStyle(), cast<WindowStyle>(DefaultChildWindowStyle() | labelStyle), DefaultExtendedWindowStyle(), backgroundColor, text, location, size, dock, anchors), flags(Flags.none)
+        {
+            if (autoSize)
+            {
+                SetAutoSizeFlag();
+                DoAutoSize();
+            }
+        }
+        public Label(const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors, bool autoSize) :
+            this(LabelStyle.SS_LEFT, DefaultControlBackgroundColor(), text, location, size, dock, anchors, autoSize)
+        {
+        }
+        public Label(LabelCreateParams& createParams) :
+            base(createParams.controlCreateParams), flags(Flags.none)
+        {
+            if (createParams.autoSize)
+            {
+                SetAutoSizeFlag();
+                DoAutoSize();
+            }
+        }
+        protected override void OnCreated()
+        {
+            base->OnCreated();
+            Graphics graphics = Graphics.FromWindowHandle(Handle());
+            const FontHandle& fontHandle = GetFontHandle(graphics);
+            if (!fontHandle.IsNull())
+            {
+                SendSetFontMessage(fontHandle);
+            }
+            if (AutoSize())
+            {
+                DoAutoSize();
+            }
+        }
+        protected override void OnTextChanged()
+        {
+            base->OnTextChanged();
+            if (AutoSize())
+            {
+                ResetAutoSized();
+                DoAutoSize();
+            }
+        }
+        public inline nothrow bool AutoSize() const
+        {
+            return (flags & Flags.autoSize) != Flags.none;
+        }
+        public void SetAutoSize(bool autoSize)
+        {
+            if (autoSize)
+            {
+                if (!AutoSize())
+                {
+                    SetAutoSizeFlag();
+                    if (!AutoSized())
+                    {
+                        DoAutoSize();
+                    }
+                }
+            }
+            else
+            {
+                ResetAutoSizeFlag();
+                ResetAutoSized();
+            }
+        }
+        private void DoAutoSize()
+        {
+            if (AutoSized()) return;
+            if (Handle() == null) return;
+            Graphics graphics = Graphics.FromWindowHandle(Handle());
+            const Font& font = GetFont();
+            StringFormat stringFormat;
+            RectF r = graphics.MeasureStringChecked(Text(), font, PointF(0, 0), stringFormat);
+            SetSize(Size(cast<int>(r.size.w), cast<int>(r.size.h)));
+            SetAutoSized();
+        }
+        private inline nothrow void SetAutoSizeFlag()
+        {
+            flags = cast<Flags>(flags | Flags.autoSize);
+        }
+        private inline nothrow void ResetAutoSizeFlag()
+        {
+            flags = cast<Flags>(flags & ~Flags.autoSize);
+        }
+        private inline nothrow bool AutoSized() const
+        {
+            return (flags & Flags.autoSized) != Flags.none;
+        }
+        private inline nothrow void SetAutoSized()
+        {
+            flags = cast<Flags>(flags | Flags.autoSized);
+        }
+        private inline nothrow void ResetAutoSized()
+        {
+            flags = cast<Flags>(flags & ~Flags.autoSized);
+        }
+        private Flags flags;
+    }
+
+} // namespace System.Windows

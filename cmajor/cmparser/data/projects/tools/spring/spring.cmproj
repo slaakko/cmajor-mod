@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>c126363e-db13-4d4c-94fd-47c791bbf152</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>winguiapp</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="Action.cm"/>
+  <CmCompile Include="Canvas.cm"/>
+  <CmCompile Include="ClassPropertiesDialog.cm"/>
+  <CmCompile Include="Command.cm"/>
+  <CmCompile Include="Diagram.cm"/>
+  <CmCompile Include="EditDiagramElementListDialog.cm"/>
+  <CmCompile Include="IndexList.cm"/>
+  <CmCompile Include="Layout.cm"/>
+  <CmCompile Include="Main.cm"/>
+  <CmCompile Include="NotePropertiesDialog.cm"/>
+  <CmCompile Include="ObjectPropertiesDialog.cm"/>
+  <CmCompile Include="Operation.cm"/>
+  <CmCompile Include="RelationshipPropertiesDialog.cm"/>
+  <CmCompile Include="SaveImageDialog.cm"/>
+  <CmCompile Include="Selection.cm"/>
+  <CmCompile Include="Tool.cm"/>
+  <CmCompile Include="Resources.xml"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

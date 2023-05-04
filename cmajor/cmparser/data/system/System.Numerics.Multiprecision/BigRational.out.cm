@@ -1,0 +1,306 @@
+using System;
+using System.IO;
+
+namespace System.Numerics.Multiprecision
+{
+    public class BigRational
+    {
+        public BigRational()
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateDefaultBigRational(errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(int v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromInt(v, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(uint v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromUInt(v, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(long v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromLong(v, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(ulong v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromULong(v, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(const string& v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromStr(v.Chars(), errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(const BigRational& v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromCopy(v.handle, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public void operator=(const BigRational& v)
+        {
+            if (handle == v.handle) return;
+            if (handle != null)
+            {
+                RtDestroyBigRational(handle);
+            }
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromCopy(v.handle, errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public nothrow BigRational(BigRational&& that) :
+            handle(that.handle)
+        {
+            that.handle = null;
+        }
+        public default nothrow void operator=(BigRational&&);
+        public BigRational(const BigInt& v)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromBigInt(v.Handle(), errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public BigRational(const BigInt& numerator, const BigInt& denominator)
+        {
+            int errorStrHandle = -1;
+            handle = RtCreateBigRationalFromBigInts(numerator.Handle(), denominator.Handle(), errorStrHandle);
+            if (handle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+        }
+        public nothrow BigRational(void* handle_)
+        {
+            handle = handle_;
+        }
+        public ~BigRational()
+        {
+            if (handle != null)
+            {
+                RtDestroyBigRational(handle);
+            }
+        }
+        public BigInt Numerator() const
+        {
+            int errorStrHandle = -1;
+            void* numeratorHandle = RtNumeratorBigRational(handle, errorStrHandle);
+            if (numeratorHandle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+            return BigInt(numeratorHandle);
+        }
+        public BigInt Denominator() const
+        {
+            int errorStrHandle = -1;
+            void* denominatorHandle = RtDenominatorBigRational(handle, errorStrHandle);
+            if (denominatorHandle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+            return BigInt(denominatorHandle);
+        }
+        public string ToString() const
+        {
+            int errorStrHandle = -1;
+            const char* p = RtBigRationalToCharPtr(handle, errorStrHandle);
+            if (p == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+            string s = p;
+            RtDeleteCharPtr(p);
+            return s;
+        }
+        public BigInt ToBigInt() const
+        {
+            int errorStrHandle = -1;
+            void* bigIntHandle = RtBigRationalToBigInt(handle, errorStrHandle);
+            if (bigIntHandle == null)
+            {
+                string error = RtGetString(errorStrHandle);
+                RtDisposeString(errorStrHandle);
+                throw Exception(error);
+            }
+            return BigInt(bigIntHandle);
+        }
+        public inline nothrow void* Handle() const
+        {
+            return handle;
+        }
+        private void* handle;
+    }
+
+    public BigRational operator-(const BigRational& x)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtNegBigRational(x.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public BigRational operator+(const BigRational& x)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtPosBigRational(x.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public BigRational operator+(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtAddBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public BigRational operator-(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtSubBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public BigRational operator*(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtMulBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public BigRational operator/(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        void* handle = RtDivBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (handle == null)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return BigRational(handle);
+    }
+
+    public bool operator==(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        bool result = RtEqualBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (errorStrHandle != -1)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return result;
+    }
+
+    public bool operator<(const BigRational& left, const BigRational& right)
+    {
+        int errorStrHandle = -1;
+        bool result = RtLessBigRational(left.Handle(), right.Handle(), errorStrHandle);
+        if (errorStrHandle != -1)
+        {
+            string error = RtGetString(errorStrHandle);
+            RtDisposeString(errorStrHandle);
+            throw Exception(error);
+        }
+        return result;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const BigRational& x)
+    {
+        return writer << x.ToString();
+    }
+
+} // namespace System.Numerics.Multiprecision

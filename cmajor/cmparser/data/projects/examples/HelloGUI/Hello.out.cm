@@ -1,0 +1,69 @@
+using System;
+using System.Windows;
+
+class HelloWindow : Window
+{
+    public HelloWindow() :
+        base("Hello"), numHellos(0), color(0u, 90u, 180u), brush(color), fontFamily(FontFamily.GenericSansSerif()), font(fontFamily, 14.000000f)
+    {
+        Size s = GetSize();
+        Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+        Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+        int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+        int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+        UniquePtr<Button> helloButton(new Button(ButtonCreateParams(ButtonControlCreateParams(ControlCreateParams().SetText("Hello").SetLocation(Point(x, y)).SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right))))));
+        helloButton->ClickEvent().AddHandler(HelloButtonClick);
+        AddChild(helloButton.Release());
+        PaintEvent().AddHandler(Paint);
+    }
+    private void HelloButtonClick()
+    {
+        ++numHellos;
+        Invalidate();
+    }
+    private void Paint(PaintEventArgs& args)
+    {
+        try
+        {
+            PointF origin(10.000000f, 10.000000f);
+            for (int i = 0; i < numHellos; ++i)
+            {
+                args.graphics.DrawStringChecked("Hello, World!", font, origin, brush);
+                origin.y = origin.y + font.GetHeight(args.graphics);
+            }
+        }
+        catch (const Exception& ex)
+        {
+            MessageBox.Show(ex.Message(), "Error", this, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+        }
+    }
+    private int numHellos;
+    private Color color;
+    private SolidBrush brush;
+    private FontFamily fontFamily;
+    private Font font;
+    private Button* helloButton;
+}
+
+int main()
+{
+    try
+    {
+        HelloWindow helloWindow;
+        return Application.Run(helloWindow);
+    }
+    catch (const Exception& ex)
+    {
+        MessageBox.Show(ex.Message(), "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+        try
+        {
+            System.IO.StreamWriter errorWriter = System.IO.File.CreateText("error.txt");
+            errorWriter << ex.ToString() << endl();
+        }
+        catch (const Exception& innerEx)
+        {
+        }
+        return 1;
+    }
+    return 0;
+}

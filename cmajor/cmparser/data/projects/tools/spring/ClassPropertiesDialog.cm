@@ -1,0 +1,153 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    public class ClassPropertiesDialog : Window
+    {
+        public ClassPropertiesDialog(ClassElement* classElement_) :
+            base("spring.classPropertiesDialog", DefaultWindowClassStyle(), DialogWindowStyle(), DefaultExtendedWindowStyle(),
+            DefaultControlBackgroundColor(), "Class Properties", Point.Default(), Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(70)),
+            Dock.none, Anchors.none, WindowState.normal), classElement(classElement_)
+        {
+            int column1Width = ScreenMetrics.Get().MMToHorizontalPixels(20);
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            int column2Width = ScreenMetrics.Get().MMToHorizontalPixels(30);
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            int line1Top = defaultControlSpacing.h + textBoxPadding + borderWidth;
+            Point classNameLabelLoc(defaultControlSpacing.w, line1Top);
+            UniquePtr<Label> classNameLabel(new Label(LabelCreateParams(LabelControlCreateParams(
+                ControlCreateParams().SetText("Class name:").SetLocation(classNameLabelLoc).SetSize(defaultLabelSize))).Defaults()));
+            int line2Top = classNameLabel->Location().y + classNameLabel->GetSize().h + defaultControlSpacing.h;
+            AddChild(classNameLabel.Release());
+            Point classNameTextBoxLoc(defaultControlSpacing.w * 2 + column1Width, line1Top);
+            Size classNameTextBoxSize(column2Width - 2 * (textBoxPadding + borderWidth), defaultTextBoxSize.h + 4);
+            Rect classNameRect(classNameTextBoxLoc, classNameTextBoxSize);
+            Rect paddedClassNameRect = classNameRect;
+            paddedClassNameRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> classNameTextBoxPtr(new TextBox(classElement->Name()));
+            classNameTextBox = classNameTextBoxPtr.Get();
+            classNameTextBox->SelectAll();
+            classNameTextBox->TextChangedEvent().AddHandler(ClassNameChanged);
+            UniquePtr<Control> paddedClassNameTextBox(new PaddedControl(classNameTextBoxPtr.Release()));
+            Rect borderedPaddedClassNameTextBoxRect = paddedClassNameRect;
+            borderedPaddedClassNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedClassNameTextBox(new BorderedControl(paddedClassNameTextBox.Release(), borderedPaddedClassNameTextBoxRect.location, borderedPaddedClassNameTextBoxRect.size,
+                Dock.none, cast<Anchors>(Anchors.top | Anchors.left)));
+            AddChild(borderedPaddedClassNameTextBox.Release());
+            Point abstractCheckBoxLoc(borderedPaddedClassNameTextBoxRect.location.x, line2Top);
+
+            UniquePtr<CheckBox> abstractCheckBoxPtr(new CheckBox(CheckBoxCreateParams(CheckBoxControlCreateParams(
+                ControlCreateParams().SetText("Abstract").SetLocation(abstractCheckBoxLoc))).SetAutoSize(true)));
+            abstractCheckBox = abstractCheckBoxPtr.Get();
+            abstractCheckBox->SetChecked(classElement->IsAbstract());
+            abstractCheckBox->CheckedChangedEvent().AddHandler(AbstractCheckBoxChanged);
+            AddChild(abstractCheckBoxPtr.Release());
+            Size abstractCheckBoxSize = abstractCheckBox->GetSize();
+            int line3Top = abstractCheckBoxLoc.y + abstractCheckBoxSize.h + defaultControlSpacing.h;
+            Point operationsLabelLoc(defaultControlSpacing.w, line3Top);
+
+            UniquePtr<Label> operationsLabel(new Label(LabelCreateParams(LabelControlCreateParams(
+                ControlCreateParams().SetText("Operations:").SetLocation(operationsLabelLoc).SetSize(defaultLabelSize))).Defaults()));
+            Size operationsLabelSize = operationsLabel->GetSize();
+            AddChild(operationsLabel.Release());
+            Point editOperationsButtonLoc(defaultControlSpacing.w + column1Width + defaultControlSpacing.w - (textBoxPadding + borderWidth), line3Top - (textBoxPadding + borderWidth));
+            Size editOperationsButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            UniquePtr<Button> editOperationsButtonPtr(new Button("...", editOperationsButtonLoc, editOperationsButtonSize, Dock.none, cast<Anchors>(Anchors.top | Anchors.left)));
+            editOperationsButton = editOperationsButtonPtr.Get();
+            editOperationsButton->ClickEvent().AddHandler(EditOperations);
+            AddChild(editOperationsButtonPtr.Release());
+            int line4Top = operationsLabelLoc.y + operationsLabelSize.h + defaultControlSpacing.h + textBoxPadding + borderWidth;
+            Point fieldsLabelLoc(defaultControlSpacing.w, line3Top);
+            UniquePtr<Label> fieldsLabel(new Label("Fields:", fieldsLabelLoc, defaultLabelSize, Dock.none, cast<Anchors>(Anchors.top | Anchors.left), true));
+            Size fieldsLabelSize = fieldsLabel->GetSize();
+            AddChild(fieldsLabel.Release());
+            Point editFieldsButtonLoc(defaultControlSpacing.w + column1Width + defaultControlSpacing.w - (textBoxPadding + borderWidth), line4Top - (textBoxPadding + borderWidth));
+            Size editFieldsButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            UniquePtr<Button> editFieldsButtonPtr(new Button("...", editFieldsButtonLoc, editFieldsButtonSize, Dock.none, cast<Anchors>(Anchors.top | Anchors.left)));
+            editFieldsButton = editFieldsButtonPtr.Get();
+            editFieldsButton->ClickEvent().AddHandler(EditFields);
+            AddChild(editFieldsButtonPtr.Release());
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button("Cancel", Point(x, y), defaultButtonSize, Dock.none, cast<Anchors>(Anchors.bottom | Anchors.right)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+            UniquePtr<Button> okButtonPtr(new Button(ButtonStyle.BS_DEFPUSHBUTTON, GetSystemColor(SystemColor.COLOR_BTNFACE), "OK", Point(x, y), defaultButtonSize,
+                Dock.none, cast<Anchors>(Anchors.bottom | Anchors.right)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            if (classElement->Name().IsEmpty())
+            {
+                okButton->Disable();
+                editOperationsButton->Disable();
+                editFieldsButton->Disable();
+            }
+            AddChild(okButtonPtr.Release());
+            AddChild(cancelButtonPtr.Release());
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+        }
+        private void ClassNameChanged()
+        {
+            if (classNameTextBox->Text().IsEmpty())
+            {
+                okButton->Disable();
+                editOperationsButton->Disable();
+                editFieldsButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+                editOperationsButton->Enable();
+                editFieldsButton->Enable();
+                classElement->SetName(classNameTextBox->Text());
+            }
+        }
+        private void AbstractCheckBoxChanged()
+        {
+            bool isAbstract = abstractCheckBox->Checked();
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                logView->WriteLine("abstract=" + ToString(isAbstract));
+            }
+            classElement->SetAbstract(isAbstract);
+        }
+        private void EditOperations()
+        {
+            bool mayHaveAbstractOperations = classElement->IsAbstract();
+            IndexList<OperationElement> clonedOperationElements = classElement->Operations().Clone();
+            if (ExecuteEditOperationsDialog(clonedOperationElements, classElement, mayHaveAbstractOperations, *this))
+            {
+                classElement->SetOperations(clonedOperationElements);
+            }
+        }
+        private void EditFields()
+        {
+            IndexList<FieldElement> clonedFieldElements = classElement->Fields().Clone();
+            if (ExecuteEditFieldsDialog(clonedFieldElements, classElement, *this))
+            {
+                classElement->SetFields(clonedFieldElements);
+            }
+        }
+        private ClassElement* classElement;
+        private Button* okButton;
+        private Button* cancelButton;
+        private Button* editOperationsButton;
+        private Button* editFieldsButton;
+        private TextBox* classNameTextBox;
+        private CheckBox* abstractCheckBox;
+    }
+}

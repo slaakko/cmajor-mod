@@ -1,0 +1,31 @@
+using System;
+using System.Init.Compression;
+
+namespace System.Init
+{
+    internal class Initializer
+    {
+        static Initializer() :
+            instance(new Initializer())
+        {
+        }
+        public static Initializer& Instance()
+        {
+            return *instance;
+        }
+        public void Initialize()
+        {
+        }
+        private Initializer()
+        {
+            SetCompressionFunctions();
+        }
+        private static UniquePtr<Initializer> instance;
+    }
+
+} // namespace System.Init
+
+public cdecl void Initialize()
+{
+    System.Init.Initializer.Instance().Initialize();
+}

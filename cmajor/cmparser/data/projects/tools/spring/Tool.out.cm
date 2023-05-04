@@ -1,0 +1,946 @@
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    public static class Tools
+    {
+        static nothrow Tools() :
+            currentTool(&selectTool)
+        {
+        }
+        public static nothrow void SetDiagram(Diagram* diagram_)
+        {
+            diagram = diagram_;
+        }
+        public static nothrow Diagram* GetDiagram()
+        {
+            return diagram;
+        }
+        public static inline nothrow Tool* Current()
+        {
+            return currentTool;
+        }
+        public static nothrow void SetCurrent(Tool* tool)
+        {
+            if (tool != currentTool)
+            {
+                currentTool = tool;
+                currentTool->GetToolButton()->SetState(ToolButton.State.pressed);
+                currentTool->Initialize(*diagram);
+            }
+        }
+        internal static nothrow void SetCurrentInternal(Tool* tool)
+        {
+            currentTool = tool;
+        }
+        public static nothrow Tool* GetSelectTool()
+        {
+            return &selectTool;
+        }
+        public static nothrow Tool* GetGrabTool()
+        {
+            return &grabTool;
+        }
+        public static nothrow Tool* GetClassTool()
+        {
+            return &classTool;
+        }
+        public static nothrow Tool* GetObjectTool()
+        {
+            return &objectTool;
+        }
+        public static nothrow Tool* GetNoteTool()
+        {
+            return &noteTool;
+        }
+        public static nothrow Tool* GetInheritanceTool()
+        {
+            return &inheritanceTool;
+        }
+        public static nothrow Tool* GetAggregationTool()
+        {
+            return &aggregationTool;
+        }
+        public static nothrow Tool* GetReferenceTool()
+        {
+            return &referenceTool;
+        }
+        public static nothrow Tool* GetCreateInstanceTool()
+        {
+            return &createInstanceTool;
+        }
+        public static nothrow Tool* GetAttachNoteTool()
+        {
+            return &attachNoteTool;
+        }
+        private static SelectTool selectTool;
+        private static GrabTool grabTool;
+        private static ClassTool classTool;
+        private static ObjectTool objectTool;
+        private static NoteTool noteTool;
+        private static InheritanceTool inheritanceTool;
+        private static AggregationTool aggregationTool;
+        private static ReferenceTool referenceTool;
+        private static CreateInstanceTool createInstanceTool;
+        private static AttachNoteTool attachNoteTool;
+        private static Tool* currentTool;
+        private static Diagram* diagram;
+    }
+
+    public class MouseArgs
+    {
+        public nothrow MouseArgs()
+        {
+        }
+        public nothrow MouseArgs(Diagram* diagram_, const PointF& location_, int elementIndex_, DiagramElement* element_, bool shift_, bool control_, bool left_, bool right_) :
+            time(Now()), diagram(diagram_), location(location_), elementIndex(elementIndex_), element(element_), shift(shift_), control(control_), left(left_), right(right_)
+        {
+        }
+        public TimePoint time;
+        public Diagram* diagram;
+        public PointF location;
+        public int elementIndex;
+        public DiagramElement* element;
+        public bool shift;
+        public bool control;
+        public bool left;
+        public bool right;
+    }
+
+    public abstract class Tool
+    {
+        public virtual default ~Tool();
+        public nothrow void SetToolButton(ToolButton* toolButton_)
+        {
+            toolButton = toolButton_;
+            toolButton->ClickEvent().AddHandler(ToolButtonClicked);
+        }
+        public inline nothrow ToolButton* GetToolButton() const
+        {
+            return toolButton;
+        }
+        public nothrow void SetCursor(Cursor* cursor_)
+        {
+            cursor = cursor_;
+        }
+        public inline nothrow Cursor* GetCursor() const
+        {
+            return cursor;
+        }
+        public nothrow void SetPressedCursor(Cursor* pressedCursor_)
+        {
+            pressedCursor = pressedCursor_;
+        }
+        public inline nothrow Cursor* GetPressedCursor() const
+        {
+            if (pressedCursor != null)
+            {
+                return pressedCursor;
+            }
+            else
+            {
+                return cursor;
+            }
+        }
+        public virtual nothrow bool CanMove() const
+        {
+            return false;
+        }
+        public virtual nothrow bool IsSimpleClickTool() const
+        {
+            return false;
+        }
+        public virtual void Initialize(Diagram& diagram)
+        {
+        }
+        public virtual void BeforeLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void AfterLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void BeforeRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void AfterRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseClick(MouseArgs& args)
+        {
+            if (args.left)
+            {
+                BeforeLeftClick(args);
+                if (args.shift)
+                {
+                    MouseShiftLeftClick(args);
+                }
+                else if (args.control)
+                {
+                    MouseControlLeftClick(args);
+                }
+                else
+                {
+                    MouseNormalLeftClick(args);
+                }
+                AfterLeftClick(args);
+            }
+            else if (args.right)
+            {
+                BeforeRightClick(args);
+                if (args.shift)
+                {
+                    MouseShiftRightClick(args);
+                }
+                else if (args.control)
+                {
+                    MouseControlRightClick(args);
+                }
+                else
+                {
+                    MouseNormalRightClick(args);
+                }
+                AfterRightClick(args);
+            }
+        }
+        public virtual void MouseShiftLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseControlLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseNormalLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseShiftRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseControlRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseNormalRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseDoubleClick(MouseArgs& args)
+        {
+        }
+        public virtual void CreateOperation(MouseArgs& args)
+        {
+        }
+        public virtual void ContinueOperation(MouseArgs& args)
+        {
+        }
+        public virtual void CancelOperation(MouseArgs& args)
+        {
+        }
+        public virtual void CommitOperation(MouseArgs& args)
+        {
+        }
+        private nothrow void ToolButtonClicked()
+        {
+            Tools.SetCurrentInternal(this);
+        }
+        private ToolButton* toolButton;
+        private Cursor* cursor;
+        private Cursor* pressedCursor;
+    }
+
+    public class SelectTool : Tool
+    {
+        public override void Initialize(Diagram& diagram)
+        {
+            diagram.ResetSelection();
+            diagram.ResetOperation();
+        }
+        public override nothrow bool CanMove() const
+        {
+            return true;
+        }
+        public override void BeforeLeftClick(MouseArgs& args)
+        {
+            args.diagram->DisposeContextMenu();
+        }
+        public override void MouseNormalLeftClick(MouseArgs& args)
+        {
+            if (args.element != null)
+            {
+                if (args.diagram->GetSelection()->Count() == 1 && args.diagram->GetSelection()->Contains(args.location))
+                {
+                    args.diagram->ResetSelection();
+                }
+                else
+                {
+                    args.diagram->SetSelection(new ElementSelection(*args.diagram, args.elementIndex));
+                }
+            }
+            else
+            {
+                args.diagram->ResetSelection();
+            }
+        }
+        public override void MouseControlLeftClick(MouseArgs& args)
+        {
+            if (args.element != null)
+            {
+                if (args.element->IsSelected())
+                {
+                    args.diagram->GetSelection()->Remove(args.elementIndex);
+                }
+                else
+                {
+                    args.diagram->GetSelection()->Add(args.elementIndex);
+                }
+            }
+        }
+        public override void MouseNormalRightClick(MouseArgs& args)
+        {
+            UniquePtr<ContextMenu> contextMenu(new ContextMenu(ContextMenuCreateParams(MenuBoxCreateParams(MenuControlCreateParams(ContextMenuControlCreateParams(ControlCreateParams().Defaults()))))));
+            bool isRectangleSelection = args.diagram->GetSelection() is RectangleSelection*;
+            if (!isRectangleSelection && args.diagram->GetSelection()->Count() <= 1)
+            {
+                if (args.diagram->GetSelection()->Count() == 1)
+                {
+                    args.elementIndex = args.diagram->GetSelection()->GetFirstIndex();
+                    if (args.elementIndex != -1)
+                    {
+                        args.element = args.diagram->GetElementByIndex(args.elementIndex);
+                    }
+                    else
+                    {
+                        args.element = null;
+                    }
+                }
+                if (args.element != null)
+                {
+                    if (args.element->Contains(args.location))
+                    {
+                        args.element->AddActions(*args.diagram, args.elementIndex, contextMenu.Get());
+                    }
+                    else
+                    {
+                        args.diagram->DisposeContextMenu();
+                    }
+                }
+                else
+                {
+                    args.diagram->DisposeContextMenu();
+                }
+            }
+            else
+            {
+                if (args.diagram->GetSelection()->Contains(args.location))
+                {
+                    args.diagram->GetSelection()->AddActions(contextMenu.Get());
+                }
+                else
+                {
+                    args.diagram->DisposeContextMenu();
+                }
+            }
+            if (contextMenu->HasMenuItems())
+            {
+                Point loc = args.diagram->GetCanvas()->ToControlLocation(args.location);
+                Point screenLoc = args.diagram->GetCanvas()->ClientToScreen(loc);
+                Window* window = args.diagram->GetCanvas()->GetWindow();
+                window->ShowContextMenu(contextMenu.Release(), screenLoc);
+            }
+            else
+            {
+                args.diagram->DisposeContextMenu();
+            }
+        }
+        public override void MouseDoubleClick(MouseArgs& args)
+        {
+            args.diagram->GetSelection()->Clear();
+            if (args.element != null)
+            {
+                if (args.element is ClassElement*)
+                {
+                    ClassElementPropertiesAction action(*args.diagram, args.elementIndex);
+                    action.Execute();
+                }
+                else if (args.element is ObjectElement*)
+                {
+                    ObjectElementPropertiesAction action(*args.diagram, args.elementIndex);
+                    action.Execute();
+                }
+                else if (args.element is NoteElement*)
+                {
+                    NoteElementPropertiesAction action(*args.diagram, args.elementIndex);
+                    action.Execute();
+                }
+                else if (args.element is RelationshipElement*)
+                {
+                    RelationshipElementPropertiesAction action(*args.diagram, args.elementIndex);
+                    action.Execute();
+                }
+            }
+        }
+        public override void CreateOperation(MouseArgs& args)
+        {
+            if (args.diagram == null) return;
+            ResizeHandle* resizeHandle = null;
+            bool leftButtonPressed = args.left && !args.right && !args.control && !args.shift;
+            if (leftButtonPressed && args.diagram->GetSelection() is RectangleSelection*)
+            {
+                RectangleSelection* selection = cast<RectangleSelection*>(args.diagram->GetSelection());
+                PointF location = args.location;
+                resizeHandle = selection->GetResizeHandle(location);
+            }
+            if (resizeHandle != null)
+            {
+                UniquePtr<Operation> operation(new ResizeRectangleSelectionOperation(args.diagram, args.location, resizeHandle));
+                args.diagram->SetOperation(operation.Release());
+            }
+            else
+            {
+                UniquePtr<Operation> operation(new MoveContainerElementsOperation(args.diagram, args.location));
+                if (args.diagram->GetSelection()->Count() <= 1)
+                {
+                    if (args.diagram->GetSelection()->Count() == 1)
+                    {
+                        args.elementIndex = args.diagram->GetSelection()->GetFirstIndex();
+                        if (args.elementIndex != -1)
+                        {
+                            args.element = args.diagram->GetElementByIndex(args.elementIndex);
+                        }
+                        else
+                        {
+                            args.element = null;
+                        }
+                    }
+                    if (args.element != null)
+                    {
+                        if (args.element is ContainerElement*)
+                        {
+                            if (args.element->Contains(args.location))
+                            {
+                                operation->AddElementIndex(args.elementIndex);
+                                ContainerElement* containerElement = cast<ContainerElement*>(args.element);
+                                if (containerElement != null)
+                                {
+                                    List<RelationshipElement*> relationships = containerElement->GetAllRelationships();
+                                    for (RelationshipElement* relationship : relationships)
+                                    {
+                                        DiagramElement* sourceElement = relationship->source.element;
+                                        ContainerElement* sourceContainerElement = null;
+                                        if (sourceElement != null)
+                                        {
+                                            sourceContainerElement = sourceElement->GetContainerElement();
+                                        }
+                                        DiagramElement* targetElement = relationship->target.element;
+                                        ContainerElement* targetContainerElement = null;
+                                        if (targetElement != null)
+                                        {
+                                            targetContainerElement = targetElement->GetContainerElement();
+                                        }
+                                        if (sourceContainerElement == containerElement && targetContainerElement == containerElement)
+                                        {
+                                            int relationshipIndex = args.diagram->GetIndexOfElement(relationship);
+                                            if (relationshipIndex != -1)
+                                            {
+                                                operation->AddElementIndex(relationshipIndex);
+                                            }
+                                        }
+                                        else if (targetElement == null && relationship->kind == RelationshipElement.kind.reference && relationship->cardinality == Cardinality.zero)
+                                        {
+                                            int relationshipIndex = args.diagram->GetIndexOfElement(relationship);
+                                            if (relationshipIndex != -1)
+                                            {
+                                                operation->AddElementIndex(relationshipIndex);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        operation.Reset(new CreateRectangleSelectionOperation(args.diagram, args.location));
+                        args.diagram->SetOperation(operation.Release());
+                        return;
+                    }
+                }
+                else
+                {
+                    if (args.diagram->GetSelection()->GetContainerElementCount() > 0)
+                    {
+                        if (args.diagram->GetSelection()->Contains(args.location))
+                        {
+                            List<int> elementIndeces = args.diagram->GetSelection()->GetContainerElementIndeces();
+                            List<int> relationshipIndeces;
+                            for (int index : elementIndeces)
+                            {
+                                DiagramElement* element = args.diagram->GetElementByIndex(index);
+                                if (element is ContainerElement*)
+                                {
+                                    ContainerElement* containerElement = cast<ContainerElement*>(element);
+                                    List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                                    for (RelationshipElement* relationship : containerElementRelationships)
+                                    {
+                                        bool sourceInSelection = false;
+                                        DiagramElement* sourceElement = relationship->source.element;
+                                        if (sourceElement != null)
+                                        {
+                                            ContainerElement* sourceContainerElement = sourceElement->GetContainerElement();
+                                            int sourceContainerElementIndex = args.diagram->GetIndexOfElement(sourceContainerElement);
+                                            if (sourceContainerElementIndex != -1)
+                                            {
+                                                if (Find(elementIndeces.CBegin(), elementIndeces.CEnd(), sourceContainerElementIndex) != elementIndeces.CEnd())
+                                                {
+                                                    sourceInSelection = true;
+                                                }
+                                            }
+                                        }
+                                        bool targetInSelection = false;
+                                        DiagramElement* targetElement = relationship->target.element;
+                                        if (targetElement != null)
+                                        {
+                                            ContainerElement* targetContainerElement = targetElement->GetContainerElement();
+                                            int targetContainerElementIndex = args.diagram->GetIndexOfElement(targetContainerElement);
+                                            if (targetContainerElementIndex != -1)
+                                            {
+                                                if (Find(elementIndeces.CBegin(), elementIndeces.CEnd(), targetContainerElementIndex) != elementIndeces.CEnd())
+                                                {
+                                                    targetInSelection = true;
+                                                }
+                                            }
+                                        }
+                                        else if (relationship->kind == RelationshipElement.Kind.reference && relationship->cardinality == Cardinality.zero)
+                                        {
+                                            targetInSelection = true;
+                                        }
+                                        if (sourceInSelection && targetInSelection)
+                                        {
+                                            int relationshipIndex = args.diagram->GetIndexOfElement(relationship);
+                                            if (relationshipIndex != -1)
+                                            {
+                                                if (Find(relationshipIndeces.CBegin(), relationshipIndeces.CEnd(), relationshipIndex) == relationshipIndeces.CEnd())
+                                                {
+                                                    relationshipIndeces.Add(relationshipIndex);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            for (int relationshipIndex : relationshipIndeces)
+                            {
+                                elementIndeces.Add(relationshipIndex);
+                            }
+                            operation->SetElementIndeces(Rvalue(elementIndeces));
+                        }
+                    }
+                }
+                operation->FetchOriginalLocations();
+                if (!operation->IsEmpty())
+                {
+                    args.diagram->SetOperation(operation.Release());
+                }
+            }
+        }
+        public override void ContinueOperation(MouseArgs& args)
+        {
+            args.diagram->AdvanceOperation(args);
+        }
+        public override void CancelOperation(MouseArgs& args)
+        {
+            args.diagram->CancelOperation();
+        }
+        public override void CommitOperation(MouseArgs& args)
+        {
+            args.diagram->CommitOperation(args);
+        }
+    }
+
+    public class GrabTool : Tool
+    {
+        public override nothrow bool CanMove() const
+        {
+            return true;
+        }
+        public override void CreateOperation(MouseArgs& args)
+        {
+            if (args.diagram == null) return;
+            if (args.left && !args.right && !args.control && !args.shift)
+            {
+                UniquePtr<Operation> operation(new GrabDiagramOperation(args.diagram, args.location));
+                args.diagram->SetOperation(operation.Release());
+            }
+        }
+        public override void ContinueOperation(MouseArgs& args)
+        {
+            args.diagram->AdvanceOperation(args);
+        }
+        public override void CancelOperation(MouseArgs& args)
+        {
+            args.diagram->CancelOperation();
+        }
+        public override void CommitOperation(MouseArgs& args)
+        {
+            args.diagram->CommitOperation(args);
+        }
+    }
+
+    public abstract class SimpleClickTool : Tool
+    {
+        public override nothrow bool IsSimpleClickTool() const
+        {
+            return true;
+        }
+    }
+
+    public class ClassTool : SimpleClickTool
+    {
+        public override void Initialize(Diagram& diagram)
+        {
+            diagram.ResetSelection();
+            diagram.ResetOperation();
+        }
+        public override void MouseNormalLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            UniquePtr<ClassElement> classElement(new ClassElement("Class", false));
+            classElement->SetLocation(args.location);
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(*args.diagram));
+            addElementsCommand->AddIndex(args.diagram->NextIndex());
+            args.diagram->AddElement(classElement.Release());
+            args.diagram->SetChanged();
+            args.diagram->Invalidate();
+            Tools.SetCurrent(Tools.GetSelectTool());
+            args.diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+        }
+    }
+
+    public class ObjectTool : SimpleClickTool
+    {
+        public override void Initialize(Diagram& diagram)
+        {
+            diagram.ResetSelection();
+            diagram.ResetOperation();
+        }
+        public override void MouseNormalLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            UniquePtr<ObjectElement> objectElement(new ObjectElement("anObject"));
+            objectElement->SetLocation(args.location);
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(*args.diagram));
+            addElementsCommand->AddIndex(args.diagram->NextIndex());
+            args.diagram->AddElement(objectElement.Release());
+            args.diagram->SetChanged();
+            args.diagram->Invalidate();
+            Tools.SetCurrent(Tools.GetSelectTool());
+            args.diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+        }
+    }
+
+    public class NoteTool : SimpleClickTool
+    {
+        public override void Initialize(Diagram& diagram)
+        {
+            diagram.ResetSelection();
+            diagram.ResetOperation();
+        }
+        public override void MouseNormalLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            UniquePtr<NoteElement> noteElement(new NoteElement());
+            noteElement->SetLocation(args.location);
+            List<string> lines;
+            lines.Add("note...");
+            noteElement->SetLines(lines);
+            noteElement->SetLocation(args.location);
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(*args.diagram));
+            addElementsCommand->AddIndex(args.diagram->NextIndex());
+            args.diagram->AddElement(noteElement.Release());
+            args.diagram->SetChanged();
+            args.diagram->Invalidate();
+            Tools.SetCurrent(Tools.GetSelectTool());
+            args.diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+        }
+    }
+
+    public abstract class RelationshipTool : SimpleClickTool
+    {
+        public override void Initialize(Diagram& diagram)
+        {
+            diagram.ResetSelection();
+            diagram.ResetOperation();
+        }
+        public virtual nothrow bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndpointType endpointType)
+        {
+            return false;
+        }
+        public abstract nothrow RelationshipElement.Kind GetRelationshipKind() const;
+        public override void MouseNormalLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            DiagramElement* element = args.element;
+            if (element == null)
+            {
+                Operation* currentOperation = args.diagram->GetOperation();
+                if (currentOperation is AddRelationshipOperation*)
+                {
+                    AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                    RelationshipElement& relationshipElement = operation->GetRelationshipElement();
+                    relationshipElement.intermediatePoints.Add(args.location);
+                }
+                return;
+            }
+            DiagramElement* sourceElement = null;
+            EndpointType endpointType = EndpointType.source;
+            Operation* currentOperation = args.diagram->GetOperation();
+            if (currentOperation is AddRelationshipOperation*)
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement& relationshipElement = operation->GetRelationshipElement();
+                sourceElement = relationshipElement.source.element;
+                if (relationshipElement.target.element == null)
+                {
+                    endpointType = EndpointType.target;
+                }
+            }
+            if (!Accept(element, sourceElement, endpointType)) return;
+            List<Endpoint> endpoints = args.element->GetEndpoints(endpointType, this);
+            if (!endpoints.IsEmpty())
+            {
+                List<Endpoint*> endpointPtrs;
+                for (const Endpoint& endpoint : endpoints)
+                {
+                    endpointPtrs.Add(&endpoint);
+                }
+                Sort(endpointPtrs.Begin(), endpointPtrs.End(), EndpointNearer(args.location));
+                Endpoint* nearestEndpoint = endpointPtrs.Front();
+                LogView* logView = Application.GetLogView();
+                if (logView != null)
+                {
+                    logView->WriteLine(nearestEndpoint->ToString());
+                }
+                if (currentOperation is EmptyOperation*)
+                {
+                    RelationshipElement.Kind relationshipKind = GetRelationshipKind();
+                    UniquePtr<RelationshipElement> relationshipElement(new RelationshipElement(relationshipKind));
+                    if (endpointType == EndpointType.source)
+                    {
+                        if (nearestEndpoint->element != null)
+                        {
+                            nearestEndpoint->element->AddRelationship(relationshipElement.Get());
+                        }
+                    }
+                    relationshipElement->source = *nearestEndpoint;
+                    UniquePtr<AddRelationshipOperation> operation(new AddRelationshipOperation(args.diagram, relationshipElement.Release()));
+                    args.diagram->SetOperation(operation.Release());
+                }
+                else if (currentOperation is AddRelationshipOperation*)
+                {
+                    AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                    RelationshipElement& relationshipElement = operation->GetRelationshipElement();
+                    if (relationshipElement.source.element == element && relationshipElement.intermediatePoints.IsEmpty())
+                    {
+                        relationshipElement.source = *nearestEndpoint;
+                    }
+                    else if (relationshipElement.target.element == null)
+                    {
+                        if (args.control)
+                        {
+                            PointF lastPoint = relationshipElement.LastPoint();
+                            PointF nextPoint = nearestEndpoint->point;
+                            Line line(lastPoint, nextPoint);
+                            Vector v(line.ToVector());
+                            switch (MainDirection(v))
+                            {
+                                case 0: case 180u: 
+                                {
+                                    lastPoint.y = nextPoint.y;
+                                    break;
+                                }
+                                case 90: case 270: 
+                                {
+                                    lastPoint.x = nextPoint.x;
+                                    break;
+                                }
+                            }
+                            relationshipElement.SetLastPoint(lastPoint);
+                        }
+                        relationshipElement.target = *nearestEndpoint;
+                        nearestEndpoint->element->AddRelationship(&relationshipElement);
+                        args.diagram->CommitOperation(args);
+                        Tools.SetCurrent(Tools.GetSelectTool());
+                    }
+                    else
+                    {
+                        #assert (false);
+                    }
+                }
+            }
+        }
+        public override void MouseControlLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            DiagramElement* element = args.element;
+            Operation* currentOperation = args.diagram->GetOperation();
+            if (currentOperation is AddRelationshipOperation*)
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement& relationshipElement = operation->GetRelationshipElement();
+                PointF lastPoint = relationshipElement.LastPoint();
+                PointF nextPoint = args.location;
+                Line line(lastPoint, nextPoint);
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0: case 180u: 
+                    {
+                        nextPoint.y = lastPoint.y;
+                        break;
+                    }
+                    case 90: case 270: 
+                    {
+                        nextPoint.x = lastPoint.x;
+                        break;
+                    }
+                }
+                args.location = nextPoint;
+                MouseNormalLeftClick(args);
+            }
+        }
+        public override void MouseShiftLeftClick(MouseArgs& args)
+        {
+            args.diagram->ResetSelection();
+            Operation* currentOperation = args.diagram->GetOperation();
+            if (currentOperation is AddRelationshipOperation*)
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement& relationshipElement = operation->GetRelationshipElement();
+                if (relationshipElement.target.element == null)
+                {
+                    PointF finalPoint = args.location;
+                    if (args.control)
+                    {
+                        PointF lastPoint = relationshipElement.LastPoint();
+                        Line line(lastPoint, finalPoint);
+                        Vector v(line.ToVector());
+                        switch (MainDirection(v))
+                        {
+                            case 0: case 180u: 
+                            {
+                                finalPoint.y = lastPoint.y;
+                                break;
+                            }
+                            case 90: case 270: 
+                            {
+                                finalPoint.x = lastPoint.x;
+                                break;
+                            }
+                        }
+                    }
+                    relationshipElement.target = Endpoint(null, Snap(), finalPoint);
+                    relationshipElement.source.element->AddRelationship(&relationshipElement);
+                    args.diagram->CommitOperation(args);
+                    Tools.SetCurrent(Tools.GetSelectTool());
+                }
+            }
+        }
+    }
+
+    public abstract class ClassRelationShipTool : RelationshipTool
+    {
+        public override nothrow bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndpointType endpointType)
+        {
+            if (element is ClassElement*)
+            {
+                return true;
+            }
+            return base->Accept(element, sourceElement, endpointType);
+        }
+    }
+
+    public class InheritanceTool : ClassRelationShipTool
+    {
+        public override nothrow RelationshipElement.Kind GetRelationshipKind() const
+        {
+            return RelationshipElement.Kind.inheritance;
+        }
+    }
+
+    public class AggregationTool : ClassRelationShipTool
+    {
+        public override nothrow RelationshipElement.Kind GetRelationshipKind() const
+        {
+            return RelationshipElement.Kind.aggregation;
+        }
+    }
+
+    public class CreateInstanceTool : ClassRelationShipTool
+    {
+        public override nothrow RelationshipElement.Kind GetRelationshipKind() const
+        {
+            return RelationshipElement.Kind.createInstance;
+        }
+    }
+
+    public class AttachNoteTool : ClassRelationShipTool
+    {
+        public override nothrow RelationshipElement.Kind GetRelationshipKind() const
+        {
+            return RelationshipElement.Kind.attachNote;
+        }
+        public override nothrow bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndpointType endpointType)
+        {
+            if (endpointType == EndpointType.target)
+            {
+                if (element is NoteElement*)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return base->Accept(element, sourceElement, endpointType);
+            }
+        }
+    }
+
+    public class ReferenceTool : RelationshipTool
+    {
+        public override nothrow bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndpointType endpointType)
+        {
+            if (sourceElement == null)
+            {
+                if ((element is ClassElement*) || (element is ObjectElement*))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (sourceElement is ClassElement*)
+                {
+                    if (element is ClassElement*)
+                    {
+                        return true;
+                    }
+                }
+                else if (sourceElement is FieldElement*)
+                {
+                    if (element is ObjectElement*)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return base->Accept(element, sourceElement, endpointType);
+        }
+        public override nothrow RelationshipElement.Kind GetRelationshipKind() const
+        {
+            return RelationshipElement.Kind.reference;
+        }
+    }
+
+} // namespace spring

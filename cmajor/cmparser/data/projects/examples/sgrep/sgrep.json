@@ -1,0 +1,24 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "BC7505670D80BF81806FD94C9C8FF98BC08CD4C7", 
+            "fileId" : "sgrep_22FDC1F7BEFD0C7ACF327442E61373DD764B72AB", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/sgrep\/sgrep.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/sgrep\/sgrep.cmp", 
+    "projectHash" : "ACDE94A7B2D8AEBD3E53C678B605FDDFD1878495", 
+    "projectId" : "project_sgrep_7F5EC701CDA891B475A9AFB690FD7F5081553472", 
+    "projectName" : "sgrep", 
+    "target" : "program"
+}

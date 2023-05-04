@@ -1,0 +1,82 @@
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum StandardCursorId : int
+    {
+        IDC_APPSTARTING = 32650, IDC_ARROW = 32512, IDC_CROSS = 32515, IDC_HAND = 32649, IDC_HELP = 32651, IDC_IBEAM = 32513, IDC_NO = 32648, IDC_SIZEALL = 32646, IDC_SIZENESW = 32643, IDC_SIZENS = 32645, IDC_SIZENWSE = 32642, IDC_SIZEWE = 32644, IDC_UPARROW = 32516, IDC_WAIT = 32514
+    }
+
+    public class Cursor : Resource
+    {
+        public nothrow Cursor() :
+            cursorHandle(null), standard(false)
+        {
+        }
+        public nothrow Cursor(void* cursorHandle_) :
+            cursorHandle(cursorHandle_), standard(false)
+        {
+        }
+        public nothrow Cursor(void* cursorHandle_, bool standard_) :
+            cursorHandle(cursorHandle_), standard(standard_)
+        {
+        }
+        public nothrow Cursor(Cursor&& that) :
+            cursorHandle(that.cursorHandle), standard(that.standard)
+        {
+            that.cursorHandle = null;
+            that.standard = false;
+        }
+        public ~Cursor()
+        {
+            if (cursorHandle != null && !standard)
+            {
+                WinDestroyCursor(cursorHandle);
+            }
+        }
+        public default nothrow void operator=(Cursor&&);
+        suppress Cursor(const Cursor&);
+        suppress void operator=(const Cursor&);
+        public nothrow void* Handle() const
+        {
+            return cursorHandle;
+        }
+        public nothrow bool IsStandard() const
+        {
+            return standard;
+        }
+        public nothrow void SetStandard()
+        {
+            standard = true;
+        }
+        private void* cursorHandle;
+        private bool standard;
+    }
+
+    public Cursor LoadStandardCursor(StandardCursorId cursorId)
+    {
+        void* cursorHandle = WinLoadStandardCursor(cast<int>(cursorId));
+        if (cursorHandle == null)
+        {
+            throw WindowsAPIException(WinGetLastError());
+        }
+        return Cursor(cursorHandle, true);
+    }
+
+    public Cursor LoadCursor(const string& cursorName)
+    {
+        return Cursor(LoadCursor(cursorName.Chars()));
+    }
+
+    public Cursor GetCursor()
+    {
+        return Cursor(WinGetCursor(), true);
+    }
+
+    public void SetCursor(Cursor& cursor)
+    {
+        WinSetCursor(cursor.Handle());
+    }
+
+} // namespace System.Windows

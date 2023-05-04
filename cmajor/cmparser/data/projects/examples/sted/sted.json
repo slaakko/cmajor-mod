@@ -1,0 +1,24 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "221CBA56122E53D5B6961161A8D6BFFE4705C568", 
+            "fileId" : "Main_0BEE7D77B8DF697D32189C041EE07F6AB3A526AD", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/sted\/Main.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/sted\/sted.cmp", 
+    "projectHash" : "05D385AE0A743927B859ED068F68AF4F297BF8A7", 
+    "projectId" : "project_sted_24054DCDBCA9D45E5768B27A48990B7D62367196", 
+    "projectName" : "sted", 
+    "target" : "program"
+}

@@ -1,0 +1,200 @@
+{
+    "breakpoints" : 
+    {
+        "breakpointLists" : 
+        [
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/AstApi.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/AstReader.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Project.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+                    {
+                        "condition" : "", 
+                        "disabled" : false, 
+                        "line" : "46"
+                    }
+                    , 
+                    {
+                        "condition" : "", 
+                        "disabled" : false, 
+                        "line" : "148"
+                    }
+                    , 
+                    {
+                        "condition" : "", 
+                        "disabled" : false, 
+                        "line" : "150"
+                    }
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmcmparser\/cmcmparser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmcode\/Action.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmcode\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/BuildService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/DebugService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/PortMapService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/ServiceBase.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/views\/Bitmaps.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/views\/CmajorEditor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/CompileUnit.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Project.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Solution.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+                    {
+                        "condition" : "", 
+                        "disabled" : true, 
+                        "line" : "46"
+                    }
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/cm\/cmcmparser\/cmcmparser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/cm\/parser\/CompileUnit.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/system\/System.Base\/List.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/system\/System.Base\/UniquePtr.cm"
+            }
+        ]
+    }
+    , 
+    "programArguments" : "-v C:\\work\\cmajorm\\cmajor\\system\\platform\\windows\\System.cms"
+}

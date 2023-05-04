@@ -1,0 +1,13 @@
+project BigNumCalc;
+target=program;
+source <BigNumClassMap.cm>;
+source <BigNumExpressionParser.cm>;
+source <BigNumLexer.cm>;
+source <BigNumParser.cm>;
+source <BigNumTokens.cm>;
+source <BigValue.cm>;
+source <Evaluator.cm>;
+source <Main.cm>;
+text <BigNumExpressionParser.parser>;
+text <BigNumLexer.lexer>;
+text <BigNumParser.spg>;

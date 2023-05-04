@@ -1,0 +1,3 @@
+project System;
+target=library;
+reference <../System.RegularExpressions/System.RegularExpressions.cmp>;

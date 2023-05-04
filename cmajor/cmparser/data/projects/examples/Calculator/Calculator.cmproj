@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>fb26d33e-b966-487f-a2a7-ad8fd712c0e9</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>program</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="Error.cm"/>
+  <CmCompile Include="Main.cm"/>
+  <CmCompile Include="Parser.cm"/>
+  <CmCompile Include="Scanner.cm"/>
+  <CmCompile Include="SymbolTable.cm"/>
+  <CmCompile Include="Token.cm"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

@@ -1,0 +1,35 @@
+using System;
+
+namespace cmsx.kernel
+{
+    public class Debugger
+    {
+        public default virtual ~Debugger();
+        public virtual void Init(cmsx.kernel.Process* process)
+        {
+        }
+        public virtual void Run(cmsx.kernel.Process* process)
+        {
+        }
+        public virtual void Exit(cmsx.kernel.Process* process)
+        {
+        }
+        public virtual void Done()
+        {
+        }
+        public virtual void WriteOutput(byte* buffer, long count)
+        {
+        }
+        public virtual string ReadInputLine()
+        {
+            return string();
+        }
+        public virtual bool Eof() const
+        {
+            return false;
+        }
+        public virtual void ResetEof()
+        {
+        }
+    }
+}

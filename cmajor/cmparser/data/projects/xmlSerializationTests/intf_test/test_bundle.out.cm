@@ -1,0 +1,41 @@
+using System;
+using System.Text;
+using System.Xml.Serialization;
+using model;
+
+namespace xmltest
+{
+    public void TestXmlBundle()
+    {
+        XmlContainer container;
+        UniqueXmlPtr<Car> car = new Car();
+        car->SetRegistrationNumber("ABC-123");
+        car->SetColor(VehicleColor.red);
+        Add(car.Get(), &container);
+        UniqueXmlPtr<Bicycle> bicycle = new Bicycle();
+        Add(bicycle.Get(), &container);
+        bicycle->SetColor(VehicleColor.green);
+        bicycle->SetPrice(1000.000000f);
+        UniqueXmlPtr<Person> person = new Person();
+        person->SetName("Joe Coder");
+        Add(person.Get(), &container);
+        person->AddVehicle(car.Release());
+        person->AddVehicle(bicycle.Release());
+        XmlBundle bundle = container.CreateBundle(person.Get(), XmlBundleKind.deep);
+        string str = bundle.ToXmlString();
+        Console.Out() << str << endl();
+        UniquePtr<XmlBundle> readBundle = ToXmlBundle(str, "string");
+        string readStr = readBundle->ToXmlString();
+        Console.Out() << readStr << endl();
+        XmlPtr<Person> root = XmlCast<Person>(readBundle->Root());
+        if (!root.IsNull())
+        {
+            Console.Out() << "yep" << endl();
+        }
+        else
+        {
+            Console.Out() << "nope" << endl();
+        }
+    }
+
+} // namespace xmltest

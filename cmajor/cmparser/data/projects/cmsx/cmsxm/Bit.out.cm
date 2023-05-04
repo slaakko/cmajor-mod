@@ -1,0 +1,44 @@
+using System;
+
+namespace cmsx.machine
+{
+    public inline nothrow ulong BitCount(ulong x)
+    {
+        ulong c = 0u;
+        ulong m = 1u;
+        for (int i = 0; i < 64; ++i)
+        {
+            if ((x & m) != 0u)
+            {
+                ++c;
+            }
+            m = m << 1u;
+        }
+        return c;
+    }
+
+    public inline nothrow byte SaturatingSubtraction(byte x, byte y)
+    {
+        if (x >= y) return x - y;
+        else return 0u;
+    }
+
+    public inline nothrow ushort SaturatingSubtraction(ushort x, ushort y)
+    {
+        if (x >= y) return x - y;
+        else return 0u;
+    }
+
+    public inline nothrow uint SaturatingSubtraction(uint x, uint y)
+    {
+        if (x >= y) return x - y;
+        else return 0u;
+    }
+
+    public inline nothrow ulong SaturatingSubtraction(ulong x, ulong y)
+    {
+        if (x >= y) return x - y;
+        else return 0u;
+    }
+
+} // namespace cmsx.machine

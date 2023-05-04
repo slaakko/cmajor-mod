@@ -1,0 +1,614 @@
+using System;
+using System.IO;
+using System.Json;
+using System.Text;
+using System.Windows;
+
+namespace cmcode
+{
+    [json="true"]
+    public class JsonPoint
+    {
+        public JsonPoint(int x_, int y_) :
+            x(x_), y(y_)
+        {
+        }
+        public JsonPoint(const System.Windows.Point& pt)
+        {
+            x = pt.x;
+            y = pt.y;
+        }
+        public System.Windows.Point ToPoint() const
+        {
+            System.Windows.Point pt(x, y);
+            return pt;
+        }
+        public int x;
+        public int y;
+    }
+
+    [json="true"]
+    public class JsonSize
+    {
+        public JsonSize(int w_, int h_) :
+            w(w_), h(h_)
+        {
+        }
+        public JsonSize(const System.Windows.Size& sz)
+        {
+            w = sz.w;
+            h = sz.h;
+        }
+        public System.Windows.Size ToSize() const
+        {
+            System.Windows.Size sz(w, h);
+            return sz;
+        }
+        public int w;
+        public int h;
+    }
+
+    [json="true"]
+    public class BuildSettings
+    {
+        public nothrow BuildSettings() :
+            numberOfProjectBuildThreads(0), singleThreadedCompile(false), generateIntermediateCodeFiles(false), generateOptimizedIntermediateCodeFiles(false)
+        {
+        }
+        public nothrow BuildSettings(int numberOfProjectBuildThreads_, bool singleThreadedCompile_, bool generateIntermediateCodeFiles_, bool generateOptimizedIntermediateCodeFiles_) :
+            numberOfProjectBuildThreads(numberOfProjectBuildThreads_), singleThreadedCompile(singleThreadedCompile_), generateIntermediateCodeFiles(generateIntermediateCodeFiles_), generateOptimizedIntermediateCodeFiles(generateOptimizedIntermediateCodeFiles_)
+        {
+        }
+        public int numberOfProjectBuildThreads;
+        public bool singleThreadedCompile;
+        public bool generateIntermediateCodeFiles;
+        public bool generateOptimizedIntermediateCodeFiles;
+    }
+
+    [json="true"]
+    public class EditorSettings
+    {
+        public nothrow EditorSettings() :
+            useCodeCompletion(true), parsingFrequency(1)
+        {
+        }
+        public bool useCodeCompletion;
+        public int parsingFrequency;
+    }
+
+    [json="true"]
+    public class MainConfig
+    {
+        public enum JsonWindowState : sbyte
+        {
+            normal, maximized
+        }
+        public nothrow MainConfig() :
+            mainWindowWindowState(JsonWindowState.normal), normalVerticalSplitterDistance(0), normalHorizontalSplitterDistance(0), maximizedVerticalSplitterDistance(0), maximizedHorizontalSplitterDistance(0), buildSettings(), editorSettings()
+        {
+        }
+        public System.Windows.WindowState GetMainWindowWindowState()
+        {
+            if (mainWindowWindowState == JsonWindowState.normal)
+            {
+                return System.Windows.WindowState.normal;
+            }
+            else if (mainWindowWindowState == JsonWindowState.maximized)
+            {
+                return System.Windows.WindowState.maximized;
+            }
+            else
+            {
+                return System.Windows.WindowState.normal;
+            }
+        }
+        public void SetMainWindowWindowState(System.Windows.WindowState mainWindowWindowState_)
+        {
+            if (mainWindowWindowState_ == System.Windows.WindowState.maximized)
+            {
+                mainWindowWindowState = JsonWindowState.maximized;
+            }
+            else
+            {
+                mainWindowWindowState = JsonWindowState.normal;
+            }
+        }
+        public System.Windows.Point GetMainWindowNormalLocation() const
+        {
+            return mainWindowNormalLocation.ToPoint();
+        }
+        public void SetMainWindowNormalLocation(const System.Windows.Point& location)
+        {
+            mainWindowNormalLocation = JsonPoint(location);
+        }
+        public System.Windows.Size GetMainWindowNormalSize() const
+        {
+            return mainWindowNormalSize.ToSize();
+        }
+        public void SetMainWindowNormalSize(const System.Windows.Size& size)
+        {
+            mainWindowNormalSize = JsonSize(size);
+        }
+        public System.Windows.Point GetMainWindowMaximizedLocation() const
+        {
+            return mainWindowMaximizedLocation.ToPoint();
+        }
+        public void SetMainWindowMaximizedLocation(const System.Windows.Point& location)
+        {
+            mainWindowMaximizedLocation = JsonPoint(location);
+        }
+        public System.Windows.Size GetMainWindowMaximizedSize() const
+        {
+            return mainWindowMaximizedSize.ToSize();
+        }
+        public void SetMainWindowMaximizedSize(const System.Windows.Size& size)
+        {
+            mainWindowMaximizedSize = JsonSize(size);
+        }
+        public int GetMainWindowNormalVerticalSplitterDistance() const
+        {
+            return normalVerticalSplitterDistance;
+        }
+        public void SetMainWindowNormalVerticalSplitterDistance(int verticalSplitterDistance_)
+        {
+            normalVerticalSplitterDistance = verticalSplitterDistance_;
+        }
+        public int GetMainWindowNormalHorizontalSplitterDistance() const
+        {
+            return normalHorizontalSplitterDistance;
+        }
+        public void SetMainWindowNormalHorizontalSplitterDistance(int horizontalSplitterDistance_)
+        {
+            normalHorizontalSplitterDistance = horizontalSplitterDistance_;
+        }
+        public int GetMainWindowMaximizedVerticalSplitterDistance() const
+        {
+            return maximizedVerticalSplitterDistance;
+        }
+        public void SetMainWindowMaximizedVerticalSplitterDistance(int verticalSplitterDistance_)
+        {
+            maximizedVerticalSplitterDistance = verticalSplitterDistance_;
+        }
+        public int GetMainWindowMaximizedHorizontalSplitterDistance() const
+        {
+            return maximizedHorizontalSplitterDistance;
+        }
+        public void SetMainWindowMaximizedHorizontalSplitterDistance(int horizontalSplitterDistance_)
+        {
+            maximizedHorizontalSplitterDistance = horizontalSplitterDistance_;
+        }
+        public nothrow const BuildSettings& GetBuildSettings() const
+        {
+            return buildSettings;
+        }
+        public nothrow void SetBuildSettings(const BuildSettings& buildSettings_)
+        {
+            buildSettings = buildSettings_;
+        }
+        public nothrow const EditorSettings& GetEditorSettings() const
+        {
+            return editorSettings;
+        }
+        public nothrow void SetEditorSettings(const EditorSettings& editorSettings_)
+        {
+            editorSettings = editorSettings_;
+        }
+        private JsonWindowState mainWindowWindowState;
+        private JsonPoint mainWindowNormalLocation;
+        private JsonPoint mainWindowMaximizedLocation;
+        private JsonSize mainWindowNormalSize;
+        private JsonSize mainWindowMaximizedSize;
+        private int normalVerticalSplitterDistance;
+        private int normalHorizontalSplitterDistance;
+        private int maximizedVerticalSplitterDistance;
+        private int maximizedHorizontalSplitterDistance;
+        private BuildSettings buildSettings;
+        private EditorSettings editorSettings;
+    }
+
+    public nothrow void AddBuildSettingsValue(JsonValue* configurationValue)
+    {
+        if (configurationValue is JsonObject*)
+        {
+            JsonObject* jsonObject = cast<JsonObject*>(configurationValue);
+            JsonValue* buildSettingsField = jsonObject->GetField("buildSettings");
+            if (buildSettingsField == null)
+            {
+                BuildSettings buildSettings;
+                UniquePtr<JsonValue> buildSettingsValue = buildSettings.ToJson();
+                jsonObject->AddField("buildSettings", Rvalue(buildSettingsValue));
+            }
+        }
+    }
+
+    public nothrow void AddEditorSettingsValue(JsonValue* configurationValue)
+    {
+        if (configurationValue is JsonObject*)
+        {
+            JsonObject* jsonObject = cast<JsonObject*>(configurationValue);
+            JsonValue* editorSettingsField = jsonObject->GetField("editorSettings");
+            if (editorSettingsField == null)
+            {
+                EditorSettings editorSettings;
+                UniquePtr<JsonValue> editorSettingsValue = editorSettings.ToJson();
+                jsonObject->AddField("editorSettings", Rvalue(editorSettingsValue));
+            }
+        }
+    }
+
+    public class MainConfiguration
+    {
+        static MainConfiguration() :
+            instance(new MainConfiguration())
+        {
+        }
+        public static nothrow MainConfiguration& Instance()
+        {
+            return *instance;
+        }
+        private MainConfiguration()
+        {
+            string cmajorRoot;
+            const char* cmajorRootEnv = RtGetEnvironmentVariable("CMAJOR_ROOT");
+            if (cmajorRootEnv != null)
+            {
+                cmajorRoot = GetFullPath(cmajorRootEnv);
+            }
+            else
+            {
+                error = "CMAJOR_ROOT environment variable not set";
+            }
+            if (!cmajorRoot.IsEmpty())
+            {
+                jsonFilePath = Path.Combine(Path.Combine(cmajorRoot, "config"), "cmcode.config.json");
+            }
+        }
+        public void Save(bool force)
+        {
+            try
+            {
+                if (!force)
+                {
+                    if (!dirty) return;
+                    if (Now() - configChangedTime < Duration.FromSeconds(3))
+                    {
+                        return;
+                    }
+                }
+                dirty = false;
+                if (!jsonFilePath.IsEmpty())
+                {
+                    UniquePtr<JsonValue> mainConfigJsonValue = mainConfig.ToJson();
+                    StreamWriter writer(File.CreateText(jsonFilePath));
+                    CodeFormatter formatter(writer);
+                    mainConfigJsonValue->Write(formatter);
+                }
+            }
+            catch (const Exception& ex)
+            {
+            }
+        }
+        public void Load()
+        {
+            try
+            {
+                if (!error.IsEmpty())
+                {
+                    throw Exception(error);
+                }
+                if (!jsonFilePath.IsEmpty())
+                {
+                    if (File.Exists(jsonFilePath))
+                    {
+                        string content = File.ReadAllText(jsonFilePath);
+                        UniquePtr<JsonValue> mainConfigJsonValue = ParseJson(content);
+                        AddBuildSettingsValue(mainConfigJsonValue.Get());
+                        AddEditorSettingsValue(mainConfigJsonValue.Get());
+                        FromJson(mainConfigJsonValue.Get(), mainConfig);
+                        loaded = true;
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show("settings could not be loaded: " + ex.Message(), "Warning", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+            }
+        }
+        public nothrow bool Loaded() const
+        {
+            return loaded;
+        }
+        public System.Windows.WindowState GetMainWindowWindowState() const
+        {
+            return mainConfig.GetMainWindowWindowState();
+        }
+        public void SetMainWindowWindowState(System.Windows.WindowState mainWindowWindowState_)
+        {
+            if (GetMainWindowWindowState() != mainWindowWindowState_)
+            {
+                mainConfig.SetMainWindowWindowState(mainWindowWindowState_);
+                SetChanged();
+            }
+        }
+        public System.Windows.Point GetMainWindowLocation() const
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                return mainConfig.GetMainWindowNormalLocation();
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                return mainConfig.GetMainWindowMaximizedLocation();
+            }
+            else
+            {
+                return mainConfig.GetMainWindowNormalLocation();
+            }
+        }
+        public System.Windows.Size GetMainWindowSize() const
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                return mainConfig.GetMainWindowNormalSize();
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                return mainConfig.GetMainWindowMaximizedSize();
+            }
+            else
+            {
+                return mainConfig.GetMainWindowNormalSize();
+            }
+        }
+        public void SetMainWindowLocation(const System.Windows.Point& location)
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                if (GetMainWindowLocation() != location)
+                {
+                    mainConfig.SetMainWindowNormalLocation(location);
+                    SetChanged();
+                }
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                if (GetMainWindowLocation() != location)
+                {
+                    mainConfig.SetMainWindowMaximizedLocation(location);
+                    SetChanged();
+                }
+            }
+        }
+        public void SetMainWindowSize(const System.Windows.Size& size)
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                if (GetMainWindowSize() != size)
+                {
+                    mainConfig.SetMainWindowNormalSize(size);
+                    SetChanged();
+                }
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                if (GetMainWindowSize() != size)
+                {
+                    mainConfig.SetMainWindowMaximizedSize(size);
+                    SetChanged();
+                }
+            }
+        }
+        public int GetMainWindowVerticalSplitterDistance() const
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                return mainConfig.GetMainWindowNormalVerticalSplitterDistance();
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                return mainConfig.GetMainWindowMaximizedVerticalSplitterDistance();
+            }
+            else
+            {
+                return mainConfig.GetMainWindowNormalVerticalSplitterDistance();
+            }
+        }
+        public void SetMainWindowVerticalSplitterDistance(int verticalSplitterDistance)
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                if (GetMainWindowVerticalSplitterDistance() != verticalSplitterDistance)
+                {
+                    mainConfig.SetMainWindowNormalVerticalSplitterDistance(verticalSplitterDistance);
+                    SetChanged();
+                }
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                if (GetMainWindowVerticalSplitterDistance() != verticalSplitterDistance)
+                {
+                    mainConfig.SetMainWindowMaximizedVerticalSplitterDistance(verticalSplitterDistance);
+                    SetChanged();
+                }
+            }
+        }
+        public int GetMainWindowHorizontalSplitterDistance() const
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                return mainConfig.GetMainWindowNormalHorizontalSplitterDistance();
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                return mainConfig.GetMainWindowMaximizedHorizontalSplitterDistance();
+            }
+            else
+            {
+                return mainConfig.GetMainWindowNormalHorizontalSplitterDistance();
+            }
+        }
+        public void SetMainWindowHorizontalSplitterDistance(int horizontalSplitterDistance)
+        {
+            if (GetMainWindowWindowState() == System.Windows.WindowState.normal)
+            {
+                if (GetMainWindowHorizontalSplitterDistance() != horizontalSplitterDistance)
+                {
+                    mainConfig.SetMainWindowNormalHorizontalSplitterDistance(horizontalSplitterDistance);
+                    SetChanged();
+                }
+            }
+            else if (GetMainWindowWindowState() == System.Windows.WindowState.maximized)
+            {
+                if (GetMainWindowHorizontalSplitterDistance() != horizontalSplitterDistance)
+                {
+                    mainConfig.SetMainWindowMaximizedHorizontalSplitterDistance(horizontalSplitterDistance);
+                    SetChanged();
+                }
+            }
+        }
+        public nothrow const BuildSettings& GetBuildSettings() const
+        {
+            return mainConfig.GetBuildSettings();
+        }
+        public nothrow void SetBuildSettings(const BuildSettings& buildSettings)
+        {
+            mainConfig.SetBuildSettings(buildSettings);
+            SetChanged();
+        }
+        public nothrow const EditorSettings& GetEditorSettings() const
+        {
+            return mainConfig.GetEditorSettings();
+        }
+        public nothrow void SetEditorSettings(const EditorSettings& editorSettings)
+        {
+            mainConfig.SetEditorSettings(editorSettings);
+            SetChanged();
+        }
+        private void SetChanged()
+        {
+            dirty = true;
+            configChangedTime = Now();
+        }
+        private static UniquePtr<MainConfiguration> instance;
+        private string error;
+        private string jsonFilePath;
+        private MainConfig mainConfig;
+        private TimePoint configChangedTime;
+        private bool loaded;
+        private bool dirty;
+    }
+
+    public const uint defaultConfigSaveTimerPeriod = 3000u;
+
+    public System.Windows.WindowState MainWindowWindowState()
+    {
+        try
+        {
+            if (MainConfiguration.Instance().Loaded())
+            {
+                return MainConfiguration.Instance().GetMainWindowWindowState();
+            }
+            else
+            {
+                return System.Windows.WindowState.normal;
+            }
+        }
+        catch (const Exception& ex)
+        {
+        }
+        return System.Windows.WindowState.normal;
+    }
+
+    public Point MainWindowLocation()
+    {
+        try
+        {
+            if (MainConfiguration.Instance().Loaded())
+            {
+                return MainConfiguration.Instance().GetMainWindowLocation();
+            }
+            else
+            {
+                return Point.Default();
+            }
+        }
+        catch (const Exception& ex)
+        {
+        }
+        return Point.Default();
+    }
+
+    public Size MainWindowSize()
+    {
+        try
+        {
+            if (MainConfiguration.Instance().Loaded())
+            {
+                return MainConfiguration.Instance().GetMainWindowSize();
+            }
+            else
+            {
+                return Size.Default();
+            }
+        }
+        catch (const Exception& ex)
+        {
+        }
+        return Size.Default();
+    }
+
+    int MainWindowVerticalSplitterDistance()
+    {
+        try
+        {
+            if (MainConfiguration.Instance().Loaded())
+            {
+                return MainConfiguration.Instance().GetMainWindowVerticalSplitterDistance();
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        catch (const Exception& ex)
+        {
+        }
+        return 0;
+    }
+
+    int MainWindowHorizontalSplitterDistance()
+    {
+        try
+        {
+            if (MainConfiguration.Instance().Loaded())
+            {
+                return MainConfiguration.Instance().GetMainWindowHorizontalSplitterDistance();
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        catch (const Exception& ex)
+        {
+        }
+        return 0;
+    }
+
+    public nothrow string CmcodeTraceFlagFileName()
+    {
+        string cmajorRootDir = Cm.Ast.CmajorRootDir();
+        string cmajorConfigDir = Path.Combine(cmajorRootDir, "config");
+        Directory.CreateDirectories(cmajorConfigDir);
+        return Path.Combine(cmajorConfigDir, "cmcode.trace.flag");
+    }
+
+    public nothrow string CmcodeLogFlagFileName()
+    {
+        string cmajorRootDir = Cm.Ast.CmajorRootDir();
+        string cmajorConfigDir = Path.Combine(cmajorRootDir, "config");
+        Directory.CreateDirectories(cmajorConfigDir);
+        return Path.Combine(cmajorConfigDir, "cmcode.log.flag");
+    }
+
+} // namespace cmcode

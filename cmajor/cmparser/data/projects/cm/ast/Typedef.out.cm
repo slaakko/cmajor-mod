@@ -1,0 +1,59 @@
+using System;
+using System.Collections;
+
+namespace Cm.Ast
+{
+    public class TypedefNode : Node
+    {
+        public nothrow TypedefNode(const System.Lex.Span& span_, const Uuid& moduleId_) :
+            base(NodeType.typedefNode, span_, moduleId_), specifiers(Specifiers.none), typeExpr(), id()
+        {
+        }
+        public nothrow TypedefNode(const System.Lex.Span& span_, const Uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
+            base(NodeType.typedefNode, span_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public nothrow Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public nothrow IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public override nothrow Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new TypedefNode(GetSpan(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override nothrow void Write(AstWriter& writer)
+        {
+            base->Write(writer);
+            writer.Write(specifiers);
+            writer.Write(typeExpr.Get());
+            writer.Write(id.Get());
+        }
+        public override void Read(AstReader& reader)
+        {
+            base->Read(reader);
+            specifiers = reader.ReadSpecifiers();
+            typeExpr.Reset(reader.ReadNode());
+            typeExpr->SetParent(this);
+            id.Reset(reader.ReadIdentifierNode());
+            id->SetParent(this);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+    }
+
+} // namespace Cm.Ast

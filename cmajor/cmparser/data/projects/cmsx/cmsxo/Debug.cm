@@ -1,0 +1,218 @@
+using System;
+using System.Collections;
+
+namespace cmsx.object
+{
+    public enum DebugRecordCode : byte
+    {
+        fileInfo = 1u, functionInfo = 2u, lineInfo = 3u, startFunc = 4u, endFunc = 5u, beginTry = 6u, endTry = 7u, catch_ = 8u, beginCleanup = 9u, endCleanup = 10u, end = 11u
+    }
+
+    public const int maxDebugCodeStrLength = 12;
+
+    public string DebugRecordCodeStr(DebugRecordCode debugRecordCode)
+    {
+        switch (debugRecordCode)
+        {
+            case DebugRecordCode.fileInfo : return "FILEINFO";
+            case DebugRecordCode.functionInfo: return "FUNCTIONINFO";
+            case DebugRecordCode.lineInfo: return "LINEINFO";
+            case DebugRecordCode.startFunc: return "STARTFUNC";
+            case DebugRecordCode.endFunc: return "ENDFUNC";
+            case DebugRecordCode.beginTry: return "BEGINTRY";
+            case DebugRecordCode.endTry: return "ENDTRY";
+            case DebugRecordCode.catch_: return "CATCH";
+            case DebugRecordCode.beginCleanup: return "BEGINCLEANUP";
+            case DebugRecordCode.endCleanup: return "ENDCLEANUP";
+        }
+        return "";
+    }
+
+    public class FunctionInfo
+    {
+        public nothrow FunctionInfo(uint functionSymbolIndex_, const string& fullName_, uint sourceFileNameId_, uint frameSize_) :
+            functionSymbolIndex(functionSymbolIndex_), fullName(fullName_), sourceFileNameId(sourceFileNameId_), frameSize(frameSize_)
+        {
+        }
+        public uint functionSymbolIndex;
+        public string fullName;
+        public uint sourceFileNameId;
+        public uint frameSize;
+    }
+
+    public class LineInfo
+    {
+        public nothrow LineInfo(uint offset_, uint lineNumber_) : offset(offset_), lineNumber(lineNumber_)
+        {
+        }
+        public uint offset;
+        public uint lineNumber;
+    }
+
+    public class FunctionTableEntry
+    {
+        public nothrow FunctionTableEntry(ulong start_, ulong length_, ulong mangledNameAddress_, ulong fullNameAddress_, ulong sourceFileNameAddress_,
+            ulong lineNumberTableStartAddress_, ulong lineNumberTableEndAddress_, ulong exceptionTableAddress_) :
+            start(start_), length(length_), mangledNameAddress(mangledNameAddress_), fullNameAddress(fullNameAddress_), sourceFileNameAddress(sourceFileNameAddress_),
+            lineNumberTableStartAddress(lineNumberTableStartAddress_), lineNumberTableEndAddress(lineNumberTableEndAddress_), exceptionTableAddress(exceptionTableAddress_)
+        {
+        }
+        public ulong start;
+        public ulong length;
+        public ulong mangledNameAddress;
+        public ulong fullNameAddress;
+        public ulong sourceFileNameAddress;
+        public ulong lineNumberTableStartAddress;
+        public ulong lineNumberTableEndAddress;
+        public ulong exceptionTableAddress;
+    }
+
+    public bool operator==(const FunctionTableEntry& left, const FunctionTableEntry& right)
+    {
+        return left.start == right.start;
+    }
+
+    public bool operator<(const FunctionTableEntry& left, const FunctionTableEntry& right)
+    {
+        return left.start < right.start;
+    }
+
+    public class LineNumberTableLimits
+    {
+        public ulong startAddress;
+        public ulong endAddress;
+    }
+
+    public class LineNumberTableEntry
+    {
+        public nothrow LineNumberTableEntry(uint offset_, uint lineNumber_) : offset(offset_), lineNumber(lineNumber_)
+        {
+        }
+        public uint offset;
+        public uint lineNumber;
+    }
+
+    public bool operator==(const LineNumberTableEntry& left, const LineNumberTableEntry& right)
+    {
+        return left.offset == right.offset;
+    }
+
+    public bool operator<(const LineNumberTableEntry& left, const LineNumberTableEntry& right)
+    {
+        return left.offset < right.offset;
+    }
+
+    public class ExceptionBlock
+    {
+        public nothrow ExceptionBlock(ulong discriminator_) : discriminator(discriminator_)
+        {
+        }
+        public default virtual ~ExceptionBlock();
+        public ulong discriminator;
+    }
+
+    public const ulong endBlockDiscriminator = 0u;
+    public const ulong handlerBlockDiscriminator = 1u;
+    public const ulong cleanupBlockDiscriminator = 2u;
+
+    public class HandlerBlock : ExceptionBlock
+    {
+        public nothrow HandlerBlock(ulong catchedClassId_, ulong handlerAddress_) : base(handlerBlockDiscriminator), catchedClassId(catchedClassId_), handlerAddress(handlerAddress_)
+        {
+        }
+        public ulong catchedClassId;
+        public ulong handlerAddress;
+    }
+
+    public class CleanupBlock : ExceptionBlock
+    {
+        public nothrow CleanupBlock(ulong cleanupAddress_, ulong parentTableAddress_) : base(cleanupBlockDiscriminator), cleanupAddress(cleanupAddress_), parentTableAddress(parentTableAddress_)
+        {
+        }
+        public ulong cleanupAddress;
+        public ulong parentTableAddress;
+    }
+
+    public class DispatchTableEntry
+    {
+        public nothrow DispatchTableEntry(uint offset_, uint length_, ulong exceptionBlockTableAddress_, DispatchBlock* dispatchBlock_) :
+            offset(offset_), length(length_), exceptionBlockTableAddress(exceptionBlockTableAddress_), dispatchBlock(dispatchBlock_)
+        {
+        }
+        public uint offset;
+        public uint length;
+        public ulong exceptionBlockTableAddress;
+        public DispatchBlock* dispatchBlock;
+    }
+
+    public bool operator==(const DispatchTableEntry& left, const DispatchTableEntry& right)
+    {
+        return left.offset == right.offset;
+    }
+
+    public bool operator<(const DispatchTableEntry& left, const DispatchTableEntry& right)
+    {
+        return left.offset < right.offset;
+    }
+
+    public class FunctionExceptionData
+    {
+        public nothrow FunctionExceptionData() : functionName(), tryBlocks(), cleanupDispatchBlocks()
+        {
+        }
+        public TryBlock* GetTryBlock(uint tryBlockId) const
+        {
+            for (const TryBlock& tryBlock : tryBlocks)
+            {
+                if (tryBlock.id == tryBlockId) return &tryBlock;
+            }
+            return null;
+        }
+        public CleanupDispatchBlock* GetOpenCleanupDispatchBlock(uint cleanupBlockId) const
+        {
+            for (const CleanupDispatchBlock& cleanupDispatchBlock : cleanupDispatchBlocks)
+            {
+                if (cleanupDispatchBlock.id == cleanupBlockId && cleanupDispatchBlock.length == 0u) return &cleanupDispatchBlock;
+            }
+            return null;
+        }
+        public nothrow bool IsEmpty() const
+        {
+            return tryBlocks.IsEmpty() && cleanupDispatchBlocks.IsEmpty();
+        }
+        public string functionName;
+        public uint frameSize;
+        public List<TryBlock> tryBlocks;
+        public List<CleanupDispatchBlock> cleanupDispatchBlocks;
+    }
+
+    public abstract class DispatchBlock
+    {
+        public default virtual ~DispatchBlock();
+    }
+
+    public class TryBlock : DispatchBlock
+    {
+        public nothrow TryBlock(uint id_, uint parentId_, uint offset_) : id(id_), parentId(parentId_), offset(offset_), length(0u), exceptionBlockTableAddress(0u)
+        {
+        }
+        public uint id;
+        public uint parentId;
+        public uint offset;
+        public uint length;
+        public List<HandlerBlock> handlerBlocks;
+        public ulong exceptionBlockTableAddress;
+    }
+
+    public class CleanupDispatchBlock : DispatchBlock
+    {
+        public nothrow CleanupDispatchBlock(uint id_, TryBlock* tryBlock_, uint offset_) : id(id_), tryBlock(tryBlock_), offset(offset_), length(0u)
+        {
+        }
+        public uint id;
+        public uint offset;
+        public uint length;
+        public CleanupBlock cleanupBlock;
+        public TryBlock* tryBlock;
+    }
+}

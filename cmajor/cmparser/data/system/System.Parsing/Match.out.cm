@@ -1,0 +1,20 @@
+using System;
+using System.Collections;
+
+namespace System.Parsing
+{
+    public class Match
+    {
+        public Match(bool hit_) :
+            hit(hit_), value(null)
+        {
+        }
+        public Match(bool hit_, void* value_) :
+            hit(hit_), value(value_)
+        {
+        }
+        public bool hit;
+        public void* value;
+    }
+
+} // namespace System.Parsing

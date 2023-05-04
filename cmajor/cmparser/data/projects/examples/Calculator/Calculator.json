@@ -1,0 +1,64 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "7FD994460A9A7854477669946F59D7C2CC8F776D", 
+            "fileId" : "Error_4F2774D6AB4F096B6567C744C48910CF6CB35485", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Error.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "8E8DA88952BFA40CEBEA075B242215C208B5F5B2", 
+            "fileId" : "Main_8819C2D4C9759672950101D0A222F266DFA76037", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Main.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "90DFB216A8510A226E935752765F57FC96F3A4C0", 
+            "fileId" : "Parser_3E833D5CA1436DB908B40D9FD182A08244B2B059", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Parser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "CD02C85D200126D8F31D2A48AB0E302266E88E13", 
+            "fileId" : "Scanner_68B21FFC77647E97E119FD56CF8755D031C8A82C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Scanner.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "A1E264543103796CBD78BC9284202AB5940EEA6D", 
+            "fileId" : "SymbolTable_E88D1B3FBD6B69B1898D462C7FEE81326D1E6A20", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/SymbolTable.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E74290940CCEABB9D210073C2D3F535A4268D032", 
+            "fileId" : "Token_1A45A42F3F977DCEC3448F9E8E0B481346B84246", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Token.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Calculator.cmp", 
+    "projectHash" : "254EA805C8F620E532ADF79F28B7C573BB84B5FE", 
+    "projectId" : "project_Calculator_112609A8B3EA1194E36CFFDD8AF625C5876387FE", 
+    "projectName" : "Calculator", 
+    "target" : "program"
+}

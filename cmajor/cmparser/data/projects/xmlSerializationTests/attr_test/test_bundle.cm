@@ -1,0 +1,14 @@
+using System;
+using System.Text;
+using System.Xml.Serialization;
+using model;
+
+namespace xmltest
+{
+    public void TestXmlBundle()
+    {
+        Register();
+        Save("traffic.xml");
+        UniqueXmlPtr<Person> person = Load("traffic.xml");
+    }
+}

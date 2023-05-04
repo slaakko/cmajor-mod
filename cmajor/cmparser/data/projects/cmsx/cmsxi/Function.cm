@@ -1,0 +1,320 @@
+using System;
+using System.Collections;
+using CodeFormatter = System.Text.CodeFormatter;
+
+namespace cmsx.intermediate
+{
+    public const uint prologId = cast<uint>(-1);
+    public const uint epilogId = cast<uint>(-2);
+
+    public class Function
+    {
+        public nothrow Function(Context& context_, FunctionType* type_, const string& name_, bool once_, MDStructRef* md_) :
+            context(context_), type(type_), name(name_), addressDescriptors(), frameLocations(context.regs), nextValueNumber(0), nextInstructionIndex(0), nextArgIndex(0), frameSizeOperand(null),
+            prolog(*this, prologId), epilog(*this, epilogId), once(once_), md(md_), frameSize(0u)
+        {
+        }
+        public BasicBlock* AddBasicBlock(uint id)
+        {
+            BasicBlock* bb = new BasicBlock(*this, id);
+            basicBlocks.Add(UniquePtr<BasicBlock>(bb));
+            return bb;
+        }
+        public Value* MakeIdValue(int lineNumber, uint id, Type* type)
+        {
+            HashMap<uint, IdValue*>.ConstIterator it = idValueMap.CFind(id);
+            if (it != idValueMap.CEnd())
+            {
+                IdValue* idValue = it->second;
+                if (idValue->type != type)
+                {
+                    throw Exception("type " + type->Name() + " conflicts type " + idValue->type->Name() + " in earlier definition at line " + ToString(idValue->line) +
+                        " (" + context.compileUnit.fileName + ":" + ToString(lineNumber) + ")");
+                }
+                return idValue;
+            }
+            else
+            {
+                IdValue* idValue = new IdValue(id);
+                idValue->type = type;
+                idValue->line = lineNumber;
+                values.Add(UniquePtr<Value>(idValue));
+                idValueMap[id] = idValue;
+                return idValue;
+            }
+        }
+        public void MapInstructions()
+        {
+            uint nextIdNumber = 0u;
+            for (const UniquePtr<BasicBlock>& bb : basicBlocks)
+            {
+                bb->MapInstructions(nextIdNumber);
+            }
+        }
+        public void MapInstruction(uint id, Instruction* instruction)
+        {
+            HashMap<uint, Instruction*>.ConstIterator it = instructionMap.CFind(id);
+            if (it == instructionMap.CEnd())
+            {
+                instructionMap[id] = instruction;
+            }
+            else
+            {
+                throw Exception("instruction '" + instruction->OperationName() + "' id " + ToString(id) + " at line '" + ToString(instruction->line) + "' already mapped at line " + ToString(it->second->line));
+            }
+        }
+        public void Validate()
+        {
+            for (const UniquePtr<BasicBlock>& bb : basicBlocks)
+            {
+                bb->Validate();
+            }
+        }
+        public Value* ResolveOperand(int line, Value* operand)
+        {
+            if (operand != null)
+            {
+                IdValue* idValue = operand as IdValue*;
+                if (idValue != null)
+                {
+                    uint id = idValue->id;
+                    HashMap<uint, Instruction*>.ConstIterator it = instructionMap.CFind(id);
+                    if (it != instructionMap.CEnd())
+                    {
+                        Instruction* instruction = it->second;
+                        if (idValue->type != instruction->type)
+                        {
+                            throw Exception("error : type conflict for operand '" + operand->Name() + "' at line " + ToString(operand->line) + " with " + instruction->OperationName() +
+                                " instruction at line " + ToString(instruction->line));
+                        }
+                        return instruction;
+                    }
+                    else
+                    {
+                        throw Exception("error : id of operand '" + operand->Name() + "' at line " + ToString(operand->line) + "' is not found from instruction map");
+                    }
+                }
+                else
+                {
+                    return operand;
+                }
+            }
+            else
+            {
+                throw Exception("internal error : operand is null at line " + ToString(line));
+            }
+        }
+        public BasicBlock* GetBasicBlock(uint target)
+        {
+            if (target < basicBlocks.Count())
+            {
+                return basicBlocks[target].Get();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void Print(CodeFormatter& formatter, int stage)
+        {
+            nextInstructionIndex = 0;
+            nextValueNumber = 0;
+            string onceStr;
+            if (once)
+            {
+                onceStr = " once";
+            }
+            formatter.WriteLine("function " + type->Name() + onceStr + " @" + name);
+            formatter.WriteLine("{");
+            formatter.IncIndent();
+            bool first = true;
+            for (const UniquePtr<BasicBlock>& basicBlock : basicBlocks)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    formatter.WriteLine();
+                }
+                basicBlock->Print(formatter, stage);
+            }
+            formatter.DecIndent();
+            formatter.WriteLine("}");
+        }
+        public nothrow inline int GetNextInstructionIndex()
+        {
+            return nextInstructionIndex++;
+        }
+        public nothrow inline int GetNextValueNumber()
+        {
+            return nextValueNumber++;
+        }
+        public nothrow inline int GetNextArgIndex()
+        {
+            return nextArgIndex++;
+        }
+        public nothrow inline void ResetNextArgIndex()
+        {
+             nextArgIndex = 0;
+        }
+        public nothrow void ComputeLivenessAndNextUse()
+        {
+            for (const UniquePtr<BasicBlock>& bb : basicBlocks)
+            {
+                bb->ComputeLivenessAndNextUse();
+            }
+        }
+        public void GenerateDeclaration(MachineCode& machineCode)
+        {
+            if (once )
+            {
+                MachineInstruction* linkOnceInst = machineCode.GetInstruction(cmsx.assembly.LINKONCE, null);
+                linkOnceInst->AddOperand(machineCode.context.GetSymbolOperand(name));
+            }
+            else
+            {
+                MachineInstruction* externInst = machineCode.GetInstruction(cmsx.assembly.EXTERN, null);
+                externInst->AddOperand(machineCode.context.GetSymbolOperand(name));
+            }
+        }
+        public void GenerateCode(MachineCode& machineCode, CodeFormatter& formatter)
+        {
+            try
+            {
+                machineCode.currentLineNumber = 0u;
+                nextInstructionIndex = 0;
+                nextValueNumber = 0;
+                if (!basicBlocks.IsEmpty())
+                {
+                    epilog.SetId(basicBlocks.Back()->Id() + 1u);
+                }
+                else
+                {
+                    epilog.SetId(1u);
+                }
+                CreateProlog(machineCode);
+                if (name == "function_DurationStr_1840BD75820836C5ECA040E3577AB0AE6BD3B54F")
+                {
+                    int x = 0;
+                }
+                if (Flags.Get(Flag.debug))
+                {
+                    formatter.WriteLine("function @" + name);
+                    formatter.WriteLine("{");
+                    formatter.IncIndent();
+                }
+                for (const UniquePtr<BasicBlock>& basicBlock : basicBlocks)
+                {
+                    basicBlock->GenerateCode(machineCode, formatter);
+                }
+                if (!basicBlocks.IsEmpty())
+                {
+                    const UniquePtr<BasicBlock>& lastBasicBlock = basicBlocks.Back();
+                    Instruction* lastInst = lastBasicBlock->GetLastInstruction();
+                    if (lastInst != null && lastInst->lineNumber != 0u)
+                    {
+                        machineCode.EmitLineNumberInfo();
+                    }
+                }
+                if (Flags.Get(Flag.debug))
+                {
+                    formatter.DecIndent();
+                    formatter.WriteLine("}");
+                }
+                CreateEpilog(machineCode);
+                frameSize = cast<ulong>(frameLocations.paramOffset);
+                frameSizeOperand->SetValue(frameSize);
+            }
+            catch (const Exception& ex)
+            {
+                throw Exception("error compiling function '" + name + "': " + ex.Message());
+            }
+        }
+        private void CreateProlog(MachineCode& machineCode)
+        {
+            MachineInstruction* funcInst = machineCode.GetInstruction(cmsx.assembly.FUNC, name);
+            MachineInstruction* stoInst = machineCode.GetInstruction(cmsx.machine.STO, null);
+            stoInst->AddOperand(context.regs.GetFP());
+            stoInst->AddOperand(context.regs.GetSP());
+            stoInst->AddOperand(context.GetLiteralOperand(0u));
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, null);
+            setInst->AddOperand(context.regs.GetFP());
+            setInst->AddOperand(context.regs.GetSP());
+            MachineInstruction* inclInst = machineCode.GetInstruction(cmsx.machine.INCL, null);
+            inclInst->AddOperand(context.regs.GetSP());
+            frameSizeOperand = context.CreateLiteralOperand();
+            inclInst->AddOperand(frameSizeOperand);
+            prolog.SetEmpty(false);
+        }
+        private void CreateEpilog(MachineCode& machineCode)
+        {
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, epilog.Name());
+            setInst->AddOperand(context.regs.GetSP());
+            setInst->AddOperand(context.regs.GetFP());
+            MachineInstruction* loadFPInst = machineCode.GetInstruction(cmsx.machine.LDO, null);
+            loadFPInst->AddOperand(context.regs.GetFP());
+            loadFPInst->AddOperand(context.regs.GetSP());
+            loadFPInst->AddOperand(context.GetLiteralOperand(0u));
+            machineCode.GetInstruction(cmsx.machine.RET, null);
+            machineCode.GetInstruction(cmsx.assembly.ENDF, name);
+            epilog.SetEmpty(false);
+        }
+        public void CombineBasicBlocks()
+        {
+            List<UniquePtr<BasicBlock>> newBasicBlocks;
+            long n = basicBlocks.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                UniquePtr<BasicBlock>& bb = basicBlocks[i];
+                if (i < n - 1)
+                {
+                    if (!bb->IsEmpty())
+                    {
+                        UniquePtr<BasicBlock>& next = basicBlocks[i + 1];
+                        if (next->Predecessors().Count() == 1 && next->Predecessors().Front() == bb.Get())
+                        {
+                            Instruction* lastInst = bb->GetLastInstruction();
+                            if (lastInst is JumpInstruction*)
+                            {
+                                JumpInstruction* jump = cast<JumpInstruction*>(lastInst);
+                                if (jump->targetBlock == next.Get())
+                                {
+                                    bb->Instructions().RemoveLast();
+                                    for (UniquePtr<Instruction>& inst : next->Instructions())
+                                    {
+                                        inst->parent = bb.Get();
+                                        bb->Instructions().Add(Rvalue(inst));
+                                    }
+                                    ++i;
+                                }
+                            }
+                        }
+                    }
+                }
+                newBasicBlocks.Add(Rvalue(bb));
+            }
+            Swap(basicBlocks, newBasicBlocks);
+        }
+        public Context& context;
+        public FunctionType* type;
+        public string name;
+        public AddressDescriptors addressDescriptors;
+        public FrameLocations frameLocations;
+        public BasicBlock prolog;
+        public BasicBlock epilog;
+        public MDStructRef* md;
+        public ulong frameSize;
+        public List<ParamInstruction*> regParams;
+        public List<UniquePtr<BasicBlock>> basicBlocks;
+        private List<UniquePtr<Value>> values;
+        private HashMap<uint, IdValue*> idValueMap;
+        private HashMap<uint, Instruction*> instructionMap;
+        private int nextInstructionIndex;
+        private int nextValueNumber;
+        private int nextArgIndex;
+        private LiteralOperand* frameSizeOperand;
+        private bool once;
+    }
+}

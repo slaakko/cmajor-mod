@@ -1,0 +1,54 @@
+using System;
+using System.Threading;
+
+public int Run(const string& command, string& errorLines)
+{
+    Process.Redirections redirections = cast<Process.Redirections>(Process.Redirections.processStdOut | Process.Redirections.processStdErr);
+    Process process(command, redirections);
+    while (!process.Eof(Process.StdHandle.stdOut))
+    {
+        string line = process.ReadLine(Process.StdHandle.stdOut);
+        Console.WriteLine(line);
+    }
+    if (!process.Eof(Process.StdHandle.stdErr))
+    {
+        errorLines = process.ReadToEnd(Process.StdHandle.stdErr);
+    }
+    process.WaitForExit();
+    int exitCode = process.ExitCode();
+    return exitCode;
+}
+
+int main(int argc, const char** argv)
+{
+    try
+    {
+        TimePoint start = Now();
+        string command;
+        string errors;
+        for (int i = 1; i < argc; ++i)
+        {
+            string arg = argv[i];
+            if (!command.IsEmpty())
+            {
+                command.Append(' ');
+            }
+            command.Append(arg);
+        }
+        int exitCode = Run(command, errors);
+        if (exitCode != 0)
+        {
+            throw Exception("executing command \'" + command + "\' failed with exit code " + ToString(exitCode) + ": " + errors);
+        }
+        TimePoint end = Now();
+        Duration dur = end - start;
+        Console.Out() << "executing command \'" + command << "\' took " << dur.Milliseconds() << " ms" << endl();
+        Console.Out() << "command returned exit code: " << exitCode << endl();
+    }
+    catch (const Exception& ex)
+    {
+        Console.Error() << ex.Message() << endl();
+        return 1;
+    }
+    return 0;
+}

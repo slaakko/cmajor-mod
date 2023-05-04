@@ -1,0 +1,29 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.rex.lexer;
+
+import soul.rex.token;
+import soul.rex.expr;
+
+lexer RexLexer
+{
+    rules
+    {
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\|" { return ALT; }
+        "\*" { return STAR; }
+        "\+" { return PLUS; }
+        "\?" { return QUEST; }
+        "\." { return DOT; }
+        "^" { return INVERSE; }
+        "-" { return MINUS; }
+        "{escape}" { return ESCAPE; }
+        "[^\x0\r\n{}\\()[\]|*+?.^-]" { return CHAR; }
+    }
+}

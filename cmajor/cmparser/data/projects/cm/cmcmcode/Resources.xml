@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <resource name="cmcode.icon" type="icon" file="res/cmcode.ico"/>
+  <resource name="cmcode.small.icon" type="icon" file="res/cmcodesmall.ico"/>
+  <resource name="cmcode.save.bitmap" type="bitmap" file="res/save.bmp"/>
+  <resource name="cmcode.save.all.bitmap" type="bitmap" file="res/save.all.bmp"/>
+  <resource name="cmcode.build.solution.bitmap" type="bitmap" file="res/build.solution.bmp"/>
+  <resource name="cmcode.build.project.bitmap" type="bitmap" file="res/build.project.bmp"/>
+  <resource name="cmcode.cancel.build.bitmap" type="bitmap" file="res/cancel.build.bmp"/>
+  <resource name="cmcode.debug.start.bitmap" type="bitmap" file="res/start.bmp"/>
+  <resource name="cmcode.debug.stop.bitmap" type="bitmap" file="res/stop.bmp"/>
+  <resource name="cmcode.debug.show.next.statement.bitmap" type="bitmap" file="res/show.next.statement.bmp"/>
+  <resource name="cmcode.debug.step.over.bitmap" type="bitmap" file="res/step.over.bmp"/>
+  <resource name="cmcode.debug.step.into.bitmap" type="bitmap" file="res/step.into.bmp"/>
+  <resource name="cmcode.debug.step.out.bitmap" type="bitmap" file="res/step.out.bmp"/>
+  <resource name="console.app.bitmap" type="bitmap" file="res/console.app.bmp"/>
+  <resource name="win.gui.app.bitmap" type="bitmap" file="res/win.gui.app.bmp"/>
+  <resource name="lib.bitmap" type="bitmap" file="res/lib.bmp"/>
+  <resource name="win.lib.bitmap" type="bitmap" file="res/win.lib.bmp"/>
+  <resource name="cmcode.prev.bitmap" type="bitmap" file="res/prev.bmp"/>
+  <resource name="cmcode.next.bitmap" type="bitmap" file="res/next.bmp"/>
+</resources>

@@ -1,0 +1,139 @@
+using System;
+using System.Collections;
+using Sirius.Math;
+
+namespace Sirius.Graphics
+{
+    public class Sphere : PolygonMeshObject
+    {
+        public nothrow Sphere() :
+            this(10, 10)
+        {
+        }
+        public nothrow Sphere(int ycount, int xzcount) :
+            this(ycount, xzcount, 1)
+        {
+        }
+        public nothrow Sphere(int ycount, int xzcount, float radius) :
+            this(ycount, xzcount, radius, Vector(0, 0, 0))
+        {
+        }
+        public nothrow Sphere(int ycount, int xzcount, float radius, const Vector& location) :
+            base()
+        {
+            List<UniquePtr<Matrix>> ry;
+            float t = cast<float>(2 * PI() / xzcount);
+            for (int j = 0; j < xzcount; ++j)
+            {
+                float xzangle = t * j;
+                UniquePtr<Matrix> m(new Matrix(RotationAboutY(xzangle)));
+                ry.Add(Rvalue(m));
+            }
+            AddVertex(Vertex(Vector(0, 1, 0)));
+            float yt = cast<float>(PI() / ycount);
+            for (int i = 1; i < ycount; ++i)
+            {
+                float yangle = cast<float>((PI() / 2) - i * yt);
+                float x = cast<float>(Cos(yangle));
+                float y = cast<float>(Sin(yangle));
+                float z = 0;
+                float t = cast<float>(2 * PI() / xzcount);
+                for (int j = 0; j < xzcount; ++j)
+                {
+                    Vector v(x, y, z);
+                    float xzangle = t * j;
+                    const Matrix& m = *ry[j];
+                    v = m * v;
+                    AddVertex(Vertex(Vector(v.x, v.y, v.z)));
+                    if (i == 1)
+                    {
+                        AddEdge(Edge(0, j + 1));
+                    }
+                    else
+                    {
+                        AddEdge(Edge(xzcount * (i - 2) + j + 1, xzcount * (i - 1) + j + 1));
+                    }
+                    if (j == 0)
+                    {
+                        AddEdge(Edge(xzcount * (i - 1) + ycount, xzcount * (i - 1) + j + 1));
+                    }
+                    else
+                    {
+                        AddEdge(Edge(xzcount * (i - 1) + j, xzcount * (i - 1) + j + 1));
+                    }
+                }
+            }
+            AddVertex(Vertex(Vector(0, -1, 0)));
+            int e = xzcount * (ycount - 1) + 1;
+            for (int j = 0; j < xzcount; ++j)
+            {
+                AddEdge(Edge((xzcount - 1) * (ycount - 1) + j, e));
+            }
+            for (int i = 0; i < ycount; ++i)
+            {
+                for (int j = 0; j < xzcount; ++j)
+                {
+                    if (i == 0)
+                    {
+                        Polygon p;
+                        p.AddVertex(0);
+                        p.AddVertex(j + 1);
+                        if (j < xzcount - 1)
+                        {
+                            p.AddVertex(j + 2);
+                        }
+                        else
+                        {
+                            p.AddVertex(1);
+                        }
+                        AddPolygon(p);
+                    }
+                    else if (i < ycount - 1)
+                    {
+                        Polygon p;
+                        if (j == 0)
+                        {
+                            p.AddVertex((i - 1) * xzcount + ycount);
+                            p.AddVertex(i * xzcount + ycount);
+                            p.AddVertex(i * xzcount + 1);
+                            p.AddVertex((i - 1) * xzcount + 1);
+                        }
+                        else
+                        {
+                            p.AddVertex((i - 1) * xzcount + j);
+                            p.AddVertex(i * xzcount + j);
+                            p.AddVertex(i * xzcount + j + 1);
+                            p.AddVertex((i - 1) * xzcount + j + 1);
+                        }
+                        AddPolygon(p);
+                    }
+                    else
+                    {
+                        int e = xzcount * (ycount - 1) + 1;
+                        Polygon p;
+                        p.AddVertex((xzcount - 1) * (ycount - 1) + j);
+                        p.AddVertex(e);
+                        p.AddVertex((xzcount - 1) * (ycount - 1) + j + 1);
+                        AddPolygon(p);
+                    }
+                }
+            }
+            AddPolygonsToVertices();
+            CalculatePolygonNormals();
+            CalculateVertexNormals();
+            Matrix scaling = Scaling(radius, radius, radius);
+            Matrix moveToLocation = Translation(location.x, location.y, location.z);
+            Matrix transformation = moveToLocation * scaling;
+            TransformLocal(transformation);
+        }
+        public nothrow Sphere(const Sphere& that) :
+            base(that.Vertices(), that.Edges(), that.Polygons(), that.GetColor())
+        {
+        }
+        public override nothrow Object* Clone() const
+        {
+            return new Sphere(*this);
+        }
+    }
+
+} // namespace Sirius.Graphics

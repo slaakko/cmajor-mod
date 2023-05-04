@@ -1,0 +1,540 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.Windows;
+using spring;
+
+public class MainWindow : Window
+{
+    public MainWindow(bool debug_) : base("Spring Software Diagram Designer"),
+        springDiagramElementsFormat("spring.diagram.elements"),
+        clipboardListener(Handle()),
+        arrowCursor(LoadStandardCursor(StandardCursorId.IDC_ARROW)),
+        grabOpenCursor(Application.GetResourceManager().GetCursor("grab.open.spring.cursor")),
+        grabClosedCursor(Application.GetResourceManager().GetCursor("grab.closed.spring.cursor")),
+        classToolCursor(Application.GetResourceManager().GetCursor("class.tool.spring.cursor")),
+        objectToolCursor(Application.GetResourceManager().GetCursor("object.tool.spring.cursor")),
+        noteToolCursor(Application.GetResourceManager().GetCursor("note.tool.spring.cursor")),
+        inheritanceToolCursor(Application.GetResourceManager().GetCursor("inheritance.tool.spring.cursor")),
+        aggregationToolCursor(Application.GetResourceManager().GetCursor("aggregation.tool.spring.cursor")),
+        referenceToolCursor(Application.GetResourceManager().GetCursor("reference.tool.spring.cursor")),
+        createInstanceToolCursor(Application.GetResourceManager().GetCursor("create.instance.tool.spring.cursor")),
+        attachNoteToolCursor(Application.GetResourceManager().GetCursor("attach.note.tool.spring.cursor")),
+        noteCornerBitmap(new Bitmap(Bitmap.FromResource("note.corner.spring.bitmap"))),
+        debug(debug_)
+    {
+        UniquePtr<MenuBar> menuBar(new MenuBar(MenuBarCreateParams(MenuControlCreateParams(
+            MenuBarControlCreateParams(ControlCreateParams().Defaults()))).Defaults()));
+        UniquePtr<MenuItem> fileMenuItem(new MenuItem("&File"));
+        UniquePtr<MenuItem> newMenuItem(new MenuItem("&New"));
+        newMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.n));
+        newMenuItem->ClickEvent().AddHandler(NewClick);
+        fileMenuItem->AddMenuItem(newMenuItem.Release());
+        UniquePtr<MenuItem> openMenuItem(new MenuItem("&Open..."));
+        openMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.o));
+        openMenuItem->ClickEvent().AddHandler(OpenClick);
+        fileMenuItem->AddMenuItem(openMenuItem.Release());
+        UniquePtr<MenuItem> saveMenuItem(new MenuItem("&Save"));
+        saveMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.s));
+        saveMenuItem->ClickEvent().AddHandler(SaveClick);
+        fileMenuItem->AddMenuItem(saveMenuItem.Release());
+        UniquePtr<MenuItem> saveAsMenuItem(new MenuItem("Save &As..."));
+        saveAsMenuItem->ClickEvent().AddHandler(SaveAsClick);
+        fileMenuItem->AddMenuItem(saveAsMenuItem.Release());
+        UniquePtr<MenuItem> saveImageMenuItem(new MenuItem("Save &Image..."));
+        saveImageMenuItem->ClickEvent().AddHandler(SaveImageClick);
+        fileMenuItem->AddMenuItem(saveImageMenuItem.Release());
+        fileMenuItem->AddMenuItem(new MenuItemSeparator());
+        UniquePtr<MenuItem> exitMenuItem(new MenuItem("E&xit"));
+        exitMenuItem->SetShortcut(cast<Keys>(Keys.altModifier | Keys.f4));
+        exitMenuItem->ClickEvent().AddHandler(ExitClick);
+        fileMenuItem->AddMenuItem(exitMenuItem.Release());
+        menuBar->AddMenuItem(fileMenuItem.Release());
+        UniquePtr<MenuItem> editMenuItem(new MenuItem("&Edit"));
+        UniquePtr<MenuItem> cutMenuItemPtr(new MenuItem("Cu&t"));
+        cutMenuItem = cutMenuItemPtr.Get();
+        cutMenuItem->Disable();
+        cutMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.x));
+        cutMenuItem->ClickEvent().AddHandler(EditCut);
+        editMenuItem->AddMenuItem(cutMenuItemPtr.Release());
+        UniquePtr<MenuItem> copyMenuItemPtr(new MenuItem("&Copy"));
+        copyMenuItem = copyMenuItemPtr.Get();
+        copyMenuItem->Disable();
+        copyMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.c));
+        copyMenuItem->ClickEvent().AddHandler(EditCopy);
+        editMenuItem->AddMenuItem(copyMenuItemPtr.Release());
+        UniquePtr<MenuItem> pasteMenuItemPtr(new MenuItem("&Paste"));
+        pasteMenuItem = pasteMenuItemPtr.Get();
+        pasteMenuItem->Disable();
+        pasteMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.v));
+        pasteMenuItem->ClickEvent().AddHandler(EditPaste);
+        editMenuItem->AddMenuItem(pasteMenuItemPtr.Release());
+        UniquePtr<MenuItem> undoMenuItemPtr(new MenuItem("&Undo"));
+        undoMenuItem = undoMenuItemPtr.Get();
+        undoMenuItem->Disable();
+        undoMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.z));
+        undoMenuItem->ClickEvent().AddHandler(EditUndo);
+        editMenuItem->AddMenuItem(undoMenuItemPtr.Release());
+        UniquePtr<MenuItem> redoMenuItemPtr(new MenuItem("&Redo"));
+        redoMenuItem = redoMenuItemPtr.Get();
+        redoMenuItem->Disable();
+        redoMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.y));
+        redoMenuItem->ClickEvent().AddHandler(EditRedo);
+        editMenuItem->AddMenuItem(redoMenuItemPtr.Release());
+        UniquePtr<MenuItem> selectAllMenuItemPtr(new MenuItem("Select &All"));
+        selectAllMenuItemPtr->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.a));
+        selectAllMenuItemPtr->ClickEvent().AddHandler(EditSelectAll);
+        editMenuItem->AddMenuItem(selectAllMenuItemPtr.Release());
+        menuBar->AddMenuItem(editMenuItem.Release());
+        AddChild(menuBar.Release());
+        UniquePtr<ToolBar> toolBar(new ToolBar(ToolBarCreateParams(ToolBarControlCreateParams(ControlCreateParams().Defaults())).
+            SetStyle(ToolBar.Style.radioButtonGroup)));
+        ToolButton* selectToolButton = new ToolButton("arrow.system.windows.bitmap", ToolButton.Style.manual);
+        selectToolButton->SetToolTip("Select");
+        Tools.GetSelectTool()->SetToolButton(selectToolButton);
+        Tools.GetSelectTool()->SetCursor(&arrowCursor);
+        toolBar->AddToolButton(selectToolButton);
+        ToolButton* grabToolButton = new ToolButton("grab.tool.spring.bitmap", ToolButton.Style.manual);
+        grabToolButton->SetToolTip("Grab");
+        Tools.GetGrabTool()->SetToolButton(grabToolButton);
+        Tools.GetGrabTool()->SetCursor(&grabOpenCursor);
+        Tools.GetGrabTool()->SetPressedCursor(&grabClosedCursor);
+        toolBar->AddToolButton(grabToolButton);
+        ToolButton* classToolButton = new ToolButton("class.tool.spring.bitmap", ToolButton.Style.manual);
+        classToolButton->SetToolTip("Add new class");
+        Tools.GetClassTool()->SetToolButton(classToolButton);
+        Tools.GetClassTool()->SetCursor(&classToolCursor);
+        toolBar->AddToolButton(classToolButton);
+        ToolButton* objectToolButton = new ToolButton("object.tool.spring.bitmap", ToolButton.Style.manual);
+        objectToolButton->SetToolTip("Add new object");
+        Tools.GetObjectTool()->SetToolButton(objectToolButton);
+        Tools.GetObjectTool()->SetCursor(&objectToolCursor);
+        toolBar->AddToolButton(objectToolButton);
+        ToolButton* noteToolButton = new ToolButton("note.tool.spring.bitmap", ToolButton.Style.manual);
+        noteToolButton->SetToolTip("Add new note");
+        Tools.GetNoteTool()->SetToolButton(noteToolButton);
+        Tools.GetNoteTool()->SetCursor(&noteToolCursor);
+        toolBar->AddToolButton(noteToolButton);
+        ToolButton* inheritanceToolButton = new ToolButton("inheritance.tool.spring.bitmap", ToolButton.Style.manual);
+        inheritanceToolButton->SetToolTip("Add inheritance relationship");
+        Tools.GetInheritanceTool()->SetToolButton(inheritanceToolButton);
+        Tools.GetInheritanceTool()->SetCursor(&inheritanceToolCursor);
+        toolBar->AddToolButton(inheritanceToolButton);
+        ToolButton* aggregationToolButton = new ToolButton("aggregation.tool.spring.bitmap", ToolButton.Style.manual);
+        aggregationToolButton->SetToolTip("Add aggregation relationship");
+        Tools.GetAggregationTool()->SetToolButton(aggregationToolButton);
+        Tools.GetAggregationTool()->SetCursor(&aggregationToolCursor);
+        toolBar->AddToolButton(aggregationToolButton);
+        ToolButton* referenceToolButton = new ToolButton("reference.tool.spring.bitmap", ToolButton.Style.manual);
+        referenceToolButton->SetToolTip("Add reference relationship");
+        Tools.GetReferenceTool()->SetToolButton(referenceToolButton);
+        Tools.GetReferenceTool()->SetCursor(&referenceToolCursor);
+        toolBar->AddToolButton(referenceToolButton);
+        ToolButton* createInstanceToolButton = new ToolButton("create.instance.tool.spring.bitmap", ToolButton.Style.manual);
+        createInstanceToolButton->SetToolTip("Add create instance relationship");
+        Tools.GetCreateInstanceTool()->SetToolButton(createInstanceToolButton);
+        Tools.GetCreateInstanceTool()->SetCursor(&createInstanceToolCursor);
+        toolBar->AddToolButton(createInstanceToolButton);
+        ToolButton* attachNoteToolButton = new ToolButton("attach.note.tool.spring.bitmap", ToolButton.Style.manual);
+        attachNoteToolButton->SetToolTip("Attach note");
+        Tools.GetAttachNoteTool()->SetToolButton(attachNoteToolButton);
+        Tools.GetAttachNoteTool()->SetCursor(&attachNoteToolCursor);
+        toolBar->AddToolButton(attachNoteToolButton);
+        AddChild(toolBar.Release());
+        UniquePtr<Canvas> canvasPtr(new Canvas());
+        canvas = canvasPtr.Get();
+        canvas->SetNoteCornerBitmap(noteCornerBitmap.Get());
+        canvas->MouseEnterEvent().AddHandler(CanvasMouseEnter);
+        canvas->MouseLeaveEvent().AddHandler(CanvasMouseLeave);
+        canvas->MouseMoveEvent().AddHandler(CanvasMouseMove);
+        canvas->SetCopyMenuItem(copyMenuItem);
+        canvas->SetCutMenuItem(cutMenuItem);
+        canvas->SetPasteMenuItem(pasteMenuItem);
+        canvas->SetUndoMenuItem(undoMenuItem);
+        canvas->SetRedoMenuItem(redoMenuItem);
+        canvas->GetDiagram().SetMenuItems(undoMenuItem, redoMenuItem);
+        if (debug)
+        {
+            UniquePtr<SplitContainer> verticalSplitContainer(new SplitContainer(Orientation.vertical, 400, Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            UniquePtr<Control> borderedCanvas(new BorderedControl(canvasPtr.Release(), BorderStyle.style3D, Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            verticalSplitContainer->Pane1Container()->AddChild(borderedCanvas.Release());
+            UniquePtr<LogView> logView(new LogView());
+            logView->SetScrollSubject();
+            Application.SetLogView(logView.Get());
+            UniquePtr<Control> borderedLogView(new BorderedControl(logView.Release(), BorderStyle.style3D, Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+            UniquePtr<Control> scrollableLogView(new ScrollableControl(borderedLogView.Release(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            verticalSplitContainer->Pane2Container()->AddChild(scrollableLogView.Release());
+            AddChild(verticalSplitContainer.Release());
+        }
+        else
+        {
+            AddChild(canvasPtr.Release());
+        }
+        UniquePtr<StatusBar> statusBar(new StatusBar());
+        string empty;
+        UniquePtr<StatusBarItem> filePathItemPtr(new StatusBarItem(empty, StatusBarItem.BorderStyle.sunken));
+        filePathStatusBarItem = filePathItemPtr.Get();
+        statusBar->AddItem(filePathItemPtr.Release());
+        UniquePtr<StatusBarItem> modifiedStatusBarItemPtr(new StatusBarItem(empty, StatusBarItem.BorderStyle.sunken));
+        modifiedStatusBarItem = modifiedStatusBarItemPtr.Get();
+        canvas->SetModifiedStatusBarItem(modifiedStatusBarItem);
+        modifiedStatusBarItem->SetText(" ");
+        statusBar->AddItem(modifiedStatusBarItemPtr.Release());
+        UniquePtr<StatusBarItem> springItem(new StatusBarItem(empty, StatusBarItem.BorderStyle.flat, true));
+        statusBar->AddItem(springItem.Release());
+        string spaces(' ', 6);
+        UniquePtr<StatusBarItem> viewXItem(new StatusBarItem("view X:"));
+        statusBar->AddItem(viewXItem.Release());
+        UniquePtr<StatusBarItem> viewXCoordItem(new StatusBarItem(spaces, StatusBarItem.BorderStyle.sunken));
+        viewXCoordStatusBarItem = viewXCoordItem.Get();
+        statusBar->AddItem(viewXCoordItem.Release());
+
+        UniquePtr<StatusBarItem> viewYItem(new StatusBarItem("view Y:"));
+        statusBar->AddItem(viewYItem.Release());
+        UniquePtr<StatusBarItem> viewYCoordItem(new StatusBarItem(spaces, StatusBarItem.BorderStyle.sunken));
+        viewYCoordStatusBarItem = viewYCoordItem.Get();
+        statusBar->AddItem(viewYCoordItem.Release());
+
+        UniquePtr<StatusBarItem> xItem(new StatusBarItem("x:"));
+        statusBar->AddItem(xItem.Release());
+        UniquePtr<StatusBarItem> xCoordItem(new StatusBarItem(spaces, StatusBarItem.BorderStyle.sunken));
+        xCoordStatusBarItem = xCoordItem.Get();
+        statusBar->AddItem(xCoordItem.Release());
+        UniquePtr<StatusBarItem> yItem(new StatusBarItem("y:"));
+        statusBar->AddItem(yItem.Release());
+        UniquePtr<StatusBarItem> yCoordItem(new StatusBarItem(spaces, StatusBarItem.BorderStyle.sunken));
+        yCoordStatusBarItem = yCoordItem.Get();
+        statusBar->AddItem(yCoordItem.Release());
+        AddChild(statusBar.Release());
+        ScreenMetrics.Get().PrintToLog();
+    }
+    protected override void OnClipboardUpdate()
+    {
+        base->OnClipboardUpdate();
+        Clipboard clipboard(Handle());
+        if (clipboard.IsClipboardFormatAvailable(springDiagramElementsFormat))
+        {
+            clipboardData = clipboard.GetStringData(springDiagramElementsFormat);
+            pasteMenuItem->Enable();
+        }
+    }
+    protected override void OnWindowClosing(bool& cancelClose)
+    {
+        if (canvas->GetDiagram().Modified())
+        {
+            MessageBoxResult result = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this, MessageBoxType.MB_YESNOCANCEL);
+            if (result == MessageBoxResult.yes)
+            {
+                SaveClick();
+            }
+            else if (result == MessageBoxResult.cancel)
+            {
+                cancelClose = true;
+            }
+        }
+    }
+    private void ExitClick()
+    {
+        Close();
+    }
+    private void OpenClick()
+    {
+        try
+        {
+            if (canvas->GetDiagram().Modified())
+            {
+                MessageBoxResult result = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this, MessageBoxType.MB_YESNOCANCEL);
+                if (result == MessageBoxResult.yes)
+                {
+                    SaveClick();
+                }
+                else if (result == MessageBoxResult.cancel)
+                {
+                    return;
+                }
+            }
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(Pair<string, string>("Spring diagram files (*.spring.xml)", "*.spring.xml"));
+            string initialDirectory = DefaultDiagramDirectory();
+            string filePath;
+            string currentDirectory;
+            List<string> fileNames;
+            string defaultFilePath;
+            bool selected = System.Windows.API.GetOpenFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".spring.xml",
+                OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST, currentDirectory, fileNames);
+            if (selected)
+            {
+                if (!fileNames.IsEmpty())
+                {
+                    filePath = Path.Combine(currentDirectory, fileNames[0]);
+                }
+                if (!filePath.IsEmpty() && File.Exists(filePath))
+                {
+                    UniquePtr<Diagram> diagram(new Diagram());
+                    diagram->Load(filePath);
+                    diagramFilePath = filePath;
+                    filePathStatusBarItem->SetText(diagramFilePath);
+                    modifiedStatusBarItem->SetText(" ");
+                    canvas->SetDiagram(diagram.Release());
+                    canvas->GetDiagram().ResetModified();
+                }
+                else
+                {
+                    throw Exception("file path is empty or does not exist");
+                }
+            }
+        }
+        catch (const Exception& ex)
+        {
+            MessageBox.Show(ex.Message());
+        }
+    }
+    private void NewClick()
+    {
+        if (canvas->GetDiagram().Modified())
+        {
+            MessageBoxResult result = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this, MessageBoxType.MB_YESNOCANCEL);
+            if (result == MessageBoxResult.yes)
+            {
+                SaveClick();
+            }
+            else if (result == MessageBoxResult.cancel)
+            {
+                return;
+            }
+        }
+        UniquePtr<Diagram> diagram(new Diagram());
+        diagramFilePath.Clear();
+        filePathStatusBarItem->SetText(diagramFilePath);
+        modifiedStatusBarItem->SetText(" ");
+        canvas->SetDiagram(diagram.Release());
+    }
+    private void SaveClick()
+    {
+        try
+        {
+            if (diagramFilePath.IsEmpty())
+            {
+                SaveAsClick();
+            }
+            else
+            {
+                canvas->GetDiagram().Save(diagramFilePath);
+                canvas->GetDiagram().ResetModified();
+            }
+        }
+        catch (const Exception& ex)
+        {
+            MessageBox.Show(ex.Message());
+        }
+    }
+    private void SaveAsClick()
+    {
+        try
+        {
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(Pair<string, string>("Spring diagram files (*.spring.xml)", "*.spring.xml"));
+            string initialDirectory = DefaultDiagramDirectory();
+            string currentDirectory;
+            List<string> fileNames;
+            string defaultFilePath;
+            string filePath;
+            bool selected = System.Windows.API.GetSaveFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".spring.xml", 0u, currentDirectory, filePath);
+            if (selected)
+            {
+                if (File.Exists(filePath))
+                {
+                    if (MessageBox.Show("File '" + filePath + "' already exists. Do you want to replace it?", "File Exists", this, MessageBoxType.MB_YESNO) != MessageBoxResult.yes)
+                    {
+                        return;
+                    }
+                }
+                canvas->GetDiagram().Save(filePath);
+                diagramFilePath = filePath;
+                filePathStatusBarItem->SetText(diagramFilePath);
+                canvas->GetDiagram().ResetModified();
+            }
+        }
+        catch (const Exception& ex)
+        {
+            MessageBox.Show(ex.Message());
+        }
+    }
+    private void EditCopy()
+    {
+        spring.Selection* selection = canvas->GetDiagram().GetSelection();
+        ustring copy = selection->Copy();
+        if (!copy.IsEmpty())
+        {
+            Clipboard clipboard(Handle());
+            clipboard.SetStringData(springDiagramElementsFormat, copy);
+        }
+    }
+    private void EditCut()
+    {
+        spring.Selection* selection = canvas->GetDiagram().GetSelection();
+        ustring copy = selection->Copy();
+        if (!copy.IsEmpty())
+        {
+            Clipboard clipboard(Handle());
+            clipboard.SetStringData(springDiagramElementsFormat, copy);
+            selection->Delete();
+        }
+    }
+    private void EditPaste()
+    {
+        if (!clipboardData.IsEmpty())
+        {
+            canvas->GetDiagram().Paste(clipboardData);
+        }
+    }
+    private void EditUndo()
+    {
+        canvas->GetDiagram().Undo();
+    }
+    private void EditRedo()
+    {
+        canvas->GetDiagram().Redo();
+    }
+    private void EditSelectAll()
+    {
+        RectF diagramRect = canvas->GetDiagram().CalculateBoundingRect();
+        UniquePtr<RectangleSelection> selection(new RectangleSelection(canvas->GetDiagram(), PointF()));
+        selection->SetRect(diagramRect);
+        canvas->GetDiagram().SetSelection(selection.Release());
+        canvas->GetDiagram().SetChanged();
+        canvas->GetDiagram().Invalidate();
+
+    }
+    private void SaveImageClick()
+    {
+        SaveImageDialog dialog(diagramFilePath, canvas->GetDiagram().GetLayout());
+        if (dialog.ShowDialog(*this) == DialogResult.ok)
+        {
+            canvas->GetDiagram().SaveImage(dialog.fileName, dialog.margins, dialog.format);
+        }
+    }
+    protected override void OnKeyDown(KeyEventArgs& args)
+    {
+        base->OnKeyDown(args);
+        switch (args.key)
+        {
+            case cast<Keys>(Keys.controlModifier | Keys.insert):
+            {
+                if (copyMenuItem->IsEnabled())
+                {
+                    EditCopy();
+                }
+                args.handled = true;
+                break;
+            }
+            case cast<Keys>(Keys.shiftModifier | Keys.insert):
+            {
+                if (pasteMenuItem->IsEnabled())
+                {
+                    EditPaste();
+                }
+                args.handled = true;
+                break;
+            }
+            case cast<Keys>(Keys.shiftModifier | Keys.delete_):
+            {
+                if (cutMenuItem->IsEnabled())
+                {
+                    EditCut();
+                }
+                args.handled = true;
+                break;
+            }
+        }
+        if (!args.handled)
+        {
+            canvas->KeyDown(args);
+        }
+    }
+    private void CanvasMouseEnter()
+    {
+        xCoordStatusBarItem->SetText(string(' ', 6));
+        yCoordStatusBarItem->SetText(string(' ', 6));
+    }
+    private void CanvasMouseLeave()
+    {
+        xCoordStatusBarItem->SetText(string(' ', 6));
+        yCoordStatusBarItem->SetText(string(' ', 6));
+    }
+    private void CanvasMouseMove(MouseEventArgs& args)
+    {
+        string viewXCoordText = Format(ToString(canvas->ViewOrigin().x, 2, 2), 6, FormatJustify.right);
+        viewXCoordStatusBarItem->SetText(viewXCoordText);
+        string viewYCoordText = Format(ToString(canvas->ViewOrigin().y, 2, 2), 6, FormatJustify.right);
+        viewYCoordStatusBarItem->SetText(viewYCoordText);
+        string xCoordText = Format(ToString(canvas->ViewOrigin().x + PixelsToMM(args.location.x, ScreenMetrics.Get().DpiX()), 2, 2), 6, FormatJustify.right);
+        xCoordStatusBarItem->SetText(xCoordText);
+        string yCoordText = Format(ToString(canvas->ViewOrigin().y + PixelsToMM(args.location.y, ScreenMetrics.Get().DpiY()), 2, 2), 6, FormatJustify.right);
+        yCoordStatusBarItem->SetText(yCoordText);
+    }
+    private ClipboardFormat springDiagramElementsFormat;
+    private ClipboardListener clipboardListener;
+    private Canvas* canvas;
+    private StatusBarItem* filePathStatusBarItem;
+    private StatusBarItem* modifiedStatusBarItem;
+    private StatusBarItem* viewXCoordStatusBarItem;
+    private StatusBarItem* viewYCoordStatusBarItem;
+    private StatusBarItem* xCoordStatusBarItem;
+    private StatusBarItem* yCoordStatusBarItem;
+    private Cursor arrowCursor;
+    private Cursor& grabOpenCursor;
+    private Cursor& grabClosedCursor;
+    private Cursor& classToolCursor;
+    private Cursor& objectToolCursor;
+    private Cursor& noteToolCursor;
+    private Cursor& inheritanceToolCursor;
+    private Cursor& aggregationToolCursor;
+    private Cursor& referenceToolCursor;
+    private Cursor& createInstanceToolCursor;
+    private Cursor& attachNoteToolCursor;
+    private UniquePtr<Bitmap> noteCornerBitmap;
+    private string diagramFilePath;
+    private ustring clipboardData;
+    private MenuItem* cutMenuItem;
+    private MenuItem* copyMenuItem;
+    private MenuItem* pasteMenuItem;
+    private MenuItem* undoMenuItem;
+    private MenuItem* redoMenuItem;
+    private bool debug;
+}
+
+int main()
+{
+    try
+    {
+       MainWindow mainWindow(false);
+       mainWindow.SetSmallIcon(Application.GetResourceManager().GetIcon("spring.icon"));
+       ScreenMetrics.Save(false);
+       Graphics graphics = Graphics.FromWindowHandle(mainWindow.Handle());
+       Layout defaultLayout(graphics);
+       string defaultLayoutFileName = Path.Combine(DefaultLayoutDirectory(), "default.spring.layout.xml");
+       defaultLayout.Save(defaultLayoutFileName);
+       int exitCode = Application.Run(mainWindow);
+       return exitCode;
+    }
+    catch (const Exception& ex)
+    {
+        MessageBox.Show(ex.Message(), "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+        try
+        {
+            StreamWriter errorWriter = File.CreateText("error.txt");
+            errorWriter << ex.ToString() << endl();
+        }
+        catch (const Exception&)
+        {
+        }
+        return 1;
+    }
+    return 0;
+}

@@ -1,0 +1,1244 @@
+using System;
+using System.IO;
+using System.Collections;
+using System.Text;
+
+namespace spring
+{
+    public abstract class Selection
+    {
+        public nothrow Selection(Diagram& diagram_) :
+            diagram(diagram_)
+        {
+        }
+        public virtual default ~Selection();
+        public abstract nothrow bool IsEmpty() const;
+        public abstract nothrow int Count() const;
+        public abstract nothrow bool Contains(const System.Windows.PointF& location) const;
+        public abstract nothrow int GetContainerElementCount() const;
+        public abstract nothrow List<int> GetContainerElementIndeces() const;
+        public abstract nothrow void Clear();
+        public abstract nothrow void Delete();
+        public abstract nothrow void SetStartLocation(const System.Windows.PointF& startLocation_);
+        public abstract nothrow void Move(MouseArgs& args);
+        public abstract nothrow List<UniquePtr<DiagramElement>> Clone() const;
+        public abstract nothrow int GetFirstIndex() const;
+        public abstract nothrow void Add(int index);
+        public abstract nothrow void Remove(int index);
+        public virtual nothrow void Draw(System.Windows.Graphics& graphics)
+        {
+        }
+        public nothrow ustring Copy()
+        {
+            List<UniquePtr<DiagramElement>> clonedElements = Clone();
+            System.Dom.Document elementDoc;
+            elementDoc.AppendChild(UniquePtr<System.Dom.Node>(new System.Dom.Element(u"spring.diagram.elements")));
+            for (const UniquePtr<DiagramElement>& clonedElement : clonedElements)
+            {
+                UniquePtr<System.Dom.Element> domElement = clonedElement->CreateDomElement();
+                clonedElement->Write(domElement.Get());
+                elementDoc.DocumentElement()->AppendChild(UniquePtr<System.Dom.Node>(domElement.Release()));
+            }
+            StringWriter writer;
+            CodeFormatter formatter(writer);
+            elementDoc.Write(formatter);
+            return ToUtf32(writer.GetString());
+        }
+        public virtual nothrow void AddActions(System.Windows.ContextMenu* contextMenu)
+        {
+            System.Windows.MenuItem* saveImageMenuItem = new System.Windows.MenuItem("Save image");
+            contextMenu->AddMenuItemAction(saveImageMenuItem, new SaveSelectionAsImageAction(GetDiagram()));
+        }
+        public inline nothrow Diagram& GetDiagram() const
+        {
+            return diagram;
+        }
+        public void SaveImage(const string& fileName, const PaddingElement& margins, System.Windows.ImageFormat imageFormat)
+        {
+            List<UniquePtr<DiagramElement>> clonedElements = Clone();
+            List<DiagramElement*> diagramElements;
+            for (const UniquePtr<DiagramElement>& element : clonedElements)
+            {
+                diagramElements.Add(element.Get());
+            }
+            System.Windows.Graphics graphics = graphics.FromWindowHandle(GetDiagram().GetCanvas()->Handle());
+            spring.SaveImage(fileName, margins, GetDiagram().GetCanvas(), diagramElements, graphics, GetDiagram().GetLayout(), imageFormat);
+        }
+        private Diagram& diagram;
+    }
+
+    public class EmptySelection : spring.Selection
+    {
+        public nothrow EmptySelection(Diagram& diagram) :
+            base(diagram)
+        {
+        }
+        public override nothrow bool IsEmpty() const
+        {
+            return true;
+        }
+        public override nothrow int Count() const
+        {
+            return 0;
+        }
+        public override nothrow bool Contains(const System.Windows.PointF& location) const
+        {
+            return false;
+        }
+        public override nothrow int GetContainerElementCount() const
+        {
+            return 0;
+        }
+        public override nothrow List<int> GetContainerElementIndeces() const
+        {
+            return List<int>();
+        }
+        public override nothrow void Clear()
+        {
+        }
+        public override nothrow void Delete()
+        {
+        }
+        public override nothrow void SetStartLocation(const System.Windows.PointF& startLocation_)
+        {
+        }
+        public override nothrow void Move(MouseArgs& args)
+        {
+        }
+        public override nothrow List<UniquePtr<DiagramElement>> Clone() const
+        {
+            return List<UniquePtr<DiagramElement>>();
+        }
+        public override nothrow int GetFirstIndex() const
+        {
+            return -1;
+        }
+        public override nothrow void Add(int elementIndex)
+        {
+        }
+        public override nothrow void Remove(int elementIndex)
+        {
+        }
+        public override nothrow void AddActions(System.Windows.ContextMenu* contextMenu)
+        {
+        }
+    }
+
+    public class ElementSelection : spring.Selection
+    {
+        public nothrow ElementSelection(Diagram& diagram) :
+            base(diagram)
+        {
+        }
+        public nothrow ElementSelection(Diagram& diagram, int index) :
+            base(diagram)
+        {
+            indeces.Add(index);
+            diagram.GetElementByIndex(index)->Select();
+            diagram.EnableCopy();
+            diagram.EnableCut();
+        }
+        public nothrow ElementSelection(Diagram& diagram, List<int>&& indeces_) :
+            base(diagram), indeces(indeces_)
+        {
+        }
+        public override nothrow bool IsEmpty() const
+        {
+            return indeces.IsEmpty();
+        }
+        public override nothrow int Count() const
+        {
+            return cast<int>(indeces.Count());
+        }
+        public override nothrow bool Contains(const System.Windows.PointF& location) const
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element->Contains(location))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public override nothrow int GetContainerElementCount() const
+        {
+            int count = 0;
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+        public override nothrow List<int> GetContainerElementIndeces() const
+        {
+            List<int> containerElementIndeces;
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    containerElementIndeces.Add(index);
+                }
+            }
+            return containerElementIndeces;
+        }
+        public override nothrow void Clear()
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                GetDiagram().GetElementByIndex(index)->ResetSelected();
+            }
+            indeces.Clear();
+        }
+        public override nothrow void Delete()
+        {
+            UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(GetDiagram()));
+            List<RelationshipElement*> relationships;
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    ContainerElement* containerElement = cast<ContainerElement*>(element);
+                    List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                    for (RelationshipElement* relationship : containerElementRelationships)
+                    {
+                        if (Find(relationships.CBegin(), relationships.CEnd(), relationship) == relationships.CEnd())
+                        {
+                            relationships.Add(relationship);
+                        }
+                    }
+                }
+            }
+            for (RelationshipElement* relationship : relationships)
+            {
+                int index = GetDiagram().GetIndexOfElement(relationship);
+                if (index != -1)
+                {
+                    if (Find(indeces.CBegin(), indeces.CEnd(), index) == indeces.CEnd())
+                    {
+                        indeces.Add(index);
+                    }
+                }
+            }
+            SortByIndex();
+            int m = cast<int>(indeces.Count());
+            for (int i = m - 1; i >= 0; --i)
+            {
+                int index = indeces[i];
+                UniquePtr<DiagramElement> element = GetDiagram().RemoveElementByIndex(index);
+                if (element.Get() is RelationshipElement*)
+                {
+                    RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                    relationship->RemoveFromElements();
+                }
+                deleteElementsCommand->AddDeletedElement(element.Release(), index);
+            }
+            GetDiagram().GetCommandList().AddCommand(deleteElementsCommand.Release());
+            indeces.Clear();
+        }
+        public override nothrow void SetStartLocation(const System.Windows.PointF& startLocation_)
+        {
+        }
+        public override nothrow void Move(MouseArgs& args)
+        {
+        }
+        public override nothrow List<UniquePtr<DiagramElement>> Clone() const
+        {
+            List<UniquePtr<DiagramElement>> clonedElements;
+            List<ContainerElement*> containerElements;
+            List<RelationshipElement*> relationshipElements;
+            System.Windows.RectF boundingRect;
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    if (boundingRect.IsEmpty())
+                    {
+                        boundingRect = element->BoundingRect();
+                    }
+                    else
+                    {
+                        boundingRect = System.Windows.RectF.Union(boundingRect, element->BoundingRect());
+                    }
+                    containerElements.Add(cast<ContainerElement*>(element));
+                }
+            }
+            for (ContainerElement* containerElement : containerElements)
+            {
+                List<RelationshipElement*> containerRelationships = containerElement->GetAllRelationships();
+                for (RelationshipElement* relationship : containerRelationships)
+                {
+                    bool sourceInClosure = false;
+                    if (relationship->source.element != null)
+                    {
+                        ContainerElement* sourceContainerElement = relationship->source.element->GetContainerElement();
+                        if (Find(containerElements.CBegin(), containerElements.CEnd(), sourceContainerElement) != containerElements.CEnd())
+                        {
+                            sourceInClosure = true;
+                        }
+                    }
+                    bool sourcesInClosure = false;
+                    if (!relationship->sourceEndpoints.IsEmpty())
+                    {
+                        sourcesInClosure = true;
+                        for (const Endpoint& endpoint : relationship->sourceEndpoints)
+                        {
+                            ContainerElement* sourceContainerElement = endpoint.element->GetContainerElement();
+                            if (Find(containerElements.CBegin(), containerElements.CEnd(), sourceContainerElement) == containerElements.CEnd())
+                            {
+                                sourcesInClosure = false;
+                                break;
+                            }
+                        }
+                    }
+                    bool targetInClosure = false;
+                    if (relationship->target.element != null)
+                    {
+                        ContainerElement* targetContainerElement = relationship->target.element->GetContainerElement();
+                        if (Find(containerElements.CBegin(), containerElements.CEnd(), targetContainerElement) != containerElements.CEnd())
+                        {
+                            targetInClosure = true;
+                        }
+                    }
+                    else if (relationship->kind == RelationshipElement.kind.reference && relationship->cardinality == Cardinality.zero)
+                    {
+                        targetInClosure = true;
+                    }
+                    if ((sourceInClosure || sourcesInClosure) && targetInClosure)
+                    {
+                        if (boundingRect.IsEmpty())
+                        {
+                            boundingRect = relationship->BoundingRect();
+                        }
+                        else
+                        {
+                            boundingRect = System.Windows.RectF.Union(boundingRect, relationship->BoundingRect());
+                        }
+                        if (Find(relationshipElements.CBegin(), relationshipElements.CEnd(), relationship) == relationshipElements.CEnd())
+                        {
+                            relationshipElements.Add(relationship);
+                        }
+                    }
+                }
+            }
+            HashMap<DiagramElement*, DiagramElement*> cloneMap;
+            HashMap<ContainerElement*, int> containerElementIndexMap;
+            int nc = cast<int>(containerElements.Count());
+            for (int i = 0; i < nc; ++i)
+            {
+                ContainerElement* containerElement = containerElements[i];
+                containerElementIndexMap[containerElement] = i;
+                ContainerElement* clone = cast<ContainerElement*>(containerElement->Clone());
+                cloneMap[containerElement] = clone;
+                clonedElements.Add(UniquePtr<DiagramElement>(clone));
+            }
+            for (RelationshipElement* relationshipElement : relationshipElements)
+            {
+                RelationshipElement* clone = cast<RelationshipElement*>(relationshipElement->Clone());
+                clone->SetContainerElementIndeces(containerElementIndexMap);
+                clone->MapContainerElements(cloneMap);
+                clone->AddToElements();
+                clonedElements.Add(UniquePtr<DiagramElement>(clone));
+            }
+            for (UniquePtr<DiagramElement>& clonedElement : clonedElements)
+            {
+                clonedElement->Offset(-boundingRect.location.x, -boundingRect.location.y);
+            }
+            return clonedElements;
+        }
+        public override nothrow int GetFirstIndex() const
+        {
+            return indeces.Front();
+        }
+        public override nothrow void Add(int index)
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (indeces[i] == index) return;
+            }
+            indeces.Add(index);
+            GetDiagram().GetElementByIndex(index)->Select();
+            if (!indeces.IsEmpty())
+            {
+                GetDiagram().EnableCopy();
+                GetDiagram().EnableCut();
+            }
+        }
+        public override nothrow void Remove(int index)
+        {
+            indeces.Remove(index);
+            GetDiagram().GetElementByIndex(index)->ResetSelected();
+            if (indeces.IsEmpty())
+            {
+                GetDiagram().DisableCopy();
+                GetDiagram().DisableCut();
+            }
+        }
+        public override nothrow void AddActions(System.Windows.ContextMenu* contextMenu)
+        {
+            base->AddActions(contextMenu);
+            int containerElementCount = GetContainerElementCount();
+            if (containerElementCount > 1)
+            {
+                System.Windows.MenuItem* alignTopMenuItem = new System.Windows.MenuItem("Align top");
+                contextMenu->AddMenuItemAction(alignTopMenuItem, new AlignTopAction(GetDiagram()));
+                System.Windows.MenuItem* alignBottomMenuItem = new System.Windows.MenuItem("Align bottom");
+                contextMenu->AddMenuItemAction(alignBottomMenuItem, new AlignBottomAction(GetDiagram()));
+                System.Windows.MenuItem* alignVerticalCenterMenuItem = new System.Windows.MenuItem("Align vertical center");
+                contextMenu->AddMenuItemAction(alignVerticalCenterMenuItem, new AlignVerticalCenterAction(GetDiagram()));
+                System.Windows.MenuItem* alignLeftSideMenuItem = new System.Windows.MenuItem("Align left side");
+                contextMenu->AddMenuItemAction(alignLeftSideMenuItem, new AlignLeftSideAction(GetDiagram()));
+                System.Windows.MenuItem* alignRightSideMenuItem = new System.Windows.MenuItem("Align right side");
+                contextMenu->AddMenuItemAction(alignRightSideMenuItem, new AlignRightSideAction(GetDiagram()));
+                System.Windows.MenuItem* alignHorizontalCenterMenuItem = new System.Windows.MenuItem("Align horizontal center");
+                contextMenu->AddMenuItemAction(alignHorizontalCenterMenuItem, new AlignHorizontalCenterAction(GetDiagram()));
+                if (containerElementCount > 2)
+                {
+                    System.Windows.MenuItem* spaceEvenlyVerticallyMenuItem = new System.Windows.MenuItem("Space evenly vertically");
+                    contextMenu->AddMenuItemAction(spaceEvenlyVerticallyMenuItem, new SpaceEvenlyVerticallyAction(GetDiagram()));
+                    System.Windows.MenuItem* spaceEvenlyHorizontallyMenuItem = new System.Windows.MenuItem("Space evenly horizontally");
+                    contextMenu->AddMenuItemAction(spaceEvenlyHorizontallyMenuItem, new SpaceEvenlyHorizontallyAction(GetDiagram()));
+                }
+            }
+            else
+            {
+                bool inheritance = false;
+                int n = cast<int>(indeces.Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    inheritance = false;
+                    int index = indeces[i];
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    if (element is RelationshipElement*)
+                    {
+                        RelationshipElement* relationshipElement = cast<RelationshipElement*>(element);
+                        if (relationshipElement->kind == RelationshipElement.Kind.inheritance)
+                        {
+                            inheritance = true;
+                        }
+                    }
+                    if (!inheritance)
+                    {
+                        break;
+                    }
+                }
+                if (inheritance && n > 1)
+                {
+                    System.Windows.MenuItem* combineMenuItem = new System.Windows.MenuItem("Combine");
+                    contextMenu->AddMenuItemAction(combineMenuItem, new CombineInheritancesAction(GetDiagram()));
+                }
+            }
+            System.Windows.MenuItem* deleteMenuItem = new System.Windows.MenuItem("Delete");
+            contextMenu->AddMenuItemAction(deleteMenuItem, new DeleteSelectionAction(GetDiagram()));
+        }
+        public nothrow void SortByIndex()
+        {
+            Sort(indeces);
+        }
+        public nothrow void SortHorizontally()
+        {
+            Sort(indeces, HorizontallyLess(&GetDiagram()));
+        }
+        public nothrow void SortVertically()
+        {
+            Sort(indeces, VerticallyLess(&GetDiagram()));
+        }
+        public nothrow void AlignTop()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float top = firstElement->Location().y;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    element->SetLocation(System.Windows.PointF(element->Location().x, top));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void AlignBottom()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float bottom = firstElement->Location().y + firstElement->GetSize().h;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float elementBottom = element->Location().y + element->GetSize().h;
+                    float dy = elementBottom - bottom;
+                    float top = element->Location().y - dy;
+                    element->SetLocation(System.Windows.PointF(element->Location().x, top));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void AlignVerticalCenter()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float center = firstElement->Location().y + firstElement->GetSize().h / 2.000000f;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float elementCenter = element->Location().y + element->GetSize().h / 2;
+                    float dy = elementCenter - center;
+                    float top = element->Location().y - dy;
+                    element->SetLocation(System.Windows.PointF(element->Location().x, top));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void AlignLeftSide()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float leftSide = firstElement->Location().x;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    element->SetLocation(System.Windows.PointF(leftSide, element->Location().y));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void AlignRightSide()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float rightSide = firstElement->Location().x + firstElement->GetSize().w;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float elementRightSide = element->Location().x + element->GetSize().w;
+                    float dx = elementRightSide - rightSide;
+                    float leftSide = element->Location().x - dx;
+                    element->SetLocation(System.Windows.PointF(leftSide, element->Location().y));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void AlignHorizontalCenter()
+        {
+            if (!indeces.IsEmpty())
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                float center = firstElement->Location().x + firstElement->GetSize().w / 2.000000f;
+                int n = cast<int>(indeces.Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float elementCenter = element->Location().x + element->GetSize().w / 2.000000f;
+                    float dx = elementCenter - center;
+                    float leftSide = element->Location().x - dx;
+                    element->SetLocation(System.Windows.PointF(leftSide, element->Location().y));
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void SpaceEvenlyVertically()
+        {
+            if (indeces.Count() > 2)
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                DiagramElement* lastElement = GetDiagram().GetElementByIndex(indeces.Back());
+                float firstElementBottom = firstElement->Location().y + firstElement->GetSize().h;
+                float lastElementTop = lastElement->Location().y;
+                int n = cast<int>(indeces.Count());
+                float space = lastElementTop - firstElementBottom;
+                for (int i = 1; i < n - 1; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    space = space - element->GetSize().h;
+                }
+                space = space / (n - 1);
+                float prevElementBottom = firstElementBottom;
+                for (int i = 1; i < n - 1; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float top = prevElementBottom + space;
+                    element->SetLocation(System.Windows.PointF(element->Location().x, top));
+                    prevElementBottom = top + element->GetSize().h;
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public nothrow void SpaceEvenlyHorizontally()
+        {
+            if (indeces.Count() > 2)
+            {
+                UniquePtr<MoveCommand> moveCommand(new MoveCommand(GetDiagram()));
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+                }
+                DiagramElement* firstElement = GetDiagram().GetElementByIndex(indeces.Front());
+                DiagramElement* lastElement = GetDiagram().GetElementByIndex(indeces.Back());
+                float firstElementRightSide = firstElement->Location().x + firstElement->GetSize().w;
+                float lastElementLeftSide = lastElement->Location().x;
+                int n = cast<int>(indeces.Count());
+                float space = lastElementLeftSide - firstElementRightSide;
+                for (int i = 1; i < n - 1; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    space = space - element->GetSize().w;
+                }
+                space = space / (n - 1);
+                float prevElementRightSide = firstElementRightSide;
+                for (int i = 1; i < n - 1; ++i)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(indeces[i]);
+                    float left = prevElementRightSide + space;
+                    element->SetLocation(System.Windows.PointF(left, element->Location().y));
+                    prevElementRightSide = left + element->GetSize().w;
+                }
+                for (int index : indeces)
+                {
+                    DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                    moveCommand->AddNewLocation(element->GetCompoundLocation());
+                }
+                GetDiagram().GetCommandList().AddCommand(moveCommand.Release());
+            }
+        }
+        public void CombineInheritanceRelationships()
+        {
+            List<RelationshipElement*> inheritanceRelationships;
+            for (int index : indeces)
+            {
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is RelationshipElement*)
+                {
+                    RelationshipElement* relationshipElement = cast<RelationshipElement*>(element);
+                    if (relationshipElement->kind == RelationshipElement.Kind.inheritance)
+                    {
+                        inheritanceRelationships.Add(relationshipElement);
+                    }
+                }
+            }
+            List<RelationshipElement*> sourceRelationships;
+            UniquePtr<RelationshipElement> combinedInheritanceRelationship = CombineInheritanceRelationships(inheritanceRelationships, sourceRelationships);
+            if (!combinedInheritanceRelationship.IsNull())
+            {
+                List<int> inheritanceRelationshipIndeces;
+                for (RelationshipElement* sourceRelationship : sourceRelationships)
+                {
+                    int index = GetDiagram().GetIndexOfElement(sourceRelationship);
+                    if (index != -1)
+                    {
+                        inheritanceRelationshipIndeces.Add(index);
+                    }
+                }
+                UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(GetDiagram()));
+                Sort(inheritanceRelationshipIndeces);
+                int n = cast<int>(inheritanceRelationshipIndeces.Count());
+                for (int i = n - 1; i >= 0; --i)
+                {
+                    int index = inheritanceRelationshipIndeces[i];
+                    UniquePtr<DiagramElement> element = GetDiagram().RemoveElementByIndex(index);
+                    if (element.Get() is RelationshipElement*)
+                    {
+                        RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                        relationship->RemoveFromElements();
+                    }
+                    deleteElementsCommand->AddDeletedElement(element.Release(), index);
+                    indeces.Remove(index);
+                }
+                GetDiagram().GetCommandList().AddCommand(deleteElementsCommand.Release());
+                int addIndex = GetDiagram().NextIndex();
+                UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(GetDiagram()));
+                addElementsCommand->AddIndex(addIndex);
+                combinedInheritanceRelationship->AddToElements();
+                GetDiagram().AddElement(combinedInheritanceRelationship.Release());
+                GetDiagram().GetCommandList().AddCommand(addElementsCommand.Release());
+            }
+        }
+        private List<int> indeces;
+    }
+
+    public class ResizeHandle
+    {
+        public nothrow ResizeHandle(RectangleSelection* selection_, const System.Windows.PointF& location_, const Snap& snap_) :
+            selection(selection_), location(location_), startLocation(location), snap(snap_)
+        {
+            switch (snap.ToInt())
+            {
+                case Snap.TopLeft(): case Snap.BottomRight(): 
+                {
+                    cursor = System.Windows.LoadStandardCursor(System.Windows.StandardCursorId.IDC_SIZENWSE);
+                    break;
+                }
+                case Snap.TopCenter(): case Snap.BottomCenter(): 
+                {
+                    cursor = System.Windows.LoadStandardCursor(System.Windows.StandardCursorId.IDC_SIZENS);
+                    break;
+                }
+                case Snap.TopRight(): case Snap.BottomLeft(): 
+                {
+                    cursor = System.Windows.LoadStandardCursor(System.Windows.StandardCursorId.IDC_SIZENESW);
+                    break;
+                }
+                case Snap.RightCenter(): case Snap.LeftCenter(): 
+                {
+                    cursor = System.Windows.LoadStandardCursor(System.Windows.StandardCursorId.IDC_SIZEWE);
+                    break;
+                }
+            }
+        }
+        public inline nothrow RectangleSelection* GetSelection() const
+        {
+            return selection;
+        }
+        public nothrow bool Contains(const System.Windows.PointF& loc)
+        {
+            return System.Windows.Distance(location, loc) <= 2 * width;
+        }
+        public void Draw(System.Windows.Graphics& graphics, Layout& layout)
+        {
+            const ResizeHandleLayoutElement& resizeHandleLayoutElement = layout.GetResizeHandleLayoutElement();
+            width = resizeHandleLayoutElement.ResizeHandleWidth();
+            System.Windows.Vector towv = System.Windows.Vector(-1, 0) * (width / 2.000000f);
+            System.Windows.Line towl(location, towv);
+            System.Windows.Vector tonv = System.Windows.Vector(0, -1) * (width / 2.000000f);
+            System.Windows.Line tonl(towl.end, tonv);
+            System.Windows.PointF nw(tonl.end);
+            System.Windows.RectF rect(nw, System.Windows.SizeF(width, width));
+            const System.Windows.Brush* brush = resizeHandleLayoutElement.InsideBrush();
+            const System.Windows.Pen& pen = resizeHandleLayoutElement.LinePen();
+            graphics.FillRectangleChecked(*brush, rect);
+            graphics.DrawRectangleChecked(pen, rect);
+        }
+        public nothrow void Locate(const System.Windows.RectF& rect)
+        {
+            switch (snap.ToInt())
+            {
+                case Snap.TopLeft(): 
+                {
+                    location = rect.location;
+                    break;
+                }
+                case Snap.TopCenter(): 
+                {
+                    location = System.Windows.PointF(rect.location.x + rect.size.w / 2.000000f, rect.location.y);
+                    break;
+                }
+                case Snap.TopRight(): 
+                {
+                    location = System.Windows.PointF(rect.location.x + rect.size.w, rect.location.y);
+                    break;
+                }
+                case Snap.RightCenter(): 
+                {
+                    location = System.Windows.PointF(rect.location.x + rect.size.w, rect.location.y + rect.size.h / 2.000000f);
+                    break;
+                }
+                case Snap.BottomRight(): 
+                {
+                    location = System.Windows.PointF(rect.location.x + rect.size.w, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Snap.BottomCenter(): 
+                {
+                    location = System.Windows.PointF(rect.location.x + rect.size.w / 2.000000f, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Snap.BottomLeft(): 
+                {
+                    location = System.Windows.PointF(rect.location.x, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Snap.LeftCenter(): 
+                {
+                    location = System.Windows.PointF(rect.location.x, rect.location.y + rect.size.h / 2.000000f);
+                    break;
+                }
+            }
+        }
+        public nothrow void Move(float dx, float dy)
+        {
+            System.Windows.RectF selectionRect = selection->StartRect();
+            switch (snap.ToInt())
+            {
+                case Snap.TopLeft(): 
+                {
+                    selectionRect.Offset(dx, dy);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Snap.TopCenter(): 
+                {
+                    selectionRect.Offset(0.000000f, dy);
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Snap.TopRight(): 
+                {
+                    selectionRect.Offset(0.000000f, dy);
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Snap.RightCenter(): 
+                {
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    break;
+                }
+                case Snap.BottomRight(): 
+                {
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Snap.BottomCenter(): 
+                {
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Snap.BottomLeft(): 
+                {
+                    selectionRect.Offset(dx, 0.000000f);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Snap.LeftCenter(): 
+                {
+                    selectionRect.Offset(dx, 0.000000f);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    break;
+                }
+            }
+            selection->SetRect(selectionRect);
+        }
+        public nothrow System.Windows.Cursor* GetCursor() const
+        {
+            return &cursor;
+        }
+        private RectangleSelection* selection;
+        private System.Windows.PointF location;
+        private System.Windows.PointF startLocation;
+        private Snap snap;
+        private System.Windows.Cursor cursor;
+        private float width;
+    }
+
+    public class RectangleSelection : spring.Selection
+    {
+        public nothrow RectangleSelection(Diagram& diagram, const System.Windows.PointF& startLocation_) :
+            base(diagram), rect(startLocation_, System.Windows.SizeF()), startLocation(startLocation_), arrowCursor(System.Windows.LoadStandardCursor(System.Windows.StandardCursorId.IDC_ARROW))
+        {
+            ResizeHandle* nw(new ResizeHandle(this, startLocation, Snap(Snap.TopLeft())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(nw));
+            ResizeHandle* n(new ResizeHandle(this, startLocation, Snap(Snap.TopCenter())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(n));
+            ResizeHandle* ne(new ResizeHandle(this, startLocation, Snap(Snap.TopRight())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(ne));
+            ResizeHandle* e(new ResizeHandle(this, startLocation, Snap(Snap.RightCenter())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(e));
+            ResizeHandle* se(new ResizeHandle(this, startLocation, Snap(Snap.BottomRight())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(se));
+            ResizeHandle* s(new ResizeHandle(this, startLocation, Snap(Snap.BottomCenter())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(s));
+            ResizeHandle* sw(new ResizeHandle(this, startLocation, Snap(Snap.BottomLeft())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(sw));
+            ResizeHandle* w(new ResizeHandle(this, startLocation, Snap(Snap.LeftCenter())));
+            resizeHandles.Add(UniquePtr<ResizeHandle>(w));
+        }
+        public override nothrow bool IsEmpty() const
+        {
+            if (rect.IsEmpty()) return true;
+            return !GetDiagram().HasIntersectingContrainerElements(rect);
+        }
+        public override nothrow int Count() const
+        {
+            return GetDiagram().GetNumberOfIntersectingContainerElements(rect);
+        }
+        public override nothrow bool Contains(const System.Windows.PointF& location) const
+        {
+            return rect.Contains(location);
+        }
+        public override nothrow int GetContainerElementCount() const
+        {
+            return GetDiagram().GetNumberOfIntersectingContainerElements(rect);
+        }
+        public override nothrow List<int> GetContainerElementIndeces() const
+        {
+            return GetDiagram().GetIntersectingContainerElementIndeces(rect);
+        }
+        public override nothrow void Clear()
+        {
+            rect = System.Windows.RectF();
+        }
+        public override nothrow void Delete()
+        {
+            UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(GetDiagram()));
+            List<int> elementIndeces = GetContainerElementIndeces();
+            List<RelationshipElement*> relationships;
+            int n = cast<int>(elementIndeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = elementIndeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    ContainerElement* containerElement = cast<ContainerElement*>(element);
+                    List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                    for (RelationshipElement* relationship : containerElementRelationships)
+                    {
+                        if (Find(relationships.CBegin(), relationships.CEnd(), relationship) == relationships.CEnd())
+                        {
+                            relationships.Add(relationship);
+                        }
+                    }
+                }
+            }
+            for (RelationshipElement* relationship : relationships)
+            {
+                int index = GetDiagram().GetIndexOfElement(relationship);
+                if (index != -1)
+                {
+                    if (Find(elementIndeces.CBegin(), elementIndeces.CEnd(), index) == elementIndeces.CEnd())
+                    {
+                        elementIndeces.Add(index);
+                    }
+                }
+            }
+            Sort(elementIndeces);
+            int m = cast<int>(elementIndeces.Count());
+            for (int i = m - 1; i >= 0; --i)
+            {
+                int index = elementIndeces[i];
+                UniquePtr<DiagramElement> element = GetDiagram().RemoveElementByIndex(index);
+                if (element.Get() is RelationshipElement*)
+                {
+                    RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                    relationship->RemoveFromElements();
+                }
+                deleteElementsCommand->AddDeletedElement(element.Release(), index);
+            }
+            GetDiagram().GetCommandList().AddCommand(deleteElementsCommand.Release());
+        }
+        public override nothrow void SetStartLocation(const System.Windows.PointF& startLocation_)
+        {
+            startLocation = startLocation_;
+            startRect = rect;
+        }
+        public override nothrow void Move(MouseArgs& args)
+        {
+            float dx = args.location.x - startLocation.x;
+            float dy = args.location.y - startLocation.y;
+            rect.location.x = startRect.location.x + dx;
+            rect.location.y = startRect.location.y + dy;
+            LocateResizeHandles();
+        }
+        public inline nothrow const System.Windows.PointF& Location() const
+        {
+            return rect.location;
+        }
+        public inline nothrow const System.Windows.SizeF& GetSize() const
+        {
+            return rect.size;
+        }
+        public inline nothrow const System.Windows.RectF& StartRect() const
+        {
+            return startRect;
+        }
+        public nothrow void SetSize(const System.Windows.SizeF& size_)
+        {
+            rect.size = size_;
+            LocateResizeHandles();
+        }
+        public nothrow void SetRect(const System.Windows.RectF& rect_)
+        {
+            rect = rect_;
+            LocateResizeHandles();
+        }
+        public override nothrow List<UniquePtr<DiagramElement>> Clone() const
+        {
+            List<UniquePtr<DiagramElement>> clonedElements;
+            List<ContainerElement*> containerElements;
+            List<RelationshipElement*> relationshipElements;
+            System.Windows.RectF boundingRect;
+            List<int> containerElementIndeces = GetContainerElementIndeces();
+            int n = cast<int>(containerElementIndeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = containerElementIndeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                if (element is ContainerElement*)
+                {
+                    if (boundingRect.IsEmpty())
+                    {
+                        boundingRect = element->BoundingRect();
+                    }
+                    else
+                    {
+                        boundingRect = System.Windows.RectF.Union(boundingRect, element->BoundingRect());
+                    }
+                    containerElements.Add(cast<ContainerElement*>(element));
+                }
+            }
+            for (ContainerElement* containerElement : containerElements)
+            {
+                List<RelationshipElement*> containerRelationships = containerElement->GetAllRelationships();
+                for (RelationshipElement* relationship : containerRelationships)
+                {
+                    bool sourceInClosure = false;
+                    if (relationship->source.element != null)
+                    {
+                        ContainerElement* sourceContainerElement = relationship->source.element->GetContainerElement();
+                        if (Find(containerElements.CBegin(), containerElements.CEnd(), sourceContainerElement) != containerElements.CEnd())
+                        {
+                            sourceInClosure = true;
+                        }
+                    }
+                    bool sourcesInClosure = false;
+                    if (!relationship->sourceEndpoints.IsEmpty())
+                    {
+                        sourcesInClosure = true;
+                        for (const Endpoint& endpoint : relationship->sourceEndpoints)
+                        {
+                            ContainerElement* sourceContainerElement = endpoint.element->GetContainerElement();
+                            if (Find(containerElements.CBegin(), containerElements.CEnd(), sourceContainerElement) == containerElements.CEnd())
+                            {
+                                sourcesInClosure = false;
+                                break;
+                            }
+                        }
+                    }
+                    bool targetInClosure = false;
+                    if (relationship->target.element != null)
+                    {
+                        ContainerElement* targetContainerElement = relationship->target.element->GetContainerElement();
+                        if (Find(containerElements.CBegin(), containerElements.CEnd(), targetContainerElement) != containerElements.CEnd())
+                        {
+                            targetInClosure = true;
+                        }
+                    }
+                    else if (relationship->kind == RelationshipElement.kind.reference && relationship->cardinality == Cardinality.zero)
+                    {
+                        targetInClosure = true;
+                    }
+                    if ((sourceInClosure || sourcesInClosure) && targetInClosure)
+                    {
+                        if (boundingRect.IsEmpty())
+                        {
+                            boundingRect = relationship->BoundingRect();
+                        }
+                        else
+                        {
+                            boundingRect = System.Windows.RectF.Union(boundingRect, relationship->BoundingRect());
+                        }
+                        if (Find(relationshipElements.CBegin(), relationshipElements.CEnd(), relationship) == relationshipElements.CEnd())
+                        {
+                            relationshipElements.Add(relationship);
+                        }
+                    }
+                }
+            }
+            HashMap<DiagramElement*, DiagramElement*> cloneMap;
+            HashMap<ContainerElement*, int> containerElementIndexMap;
+            int nc = cast<int>(containerElements.Count());
+            for (int i = 0; i < nc; ++i)
+            {
+                ContainerElement* containerElement = containerElements[i];
+                containerElementIndexMap[containerElement] = i;
+                ContainerElement* clone = cast<ContainerElement*>(containerElement->Clone());
+                cloneMap[containerElement] = clone;
+                clonedElements.Add(UniquePtr<DiagramElement>(clone));
+            }
+            for (RelationshipElement* relationshipElement : relationshipElements)
+            {
+                RelationshipElement* clone = cast<RelationshipElement*>(relationshipElement->Clone());
+                clone->SetContainerElementIndeces(containerElementIndexMap);
+                clone->MapContainerElements(cloneMap);
+                clone->AddToElements();
+                clonedElements.Add(UniquePtr<DiagramElement>(clone));
+            }
+            for (UniquePtr<DiagramElement>& clonedElement : clonedElements)
+            {
+                clonedElement->Offset(-boundingRect.location.x, -boundingRect.location.y);
+            }
+            return clonedElements;
+        }
+        public override nothrow int GetFirstIndex() const
+        {
+            List<int> containerElementIndeces = GetContainerElementIndeces();
+            if (!containerElementIndeces.IsEmpty())
+            {
+                return containerElementIndeces.Front();
+            }
+            return -1;
+        }
+        public override nothrow void Add(int index)
+        {
+        }
+        public override nothrow void Remove(int index)
+        {
+        }
+        public override nothrow void AddActions(System.Windows.ContextMenu* contextMenu)
+        {
+            base->AddActions(contextMenu);
+            System.Windows.MenuItem* deleteMenuItem = new System.Windows.MenuItem("Delete");
+            contextMenu->AddMenuItemAction(deleteMenuItem, new DeleteSelectionAction(GetDiagram()));
+        }
+        public override nothrow void Draw(System.Windows.Graphics& graphics)
+        {
+            Layout& layout = GetDiagram().GetLayout();
+            const ColorElement& selectedColorElement = layout.GetSelectedColorElement();
+            const System.Windows.Brush* brush = selectedColorElement.GetBrush(layout);
+            graphics.FillRectangleChecked(*brush, rect);
+            DrawResizeHandles(graphics, layout);
+        }
+        public System.Windows.Cursor* GetCursor(const System.Windows.PointF& location)
+        {
+            for (UniquePtr<ResizeHandle>& handle : resizeHandles)
+            {
+                if (handle->Contains(location))
+                {
+                    return handle->GetCursor();
+                }
+            }
+            return &arrowCursor;
+        }
+        public nothrow ResizeHandle* GetResizeHandle(const System.Windows.PointF& location) const
+        {
+            for (UniquePtr<ResizeHandle>& handle : resizeHandles)
+            {
+                if (handle->Contains(location))
+                {
+                    return handle.Get();
+                }
+            }
+            return null;
+        }
+        private void LocateResizeHandles()
+        {
+            for (UniquePtr<ResizeHandle>& handle : resizeHandles)
+            {
+                handle->Locate(rect);
+            }
+        }
+        private void DrawResizeHandles(System.Windows.Graphics& graphics, Layout& layout)
+        {
+            for (UniquePtr<ResizeHandle>& handle : resizeHandles)
+            {
+                handle->Draw(graphics, layout);
+            }
+        }
+        private System.Windows.RectF rect;
+        private System.Windows.RectF startRect;
+        private System.Windows.PointF startLocation;
+        private List<UniquePtr<ResizeHandle>> resizeHandles;
+        private System.Windows.Cursor arrowCursor;
+    }
+
+} // namespace spring

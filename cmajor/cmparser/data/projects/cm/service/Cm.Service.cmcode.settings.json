@@ -1,0 +1,99 @@
+{
+    "breakpoints" : 
+    {
+        "breakpointLists" : 
+        [
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmcode\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/Breakpoint.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/BuildServerMessage.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/BuildService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/CodeCompletionMessage.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/CodeCompletionService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/PortMapService.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/ServiceBase.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/ConditionVariable.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/LinkedList.cm"
+            }
+        ]
+    }
+    , 
+    "programArguments" : ""
+}

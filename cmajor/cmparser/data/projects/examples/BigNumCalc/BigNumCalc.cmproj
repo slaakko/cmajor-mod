@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>02f1fbb4-dae0-4cad-8421-844ad6ded513</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>program</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="BigNumClassMap.cm"/>
+  <CmCompile Include="BigNumExpressionParser.cm"/>
+  <CmCompile Include="BigNumLexer.cm"/>
+  <CmCompile Include="BigNumParser.cm"/>
+  <CmCompile Include="BigNumTokens.cm"/>
+  <CmCompile Include="BigValue.cm"/>
+  <CmCompile Include="Evaluator.cm"/>
+  <CmCompile Include="Main.cm"/>
+ </ItemGroup>
+ <ItemGroup>
+  <None Include="BigNumExpressionParser.parser"/>
+  <None Include="BigNumLexer.lexer"/>
+  <None Include="BigNumParser.spg"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

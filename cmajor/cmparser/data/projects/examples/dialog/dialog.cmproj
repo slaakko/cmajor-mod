@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>e5cae11b-5d6f-4bf2-87cc-2ace0ab0e468</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>winguiapp</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="dialog.cm"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

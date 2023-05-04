@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>9e072d48-2f21-423f-a0f4-7bc728a8a106</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>library</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="bicycle.cm"/>
+  <CmCompile Include="car.cm"/>
+  <CmCompile Include="load.cm"/>
+  <CmCompile Include="person.cm"/>
+  <CmCompile Include="register.cm"/>
+  <CmCompile Include="save.cm"/>
+  <CmCompile Include="vehicle.cm"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

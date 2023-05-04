@@ -1,0 +1,79 @@
+using System;
+using Sirius.Math;
+
+namespace Sirius.Graphics
+{
+    public class Camera
+    {
+        public nothrow Camera() :
+            location(), pointAt(), up(), distance()
+        {
+        }
+        public nothrow Camera(const Vector& location_, const Vector& pointAt_, const Vector& up_, float distance_)
+        {
+            Move(location_, pointAt_, up_, distance_);
+        }
+        public nothrow void Move(const Vector& location_, const Vector& pointAt_, const Vector& up_, float distance_)
+        {
+            if (location != location_ || pointAt != pointAt_ || up != up_ || distance != distance_)
+            {
+                location = location_;
+                pointAt = pointAt_;
+                viewVector = location - pointAt;
+                up = up_;
+                distance = distance_;
+                SetMapping();
+            }
+        }
+        public inline nothrow const Vector& ViewVector() const
+        {
+            return viewVector;
+        }
+        public nothrow void SetMapping()
+        {
+            Matrix vm = View(location, pointAt, up);
+            viewMatrix = vm;
+            Matrix pm = Projection(distance);
+            projectionMatrix = pm;
+            Matrix mappingMatrix = projectionMatrix * viewMatrix;
+            mapping = mappingMatrix;
+        }
+        public inline nothrow const Matrix& ViewMatrix() const
+        {
+            return viewMatrix;
+        }
+        public inline nothrow const Matrix& ProjectionMatrix() const
+        {
+            return projectionMatrix;
+        }
+        public inline nothrow const Matrix& Mapping() const
+        {
+            return mapping;
+        }
+        public inline nothrow const Vector& Location() const
+        {
+            return location;
+        }
+        public inline nothrow const Vector& PointAt() const
+        {
+            return pointAt;
+        }
+        public inline nothrow const Vector& Up() const
+        {
+            return up;
+        }
+        public inline nothrow float Distance() const
+        {
+            return distance;
+        }
+        private Vector location;
+        private Vector pointAt;
+        private Vector viewVector;
+        private Vector up;
+        private float distance;
+        private Matrix viewMatrix;
+        private Matrix projectionMatrix;
+        private Matrix mapping;
+    }
+
+} // namespace Sirius.Graphics

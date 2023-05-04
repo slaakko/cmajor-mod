@@ -1,0 +1,165 @@
+using System;
+using MdbTokens;
+
+parser MdbExprParser
+{
+    uselexer MdbLexer;
+    main;
+
+    Expression : cmsx.debug.Node*
+        ::= FormatExpression:formatExpr{ return formatExpr; }
+        ;
+
+    FormatExpression(var UniquePtr<cmsx.debug.Node> node) : cmsx.debug.Node*
+        ::= (BinaryExpression:binaryExpr{ node.Reset(binaryExpr); } (DOT Format:f{ node.Reset(new cmsx.debug.FormatExpressionNode(span, node.Release(), f)); })?){ return node.Release(); }
+        ;
+
+    Format(var Span s) : cmsx.debug.ResultFormat
+        ::= ID
+        {
+            pass = true;
+            cmsx.debug.ResultFormat format;
+            string f = ToUtf8(lexer.GetToken(pos).match.ToString());
+            switch (cast<char>(f[0]))
+            {
+                case 'b': format.type = cmsx.debug.Type.byte_; break;
+                case 'w': format.type = cmsx.debug.Type.wyde; break;
+                case 't': format.type = cmsx.debug.Type.tetra; break;
+                case 'o': format.type = cmsx.debug.Type.octa; break;
+                case 'c': format.type = cmsx.debug.Type.char_; break;
+                case 's': format.type = cmsx.debug.Type.string; break;
+                default: pass = false; break;
+            }
+            if (pass == true)
+            {
+                if (f.Length() == 2)
+                {
+                    switch (cast<char>(f[1]))
+                    {
+                        case 's': format.modifier = cmsx.debug.Modifier.signed; break;
+                        case 'x': format.modifier = cmsx.debug.Modifier.hex; break;
+                        default: pass = false; break;
+                    }
+                }
+                else if (f.Length() > 2)
+                {
+                    pass = false;
+                }
+            }
+            if (pass)
+            {
+                return format;
+            }
+        }
+        |   (DEC{ s = span; } (ID{ s.end = span.end; })?)
+        {
+            pass = true;
+            cmsx.debug.ResultFormat format;
+            string f = ToUtf8(lexer.GetMatch(s));
+            switch (cast<char>(f[0]))
+            {
+                case '1': format.type = cmsx.debug.Type.byte_; break;
+                case '2': format.type = cmsx.debug.Type.wyde; break;
+                case '4': format.type = cmsx.debug.Type.tetra; break;
+                case '8': format.type = cmsx.debug.Type.octa; break;
+                default: pass = false; break;
+            }
+            if (pass == true)
+            {
+                if (f.Length() == 2)
+                {
+                    switch (cast<char>(f[1]))
+                    {
+                        case 's': format.modifier = cmsx.debug.Modifier.signed; break;
+                        case 'x': format.modifier = cmsx.debug.Modifier.hex; break;
+                        default: pass = false; break;
+                    }
+                }
+                else if (f.Length() > 2)
+                {
+                    pass = false;
+                }
+            }
+            if (pass)
+            {
+                return format;
+            }
+        }
+        ;
+
+    BinaryExpression(var UniquePtr<cmsx.debug.Node> node) : cmsx.debug.Node*
+        ::= (Term:left{ node.Reset(left); } (WeakOperator:op Term:right{ node.Reset(new cmsx.debug.BinaryExpressionNode(span, node.Release(), right, op)); })*){ return node.Release(); }
+        ;
+
+    WeakOperator : cmsx.debug.Operator
+        ::= PLUS{ return cmsx.debug.Operator.add; }
+        |   MINUS{ return cmsx.debug.Operator.sub; }
+        |   BAR{ return cmsx.debug.Operator.or_; }
+        |   CARET{ return cmsx.debug.Operator.xor_; }
+        ;
+
+    Term(var UniquePtr<cmsx.debug.Node> node) : cmsx.debug.Node*
+        ::= (UnaryExpression:left{ node.Reset(left); } (StrongOperator:op UnaryExpression:right{ node.Reset(new cmsx.debug.BinaryExpressionNode(span, node.Release(), right, op)); })*)
+        {
+            return node.Release();
+        }
+        ;
+
+    StrongOperator : cmsx.debug.Operator
+        ::= AST{ return cmsx.debug.Operator.mul; }
+        |   SLASH{ return cmsx.debug.Operator.div; }
+        |   PERCENT{ return cmsx.debug.Operator.mod; }
+        |   SHIFT_LEFT{ return cmsx.debug.Operator.shiftLeft; }
+        |   SHIFT_RIGHT{ return cmsx.debug.Operator.shiftRight; }
+        |   AMP{ return cmsx.debug.Operator.and_; }
+        ;
+
+    UnaryExpression : cmsx.debug.Node*
+        ::= LPAREN Expression:expr RPAREN{ return new cmsx.debug.ParenthesizedExpressionNode(span, expr); }
+        |   UnaryOperator:op UnaryExpression:child{ return new cmsx.debug.UnaryExpressionNode(span, child, op); }
+        |   PrimaryExpression:primary{ return primary; }
+        ;
+
+    UnaryOperator : cmsx.debug.Operator
+        ::= PLUS{ return cmsx.debug.Operator.unaryPlus; }
+        |   MINUS{ return cmsx.debug.Operator.unaryMinus; }
+        |   TILDE{ return cmsx.debug.Operator.complement; }
+        |   AST{ return cmsx.debug.Operator.deref; }
+        ;
+
+    PrimaryExpression : cmsx.debug.Node*
+        ::= SEG
+        {
+            uchar s = lexer.GetToken(pos).match.ToString()[1];
+            switch (s)
+            {
+                case 't': return new cmsx.debug.SegmentNode(span, cmsx.machine.textSegmentIndex);
+                case 'd': return new cmsx.debug.SegmentNode(span, cmsx.machine.dataSegmentIndex);
+                case 'p': return new cmsx.debug.SegmentNode(span, cmsx.machine.poolSegmentIndex);
+                case 's': return new cmsx.debug.SegmentNode(span, cmsx.machine.stackSegmentIndex);
+                case 'k': return new cmsx.debug.SegmentNode(span, cmsx.machine.numSegments);
+            }
+            return null;
+        }
+        |   REG
+        {
+            byte x = ParseByte(ToUtf8(lexer.GetToken(pos).match.ToString().Substring(1)));
+            return new cmsx.debug.RegNumberNode(span, x);
+        }
+        |   HEX
+        {
+            ulong x = ParseHexULong(ToUtf8(lexer.GetToken(pos).match.ToString().Substring(1)));
+            return new cmsx.debug.HexNumberNode(span, x);
+        }
+        |   DEC
+        {
+            ulong x = ParseULong(ToUtf8(lexer.GetToken(pos).match.ToString()));
+            return new cmsx.debug.DecNumberNode(span, x);
+        }
+        |   ID
+        {
+            ustring id = lexer.GetToken(pos).match.ToString();
+            return new cmsx.debug.SymbolNode(span, id);
+        }
+        ;
+}

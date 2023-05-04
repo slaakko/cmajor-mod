@@ -1,0 +1,17 @@
+namespace System.Runtime
+{
+    public class FunctionProfiler
+    {
+        public explicit nothrow FunctionProfiler(void* functionId_) :
+            functionId(functionId_)
+        {
+            RtProfileStartFunction(functionId);
+        }
+        public ~FunctionProfiler()
+        {
+            RtProfileEndFunction(functionId);
+        }
+        private void* functionId;
+    }
+
+} // namespace System.Runtime

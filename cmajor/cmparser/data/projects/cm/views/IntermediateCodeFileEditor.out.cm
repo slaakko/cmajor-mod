@@ -1,0 +1,49 @@
+using System;
+using System.Windows;
+
+namespace Cm.Views
+{
+    public class IntermediateCodeFileEditor : Editor
+    {
+        public IntermediateCodeFileEditor(const string& filePath) :
+            base(filePath)
+        {
+            UniquePtr<TextView> textViewPtr(new TextView(Point(), Size(), Dock.none, Anchors.none));
+            textView = textViewPtr.Get();
+            textView->SetScrollSubject();
+            textView->SetReadOnly();
+            UniquePtr<ScrollableControl> scrollableTextView(new ScrollableControl(textViewPtr.Release(), Point(), Size(), Dock.fill, Anchors.none));
+            AddChild(scrollableTextView.Release());
+            ustring content = ToUtf32(File.ReadAllText(filePath));
+            textView->SetTextContent(content);
+            textView->SetFixed();
+            textView->SetIndentSize(1);
+            textView->SetFilePath(filePath);
+        }
+        public override nothrow TextView* GetTextView() const
+        {
+            return textView;
+        }
+        public override void SaveTo(const string& filePath)
+        {
+        }
+        public override nothrow bool IsDirty() const
+        {
+            return false;
+        }
+        public override nothrow void ResetDirty()
+        {
+        }
+        public override nothrow void Select()
+        {
+        }
+        public override nothrow void Undo()
+        {
+        }
+        public override nothrow void Redo()
+        {
+        }
+        private TextView* textView;
+    }
+
+} // namespace Cm.Views

@@ -1,0 +1,12 @@
+solution Cm;
+project <ast/Cm.Ast.cmp>;
+project <lexer/Cm.Lexer.cmp>;
+project <nothrowlexer/Cm.Nothrow.Lexer.cmp>;
+project <nothrowparser/Cm.Nothrow.Parser.cmp>;
+project <parser/Cm.Parser.cmp>;
+project <service/Cm.Service.cmp>;
+project <views/Cm.Views.cmp>;
+project <cmcmcode/cmcmcode.cmp>;
+project <cmcmparser/cmcmparser.cmp>;
+project <cmpmm/cmpmm.cmp>;
+activeProject cmcmcode;

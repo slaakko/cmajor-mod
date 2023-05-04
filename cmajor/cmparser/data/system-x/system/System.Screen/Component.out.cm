@@ -1,0 +1,72 @@
+using System;
+
+namespace System.Screen
+{
+    public abstract class Component
+    {
+        public nothrow Component() :
+            container(null), nextSibling(null), prevSibling(null)
+        {
+        }
+        public virtual default ~Component();
+        public nothrow Container* GetContainer() const
+        {
+            return container;
+        }
+        public nothrow void SetContainer(Container* container_)
+        {
+            container = container_;
+        }
+        public nothrow Component* NextSibling() const
+        {
+            return nextSibling;
+        }
+        public nothrow void SetNextSibling(Component* nextSibling_)
+        {
+            nextSibling = nextSibling_;
+        }
+        public nothrow Component* PrevSibling() const
+        {
+            return prevSibling;
+        }
+        public nothrow void SetPrevSibling(Component* prevSibling_)
+        {
+            prevSibling = prevSibling_;
+        }
+        public nothrow void LinkBefore(Component* component)
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = component;
+            }
+            component->prevSibling = prevSibling;
+            component->nextSibling = this;
+            prevSibling = component;
+        }
+        public nothrow void LinkAfter(Component* component)
+        {
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = component;
+            }
+            component->prevSibling = this;
+            component->nextSibling = nextSibling;
+            nextSibling = component;
+        }
+        public void Unlink()
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = nextSibling;
+            }
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = prevSibling;
+            }
+        }
+        private Container* container;
+        private Component* nextSibling;
+        private Component* prevSibling;
+    }
+
+} // namespace System.Screen

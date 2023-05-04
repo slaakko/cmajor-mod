@@ -1,0 +1,137 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_Sirius.Math_B856BCA3DBE9CD56C4B1382322542CD9DAFCBD94"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "C8605962F06853B33367FCD89EDC4E4C3E465F02", 
+            "fileId" : "Arrow_2E0C178828CCD3A5194D24F3707F1BEB077DD5E4", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Arrow.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "980B3246E4CD55CFE58B2B8B76C1E2B1D16BF93F", 
+            "fileId" : "Buffer_40814C112CF91757514F172C5710E01AC6BDDD39", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Buffer.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "FC03CDF485BB1EE7326BF31040D539D097188CF5", 
+            "fileId" : "BufferPool_A2DBB915090E27B8AB6E93FC7D30CAAFBFCFF0E3", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/BufferPool.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "F4DDB8B57812BE0D09FAA80856B7E11E5A2EE4ED", 
+            "fileId" : "Camera_761D71766AFD6B873A20F9B8E930172ABE76F60A", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Camera.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "275C0E0D042C6849E67D37B6B2BE86311F9B9B9A", 
+            "fileId" : "Cone_7818B623693A0C3AEC1239EC3AC0DC0294A50B6E", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Cone.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "0955483FA8BB76A3FDF20C4F8CCA0A7F0AE9E67E", 
+            "fileId" : "Cube_664B2C1C789C5A2050359DD43DFB7DB8D0669C68", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Cube.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "503517CA0A55E40E9DBE629534DE2642EE376B91", 
+            "fileId" : "Cylinder_EE78E198D68D0005E3A80FDD2964AB99A5711DDE", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Cylinder.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "3873A070F2FE92FC9F18CA6A3BC706A0630D5B72", 
+            "fileId" : "Grid_8CC11D47BFB93DF7CE841EE54C8C60F366ED0D54", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Grid.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E17D2E7A1535A47CA1B45AC2443B01695047250A", 
+            "fileId" : "Light_8B2936994ACFF52A1F5FD93B1A2E13E9ADC621A6", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Light.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "9E0B13CC9750047E6FB2A1379BC55C501736F91F", 
+            "fileId" : "LineSegment_682912400F7E7002D0EAD1F363B470DA8CADD9CE", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/LineSegment.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "B673585A6FEF078CC9ABE72456EC6CAC74EF2DCC", 
+            "fileId" : "Primitive_90A0B7C071C30100457B7344F15BEB9C8DF189DA", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Primitive.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "3C65069FE190D3BEAF1088A8F165AE4C837BBC84", 
+            "fileId" : "Scene_C81F2C22B4798CEC152A07BCFD449CF256FF629D", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Scene.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "6818ACF4428B83ED1DE104E04FB5E6025A16FF8A", 
+            "fileId" : "Screen_9B46C523731FC33C40AF075A1FEC09C2E0721A9C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Screen.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "73B01E127AB49B1B1B4BD8792D647BA5BAFD0F34", 
+            "fileId" : "Sphere_131B210800D477D4C240F7D57FDF2D2B3E778D42", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Sphere.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "81AC9F4F46B7AEC0FFD4F9236257951861099B9B", 
+            "fileId" : "ZBuffer_9995E5507300FE41E43C9328F38D053660921260", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/ZBuffer.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/sirius\/graphics\/Sirius.Graphics.cmp", 
+    "projectHash" : "8824C60FE439D90777BC3CB0ECC6560CE4BE3C64", 
+    "projectId" : "project_Sirius.Graphics_ECB81134570DCEB200499FD01A7086477E35955B", 
+    "projectName" : "Sirius.Graphics", 
+    "target" : "winlib"
+}

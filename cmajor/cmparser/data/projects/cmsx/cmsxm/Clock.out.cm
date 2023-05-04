@@ -1,0 +1,75 @@
+using System;
+using System.Threading;
+
+namespace cmsx.machine
+{
+    public class ClockDriver
+    {
+        public ClockDriver(Clock& clock_) :
+            clock(clock_)
+        {
+            clock.Start();
+        }
+        public ~ClockDriver()
+        {
+            clock.Stop();
+        }
+        private Clock& clock;
+    }
+
+    public class Clock
+    {
+        public const long tick = 50;
+        static Clock() :
+            instance(new Clock())
+        {
+        }
+        public static Clock& Instance()
+        {
+            return *instance;
+        }
+        private Clock() :
+            machine(GetMachine()), started(false), stopping(false)
+        {
+        }
+        public void Start()
+        {
+            ThreadStartMethod tickMethod = Tick;
+            thread = Thread.StartMethod(tickMethod);
+            started = true;
+        }
+        public void Stop()
+        {
+            if (!started) return;
+            stopping = true;
+            stop.NotifyOne();
+            thread.Join();
+        }
+        private void Tick()
+        {
+            try
+            {
+                while (!stopping)
+                {
+                    ConditionVariableStatus status = stop.WaitFor(mtx, Duration.FromMilliseconds(tick));
+                    if (status == ConditionVariableStatus.timeout)
+                    {
+                        machine.GetRegisters().SetInterrupt(CLOCK_BIT);
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                Console.Error() << "clock: " << ex.ToString() << endl();
+            }
+        }
+        private static UniquePtr<Clock> instance;
+        private Machine& machine;
+        private RecursiveMutex mtx;
+        private ConditionVariable stop;
+        private Thread thread;
+        private bool started;
+        private bool stopping;
+    }
+
+} // namespace cmsx.machine

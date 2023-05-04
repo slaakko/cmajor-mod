@@ -1,0 +1,33 @@
+using System;
+
+namespace System.Windows
+{
+    public class Buffer
+    {
+        public Buffer(const Size& size_, System.Windows.Graphics& graphics_) :
+            size(size_), bitmap(size.w, size.h, graphics_), graphics(System.Windows.Graphics.FromImage(bitmap))
+        {
+        }
+        public inline nothrow const Size& GetSize() const
+        {
+            return size;
+        }
+        public inline nothrow System.Windows.Graphics& BitmapGraphics()
+        {
+            return graphics;
+        }
+        public inline nothrow System.Windows.Bitmap& GetBitmap() const
+        {
+            return bitmap;
+        }
+        public void Draw(System.Windows.Graphics& graphics)
+        {
+            PointF topLeftCorner;
+            graphics.DrawImageChecked(bitmap, topLeftCorner);
+        }
+        private Size size;
+        private Bitmap bitmap;
+        private System.Windows.Graphics graphics;
+    }
+
+} // namespace System.Windows

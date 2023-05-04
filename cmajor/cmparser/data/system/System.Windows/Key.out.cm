@@ -1,0 +1,383 @@
+using System;
+
+namespace System.Windows
+{
+    public const byte VK_LBUTTON = 1u;
+
+    public const byte VK_RBUTTON = 2u;
+
+    public const byte VK_CANCEL = 3u;
+
+    public const byte VK_MBUTTON = 4u;
+
+    public const byte VK_XBUTTON1 = 5u;
+
+    public const byte VK_XBUTTON2 = 6u;
+
+    public const byte VK_BACK = 8u;
+
+    public const byte VK_TAB = 9u;
+
+    public const byte VK_CLEAR = 12u;
+
+    public const byte VK_RETURN = 13u;
+
+    public const byte VK_SHIFT = 16u;
+
+    public const byte VK_CONTROL = 17u;
+
+    public const byte VK_MENU = 18u;
+
+    public const byte VK_PAUSE = 19u;
+
+    public const byte VK_CAPITAL = 20u;
+
+    public const byte VK_KANA = 21u;
+
+    public const byte VK_HANGUEL = 21u;
+
+    public const byte VK_HANGUL = 21u;
+
+    public const byte VK_IME_ON = 22u;
+
+    public const byte VK_JUNJA = 23u;
+
+    public const byte VK_FINAL = 24u;
+
+    public const byte VK_HANJA = 25u;
+
+    public const byte VK_KANJI = 25u;
+
+    public const byte VK_IME_OFF = 26u;
+
+    public const byte VK_ESCAPE = 27u;
+
+    public const byte VK_CONVERT = 28u;
+
+    public const byte VK_NONCONVERT = 29u;
+
+    public const byte VK_ACCEPT = 30u;
+
+    public const byte VK_MODECHANGE = 31u;
+
+    public const byte VK_SPACE = 32u;
+
+    public const byte VK_PRIOR = 33u;
+
+    public const byte VK_NEXT = 34u;
+
+    public const byte VK_END = 35u;
+
+    public const byte VK_HOME = 36u;
+
+    public const byte VK_LEFT = 37u;
+
+    public const byte VK_UP = 38u;
+
+    public const byte VK_RIGHT = 39u;
+
+    public const byte VK_DOWN = 40u;
+
+    public const byte VK_SELECT = 41u;
+
+    public const byte VK_PRINT = 42u;
+
+    public const byte VK_EXECUTE = 43u;
+
+    public const byte VK_SNAPSHOT = 44u;
+
+    public const byte VK_INSERT = 45u;
+
+    public const byte VK_DELETE = 46u;
+
+    public const byte VK_HELP = 47u;
+
+    public const byte VK_0 = 48u;
+
+    public const byte VK_1 = 49u;
+
+    public const byte VK_2 = 50u;
+
+    public const byte VK_3 = 51u;
+
+    public const byte VK_4 = 52u;
+
+    public const byte VK_5 = 53u;
+
+    public const byte VK_6 = 54u;
+
+    public const byte VK_7 = 55u;
+
+    public const byte VK_8 = 56u;
+
+    public const byte VK_9 = 57u;
+
+    public const byte VK_A = 65u;
+
+    public const byte VK_B = 66u;
+
+    public const byte VK_C = 67u;
+
+    public const byte VK_D = 68u;
+
+    public const byte VK_E = 69u;
+
+    public const byte VK_F = 70u;
+
+    public const byte VK_G = 71u;
+
+    public const byte VK_H = 72u;
+
+    public const byte VK_I = 73u;
+
+    public const byte VK_J = 74u;
+
+    public const byte VK_K = 75u;
+
+    public const byte VK_L = 76u;
+
+    public const byte VK_M = 77u;
+
+    public const byte VK_N = 78u;
+
+    public const byte VK_O = 79u;
+
+    public const byte VK_P = 80u;
+
+    public const byte VK_Q = 81u;
+
+    public const byte VK_R = 82u;
+
+    public const byte VK_S = 83u;
+
+    public const byte VK_T = 84u;
+
+    public const byte VK_U = 85u;
+
+    public const byte VK_V = 86u;
+
+    public const byte VK_W = 87u;
+
+    public const byte VK_X = 88u;
+
+    public const byte VK_Y = 89u;
+
+    public const byte VK_Z = 90u;
+
+    public const byte VK_LWIN = 91u;
+
+    public const byte VK_RWIN = 92u;
+
+    public const byte VK_APPS = 93u;
+
+    public const byte VK_SLEEP = 95u;
+
+    public const byte VK_NUMPAD0 = 96u;
+
+    public const byte VK_NUMPAD1 = 97u;
+
+    public const byte VK_NUMPAD2 = 98u;
+
+    public const byte VK_NUMPAD3 = 99u;
+
+    public const byte VK_NUMPAD4 = 100u;
+
+    public const byte VK_NUMPAD5 = 101u;
+
+    public const byte VK_NUMPAD6 = 102u;
+
+    public const byte VK_NUMPAD7 = 103u;
+
+    public const byte VK_NUMPAD8 = 104u;
+
+    public const byte VK_NUMPAD9 = 105u;
+
+    public const byte VK_MULTIPLY = 106u;
+
+    public const byte VK_ADD = 107u;
+
+    public const byte VK_SEPARATOR = 108u;
+
+    public const byte VK_SUBTRACT = 109u;
+
+    public const byte VK_DECIMAL = 110u;
+
+    public const byte VK_DIVIDE = 111u;
+
+    public const byte VK_F1 = 112u;
+
+    public const byte VK_F2 = 113u;
+
+    public const byte VK_F3 = 114u;
+
+    public const byte VK_F4 = 115u;
+
+    public const byte VK_F5 = 116u;
+
+    public const byte VK_F6 = 117u;
+
+    public const byte VK_F7 = 118u;
+
+    public const byte VK_F8 = 119u;
+
+    public const byte VK_F9 = 120u;
+
+    public const byte VK_F10 = 121u;
+
+    public const byte VK_F11 = 122u;
+
+    public const byte VK_F12 = 123u;
+
+    public const byte VK_F13 = 124u;
+
+    public const byte VK_F14 = 125u;
+
+    public const byte VK_F15 = 126u;
+
+    public const byte VK_F16 = 127u;
+
+    public const byte VK_F17 = 128u;
+
+    public const byte VK_F18 = 129u;
+
+    public const byte VK_F19 = 130u;
+
+    public const byte VK_F20 = 131u;
+
+    public const byte VK_F21 = 132u;
+
+    public const byte VK_F22 = 133u;
+
+    public const byte VK_F23 = 134u;
+
+    public const byte VK_F24 = 135u;
+
+    public const byte VK_NUMLOCK = 144u;
+
+    public const byte VK_SCROLL = 145u;
+
+    public const byte VK_LSHIFT = 160u;
+
+    public const byte VK_RSHIFT = 161u;
+
+    public const byte VK_LCONTROL = 162u;
+
+    public const byte VK_RCONTROL = 163u;
+
+    public const byte VK_LMENU = 164u;
+
+    public const byte VK_RMENU = 165u;
+
+    public const byte VK_BROWSER_BACK = 166u;
+
+    public const byte VK_BROWSER_FORWARD = 167u;
+
+    public const byte VK_BROWSER_REFRESH = 168u;
+
+    public const byte VK_BROWSER_STOP = 169u;
+
+    public const byte VK_BROWSER_SEARCH = 170u;
+
+    public const byte VK_BROWSER_FAVORITES = 171u;
+
+    public const byte VK_BROWSER_HOME = 172u;
+
+    public const byte VK_VOLUME_MUTE = 173u;
+
+    public const byte VK_VOLUME_DOWN = 174u;
+
+    public const byte VK_VOLUME_UP = 175u;
+
+    public const byte VK_MEDIA_NEXT_TRACK = 176u;
+
+    public const byte VK_MEDIA_PREV_TRACK = 177u;
+
+    public const byte VK_MEDIA_STOP = 178u;
+
+    public const byte VK_MEDIA_PLAY_PAUSE = 179u;
+
+    public const byte VK_LAUNCH_MAIL = 180u;
+
+    public const byte VK_LAUNCH_MEDIA_SELECT = 181u;
+
+    public const byte VK_LAUNCH_APP1 = 182u;
+
+    public const byte VK_LAUNCH_APP2 = 183u;
+
+    public const byte VK_OEM_1 = 186u;
+
+    public const byte VK_OEM_PLUS = 187u;
+
+    public const byte VK_OEM_COMMA = 188u;
+
+    public const byte VK_OEM_MINUS = 189u;
+
+    public const byte VK_OEM_PEDIOD = 190u;
+
+    public const byte VK_OEM_2 = 191u;
+
+    public const byte VK_OEM_3 = 192u;
+
+    public const byte VK_OEM_4 = 219u;
+
+    public const byte VK_OEM_5 = 220u;
+
+    public const byte VK_OEM_6 = 221u;
+
+    public const byte VK_OEM_7 = 222u;
+
+    public const byte VK_OEM_8 = 223u;
+
+    public const byte VK_OEM_102 = 226u;
+
+    public const byte VK_PROCESSKEY = 229u;
+
+    public const byte VK_PACKET = 231u;
+
+    public const byte VK_ATTN = 246u;
+
+    public const byte VK_CRSEL = 247u;
+
+    public const byte VK_EXSEL = 248u;
+
+    public const byte VK_PLAY = 250u;
+
+    public const byte VK_ZOOM = 251u;
+
+    public const byte VK_PA1 = 253u;
+
+    public const byte VK_OEM_CLEAR = 254u;
+
+    public enum Keys : int
+    {
+        a = 65, add = 107, altModifier = 262144, apps = 93, attn = 246u, b = 66, back = 8, browserBack = 166u, browserFavorites = 171u, browserForward = 167u, browserHome = 172u, browserRefresh = 168u, browserSearch = 170u, browserStop = 169u, c = 67, cancel = 3, capital = 20, capsLock = 20, clear = 12, controlModifier = 131072, controlKey = 17, crsel = 247u, d = 68, d0 = 48, d1 = 49, d2 = 50, d3 = 51, d4 = 52, d5 = 53, d6 = 54, d7 = 55, d8 = 56, d9 = 57, decimal = 110, delete_ = 46, divide = 111, down = 40, e = 69, end = 35, enter = 13, eraseEof = 249u, escape = 27, execute = 43, exsel = 248u, f = 70, f1 = 112, f10 = 121, f11 = 122, f12 = 123, f13 = 124, f14 = 125, f15 = 126, f16 = 127, f17 = 128u, f18 = 129u, f19 = 130u, f2 = 113, f20 = 131u, f21 = 132u, f22 = 133u, f23 = 134u, f24 = 135u, f3 = 114, f4 = 115, f5 = 116, f6 = 117, f7 = 118, f8 = 119, f9 = 120, finalMode = 24, g = 71, h = 72, hanguelMode = 21, hangulMode = 21, hanjaMode = 25, help = 47, home = 36, i = 73, imeAccept = 30, imeConvert = 28, imeModeChange = 31, imeNonconvert = 29, insert = 45, j = 74, junjaMode = 23, k = 75, kanaMode = 21, kanjiMode = 25, keyCode = 65535u, l = 75, launchApplication1 = 182u, launchApplication2 = 183u, launchMail = 180u, lButton = 1, lControlKey = 162u, left = 37, lineFeed = 10, lMenu = 164u, lShiftKey = 160u, lWin = 91, m = 77, mButton = 4, mediaNextTrack = 176u, mediaPlayPause = 179u, mediaPreviousTrack = 177u, mediaStop = 178u, menu = 18, modifiers = -65536, multiply = 106, n = 78, next = 34, noName = 252u, none = 0, numLock = 144u, numPad0 = 96, numPad1 = 97, numPad2 = 98, numPad3 = 99, numPad4 = 100, numPad5 = 101, numPad6 = 102, numPad7 = 103, numPad8 = 104, numPad9 = 105, o = 79, oem1 = 186u, oem102 = 226u, oem2 = 191u, oem3 = 192u, oem4 = 219u, oem5 = 220u, oem6 = 221u, oem7 = 222u, oem8 = 223u, oemBackslash = 226u, oemClear = 254u, oemCloseBrackets = 221u, oemComma = 188u, oemMinus = 189u, oemOpenBrackets = 219u, oemPediod = 190u, oemPipe = 220u, oemPlus = 187u, oemQuestion = 191u, oemQuotes = 222u, oemSemicolon = 186u, oemTilde = 192u, p = 80, pa1 = 253u, packet = 231u, pageDown = 34, pageUp = 33, pause = 19, play = 250u, print = 42, printScreen = 44, prior = 33, processKey = 229u, q = 81, r = 82, rButton = 2, rControlKey = 163u, return_ = 13, right = 39, rMenu = 165u, rShiftKey = 161u, rWin = 92, s = 83, scroll = 145u, select = 41, selectMedia = 181u, separator = 108, shiftModifier = 65536, shiftKey = 16, sleep = 95, snapshot = 44, space = 32, subtract = 109, t = 84, tab = 9, u = 85, up = 38, v = 86, volumeDown = 174u, volumeMute = 173u, volumeUp = 175u, w = 87, x = 88, xButton1 = 5, xButton2 = 6, y = 89, z = 90, zoom = 251u
+    }
+
+    public nothrow ulong GetHashCode(Keys keys)
+    {
+        return cast<ulong>(cast<int>(keys));
+    }
+
+    public const char*[] keyCodeStr = ["None", "LButton", "RButton", "Cancel", "MButton", "XBUtton1", "XButton2", "", "Backspace", "Tab", "", "", "Clear", "Enter", "", "", "Shift", "Control", "Alt", "Pause", "Caps Lock", "Kana", "IME On", "Junja", "Final", "Hanja", "IME Off", "Escape", "Convert", "Nonconvert", "Accept", "Mode change", "Space", "Page up", "Page down", "End", "Home", "Left", "Up", "Right", "Down", "Select", "Print", "Execute", "Snapshot", "Insert", "Delete", "Help", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "", "", "", "", "", "", "", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "Left Windows", "Right Windows", "Apps", "", "Sleep", "Num pad 0", "Num pad 1", "Num pad 2", "Num pad 3", "Num pad 4", "Num pad 5", "Num pad 6", "Num pad 7", "Num pad 8", "Num pad 9", "Multiply", "Add", "Separator", "Subtract", "Decimal", "Divide", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21", "F22", "F23", "F24", "", "", "", "", "", "", "", "", "Num Lock", "Scroll Lock", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Left Shift", "Right Shift", "Left Control", "Right Control", "Left Alt", "Right Alt", "Browser Back", "Browser Forward", "Browser Refresh", "Browser Stop", "Browser Search", "Browser Favorites", "Browser Home", "Volume Mute", "Volume Down", "Volume Up", "Media Next Track", "Media Prev Track", "Media Stop", "Media Play Pause", "Launch Mail", "Launch Media Select", "Launch Application 1", "Launch Application 2", "", "", "OEM 1", "OEM Plus", "OEM Comma", "OEM Minus", "OEM Period", "OEM 2", "OEM 3", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "OEM 4", "OEM 5", "OEM 6", "OEM 7", "OEM 8", "", "", "OEM 102", "", "", "Process Key", "", "Packet", "", "", "", "", "", "", "", "", "", "", "", "", "", "Attention", "CR Select", "EX Select", "", "Play", "Zoom", "", "PA1", "OEM Clear"];
+
+    public nothrow string ToString(Keys keys)
+    {
+        string s;
+        if ((keys & Keys.controlModifier) != 0)
+        {
+            s.Append("Ctrl+");
+        }
+        if ((keys & Keys.altModifier) != 0)
+        {
+            s.Append("Alt+");
+        }
+        if ((keys & Keys.shiftModifier) != 0)
+        {
+            s.Append("Shift+");
+        }
+        Keys keyCode = cast<Keys>(keys & ~Keys.modifiers);
+        s.Append(keyCodeStr[cast<int>(keyCode)]);
+        return s;
+    }
+
+} // namespace System.Windows

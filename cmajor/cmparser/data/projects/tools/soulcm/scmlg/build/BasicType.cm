@@ -1,0 +1,213 @@
+using System;
+using System.Collections;
+using System.Lex;
+using System.Parsing;
+using Cm.Ast;
+using LexerFileTokens;
+
+// this file has been automatically generated from 'C:/work/cmajorm/cmajor/projects/tools/soulcm/scmlg/build/BasicType.parser' using soulcm parser generator scmpg version 3.10.0
+
+public static class BasicTypeParser
+{
+    public static Match BasicType(LexerFileLexer& lexer, ParsingContext* ctx)
+    {
+        #if (DEBUG)
+            Span debugSpan;
+            bool writeToLog = lexer.Log() != null;
+            if (writeToLog)
+            {
+                debugSpan = lexer.GetSpan();
+                System.Lex.WriteBeginRuleToLog(lexer, u"BasicType");
+            }
+        #endif
+        Match match(false);
+        long pos = lexer.GetPos();
+        Span span = lexer.GetSpan();
+        switch (*lexer)
+        {
+            case BOOL: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new BoolNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case SBYTE: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new SByteNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case BYTE: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new ByteNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case SHORT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new ShortNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case USHORT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new UShortNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case INT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new IntNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case UINT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new UIntNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case LONG: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new LongNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case ULONG: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new ULongNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case FLOAT: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new FloatNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case DOUBLE: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new DoubleNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case CHAR: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new CharNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case WCHAR: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new WCharNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case UCHAR: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new UCharNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+            case VOID: 
+            {
+                ++lexer;
+                {
+                    #if (DEBUG)
+                        if (writeToLog) System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                    #endif
+                    return Match(true, new VoidNode(span, ctx->ModuleId()));
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+            if (writeToLog)
+            {
+                if (match.hit)
+                {
+                    System.Lex.WriteSuccessToLog(lexer, debugSpan, u"BasicType");
+                }
+                else
+                {
+                    System.Lex.WriteFailureToLog(lexer, u"BasicType");
+                }
+            }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return match;
+    }
+}

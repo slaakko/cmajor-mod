@@ -1,0 +1,33 @@
+using System;
+using System.Collections;
+
+namespace System.Lex
+{
+    public abstract class ParsingLog
+    {
+        public ParsingLog() :
+            maxLineLength(80)
+        {
+        }
+        public ParsingLog(int maxLineLength_) :
+            maxLineLength(maxLineLength_)
+        {
+        }
+        public virtual ~ParsingLog()
+        {
+        }
+        public abstract void IncIndent();
+        public abstract void DecIndent();
+        public abstract void WriteBeginRule(const ustring& ruleName);
+        public abstract void WriteEndRule(const ustring& ruleName);
+        public abstract void WriteTry(const ustring& s);
+        public abstract void WriteSuccess(const ustring& match);
+        public abstract void WriteFail();
+        public virtual int MaxLineLength() const
+        {
+            return maxLineLength;
+        }
+        private int maxLineLength;
+    }
+
+} // namespace System.Lex

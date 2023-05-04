@@ -1,0 +1,345 @@
+using System;
+using System.Collections;
+
+namespace System.Net.Http
+{
+    public class UriException : Exception
+    {
+        public nothrow UriException(const string& message_) :
+            base(message_)
+        {
+        }
+    }
+
+    public class Authority
+    {
+        public enum Flags : sbyte
+        {
+            none = 0, hasUserInfo = 1 << 0
+        }
+        public nothrow Authority() :
+            flags(Flags.none), port(-1)
+        {
+        }
+        public inline nothrow Flags operator|(Flags left, Flags right) const
+        {
+            return cast<Flags>(cast<sbyte>(left) | cast<sbyte>(right));
+        }
+        public inline nothrow Flags operator&(Flags left, Flags right) const
+        {
+            return cast<Flags>(cast<sbyte>(left) & cast<sbyte>(right));
+        }
+        public inline nothrow Flags operator~(Flags f) const
+        {
+            return cast<Flags>(~cast<sbyte>(f));
+        }
+        public inline nothrow bool GetFlag(Flags flag) const
+        {
+            return (flags & flag) != Flags.none;
+        }
+        public inline nothrow void SetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags | flag);
+        }
+        public inline nothrow void ResetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags & ~flag);
+        }
+        public inline nothrow const string& UserInfo() const
+        {
+            return userInfo;
+        }
+        public nothrow void SetUserInfo(const string& userInfo_)
+        {
+            userInfo = userInfo_;
+            SetFlag(Flags.hasUserInfo);
+        }
+        public inline nothrow const string& Host() const
+        {
+            return host;
+        }
+        public nothrow void SetHost(const string& host_)
+        {
+            host = host_;
+        }
+        public inline nothrow int Port() const
+        {
+            return port;
+        }
+        public nothrow void SetPort(int port_)
+        {
+            port = port_;
+        }
+        public nothrow string ToString() const
+        {
+            string result;
+            if (GetFlag(Flags.hasUserInfo))
+            {
+                result.Append(userInfo).Append('@');
+            }
+            result.Append(host);
+            if (port != -1)
+            {
+                result.Append(':').Append(ToString(port));
+            }
+            return result;
+        }
+        private Flags flags;
+        private string userInfo;
+        private string host;
+        private int port;
+    }
+
+    public class UriReference
+    {
+        public enum Flags : sbyte
+        {
+            none = 0, asterisk = 1 << 0, hasAuthority = 1 << 1, hasQuery = 1 << 2, hasFragment = 1 << 3
+        }
+        public nothrow UriReference()
+        {
+        }
+        public UriReference(const string& uri)
+        {
+            UriLexer lexer(ToUtf32(uri), "", 0);
+            UriReference that = Uri.Parse(lexer);
+            Swap(flags, that.flags);
+            Swap(scheme, that.scheme);
+            Swap(authority, that.authority);
+            Swap(path, that.path);
+            Swap(query, that.query);
+            Swap(fragment, that.fragment);
+        }
+        public inline nothrow bool IsAbsolute() const
+        {
+            return !scheme.IsEmpty();
+        }
+        public inline nothrow bool IsRelative() const
+        {
+            return !IsAbsolute();
+        }
+        public static UriReference Combine(const UriReference& baseUri, const UriReference& relativeUri)
+        {
+            if (!baseUri.IsAbsolute())
+            {
+                throw UriException("base URI not absolute");
+            }
+            if (relativeUri.IsAbsolute())
+            {
+                return relativeUri;
+            }
+            string basePath = "/";
+            if (!baseUri.Path().IsEmpty())
+            {
+                if (baseUri.Path().StartsWith("/"))
+                {
+                    basePath = baseUri.Path();
+                }
+                else
+                {
+                    basePath = "/" + baseUri.Path();
+                }
+            }
+            UriReference combined;
+            combined.SetFlags(baseUri.GetFlags());
+            combined.SetScheme(baseUri.Scheme());
+            if (baseUri.GetFlag(Flags.hasAuthority))
+            {
+                combined.SetAuthority(baseUri.GetAuthority());
+            }
+            combined.SetPath(GetFullNetPath(CombineNetPath(basePath, relativeUri.Path())));
+            if (relativeUri.GetFlag(Flags.hasQuery))
+            {
+                combined.SetQuery(relativeUri.Query());
+            }
+            if (relativeUri.GetFlag(Flags.hasFragment))
+            {
+                combined.SetFragment(relativeUri.Fragment());
+            }
+            return combined;
+        }
+        public string ToString() const
+        {
+            if (GetFlag(Flags.asterisk))
+            {
+                return "*";
+            }
+            else
+            {
+                string result;
+                if (!scheme.IsEmpty())
+                {
+                    result.Append(scheme).Append(':');
+                    if (GetFlag(Flags.hasAuthority))
+                    {
+                        result.Append(authority.ToString());
+                    }
+                }
+                result.Append(path);
+                if (GetFlag(Flags.hasQuery))
+                {
+                    result.Append('?').Append(query);
+                }
+                if (GetFlag(Flags.hasFragment))
+                {
+                    result.Append('#').Append(fragment);
+                }
+                return result;
+            }
+        }
+        public inline nothrow Flags GetFlags() const
+        {
+            return flags;
+        }
+        public inline nothrow void SetFlags(Flags flags_)
+        {
+            flags = flags_;
+        }
+        public inline nothrow bool GetFlag(Flags flag) const
+        {
+            return cast<Flags>(cast<sbyte>(flags) & cast<sbyte>(flag)) != Flags.none;
+        }
+        public inline nothrow void SetFlag(Flags flag)
+        {
+            flags = cast<Flags>(cast<sbyte>(flags) | cast<sbyte>(flag));
+        }
+        public inline nothrow void ResetFlag(Flags flag)
+        {
+            flags = cast<Flags>(cast<sbyte>(flags) & ~cast<sbyte>(flag));
+        }
+        public inline nothrow const string& Scheme() const
+        {
+            return scheme;
+        }
+        public nothrow void SetScheme(const string& scheme_)
+        {
+            scheme = scheme_;
+        }
+        public inline nothrow const Authority& GetAuthority() const
+        {
+            return authority;
+        }
+        public nothrow void SetAuthority(const Authority& authority_)
+        {
+            authority = authority_;
+            SetFlag(Flags.hasAuthority);
+        }
+        public inline nothrow const string& Path() const
+        {
+            return path;
+        }
+        public nothrow void SetPath(const string& path_)
+        {
+            path = path_;
+        }
+        public inline nothrow const string& Query() const
+        {
+            return query;
+        }
+        public nothrow void SetQuery(const string& query_)
+        {
+            query = query_;
+            SetFlag(Flags.hasQuery);
+        }
+        public inline nothrow const string& Fragment() const
+        {
+            return fragment;
+        }
+        public nothrow void SetFragment(const string& fragment_)
+        {
+            fragment = fragment_;
+            SetFlag(Flags.hasFragment);
+        }
+        private Flags flags;
+        private string scheme;
+        private Authority authority;
+        private string path;
+        private string query;
+        private string fragment;
+    }
+
+    public nothrow string CombineNetPath(const string& left, const string& right)
+    {
+        string combined;
+        if (left.IsEmpty())
+        {
+            combined = right;
+        }
+        else if (right.IsEmpty())
+        {
+            combined = left;
+        }
+        else
+        {
+            if (right.StartsWith("/"))
+            {
+                combined = right;
+            }
+            else
+            {
+                combined.Append(left);
+                if (!left.EndsWith("/"))
+                {
+                    combined.Append('/');
+                }
+                combined.Append(right);
+            }
+        }
+        return combined;
+    }
+
+    public string GetFullNetPath(const string& path)
+    {
+        List<string> components = path.Split('/');
+        long w = 0;
+        long n = components.Count();
+        for (long i = 0; i < n; ++i)
+        {
+            string c = components[i];
+            if (i == 0 || !c.IsEmpty() && c != ".")
+            {
+                if (c == "..")
+                {
+                    --w;
+                    if (w < 0)
+                    {
+                        throw UriException("invalid path \'" + path + "\'");
+                    }
+                }
+                else
+                {
+                    if (w != i)
+                    {
+                        components[w] = components[i];
+                    }
+                    ++w;
+                }
+            }
+        }
+        if (w == 0)
+        {
+            return "/";
+        }
+        else
+        {
+            string result;
+            for (long i = 0; i < w; ++i)
+            {
+                if (i != 0)
+                {
+                    result.Append('/');
+                }
+                result.Append(components[i]);
+            }
+            if (result.IsEmpty())
+            {
+                return "/";
+            }
+            else
+            {
+                return result;
+            }
+        }
+    }
+
+} // namespace System.Net.Http

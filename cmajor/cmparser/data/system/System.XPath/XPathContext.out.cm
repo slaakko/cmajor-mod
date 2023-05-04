@@ -1,0 +1,29 @@
+using System;
+using System.Collections;
+
+namespace System.XPath
+{
+    public class XPathContext
+    {
+        public XPathContext(System.Dom.Node* node_, int position_, int size_) :
+            node(node_), position(position_), size(size_)
+        {
+        }
+        public System.Dom.Node* Node() const
+        {
+            return node;
+        }
+        public int Position() const
+        {
+            return position;
+        }
+        public int Size() const
+        {
+            return size;
+        }
+        private System.Dom.Node* node;
+        private int position;
+        private int size;
+    }
+
+} // namespace System.XPath

@@ -142,13 +142,15 @@ parser ExpressionParser
         |   NEQ{ return Operator::neq; }
         ;
 
-    Relational(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+    Relational(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> expr, var soul::ast::SourcePos s, var cmajor::parser::operators::Operator op) : 
+        cmajor::ast::Node*
         ::= 
         (   Shift(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
             (   
                 (
-                    RelOp:op
+                    RelOp:relOp
                     { 
+                        op = relOp;
                         if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments()) 
                         {
                             pass = false; 

@@ -14,9 +14,10 @@ export namespace cmajor::build {
 enum class Flags
 {
     none = 0, 
-    singleThreaded = 1 << 0,
-    ast = 1 << 1,
-    print = 1 << 2
+    verbose = 1 << 0,
+    singleThreaded = 1 << 1,
+    ast = 1 << 2,
+    print = 1 << 3
 };
 
 constexpr Flags operator|(Flags left, Flags right)
@@ -39,5 +40,7 @@ std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projec
 std::unique_ptr<cmajor::ast::Project> ParseProject(Flags flags, const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend,
     const std::string& toolChain, soul::lexer::FileMap& fileMap);
 std::unique_ptr<cmajor::ast::Solution> ParseSolutionFile(const std::string& solutionFilePath);
+std::unique_ptr<cmajor::ast::Solution> ParseSolution(Flags flags, const std::string& solutionFilePath, const std::string& config, cmajor::ast::BackEnd backend,
+    const std::string& toolChain);
 
 } // namespace cmajor::build

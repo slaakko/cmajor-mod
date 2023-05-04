@@ -1,0 +1,18 @@
+project Sirius.Graphics;
+target=winlib;
+reference <../math/Sirius.Math.cmp>;
+source <Arrow.cm>;
+source <Buffer.cm>;
+source <BufferPool.cm>;
+source <Camera.cm>;
+source <Cone.cm>;
+source <Cube.cm>;
+source <Cylinder.cm>;
+source <Grid.cm>;
+source <Light.cm>;
+source <LineSegment.cm>;
+source <Primitive.cm>;
+source <Scene.cm>;
+source <Screen.cm>;
+source <Sphere.cm>;
+source <ZBuffer.cm>;

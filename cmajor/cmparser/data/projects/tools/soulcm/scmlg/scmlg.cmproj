@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>ed0e1861-695f-454b-b69c-7252a7e8f98c</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>program</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="Algorithm.cm"/>
+  <CmCompile Include="BasicType.cm"/>
+  <CmCompile Include="Dfa.cm"/>
+  <CmCompile Include="Expression.cm"/>
+  <CmCompile Include="Identifier.cm"/>
+  <CmCompile Include="IdentifierClass.cm"/>
+  <CmCompile Include="LexerContext.cm"/>
+  <CmCompile Include="LexerFileClassMap.cm"/>
+  <CmCompile Include="LexerFileKeywords.cm"/>
+  <CmCompile Include="LexerFileLexer.cm"/>
+  <CmCompile Include="LexerFileParser.cm"/>
+  <CmCompile Include="LexerFileTokens.cm"/>
+  <CmCompile Include="Literal.cm"/>
+  <CmCompile Include="Main.cm"/>
+  <CmCompile Include="Model.cm"/>
+  <CmCompile Include="Nfa.cm"/>
+  <CmCompile Include="Operator.cm"/>
+  <CmCompile Include="ParsingContext.cm"/>
+  <CmCompile Include="RegExClassMap.cm"/>
+  <CmCompile Include="RegExLexer.cm"/>
+  <CmCompile Include="RegExParser.cm"/>
+  <CmCompile Include="RegExTokens.cm"/>
+  <CmCompile Include="RegularExpressionParser.cm"/>
+  <CmCompile Include="Statement.cm"/>
+  <CmCompile Include="Symbol.cm"/>
+  <CmCompile Include="Template.cm"/>
+  <CmCompile Include="TokenValueParsers.cm"/>
+  <CmCompile Include="TypeExpr.cm"/>
+  <CmCompile Include="Visitor.cm"/>
+ </ItemGroup>
+ <ItemGroup>
+  <None Include="BasicType.parser"/>
+  <None Include="Expression.parser"/>
+  <None Include="Identifier.parser"/>
+  <None Include="LexerFileLexer.lexer"/>
+  <None Include="LexerFileParser.parser"/>
+  <None Include="Literal.parser"/>
+  <None Include="Parsers.spg"/>
+  <None Include="RegExLexer.lexer"/>
+  <None Include="RegExParser.parser"/>
+  <None Include="Statement.parser"/>
+  <None Include="Template.parser"/>
+  <None Include="TypeExpr.parser"/>
+ </ItemGroup>
+ <ItemGroup>
+  <ProjectReference Include="../../../cm/ast/Cm.Ast.cmproj"/>
+ </ItemGroup>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

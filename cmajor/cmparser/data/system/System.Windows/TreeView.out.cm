@@ -1,0 +1,1728 @@
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public class delegate void TreeViewNodeMouseClickEventHandler(TreeViewNodeMouseClickEventArgs& args);
+
+    public class delegate void TreeViewNodeEventHandler(TreeViewNodeEventArgs& args);
+
+    public nothrow string DefaultTreeViewNormalNodeFontFamilyName()
+    {
+        return "Segoe UI";
+    }
+
+    public nothrow float DefaultTreeViewNormalNodeFontSize()
+    {
+        return 9.000000f;
+    }
+
+    public nothrow FontStyle DefaultTreeViewNormalNodeFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    public nothrow string DefaultTreeViewActiveNodeFontFamilyName()
+    {
+        return "Segoe UI";
+    }
+
+    public nothrow float DefaultTreeViewActiveNodeFontSize()
+    {
+        return 9.000000f;
+    }
+
+    public nothrow FontStyle DefaultTreeViewActiveNodeFontStyle()
+    {
+        return FontStyle.bold;
+    }
+
+    public nothrow Color DefaultTreeViewBackgroundColor()
+    {
+        return Color.White();
+    }
+
+    public nothrow Color DefaultTreeViewStateIndicatorColor()
+    {
+        return Color.Red();
+    }
+
+    public nothrow Color DefaultTreeViewNodeSelectedColor()
+    {
+        return Color(201u, 222u, 245u);
+    }
+
+    public nothrow float DefaultTreeViewStateIndicatorPercentage()
+    {
+        return 50.000000f;
+    }
+
+    public nothrow float DefaultTreeViewNodeIndentPercent()
+    {
+        return 200.000000f;
+    }
+
+    public nothrow float DefaultTreeViewNodeTextIndentPercent()
+    {
+        return 100.000000f;
+    }
+
+    public nothrow Padding DefaultTreeViewNodeImagePadding()
+    {
+        return Padding(0, 0, 0, 0);
+    }
+
+    public nothrow ControlCreateParams& TreeViewControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassName("System.Windows.TreeView").SetWindowClassStyle(DoubleClickWindowClassStyle()).SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(DefaultTreeViewBackgroundColor());
+    }
+
+    public class TreeViewCreateParams
+    {
+        public nothrow TreeViewCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_), normalNodeFontFamilyName(DefaultTreeViewNormalNodeFontFamilyName()), normalNodeFontSize(DefaultTreeViewNormalNodeFontSize()), normalNodeFontStyle(DefaultTreeViewNormalNodeFontStyle()), activeNodeFontFamilyName(DefaultTreeViewActiveNodeFontFamilyName()), activeNodeFontSize(DefaultTreeViewActiveNodeFontSize()), activeNodeFontStyle(DefaultTreeViewActiveNodeFontStyle()), stateIndicatorColor(DefaultTreeViewStateIndicatorColor()), nodeSelectedColor(DefaultTreeViewNodeSelectedColor()), stateIndicatorPercentage(DefaultTreeViewStateIndicatorPercentage()), nodeIndentPercent(DefaultTreeViewNodeIndentPercent()), nodeTextIndentPercent(DefaultTreeViewNodeTextIndentPercent()), nodeImagePadding(DefaultTreeViewNodeImagePadding())
+        {
+        }
+        public nothrow TreeViewCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNormalNodeFontFamilyName(const string& normalNodeFontFamilyName_)
+        {
+            normalNodeFontFamilyName = normalNodeFontFamilyName_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNormalNodeFontSize(float normalNodeFontSize_)
+        {
+            normalNodeFontSize = normalNodeFontSize_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNormalNodeFontStyle(FontStyle normalNodeFontStyle_)
+        {
+            normalNodeFontStyle = normalNodeFontStyle_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetActiveNodeFontFamilyName(const string& activeNodeFontFamilyName_)
+        {
+            activeNodeFontFamilyName = activeNodeFontFamilyName_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetActiveNodeFontSize(float activeNodeFontSize_)
+        {
+            activeNodeFontSize = activeNodeFontSize_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetActiveNodeFontStyle(FontStyle activeNodeFontStyle_)
+        {
+            activeNodeFontStyle = activeNodeFontStyle_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetStateIndicatorColor(const Color& stateIndicatorColor_)
+        {
+            stateIndicatorColor = stateIndicatorColor_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNodeSelectedColor(const Color& nodeSelectedColor_)
+        {
+            nodeSelectedColor = nodeSelectedColor_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetTextColor(const Color& textColor_)
+        {
+            textColor = textColor_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetStateIndicatorPercentage(float stateIndicatorPercentage_)
+        {
+            stateIndicatorPercentage = stateIndicatorPercentage_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNodeIndentPercent(float nodeIndentPercent_)
+        {
+            nodeIndentPercent = nodeIndentPercent_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNodeTextIndentPercent(float nodeTextIndentPercent_)
+        {
+            nodeTextIndentPercent = nodeTextIndentPercent_;
+            return *this;
+        }
+        public nothrow TreeViewCreateParams& SetNodeImagePadding(const Padding& nodeImagePadding_)
+        {
+            nodeImagePadding = nodeImagePadding_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public string normalNodeFontFamilyName;
+        public float normalNodeFontSize;
+        public FontStyle normalNodeFontStyle;
+        public string activeNodeFontFamilyName;
+        public float activeNodeFontSize;
+        public FontStyle activeNodeFontStyle;
+        public Color stateIndicatorColor;
+        public Color nodeSelectedColor;
+        public Color textColor;
+        public float stateIndicatorPercentage;
+        public float nodeIndentPercent;
+        public float nodeTextIndentPercent;
+        public Padding nodeImagePadding;
+    }
+
+    public class TreeView : Control
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, changed = 1 << 0, treeViewNodeChanged = 1 << 1, treeViewNodeStateChanged = 1 << 2, toolTipWindowAdded = 1 << 3
+        }
+        public TreeView(const Font& normalNodeFont_, const Font& activeNodeFont_, const Color& backgroundColor, const Color& stateIndicatorColor_, const Color& nodeSelectedColor_, const Color& textColor_, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("System.Windows.TreeView", DoubleClickWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(), backgroundColor, "treeView", location, size, dock, anchors), flags(Flags.none), root(), normalNodeFont(normalNodeFont_), activeNodeFont(activeNodeFont_), textHeight(0), stateIndicatorPercentage(50.000000f), stateIndicatorColor(stateIndicatorColor_), nodeSelectedColor(nodeSelectedColor_), nodeSelectedBrush(nodeSelectedColor), textColor(textColor_), textBrush(textColor), nodeIndentPercent(DefaultTreeViewNodeIndentPercent()), nodeTextIndentPercent(DefaultTreeViewNodeTextIndentPercent()), format(StringAlignment.near, StringAlignment.near), bitmapIndex(-1), animationMs(5), selectedNode(null), trackedNode(null), toolTipWindow(new ToolTip())
+        {
+            SetChanged();
+            SetMouseHoverMs(DefaultMouseHoverMs());
+        }
+        public TreeView(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(Font(FontFamily("Segoe UI"), 9.000000f), Font(FontFamily("Segoe UI"), 9.000000f, FontStyle.bold, Unit.point), Color.White(), Color.Red(), Color(201u, 222u, 245u), Color.Black(), location, size, dock, anchors)
+        {
+        }
+        public TreeView(TreeViewCreateParams& createParams) :
+            base(createParams.controlCreateParams), flags(Flags.none), root(), normalNodeFont(Font(FontFamily(createParams.normalNodeFontFamilyName), createParams.normalNodeFontSize, createParams.normalNodeFontStyle, Unit.point)), activeNodeFont(Font(FontFamily(createParams.activeNodeFontFamilyName), createParams.activeNodeFontSize, createParams.activeNodeFontStyle, Unit.point)), textHeight(0), stateIndicatorPercentage(createParams.stateIndicatorPercentage), stateIndicatorColor(createParams.stateIndicatorColor), nodeSelectedColor(createParams.nodeSelectedColor), nodeSelectedBrush(nodeSelectedColor), textColor(createParams.textColor), textBrush(textColor), nodeIndentPercent(createParams.nodeIndentPercent), nodeTextIndentPercent(createParams.nodeTextIndentPercent), nodeImagePadding(createParams.nodeImagePadding), format(StringAlignment.near, StringAlignment.near), bitmapIndex(-1), animationMs(5), selectedNode(null), trackedNode(null), toolTipWindow(new ToolTip())
+        {
+            SetChanged();
+            SetMouseHoverMs(DefaultMouseHoverMs());
+        }
+        public ~TreeView()
+        {
+            if (toolTipWindow != null && ToolTipWindowAdded())
+            {
+                ResetToolTipWindowAdded();
+                Window* window = GetWindow();
+                if (window != null)
+                {
+                    window->RemoveChild(toolTipWindow);
+                    toolTipWindow = null;
+                }
+            }
+        }
+        public override void PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                log->WriteLine(string(' ', level) + "TreeView." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+            }
+        }
+        public void EnsureNodeVisible(TreeViewNode* node)
+        {
+            Size size = GetSize();
+            Point contentLocation = ContentLocation();
+            Point nodeLocation = node->Location();
+            if (nodeLocation.y >= contentLocation.y && nodeLocation.y < contentLocation.y + size.h)
+            {
+                return;
+            }
+            if (nodeLocation.y > contentLocation.y)
+            {
+                int y = nodeLocation.y - Max(cast<int>(0), cast<int>(size.h - 2 * textHeight));
+                Point newOrigin(0, y);
+                SetContentLocation(newOrigin);
+                Invalidate();
+            }
+            else
+            {
+                int y = nodeLocation.y;
+                Point newOrigin(0, y);
+                SetContentLocation(newOrigin);
+                Invalidate();
+            }
+        }
+        public nothrow bool NodeVisible(TreeViewNode* node) const
+        {
+            Size size = GetSize();
+            Point contentLocation = ContentLocation();
+            Point nodeLocation = node->Location();
+            if (nodeLocation.y >= contentLocation.y && nodeLocation.y < contentLocation.y + size.h)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public List<TreeViewNode*> GetVisibleNodes(int level) const
+        {
+            List<TreeViewNode*> visibleNodes;
+            root->GetVisibleNodes(visibleNodes, this, level);
+            return visibleNodes;
+        }
+        public List<TreeViewNode*> GetVisibleNodes() const
+        {
+            return GetVisibleNodes(-1);
+        }
+        protected override void OnPaint(PaintEventArgs& args)
+        {
+            try
+            {
+                if (Debug.Paint())
+                {
+                    Rect r(Point(), GetSize());
+                    LogView* log = Application.GetLogView();
+                    if (log != null)
+                    {
+                        log->WriteLine("TreeView.OnPaint: " + r.ToString());
+                    }
+                }
+                if (!ToolTipWindowAdded())
+                {
+                    SetToolTipWindowAdded();
+                    Window* window = GetWindow();
+                    if (window != null)
+                    {
+                        window->AddChild(toolTipWindow);
+                    }
+                }
+                if (Changed())
+                {
+                    ResetChanged();
+                    Measure(args.graphics);
+                    MakeStateIndicatorBitmaps(args.graphics);
+                    SetTreeViewNodeChanged();
+                    SetTreeViewNodeStateChanged();
+                }
+                if (TreeViewNodeChanged())
+                {
+                    ResetTreeViewNodeChanged();
+                    if (!root.IsNull())
+                    {
+                        root->MeasureSize(args.graphics, this);
+                    }
+                }
+                if (TreeViewNodeStateChanged())
+                {
+                    ResetTreeViewNodeStateChanged();
+                    if (!root.IsNull())
+                    {
+                        Rect r(Point(), GetSize());
+                        r.size.w = r.size.w - 1;
+                        r.size.h = r.size.h - 1;
+                        int idx = 0;
+                        Rect rect;
+                        root->Measure(args.graphics, r.location, this, 0, idx, rect);
+                        SetContentSize(rect.size);
+                    }
+                }
+                args.graphics.Clear(BackgroundColor());
+                if (bitmapIndex != -1)
+                {
+                    Point location;
+                    PointF loc(location.x, location.y);
+                    args.graphics.DrawImage(stateIndicatorBitmaps[bitmapIndex], loc);
+                }
+                else
+                {
+                    if (!root.IsNull())
+                    {
+                        root->Draw(args.graphics, this);
+                    }
+                    base->OnPaint(args);
+                }
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show(ex.Message());
+            }
+        }
+        public inline nothrow TreeViewNode* Root() const
+        {
+            return root.Get();
+        }
+        public nothrow TreeViewNode* ReleaseRoot()
+        {
+            return root.Release();
+        }
+        public nothrow void ResetRoot(TreeViewNode* root_)
+        {
+            root.Reset(root_);
+        }
+        public nothrow void SetRoot(TreeViewNode* root_)
+        {
+            if (!root.IsNull())
+            {
+                root->SetTreeView(null);
+            }
+            root.Reset(root_);
+            SetContentLocation(Point(0, 0));
+            if (!root.IsNull())
+            {
+                root->SetTreeView(this);
+                SetTreeViewNodeChanged();
+                SetTreeViewNodeStateChanged();
+                SetContentChanged();
+            }
+            SetChanged();
+            Invalidate();
+        }
+        public inline nothrow const Font& GetNormalNodeFont() const
+        {
+            return normalNodeFont;
+        }
+        public inline nothrow const Font& GetActiveNodeFont() const
+        {
+            return activeNodeFont;
+        }
+        public nothrow void SetNormalNodeFont(const Font& normalNodeFont_)
+        {
+            normalNodeFont = normalNodeFont_;
+            SetChanged();
+        }
+        public nothrow void SetActiveNodeFont(const Font& activeNodeFont_)
+        {
+            activeNodeFont = activeNodeFont_;
+            SetChanged();
+        }
+        public inline nothrow const SolidBrush& TextBrush() const
+        {
+            return textBrush;
+        }
+        public inline nothrow const SolidBrush& NodeSelectedBrush() const
+        {
+            return nodeSelectedBrush;
+        }
+        public inline nothrow float TextHeight() const
+        {
+            return textHeight;
+        }
+        public inline nothrow float StateIndicatorPercentage() const
+        {
+            return stateIndicatorPercentage;
+        }
+        public inline nothrow void SetStateIndicatorPercentage(float stateIndicatorPercentage_)
+        {
+            stateIndicatorPercentage = stateIndicatorPercentage_;
+            SetChanged();
+        }
+        public inline nothrow float StateIndicatorHeight() const
+        {
+            return stateIndicatorHeight;
+        }
+        public inline nothrow const Color& StateIndicatorColor() const
+        {
+            return stateIndicatorColor;
+        }
+        public void SetStateIndicatorColor(const Color& stateIndicatorColor_)
+        {
+            stateIndicatorColor = stateIndicatorColor_;
+            SetChanged();
+        }
+        public inline nothrow const Color& NodeSelectedColor() const
+        {
+            return nodeSelectedColor;
+        }
+        public nothrow void SetNodeSelectedColor(const Color& nodeSelectedColor_)
+        {
+            if (nodeSelectedColor != nodeSelectedColor_)
+            {
+                nodeSelectedColor = nodeSelectedColor_;
+                nodeSelectedBrush = SolidBrush(nodeSelectedColor);
+            }
+        }
+        public inline nothrow const Color& TextColor() const
+        {
+            return textColor;
+        }
+        public void SetTextColor(const Color& textColor_)
+        {
+            if (textColor != textColor_)
+            {
+                textColor = textColor_;
+                textBrush = SolidBrush(textColor);
+                SetChanged();
+            }
+        }
+        public inline nothrow float NodeIndentPercent() const
+        {
+            return nodeIndentPercent;
+        }
+        public inline nothrow float NodeTextIndentPercent() const
+        {
+            return nodeTextIndentPercent;
+        }
+        public inline nothrow int AnimationMs() const
+        {
+            return animationMs;
+        }
+        public nothrow void SetAnimationMs(int animationMs_)
+        {
+            animationMs = animationMs_;
+        }
+        public void ShowToolTipWindow(const string& toolTipText, TreeViewNode* node)
+        {
+            toolTipWindow->Hide();
+            Point loc = node->Location();
+            Size size = node->GetSize();
+            Point pt(loc.x, loc.y + size.h + 4);
+            if (!node->Children().IsEmpty())
+            {
+                pt.x = pt.x + cast<int>(textHeight + 2.000000f);
+            }
+            TranslateContentLocation(pt);
+            pt = ClientToScreen(pt);
+            toolTipWindow->SetText(toolTipText);
+            toolTipWindow->MeasureExtent();
+            Window* window = GetWindow();
+            if (window != null)
+            {
+                pt = window->ScreenToClient(pt);
+                Size sz = toolTipWindow->GetSize();
+                Point wloc = window->Location();
+                Size wsz = window->GetSize();
+                if (pt.y + sz.h > wloc.y + wsz.h)
+                {
+                    pt.y = wloc.y + wsz.h - sz.h;
+                }
+                if (pt.x + sz.w > wloc.x + wsz.w)
+                {
+                    pt.x = wloc.x + wsz.w - sz.w;
+                }
+                toolTipWindow->SetLocation(pt);
+                toolTipWindow->BringToFront();
+                toolTipWindow->Show();
+                toolTipWindow->Invalidate();
+                toolTipWindow->Update();
+            }
+        }
+        public void HideToolTipWindow()
+        {
+            toolTipWindow->Hide();
+        }
+        public nothrow Event<TreeViewNodeMouseClickEventHandler, TreeViewNodeMouseClickEventArgs>& NodeClickEvent()
+        {
+            return nodeClickEvent;
+        }
+        public nothrow Event<TreeViewNodeMouseClickEventHandler, TreeViewNodeMouseClickEventArgs>& NodeDoubleClickEvent()
+        {
+            return nodeDoubleClickEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeEnterEvent()
+        {
+            return nodeEnterEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeLeaveEvent()
+        {
+            return nodeLeaveEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeSelectedEvent()
+        {
+            return nodeSelectedEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeExpandedEvent()
+        {
+            return nodeExpandedEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeCollapsedEvent()
+        {
+            return nodeCollapsedEvent;
+        }
+        public nothrow Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs>& NodeHoveredEvent()
+        {
+            return nodeHoveredEvent;
+        }
+        protected override void OnMouseDown(MouseEventArgs& args)
+        {
+            base->OnMouseDown(args);
+            if (!root.IsNull())
+            {
+                bool handled = false;
+                root->DispatchMouseDown(args, handled);
+                if (TreeViewNodeStateChanged())
+                {
+                    DeselectNode();
+                    Invalidate();
+                }
+            }
+        }
+        protected override void OnMouseUp(MouseEventArgs& args)
+        {
+            base->OnMouseUp(args);
+            if (!root.IsNull())
+            {
+                bool handled = false;
+                root->DispatchMouseUp(args, handled);
+            }
+        }
+        protected override void OnMouseDoubleClick(MouseEventArgs& args)
+        {
+            base->OnMouseDoubleClick(args);
+            if (!root.IsNull())
+            {
+                bool handled = false;
+                root->DispatchMouseDoubleClick(args, handled);
+                if (TreeViewNodeStateChanged())
+                {
+                    DeselectNode();
+                    Invalidate();
+                }
+            }
+        }
+        protected override void OnMouseEnter()
+        {
+            base->OnMouseEnter();
+            trackedNode = null;
+        }
+        protected override void OnMouseMove(MouseEventArgs& args)
+        {
+            base->OnMouseMove(args);
+            if (!root.IsNull())
+            {
+                bool handled = false;
+                root->DispatchMouseMove(args, handled);
+                if (!handled)
+                {
+                    if (trackedNode != null)
+                    {
+                        if (trackedNode->MouseEntered())
+                        {
+                            trackedNode->ResetMouseEntered();
+                            trackedNode->MouseLeaveInternal();
+                        }
+                        trackedNode = null;
+                    }
+                }
+            }
+        }
+        protected override void OnMouseLeave()
+        {
+            base->OnMouseLeave();
+            if (trackedNode != null)
+            {
+                if (trackedNode->MouseEntered())
+                {
+                    trackedNode->ResetMouseEntered();
+                    trackedNode->MouseLeaveInternal();
+                }
+                trackedNode = null;
+            }
+        }
+        protected override void OnMouseHover(MouseEventArgs& args)
+        {
+            base->OnMouseHover(args);
+            if (!root.IsNull())
+            {
+                bool handled = false;
+                root->DispatchMouseHover(args, handled);
+            }
+        }
+        internal inline nothrow bool Changed() const
+        {
+            return (flags & Flags.changed) != Flags.none;
+        }
+        public inline nothrow void SetChanged()
+        {
+            flags = cast<Flags>(flags | Flags.changed);
+        }
+        private inline nothrow void ResetChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.changed);
+        }
+        internal inline nothrow bool TreeViewNodeChanged() const
+        {
+            return (flags & Flags.treeViewNodeChanged) != Flags.none;
+        }
+        internal inline nothrow void SetTreeViewNodeChanged()
+        {
+            flags = cast<Flags>(flags | Flags.treeViewNodeChanged);
+        }
+        private inline nothrow void ResetTreeViewNodeChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.treeViewNodeChanged);
+        }
+        internal inline nothrow bool TreeViewNodeStateChanged() const
+        {
+            return (flags & Flags.treeViewNodeStateChanged) != Flags.none;
+        }
+        private inline nothrow void ResetTreeViewNodeStateChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.treeViewNodeStateChanged);
+        }
+        internal inline nothrow void SetTreeViewNodeStateChanged()
+        {
+            flags = cast<Flags>(flags | Flags.treeViewNodeStateChanged);
+        }
+        private inline nothrow bool ToolTipWindowAdded() const
+        {
+            return (flags & Flags.toolTipWindowAdded) != Flags.none;
+        }
+        private inline nothrow void SetToolTipWindowAdded()
+        {
+            flags = cast<Flags>(flags | Flags.toolTipWindowAdded);
+        }
+        private inline nothrow void ResetToolTipWindowAdded()
+        {
+            flags = cast<Flags>(flags & ~Flags.toolTipWindowAdded);
+        }
+        private void Measure(Graphics& graphics)
+        {
+            string s = "RootNode";
+            RectF normalTextRect = graphics.MeasureStringChecked(s, normalNodeFont, PointF(0, 0), format);
+            textHeight = normalTextRect.size.h;
+            RectF activeTextRect = graphics.MeasureStringChecked(s, activeNodeFont, PointF(0, 0), format);
+            textHeight = Max(textHeight, activeTextRect.size.h);
+            stateIndicatorHeight = stateIndicatorPercentage * textHeight / 100.000000f;
+            SetScrollUnits(cast<int>(textHeight + 0.500000), cast<int>(textHeight + 0.500000));
+        }
+        private void MakeStateIndicatorBitmaps(Graphics& graphics)
+        {
+            SolidBrush stateIndicatorBrush(stateIndicatorColor);
+            stateIndicatorBitmaps.Clear();
+            PointF center(textHeight / 2, textHeight / 2);
+            float w = cast<float>((Sqrt(3.000000) / 2) * stateIndicatorHeight);
+            PointF pt1(center.x - w / 2, center.y - stateIndicatorHeight / 2);
+            PointF pt2(center.x - w / 2, center.y + stateIndicatorHeight / 2);
+            PointF pt3(center.x + w / 2, center.y);
+            for (int i = 9; i >= 0; --i)
+            {
+                float angle = i * 10.000000f;
+                List<PointF> triangle;
+                triangle.Add(pt1);
+                triangle.Add(pt2);
+                triangle.Add(pt3);
+                Bitmap bm(cast<int>(textHeight), cast<int>(textHeight), graphics);
+                Graphics bmGraphics = Graphics.FromImage(bm);
+                bmGraphics.Clear(BackgroundColor());
+                if (i > 0)
+                {
+                    Matrix id;
+                    Matrix rm = RotateAt(id, angle, center);
+                    rm.TransformPointsChecked(triangle);
+                }
+                List<Point> indicatorTriangle;
+                for (const PointF& pt : triangle)
+                {
+                    indicatorTriangle.Add(Point(cast<int>(pt.x), cast<int>(pt.y)));
+                }
+                bmGraphics.SetSmoothingModeChecked(SmoothingMode.highQuality);
+                bmGraphics.FillPolygonChecked(stateIndicatorBrush, 3, indicatorTriangle.Begin().Ptr());
+                stateIndicatorBitmaps.Add(Rvalue(bm));
+            }
+        }
+        internal void DoAnimation(TreeViewNode.State targetState, const Rect& stateRect)
+        {
+            if (targetState == TreeViewNode.State.expanded)
+            {
+                for (long i = stateIndicatorBitmaps.Count() - 1; i >= 0; --i)
+                {
+                    UpdateGuard guard(this, i);
+                    Invalidate(stateRect.ToWinRect());
+                    Update();
+                    Sleep(Duration.FromMilliseconds(animationMs));
+                }
+            }
+            else if (targetState == TreeViewNode.State.collapsed)
+            {
+                for (long i = 0; i < stateIndicatorBitmaps.Count(); ++i)
+                {
+                    UpdateGuard guard(this, i);
+                    Invalidate(stateRect.ToWinRect());
+                    Update();
+                    Sleep(Duration.FromMilliseconds(animationMs));
+                }
+            }
+        }
+        private class UpdateGuard
+        {
+            public nothrow UpdateGuard(TreeView* view_, long bitmapIndex) :
+                view(view_)
+            {
+                view->SetBitmapIndex(bitmapIndex);
+            }
+            public ~UpdateGuard()
+            {
+                view->ResetBitmapIndex();
+            }
+            private TreeView* view;
+        }
+        private nothrow void SetBitmapIndex(long bitmapIndex_)
+        {
+            bitmapIndex = bitmapIndex_;
+        }
+        private nothrow void ResetBitmapIndex()
+        {
+            bitmapIndex = -1;
+        }
+        public const Bitmap& NodeExpandedBitmap() const
+        {
+            if (stateIndicatorBitmaps.IsEmpty())
+            {
+                throw Exception("no state indicator bitmaps");
+            }
+            return stateIndicatorBitmaps.Front();
+        }
+        public const Bitmap& NodeCollapsedBitmap() const
+        {
+            if (stateIndicatorBitmaps.IsEmpty())
+            {
+                throw Exception("no state indicator bitmaps");
+            }
+            return stateIndicatorBitmaps.Back();
+        }
+        public inline nothrow const StringFormat& Format() const
+        {
+            return format;
+        }
+        internal nothrow void SetSelectedNode(TreeViewNode* node)
+        {
+            if (selectedNode != node)
+            {
+                if (selectedNode != null)
+                {
+                    selectedNode->ResetSelected();
+                }
+                selectedNode = node;
+                SetTreeViewNodeStateChanged();
+            }
+        }
+        public nothrow TreeViewNode* SelectedNode() const
+        {
+            return selectedNode;
+        }
+        public void DeselectNode()
+        {
+            if (selectedNode != null)
+            {
+                TreeViewNode* selectedNodeParent = selectedNode->Parent();
+                while (selectedNodeParent != null)
+                {
+                    if (selectedNodeParent->GetState() == TreeViewNode.State.collapsed)
+                    {
+                        SetSelectedNode(null);
+                        break;
+                    }
+                    selectedNodeParent = selectedNodeParent->Parent();
+                }
+            }
+        }
+        internal inline nothrow TreeViewNode* TrackedNode() const
+        {
+            return trackedNode;
+        }
+        internal nothrow void SetTrackedNode(TreeViewNode* trackedNode_)
+        {
+            trackedNode = trackedNode_;
+        }
+        public inline nothrow const Padding& NodeImagePadding() const
+        {
+            return nodeImagePadding;
+        }
+        protected virtual void OnNodeClick(TreeViewNodeMouseClickEventArgs& args)
+        {
+            nodeClickEvent.Fire(args);
+        }
+        internal void NodeClick(const Point& location, MouseButtons buttons, TreeViewNode* node)
+        {
+            TreeViewNodeMouseClickEventArgs args(location, buttons, 1, node);
+            OnNodeClick(args);
+        }
+        protected virtual void OnNodeDoubleClick(TreeViewNodeMouseClickEventArgs& args)
+        {
+            nodeDoubleClickEvent.Fire(args);
+        }
+        internal void NodeDoubleClick(const Point& location, MouseButtons buttons, TreeViewNode* node)
+        {
+            TreeViewNodeMouseClickEventArgs args(location, buttons, 2, node);
+            OnNodeDoubleClick(args);
+        }
+        protected virtual void OnNodeEnter(TreeViewNodeEventArgs& args)
+        {
+            nodeEnterEvent.Fire(args);
+        }
+        internal void NodeEnter(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeEnter(args);
+        }
+        protected virtual void OnNodeLeave(TreeViewNodeEventArgs& args)
+        {
+            nodeLeaveEvent.Fire(args);
+        }
+        internal void NodeLeave(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeLeave(args);
+        }
+        protected virtual void OnNodeSelected(TreeViewNodeEventArgs& args)
+        {
+            nodeSelectedEvent.Fire(args);
+        }
+        internal void NodeSelected(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeSelected(args);
+        }
+        protected virtual void OnNodeExpanded(TreeViewNodeEventArgs& args)
+        {
+            nodeExpandedEvent.Fire(args);
+        }
+        internal void NodeExpanded(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeExpanded(args);
+        }
+        protected virtual void OnNodeCollapsed(TreeViewNodeEventArgs& args)
+        {
+            nodeCollapsedEvent.Fire(args);
+        }
+        protected virtual void OnNodeHovered(TreeViewNodeEventArgs& args)
+        {
+            nodeHoveredEvent.Fire(args);
+        }
+        internal void NodeCollapsed(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeCollapsed(args);
+        }
+        internal void NodeHovered(TreeViewNode* node)
+        {
+            TreeViewNodeEventArgs args(node);
+            OnNodeHovered(args);
+        }
+        public inline nothrow ImageList* GetImageList() const
+        {
+            return imageList;
+        }
+        public nothrow void SetImageList(ImageList* imageList_)
+        {
+            imageList = imageList_;
+        }
+        private Flags flags;
+        private UniquePtr<TreeViewNode> root;
+        private Font normalNodeFont;
+        private Font activeNodeFont;
+        private float textHeight;
+        private float stateIndicatorPercentage;
+        private float stateIndicatorHeight;
+        private Color stateIndicatorColor;
+        private Color nodeSelectedColor;
+        private Color textColor;
+        private float nodeIndentPercent;
+        private float nodeTextIndentPercent;
+        private Padding nodeImagePadding;
+        private SolidBrush nodeSelectedBrush;
+        private SolidBrush textBrush;
+        private List<Bitmap> stateIndicatorBitmaps;
+        private StringFormat format;
+        private long bitmapIndex;
+        private int animationMs;
+        private TreeViewNode* selectedNode;
+        private TreeViewNode* trackedNode;
+        private ToolTip* toolTipWindow;
+        private ImageList* imageList;
+        private Event<TreeViewNodeMouseClickEventHandler, TreeViewNodeMouseClickEventArgs> nodeClickEvent;
+        private Event<TreeViewNodeMouseClickEventHandler, TreeViewNodeMouseClickEventArgs> nodeDoubleClickEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeEnterEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeLeaveEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeSelectedEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeExpandedEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeCollapsedEvent;
+        private Event<TreeViewNodeEventHandler, TreeViewNodeEventArgs> nodeHoveredEvent;
+    }
+
+    public class TreeViewNode : Component
+    {
+        public enum State : sbyte
+        {
+            collapsed = 0, expanded = 1
+        }
+        private enum Flags : sbyte
+        {
+            none = 0, mouseEntered = 1 << 0, selected = 1 << 1, active = 1 << 2
+        }
+        public explicit nothrow TreeViewNode(const string& text_) :
+            treeView(null), text(text_), children(this), state(State.collapsed), flags(Flags.none), index(-1), imageIndex(-1), expandedImageIndex(-1)
+        {
+        }
+        public nothrow void SetTreeView(TreeView* treeView_)
+        {
+            treeView = treeView_;
+        }
+        public nothrow TreeViewNode* Parent() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is TreeViewNode*)
+                    {
+                        return cast<TreeViewNode*>(parent);
+                    }
+                }
+            }
+            return null;
+        }
+        public nothrow TreeView* GetTreeView() const
+        {
+            if (treeView != null)
+            {
+                return treeView;
+            }
+            TreeViewNode* parent = Parent();
+            if (parent != null)
+            {
+                return parent->GetTreeView();
+            }
+            return null;
+        }
+        public void AddChild(TreeViewNode* child)
+        {
+            children.AddChild(child);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->SetTreeViewNodeChanged();
+            }
+        }
+        public UniquePtr<TreeViewNode> RemoveChild(TreeViewNode* child)
+        {
+            UniquePtr<Component> removed = children.RemoveChild(child);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->SetTreeViewNodeChanged();
+            }
+            return UniquePtr<TreeViewNode>(cast<TreeViewNode*>(removed.Release()));
+        }
+        public void RemoveChildren()
+        {
+            Component* component = children.FirstChild();
+            while (component != null)
+            {
+                Component* next = component->NextSibling();
+                UniquePtr<Component> removed = children.RemoveChild(component);
+                component = next;
+            }
+        }
+        public nothrow int Level() const
+        {
+            TreeViewNode* parent = Parent();
+            if (parent != null)
+            {
+                return parent->Level() + 1;
+            }
+            return 0;
+        }
+        public nothrow const Point& Location() const
+        {
+            return location;
+        }
+        public nothrow const Size& GetSize() const
+        {
+            return size;
+        }
+        public nothrow void MeasureSize(Graphics& graphics, TreeView* treeView)
+        {
+            RectF textRect = graphics.MeasureStringChecked(text, treeView->GetNormalNodeFont(), PointF(0, 0), treeView->Format());
+            SizeF imageSize(0, 0);
+            if (imageIndex != -1)
+            {
+                Padding padding = treeView->NodeImagePadding();
+                ImageList* imageList = treeView->GetImageList();
+                if (imageList != null)
+                {
+                    Bitmap* bitmap = imageList->GetImage(imageIndex);
+                    imageSize.w = bitmap->GetWidth() + padding.Horizontal();
+                    imageSize.h = bitmap->GetHeight() + padding.Vertical();
+                }
+            }
+            size = Size(cast<int>(treeView->TextHeight() + textRect.size.w + imageSize.w), cast<int>(Max(textRect.size.h, imageSize.h)));
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is TreeViewNode*)
+                {
+                    TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                    childNode->MeasureSize(graphics, treeView);
+                }
+                child = child->NextSibling();
+            }
+        }
+        internal nothrow void Measure(Graphics& graphics, const Point& loc, TreeView* treeView, int level, int& idx, Rect& parentRect)
+        {
+            float imageHeight = 0;
+            if (imageIndex != -1)
+            {
+                Padding padding = treeView->NodeImagePadding();
+                ImageList* imageList = treeView->GetImageList();
+                if (imageList != null)
+                {
+                    Bitmap* image = imageList->GetImage(imageIndex);
+                    imageHeight = image->GetHeight() + padding.Vertical();
+                }
+            }
+            location = Point(cast<int>(loc.x + level * treeView->NodeIndentPercent() * treeView->TextHeight() / 100.000000f), cast<int>(loc.y + idx * Max(treeView->TextHeight(), imageHeight)));
+            Rect rect(location, size);
+            childRect = rect;
+            parentRect = Rect.Union(parentRect, childRect);
+            if (state == State.expanded)
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is TreeViewNode*)
+                    {
+                        TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                        ++idx;
+                        childNode->Measure(graphics, loc, treeView, level + 1, idx, childRect);
+                        parentRect = Rect.Union(parentRect, childRect);
+                    }
+                    child = child->NextSibling();
+                }
+            }
+        }
+        internal void DispatchMouseDown(MouseEventArgs& args, bool& handled)
+        {
+            Rect r(location, size);
+            if (r.Contains(args.location))
+            {
+                OnMouseDown(args);
+                handled = true;
+            }
+            else
+            {
+                if (childRect.Contains(args.location))
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is TreeViewNode*)
+                        {
+                            TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                            childNode->DispatchMouseDown(args, handled);
+                            if (handled)
+                            {
+                                return;
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+        }
+        internal void DispatchMouseUp(MouseEventArgs& args, bool& handled)
+        {
+            Rect r(location, size);
+            if (r.Contains(args.location))
+            {
+                OnMouseUp(args);
+                handled = true;
+            }
+            else
+            {
+                if (childRect.Contains(args.location))
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is TreeViewNode*)
+                        {
+                            TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                            childNode->DispatchMouseUp(args, handled);
+                            if (handled)
+                            {
+                                return;
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+        }
+        internal void DispatchMouseDoubleClick(MouseEventArgs& args, bool& handled)
+        {
+            Rect r(location, size);
+            if (r.Contains(args.location))
+            {
+                OnMouseDoubleClick(args);
+                handled = true;
+            }
+            else
+            {
+                if (childRect.Contains(args.location))
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is TreeViewNode*)
+                        {
+                            TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                            childNode->DispatchMouseDoubleClick(args, handled);
+                            if (handled)
+                            {
+                                return;
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+        }
+        internal void DispatchMouseMove(MouseEventArgs& args, bool& handled)
+        {
+            Rect r(location, size);
+            if (r.Contains(args.location))
+            {
+                handled = true;
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    TreeViewNode* prevNode = view->TrackedNode();
+                    if (prevNode != null && prevNode != this)
+                    {
+                        if (prevNode->MouseEntered())
+                        {
+                            prevNode->ResetMouseEntered();
+                            prevNode->OnMouseLeave();
+                        }
+                    }
+                    view->SetTrackedNode(this);
+                    if (!MouseEntered())
+                    {
+                        SetMouseEntered();
+                        OnMouseEnter();
+                    }
+                }
+            }
+            else
+            {
+                if (childRect.Contains(args.location))
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is TreeViewNode*)
+                        {
+                            TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                            childNode->DispatchMouseMove(args, handled);
+                            if (handled)
+                            {
+                                return;
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+        }
+        internal void MouseLeaveInternal()
+        {
+            OnMouseLeave();
+        }
+        internal void DispatchMouseHover(MouseEventArgs& args, bool& handled)
+        {
+            Rect r(location, size);
+            if (r.Contains(args.location))
+            {
+                handled = true;
+                OnMouseHover();
+            }
+            else
+            {
+                if (childRect.Contains(args.location))
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is TreeViewNode*)
+                        {
+                            TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                            childNode->DispatchMouseHover(args, handled);
+                            if (handled)
+                            {
+                                return;
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+        }
+        private void OnMouseDown(MouseEventArgs& args)
+        {
+            if (args.buttons == MouseButtons.lbutton)
+            {
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    if (children.IsEmpty())
+                    {
+                        Select();
+                    }
+                    else
+                    {
+                        int stateSquareSideLength = cast<int>(view->TextHeight());
+                        Rect stateRect(location, Size(stateSquareSideLength, stateSquareSideLength));
+                        if (stateRect.Contains(args.location))
+                        {
+                            Toggle();
+                        }
+                        else
+                        {
+                            Select();
+                        }
+                    }
+                }
+            }
+            else if (args.buttons == MouseButtons.rbutton)
+            {
+                Select();
+            }
+        }
+        private void OnMouseUp(MouseEventArgs& args)
+        {
+            if (args.buttons == MouseButtons.lbutton)
+            {
+                if (Selected())
+                {
+                    TreeView* view = GetTreeView();
+                    if (view != null)
+                    {
+                        view->NodeClick(args.location, args.buttons, this);
+                    }
+                }
+            }
+            else if (args.buttons == MouseButtons.rbutton)
+            {
+                if (Selected())
+                {
+                    TreeView* view = GetTreeView();
+                    if (view != null)
+                    {
+                        view->NodeClick(args.location, args.buttons, this);
+                    }
+                }
+            }
+        }
+        private void OnMouseDoubleClick(MouseEventArgs& args)
+        {
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeDoubleClick(args.location, args.buttons, this);
+            }
+        }
+        private void OnMouseEnter()
+        {
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeEnter(this);
+            }
+        }
+        private void OnMouseLeave()
+        {
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeLeave(this);
+            }
+        }
+        private void OnMouseHover()
+        {
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeHovered(this);
+            }
+        }
+        public void Toggle()
+        {
+            switch (state)
+            {
+                case State.expanded: Collapse();
+                break;
+                case State.collapsed: Expand();
+                break;
+            }
+        }
+        public void Select()
+        {
+            if (!Selected())
+            {
+                SetSelected();
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetSelectedNode(this);
+                    view->NodeSelected(this);
+                }
+            }
+        }
+        public void Deselect()
+        {
+            if (Selected())
+            {
+                ResetSelected();
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetSelectedNode(null);
+                }
+            }
+        }
+        public void Expand()
+        {
+            if (children.IsEmpty()) return;
+            DoAnimation();
+            Expand(false);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeExpanded(this);
+            }
+        }
+        public void ExpandAll()
+        {
+            if (children.IsEmpty()) return;
+            DoAnimation();
+            Expand(true);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeExpanded(this);
+            }
+        }
+        public void Expand(bool all)
+        {
+            if (children.IsEmpty()) return;
+            SetState(State.expanded);
+            if (all)
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is TreeViewNode*)
+                    {
+                        TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                        childNode->Expand(all);
+                    }
+                    child = child->NextSibling();
+                }
+            }
+        }
+        public void Collapse()
+        {
+            if (children.IsEmpty()) return;
+            DoAnimation();
+            Collapse(false);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeCollapsed(this);
+            }
+        }
+        public void CollapseAll()
+        {
+            if (children.IsEmpty()) return;
+            DoAnimation();
+            Collapse(true);
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->NodeCollapsed(this);
+            }
+        }
+        public void Collapse(bool all)
+        {
+            if (children.IsEmpty()) return;
+            SetState(State.collapsed);
+            if (all)
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is TreeViewNode*)
+                    {
+                        TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                        childNode->Collapse(all);
+                    }
+                    child = child->NextSibling();
+                }
+            }
+        }
+        private void DoAnimation()
+        {
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                int stateSquareSideLength = cast<int>(view->TextHeight());
+                Rect stateRect(location, Size(stateSquareSideLength, stateSquareSideLength));
+                view->DoAnimation(cast<State>(1 - state), stateRect);
+            }
+        }
+        public inline nothrow const string& Text() const
+        {
+            return text;
+        }
+        public nothrow void SetText(const string& text_)
+        {
+            text = text_;
+            TreeView* view = GetTreeView();
+            if (view != null)
+            {
+                view->SetTreeViewNodeChanged();
+            }
+        }
+        public inline nothrow Container& Children() const
+        {
+            return children;
+        }
+        public inline nothrow State GetState() const
+        {
+            return state;
+        }
+        public nothrow void SetState(State state_)
+        {
+            if (state != state_)
+            {
+                state = state_;
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetTreeViewNodeStateChanged();
+                    if (state == State.collapsed)
+                    {
+                        view->SetContentLocation(Point(0, 0));
+                    }
+                }
+            }
+        }
+        public inline nothrow void* Data() const
+        {
+            return data;
+        }
+        public inline nothrow void SetData(void* data_)
+        {
+            data = data_;
+        }
+        public void EnsureVisible()
+        {
+            TreeView* treeView = GetTreeView();
+            if (treeView != null)
+            {
+                treeView->EnsureNodeVisible(this);
+            }
+        }
+        public void GetVisibleNodes(List<TreeViewNode*>& visibleNodes, TreeView* treeView, int selectLevel)
+        {
+            if (selectLevel == -1 || Level() == selectLevel)
+            {
+                if (treeView->NodeVisible(this))
+                {
+                    visibleNodes.Add(this);
+                }
+            }
+            if (state == State.expanded)
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is TreeViewNode*)
+                    {
+                        TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                        childNode->GetVisibleNodes(visibleNodes, treeView, selectLevel);
+                    }
+                    child = child->NextSibling();
+                }
+            }
+        }
+        public void Draw(Graphics& graphics, TreeView* treeView)
+        {
+            bool isVisible = treeView->NodeVisible(this);
+            Point loc = location;
+            if (!children.IsEmpty())
+            {
+                if (isVisible)
+                {
+                    switch (state)
+                    {
+                        case State.expanded: 
+                        {
+                            graphics.DrawImageChecked(treeView->NodeExpandedBitmap(), PointF(loc.x, loc.y));
+                            break;
+                        }
+                        case State.collapsed: 
+                        {
+                            graphics.DrawImageChecked(treeView->NodeCollapsedBitmap(), PointF(loc.x, loc.y));
+                            break;
+                        }
+                    }
+                }
+                loc.x = cast<int>(loc.x + treeView->NodeTextIndentPercent() * treeView->TextHeight() / 100.000000f);
+            }
+            if (isVisible)
+            {
+                if (imageIndex != -1)
+                {
+                    DrawImage(treeView, graphics, loc);
+                }
+            }
+            if (isVisible)
+            {
+                if (Selected())
+                {
+                    Rect rect(loc, size);
+                    graphics.FillRectangleChecked(treeView->NodeSelectedBrush(), rect);
+                }
+                if (Active())
+                {
+                    graphics.DrawStringChecked(text, treeView->GetActiveNodeFont(), PointF(loc.x, loc.y), treeView->TextBrush());
+                }
+                else
+                {
+                    graphics.DrawStringChecked(text, treeView->GetNormalNodeFont(), PointF(loc.x, loc.y), treeView->TextBrush());
+                }
+            }
+            if (state == State.expanded)
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is TreeViewNode*)
+                    {
+                        TreeViewNode* childNode = cast<TreeViewNode*>(child);
+                        childNode->Draw(graphics, treeView);
+                    }
+                    child = child->NextSibling();
+                }
+            }
+        }
+        internal inline nothrow bool MouseEntered() const
+        {
+            return (flags & Flags.mouseEntered) != Flags.none;
+        }
+        internal inline nothrow void SetMouseEntered()
+        {
+            flags = cast<Flags>(flags | Flags.mouseEntered);
+        }
+        internal inline nothrow void ResetMouseEntered()
+        {
+            flags = cast<Flags>(flags & ~Flags.mouseEntered);
+        }
+        public inline nothrow bool Selected() const
+        {
+            return (flags & Flags.selected) != Flags.none;
+        }
+        private inline nothrow void SetSelected()
+        {
+            flags = cast<Flags>(flags | Flags.selected);
+        }
+        internal inline nothrow void ResetSelected()
+        {
+            flags = cast<Flags>(flags & ~Flags.selected);
+        }
+        public inline nothrow bool Active() const
+        {
+            return (flags & Flags.active) != Flags.none;
+        }
+        public nothrow void SetActive(bool active)
+        {
+            if (Active() != active)
+            {
+                if (active)
+                {
+                    flags = cast<Flags>(flags | Flags.active);
+                }
+                else
+                {
+                    flags = cast<Flags>(flags & ~Flags.active);
+                }
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetTreeViewNodeStateChanged();
+                }
+            }
+        }
+        public inline nothrow int Index() const
+        {
+            return index;
+        }
+        public nothrow void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public inline nothrow int ImageIndex() const
+        {
+            return imageIndex;
+        }
+        public nothrow void SetImageIndex(int imageIndex_)
+        {
+            if (imageIndex != imageIndex_)
+            {
+                imageIndex = imageIndex_;
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetTreeViewNodeStateChanged();
+                    view->SetChanged();
+                    view->Invalidate();
+                }
+            }
+        }
+        public nothrow void SetExpandedImageIndex(int expandedImageIndex_)
+        {
+            if (expandedImageIndex != expandedImageIndex_)
+            {
+                expandedImageIndex = expandedImageIndex_;
+                TreeView* view = GetTreeView();
+                if (view != null)
+                {
+                    view->SetTreeViewNodeStateChanged();
+                    view->SetChanged();
+                    view->Invalidate();
+                }
+            }
+        }
+        public nothrow void DrawImage(TreeView* view, Graphics& graphics, Point& loc)
+        {
+            ImageList* imageList = view->GetImageList();
+            if (imageList != null)
+            {
+                int imgIndex = imageIndex;
+                if (state == State.expanded)
+                {
+                    if (expandedImageIndex != -1)
+                    {
+                        imgIndex = expandedImageIndex;
+                    }
+                }
+                Bitmap* image = imageList->GetImage(imgIndex);
+                if (image != null)
+                {
+                    int imageWidth = cast<int>(image->GetWidth());
+                    int imageHeight = cast<int>(image->GetHeight());
+                    Padding padding = view->NodeImagePadding();
+                    Rect r(loc, Size(imageWidth + padding.Horizontal(), imageHeight + padding.Vertical()));
+                    ImageAttributes attributes;
+                    Color transparentColor = System.Windows.Color.DefaultBitmapTransparent();
+                    attributes.SetColorKeyChecked(transparentColor, transparentColor, ColorAdjustType.default_);
+                    graphics.DrawImageChecked(*image, r, 0, 0, imageWidth + padding.Horizontal(), imageHeight + padding.Vertical(), Unit.pixel, attributes);
+                    loc.x = loc.x + imageWidth + padding.Horizontal();
+                }
+            }
+        }
+        private TreeView* treeView;
+        private string text;
+        private Container children;
+        private State state;
+        private Flags flags;
+        private void* data;
+        private Point location;
+        private Size size;
+        private Rect childRect;
+        private int index;
+        private int imageIndex;
+        private int expandedImageIndex;
+    }
+
+} // namespace System.Windows

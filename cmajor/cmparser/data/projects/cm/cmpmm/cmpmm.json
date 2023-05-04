@@ -1,0 +1,26 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_Cm.Service_D219517545C924A7168FB331FCA4605ACCBEA75E", 
+        "project_Cm.Views_1A8722F018A7EAE36A61C7D85ACF39EDE6A7342B"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "74E1C5F09F7494A19279A99D08974C97AFE20F64", 
+            "fileId" : "Main_3C01959DC9E9D41A33DB46E4B1E4EA27E680D970", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmpmm\/Main.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/cmpmm\/cmpmm.cmp", 
+    "projectHash" : "B25A6A41A9CBF5472E634857112A1357439A233E", 
+    "projectId" : "project_cmpmm_42A76555F3A8B30787E41D163198DFA5FE997DF8", 
+    "projectName" : "cmpmm", 
+    "target" : "winguiapp"
+}

@@ -1,0 +1,288 @@
+// =================================
+// Copyright (c) 2020 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.Os;
+using System.Security;
+using cmsh;
+
+void PrintHelp()
+{
+    Console.Out() << "Usage: cmsh [options] [COMMAND [ARGS]...]" << endl();
+    Console.Out() << "If no COMMAND and ARGS are given run shell in interactive mode." << endl();
+    Console.Out() << "Otherwise expand COMMAND and ARGS and run command." << endl();
+    Console.Out() << "Then exit code of the shell is the exit code of the COMMAND." << endl() << endl();
+    Console.Out() << "Options:" << endl();
+    Console.Out() << "--help | -h" << endl();
+    Console.Out() << "  Print help and exit." << endl() << endl();
+    Console.Out() << "--diagnostics | -d" << endl();
+    Console.Out() << "  Show stack trace in case of error." << endl() << endl();
+}
+
+namespace cmsh
+{
+    void SetLoginEnvironment(ShellEnvironment& shellEnvironment)
+    {
+        if (HasEnv("HOSTNAME"))
+        {
+            shellEnvironment.hostName = GetEnv("HOSTNAME");
+        }
+        else
+        {
+            shellEnvironment.hostName = GetHostName();
+            SetEnv("HOSTNAME", shellEnvironment.hostName);
+        }
+        if (HasEnv("UID"))
+        {
+            shellEnvironment.uid = ParseInt(GetEnv("UID"));
+        }
+        else
+        {
+            shellEnvironment.uid = GetUID();
+            SetEnv("UID", ToString(shellEnvironment.uid));
+        }
+        User* user = shellEnvironment.users.GetUser(shellEnvironment.uid);
+        if (HasEnv("USER"))
+        {
+            shellEnvironment.userName = GetEnv("USER");
+        }
+        else
+        {
+            if (user != null)
+            {
+                shellEnvironment.userName = user->Name();
+                SetEnv("USER", shellEnvironment.userName);
+            }
+        }
+        if (HasEnv("HOME"))
+        {
+            shellEnvironment.home = GetEnv("HOME");
+        }
+        else
+        {
+            if (user != null)
+            {
+                shellEnvironment.home = user->Home();
+                SetEnv("HOME", shellEnvironment.home);
+            }
+        }
+        if (HasEnv("SHELL"))
+        {
+            shellEnvironment.shell = GetEnv("SHELL");
+        }
+        else
+        {
+            if (user != null)
+            {
+                shellEnvironment.shell = user->Shell();
+                SetEnv("SHELL", shellEnvironment.shell);
+            }
+        }
+    }
+
+    void ReadEnvironmentFile()
+    {
+        try
+        {
+            if (!File.Exists("/etc/environment"))
+            {
+                throw Exception("warning: /etc/environment does not exist");;
+            }
+            ustring environmentContent = ToUtf32(File.ReadAllText("/etc/environment"));
+            EnvironmentParser parser("/etc/environment", environmentContent);
+            parser.Parse();
+        }
+        catch (const Exception& ex)
+        {
+            Console.Error() << "cmsh: " << ex.Message() << endl();
+        }
+    }
+
+    void Setup(ShellEnvironment& shellEnvironment)
+    {
+        SetLoginEnvironment(shellEnvironment);
+        BeginObeyColorStrings(1);
+        SetPWD(shellEnvironment);
+        ReadEnvironmentFile();
+        SetPGID(GetPID());
+        SetFGPID(0, GetPID());
+    }
+
+    void PrintPrompt(ShellEnvironment& shellEnvironment)
+    {
+        BeginObeyColorStrings(1);
+        ustring loc;
+        loc.Append(BeginColors(ConsoleColor.green, ConsoleColor.black)).Append(ToUtf32(shellEnvironment.userName)).Append('@').Append(
+        ToUtf32(shellEnvironment.hostName)).Append(EndColors());
+        ustring cwd;
+        if (shellEnvironment.pwd.StartsWith(shellEnvironment.home))
+        {
+            cwd.Append(BeginColors(ConsoleColor.cyan, ConsoleColor.black)).Append('~').Append(
+            ToUtf32(shellEnvironment.pwd.Substring(shellEnvironment.home.Length()))).Append(EndColors());
+        }
+        else
+        {
+            cwd.Append(BeginColors(ConsoleColor.cyan, ConsoleColor.black)).Append(ToUtf32(shellEnvironment.pwd)).Append(EndColors());
+        }
+        ustring prompt = u"$ ";
+        if (shellEnvironment.uid == 0)
+        {
+            prompt = u"# ";
+        }
+        Console.Out() << loc << ":" << cwd << prompt;
+        EndObeyColorStrings(1);
+    }
+
+    nothrow string ReadLine(ShellEnvironment& shellEnvironment)
+    {
+        string line = Console.ReadLine();
+        if (Console.In().Eof())
+        {
+            shellEnvironment.exit = true;
+        }
+        return line;
+    }
+    
+    void ProcessLine(const string& line, ShellEnvironment& shellEnvironment)
+    {
+        TokenizerFlags flags = TokenizerFlags.none;
+        List<Token> tokens = Tokenize(ToUtf32(line), flags);
+        Expand(tokens, shellEnvironment, flags);
+        ProcessCommandLine(tokens, shellEnvironment);
+    }
+    
+    void RunInteractive(ShellEnvironment& shellEnvironment)
+    {
+        PrintPrompt(shellEnvironment);
+        SetFGPID(0, GetPID());
+        string line = ReadLine(shellEnvironment);
+        while (!shellEnvironment.exit)
+        {
+            try
+            {
+                ProcessLine(line, shellEnvironment);
+            }
+            catch (const Exception& ex)
+            {
+                Console.Error() << "cmsh: " << ex.Message() << endl();
+            }
+            Console.Out() << endl();
+            if (shellEnvironment.exit) break;
+            PrintPrompt(shellEnvironment);
+            SetFGPID(0, GetPID());
+            line = ReadLine(shellEnvironment);
+        }
+    }
+    
+    void RunCommand(const List<string>& args, ShellEnvironment& shellEnvironment)
+    {
+        string line;
+        bool first = true;
+        for (string arg : args)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                line.Append(' ');
+            }
+            line.Append(arg);
+        }
+        ProcessLine(line, shellEnvironment);
+    }
+}
+
+int main(int argc, const char** argv)
+{
+    bool diagnostics = false;
+    int retval = 0;
+    try
+    {
+        List<string> args;
+        bool debug = false;
+        for (int i = 1; i < argc; ++i)
+        {
+            string arg = argv[i];
+            if (arg.StartsWith("--"))
+            {
+                if (arg == "--help")
+                {
+                    PrintHelp();
+                    return 1;
+                }
+                else if (arg == "--diagnostics")
+                {
+                    diagnostics = true;
+                }
+                else
+                {
+                    throw Exception("unknown option '" + arg + "'");
+                }
+            }
+            else if (arg.StartsWith("-"))
+            {
+                string options = arg.Substring(1);
+                if (options.IsEmpty())
+                {
+                    throw Exception("unknonwn option '" + arg + "'");
+                }
+                else
+                {
+                    for (char o : options)
+                    {
+                        if (o == 'h')
+                        {
+                            PrintHelp();
+                            return 1;
+                        }
+                        else if (o == 'd')
+                        {
+                            diagnostics = true;
+                        }
+                        else 
+                        {
+                            throw Exception("unknown option '-" + string(o) + "'");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                args.Add(arg);
+            }
+        }
+        ShellEnvironment shellEnvironment;
+        if (Log())
+        {
+            shellEnvironment.log = true;
+        }
+        Setup(shellEnvironment);
+        if (args.IsEmpty())
+        {
+            RunInteractive(shellEnvironment);
+        }
+        else
+        {
+            RunCommand(args, shellEnvironment);
+        }
+    }
+    catch (const Exception& ex)
+    {
+        if (diagnostics)
+        {
+            Console.Error() << ex.ToString() << endl();
+        }
+        else
+        {
+            Console.Error() << ex.Message() << endl();
+        }
+        retval = 1;
+    }
+    return retval;
+}

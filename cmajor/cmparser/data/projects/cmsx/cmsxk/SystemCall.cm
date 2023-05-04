@@ -1,0 +1,887 @@
+using System;
+using cmsx.machine;
+
+namespace cmsx.kernel
+{
+    public const byte sys_exit = 0u;
+    public const byte sys_wait = 1u;
+    public const byte sys_fork = 2u;
+    public const byte sys_exec = 3u;
+    public const byte sys_kill = 4u;
+    public const byte sys_create = 5u;
+    public const byte sys_open = 6u;
+    public const byte sys_close = 7u;
+    public const byte sys_read = 8u;
+    public const byte sys_write = 9u;
+    public const byte sys_seek = 10u;
+    public const byte sys_tell = 11u;
+    public const byte sys_pool_end = 12u;
+    public const byte sys_set_pool_end = 13u;
+    public const byte sys_debug_break = 14u;
+    public const byte sys_stack_trace = 15u;
+    public const byte sys_throw = 16u;
+    public const byte sys_catch = 17u;
+    public const byte sys_resume = 18u;
+    public const byte sys_get_system_error = 19u;
+    public const byte sys_get_current_time_point = 20u;
+    public const byte sys_sleep = 21u;
+    public const byte sys_get_current_date = 22u;
+    public const byte sys_get_current_date_time = 23u;
+    public const byte sys_pow = 24u;
+    public const byte sys_get_random_seed = 25u;
+    public const byte sys_link = 26u;
+    public const byte sys_unlink = 27u;
+    public const byte sys_rename = 28u;
+    public const byte sys_mkdir = 29u;
+    public const byte sys_opendir = 30u;
+    public const byte sys_readdir = 31u;
+    public const byte sys_closedir = 32u;
+    public const byte sys_getcwd = 33u;
+    public const byte sys_chdir = 34u;
+    public const byte sys_stat = 35u;
+    public const byte sys_umask = 36u;
+    public const byte sys_ioctl = 37u;
+    public const byte sys_chmod = 38u;
+    public const byte sys_chown = 39u;
+    public const byte sys_utime = 40u;
+    public const byte sys_getuid = 41u;
+    public const byte sys_setuid = 42u;
+    public const byte sys_getgid = 43u;
+    public const byte sys_setgid = 44u;
+    public const byte sys_getpid = 45u;
+    public const byte sys_getpgid = 46u;
+    public const byte sys_setpgid = 47u;
+    public const byte sys_getfgpid = 48u;
+    public const byte sys_setfgpid = 49u;
+    public const byte sys_sync = 50u;
+    public const byte sys_times = 51u;
+    public const byte sys_get_host_name = 52u;
+    public const byte sys_dup = 53u;
+    public const byte sys_pipe = 54u;
+    public const byte sys_log = 55u;
+    public const byte sys_log_message = 56u;
+    
+    public const byte numSystemCalls = sys_log_message + 1u;
+
+    public nothrow string SystemCallName(byte systemCall)
+    {
+        switch (systemCall)
+        {
+            case sys_exit: return "sys_exit";
+            case sys_wait: return "sys_wait";
+            case sys_fork: return "sys_fork";
+            case sys_exec: return "sys_exec";
+            case sys_kill: return "sys_kill";
+            case sys_create: return "sys_create";
+            case sys_open: return "sys_open";
+            case sys_close: return "sys_close";
+            case sys_read: return "sys_read";
+            case sys_write: return "sys_write";
+            case sys_seek: return "sys_seek";
+            case sys_tell: return "sys_tell";
+            case sys_pool_end : return "sys_pool_end";
+            case sys_set_pool_end: return "sys_set_pool_end";
+            case sys_debug_break : return "sys_debug_break";
+            case sys_stack_trace: return "sys_stack_trace";
+            case sys_throw: return "sys_throw";
+            case sys_catch: return "sys_catch";
+            case sys_resume: return "sys_resume";
+            case sys_get_system_error: return "sys_get_system_error";
+            case sys_get_current_time_point: return "sys_get_current_time_point";
+            case sys_sleep: return "sys_sleep";
+            case sys_get_current_date: return "sys_get_current_date";
+            case sys_get_current_date_time: return "sys_get_current_date_time";
+            case sys_pow: return "sys_pow";
+            case sys_get_random_seed: return "sys_get_random_seed";
+            case sys_link: return "sys_link";
+            case sys_unlink: return "sys_unlink";
+            case sys_rename: return "sys_rename";
+            case sys_mkdir: return "sys_mkdir";
+            case sys_opendir: return "sys_opendir";
+            case sys_readdir: return "sys_readdir";
+            case sys_closedir: return "sys_closedir";
+            case sys_getcwd: return "sys_getcwd";
+            case sys_chdir: return "sys_chdir";
+            case sys_stat: return "sys_stat";
+            case sys_umask: return "sys_umask";
+            case sys_ioctl: return "sys_ioctl";
+            case sys_chmod: return "sys_chmod";
+            case sys_chown: return "sys_chown";
+            case sys_utime: return "sys_utime";
+            case sys_getuid: return "sys_getuid";
+            case sys_setuid: return "sys_setuid";
+            case sys_getgid: return "sys_getgid";
+            case sys_setgid: return "sys_setgid";
+            case sys_getpid: return "sys_getpid";
+            case sys_getpgid: return "sys_getpgid";
+            case sys_setpgid: return "sys_setpgid";
+            case sys_getfgpid: return "sys_getfgpid";
+            case sys_setfgpid: return "sys_setfgpid";
+            case sys_sync: return "sys_sync";
+            case sys_times: return "sys_times";
+            case sys_get_host_name: return "sys_get_host_name";
+            case sys_dup: return "sys_dup";
+            case sys_pipe: return "sys_pipe";
+            case sys_log: return "sys_log";
+            case sys_log_message: return "sys_log_message";
+        }
+        return string();
+    }
+
+    public const uint debugBreakInst = (TRAP << 24u) | (0u << 16u) | (sys_debug_break << 8u) | (0u << 0u);
+
+    public inline nothrow ulong MakeSystemCallPtrAddress(int systemCall)
+    {
+        return trapTableBaseAddress + cast<ulong>(systemCall) * 8u;
+    }
+
+    public class SystemCall
+    {
+        public nothrow SystemCall(Machine* machine_, Kernel* kernel_, ProcessTable* processTable_, Process* process_,
+            SystemCallHandler handler_, byte x_, byte y_, byte z_, ulong ax_, ulong bx_, ulong cx_, ulong dx_, ulong ex_) :
+            machine(machine_), kernel(kernel_), processTable(processTable_), process(process_),
+            handler(handler_), x(x_), y(y_), z(z_), ax(ax_), bx(bx_), cx(cx_), dx(dx_), ex(ex_), result(0)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            string s;
+            s.Append(SystemCallName(y)).Append(".ax=").Append(ToHexString(ax)).Append(".bx=").Append(ToHexString(bx)).Append(".cx=").Append(ToHexString(cx)).Append(".dx=");
+            s.Append(ToHexString(dx)).Append(".ex=").Append(ToHexString(ex)).Append(".result=").Append(ToHexString(result));
+            return s;
+        }
+        public nothrow bool IsDebugBreak() const
+        {
+            return x == 0u && y == sys_debug_break && z == 0u;
+        }
+        public Machine* machine;
+        public Kernel* kernel;
+        public ProcessTable* processTable;
+        public Process* process;
+        public SystemCallHandler handler;
+        public byte x;
+        public byte y;
+        public byte z;
+        public ulong ax;
+        public ulong bx;
+        public ulong cx;
+        public ulong dx;
+        public ulong ex;
+        public long result;
+    }
+
+    public delegate void SystemCallHandler(SystemCall& sc);
+
+    public void SystemCallFiber(void* processParam)
+    {
+        Process* process = cast<Process*>(processParam);
+        while (true)
+        {
+            try
+            {
+                process->systemCallReady = false;
+                const SystemCall& sc = process->systemCall;
+                if (Log())
+                {
+                    LogMessage("sc.begin", sc.ToString());
+                }
+                SystemCallHandler handler = sc.handler;
+                process->kernelStart = Now();
+                handler(sc);
+            }
+            catch (const SystemError& systemError)
+            {
+                process->lastError = systemError;
+                process->systemCall.result = -1;
+                string s = SystemCallName(process->systemCall.y);
+                s.Append(" failed\n");
+                Kernel& kernel = GetKernel();
+                Debugger* debugger = kernel.GetDebugger();
+                debugger->WriteOutput(cast<byte*>(cast<void*>(s.Chars())), s.Length());
+            }
+            catch (const Exception& ex)
+            {
+                process->lastError = SystemError(EFAIL, "system call failed: " + ex.ToString());
+                process->systemCall.result = -1;
+            }
+            if (Log())
+            {
+                string msg = process->systemCall.ToString();
+                if (process->systemCall.result == -1)
+                {
+                    msg.Append(".error=").Append(process->lastError.ToString());
+                }
+                LogMessage("sc.end", msg);
+            }
+            process->systemCallReady = true;
+            process->mode = Process.Mode.runningUser;
+            process->kernelTime = process->kernelTime + Now() - process->kernelStart;
+            OsSwitchToFiber(mainFiber);
+        }
+    }
+
+    public void Exit(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_exit || sc.z != 0u)
+        {
+            Panic("invalid exit parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ushort exitCode = MakeProcessExitCode(0u, cast<byte>(sc.ax));
+        Debugger* debugger = sc.kernel->GetDebugger();
+        Processor& processor = sc.machine->GetProcessor();
+        Process* process = sc.process;
+        ExitProcess(*sc.machine, *sc.processTable, process, exitCode);
+        if (process->pid == sc.kernel->GetProgramPID())
+        {
+            processor.Exit();
+        }
+        debugger->Exit(process);
+    }
+
+    public void Wait(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_wait || sc.z != 0u)
+        {
+            Panic("invalid wait parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int retval = WaitProcess(*sc.machine, *sc.processTable, sc.process, sc.ax);
+        sc.result = retval;
+    }
+
+    public void Fork(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_fork || sc.z != 0u)
+        {
+            Panic("invalid fork parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int retval = ForkProcess(*sc.machine, *sc.processTable, sc.process);
+        sc.result = retval;
+    }
+
+    public void Exec(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_exec || sc.z != 0u)
+        {
+            Panic("invalid exec parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Exec(*sc.machine, *sc.processTable, sc.process, cast<int>(sc.ax), cast<int>(sc.bx), sc.cx, cast<long>(sc.dx));
+        sc.result = cast<int>(sc.ax);
+    }
+
+    public void Kill(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_kill || sc.z != 0u)
+        {
+            Panic("invalid kill parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        SendSignalProcess(*sc.machine, *sc.processTable, sc.process, cast<int>(sc.ax), cast<int>(sc.bx));
+        sc.result = 0;
+    }
+
+    public void Create(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_create || sc.z != 0u)
+        {
+            Panic("invalid create parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = Create(*sc.machine, sc.process, cast<ulong>(sc.ax), cast<int>(sc.bx));
+    }
+
+    public void Open(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_open || sc.z != 0u)
+        {
+            Panic("invalid open parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = Open(*sc.machine, sc.process, cast<ulong>(sc.ax), cast<OpenFlags>(cast<int>(sc.bx)), cast<int>(sc.cx));
+    }
+
+    public void Close(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_close || sc.z != 0u)
+        {
+            Panic("invalid close parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Close(*sc.machine, sc.process, cast<int>(sc.ax));
+        sc.result = 0;
+    }
+
+    public void Read(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_read || sc.z != 0u)
+        {
+            Panic("invalid read parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        long retval = Read(*sc.machine, sc.process, cast<int>(sc.ax), sc.bx, cast<long>(sc.cx));
+        sc.result = retval;
+    }
+
+    public void Write(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_write || sc.z != 0u)
+        {
+            Panic("invalid write parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        long retval = Write(*sc.machine, sc.process, cast<int>(sc.ax), sc.bx, cast<long>(sc.cx));
+        sc.result = retval;
+    }
+
+    public void Seek(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_seek || sc.z != 0u)
+        {
+            Panic("invalid seek parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int fd = cast<int>(sc.ax);
+        long pos = cast<long>(sc.bx);
+        Origin origin = cast<Origin>(cast<byte>(sc.cx));
+        long retval = Seek(*sc.machine, sc.process, fd, pos, origin);
+        sc.result = retval;
+    }
+
+    public void Tell(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_seek || sc.z != 0u)
+        {
+            Panic("invalid tell parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int fd = cast<int>(sc.ax);
+        long retval = Tell(*sc.machine, sc.process, fd);
+        sc.result = retval;
+    }
+
+    public void PoolEnd(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_pool_end || sc.z != 0u)
+        {
+            Panic("invalid pool_end parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        long retval = cast<long>(sc.process->poolEnd);
+        sc.result = retval;
+    }
+
+    public void SetPoolEnd(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_set_pool_end || sc.z != 0u)
+        {
+            Panic("invalid set_pool_end parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = SetPoolEndProcess(*sc.machine, sc.process, sc.ax);
+    }
+
+    public void DebugBreak(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_debug_break || sc.z != 0u)
+        {
+            Panic("invalid debug break parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Debugger* debugger = sc.kernel->GetDebugger();
+        debugger->Run(sc.process);
+    }
+
+    public void StackTrace(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_stack_trace || sc.z != 0u)
+        {
+            Panic("invalid stack trace parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong fp = sc.machine->GetRegisters().Get(regFP);
+        ulong buffer = sc.ax;
+        long count = cast<long>(sc.bx);
+        GetProcessStackTrace(*sc.machine, sc.process, fp, buffer, count);
+        sc.result = 0;
+    }
+
+    public void Throw(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_throw || sc.z != 0u)
+        {
+            Panic("invalid throw parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong exceptionAddress = sc.ax;
+        ulong exceptionClassId = sc.bx;
+        ulong fp = sc.machine->GetRegisters().Get(regFP);
+        sc.process->currentExceptionAddress = exceptionAddress;
+        sc.process->currentExceptionClassId = exceptionClassId;
+        DispatchException(*sc.machine, sc.process, fp);
+        sc.result = 0;
+    }
+
+    public void Catch(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_catch || sc.z != 0u)
+        {
+            Panic("invalid catch parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong exceptionAddress = sc.process->currentExceptionAddress;
+        sc.result = cast<long>(exceptionAddress); 
+    }
+
+    public void Resume(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_resume || sc.z != 0u)
+        {
+            Panic("invalid resume parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong fp = sc.machine->GetRegisters().Get(regFP);
+        ContinueExceptionDispatch(*sc.machine, sc.process, fp);
+        sc.result = 0;
+    }
+
+    public void GetSystemError(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_system_error || sc.z != 0u)
+        {
+            Panic("invalid get_system_error parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong errorCodeAddress = sc.ax;
+        ulong bufferAddress = sc.bx;
+        long count = cast<long>(sc.cx);
+        GetProcessSystemError(*sc.machine, sc.process, errorCodeAddress, bufferAddress, count);
+        sc.result = 0;
+    }
+
+    public void GetCurrentTimePoint(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_current_time_point || sc.z != 0u)
+        {
+            Panic("invalid get_current_time_point parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        long currentTimePoint = System.Now().Rep();
+        sc.result = currentTimePoint;
+    }
+
+    public void Sleep(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_sleep || sc.z != 0u)
+        {
+            Panic("invalid sleep parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Duration sleepDuration(cast<long>(sc.ax));
+        if (sleepDuration.Rep() < 0)
+        {
+            throw SystemError(EINVAL, "invalid sleep duration");
+        }
+        TimePoint dueTime = System.Now() + sleepDuration;
+        SleepProcess(sc.process, wakeupEvent, cast<ulong>(dueTime.Rep()), 0u);
+        SleepingProcessQueue.Instance().AddProcess(sc.process);
+        sc.result = 0;
+    }
+
+    public void GetCurrentDate(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_current_date || sc.z != 0u)
+        {
+            Panic("invalid get_current_date parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong yearAddress = sc.ax;
+        ulong monthAddress = sc.bx;
+        ulong dayAddress = sc.cx;
+        if (yearAddress == 0u)
+        {
+            throw SystemError(EINVAL, "year pointer is null");
+        }
+        else if (monthAddress == 0u)
+        {
+            throw SystemError(EINVAL, "month pointer is null");
+        }
+        else if (dayAddress == 0u)
+        {
+            throw SystemError(EINVAL, "day pointer is null");
+        }
+        Date date = System.GetCurrentDate();
+        short year = date.Year();
+        sbyte month = date.GetMonth();
+        sbyte day = date.Day();
+        WriteProcessMemory(*sc.machine, sc.process, yearAddress, cast<ulong>(year), 2u, Protection.write);
+        WriteProcessMemory(*sc.machine, sc.process, monthAddress, cast<ulong>(month), 1u, Protection.write);
+        WriteProcessMemory(*sc.machine, sc.process, dayAddress, cast<ulong>(day), 1u, Protection.write);
+    }
+
+    public void GetCurrentDateTime(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_current_date_time || sc.z != 0u)
+        {
+            Panic("invalid get_current_date_time parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong yearAddress = sc.ax;
+        ulong monthAddress = sc.bx;
+        ulong dayAddress = sc.cx;
+        ulong secsAddress = sc.dx;
+        if (yearAddress == 0u)
+        {
+            throw SystemError(EINVAL, "year pointer is null");
+        }
+        else if (monthAddress == 0u)
+        {
+            throw SystemError(EINVAL, "month pointer is null");
+        }
+        else if (dayAddress == 0u)
+        {
+            throw SystemError(EINVAL, "day pointer is null");
+        }
+        else if (secsAddress == 0u)
+        {
+            throw SystemError(EINVAL, "secs pointer is null");
+        }
+        DateTime dateTime = GetCurrentDateTime();
+        Date date = dateTime.GetDate();
+        short year = date.Year();
+        sbyte month = date.GetMonth();
+        sbyte day = date.Day();
+        int secs = dateTime.Seconds();
+        WriteProcessMemory(*sc.machine, sc.process, yearAddress, cast<ulong>(year), 2u, Protection.write);
+        WriteProcessMemory(*sc.machine, sc.process, monthAddress, cast<ulong>(month), 1u, Protection.write);
+        WriteProcessMemory(*sc.machine, sc.process, dayAddress, cast<ulong>(day), 1u, Protection.write);
+        WriteProcessMemory(*sc.machine, sc.process, secsAddress, cast<ulong>(secs), 4u, Protection.write);
+    }
+
+    public void Pow(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_pow || sc.z != 0u)
+        {
+            Panic("invalid pow parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        double x = *cast<double*>(cast<void*>(&sc.ax));
+        double y = *cast<double*>(cast<void*>(&sc.bx));
+        double r = Pow(x, y);
+        sc.result = *cast<long*>(cast<void*>(&r));
+    }
+
+    public void GetRandomSeed(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_random_seed || sc.z != 0u)
+        {
+            Panic("invalid get_random_seed parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = RtGetRandomSeed();
+    }
+
+    public void Link(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_link || sc.z != 0u)
+        {
+            Panic("invalid link parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Link(*sc.machine, sc.process, sc.ax, sc.bx);
+    }
+
+    public void Unlink(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_unlink || sc.z != 0u)
+        {
+            Panic("invalid unlink parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Unlink(*sc.machine, sc.process, sc.ax);
+        sc.result = 0;
+    }
+
+    public void Rename(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_rename || sc.z != 0u)
+        {
+            Panic("invalid rename parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Rename(*sc.machine, sc.process, sc.ax, sc.bx);
+        sc.result = 0;
+    }
+
+    public void Mkdir(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_mkdir || sc.z != 0u)
+        {
+            Panic("invalid mkdir parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Mkdir(*sc.machine, sc.process, sc.ax, cast<int>(sc.bx));
+    }
+
+    public void OpenDir(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_opendir || sc.z != 0u)
+        {
+            Panic("invalid opendir parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = OpenDir(*sc.machine, sc.process, sc.ax);
+    }
+
+    public void ReadDir(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_readdir || sc.z != 0u)
+        {
+            Panic("invalid readdir parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = ReadDir(*sc.machine, sc.process, cast<int>(sc.ax), sc.bx, sc.cx);
+    }
+
+    public void CloseDir(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_closedir || sc.z != 0u)
+        {
+            Panic("invalid closedir parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        CloseDir(*sc.machine, sc.process, cast<int>(sc.ax));
+        sc.result = 0;
+    }
+
+    public void GetCWD(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getcwd || sc.z != 0u)
+        {
+            Panic("invalid getcwd parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        GetCWD(*sc.machine, sc.process, sc.ax, cast<long>(sc.bx));
+        sc.result = 0;
+    }
+
+    public void ChDir(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_chdir || sc.z != 0u)
+        {
+            Panic("invalid chdir parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ChDir(*sc.machine, sc.process, sc.ax);
+        sc.result = 0;
+    }
+
+    public void Stat(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_stat || sc.z != 0u)
+        {
+            Panic("invalid stat parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Stat(*sc.machine, sc.process, sc.ax, sc.bx);
+        sc.result = 0;
+    }
+
+    public void UMask(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_umask || sc.z != 0u)
+        {
+            Panic("invalid umask parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = UMask(*sc.machine, sc.process, cast<int>(sc.ax));
+    }
+
+    public void IOCtl(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_ioctl || sc.z != 0u)
+        {
+            Panic("invalid ioctl parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        IOCtl(*sc.machine, sc.process, cast<int>(sc.ax), cast<int>(sc.bx), sc.cx, cast<long>(sc.dx));
+        sc.result = 0;
+    }
+
+    public void Chmod(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_chmod || sc.z != 0u)
+        {
+            Panic("invalid chmod parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Chmod(*sc.machine, sc.process, sc.ax, cast<int>(sc.bx));
+        sc.result = 0;
+    }
+
+    public void Chown(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_chown || sc.z != 0u)
+        {
+            Panic("invalid chmod parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Chown(*sc.machine, sc.process, sc.ax, cast<int>(sc.bx), cast<int>(sc.cx));
+        sc.result = 0;
+    }
+
+    public void UTime(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_utime || sc.z != 0u)
+        {
+            Panic("invalid utime parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        UTime(*sc.machine, sc.process, sc.ax, sc.bx);
+    }
+
+    public void GetUID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getuid || sc.z != 0u)
+        {
+            Panic("invalid getuid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = sc.process->uid;
+    }
+
+    public void SetUID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_setuid || sc.z != 0u)
+        {
+            Panic("invalid setuid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        SetUIDProcess(sc.process, cast<int>(sc.ax));
+        sc.result = 0;
+    }
+
+    public void GetGID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getgid || sc.z != 0u)
+        {
+            Panic("invalid getgid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = sc.process->gid;
+    }
+
+    public void SetGID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_setgid || sc.z != 0u)
+        {
+            Panic("invalid setgid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        SetGIDProcess(sc.process, cast<int>(sc.ax));
+        sc.result = 0;
+    }
+
+    public void GetPID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getpid || sc.z != 0u)
+        {
+            Panic("invalid getpid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = sc.process->pid;
+    }
+
+    public void GetPGID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getpgid || sc.z != 0u)
+        {
+            Panic("invalid getpgid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = sc.process->pgid;
+    }
+
+    public void SetPGID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_setpgid || sc.z != 0u)
+        {
+            Panic("invalid setpgid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Process* process = sc.process;
+        process->pgid = cast<int>(sc.ax);
+        sc.result = 0;
+    }
+
+    public void GetFGPID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_getfgpid || sc.z != 0u)
+        {
+            Panic("invalid getfgpid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int fd = cast<int>(sc.ax);
+        sc.result = GetFGPID(sc.process, fd);
+    }
+
+    public void SetFGPID(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_setfgpid || sc.z != 0u)
+        {
+            Panic("invalid setfgpid parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        int fd = cast<int>(sc.ax);
+        int pid = cast<int>(sc.bx);
+        SetFGPID(sc.process, fd, pid);
+        sc.result = 0;
+    }
+
+    public void Sync(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_sync || sc.z != 0u)
+        {
+            Panic("invalid sync parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        GetMountTable().Flush();
+        sc.result = 0;
+    }
+
+    public void Times(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_times || sc.z != 0u)
+        {
+            Panic("invalid times parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Times(*sc.machine, sc.process, sc.ax, sc.bx, sc.cx, sc.dx);
+        sc.result = 0;
+    }
+
+    public void GetHostName(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_get_host_name || sc.z != 0u)
+        {
+            Panic("invalid get_host_name parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong bufferAddress = sc.ax;
+        int size = cast<int>(sc.bx);
+        const string& host = sc.kernel->Host();
+        if (size <= host.Length())
+        {
+            throw SystemError(ERANGE, "get_host_name: buffer too small");
+        }
+        WriteProcessMemory(*sc.machine, sc.process, bufferAddress, cast<byte*>(cast<void*>(host.Chars())), cast<ulong>(host.Length() + 1), Protection.write);
+        sc.result = 0;
+    }
+
+    public void Dup(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_dup || sc.z != 0u)
+        {
+            Panic("invalid dup parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        sc.result = Dup(sc.process, cast<int>(sc.ax));
+    }
+
+    public void Pipe(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_pipe || sc.z != 0u)
+        {
+            Panic("invalid pipe parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        Pipe(*sc.machine, sc.process, sc.ax, sc.bx);
+        sc.result = 0;
+    }
+
+    public void Log(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_log || sc.z != 0u)
+        {
+            Panic("invalid log parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        if (cmsx.kernel.Log())
+        {
+            sc.result = 1;
+        }
+        else
+        {
+            sc.result = 0;
+        }
+    }
+
+    public void LogMessage(SystemCall& sc)
+    {
+        if (sc.x != 0u || sc.y != sys_log_message || sc.z != 0u)
+        {
+            Panic("invalid log_message parameters: " + ToString(sc.x) + ", " + ToString(sc.y) + ", " + ToString(sc.z));
+        }
+        ulong methodAddress = sc.ax;
+        if (methodAddress == 0u)
+        {
+            throw SystemError(EINVAL, "method address is null");
+        }
+        ulong msgAddress = sc.bx;
+        if (msgAddress == 0u)
+        {
+            throw SystemError(EINVAL, "msg address is null");
+        }
+        string method;
+        ReadStringFromProcessMemory(*sc.machine, sc.process, methodAddress, method);
+        string msg;
+        ReadStringFromProcessMemory(*sc.machine, sc.process, msgAddress, msg);
+        LogMessage(method, msg);
+    }
+}

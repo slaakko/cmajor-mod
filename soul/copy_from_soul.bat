@@ -21,3 +21,6 @@ xcopy /F /Y ..\..\soul-mod\soul\xml\xml_parser\*.cppm xml\xml_parser\
 xcopy /F /Y ..\..\soul-mod\soul\xml\xml_parser\*.cpp xml\xml_parser\
 xcopy /F /Y ..\..\soul-mod\soul\xml\xml_parser\*.parser xml\xml_parser\
 xcopy /F /Y ..\..\soul-mod\soul\xml\xml_parser\*.spg xml\xml_parser\
+
+xcopy /F /Y ..\..\soul-mod\soul\rex\*.cppm rex\
+xcopy /F /Y ..\..\soul-mod\soul\rex\*.cpp rex\

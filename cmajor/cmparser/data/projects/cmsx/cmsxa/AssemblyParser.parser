@@ -1,0 +1,164 @@
+using AssemblyTokens;
+
+parser AssemblyParser
+{
+    uselexer AssemblyLexer;
+    main;
+
+    AssemblyFile(List<UniquePtr<cmsx.assembly.Instruction>>* instructionList) 
+        ::= AssemblyLine(instructionList):assemblyLine*
+        ;
+
+    AssemblyLine(List<UniquePtr<cmsx.assembly.Instruction>>* instructionList)
+        ::= CommentLine:commentLine
+        |   EmptyLine:emptyLine
+        |   ModeLine(instructionList):modeLine
+        |   InstructionLine(instructionList):instructionLine
+        ;
+
+    CommentLine
+        ::= Comment:cmt NEWLINE
+        ;
+
+    Comment
+        ::= SPACE? (any - (NEWLINE | SYMBOL | LOCAL_SYMBOL | DOT | SEMICOLON | AT)) (any - NEWLINE)*
+        ;
+
+    EmptyLine
+        ::= SPACE? NEWLINE
+        ;
+
+    ModeLine(List<UniquePtr<cmsx.assembly.Instruction>>* instructionList)
+        ::= SPACE?
+            DOT
+            SYMBOL
+            {
+                cmsx.assembly.Instruction* modeInst = cmsx.assembly.MakeModeInst(span, lexer.GetToken(pos));
+                pass = modeInst != null;
+                if (pass)
+                {
+                    instructionList->Add(UniquePtr<cmsx.assembly.Instruction>(modeInst));
+                }
+            }
+            SPACE?
+            NEWLINE
+        ;
+
+    InstructionLine(List<UniquePtr<cmsx.assembly.Instruction>>* instructionList)
+        ::= Instruction:left{ instructionList->Add(UniquePtr<cmsx.assembly.Instruction>(left)); }
+            (SPACE? SEMICOLON Instruction:right{ instructionList->Add(UniquePtr<cmsx.assembly.Instruction>(right)); })* Comment:cmt? NEWLINE
+        ;
+
+    Instruction(var Span s, var UniquePtr<cmsx.assembly.Node> label) : cmsx.assembly.Instruction*
+        ::=
+        (
+            empty{ lexer.PushSpan(); }
+            Label:lbl{ lexer.SetSpan(pos); label.Reset(lbl); }
+            SplitLine(!label.IsNull()):splitLine{ lexer.SetSpan(pos); }
+            OpCode:opcode{ lexer.SetSpan(pos); }
+            Operands:operands{ lexer.SetSpan(pos); }
+        )
+        {
+            return new cmsx.assembly.Instruction(lexer.PopSpan(), label.Release(), opcode, operands);
+        }
+        ;
+
+    Label : cmsx.assembly.Node*
+        ::= LOCAL_SYMBOL{ return cmsx.assembly.MakeLocalSymbolNode(span, lexer.GetToken(pos)); }
+        |   SYMBOL{ return cmsx.assembly.MakeSymbolNode(span, lexer.GetToken(pos)); }
+        |   empty{ return null; }
+        ;
+
+    SplitLine(bool hasLabel)
+        ::= SPACE (NEWLINE SPACE)?
+        |   empty{ pass = hasLabel; } NEWLINE SPACE
+        ;
+
+    OpCode : cmsx.assembly.OpCode*
+        ::= empty{ lexer.PushSpan(); } (DECIMAL_CONSTANT{ lexer.SetSpan(pos); })? SYMBOL{ lexer.SetSpan(pos); Span s = lexer.PopSpan(); return cmsx.assembly.MakeOpCode(s, lexer.GetMatch(s)); }
+        ;
+
+    Operands(var UniquePtr<cmsx.assembly.OperandList> operandList) : cmsx.assembly.OperandList*
+        ::=
+        (   SPACE? Expression:left{ operandList.Reset(new cmsx.assembly.OperandList(span, left)); } (COMMA Expression:right{ operandList->AddOperand(right); })*
+        |   SPACE? empty{ operandList.Reset(new cmsx.assembly.OperandList(span, new cmsx.assembly.DecimalConstant(span, 0u))); }
+        )
+        {
+            return operandList.Release();
+        }
+        ;
+
+    Expression(var UniquePtr<cmsx.assembly.Node> expr) : cmsx.assembly.Node*
+        ::=
+        (
+            Term:left{ expr.Reset(left); } (WeakOperator:op Term:right{ expr.Reset(new cmsx.assembly.BinaryExpression(span, expr.Release(), op, right)); })*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+    
+    WeakOperator : cmsx.assembly.Operator
+        ::= PLUS{ return cmsx.assembly.Operator.add; }
+        |   MINUS{ return cmsx.assembly.Operator.subtract; }
+        |   BAR{ return cmsx.assembly.Operator.bitwiseOr; }
+        |   CARET{ return cmsx.assembly.Operator.bitwiseXor; }
+        ;
+
+    Term(var UniquePtr<cmsx.assembly.Node> expr) : cmsx.assembly.Node*
+        ::=
+        (
+            PrimaryExpression:left{ expr.Reset(left); } (StrongOperator:op PrimaryExpression:right{ expr.Reset(new cmsx.assembly.BinaryExpression(span, expr.Release(), op, right)); })*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    StrongOperator : cmsx.assembly.Operator
+        ::= AST{ return cmsx.assembly.Operator.multiply; }
+        |   SLASH{ return cmsx.assembly.Operator.divide; }
+        |   SLASHSLASH{ return cmsx.assembly.Operator.fractionalDivide; }
+        |   PERCENT{ return cmsx.assembly.Operator.modulus; }
+        |   SHIFT_LEFT{ return cmsx.assembly.Operator.shiftLeft; }
+        |   SHIFT_RIGHT{ return cmsx.assembly.Operator.shiftRight; }
+        |   AMP{ return cmsx.assembly.Operator.bitwiseAnd; }
+        ;
+
+    PrimaryExpression(var Span s) : cmsx.assembly.Node*
+        ::= LocalSymbol:localSymbol{ return localSymbol; }
+        |   Constant:constant{ return constant; }
+        |   Symbol:symbol{ return symbol; }
+        |   At:at{ return at; }
+        |   LPAREN{ s = span; } Expression:expr RPAREN{ s.end = span.end; return new cmsx.assembly.ParenthesizedExpression(s, expr); }
+        |   UnaryOperator:op{ s = span; } PrimaryExpression:primaryExpr{ s.end = span.end; return new cmsx.assembly.UnaryExpression(s, op, primaryExpr); }
+        ;
+
+    UnaryOperator : cmsx.assembly.Operator
+        ::= PLUS{ return cmsx.assembly.Operator.unaryPlus; }
+        |   MINUS{ return cmsx.assembly.Operator.unaryMinus; }
+        |   TILDE{ return cmsx.assembly.Operator.complement; }
+        |   DOLLAR{ return cmsx.assembly.Operator.register; }
+        |   AMP{ return cmsx.assembly.Operator.serial; }
+        ;
+
+    LocalSymbol : cmsx.assembly.Node*
+        ::= LOCAL_SYMBOL{ return cmsx.assembly.MakeLocalSymbolNode(span, lexer.GetToken(pos)); }
+        ;
+
+    Constant : cmsx.assembly.Node*
+        ::= DECIMAL_CONSTANT{ return new cmsx.assembly.DecimalConstant(span, ParseULong(ToUtf8(lexer.GetMatch(span)))); }
+        |   HEX_CONSTANT{ return cmsx.assembly.MakeHexConstant(span, lexer.GetToken(pos)); }
+        |   CHAR_CONSTANT{ return cmsx.assembly.MakeCharConstant(span, lexer.GetToken(pos)); }
+        |   STRING_CONSTANT{ return cmsx.assembly.MakeStringConstant(span, lexer.GetToken(pos)); }
+        |   CLSID_CONSTANT{ return cmsx.assembly.MakeClsIdConstant(span, lexer.GetToken(pos)); }
+        ;
+
+    Symbol : cmsx.assembly.Node*
+        ::= SYMBOL{ return cmsx.assembly.MakeSymbolNode(span, lexer.GetToken(pos)); }
+        ;
+
+    At : cmsx.assembly.Node*
+        ::= AT{ return new cmsx.assembly.At(span); }
+        ;
+}

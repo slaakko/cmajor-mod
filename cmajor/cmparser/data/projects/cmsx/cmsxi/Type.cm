@@ -1,0 +1,1483 @@
+using System;
+using System.Collections;
+using CodeFormatter = System.Text.CodeFormatter;
+
+namespace cmsx.intermediate
+{
+    public abstract class Type
+    {
+        public default virtual ~Type();
+        public abstract nothrow string Name() const;
+        public abstract Value* DefaultValue() const;
+        public virtual ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            throw Exception("cannot make '" + Name() + "' type value from string '" + fromStr + "'");
+        }
+        public virtual ConstantValue* MakeValue(ulong val) const
+        {
+            throw Exception("cannot make '" + Name() + "' type value from value '" + ToString(val) + "'");
+        }
+        public virtual void PrintDeclaration(CodeFormatter& formatter)
+        {
+        }
+        public nothrow virtual void ComputeSizeAndOffsets()
+        {
+        }
+        public virtual int GetLoadOp(int line) const
+        {
+            throw Exception("error: tried to generate load to '" + Name() + "' type value (line " + ToString(line) + ")");
+        }
+        public virtual int GetStoreOp(int line) const
+        {
+            throw Exception("error: tried to generate store of '" + Name() + "' type value (line " + ToString(line) + ")");
+        }
+        public abstract nothrow long Alignment();
+        public abstract nothrow long Size();
+        public virtual nothrow Type* BaseType() const
+        {
+            return this;
+        }
+        public virtual Operand* HexAllOnes(Context& context, int line) const
+        {
+            throw Exception("error: tried to get hex all ones for '" + Name() + "' type (line " + ToString(line) + ")");
+            return null;
+        }
+        public virtual void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            throw Exception("error: tried to generate minus one for '" + Name() + "' type (line " + ToString(line) + ")");
+        }
+        public virtual MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            throw Exception("error: tried to generate data instruction for '" + Name() + "' type (line " + ToString(line) + ")");
+        }
+    }
+
+    public abstract class ScalarType : Type
+    {
+    }
+
+    public class VoidType : ScalarType
+    {
+        public override nothrow string Name() const
+        {
+            return "void";
+        }
+        public override Value* DefaultValue() const
+        {
+            throw Exception("cannot make default value of type '" + Name() + "'");
+        }
+        public override nothrow long Alignment()
+        {
+            #assert(false); 
+            return 0;
+        }
+        public override nothrow long Size()
+        {
+            #assert(false); 
+            return 0;
+        }
+    }
+
+    public class BoolType : ScalarType
+    {
+        public nothrow BoolType() : falseValue(false), trueValue(true)
+        {
+            falseValue.type = this;
+            trueValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "bool";
+        }
+        public override ConstantValue* DefaultValue() const
+        {
+            return &falseValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            bool value = ParseBool(fromStr);
+            if (value)
+            {
+                return &trueValue;
+            }
+            else
+            {
+                return &falseValue;
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 1;
+        }
+        public override nothrow long Size()
+        {
+            return 1;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDBU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STBU;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#1");
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            MachineInstruction* machineInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            machineInst->AddOperand(reg);
+            machineInst->AddOperand(HexAllOnes(machineCode.context, line));
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new BoolValue(cast<bool>(val));
+        }
+        public nothrow inline BoolValue* MakeBoolValue(bool val) const
+        {
+            if (val) return &trueValue; else return &falseValue;
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.BYTE, null);
+        }
+        private BoolValue falseValue;
+        private BoolValue trueValue;
+    }
+
+    public abstract class IntegerType : ScalarType
+    {
+    }
+
+    public abstract class SignedIntegerType : IntegerType
+    {
+    }
+
+    public abstract class UnsignedIntegerType : IntegerType
+    {
+    }
+
+    public abstract class FloatingType : ScalarType
+    {
+    }
+
+    public class SByteType : SignedIntegerType
+    {
+        public nothrow SByteType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "sbyte";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            long longValue = ParseLong(fromStr);
+            if (longValue >= MinValue<sbyte>() && longValue <= MaxValue<sbyte>())
+            {
+                sbyte value = cast<sbyte>(longValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeSByteValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 1;
+        }
+        public override nothrow long Size()
+        {
+            return 1;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDB;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STB;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<byte>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            MachineInstruction* machineInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            machineInst->AddOperand(reg);
+            machineInst->AddOperand(HexAllOnes(machineCode.context, line));
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new SByteValue(cast<sbyte>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.BYTE, null);
+        }
+        private SByteValue defaultValue;
+    }
+
+    public class ByteType : UnsignedIntegerType
+    {
+        public nothrow ByteType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "byte";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            ulong ulongValue = ParseULong(fromStr);
+            if (ulongValue >= MinValue<byte>() && ulongValue <= MaxValue<byte>())
+            {
+                byte value = cast<byte>(ulongValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeByteValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 1;
+        }
+        public override nothrow long Size()
+        {
+            return 1;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDBU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STBU;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<byte>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            MachineInstruction* machineInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            machineInst->AddOperand(reg);
+            machineInst->AddOperand(HexAllOnes(machineCode.context, line));
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new ByteValue(cast<byte>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.BYTE, null);
+        }
+        private ByteValue defaultValue;
+    }
+
+    public class ShortType : SignedIntegerType
+    {
+        public nothrow ShortType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "short";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            long longValue = ParseLong(fromStr);
+            if (longValue >= MinValue<short>() && longValue <= MaxValue<short>())
+            {
+                short value = cast<short>(longValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeShortValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 2;
+        }
+        public override nothrow long Size()
+        {
+            return 2;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDW;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STW;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<ushort>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            MachineInstruction* machineInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            machineInst->AddOperand(reg);
+            machineInst->AddOperand(HexAllOnes(machineCode.context, line));
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new ShortValue(cast<short>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.WYDE, null);
+        }
+        private ShortValue defaultValue;
+    }
+
+    public class UShortType : UnsignedIntegerType
+    {
+        public nothrow UShortType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "ushort";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            ulong ulongValue = ParseULong(fromStr);
+            if (ulongValue >= MinValue<ushort>() && ulongValue <= MaxValue<ushort>())
+            {
+                ushort value = cast<ushort>(ulongValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeUShortValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 2;
+        }
+        public override nothrow long Size()
+        {
+            return 2;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDWU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STWU;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<ushort>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            MachineInstruction* machineInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            machineInst->AddOperand(reg);
+            machineInst->AddOperand(HexAllOnes(machineCode.context, line));
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new UShortValue(cast<ushort>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.WYDE, null);
+        }
+        private UShortValue defaultValue;
+    }
+
+    public class IntType : SignedIntegerType
+    {
+        public nothrow IntType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "int";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            long longValue = ParseLong(fromStr);
+            if (longValue >= MinValue<int>() && longValue <= MaxValue<int>())
+            {
+                int value = cast<int>(longValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeIntValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 4;
+        }
+        public override nothrow long Size()
+        {
+            return 4;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDT;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STT;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<uint>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            Operand* allOnes = machineCode.context.GetUShortType()->HexAllOnes(machineCode.context, line);
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            setInst->AddOperand(reg);
+            setInst->AddOperand(allOnes);
+            MachineInstruction* orMlInst = machineCode.GetInstruction(cmsx.machine.ORML, inst);
+            orMlInst->AddOperand(reg);
+            orMlInst->AddOperand(allOnes);
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new IntValue(cast<int>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.TETRA, null);
+        }
+        private IntValue defaultValue;
+    }
+
+    public class UIntType : UnsignedIntegerType
+    {
+        public nothrow UIntType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "uint";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            ulong ulongValue = ParseULong(fromStr);
+            if (ulongValue >= MinValue<uint>() && ulongValue <= MaxValue<uint>())
+            {
+                uint value = cast<uint>(ulongValue);
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeUIntValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 4;
+        }
+        public override nothrow long Size()
+        {
+            return 4;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDTU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STTU;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<uint>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            Operand* allOnes = machineCode.context.GetUShortType()->HexAllOnes(machineCode.context, line);
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            setInst->AddOperand(reg);
+            setInst->AddOperand(allOnes);
+            MachineInstruction* orMlInst = machineCode.GetInstruction(cmsx.machine.ORML, inst);
+            orMlInst->AddOperand(reg);
+            orMlInst->AddOperand(allOnes);
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new UIntValue(cast<uint>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.TETRA, null);
+        }
+        private UIntValue defaultValue;
+    }
+
+    public class LongType : SignedIntegerType
+    {
+        public nothrow LongType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "long";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            long longValue = ParseLong(fromStr);
+            if (longValue >= MinValue<long>() && longValue <= MaxValue<long>())
+            {
+                long value = longValue;
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeLongValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return 8;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDO;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STO;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<ulong>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            Operand* allOnes = machineCode.context.GetUShortType()->HexAllOnes(machineCode.context, line);
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            setInst->AddOperand(reg);
+            setInst->AddOperand(allOnes);
+            MachineInstruction* orMlInst = machineCode.GetInstruction(cmsx.machine.ORML, inst);
+            orMlInst->AddOperand(reg);
+            orMlInst->AddOperand(allOnes);
+            MachineInstruction* orMhInst = machineCode.GetInstruction(cmsx.machine.ORMH, inst);
+            orMhInst->AddOperand(reg);
+            orMhInst->AddOperand(allOnes);
+            MachineInstruction* orHInst = machineCode.GetInstruction(cmsx.machine.ORH, inst);
+            orHInst->AddOperand(reg);
+            orHInst->AddOperand(allOnes);
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new LongValue(cast<long>(val));
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+        }
+        private LongValue defaultValue;
+    }
+
+    public class ULongType : UnsignedIntegerType
+    {
+        public nothrow ULongType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "ulong";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            ulong ulongValue = ParseULong(fromStr);
+            if (ulongValue >= MinValue<ulong>() && ulongValue <= MaxValue<ulong>())
+            {
+                ulong value = ulongValue;
+                if (value == defaultValue.value)
+                {
+                    return &defaultValue;
+                }
+                else
+                {
+                    return context.MakeULongValue(this, value);
+                }
+            }
+            else
+            {
+                throw Exception("type '" + Name() + "' value '" + fromStr + "' out of bounds");
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return 8;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDOU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STOU;
+        }
+        public override Operand* HexAllOnes(Context& context, int line) const
+        {
+            return context.GetSymbolOperand("#" + ToHexString(cast<ulong>(-1)));
+        }
+        public override void GenerateMinusOne(MachineCode& machineCode, Register* reg, int line, Instruction* inst)
+        {
+            Operand* allOnes = machineCode.context.GetUShortType()->HexAllOnes(machineCode.context, line);
+            MachineInstruction* setInst = machineCode.GetInstruction(cmsx.assembly.SET, inst);
+            setInst->AddOperand(reg);
+            setInst->AddOperand(allOnes);
+            MachineInstruction* orMlInst = machineCode.GetInstruction(cmsx.machine.ORML, inst);
+            orMlInst->AddOperand(reg);
+            orMlInst->AddOperand(allOnes);
+            MachineInstruction* orMhInst = machineCode.GetInstruction(cmsx.machine.ORMH, inst);
+            orMhInst->AddOperand(reg);
+            orMhInst->AddOperand(allOnes);
+            MachineInstruction* orHInst = machineCode.GetInstruction(cmsx.machine.ORH, inst);
+            orHInst->AddOperand(reg);
+            orHInst->AddOperand(allOnes);
+        }
+        public override ConstantValue* MakeValue(ulong val) const
+        {
+            return new ULongValue(val);
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+        }
+        private ULongValue defaultValue;
+    }
+
+    public class FloatType : FloatingType
+    {
+        public nothrow FloatType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "float";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            float value = ParseFloat(fromStr);
+            if (value == defaultValue.value)
+            {
+                return &defaultValue;
+            }
+            else
+            {
+                return context.MakeFloatValue(this, value);
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 4;
+        }
+        public override nothrow long Size()
+        {
+            return 4;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDSF;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STSF;
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.TETRA, null);
+        }
+        private FloatValue defaultValue;
+    }
+
+    public class DoubleType : FloatingType
+    {
+        public nothrow DoubleType() : defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public override nothrow string Name() const
+        {
+            return "double";
+        }
+        public override Value* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            double doubleValue = ParseDouble(fromStr);
+            double value = doubleValue;
+            if (value == defaultValue.value)
+            {
+                return &defaultValue;
+            }
+            else
+            {
+                return context.MakeDoubleValue(this, value);
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return 8;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDOU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STOU;
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+        }
+        private DoubleValue defaultValue;
+    }
+
+    public class PtrType : ScalarType
+    {
+        public nothrow PtrType() : baseType(null), defaultValue()
+        {
+            defaultValue.type = this;
+        }
+        public nothrow PtrType(Type* baseType_) : baseType(baseType_), defaultValue(this)
+        {
+        }
+        public nothrow override Type* BaseType() const
+        {
+            return baseType;
+        }
+        public override nothrow string Name() const
+        {
+            return baseType->Name() + "*";
+        }
+        public nothrow inline void SetBaseType(Type* baseType_)
+        {
+            baseType = baseType_;
+        }
+        public override ConstantValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        public override ConstantValue* MakeValue(const string& fromStr, Context& context) const
+        {
+            if (fromStr == "null")
+            {
+                return &defaultValue;
+            }
+            else
+            {
+                GlobalVariable* globalVariable = context.GetGlobalVariable(fromStr);
+                PtrValue* ptrValue = new PtrValue(this, globalVariable);
+                context.AddValue(ptrValue);
+                return ptrValue;
+            }
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return 8;
+        }
+        public override int GetLoadOp(int line) const
+        {
+            return cmsx.machine.LDOU;
+        }
+        public override int GetStoreOp(int line) const
+        {
+            return cmsx.machine.STOU;
+        }
+        public override MachineInstruction* GetDataInstruction(MachineCode& machineCode, int line) const
+        {
+            return machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+        }
+        private Type* baseType;
+        private NullValue defaultValue;
+    }
+
+    public nothrow bool IsPtrType(Type* type)
+    {
+        return type is PtrType*;
+    }
+
+    public abstract class AggregateType : Type
+    {
+    }
+
+    public class StructureType : AggregateType
+    {
+        public nothrow StructureType(const string& typeId_) : typeId(typeId_), memberTypes(), memberOffsets(), size(0)
+        {
+        }
+        public nothrow StructureType(const string& typeId_, const List<Type*>& memberTypes_) : typeId(typeId_), memberTypes(memberTypes_), memberOffsets(), size(0)
+        {
+        }
+        public nothrow void SetMemberTypes(List<Type*>&& memberTypes_)
+        {
+            memberTypes = Rvalue(memberTypes_);
+        }
+        public override nothrow string Name() const
+        {
+            return typeId;
+        }
+        public override Value* DefaultValue() const
+        {
+            throw Exception("cannot make default value of type '" + Name() + "'");
+        }
+        public override void PrintDeclaration(CodeFormatter& formatter)
+        {
+            formatter << typeId << " = { ";
+            long n = memberTypes.Count();
+            #assert(n == memberOffsets.Count());
+            for (long i = 0; i < n; ++i)
+            {
+                Type* memberType = memberTypes[i];
+                long memberOffset = memberOffsets[i];
+                if (i > 0)
+                {
+                    formatter << ", ";
+                }
+                formatter << memberType->Name() << " : offset=" << ToString(memberOffset);
+            }
+            formatter << " } size=" << ToString(Size()) << ", alignment=" << ToString(Alignment()) << endl();
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return size;
+        }
+        public nothrow override void ComputeSizeAndOffsets()
+        {
+            if (size != 0) return;
+            long offset = 0;
+            bool first = true;
+            for (Type* memberType : memberTypes)
+            {
+                long memberOffset = offset;
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    long alignment = memberType->Alignment();
+                    memberOffset = alignment * ((offset - 1) / alignment + 1);
+                }
+                memberOffsets.Add(memberOffset);
+                memberType->ComputeSizeAndOffsets();
+                offset = memberOffset + memberType->Size();
+            }
+            #assert(offset != 0);
+            size = 8 * ((offset - 1) / 8 + 1);
+        }
+        public nothrow long GetMemberOffset(long memberIndex) const
+        {
+            return memberOffsets[memberIndex];
+        }
+        public string typeId;
+        public List<Type*> memberTypes;
+        public List<long> memberOffsets;
+        public long size;
+    }
+
+    public class ArrayType : AggregateType
+    {
+        public nothrow ArrayType(const string& typeId_, long elementCount_) : typeId(typeId_), elementCount(elementCount_)
+        {
+        }
+        public nothrow ArrayType(const string& typeId_, Type* elementType_, long elementCount_) : typeId(typeId_), elementType(elementType_), elementCount(elementCount_)
+        {
+        }
+        public nothrow inline Type* ElementType() const
+        {
+            return elementType;
+        }
+        public nothrow inline void SetElementType(Type* elementType_)
+        {
+            elementType = elementType_;
+        }
+        public nothrow inline long ElementCount() const
+        {
+            return elementCount;
+        }
+        public override nothrow string Name() const
+        {
+            return typeId;
+        }
+        public override Value* DefaultValue() const
+        {
+            throw Exception("cannot make default value of type '" + Name() + "'");
+        }
+        public override void PrintDeclaration(CodeFormatter& formatter)
+        {
+            formatter << typeId << " = [";
+            formatter << ToString(elementCount) << " x " << elementType->Name();
+            formatter << "] size=" << ToString(Size()) << ", alignment=" << ToString(Alignment()) << endl();
+        }
+        public nothrow override void ComputeSizeAndOffsets()
+        {
+            elementType->ComputeSizeAndOffsets();
+        }
+        public override nothrow long Alignment()
+        {
+            return 8;
+        }
+        public override nothrow long Size()
+        {
+            return elementCount * elementType->Size();
+        }
+        private string typeId;
+        private Type* elementType;
+        private long elementCount;
+    }
+
+    public class FunctionType : AggregateType
+    {
+        public nothrow FunctionType(const string& typeId_) : typeId(typeId_)
+        {
+        }
+        public nothrow FunctionType(const string& typeId_, Type* returnType_, const List<Type*>& paramTypes_) : typeId(typeId_), returnType(returnType_), paramTypes(paramTypes_)
+        {
+        }
+        public nothrow inline Type* ReturnType() const
+        {
+            return returnType;
+        }
+        public nothrow inline void SetReturnType(Type* returnType_)
+        {
+            returnType = returnType_;
+        }
+        public nothrow inline const List<Type*>& ParamTypes() const
+        {
+            return paramTypes;
+        }
+        public nothrow void SetParamTypes(List<Type*>&& paramTypes_)
+        {
+            paramTypes = Rvalue(paramTypes_);
+        }
+        public override nothrow string Name() const
+        {
+            return typeId;
+        }
+        public override Value* DefaultValue() const
+        {
+            throw Exception("cannot make default value of type '" + Name() + "'");
+        }
+        public override void PrintDeclaration(CodeFormatter& formatter)
+        {
+            formatter << typeId << " = function " << returnType->Name() << "(";
+            bool first = true;
+            for (Type* paramType : paramTypes)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    formatter << ", ";
+                }
+                formatter << paramType->Name();
+            }
+            formatter << ")" << endl();
+        }
+        public override nothrow long Alignment()
+        {
+            #assert(false); 
+            return 0;
+        }
+        public override nothrow long Size()
+        {
+            #assert(false); 
+            return 0;
+        }
+        private string typeId;
+        private Type* returnType;
+        private List<Type*> paramTypes;
+    }
+
+    public class TypeRepository
+    {
+        public TypeRepository()
+        {
+            typeMap[voidType.Name()] = &voidType;
+            typeMap[boolType.Name()] = &boolType;
+            typeMap[sbyteType.Name()] = &sbyteType;
+            typeMap[byteType.Name()] = &byteType;
+            typeMap[shortType.Name()] = &shortType;
+            typeMap[ushortType.Name()] = &ushortType;
+            typeMap[intType.Name()] = &intType;
+            typeMap[uintType.Name()] = &uintType;
+            typeMap[longType.Name()] = &longType;
+            typeMap[ulongType.Name()] = &ulongType;
+            typeMap[floatType.Name()] = &floatType;
+            typeMap[doubleType.Name()] = &doubleType;
+        }
+        public nothrow inline VoidType* GetVoidType() const
+        {
+            return &voidType;
+        }
+        public nothrow inline BoolType* GetBoolType() const
+        {
+            return &boolType;
+        }
+        public nothrow inline SByteType* GetSByteType() const
+        {
+            return &sbyteType;
+        }
+        public nothrow inline ByteType* GetByteType() const
+        {
+            return &byteType;
+        }
+        public nothrow inline ShortType* GetShortType() const
+        {
+            return &shortType;
+        }
+        public nothrow inline UShortType* GetUShortType() const
+        {
+            return &ushortType;
+        }
+        public nothrow inline IntType* GetIntType() const
+        {
+            return &intType;
+        }
+        public nothrow inline UIntType* GetUIntType() const
+        {
+            return &uintType;
+        }
+        public nothrow inline LongType* GetLongType() const
+        {
+            return &longType;
+        }
+        public nothrow inline ULongType* GetULongType() const
+        {
+            return &ulongType;
+        }
+        public nothrow inline FloatType* GetFloatType() const
+        {
+            return &floatType;
+        }
+        public nothrow inline DoubleType* GetDoubleType() const
+        {
+            return &doubleType;
+        }
+        public Type* GetTypeById(const string& typeId)
+        {
+            HashMap<string, Type*>.ConstIterator it = typeMap.CFind(typeId);
+            if (it != typeMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public PtrType* GetPtrType(Type* baseType)
+        {
+            HashMap<Type*, PtrType*>.ConstIterator it = ptrTypeMap.CFind(baseType);
+            if (it != ptrTypeMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                PtrType* ptrType = new PtrType(baseType);
+                typeMap[ptrType->Name()] = ptrType;
+                ptrTypeMap[baseType] = ptrType;
+                types.Add(UniquePtr<Type>(ptrType));
+                return  ptrType;
+            }
+        }
+        public void AddPtrType(const string& typeId, int line)
+        {
+            HashMap<string, Type*>.ConstIterator it1 = typeMap.CFind(typeId);
+            if (it1 == typeMap.CEnd())
+            {
+                #assert(typeId.EndsWith("*"));
+                string baseTypeId = typeId.Substring(0, typeId.Length() - 1);
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(baseTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    Type* baseType = it->second;
+                    PtrType* ptrType = new PtrType(baseType);
+                    typeMap[typeId] = ptrType;
+                    ptrTypeMap[baseType] = ptrType;
+                    types.Add(UniquePtr<Type>(ptrType));
+                }
+                else
+                {
+                    PtrType* ptrType = new PtrType();
+                    typeMap[typeId] = ptrType;
+                    types.Add(UniquePtr<Type>(ptrType));
+                    unresolvedPtrTypes.Add(MakePair(ptrType, baseTypeId));
+                }
+            }
+        }
+        public void AddStructureType(const string& typeId, const List<string>& memberTypeIds)
+        {
+            HashMap<string, Type*>.ConstIterator it1 = typeMap.CFind(typeId);
+            if (it1 == typeMap.CEnd())
+            {
+                List<Type*> memberTypes;
+                for (const string& memberTypeId : memberTypeIds)
+                {
+                    HashMap<string, Type*>.ConstIterator it = typeMap.CFind(memberTypeId);
+                    if (it != typeMap.CEnd())
+                    {
+                        memberTypes.Add(it->second);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (memberTypes.Count() == memberTypeIds.Count())
+                {
+                    StructureType* structureType = new StructureType(typeId, memberTypes);
+                    typeMap[typeId] = structureType;
+                    types.Add(UniquePtr<Type>(structureType));
+                }
+                else
+                {
+                    StructureType* structureType = new StructureType(typeId);
+                    typeMap[typeId] = structureType;
+                    types.Add(UniquePtr<Type>(structureType));
+                    unresolvedStructureTypes.Add(MakePair(structureType, memberTypeIds));
+                }
+            }
+        }
+        public void AddArrayType(const string& typeId, const string& elementTypeId, long size)
+        {
+            HashMap<string, Type*>.ConstIterator it1 = typeMap.CFind(typeId);
+            if (it1 == typeMap.CEnd())
+            {
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(elementTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    Type* elementType = it->second;
+                    ArrayType* arrayType = new ArrayType(typeId, elementType, size);
+                    typeMap[typeId] = arrayType;
+                    types.Add(UniquePtr<Type>(arrayType));
+                }
+                else
+                {
+                    ArrayType* arrayType = new ArrayType(typeId, size);
+                    typeMap[typeId] = arrayType;
+                    types.Add(UniquePtr<Type>(arrayType));
+                    unresolvedArrayTypes.Add(MakePair(arrayType, elementTypeId));
+                }
+            }
+        }
+        public void AddFunctionType(const string& typeId, const string& returnTypeId, const List<string>& paramTypeIds)
+        {
+            HashMap<string, Type*>.ConstIterator it1 = typeMap.CFind(typeId);
+            if (it1 == typeMap.CEnd())
+            {
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(returnTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    Type* returnType = it->second;
+                    List<Type*> paramTypes;
+                    for (const string& paramTypeId : paramTypeIds)
+                    {
+                        HashMap<string, Type*>.ConstIterator it = typeMap.CFind(paramTypeId);
+                        if (it != typeMap.CEnd())
+                        {
+                            paramTypes.Add(it->second);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (paramTypes.Count() == paramTypeIds.Count())
+                    {
+                        FunctionType* functionType = new FunctionType(typeId, returnType, paramTypes);
+                        typeMap[typeId] = functionType;
+                        types.Add(UniquePtr<Type>(functionType));
+                    }
+                    else
+                    {
+                        FunctionType* functionType = new FunctionType(typeId);
+                        typeMap[typeId] = functionType;
+                        types.Add(UniquePtr<Type>(functionType));
+                        unresolvedFunctionTypes.Add(MakePair(functionType, MakePair(returnTypeId, paramTypeIds)));
+                    }
+                }
+            }
+        }
+        public void ResolveTypes()
+        {
+            ResolvePointerTypes();
+            ResolveStructureTypes();
+            ResolveArrayTypes();
+            ResolveFunctionTypes();
+            ComputeSizesAndOffsets();
+        }
+        public void PrintTypes(CodeFormatter& formatter)
+        {
+            formatter.WriteLine("types");
+            formatter.WriteLine("{");
+            formatter.IncIndent();
+            for (const UniquePtr<Type>& type : types)
+            {
+                type->PrintDeclaration(formatter);
+            }
+            formatter.DecIndent();
+            formatter.WriteLine("}");
+        }
+        private void ResolvePointerTypes()
+        {
+            for (const Pair<PtrType*, string>& p : unresolvedPtrTypes)
+            {
+                PtrType* ptrType = p.first;
+                const string& baseTypeId = p.second;
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(baseTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    Type* baseType = it->second;
+                    ptrType->SetBaseType(baseType);
+                    ptrTypeMap[baseType] = ptrType;
+                }
+                else
+                {
+                    throw Exception("base type '" + baseTypeId + "' for pointer type '" + ptrType->Name() + "' not resolved");
+                }
+            }
+            unresolvedPtrTypes.Clear();
+        }
+        private void ResolveStructureTypes()
+        {
+            for (const Pair<StructureType*, List<string>>& p : unresolvedStructureTypes)
+            {
+                StructureType* structureType = p.first;
+                const List<string>& memberTypeIds = p.second;
+                List<Type*> memberTypes;
+                for (const string& memberTypeId : memberTypeIds)
+                {
+                    HashMap<string, Type*>.ConstIterator it = typeMap.CFind(memberTypeId);
+                    if (it != typeMap.CEnd())
+                    {
+                        memberTypes.Add(it->second);
+                    }
+                    else
+                    {
+                        throw Exception("member type '" + memberTypeId + "' for structure type '" + structureType->Name() + "' not resolved");
+                    }
+                }
+                structureType->SetMemberTypes(Rvalue(memberTypes));
+            }
+            unresolvedStructureTypes.Clear();
+        }
+        private void ResolveArrayTypes()
+        {
+            for (const Pair<ArrayType*, string>& p : unresolvedArrayTypes)
+            {
+                ArrayType* arrayType = p.first;
+                const string& elementTypeId = p.second;
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(elementTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    arrayType->SetElementType(it->second);
+                }
+                else
+                {
+                    throw Exception("element type '" + elementTypeId + "' for array type '" + arrayType->Name() + "' not resolved");
+                }
+            }
+            unresolvedArrayTypes.Clear();
+        }
+        private void ResolveFunctionTypes()
+        {
+            for (const Pair<FunctionType*, Pair<string, List<string>>>& p : unresolvedFunctionTypes)
+            {
+                FunctionType* functionType = p.first;
+                const Pair<string, List<string>>& ids = p.second;
+                const string& returnTypeId = ids.first;
+                Type* returnType = null;
+                HashMap<string, Type*>.ConstIterator it = typeMap.CFind(returnTypeId);
+                if (it != typeMap.CEnd())
+                {
+                    returnType = it->second;
+                }
+                else
+                {
+                    throw Exception("return type '" + returnTypeId + "' for function type '" + functionType->Name() + "' not resolved");
+                }
+                const List<string>& paramTypeIds = ids.second;
+                List<Type*> paramTypes;
+                for (const string& paramTypeId : paramTypeIds)
+                {
+                    HashMap<string, Type*>.ConstIterator it = typeMap.CFind(paramTypeId);
+                    if (it != typeMap.CEnd())
+                    {
+                        paramTypes.Add(it->second);
+                    }
+                    else
+                    {
+                        throw Exception("parameter type '" + paramTypeId + "' for function type '" + functionType->Name() + "' not resolved");
+                    }
+                }
+                functionType->SetReturnType(returnType);
+                functionType->SetParamTypes(Rvalue(paramTypes));
+            }
+            unresolvedFunctionTypes.Clear();
+        }
+        private nothrow void ComputeSizesAndOffsets()
+        {
+            for (UniquePtr<Type>& type : types)
+            {
+                type->ComputeSizeAndOffsets();
+            }
+        }
+        private VoidType voidType;
+        private BoolType boolType;
+        private SByteType sbyteType;
+        private ByteType byteType;
+        private ShortType shortType;
+        private UShortType ushortType;
+        private IntType intType;
+        private UIntType uintType;
+        private LongType longType;
+        private ULongType ulongType;
+        private FloatType floatType;
+        private DoubleType doubleType;
+        private HashMap<string, Type*> typeMap;
+        private HashMap<Type*, PtrType*> ptrTypeMap;
+        private List<UniquePtr<Type>> types;
+        private List<Pair<PtrType*, string>> unresolvedPtrTypes;
+        private List<Pair<StructureType*, List<string>>> unresolvedStructureTypes;
+        private List<Pair<ArrayType*, string>> unresolvedArrayTypes;
+        private List<Pair<FunctionType*, Pair<string, List<string>>>> unresolvedFunctionTypes;
+    }
+}

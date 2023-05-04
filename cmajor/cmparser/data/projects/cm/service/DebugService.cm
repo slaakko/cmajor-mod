@@ -1,0 +1,970 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using System.Net.Sockets;
+using System.Dom;
+using System.Text;
+using System.Xml.Serialization;
+using Cm.Service;
+
+namespace Cm.Service.Debug
+{
+    public int defaultPort = 54326;
+    public int defaultSessionPort = 54322;
+    public class delegate void WriteTargetOutputMethod(int handle, const string& targetOutput);
+    public class delegate void ReadTargetInputMethod(string& targetInput, bool& eof);
+    public class delegate void SetDebugLocationMethod(const Location& location, bool saveLatest);
+    public class delegate void TargetRunningMethod();
+
+    public class DebugServiceArgs
+    {
+        public nothrow DebugServiceArgs() :
+            port(defaultPort), sessionPort(defaultSessionPort), log(false), idle(false), wait(false), verbose(false), debugServer(false), serverStartWaitSeconds(1),
+            backend("cpp"), toolChain("gcc"), config("debug")
+        {
+        }
+        public nothrow DebugServiceArgs& ProgramName(const string& programName_)
+        {
+            programName = programName_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Pid(int pid_)
+        {
+            pid = pid_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Port(int port_)
+        {
+            port = port_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& SessionPort(int sessionPort_)
+        {
+            sessionPort = sessionPort_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Log(bool log_)
+        {
+            log = log_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Idle(bool idle_)
+        {
+            idle = idle_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Wait(bool wait_)
+        {
+            wait = wait_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Verbose(bool verbose_)
+        {
+            verbose = verbose_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& ServerStartWaitSeconds(int serverStartWaitSeconds_)
+        {
+            serverStartWaitSeconds = serverStartWaitSeconds_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& DebugServer(bool debugServer_)
+        {
+            debugServer = debugServer_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Backend(const string& backend_)
+        {
+            backend = backend_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& ToolChain(const string& toolChain_)
+        {
+            toolChain = toolChain_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Config(const string& config_)
+        {
+            config = config_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& ProjectFilePath(const string& projectFilePath_)
+        {
+            projectFilePath = projectFilePath_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& ExecutableName(const string& executableName_)
+        {
+            executableName = executableName_;
+            return *this;
+        }
+        public nothrow DebugServiceArgs& Arguments(const string& arguments_)
+        {
+            arguments = arguments_;
+            return *this;
+        }
+        public nothrow string GetExecutablePath() const
+        {
+            string executablePath = Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(projectFilePath), "bin"), backend),
+                toolChain), config), executableName);
+            return executablePath;
+        }
+        public string programName;
+        public int pid;
+        public int port;
+        public int sessionPort;
+        public bool log;
+        public bool idle;
+        public bool wait;
+        public bool verbose;
+        public bool debugServer;
+        public int serverStartWaitSeconds;
+        public string backend;
+        public string toolChain;
+        public string config;
+        public string projectFilePath;
+        public string executableName;
+        public string arguments;
+    }
+
+    public class RequestGuard
+    {
+        public nothrow RequestGuard(DebugService* service_) : service(service_), prevState(service->GetState())
+        {
+            service->SetState(DebugService.State.requestInProgress);
+        }
+        public ~RequestGuard()
+        {
+            if (service->GetState() != DebugService.State.debuggingStopped)
+            {
+                service->SetState(prevState);
+            }
+        }
+        private DebugService* service;
+        private DebugService.State prevState;
+    }
+
+    public class DebugService : ServiceBase
+    {
+        public enum State
+        {
+            initialized, debuggingStarted, requestInProgress, debuggingStopped
+        }
+        public DebugService(DebugServiceArgs& args_) : base(), args(args_)
+        {
+            InitMessageKindMap();
+        }
+        public nothrow void SetWriteTargetOutputMethod(const WriteTargetOutputMethod& writeTargetOutput_)
+        {
+            writeTargetOutput = writeTargetOutput_;
+        }
+        public nothrow void SetReadTargetInputMethod(const ReadTargetInputMethod& readTargetInput_)
+        {
+            readTargetInput = readTargetInput_;
+        }
+        public nothrow void SetSetDebugLocationMethod(const SetDebugLocationMethod& setDebugLocation_)
+        {
+            setDebugLocation = setDebugLocation_;
+        }
+        public nothrow void SetTargetRunningMethod(const TargetRunningMethod& targetRunning_)
+        {
+            targetRunning = targetRunning_;
+        }
+        private void InitMessageKindMap()
+        {
+            messageKindMap["startDebugRequest"] = MessageKind.startRequest;
+            messageKindMap["startDebugReply"] = MessageKind.startReply;
+            messageKindMap["stopDebugRequest"] = MessageKind.stopRequest;
+            messageKindMap["stopDebugReply"] = MessageKind.stopReply;
+            messageKindMap["genericDebugErrorReply"] = MessageKind.genericErrorReply;
+            messageKindMap["continueRequest"] = MessageKind.continueRequest;
+            messageKindMap["continueReply"] = MessageKind.continueReply;
+            messageKindMap["nextRequest"] = MessageKind.nextRequest;
+            messageKindMap["nextReply"] = MessageKind.nextReply;
+            messageKindMap["stepRequest"] = MessageKind.stepRequest;
+            messageKindMap["stepReply"] = MessageKind.stepReply;
+            messageKindMap["finishRequest"] = MessageKind.finishRequest;
+            messageKindMap["finishReply"] = MessageKind.finishReply;
+            messageKindMap["untilRequest"] = MessageKind.untilRequest;
+            messageKindMap["untilReply"] = MessageKind.untilReply;
+            messageKindMap["breakRequest"] = MessageKind.breakRequest;
+            messageKindMap["breakReply"] = MessageKind.breakReply;
+            messageKindMap["deleteRequest"] = MessageKind.deleteRequest;
+            messageKindMap["deleteReply"] = MessageKind.deleteReply;
+            messageKindMap["depthRequest"] = MessageKind.depthRequest;
+            messageKindMap["depthReply"] = MessageKind.depthReply;
+            messageKindMap["framesRequest"] = MessageKind.framesRequest;
+            messageKindMap["framesReply"] = MessageKind.framesReply;
+            messageKindMap["countRequest"] = MessageKind.countRequest;
+            messageKindMap["countReply"] = MessageKind.countReply;
+            messageKindMap["evaluateChildRequest"] = MessageKind.evaluateChildRequest;
+            messageKindMap["evaluateChildReply"] = MessageKind.evaluateChildReply;
+            messageKindMap["evaluateRequest"] = MessageKind.evaluateRequest;
+            messageKindMap["evaluateReply"] = MessageKind.evaluateReply;
+            messageKindMap["targetRunningRequest"] = MessageKind.targetRunningRequest;
+            messageKindMap["targetRunningReply"] = MessageKind.targetRunningReply;
+            messageKindMap["targetInputRequest"] = MessageKind.targetInputRequest;
+            messageKindMap["targetInputReply"] = MessageKind.targetInputReply;
+            messageKindMap["targetOutputRequest"] = MessageKind.targetOutputRequest;
+            messageKindMap["targetOutputReply"] = MessageKind.targetOutputReply;
+            messageKindMap["logDebugMessageRequest"] = MessageKind.logMessageRequest;
+            messageKindMap["logDebugMessageReply"] = MessageKind.logMessageReply;
+        }
+        private string MakeDebugServerStartCommand()
+        {
+            string serverStartCommand = "cmdb";
+            if (args.debugServer)
+            {
+                serverStartCommand = "cmdbd";
+            }
+            serverStartCommand.Append(" --server");
+            port = Cm.Service.PortMap.GetFreePortNumber(args.programName, args.pid, portMapServicePortNumber);
+            bool gotNoPort = false;
+            if (port == -1)
+            {
+                port = args.port;
+                LogMessage("DebugService: got no port from port map server, resorting to default port " + ToString(port));
+                gotNoPort = true;
+            }
+            serverStartCommand.Append(" --port=" + ToString(port));
+            if (!gotNoPort)
+            {
+                sessionPort = Cm.Service.PortMap.GetFreePortNumber(args.programName, args.pid, portMapServicePortNumber);
+            }
+            if (sessionPort == -1)
+            {
+                sessionPort = args.sessionPort;
+                LogMessage("DebugService: got no port from port map server, resorting to default session port " + ToString(sessionPort));
+            }
+            if (portMapServicePortNumber != -1)
+            {
+                serverStartCommand.Append(" --portMapServicePort=" + ToString(portMapServicePortNumber));
+            }
+            serverStartCommand.Append(" --sessionPort=" + ToString(sessionPort));
+            if (args.log)
+            {
+                serverStartCommand.Append(" --log");
+            }
+            if (args.idle)
+            {
+                 serverStartCommand.Append(" --idle");
+            }
+            if (args.wait)
+            {
+                serverStartCommand.Append(" --wait");
+            }
+            if (args.verbose)
+            {
+                serverStartCommand.Append(" --verbose");
+            }
+            serverStartCommand.Append(" \"").Append(args.GetExecutablePath()).Append("\"");
+            if (!args.arguments.IsEmpty())
+            {
+                serverStartCommand.Append(" ").Append(args.arguments);
+            }
+            return serverStartCommand;
+        }
+        public nothrow bool ServerRunning() const
+        {
+            if (debugServer.IsNull()) return false;
+            return debugServer->Running();
+        }
+        public void Start(const BreakpointCollection& breakpointCollection)
+        {
+            targetState.Reset();
+            if (state != State.initialized)
+            {
+                return;
+            }
+            {
+                RequestGuard requestGuard(this);
+                string serverStartCommand = MakeDebugServerStartCommand();
+                LogMessage("DebugService: Starting Debug Server (port=" + ToString(port) + ", sessionPort=" + ToString(sessionPort) + ")");
+                debugServer.Reset(new Process(serverStartCommand,
+                    cast<Process.Redirections>(Process.Redirections.processStdIn | Process.Redirections.processStdOut | Process.Redirections.processStdErr)));
+                string line = debugServer->ReadLine(Process.StdHandle.stdOut);
+                if (line == "debug-server-error")
+                {
+                    line = debugServer->ReadLine(Process.StdHandle.stdOut);
+                    throw Exception("DebugServer failed: " + line);
+                }
+                LogMessage(line);
+                line = debugServer->ReadLine(Process.StdHandle.stdOut);
+                LogMessage(line);
+                Sleep(Duration.FromSeconds(serverStartWaitSeconds));
+                socket.Connect("localhost", ToString(port));
+                List<Breakpoint*> breakpoints = SendStartRequest(breakpointCollection);
+                UniquePtr<Document> reply = ReadReply(MessageKind.startReply);
+                ProcessStartReply(reply->DocumentElement(), breakpoints);
+                LogMessage("DebugService: Debug Server started.");
+            }
+            state = State.debuggingStarted;
+        }
+        private List<Breakpoint*> SendStartRequest(const BreakpointCollection& breakpointCollection)
+        {
+            List<Breakpoint*> breakpoints;
+            StartDebugRequest startDebugRequest;
+            for (const Pair<string, BreakpointList>& p : breakpointCollection.BreakpointListMap())
+            {
+                const BreakpointList& bpList = p.second;
+                for (Breakpoint* breakpoint : bpList.Breakpoints())
+                {
+                    breakpoints.Add(breakpoint);
+                    SourceLoc breakpointLocation;
+                    breakpointLocation.path = bpList.FilePath();
+                    breakpointLocation.line = breakpoint->line;
+                    startDebugRequest.breakpointLocations.Add(breakpointLocation);
+                }
+            }
+            UniquePtr<Element> request = startDebugRequest.ToXml("startDebugRequest");
+            WriteRequest(request.Release());
+            return breakpoints;
+        }
+        private void ProcessStartReply(Element* reply, const List<Breakpoint*>& breakpoints)
+        {
+            StartDebugReply startDebugReply;
+            startDebugReply.FromXml(reply);
+            if (startDebugReply.success)
+            {
+                int n = cast<int>(breakpoints.Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    Breakpoint* breakpoint = breakpoints[i];
+                    breakpoint->info = startDebugReply.breakpointInfos[i];
+                    if (breakpoint->info.success)
+                    {
+                        breakpoint->disabled = false;
+                    }
+                    else
+                    {
+                        breakpoint->disabled = true;
+                    }
+                }
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(startDebugReply.location, true);
+                }
+            }
+            else
+            {
+                LogMessage("start debug request failed: " + startDebugReply.error);
+            }
+        }
+        public void Stop()
+        {
+            if (!ServerRunning())
+            {
+                return;
+            }
+            targetState.Reset();
+            if (state == State.requestInProgress)
+            {
+                debugServer->Terminate();
+            }
+            else
+            {
+                RequestGuard requestGuard(this);
+                SendStopRequest();
+                UniquePtr<Document> reply = ReadReply(MessageKind.stopReply);
+                ProcessStopReply(reply->DocumentElement());
+            }
+            socket.Close();
+            debugServer.Reset();
+            LogMessage("DebugService: Debug Server stopped.");
+            state = State.initialized;
+        }
+        private void SendStopRequest()
+        {
+            StopDebugRequest stopDebugRequest;
+            UniquePtr<Element> request = stopDebugRequest.ToXml("stopDebugRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessStopReply(Element* reply)
+        {
+            StopDebugReply stopDebugReply;
+            stopDebugReply.FromXml(reply);
+            LogMessage("debugging stopped");
+        }
+        public void Continue()
+        {
+            targetState.Reset();
+            RequestGuard requestGuard(this);
+            SendContinueRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.continueReply);
+            ProcessContinueReply(reply->DocumentElement());
+        }
+        private void SendContinueRequest()
+        {
+            ContinueRequest continueRequest;
+            UniquePtr<Element> request = continueRequest.ToXml("continueRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessContinueReply(Element* reply)
+        {
+            ContinueReply continueReply;
+            continueReply.FromXml(reply);
+            if (continueReply.success)
+            {
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(continueReply.location, true);
+                }
+                ProcessStopReason(continueReply.state);
+            }
+            else
+            {
+                LogMessage("continue request failed: " + continueReply.error);
+            }
+        }
+        public void Next()
+        {
+            targetState.Reset();
+            RequestGuard requestGuard(this);
+            SendNextRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.nextReply);
+            ProcessNextReply(reply->DocumentElement());
+        }
+        private void SendNextRequest()
+        {
+            NextRequest nextRequest;
+            UniquePtr<Element> request = nextRequest.ToXml("nextRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessNextReply(Element* reply)
+        {
+            NextReply nextReply;
+            nextReply.FromXml(reply);
+            if (nextReply.success)
+            {
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(nextReply.location, true);
+                }
+                ProcessStopReason(nextReply.state);
+            }
+            else
+            {
+                LogMessage("next request failed: " + nextReply.error);
+            }
+        }
+        public void Step()
+        {
+            targetState.Reset();
+            RequestGuard requestGuard(this);
+            SendStepRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.stepReply);
+            ProcessStepReply(reply->DocumentElement());
+        }
+        private void SendStepRequest()
+        {
+            StepRequest stepRequest;
+            UniquePtr<Element> request = stepRequest.ToXml("stepRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessStepReply(Element* reply)
+        {
+            StepReply stepReply;
+            stepReply.FromXml(reply);
+            if (stepReply.success)
+            {
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(stepReply.location, true);
+                }
+                ProcessStopReason(stepReply.state);
+            }
+            else
+            {
+                LogMessage("step request failed: " + stepReply.error);
+            }
+        }
+        public void Finish()
+        {
+            targetState.Reset();
+            RequestGuard requestGuard(this);
+            SendFinishRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.finishReply);
+            ProcessFinishReply(reply->DocumentElement());
+        }
+        private void SendFinishRequest()
+        {
+            FinishRequest finishRequest;
+            UniquePtr<Element> request = finishRequest.ToXml("finishRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessFinishReply(Element* reply)
+        {
+            FinishReply finishReply;
+            finishReply.FromXml(reply);
+            if (finishReply.success)
+            {
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(finishReply.location, true);
+                }
+                ProcessStopReason(finishReply.state);
+            }
+            else
+            {
+                LogMessage("finish request failed: " + finishReply.error);
+            }
+        }
+        public void Until(const string& filePath, int line)
+        {
+            targetState.Reset();
+            RequestGuard requestGuard(this);
+            SendUntilRequest(filePath, line);
+            UniquePtr<Document> reply = ReadReply(MessageKind.untilReply);
+            ProcessUntilReply(reply->DocumentElement());
+        }
+        private void SendUntilRequest(const string& filePath, int line)
+        {
+            SourceLoc sourceLoc;
+            sourceLoc.path = filePath;
+            sourceLoc.line = line;
+            UntilRequest untilRequest(sourceLoc);
+            UniquePtr<Element> request = untilRequest.ToXml("untilRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessUntilReply(Element* reply)
+        {
+            UntilReply untilReply;
+            untilReply.FromXml(reply);
+            if (untilReply.success)
+            {
+                if (setDebugLocation != SetDebugLocationMethod())
+                {
+                    setDebugLocation(untilReply.location, true);
+                }
+                ProcessStopReason(untilReply.state);
+            }
+            else
+            {
+                LogMessage("until request failed: " + untilReply.error);
+            }
+        }
+        public void Break(const string& filePath, Breakpoint* breakpoint)
+        {
+            RequestGuard requestGuard(this);
+            SendBreakRequest(filePath, breakpoint);
+            UniquePtr<Document> reply = ReadReply(MessageKind.breakReply);
+            ProcessBreakReply(reply->DocumentElement(), breakpoint);
+        }
+        private void SendBreakRequest(const string& filePath, Breakpoint* breakpoint)
+        {
+            BreakRequest breakRequest;
+            breakRequest.breakpointLocation.path = filePath;
+            breakRequest.breakpointLocation.line = breakpoint->line;
+            UniquePtr<Element> request = breakRequest.ToXml("breakRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessBreakReply(Element* reply, Breakpoint* breakpoint)
+        {
+            BreakReply breakReply;
+            breakReply.FromXml(reply);
+            breakpoint->info = breakReply.breakpointInfo;
+            if (breakpoint->info.success)
+            {
+                LogMessage("breakpoint added");
+            }
+            else
+            {
+                LogMessage("break request failed: " + breakpoint->info.error);
+            }
+        }
+        public void Delete(const string& breakpointId)
+        {
+            RequestGuard requestGuard(this);
+            SendDeleteRequest(breakpointId);
+            UniquePtr<Document> reply = ReadReply(MessageKind.deleteReply);
+            ProcessDeleteReply(reply->DocumentElement());
+        }
+        private void SendDeleteRequest(const string& breakpointId)
+        {
+            DeleteRequest deleteRequest;
+            deleteRequest.breakpointId = breakpointId;
+            UniquePtr<Element> request = deleteRequest.ToXml("deleteRequest");
+            WriteRequest(request.Get());
+        }
+        private void ProcessDeleteReply(Element* reply)
+        {
+            DeleteReply deleteReply;
+            deleteReply.FromXml(reply);
+            if (deleteReply.success)
+            {
+                LogMessage("breakpoint removed");
+            }
+            else
+            {
+                LogMessage("delete request failed: " + deleteReply.error);
+            }
+        }
+        public int Depth()
+        {
+            RequestGuard requestGuard(this);
+            SendDepthRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.depthReply);
+            int depth = -1;
+            ProcessDepthReply(reply->DocumentElement(), depth);
+            return depth;
+        }
+        private void SendDepthRequest()
+        {
+            DepthRequest depthRequest;
+            UniquePtr<Element> request = depthRequest.ToXml("depthRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessDepthReply(Element* reply, int& depth)
+        {
+            DepthReply depthReply;
+            depthReply.FromXml(reply);
+            if (depthReply.success)
+            {
+                depth = depthReply.depth;
+            }
+            else
+            {
+                LogMessage("depth request failed: " + depthReply.error);
+            }
+        }
+        public Pair<List<Location>, bool> Frames(int lowFrame, int highFrame)
+        {
+            RequestGuard requestGuard(this);
+            SendFramesRequest(lowFrame, highFrame);
+            UniquePtr<Document> reply = ReadReply(MessageKind.framesReply);
+            return ProcessFramesReply(reply->DocumentElement());
+        }
+        private void SendFramesRequest(int lowFrame, int highFrame)
+        {
+            FramesRequest framesRequest;
+            framesRequest.lowFrame = lowFrame;
+            framesRequest.highFrame = highFrame;
+            UniquePtr<Element> request = framesRequest.ToXml("framesRequest");
+            WriteRequest(request.Release());
+        }
+        private Pair<List<Location>, bool> ProcessFramesReply(Element* reply)
+        {
+            FramesReply framesReply;
+            framesReply.FromXml(reply);
+            if (framesReply.success)
+            {
+                return MakePair(framesReply.frames, true);
+            }
+            else
+            {
+                LogMessage("frames request failed: " + framesReply.error);
+                return MakePair(List<Location>(), false);
+            }
+        }
+        public int LocalVariableCount()
+        {
+            RequestGuard requestGuard(this);
+            SendLocalVariableCountRequest();
+            UniquePtr<Document> reply = ReadReply(MessageKind.countReply);
+            int count = -1;
+            ProcessLocalVariableCountReply(reply->DocumentElement(), count);
+            return count;
+        }
+        private void SendLocalVariableCountRequest()
+        {
+            CountRequest countRequest;
+            countRequest.expression = "@locals";
+            UniquePtr<Element> request = countRequest.ToXml("countRequest");
+            WriteRequest(request.Release());
+        }
+        private void ProcessLocalVariableCountReply(Element* reply, int& count)
+        {
+            CountReply countReply;
+            countReply.FromXml(reply);
+            if (countReply.success)
+            {
+                try
+                {
+                    count = countReply.count;
+                }
+                catch (const Exception& ex)
+                {
+                    LogMessage("count request failed: count not valid: " + ex.Message());
+                    count = -1;
+                }
+            }
+            else
+            {
+                LogMessage("count request failed: " + countReply.error);
+                count = -1;
+            }
+        }
+        public Pair<List<ChildResult>, bool> LocalVariables(int start, int count)
+        {
+            RequestGuard requestGuard(this);
+            SendEvaluateLocalVariablesRequest(start, count);
+            UniquePtr<Document> reply = ReadReply(MessageKind.evaluateChildReply);
+            return ProcessEvaluateLocalVariablesReply(reply->DocumentElement());
+        }
+        private void SendEvaluateLocalVariablesRequest(int start, int count)
+        {
+            EvaluateChildRequest evaluateChildRequest;
+            evaluateChildRequest.expression = "@locals";
+            evaluateChildRequest.start = start;
+            evaluateChildRequest.count = count;
+            UniquePtr<Element> request = evaluateChildRequest.ToXml("evaluateChildRequest");
+            WriteRequest(request.Release());
+        }
+        private Pair<List<ChildResult>, bool> ProcessEvaluateLocalVariablesReply(Element* reply)
+        {
+            EvaluateChildReply evaluateChildReply;
+            evaluateChildReply.FromXml(reply);
+            if (evaluateChildReply.success)
+            {
+                return MakePair(evaluateChildReply.results, true);
+            }
+            else
+            {
+                LogMessage("evaluate child request failed: " + evaluateChildReply.error);
+                return MakePair(List<ChildResult>(), false);
+            }
+        }
+        public Pair<List<ChildResult>, bool> Children(const string& expr, int start, int count)
+        {
+            RequestGuard requestGuard(this);
+            SendEvaluateChildRequest(expr, start, count);
+            UniquePtr<Document> reply = ReadReply(MessageKind.evaluateChildReply);
+            return ProcessEvaluateChildReply(reply->DocumentElement());
+        }
+        private void SendEvaluateChildRequest(const string& expr, int start, int count)
+        {
+            EvaluateChildRequest evaluateChildRequest;
+            evaluateChildRequest.expression = expr;
+            evaluateChildRequest.start = start;
+            evaluateChildRequest.count = count;
+            UniquePtr<Element> request = evaluateChildRequest.ToXml("evaluateChildRequest");
+            WriteRequest(request.Release());
+        }
+        private Pair<List<ChildResult>, bool> ProcessEvaluateChildReply(Element* reply)
+        {
+            EvaluateChildReply evaluateChildReply;
+            evaluateChildReply.FromXml(reply);
+            if (evaluateChildReply.success)
+            {
+                return MakePair(evaluateChildReply.results, true);
+            }
+            else
+            {
+                LogMessage("evaluate child request failed: " + evaluateChildReply.error);
+                return MakePair(List<ChildResult>(), false);
+            }
+        }
+        public Pair<string, bool> Evaluate(const string& expr)
+        {
+            SendEvaluateRequest(expr);
+            UniquePtr<Document> reply = ReadReply(MessageKind.evaluateReply);
+            return ProcessEvaluateReply(reply->DocumentElement());
+        }
+        private void SendEvaluateRequest(const string& expr)
+        {
+            EvaluateRequest evaluateRequest;
+            evaluateRequest.expression = expr;
+            UniquePtr<Element> request = evaluateRequest.ToXml("evaluateRequest");
+            WriteRequest(request.Release());
+        }
+        private Pair<string, bool> ProcessEvaluateReply(Element* reply)
+        {
+            EvaluateReply evaluateReply;
+            evaluateReply.FromXml(reply);
+            if (evaluateReply.success)
+            {
+                return MakePair(evaluateReply.result.value, true);
+            }
+            else
+            {
+                return MakePair(string(), false);
+            }
+        }
+        private void ProcessStopReason(const TargetState& state)
+        {
+            if (state.stopReason == "exited-normally")
+            {
+                LogMessage("program exited normally");
+                SetState(State.debuggingStopped);
+            }
+            else if (state.stopReason == "exited")
+            {
+                LogMessage("program exited with code " + state.exitCode);
+                SetState(State.debuggingStopped);
+            }
+            else if (state.stopReason == "signal-received")
+            {
+                LogMessage("program received signal " + state.signalName + "(" + state.signalMeaning + ")");
+                SetState(State.debuggingStopped);
+            }
+            targetState = state;
+        }
+        private void ProcessMessage(Element* message, MessageKind messageKind, const string& messageKindStr)
+        {
+            switch (messageKind)
+            {
+                case MessageKind.targetRunningRequest:
+                {
+                    TargetRunningRequest targetRunningRequest;
+                    targetRunningRequest.FromXml(message);
+                    ProcessTargetRunningRequest(targetRunningRequest);
+                    break;
+                }
+                case MessageKind.targetInputRequest:
+                {
+                    TargetInputRequest targetInputRequest;
+                    targetInputRequest.FromXml(message);
+                    ProcessTargetInputRequest(targetInputRequest);
+                    break;
+                }
+                case MessageKind.targetOutputRequest:
+                {
+                    TargetOutputRequest targetOutputRequest;
+                    targetOutputRequest.FromXml(message);
+                    ProcessTargetOutputRequest(targetOutputRequest);
+                    break;
+                }
+                case MessageKind.logMessageRequest:
+                {
+                    LogDebugMessageRequest logDebugMessageRequest;
+                    logDebugMessageRequest.FromXml(message);
+                    ProcessLogMessageRequest(logDebugMessageRequest);
+                    break;
+                }
+                case MessageKind.genericErrorReply:
+                {
+                    GenericDebugErrorReply errorReply;
+                    errorReply.FromXml(message);
+                    ProcessErrorReply(errorReply);
+                    break;
+                }
+                default:
+                {
+                    LogMessage("unexpected " + messageKindStr + " received");
+                    break;
+                }
+            }
+        }
+        private void ProcessTargetRunningRequest(const TargetRunningRequest& targetRunningRequest)
+        {
+            if (targetRunning != TargetRunningMethod())
+            {
+                targetRunning();
+            }
+            TargetRunningReply targetRunningReply;
+            UniquePtr<Element> reply = targetRunningReply.ToXml("targetRunningReply");
+            WriteReply(reply.Release());
+        }
+        private void ProcessTargetInputRequest(const TargetInputRequest& targetInputRequest)
+        {
+            TargetInputReply targetInputReply;
+            if (readTargetInput != ReadTargetInputMethod())
+            {
+                readTargetInput(targetInputReply.line, targetInputReply.eof);
+            }
+            if (ServerRunning())
+            {
+                UniquePtr<Element> reply = targetInputReply.ToXml("targetInputReply");
+                WriteReply(reply.Release());
+            }
+        }
+        private void ProcessTargetOutputRequest(const TargetOutputRequest& targetOutputRequest)
+        {
+            int handle = targetOutputRequest.handle;
+            if (writeTargetOutput != WriteTargetOutputMethod())
+            {
+                writeTargetOutput(handle, targetOutputRequest.output);
+            }
+            TargetOutputReply targetOutputReply;
+            UniquePtr<Element> reply = targetOutputReply.ToXml("targetOutputReply");
+            WriteReply(reply.Release());
+        }
+        private void ProcessLogMessageRequest(const LogDebugMessageRequest& logDebugMessageRequest)
+        {
+            LogMessage(logDebugMessageRequest.logMessage);
+            LogDebugMessageReply logDebugMessageReply;
+            UniquePtr<Element> reply = logDebugMessageReply.ToXml("logDebugMessageReply");
+            WriteReply(reply.Release());
+        }
+        private void ProcessErrorReply(const GenericDebugErrorReply& errorReply)
+        {
+            LogMessage("error from debug server: " + errorReply.errorMessage);
+        }
+        private MessageKind GetMessageKind(Element* message, string& messageKindStr)
+        {
+            messageKindStr = ToUtf8(message->Name());
+            Map<string, MessageKind>.ConstIterator it = messageKindMap.CFind(messageKindStr);
+            if (it != messageKindMap.CEnd())
+            {
+                return it->second;
+            }
+            return MessageKind.none;
+        }
+        private void WriteRequest(Element* request)
+        {
+            Document requestDoc;
+            requestDoc.AppendChild(UniquePtr<Node>(request));
+            StringWriter writer;
+            CodeFormatter formatter(writer);
+            requestDoc.Write(formatter);
+            string requestStr = writer.GetString();
+            Write(socket, requestStr);
+        }
+        private void WriteReply(Element* reply)
+        {
+            Document replyDoc;
+            replyDoc.AppendChild(UniquePtr<Node>(reply));
+            StringWriter writer;
+            CodeFormatter formatter(writer);
+            replyDoc.Write(formatter);
+            string replyStr = writer.GetString();
+            Write(socket, replyStr);
+        }
+        private UniquePtr<Document> ReadReply(MessageKind replyMessageKind)
+        {
+            string replyStr = ReadStr(socket);
+            UniquePtr<Document> replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+            string messageKindStr;
+            MessageKind messageKind = GetMessageKind(replyDoc->DocumentElement(), messageKindStr);
+            while (messageKind != replyMessageKind)
+            {
+                ProcessMessage(replyDoc->DocumentElement(), messageKind, messageKindStr);
+                replyStr = ReadStr(socket);
+                replyDoc = ParseDocument(ToUtf32(replyStr), "socket");
+                messageKind = GetMessageKind(replyDoc->DocumentElement(), messageKindStr);
+            }
+            return replyDoc;
+        }
+        public nothrow State GetState() const
+        {
+            return state;
+        }
+        public nothrow void SetState(State state_)
+        {
+            state = state_;
+        }
+        public nothrow const TargetState& GetTargetState() const
+        {
+            return targetState;
+        }
+        private DebugServiceArgs args;
+        private int port;
+        private int sessionPort;
+        private int portMapServicePortNumber;
+        private State state;
+        private TargetState targetState;
+        private UniquePtr<Process> debugServer;
+        private int serverStartWaitSeconds;
+        private TcpSocket socket;
+        private Map<string, MessageKind> messageKindMap;
+        private WriteTargetOutputMethod writeTargetOutput;
+        private ReadTargetInputMethod readTargetInput;
+        private SetDebugLocationMethod setDebugLocation;
+        private TargetRunningMethod targetRunning;
+    }
+}

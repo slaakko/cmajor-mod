@@ -1,0 +1,49 @@
+using System;
+using Calculator;
+
+int main()
+{
+    try
+    {
+        Console.WriteLine("desk calculator");
+        #if (WINDOWS)
+            Console.WriteLine("enter command, or CTRL-Z to end:");
+        #else
+            Console.WriteLine("enter command, or CTRL-D to end:");
+        #endif
+        Console.Write("> ");
+        string line = Console.ReadLine();
+        while (!Console.In().EndOfStream())
+        {
+            try
+            {
+                Parse(ToUtf32(line));
+            }
+            catch (const ParsingException& ex)
+            {
+                Console.Out() << "error: " << ex.Message() << endl();
+            }
+            catch (const DivisionByZeroException& ex)
+            {
+                Console.Out() << "error: " + ex.Message() << endl();
+            }
+            catch (const VariableNotFoundException& ex)
+            {
+                Console.Out() << "error: " + ex.Message() << endl();
+            }
+            catch (const ConversionException& ex)
+            {
+                Console.Out() << "error: " + ex.Message() << endl();
+            }
+            Console.Write("> ");
+            line = Console.ReadLine();
+        }
+        Console.WriteLine("bye!");
+    }
+    catch (Exception ex)
+    {
+        Console.Error() << ex.ToString() << endl();
+        return 1;
+    }
+    return 0;
+}

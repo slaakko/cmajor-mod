@@ -1,0 +1,374 @@
+using System;
+using System.Collections;
+
+namespace System.Screen
+{
+    public class ListBoxCreateParams
+    {
+        public ListBoxCreateParams() :
+            controlCreateParams(), selectedItemForeColor(ConsoleColor.defaultColor), selectedItemBackColor(ConsoleColor.defaultColor), selectedItemFocusedForeColor(ConsoleColor.defaultColor), selectedItemFocusedBackColor(ConsoleColor.defaultColor)
+        {
+        }
+        public nothrow ListBoxCreateParams& SetLocation(const Point& loc)
+        {
+            controlCreateParams.SetLocation(loc);
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetSize(const Size& size_)
+        {
+            controlCreateParams.SetSize(size_);
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetForeColor(ConsoleColor foreColor_)
+        {
+            controlCreateParams.SetForeColor(foreColor_);
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetBackColor(ConsoleColor backColor_)
+        {
+            controlCreateParams.SetBackColor(backColor_);
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetSelectedItemForeColor(ConsoleColor selectedItemForeColor_)
+        {
+            selectedItemForeColor = selectedItemForeColor_;
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetSelectedItemBackColor(ConsoleColor selectedItemBackColor_)
+        {
+            selectedItemBackColor = selectedItemBackColor_;
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetSelectedItemFocusedForeColor(ConsoleColor selectedItemFocusedForeColor_)
+        {
+            selectedItemFocusedForeColor = selectedItemFocusedForeColor_;
+            return *this;
+        }
+        public nothrow ListBoxCreateParams& SetSelectedItemFocusedBackColor(ConsoleColor selectedItemFocusedBackColor_)
+        {
+            selectedItemFocusedBackColor = selectedItemFocusedBackColor_;
+            return *this;
+        }
+        public ControlCreateParams controlCreateParams;
+        public ConsoleColor selectedItemForeColor;
+        public ConsoleColor selectedItemBackColor;
+        public ConsoleColor selectedItemFocusedForeColor;
+        public ConsoleColor selectedItemFocusedBackColor;
+    }
+
+    public class ListBox : Control
+    {
+        public nothrow ListBox(ListBoxCreateParams& createParams) :
+            base(createParams.controlCreateParams), selectedItemForeColor(createParams.selectedItemForeColor), selectedItemBackColor(createParams.selectedItemBackColor), selectedItemFocusedForeColor(createParams.selectedItemFocusedForeColor), selectedItemFocusedBackColor(createParams.selectedItemFocusedBackColor), topIndex(0), selectedIndex(0)
+        {
+            InvalidateGuard invalidateGuard(this, InvalidateKind.dontInvalidate);
+            if (ForeColor() == ConsoleColor.defaultColor)
+            {
+                SetForeColor(ConsoleColor.black);
+            }
+            if (BackColor() == ConsoleColor.defaultColor)
+            {
+                SetBackColor(ConsoleColor.cyan);
+            }
+            if (selectedItemForeColor == ConsoleColor.defaultColor)
+            {
+                selectedItemForeColor = ConsoleColor.gray;
+            }
+            if (selectedItemBackColor == ConsoleColor.defaultColor)
+            {
+                selectedItemBackColor = ConsoleColor.black;
+            }
+            if (selectedItemFocusedForeColor == ConsoleColor.defaultColor)
+            {
+                selectedItemFocusedForeColor = ConsoleColor.white;
+            }
+            if (selectedItemFocusedBackColor == ConsoleColor.defaultColor)
+            {
+                selectedItemFocusedBackColor = ConsoleColor.darkBlue;
+            }
+            SetControlCursorPos(Location());
+        }
+        public override nothrow Rect FocusRect() const
+        {
+            return LineRect(selectedIndex - topIndex);
+        }
+        public override void OnWriteScreen(WriteScreenEventArgs& args)
+        {
+            base->OnWriteScreen(args);
+            bool focused = IsFocused();
+            Rect updateRect = GetRect();
+            if (!args.GetRect().IsDefault())
+            {
+                updateRect = Rect.Intersection(updateRect, args.GetRect());
+            }
+            if (updateRect.IsEmpty()) return;
+            Clear(updateRect, ForeColor(), BackColor());
+            Point loc = Location();
+            Rect rect = GetRect();
+            int n = Min(rect.size.h, Max(cast<int>(0), cast<int>(items.Count() - topIndex)));
+            for (int i = 0; i < n; ++i)
+            {
+                int index = topIndex + i;
+                Rect lineRect = LineRect(i);
+                if (lineRect.IntersectsWith(updateRect))
+                {
+                    SetCursorPos(loc.x, loc.y + i);
+                    ConsoleColor foreColor = ForeColor();
+                    ConsoleColor backColor = BackColor();
+                    if (index == selectedIndex)
+                    {
+                        if (focused)
+                        {
+                            foreColor = selectedItemFocusedForeColor;
+                            backColor = selectedItemFocusedBackColor;
+                        }
+                        else
+                        {
+                            foreColor = selectedItemForeColor;
+                            backColor = selectedItemBackColor;
+                        }
+                    }
+                    Terminal.Out() << SetColors(foreColor, backColor) << items[index];
+                }
+            }
+        }
+        public override void OnKeyPressed(KeyEventArgs& args)
+        {
+            base->OnKeyPressed(args);
+            Size sz = GetSize();
+            if (!args.Handled())
+            {
+                int prevTopIndex = topIndex;
+                if (args.Key() == keyNewline)
+                {
+                    topIndex = 0;
+                    OnItemSelected();
+                    args.SetHandled();
+                }
+                else
+                {
+                    switch (args.Key())
+                    {
+                        case keyDown: 
+                        {
+                            if (selectedIndex < items.Count() - 1)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                ++selectedIndex;
+                                if (selectedIndex >= topIndex + sz.h)
+                                {
+                                    ++topIndex;
+                                }
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                        case keyUp: 
+                        {
+                            if (selectedIndex > 0)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                --selectedIndex;
+                                if (selectedIndex < topIndex)
+                                {
+                                    --topIndex;
+                                }
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                        case keyHome: 
+                        {
+                            if (selectedIndex != 0)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                selectedIndex = 0;
+                                topIndex = 0;
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                        case keyEnd: 
+                        {
+                            if (selectedIndex != items.Count() - 1)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                selectedIndex = cast<int>(items.Count() - 1);
+                                topIndex = cast<int>(items.Count() - sz.h);
+                                if (topIndex < 0)
+                                {
+                                    topIndex = 0;
+                                }
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                        case keyPgDown: 
+                        {
+                            if (selectedIndex < items.Count() - 1)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                selectedIndex = Max(cast<int>(0), Min(cast<int>(items.Count() - 1), selectedIndex + sz.h));
+                                topIndex = topIndex + sz.h;
+                                if (topIndex + sz.h > items.Count())
+                                {
+                                    topIndex = Max(cast<int>(0), cast<int>(items.Count() - sz.h));
+                                }
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                        case keyPgUp: 
+                        {
+                            if (selectedIndex > 0)
+                            {
+                                Rect updateRect = LineRect(selectedIndex - topIndex);
+                                selectedIndex = Max(cast<int>(0), selectedIndex - sz.h);
+                                topIndex = Max(cast<int>(0), topIndex - sz.h);
+                                updateRect = Rect.Union(updateRect, LineRect(selectedIndex - topIndex));
+                                OnSelectedIndexChanged();
+                                if (topIndex == prevTopIndex)
+                                {
+                                    Invalidate(updateRect);
+                                }
+                                else
+                                {
+                                    InvalidateGuard invalidateGuard(this, InvalidateKind.forceInvalidate);
+                                    Invalidate();
+                                }
+                                args.SetHandled();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        public nothrow long ItemCount() const
+        {
+            return items.Count();
+        }
+        public void AddItem(const ustring& item)
+        {
+            items.Add(item);
+        }
+        public const ustring& GetItem(int index) const
+        {
+            return items[index];
+        }
+        public void Clear()
+        {
+            items.Clear();
+        }
+        public nothrow int SelectedIndex() const
+        {
+            return selectedIndex;
+        }
+        public nothrow void SetSelectedIndex(int selectedIndex_)
+        {
+            if (selectedIndex != selectedIndex_)
+            {
+                Size sz = GetSize();
+                selectedIndex = selectedIndex_;
+                topIndex = selectedIndex;
+                if (topIndex + sz.h > items.Count())
+                {
+                    topIndex = Max(cast<int>(0), cast<int>(items.Count() - sz.h));
+                }
+            }
+        }
+        public virtual void OnSelectedIndexChanged()
+        {
+            Point loc = Location();
+            int index = selectedIndex - topIndex;
+            loc.y = loc.y + index;
+            SetControlCursorPos(loc);
+            selectedIndexChangedEvent.Fire();
+        }
+        public virtual void OnItemSelected()
+        {
+            itemSelectedEvent.Fire();
+        }
+        public nothrow Event<ChangedEventHandler>& SelectedIndexChangedEvent()
+        {
+            return selectedIndexChangedEvent;
+        }
+        public nothrow Event<SelectEventHandler>& ItemSelectedEvent()
+        {
+            return itemSelectedEvent;
+        }
+        private nothrow Rect LineRect(int i) const
+        {
+            Point loc = Location();
+            loc.y = loc.y + i;
+            Size sz = GetSize();
+            sz.h = 1;
+            return Rect(loc, sz);
+        }
+        private ConsoleColor selectedItemForeColor;
+        private ConsoleColor selectedItemBackColor;
+        private ConsoleColor selectedItemFocusedForeColor;
+        private ConsoleColor selectedItemFocusedBackColor;
+        private List<ustring> items;
+        private int topIndex;
+        private int selectedIndex;
+        private Event<ChangedEventHandler> selectedIndexChangedEvent;
+        private Event<SelectEventHandler> itemSelectedEvent;
+    }
+
+} // namespace System.Screen

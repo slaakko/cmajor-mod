@@ -1,0 +1,113 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_Cm.Ast_BFF232E4680A917E861A5833139E3F88D9862A65"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "E2D55954CB0670CCD7C64DB7B4E92C6DC15A7E10", 
+            "fileId" : "Breakpoint_C7E661604E272A296FE4671FE52CB9F40D2DC1D9", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/Breakpoint.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "EE9D90BD93407F48847341A1E369A2883C94435F", 
+            "fileId" : "BuildServerMessage_FD8A207E55F9DEB02F9CFD634EB2587433959938", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/BuildServerMessage.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "628167F96BA7BEC2E489D1F6D40D5FCC245B3CB8", 
+            "fileId" : "BuildService_B5477952EB8D28503492FEE55BD3744BA2B5B9A6", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/BuildService.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "BEC50C2545D9C098E716118296CDFBDB5F067054", 
+            "fileId" : "CmdbSession_8C309AA10B76AD974CFB053D9A384F996B3F6BEC", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/CmdbSession.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D49DA866F2145F6B9CAAD2837D3F1B95A77E0505", 
+            "fileId" : "CodeCompletionMessage_4266E3509524E220819BC360F95B6628A9417A62", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/CodeCompletionMessage.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D5256E623D3BF30516194E9EBF8639E0802E3C02", 
+            "fileId" : "CodeCompletionService_92FBEDA3056E06CEC1A24CC164907083EF655996", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/CodeCompletionService.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "40677D470ED423C0031E4F7F264C7471C07411F4", 
+            "fileId" : "DebugServerMessage_8F3C101646E8537395F5773A9574307689C2C11D", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/DebugServerMessage.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "763E5181AE04DAE43759F8248C8E3D81DC04E1FB", 
+            "fileId" : "DebugService_C0AA2AF9548C1DD3C252EDF0B1D37F3B5DFBDD89", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/DebugService.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "58A9F226EDF91EA0428D5934B04726C132F72AA1", 
+            "fileId" : "PortMapService_61F7B70A0D1B74E0EE19AFAC170BB92B9661FF26", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/PortMapService.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "102D4B29A6C9BC5599B4DCB69E1FA4E590F53E42", 
+            "fileId" : "Register_D822C9347A2228916E9C1EBE03D44ACE6A34FB04", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/Register.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "14690E73FBD1DB22C00D2395F03964F31FD99EB6", 
+            "fileId" : "RunService_5E8D0FE9AF6726BDED7E94C3E427AE7F2417E96F", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/RunService.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E4F97290BF4345AEA15140162DCF7BD693DB897E", 
+            "fileId" : "ServiceBase_5127A3E0EAD91A884B1C634CD9B3C8A8F12B5740", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/ServiceBase.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/service\/Cm.Service.cmp", 
+    "projectHash" : "5E401A8F3E35C9FCAC751C0C89D162EE8A2B67B3", 
+    "projectId" : "project_Cm.Service_D219517545C924A7168FB331FCA4605ACCBEA75E", 
+    "projectName" : "Cm.Service", 
+    "target" : "library"
+}

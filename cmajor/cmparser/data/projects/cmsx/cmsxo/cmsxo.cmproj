@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>e7e34b7b-93a5-4e3c-a67f-6898191a8f79</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>library</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="BinaryFile.cm"/>
+  <CmCompile Include="Class.cm"/>
+  <CmCompile Include="Debug.cm"/>
+  <CmCompile Include="Link.cm"/>
+  <CmCompile Include="Symbol.cm"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup>
+  <ProjectReference Include="../cmsxm/cmsxm.cmproj"/>
+ </ItemGroup>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

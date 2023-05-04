@@ -1,0 +1,124 @@
+using System;
+using System.Collections;
+using System.Xml.Serialization;
+
+namespace model
+{
+    public class Person : XmlSerializable
+    {
+        public nothrow static string StaticClassName()
+        {
+            return "model.Person";
+        }
+        public static void Register(int classId_)
+        {
+            classId = classId_;
+            XmlRegister<Person>(classId);
+        }
+        public static void* Create()
+        {
+            return new Person();
+        }
+        public virtual ~Person()
+        {
+        }
+        public nothrow virtual void DestroyObject()
+        {
+            delete this;
+        }
+        public virtual nothrow Uuid ObjectId() const
+        {
+            return objectId;
+        }
+        public virtual nothrow void SetObjectId(const Uuid& objectId_)
+        {
+            objectId = objectId_;
+        }
+        public virtual XmlContainer* Container() const
+        {
+            return container;
+        }
+        public virtual void SetContainer(XmlContainer* container_)
+        {
+            container = container_;
+        }
+        public virtual nothrow bool IsOwned() const
+        {
+            return isOwned;
+        }
+        public virtual nothrow void SetOwned()
+        {
+            isOwned = true;
+        }
+        public virtual nothrow void ResetOwned()
+        {
+            isOwned = false;
+        }
+        public int ClassId() const
+        {
+            return classId;
+        }
+        public string ClassName() const
+        {
+            return typename(*this);
+        }
+        public virtual void SetObjectXmlAttributes(System.Dom.Element* element)
+        {
+            element->SetAttribute(u"classId", ToUtf32(ToString(classId)));
+            element->SetAttribute(u"objectId", ToUtf32(ToString(ObjectId())));
+            element->SetAttribute(u"className", ToUtf32(ClassName()));
+        }
+        public System.Dom.Element* ToXml(const string& elementName)
+        {
+            System.Xml.Serialization.XmlSerializationContext ctx;
+            return ToXml(elementName, ctx);
+        }
+        public virtual System.Dom.Element* ToXml(const string& elementName, System.Xml.Serialization.XmlSerializationContext& ctx)
+        {
+            System.Dom.Element* element = new System.Dom.Element(ToUtf32(elementName));
+            SetObjectXmlAttributes(element);
+            element->AppendChild(UniquePtr<System.Dom.Node>(System.Xml.Serialization.ToXml(name, "name", ctx).Release()));
+            element->AppendChild(UniquePtr<System.Dom.Node>(System.Xml.Serialization.ToXml(vehicles, "vehicles", ctx).Release()));
+            return element;
+        }
+        public virtual void FromXml(System.Dom.Element* element)
+        {
+            ustring objectIdAttr = element->GetAttribute(u"objectId");
+            if (!objectIdAttr.IsEmpty())
+            {
+                objectId = ParseUuid(ToUtf8(objectIdAttr));
+            }
+            System.Xml.Serialization.FromXml(element, "name", name);
+            System.Xml.Serialization.FromXml(element, "vehicles", vehicles);
+        }
+        public const string& Name() const
+        {
+            return name;
+        }
+        public void SetName(const string& name_)
+        {
+            name = name_;
+        }
+        public void AddVehicle(Vehicle* vehicle)
+        {
+            vehicle->SetOwner(this);
+            vehicles.Add(UniqueXmlPtr<Vehicle>(vehicle));
+        }
+        public virtual List<XmlPtrBase*> GetPtrs() const
+        {
+            List<XmlPtrBase*> ptrs;
+            for (UniqueXmlPtr<Vehicle>& ptr : vehicles)
+            {
+                ptrs.Add(&ptr);
+            }
+            return ptrs;
+        }
+        private static int classId;
+        private Uuid objectId;
+        private XmlContainer* container;
+        private bool isOwned;
+        private string name;
+        private List<UniqueXmlPtr<Vehicle>> vehicles;
+    }
+}
+

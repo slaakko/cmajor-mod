@@ -1,0 +1,144 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "2ADDD14CECF80DB69269AB153735662F6FA8F031", 
+            "fileId" : "Action_23FC97AB5915DC3D4DA8BE2A5F6FE440087354B9", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Action.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "A327E5A1444311EAA816AF4AEC3A6404055CDB9D", 
+            "fileId" : "Canvas_6E3AD89972F8AC8EAFB1715F091029F4F2E93097", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Canvas.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "AFD0A14664B81F3F2BB96D2679CEE061736E2355", 
+            "fileId" : "ClassPropertiesDialog_CA027B817EE4103E3A302893D5117E69DA8F0689", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/ClassPropertiesDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "B716FC76728A47B72AE5257BDFF2F50EDB688F7E", 
+            "fileId" : "Command_FB37B283218DD591A829C5037625578264AB8CFC", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Command.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "FDBF35E6095B761BCDF7611A4161FC7D6EBAD028", 
+            "fileId" : "Diagram_EC4D3073E3CC959D5A0ACD949E4EF125AF76C4FC", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Diagram.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "A4971B6C616D21F49B56C6AAEFD44DDBD28875FA", 
+            "fileId" : "EditDiagramElementListDialog_608F5E48226B0CCB710E508693200182A1370C7A", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/EditDiagramElementListDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "01A610AD0C9F5968832CE1487A59FAA1F264D30E", 
+            "fileId" : "IndexList_8C7C00948FFADBDB734A58C20AE257337C811B22", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/IndexList.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "511DC851A42F105CA2702D6043C4C0F7D29C7936", 
+            "fileId" : "Layout_8B8BAD339D757830C26922A7498845FC68D5A652", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Layout.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "7B5506A2A2F6FFA967020E072E1CA22BD27A5F5A", 
+            "fileId" : "Main_EC259DA91D5F8A841367F3C00CCC327C691A7EFD", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Main.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "95BFBEE737868E275C55720730D1F6F349FC75F0", 
+            "fileId" : "NotePropertiesDialog_58FB987C0BCC7FD5788A610A9C9C1A332DECF502", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/NotePropertiesDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E8C066C97266DE3E135B70E9AE15C816F513EE0A", 
+            "fileId" : "ObjectPropertiesDialog_22C0281207D1D331ACB9FC8D7F5D2DA276DF2DC4", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/ObjectPropertiesDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "88D942DC39181B136919698EF2C25E030ED32A8A", 
+            "fileId" : "Operation_8609397E5A8AE5DDCC1080AB63994577EA48C6F3", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Operation.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "BDD385B371F5494D0E54402056E366E155040FF9", 
+            "fileId" : "RelationshipPropertiesDialog_F61822A466CB98B91B7E0F5DF1A887F356A313C2", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/RelationshipPropertiesDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "12CE65D912DE06BF5D0CC3F22A30C8587DDC9907", 
+            "fileId" : "SaveImageDialog_4AE4D02844FA2A10ED90FED92E84C3C56B8337A8", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/SaveImageDialog.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "05E875F33D3A19B781DDDCFFF3FC12173D7B6BBD", 
+            "fileId" : "Selection_2CDA52AB97497FA2BE16E95DE96C147A5CF19696", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Selection.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "2366F51D60EE517540D57EF72AD2DE9025111611", 
+            "fileId" : "Tool_3015181196E9FB7B314D319505BFF56612CB6DCE", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/Tool.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/spring\/spring.cmp", 
+    "projectHash" : "B712436FD24011E0155865092A19AD3B77E1AD13", 
+    "projectId" : "project_spring_E2940A2AD92CDD31529150672148EB4F0CB496BD", 
+    "projectName" : "spring", 
+    "target" : "winguiapp"
+}

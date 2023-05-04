@@ -1,0 +1,16 @@
+using System;
+using System.Collections;
+
+namespace System.Parsing
+{
+    public class Range
+    {
+        public constexpr nothrow Range(int first_, int last_) :
+            first(first_), last(last_)
+        {
+        }
+        public int first;
+        public int last;
+    }
+
+} // namespace System.Parsing

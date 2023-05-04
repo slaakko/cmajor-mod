@@ -1,0 +1,139 @@
+using System;
+using System.Collections;
+using System.Threading;
+
+namespace cmsx.kernel
+{
+    private bool log = false;
+
+    private string file;
+
+    public nothrow bool Log()
+    {
+        return log;
+    }
+
+    public nothrow void SetLog()
+    {
+        log = true;
+    }
+
+    public class LogFileWriter
+    {
+        static LogFileWriter() :
+            instance(new LogFileWriter())
+        {
+        }
+        public static nothrow LogFileWriter& Instance()
+        {
+            return *instance;
+        }
+        private LogFileWriter() :
+            writer(System.IO.File.CreateText(file))
+        {
+            flusherThread = Thread.StartMethod(Flush);
+        }
+        public void Write(const string& msg)
+        {
+            writer << msg << endl();
+        }
+        public void Exit()
+        {
+            exit = true;
+            exiting.NotifyOne();
+            flusherThread.Join();
+        }
+        private void Flush()
+        {
+            try
+            {
+                while (!exit)
+                {
+                    exiting.WaitFor(mtx, Duration.FromSeconds(10));
+                }
+            }
+            catch (const Exception&)
+            {
+            }
+        }
+        private static UniquePtr<LogFileWriter> instance;
+        private System.IO.StreamWriter writer;
+        private Thread flusherThread;
+        private bool exit;
+        private RecursiveMutex mtx;
+        private ConditionVariable exiting;
+    }
+
+    public nothrow void SetLog(const string& logFile)
+    {
+        log = true;
+        file = logFile;
+    }
+
+    private TimePoint start;
+
+    public nothrow void StartLog()
+    {
+        start = Now();
+    }
+
+    public nothrow void StopLog()
+    {
+        bool logStarted = log && !file.IsEmpty();
+        if (logStarted)
+        {
+            LogFileWriter.Instance().Exit();
+        }
+    }
+
+    public class LogLock
+    {
+        static LogLock() :
+            instance(new LogLock())
+        {
+        }
+        public static nothrow LogLock& Instance()
+        {
+            return *instance;
+        }
+        public nothrow Mutex& Mtx()
+        {
+            return mtx;
+        }
+        private static UniquePtr<LogLock> instance;
+        private Mutex mtx;
+    }
+
+    public nothrow void LogMessage(const string& method, const string& msg)
+    {
+        LockGuard<Mutex> lock(LogLock.Instance().Mtx());
+        string m;
+        Duration duration = Now() - start;
+        m.Append(DurationStr(duration)).Append(' ');
+        m.Append(ToString(RtThisThreadId()));
+        m.Append(' ');
+        void* fiberData = OsGetFiberData();
+        Process* process = cast<Process*>(fiberData);
+        if (process == null)
+        {
+            m.Append("kernel");
+        }
+        else
+        {
+            m.Append(ProcessName(process));
+        }
+        m.Append(' ');
+        m.Append(method);
+        m.Append(' ');
+        m.Append(msg);
+        if (file.IsEmpty())
+        {
+            Console.Out() << m << endl();
+        }
+        else
+        {
+            LogFileWriter.Instance().Write(m);
+        }
+    }
+
+} // namespace cmsx.kernel

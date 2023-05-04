@@ -1368,8 +1368,9 @@ soul::parser::Match ExpressionParser<LexerT>::Relational(LexerT& lexer, cmajor::
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7570458120711831563);
     std::unique_ptr<cmajor::ast::Node> expr = std::unique_ptr<cmajor::ast::Node>();
     soul::ast::SourcePos s = soul::ast::SourcePos();
+    cmajor::parser::operators::Operator op = cmajor::parser::operators::Operator();
     std::unique_ptr<cmajor::ast::Node> left;
-    std::unique_ptr<soul::parser::Value<cmajor::parser::operators::Operator>> op;
+    std::unique_ptr<soul::parser::Value<cmajor::parser::operators::Operator>> relOp;
     std::unique_ptr<cmajor::ast::Node> isType;
     std::unique_ptr<cmajor::ast::Node> asType;
     std::unique_ptr<cmajor::ast::Node> right;
@@ -1434,9 +1435,10 @@ soul::parser::Match ExpressionParser<LexerT>::Relational(LexerT& lexer, cmajor::
                                                         int64_t pos = lexer.GetPos();
                                                         bool pass = true;
                                                         soul::parser::Match match = ExpressionParser<LexerT>::RelOp(lexer);
-                                                        op.reset(static_cast<soul::parser::Value<cmajor::parser::operators::Operator>*>(match.value));
+                                                        relOp.reset(static_cast<soul::parser::Value<cmajor::parser::operators::Operator>*>(match.value));
                                                         if (match.hit)
                                                         {
+                                                            op = relOp->value;
                                                             if (context->ParsingLvalue() || context->ParsingExpressionStatement() && !context->ParsingArguments())
                                                             {
                                                                 pass = false;
@@ -1482,7 +1484,7 @@ soul::parser::Match ExpressionParser<LexerT>::Relational(LexerT& lexer, cmajor::
                                                                 }
                                                                 else
                                                                 {
-                                                                    op->value = Operator::is;
+                                                                    op = Operator::is;
                                                                     context->PushParsingIsOrAs(true);
                                                                 }
                                                             }
@@ -1535,7 +1537,7 @@ soul::parser::Match ExpressionParser<LexerT>::Relational(LexerT& lexer, cmajor::
                                                                 }
                                                                 else
                                                                 {
-                                                                    op->value = Operator::as;
+                                                                    op = Operator::as;
                                                                     context->PushParsingIsOrAs(true);
                                                                 }
                                                             }
@@ -1620,7 +1622,7 @@ soul::parser::Match ExpressionParser<LexerT>::Relational(LexerT& lexer, cmajor::
                                                 if (match.hit)
                                                 {
                                                     context->PopParsingIsOrAs();
-                                                    switch (op->value)
+                                                    switch (op)
                                                     {
                                                         case Operator::lessOrEq: expr.reset(new cmajor::ast::LessOrEqualNode(s, context->ModuleId(), expr.release(), right.release()));
                                                         break;

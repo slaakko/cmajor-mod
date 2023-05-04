@@ -1,0 +1,940 @@
+using System.Os;
+using System.Unicode;
+
+namespace System
+{
+    public const uchar keyBackspace = '\b';
+
+    public const uchar keyTab = '\t';
+
+    public const uchar keyNewline = '\n';
+
+    public const uchar keyControlA = cast<uchar>(1);
+
+    public const uchar keyControlB = cast<uchar>(2);
+
+    public const uchar keyControlC = cast<uchar>(3);
+
+    public const uchar keyControlD = cast<uchar>(4);
+
+    public const uchar keyControlE = cast<uchar>(5);
+
+    public const uchar keyControlF = cast<uchar>(6);
+
+    public const uchar keyControlG = cast<uchar>(7);
+
+    public const uchar keyControlH = cast<uchar>(8);
+
+    public const uchar keyControlI = cast<uchar>(9);
+
+    public const uchar keyControlJ = cast<uchar>(10);
+
+    public const uchar keyControlK = cast<uchar>(11);
+
+    public const uchar keyControlL = cast<uchar>(12);
+
+    public const uchar keyControlM = cast<uchar>(13);
+
+    public const uchar keyControlN = cast<uchar>(14);
+
+    public const uchar keyControlO = cast<uchar>(15);
+
+    public const uchar keyControlP = cast<uchar>(16);
+
+    public const uchar keyControlQ = cast<uchar>(17);
+
+    public const uchar keyControlR = cast<uchar>(18);
+
+    public const uchar keyControlS = cast<uchar>(19);
+
+    public const uchar keyControlT = cast<uchar>(20);
+
+    public const uchar keyControlU = cast<uchar>(21);
+
+    public const uchar keyControlV = cast<uchar>(22);
+
+    public const uchar keyControlW = cast<uchar>(23);
+
+    public const uchar keyControlX = cast<uchar>(24);
+
+    public const uchar keyControlY = cast<uchar>(25);
+
+    public const uchar keyControlZ = cast<uchar>(26);
+
+    public const uchar keyEscape = cast<uchar>(27);
+
+    public const uchar keyFS = cast<uchar>(28);
+
+    public const uchar keyGS = cast<uchar>(29);
+
+    public const uchar keyRS = cast<uchar>(30);
+
+    public const uchar keyUS = cast<uchar>(31);
+
+    public const uchar specialKeyStart = cast<uchar>(57344u);
+
+    public const uchar keyDown = cast<uchar>(57344u);
+
+    public const uchar keyUp = cast<uchar>(57345u);
+
+    public const uchar keyLeft = cast<uchar>(57346u);
+
+    public const uchar keyRight = cast<uchar>(57347u);
+
+    public const uchar keyHome = cast<uchar>(57348u);
+
+    public const uchar keyMsg = cast<uchar>(57349u);
+
+    public const uchar keyF1 = cast<uchar>(57350u);
+
+    public const uchar keyF2 = cast<uchar>(57351u);
+
+    public const uchar keyF3 = cast<uchar>(57352u);
+
+    public const uchar keyF4 = cast<uchar>(57353u);
+
+    public const uchar keyF5 = cast<uchar>(57354u);
+
+    public const uchar keyF6 = cast<uchar>(57355u);
+
+    public const uchar keyF7 = cast<uchar>(57356u);
+
+    public const uchar keyF8 = cast<uchar>(57357u);
+
+    public const uchar keyF9 = cast<uchar>(57358u);
+
+    public const uchar keyF10 = cast<uchar>(57359u);
+
+    public const uchar keyF11 = cast<uchar>(57360u);
+
+    public const uchar keyF12 = cast<uchar>(57361u);
+
+    public const uchar keyDel = cast<uchar>(57362u);
+
+    public const uchar keyIns = cast<uchar>(57363u);
+
+    public const uchar keyPgDown = cast<uchar>(57364u);
+
+    public const uchar keyPgUp = cast<uchar>(57365u);
+
+    public const uchar keyPrint = cast<uchar>(57366u);
+
+    public const uchar keyEnd = cast<uchar>(57367u);
+
+    public const uchar keyShiftDel = cast<uchar>(57368u);
+
+    public const uchar keyShiftEnd = cast<uchar>(57369u);
+
+    public const uchar keyShiftHome = cast<uchar>(57370u);
+
+    public const uchar keyShiftLeft = cast<uchar>(57371u);
+
+    public const uchar keyShiftRight = cast<uchar>(57372u);
+
+    public const uchar keyResize = cast<uchar>(57373u);
+
+    public const uchar keyShiftUp = cast<uchar>(57374u);
+
+    public const uchar keyShiftDown = cast<uchar>(57375u);
+
+    public const uchar keyControlUp = cast<uchar>(57376u);
+
+    public const uchar keyControlDown = cast<uchar>(57377u);
+
+    public const uchar keyControlLeft = cast<uchar>(57378u);
+
+    public const uchar keyControlRight = cast<uchar>(57379u);
+
+    public const uchar keyControlPgUp = cast<uchar>(57380u);
+
+    public const uchar keyControlPgDown = cast<uchar>(57381u);
+
+    public const uchar keyControlHome = cast<uchar>(57382u);
+
+    public const uchar keyControlEnd = cast<uchar>(57383u);
+
+    public const uchar keyControlDel = cast<uchar>(57384u);
+
+    public const uchar keyControlF1 = cast<uchar>(57385u);
+
+    public const uchar keyControlF2 = cast<uchar>(57386u);
+
+    public const uchar keyControlF3 = cast<uchar>(57387u);
+
+    public const uchar keyControlF4 = cast<uchar>(57388u);
+
+    public const uchar keyControlF5 = cast<uchar>(57389u);
+
+    public const uchar keyControlF6 = cast<uchar>(57390u);
+
+    public const uchar keyControlF7 = cast<uchar>(57391u);
+
+    public const uchar keyControlF8 = cast<uchar>(57392u);
+
+    public const uchar keyControlF9 = cast<uchar>(57393u);
+
+    public const uchar keyControlF10 = cast<uchar>(57394u);
+
+    public const uchar keyControlF11 = cast<uchar>(57395u);
+
+    public const uchar keyControlF12 = cast<uchar>(57396u);
+
+    public const uchar keyShiftPgUp = cast<uchar>(57397u);
+
+    public const uchar keyShiftPgDown = cast<uchar>(57398u);
+
+    public const uchar keyShiftF1 = cast<uchar>(57399u);
+
+    public const uchar keyShiftF2 = cast<uchar>(57400u);
+
+    public const uchar keyShiftF3 = cast<uchar>(57401u);
+
+    public const uchar keyShiftF4 = cast<uchar>(57402u);
+
+    public const uchar keyShiftF5 = cast<uchar>(57403u);
+
+    public const uchar keyShiftF6 = cast<uchar>(57404u);
+
+    public const uchar keyShiftF7 = cast<uchar>(57405u);
+
+    public const uchar keyShiftF8 = cast<uchar>(57406u);
+
+    public const uchar keyShiftF9 = cast<uchar>(57407u);
+
+    public const uchar keyShiftF10 = cast<uchar>(57408u);
+
+    public const uchar keyShiftF11 = cast<uchar>(57409u);
+
+    public const uchar keyShiftF12 = cast<uchar>(57410u);
+
+    public const uchar keyAltA = cast<uchar>(57411u);
+
+    public const uchar keyAltB = cast<uchar>(57412u);
+
+    public const uchar keyAltC = cast<uchar>(57413u);
+
+    public const uchar keyAltD = cast<uchar>(57414u);
+
+    public const uchar keyAltE = cast<uchar>(57415u);
+
+    public const uchar keyAltF = cast<uchar>(57416u);
+
+    public const uchar keyAltG = cast<uchar>(57417u);
+
+    public const uchar keyAltH = cast<uchar>(57418u);
+
+    public const uchar keyAltI = cast<uchar>(57419u);
+
+    public const uchar keyAltJ = cast<uchar>(57420u);
+
+    public const uchar keyAltK = cast<uchar>(57421u);
+
+    public const uchar keyAltL = cast<uchar>(57422u);
+
+    public const uchar keyAltM = cast<uchar>(57423u);
+
+    public const uchar keyAltN = cast<uchar>(57424u);
+
+    public const uchar keyAltO = cast<uchar>(57425u);
+
+    public const uchar keyAltP = cast<uchar>(57426u);
+
+    public const uchar keyAltQ = cast<uchar>(57427u);
+
+    public const uchar keyAltR = cast<uchar>(57428u);
+
+    public const uchar keyAltS = cast<uchar>(57429u);
+
+    public const uchar keyAltT = cast<uchar>(57430u);
+
+    public const uchar keyAltU = cast<uchar>(57431u);
+
+    public const uchar keyAltV = cast<uchar>(57432u);
+
+    public const uchar keyAltW = cast<uchar>(57433u);
+
+    public const uchar keyAltX = cast<uchar>(57434u);
+
+    public const uchar keyAltY = cast<uchar>(57435u);
+
+    public const uchar keyAltZ = cast<uchar>(57436u);
+
+    public const uchar keyAltF1 = cast<uchar>(57437u);
+
+    public const uchar keyAltF2 = cast<uchar>(57438u);
+
+    public const uchar keyAltF3 = cast<uchar>(57439u);
+
+    public const uchar keyAltF4 = cast<uchar>(57440u);
+
+    public const uchar keyAltF5 = cast<uchar>(57441u);
+
+    public const uchar keyAltF6 = cast<uchar>(57442u);
+
+    public const uchar keyAltF7 = cast<uchar>(57443u);
+
+    public const uchar keyAltF8 = cast<uchar>(57444u);
+
+    public const uchar keyAltF9 = cast<uchar>(57445u);
+
+    public const uchar keyAltF10 = cast<uchar>(57446u);
+
+    public const uchar keyAltF11 = cast<uchar>(57447u);
+
+    public const uchar keyAltF12 = cast<uchar>(57448u);
+
+    public const uchar keyControlShiftLeft = cast<uchar>(57449u);
+
+    public const uchar keyControlShiftRight = cast<uchar>(57450u);
+
+    public const uchar keyControlShiftHome = cast<uchar>(57451u);
+
+    public const uchar keyControlShiftEnd = cast<uchar>(57452u);
+
+    public const uchar keyControlTab = cast<uchar>(57453u);
+
+    public const uchar keyShiftTab = cast<uchar>(57454u);
+
+    public const uchar keyControlIns = cast<uchar>(57455u);
+
+    public const uchar keyShiftIns = cast<uchar>(57456u);
+
+    public const uchar specialKeyEnd = cast<uchar>(57456u);
+
+    public class KeyBuffer
+    {
+        static KeyBuffer() :
+            instance(new KeyBuffer())
+        {
+        }
+        public static nothrow KeyBuffer& Instance()
+        {
+            return *instance;
+        }
+        public nothrow void Put(byte ch)
+        {
+            engine.Put(ch);
+        }
+        public nothrow bool KeyReady() const
+        {
+            return engine.ResultReady();
+        }
+        public nothrow uchar GetKey() const
+        {
+            return engine.Get();
+        }
+        private static UniquePtr<KeyBuffer> instance;
+        private UnicodeEngine engine;
+    }
+
+    public uchar ReadKey(int fd)
+    {
+        KeyBuffer& keyBuffer = KeyBuffer.Instance();
+        byte ch = 0u;
+        long count = Read(fd, &ch, 1);
+        while (count > 0)
+        {
+            keyBuffer.Put(ch);
+            if (keyBuffer.KeyReady())
+            {
+                return keyBuffer.GetKey();
+            }
+            count = Read(fd, &ch, 1);
+        }
+        return cast<uchar>(0);
+    }
+
+    public string KeyName(uchar c)
+    {
+        switch (c)
+        {
+            case keyBackspace: 
+            {
+                return "Backspace";
+            }
+            case keyTab: 
+            {
+                return "Tab";
+            }
+            case keyNewline: 
+            {
+                return "Newline";
+            }
+            case keyControlA: 
+            {
+                return "Ctrl+A";
+            }
+            case keyControlB: 
+            {
+                return "Ctrl+B";
+            }
+            case keyControlC: 
+            {
+                return "Ctrl+C";
+            }
+            case keyControlD: 
+            {
+                return "Ctrl+D";
+            }
+            case keyControlE: 
+            {
+                return "Ctrl+E";
+            }
+            case keyControlF: 
+            {
+                return "Ctrl+F";
+            }
+            case keyControlG: 
+            {
+                return "Ctrl+G";
+            }
+            case keyControlK: 
+            {
+                return "Ctrl+K";
+            }
+            case keyControlL: 
+            {
+                return "Ctrl+L";
+            }
+            case keyControlM: 
+            {
+                return "Ctrl+M";
+            }
+            case keyControlN: 
+            {
+                return "Ctrl+N";
+            }
+            case keyControlO: 
+            {
+                return "Ctrl+O";
+            }
+            case keyControlP: 
+            {
+                return "Ctrl+P";
+            }
+            case keyControlQ: 
+            {
+                return "Ctrl+Q";
+            }
+            case keyControlR: 
+            {
+                return "Ctrl+R";
+            }
+            case keyControlS: 
+            {
+                return "Ctrl+S";
+            }
+            case keyControlT: 
+            {
+                return "Ctrl+T";
+            }
+            case keyControlU: 
+            {
+                return "Ctrl+U";
+            }
+            case keyControlV: 
+            {
+                return "Ctrl+V";
+            }
+            case keyControlW: 
+            {
+                return "Ctrl+W";
+            }
+            case keyControlX: 
+            {
+                return "Ctrl+X";
+            }
+            case keyControlY: 
+            {
+                return "Ctrl+Y";
+            }
+            case keyControlZ: 
+            {
+                return "Ctrl+Z";
+            }
+            case keyEscape: 
+            {
+                return "Escape";
+            }
+            case keyFS: 
+            {
+                return "FS";
+            }
+            case keyGS: 
+            {
+                return "GS";
+            }
+            case keyRS: 
+            {
+                return "RS";
+            }
+            case keyUS: 
+            {
+                return "US";
+            }
+            case keyDown: 
+            {
+                return "Down Arrow";
+            }
+            case keyUp: 
+            {
+                return "Up Arrow";
+            }
+            case keyLeft: 
+            {
+                return "Left Arrow";
+            }
+            case keyRight: 
+            {
+                return "Right Arrow";
+            }
+            case keyHome: 
+            {
+                return "Home";
+            }
+            case keyMsg: 
+            {
+                return "MSG";
+            }
+            case keyF1: 
+            {
+                return "F1";
+            }
+            case keyF2: 
+            {
+                return "F2";
+            }
+            case keyF3: 
+            {
+                return "F3";
+            }
+            case keyF4: 
+            {
+                return "F4";
+            }
+            case keyF5: 
+            {
+                return "F5";
+            }
+            case keyF6: 
+            {
+                return "F6";
+            }
+            case keyF7: 
+            {
+                return "F7";
+            }
+            case keyF8: 
+            {
+                return "F8";
+            }
+            case keyF9: 
+            {
+                return "F9";
+            }
+            case keyF10: 
+            {
+                return "F10";
+            }
+            case keyF11: 
+            {
+                return "F11";
+            }
+            case keyF12: 
+            {
+                return "F12";
+            }
+            case keyDel: 
+            {
+                return "Delete";
+            }
+            case keyIns: 
+            {
+                return "Insert";
+            }
+            case keyPgDown: 
+            {
+                return "Page Down";
+            }
+            case keyPgUp: 
+            {
+                return "Page Up";
+            }
+            case keyPrint: 
+            {
+                return "Print Screen";
+            }
+            case keyEnd: 
+            {
+                return "End";
+            }
+            case keyShiftDel: 
+            {
+                return "Shift+Delete";
+            }
+            case keyShiftEnd: 
+            {
+                return "Shift+End";
+            }
+            case keyShiftHome: 
+            {
+                return "Shift+Home";
+            }
+            case keyShiftLeft: 
+            {
+                return "Shift+Left Arrow";
+            }
+            case keyShiftRight: 
+            {
+                return "Shift+Right Arrow";
+            }
+            case keyResize: 
+            {
+                return "Resize";
+            }
+            case keyShiftUp: 
+            {
+                return "Shift+Up Arrow";
+            }
+            case keyShiftDown: 
+            {
+                return "Shift+Down Arrow";
+            }
+            case keyControlUp: 
+            {
+                return "Ctrl+Up Arrow";
+            }
+            case keyControlDown: 
+            {
+                return "Ctrl+Down Arrow";
+            }
+            case keyControlLeft: 
+            {
+                return "Ctrl+Left Arrow";
+            }
+            case keyControlRight: 
+            {
+                return "Ctrl+Right Arrow";
+            }
+            case keyControlPgUp: 
+            {
+                return "Ctrl+Page Up";
+            }
+            case keyControlPgDown: 
+            {
+                return "Ctrl+Page Down";
+            }
+            case keyControlHome: 
+            {
+                return "Ctrl+Home";
+            }
+            case keyControlEnd: 
+            {
+                return "Ctrl+End";
+            }
+            case keyControlDel: 
+            {
+                return "Ctrl+Delete";
+            }
+            case keyControlF1: 
+            {
+                return "Ctrl+F1";
+            }
+            case keyControlF2: 
+            {
+                return "Ctrl+F2";
+            }
+            case keyControlF3: 
+            {
+                return "Ctrl+F3";
+            }
+            case keyControlF4: 
+            {
+                return "Ctrl+F4";
+            }
+            case keyControlF5: 
+            {
+                return "Ctrl+F5";
+            }
+            case keyControlF6: 
+            {
+                return "Ctrl+F6";
+            }
+            case keyControlF7: 
+            {
+                return "Ctrl+F7";
+            }
+            case keyControlF8: 
+            {
+                return "Ctrl+F8";
+            }
+            case keyControlF9: 
+            {
+                return "Ctrl+F9";
+            }
+            case keyControlF10: 
+            {
+                return "Ctrl+F10";
+            }
+            case keyControlF11: 
+            {
+                return "Ctrl+F11";
+            }
+            case keyControlF12: 
+            {
+                return "Ctrl+F12";
+            }
+            case keyShiftPgUp: 
+            {
+                return "Shift+Page Up";
+            }
+            case keyShiftPgDown: 
+            {
+                return "Shift+Page Down";
+            }
+            case keyShiftF1: 
+            {
+                return "Shift+F1";
+            }
+            case keyShiftF2: 
+            {
+                return "Shift+F2";
+            }
+            case keyShiftF3: 
+            {
+                return "Shift+F3";
+            }
+            case keyShiftF4: 
+            {
+                return "Shift+F4";
+            }
+            case keyShiftF5: 
+            {
+                return "Shift+F5";
+            }
+            case keyShiftF6: 
+            {
+                return "Shift+F6";
+            }
+            case keyShiftF7: 
+            {
+                return "Shift+F7";
+            }
+            case keyShiftF8: 
+            {
+                return "Shift+F8";
+            }
+            case keyShiftF9: 
+            {
+                return "Shift+F9";
+            }
+            case keyShiftF10: 
+            {
+                return "Shift+F10";
+            }
+            case keyShiftF11: 
+            {
+                return "Shift+F11";
+            }
+            case keyShiftF12: 
+            {
+                return "Shift+F12";
+            }
+            case keyAltA: 
+            {
+                return "Alt+A";
+            }
+            case keyAltB: 
+            {
+                return "Alt+B";
+            }
+            case keyAltC: 
+            {
+                return "Alt+C";
+            }
+            case keyAltD: 
+            {
+                return "Alt+D";
+            }
+            case keyAltE: 
+            {
+                return "Alt+E";
+            }
+            case keyAltF: 
+            {
+                return "Alt+F";
+            }
+            case keyAltG: 
+            {
+                return "Alt+G";
+            }
+            case keyAltH: 
+            {
+                return "Alt+H";
+            }
+            case keyAltI: 
+            {
+                return "Alt+I";
+            }
+            case keyAltJ: 
+            {
+                return "Alt+J";
+            }
+            case keyAltK: 
+            {
+                return "Alt+K";
+            }
+            case keyAltL: 
+            {
+                return "Alt+L";
+            }
+            case keyAltM: 
+            {
+                return "Alt+M";
+            }
+            case keyAltN: 
+            {
+                return "Alt+N";
+            }
+            case keyAltO: 
+            {
+                return "Alt+O";
+            }
+            case keyAltP: 
+            {
+                return "Alt+P";
+            }
+            case keyAltQ: 
+            {
+                return "Alt+Q";
+            }
+            case keyAltR: 
+            {
+                return "Alt+R";
+            }
+            case keyAltS: 
+            {
+                return "Alt+S";
+            }
+            case keyAltT: 
+            {
+                return "Alt+T";
+            }
+            case keyAltU: 
+            {
+                return "Alt+U";
+            }
+            case keyAltV: 
+            {
+                return "Alt+V";
+            }
+            case keyAltW: 
+            {
+                return "Alt+W";
+            }
+            case keyAltX: 
+            {
+                return "Alt+X";
+            }
+            case keyAltY: 
+            {
+                return "Alt+Y";
+            }
+            case keyAltZ: 
+            {
+                return "Alt+Z";
+            }
+            case keyAltF1: 
+            {
+                return "Alt+F1";
+            }
+            case keyAltF2: 
+            {
+                return "Alt+F2";
+            }
+            case keyAltF3: 
+            {
+                return "Alt+F3";
+            }
+            case keyAltF4: 
+            {
+                return "Alt+F4";
+            }
+            case keyAltF5: 
+            {
+                return "Alt+F5";
+            }
+            case keyAltF6: 
+            {
+                return "Alt+F6";
+            }
+            case keyAltF7: 
+            {
+                return "Alt+F7";
+            }
+            case keyAltF8: 
+            {
+                return "Alt+F8";
+            }
+            case keyAltF9: 
+            {
+                return "Alt+F9";
+            }
+            case keyAltF10: 
+            {
+                return "Alt+F10";
+            }
+            case keyAltF11: 
+            {
+                return "Alt+F11";
+            }
+            case keyAltF12: 
+            {
+                return "Alt+F12";
+            }
+            case keyControlShiftLeft: 
+            {
+                return "Ctrl+Shift+Left Arrow";
+            }
+            case keyControlShiftRight: 
+            {
+                return "Ctrl+Shift+Right Arrow";
+            }
+            case keyControlShiftHome: 
+            {
+                return "Ctrl+Shift+Home";
+            }
+            case keyControlShiftEnd: 
+            {
+                return "Ctrl+Shift+End";
+            }
+            case keyControlTab: 
+            {
+                return "Ctrl+Tab";
+            }
+            case keyShiftTab: 
+            {
+                return "Shift+Tab";
+            }
+            case keyControlIns: 
+            {
+                return "Ctrl+Insert";
+            }
+            case keyShiftIns: 
+            {
+                return "Shift+Insert";
+            }
+            default: 
+            {
+                if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
+                {
+                    ustring k(c);
+                    return ToUtf8(ToUpper(k));
+                }
+                break;
+            }
+        }
+        return "<unknown key>";
+    }
+
+} // namespace System

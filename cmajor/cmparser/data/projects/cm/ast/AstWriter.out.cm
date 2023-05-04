@@ -1,0 +1,80 @@
+using System;
+using System.Collections;
+using System.IO;
+
+namespace Cm.Ast
+{
+    public class AstWriter
+    {
+        public nothrow AstWriter(const string& fileName_) :
+            binaryWriter(File.CreateBinary(fileName_)), lexers(null), spanConversionModuleId(Uuid())
+        {
+        }
+        public inline nothrow BinaryWriter& GetBinaryWriter()
+        {
+            return binaryWriter;
+        }
+        public nothrow void Write(Node* node)
+        {
+            binaryWriter.Write(cast<byte>(node->GetNodeType()));
+            if (node->ModuleId() == spanConversionModuleId)
+            {
+                Write(node->GetSpan(), true);
+            }
+            else
+            {
+                Write(node->GetSpan(), false);
+            }
+            binaryWriter.Write(node->ModuleId());
+            node->Write(*this);
+        }
+        public nothrow void Write(Specifiers specifiers)
+        {
+            binaryWriter.Write(cast<uint>(cast<int>(specifiers)));
+        }
+        public nothrow void Write(const System.Lex.Span& span, bool convertExternal)
+        {
+            if (!span.Valid())
+            {
+                binaryWriter.Write(false);
+            }
+            else
+            {
+                System.Lex.Span s = span;
+                if (convertExternal)
+                {
+                    if (s.fileIndex >= 0 && s.fileIndex < lexers->Count())
+                    {
+                        System.Lex.Lexer* lexer = (*lexers)[span.fileIndex];
+                        lexer->ConvertExternal(s);
+                    }
+                }
+                binaryWriter.Write(true);
+                binaryWriter.WriteULEB128UInt(cast<uint>(s.fileIndex));
+                binaryWriter.WriteULEB128UInt(cast<uint>(s.line));
+                binaryWriter.WriteULEB128UInt(cast<uint>(s.start));
+                binaryWriter.WriteULEB128UInt(cast<uint>(s.end));
+            }
+        }
+        public nothrow void SetLexers(List<System.Lex.Lexer*>* lexers_)
+        {
+            lexers = lexers_;
+        }
+        public inline nothrow const List<System.Lex.Lexer*>* Lexers() const
+        {
+            return lexers;
+        }
+        public inline nothrow const Uuid& SpanConversionModuleId() const
+        {
+            return spanConversionModuleId;
+        }
+        public nothrow void SetSpanConversionModuleId(const Uuid& spanConversionModuleId_)
+        {
+            spanConversionModuleId = spanConversionModuleId_;
+        }
+        private BinaryWriter binaryWriter;
+        private List<System.Lex.Lexer*>* lexers;
+        private Uuid spanConversionModuleId;
+    }
+
+} // namespace Cm.Ast

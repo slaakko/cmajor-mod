@@ -1,0 +1,300 @@
+using System;
+using System.Collections;
+using System.IO;
+using CodeFormatter = System.Text.CodeFormatter;
+
+namespace cmsx.intermediate
+{
+    public const int printMachineCodeStage = 9999;
+
+    public class CompileUnit
+    {
+        public nothrow CompileUnit(Context& context_) :
+            context(context_)
+        {
+        }
+        public nothrow void SetFileName(const string& fileName_)
+        {
+            fileName = fileName_;
+        }
+        public void AddInfo(const string& id_, MDStructRef* mdRef_)
+        {
+            id = id_;
+            mdRef = mdRef_;
+        }
+        public Function* AddFunction(int lineNumber, Type* type, const string& name, bool once, MDStructRef* md)
+        {
+            if (type is FunctionType*)
+            {
+                Function* function = new Function(context, cast<FunctionType*>(type), name, once, md);
+                functions.Add(UniquePtr<Function>(function));
+                return function;
+            }
+            else
+            {
+                throw Exception("function type expected (" + fileName + ":" + ToString(lineNumber) + ")");
+            }
+        }
+        public void MapInstructions()
+        {
+            for (const UniquePtr<Function>& function : functions)
+            {
+                function->MapInstructions();
+            }
+        }
+        public void CombineBasicBlocks()
+        {
+            for (const UniquePtr<Function>& function : functions)
+            {
+                function->CombineBasicBlocks();
+            }
+        }
+        public void Validate()
+        {
+            for (const UniquePtr<Function>& function : functions)
+            {
+                try
+                {
+                    function->Validate();
+                }
+                catch (const Exception& ex)
+                {
+                    throw Exception("validation of function " + function->name + " in file \'" + fileName + "\' failed: " + ex.Message());
+                }
+            }
+        }
+        public void Print(int stage)
+        {
+            string filePath;
+            if (stage == printMachineCodeStage)
+            {
+                filePath = Path.ChangeExtension(fileName, ".is");
+            }
+            else
+            {
+                filePath = Path.ChangeExtension(fileName, ".i" + ToString(stage));
+            }
+            StreamWriter writer = File.CreateText(filePath);
+            CodeFormatter formatter(writer);
+            formatter.SetIndentSize(5);
+            context.PrintTypes(formatter);
+            if (!globalVariables.IsEmpty())
+            {
+                formatter.WriteLine();
+                formatter.WriteLine("data");
+                formatter.WriteLine("{");
+                formatter.IncIndent();
+                for (UniquePtr<GlobalVariable>& globalVariable : globalVariables)
+                {
+                    globalVariable->Print(formatter);
+                    formatter.WriteLine();
+                }
+                formatter.DecIndent();
+                formatter.WriteLine("}");
+            }
+            formatter.WriteLine();
+            bool first = true;
+            for (const UniquePtr<Function>& function : functions)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    formatter.WriteLine();
+                }
+                function->Print(formatter, stage);
+            }
+            if (Flags.Get(Flag.verbose))
+            {
+                Console.Out() << "==> " << filePath << endl();
+            }
+        }
+        public nothrow void ComputeLivenessAndNextUse()
+        {
+            for (const UniquePtr<Function>& function : functions)
+            {
+                function->ComputeLivenessAndNextUse();
+            }
+        }
+        public GlobalVariable* GetGlobalVariableNothrow(const string& globalVariableName) const
+        {
+            HashMap<string, GlobalVariable*>.ConstIterator it = globalVariableMap.CFind(globalVariableName);
+            if (it != globalVariableMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public GlobalVariable* GetGlobalVariable(const string& globalVariableName) const
+        {
+            GlobalVariable* globalVar = GetGlobalVariableNothrow(globalVariableName);
+            if (globalVar != null)
+            {
+                return globalVar;
+            }
+            else
+            {
+                throw Exception("global variable \'" + globalVariableName + "\' not found");
+            }
+        }
+        public void AddGlobalVariable(Type* type, const string& name, ConstantValue* initializer, int line, bool once)
+        {
+            Location* dataLocation = dataLocations.GetDataLocation(context.GetSymbolOperand(name));
+            GlobalVariable* globalVariable = new GlobalVariable(type, name, initializer, line, dataLocation, once);
+            globalVariables.Add(UniquePtr<GlobalVariable>(globalVariable));
+            globalVariableMap[name] = globalVariable;
+        }
+        public void ValidateGlobalVariables()
+        {
+            for (const UniquePtr<GlobalVariable>& globalVariable : globalVariables)
+            {
+                globalVariable->Validate();
+            }
+        }
+        public void GenerateCode(MachineCode& machineCode)
+        {
+            StreamWriter* writer = &Console.Out();
+            UniquePtr<StreamWriter> debugWriter;
+            if (Flags.Get(Flag.debug))
+            {
+                string filePath = Path.ChangeExtension(fileName, ".id");
+                debugWriter.Reset(new StreamWriter(File.CreateText(filePath)));
+                writer = debugWriter.Get();
+            }
+            CodeFormatter formatter(*writer);
+            for (const UniquePtr<GlobalVariable>& globalVariable : globalVariables)
+            {
+                globalVariable->GenerateDeclaration(machineCode);
+            }
+            for (const UniquePtr<Function>& function : functions)
+            {
+                function->GenerateDeclaration(machineCode);
+            }
+            if (!globalVariables.IsEmpty())
+            {
+                machineCode.GetInstruction(separatorInstructionOpCode, null);
+                machineCode.GetInstruction(cmsx.assembly.DATA, null);
+                machineCode.GetInstruction(separatorInstructionOpCode, null);
+                for (const UniquePtr<GlobalVariable>& globalVariable : globalVariables)
+                {
+                    globalVariable->GenerateDefinition(machineCode, context);
+                }
+                machineCode.GetInstruction(separatorInstructionOpCode, null);
+                machineCode.GetInstruction(cmsx.assembly.CODE, null);
+            }
+            List<Function*> debugInfoFuncs;
+            for (const UniquePtr<Function>& function : functions)
+            {
+                machineCode.GetInstruction(separatorInstructionOpCode, null);
+                function->GenerateCode(machineCode, formatter);
+                if (function->md != null)
+                {
+                    debugInfoFuncs.Add(function.Get());
+                }
+            }
+            machineCode.GetInstruction(separatorInstructionOpCode, null);
+            machineCode.GetInstruction(cmsx.assembly.DEBUG, null);
+            machineCode.GetInstruction(separatorInstructionOpCode, null);
+            MDStruct* compileUnitStruct = metadata.GetMDStruct(mdRef->id);
+            MDItem* sourceFileNameItem = compileUnitStruct->GetItem("sourceFileName");
+            HashMap<string, int> sourceFileNameMap;
+            string sourceFileName;
+            if (sourceFileNameItem is MDString*)
+            {
+                sourceFileName = cast<MDString*>(sourceFileNameItem)->value;
+                sourceFileNameMap[sourceFileName] = mdRef->id;
+            }
+            else
+            {
+                throw Exception("metadata string expected");
+            }
+            for (Function* debugInfoFunc : debugInfoFuncs)
+            {
+                MDStructRef* md = debugInfoFunc->md;
+                MDStruct* mdStruct = metadata.GetMDStruct(md->id);
+                MDItem* sourceFileItem = mdStruct->GetItem("sourceFile");
+                if (sourceFileItem is MDStructRef*)
+                {
+                    MDStructRef* mdRef = cast<MDStructRef*>(sourceFileItem);
+                    MDStruct* sourceFileStruct = metadata.GetMDStruct(mdRef->id);
+                    MDItem* sourceFileNameItem = sourceFileStruct->GetItem("sourceFileName");
+                    if (sourceFileNameItem is MDString*)
+                    {
+                        sourceFileName = cast<MDString*>(sourceFileNameItem)->value;
+                        sourceFileNameMap[sourceFileName] = mdRef->id;
+                    }
+                    else
+                    {
+                        throw Exception("metadata string expected");
+                    }
+                }
+                else
+                {
+                    throw Exception("metadata ref expected");
+                }
+            }
+            for (const Pair<string, int>& sourceFile : sourceFileNameMap)
+            {
+                const string& sourceFileName = sourceFile.first;
+                int sourceFileNameId = sourceFile.second;
+                MachineInstruction* bspecInst = machineCode.GetInstruction(cmsx.assembly.BSPEC, null);
+                MachineInstruction* octaInst = machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+                octaInst->AddOperand(context.GetLiteralOperand(cmsx.assembly.FILEINFO));
+                octaInst->AddOperand(context.GetStringOperand(sourceFileName));
+                octaInst->AddOperand(context.GetLiteralOperand(cast<ulong>(sourceFileNameId)));
+                MachineInstruction* especInst = machineCode.GetInstruction(cmsx.assembly.ESPEC, null);
+            }
+            if (!debugInfoFuncs.IsEmpty())
+            {
+                for (Function* debugInfoFunc : debugInfoFuncs)
+                {
+                    MDStructRef* md = debugInfoFunc->md;
+                    MDStruct* mdStruct = metadata.GetMDStruct(md->id);
+                    MDItem* fullNameItem = mdStruct->GetItem("fullName");
+                    string functionFullName;
+                    if (fullNameItem is MDString*)
+                    {
+                        functionFullName = cast<MDString*>(fullNameItem)->value;
+                    }
+                    else
+                    {
+                        throw Exception("metadata string expected");
+                    }
+                    MDItem* sourceFileItem = mdStruct->GetItem("sourceFile");
+                    int sourceFileNameId = 0;
+                    if (sourceFileItem is MDStructRef*)
+                    {
+                        sourceFileNameId = cast<MDStructRef*>(sourceFileItem)->id;
+                    }
+                    else
+                    {
+                        throw Exception("metadata ref expected");
+                    }
+                    MachineInstruction* bspecInst = machineCode.GetInstruction(cmsx.assembly.BSPEC, null);
+                    MachineInstruction* octaInst = machineCode.GetInstruction(cmsx.assembly.OCTA, null);
+                    octaInst->AddOperand(context.GetLiteralOperand(cmsx.assembly.FUNCINFO));
+                    octaInst->AddOperand(context.GetSymbolOperand(debugInfoFunc->name));
+                    octaInst->AddOperand(context.GetStringOperand(functionFullName));
+                    octaInst->AddOperand(context.GetLiteralOperand(cast<ulong>(sourceFileNameId)));
+                    octaInst->AddOperand(context.GetLiteralOperand(debugInfoFunc->frameSize));
+                    MachineInstruction* especInst = machineCode.GetInstruction(cmsx.assembly.ESPEC, null);
+                }
+            }
+        }
+        public Context& context;
+        public string fileName;
+        public Metadata metadata;
+        private List<UniquePtr<GlobalVariable>> globalVariables;
+        private HashMap<string, GlobalVariable*> globalVariableMap;
+        private List<UniquePtr<Function>> functions;
+        private DataLocations dataLocations;
+        private string id;
+        private MDStructRef* mdRef;
+    }
+
+} // namespace cmsx.intermediate

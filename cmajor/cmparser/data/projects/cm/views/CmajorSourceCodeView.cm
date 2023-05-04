@@ -1,0 +1,375 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+using System.Lex;
+using Cm.Lexer;
+using CmajorTokens;
+using Cm.Service.Debug;
+
+namespace Cm.Views
+{
+    public const uint expressionHoverTimerId = 3u;
+
+    public class ExpressionHoverEventArgs
+    {
+        public nothrow ExpressionHoverEventArgs(const ustring& expression_, CmajorSourceCodeView* view_, const Point& location_) :
+            expression(expression_), view(view_), location(location_)
+        {
+        }
+        public ustring expression;
+        public CmajorSourceCodeView* view;
+        public Point location;
+    }
+
+    public class delegate void ExpressionHoverEventHandler(ExpressionHoverEventArgs& args);
+    public class delegate void ExpressionExitHoverEventHandler();
+
+    public nothrow inline System.Windows.Color DefaultDebugLocationBackgroundColor()
+    {
+        return System.Windows.Color(255u, 241u, 129u);
+    }
+
+    public nothrow inline System.Windows.Color DefaultDebugLocationTextColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    public nothrow inline Padding DebugLocationPadding()
+    {
+        return Padding(0, 2, 4, 0);
+    }
+
+    public class CmajorSourceCodeView : SourceCodeView
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, generateExpressionHoverEvents = 1 << 0, expressionHovered = 1 << 1
+        }
+
+        public CmajorSourceCodeView(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base(location, size, dock, anchors), lexer(null, null, string(), 0), flags(Flags.none), prevTokenText(),
+            debugLocationBackgroundColor(DefaultDebugLocationBackgroundColor()), debugLocationTextColor(DefaultDebugLocationTextColor())
+        {
+            lexer.SetCommentTokenId(COMMENT);
+            Set<int> blockCommentStates;
+            blockCommentStates.Insert(124);
+            blockCommentStates.Insert(125);
+            blockCommentStates.Insert(126);
+            blockCommentStates.Insert(127);
+            lexer.SetBlockCommentStates(blockCommentStates);
+            SetMouseHoverMs(DefaultMouseHoverMs());
+            SetFixed();
+            SetIndentSize(4);
+        }
+        public nothrow void SetDebugLocationBackgroundColor(const System.Windows.Color& debugLocationBackgroundColor_)
+        {
+            debugLocationBackgroundColor = debugLocationBackgroundColor_;
+        }
+        public nothrow void SetDebugLocationTextColor(const System.Windows.Color& debugLocationTextColor_)
+        {
+            debugLocationTextColor = debugLocationTextColor_;
+        }
+        public nothrow inline DebugStrip* GetDebugStrip() const
+        {
+            return debugStrip;
+        }
+        public void ToggleBreakpoint()
+        {
+            int line = CaretLine();
+            Breakpoint* bp = debugStrip->GetBreakpoint(line);
+            if (bp != null)
+            {
+                debugStrip->RemoveBreakpoint(bp);
+                debugStrip->Invalidate();
+            }
+            else
+            {
+                Breakpoint* bp = new Breakpoint(line);
+                debugStrip->AddBreakpoint(bp);
+                debugStrip->Invalidate();
+            }
+        }
+        protected override void OnMouseHover(MouseEventArgs& args)
+        {
+            try
+            {
+                base->OnMouseHover(args);
+                if (GenerateExpressionHoverEvents())
+                {
+                    int lineNumber = 0;
+                    short columnNumber = 0;
+                    GetLineColumn(args.location, lineNumber, columnNumber);
+                    if (lineNumber >= 1 && lineNumber <= Lines().Count() && columnNumber >= 1 && columnNumber <= GetLineLength(lineNumber))
+                    {
+                        ustring tokenText = GetTokenText(lineNumber, columnNumber);
+                        if (!tokenText.IsEmpty())
+                        {
+                            if (tokenText != prevTokenText)
+                            {
+                                SetExpressionHovered();
+                                prevTokenText = tokenText;
+                                expressionHoverTime = Now();
+                                OnExpressionHovered(tokenText, args.location);
+                                SetTimer(expressionHoverTimerId, 3000u);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            prevTokenText.Clear();
+                        }
+                    }
+                    else
+                    {
+                        prevTokenText.Clear();
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show(ex.Message(), "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+            }
+        }
+        protected override void OnTimer(TimerEventArgs& args)
+        {
+            base->OnTimer(args);
+            if (args.timerId == expressionHoverTimerId && ExpressionHovered())
+            {
+                KillTimer(expressionHoverTimerId);
+                ResetExpressionHovered();
+                OnExpressionExitHover();
+                prevTokenText.Clear();
+            }
+        }
+        protected virtual void OnExpressionHovered(const ustring& expression, const Point& location)
+        {
+            ExpressionHoverEventArgs args(expression, this, location);
+            expressionHoverEvent.Fire(args);
+        }
+        protected virtual void OnExpressionExitHover()
+        {
+            expressionExitHoverEvent.Fire();
+        }
+        protected override void DrawHilites(Graphics& graphics, int lineIndex, const PointF& origin)
+        {
+            if (debugStrip == null) 
+            {
+                return;
+            }
+            SourceSpan debugLocation = debugStrip->DebugLocation();
+            if (!debugLocation.IsEmpty() && debugLocation.line == lineIndex + 1)
+            {
+                DrawDebugLocationHilite(graphics, debugLocation, origin);
+            }
+        }
+        private void DrawDebugLocationHilite(Graphics& graphics, const SourceSpan& debugLocation, const PointF& origin)
+        {
+            string hiliteText = ToUtf8(GetText(debugLocation));
+            int n = Max(cast<int>(0), cast<int>(debugLocation.ecol - debugLocation.scol));
+            RectF r(PointF(origin.x + CharWidth() * (debugLocation.scol - 1), origin.y), SizeF(CharWidth() * n, CharHeight()));
+            Brush* backgroundBrush = GetOrInsertBrush(debugLocationBackgroundColor);
+            Padding padding = DebugLocationPadding();
+            RectF f(PointF(r.location.x - padding.left, r.location.y - padding.top), SizeF(r.size.w + padding.Horizontal(), r.size.h + padding.Vertical()));
+            graphics.FillRectangleChecked(*backgroundBrush, f);
+            if (!hiliteText.IsEmpty())
+            {
+                Brush* textBrush = GetOrInsertBrush(debugLocationTextColor);
+                Font* font = GetOrInsertFont(FontStyle.regular);
+                graphics.DrawStringChecked(hiliteText, *font, r.location, *textBrush);
+            }
+        }
+        protected override TokenLine TokenizeLine(const ustring& line, int lineNumber, int startState)
+        {
+            TokenLine tokenLine = lexer.TokenizeLine(line, lineNumber, startState);
+            int tokenIndex = 0;
+            for (Token& token : tokenLine.tokens)
+            {
+                ustring s = token.match.ToString();
+                string sl = MakeStringLiteral(ToUtf8(s));
+                switch (startState)
+                {
+                    case 0:
+                    {
+                        if (token.id == CONTINUE_TOKEN)
+                        {
+                            if (s.Length() >= 2)
+                            {
+                                if (s[0] == '/' && s[1] == '/')
+                                {
+                                    token.id = COMMENT;
+                                    tokenLine.endState = 0;
+                                }
+                                else if (s[0] == '/' && s[1] == '*')
+                                {
+                                    token.id = COMMENT;
+                                }
+                            }
+                            else if (!s.IsEmpty())
+                            {
+                                if (IsWhiteSpace(s[0]))
+                                {
+                                    token.id = WS;
+                                    if (tokenIndex == tokenLine.tokens.Count() -1)
+                                    {
+                                        tokenLine.endState = 0;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        if (lexer.BlockCommentStates().CFind(startState) != lexer.BlockCommentStates().CEnd())
+                        {
+                            token.id = COMMENT;
+                        }
+                        break;
+                    }
+                }
+                startState = 0;
+                ++tokenIndex;
+            }
+            return tokenLine;
+        }
+        protected override nothrow SourceCodeTokenKind GetTokenKind(const Token& token) const
+        {
+            switch (token.id)
+            {
+                case ASSERT: case ELIF: case ENDIF: case BOOL: case TRUE: case FALSE:
+                case SBYTE: case BYTE: case SHORT: case USHORT: case INT: case UINT:
+                case LONG: case ULONG: case FLOAT: case DOUBLE: case CHAR: case WCHAR:
+                case UCHAR: case VOID: case ENUM: case CAST: case INTERFACE: case NAMESPACE:
+                case USING: case STATIC: case EXTERN: case AS: case IS: case EXPLICIT:
+                case DELEGATE: case INLINE: case CDECL: case NOTHROW: case PUBLIC:
+                case PROTECTED: case PRIVATE: case INTERNAL: case VIRTUAL: case ABSTRACT:
+                case OVERRIDE: case SUPPRESS: case WINAPI: case OPERATOR: case CLASS:
+                case RETURN: case IF: case ELSE: case SWITCH: case CASE: case DEFAULT:
+                case WHILE: case DO: case FOR: case BREAK: case CONTINUE: case GOTO:
+                case TYPEDEF: case TYPENAME: case TYPEID: case CONST: case CONSTEXPR:
+                case NULLLIT: case THIS: case BASE: case CONSTRUCT: case DESTROY:
+                case NEW: case DELETE: case SIZEOF: case TRY: case CATCH: case THROW:
+                case CONCEPT: case WHERE: case AXIOM: case AND: case OR: 
+                {
+                    return SourceCodeTokenKind.keyword;
+                }
+                case ID:
+                {
+                    return SourceCodeTokenKind.identifier;
+                }
+                case EXCLAMATION: case UNIT_TEST: case EQUIVALENCE: case IMPLICATION:
+                case DISJUNCTION: case AMPAMP: case BITOR: case BITXOR: case AMP:
+                case EQ: case NEQ: case LEQ: case GEQ: case SHIFTLEFT: case SHIFTRIGHT:
+                case PLUS: case MINUS: case STAR: case DIV: case REM: case PLUSPLUS:
+                case MINUSMINUS: case CPL: case DOT: case ARROW: case LBRACKET:
+                case RBRACKET: case LPAREN: case RPAREN: case LANGLE: case RANGLE:
+                case COMMA: case ASSIGN: case COLON:
+                case SEMICOLON: case HASH:
+                {
+                    return SourceCodeTokenKind.plain;
+                }
+                case LBRACE:
+                {
+                    return SourceCodeTokenKind.beginBlock;
+                }
+                case RBRACE:
+                {
+                    return SourceCodeTokenKind.endBlock;
+                }
+                case WS:
+                {
+                    return SourceCodeTokenKind.space;
+                }
+                case FLOATINGLIT: case INTLIT: 
+                {
+                    return SourceCodeTokenKind.number;
+                }
+                case CHARLIT:
+                {
+                    return SourceCodeTokenKind.character;
+                }
+                case STRINGLIT:
+                {
+                    return SourceCodeTokenKind.string;
+                }
+                case COMMENT:
+                {
+                    return SourceCodeTokenKind.comment;
+                }
+            }
+            return SourceCodeTokenKind.plain;
+        }
+        public nothrow inline void DoGenerateExpressionHoverEvents()
+        {
+            SetFlag(Flags.generateExpressionHoverEvents);
+        }
+        public nothrow inline void DontGenerateExpressionHoverEvents()
+        {
+            ResetFlag(Flags.generateExpressionHoverEvents);
+        }
+        public nothrow inline Event<ExpressionHoverEventHandler, ExpressionHoverEventArgs>& ExpressionHoverEvent()
+        {
+            return expressionHoverEvent;
+        }
+        public nothrow inline Event<ExpressionExitHoverEventHandler>& ExpressionExitHoverEvent()
+        {
+            return expressionExitHoverEvent;
+        }
+        private nothrow inline bool GenerateExpressionHoverEvents() const
+        {
+            return GetFlag(Flags.generateExpressionHoverEvents);
+        }
+        private nothrow void SetExpressionHovered()
+        {
+            SetFlag(Flags.expressionHovered);
+        }
+        private nothrow void ResetExpressionHovered()
+        {
+            ResetFlag(Flags.expressionHovered);
+        }
+        private nothrow inline bool ExpressionHovered() const
+        {
+            return GetFlag(Flags.expressionHovered);
+        }
+        internal nothrow void SetDebugStrip(DebugStrip* debugStrip_)
+        {
+            debugStrip = debugStrip_;
+        }
+        internal nothrow void SetEditor(CmajorEditor* editor_)
+        {
+            editor = editor_;
+        }
+        public nothrow inline CmajorEditor* GetEditor() const
+        {
+            return editor;
+        }
+        private inline nothrow bool GetFlag(Flags flag) const
+        {
+            return (flags & flag) != Flags.none;
+        }
+        private inline nothrow void SetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags | flag);
+        }
+        private inline nothrow void ResetFlag(Flags flag)
+        {
+            flags = cast<Flags>(flags & ~flag);
+        }
+        private Flags flags;
+        private CmajorLexer lexer;
+        private CmajorEditor* editor;
+        private DebugStrip* debugStrip;
+        private ustring prevTokenText;
+        private Event<ExpressionHoverEventHandler, ExpressionHoverEventArgs> expressionHoverEvent;
+        private Event<ExpressionExitHoverEventHandler> expressionExitHoverEvent;
+        private System.Windows.Color debugLocationBackgroundColor;
+        private System.Windows.Color debugLocationTextColor;
+        private TimePoint expressionHoverTime;
+
+    }
+}

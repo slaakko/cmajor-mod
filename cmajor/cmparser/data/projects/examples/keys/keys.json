@@ -1,0 +1,24 @@
+{
+    "dependsOnProjects" : 
+    [
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "C9359353069EB495382180286934C569796EF9D4", 
+            "fileId" : "keys_896F1B83FD6BC74C87DDC260F99FAEA69030D7C2", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/keys\/keys.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/keys\/keys.cmp", 
+    "projectHash" : "1E7596796B2F1373D77D8C6CB199595F2785D781", 
+    "projectId" : "project_keys_1805AC4FB9894DE19563A8780369A72FCC8A0FFC", 
+    "projectName" : "keys", 
+    "target" : "program"
+}

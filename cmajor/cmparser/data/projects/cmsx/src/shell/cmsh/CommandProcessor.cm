@@ -1,0 +1,616 @@
+// =================================
+// Copyright (c) 2020 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Os;
+using System.Security;
+
+namespace cmsh
+{
+    public enum ExecutionContext : int
+    {
+        none = 0,
+        setLeader = 1 << 0, 
+        pipeRead = 1 << 1, 
+        pipeWrite = 1 << 2,
+        subshell = 1 << 3
+    }
+    
+    public nothrow string ExecutionContextStr(ExecutionContext ctx)
+    {
+        string s;
+        if ((ctx & ExecutionContext.setLeader) != ExecutionContext.none)
+        {
+            s.Append("SETLEADER");
+        }
+        if ((ctx & ExecutionContext.pipeRead) != ExecutionContext.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("PIPEREAD");
+        }
+        if ((ctx & ExecutionContext.pipeWrite) != ExecutionContext.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("PIPEWRITE");
+        }
+        if ((ctx & ExecutionContext.subshell) != ExecutionContext.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("SUBSHELL");
+        }
+        return s;
+    }
+
+    public abstract class Command 
+    {
+        public default virtual ~Command();
+        public abstract byte Execute(ShellEnvironment& shellEnvironment, int level, int rfd, int wfd, int ewfd, ExecutionContext ctx, int pgid, int& commandPID);
+        public nothrow abstract string ToString() const;
+    }
+
+    public class SimpleCommand : Command
+    {
+        public nothrow SimpleCommand(const string& name_) : name(name_)
+        {
+        }
+        public override byte Execute(ShellEnvironment& shellEnvironment, int level, int rfd, int wfd, int ewfd, ExecutionContext ctx, int pgid, int& commandPID)
+        {
+            if (shellEnvironment.log)
+            {
+                string msg = "executing simple command '";
+                msg.Append(ToString());
+                msg.Append("' with context ");
+                msg.Append(ExecutionContextStr(ctx));
+                LogMessage("shell.cmdproc", msg);
+                LogMessage("shell.cmdproc", "pipe read fd is " + ToString(rfd));
+                LogMessage("shell.cmdproc", "pipe write fd is " + ToString(wfd));
+            }
+            try
+            {
+                InternalCommand* internalCommand = shellEnvironment.internalCommandMap.GetCommand(name);
+                if (internalCommand != null)
+                {
+                    return internalCommand->Execute(shellEnvironment, args);
+                }
+                else
+                {
+                    if (!name.StartsWith("/"))
+                    {
+                        if (!shellEnvironment.externalCommandMap.Populated())
+                        {
+                            shellEnvironment.externalCommandMap.Populate(shellEnvironment);
+                        }
+                        string pathName = shellEnvironment.externalCommandMap.Find(name);
+                        if (!pathName.IsEmpty())
+                        {
+                            name = pathName;
+                        }
+                    }
+                    if ((ctx & (ExecutionContext.pipeWrite | ExecutionContext.pipeRead)) != ExecutionContext.none)
+                    {
+                        int pid = Fork();
+                        if (pid == 0)
+                        {
+                            try
+                            {
+                                if (shellEnvironment.log)
+                                {
+                                    LogMessage("shell.cmdproc", "executing simple command " + name);
+                                }
+                                if ((ctx & ExecutionContext.setLeader) != ExecutionContext.none)
+                                {
+                                    SetPGID(GetPID());
+                                    SetFGPID(0, GetPID());
+                                }
+                                else
+                                {
+                                    SetPGID(pgid);
+                                }
+                                if ((ctx & ExecutionContext.pipeWrite) != ExecutionContext.none)
+                                {
+                                    Close(1);
+                                    Dup(wfd);
+                                }
+                                if ((ctx & ExecutionContext.pipeRead) != ExecutionContext.none)
+                                {
+                                    Close(0);
+                                    Dup(rfd);
+                                }
+                                Close(wfd);
+                                Close(rfd);
+                                if (ewfd != -1)
+                                {
+                                    Close(ewfd);
+                                }
+                                for (const Pair<ustring, ustring>& var : variableAssignments)
+                                {
+                                    SetEnv(ToUtf8(var.first), ToUtf8(var.second));
+                                }
+                                for (const UniquePtr<Redirection>& redirection : redirections)
+                                {
+                                    redirection->Execute();
+                                }
+                                Exec(name, args);
+                            }
+                            catch (const Exception& ex)
+                            {
+                                if (shellEnvironment.log)
+                                {
+                                    LogMessage("shell.cmdproc", "error executing simple command with context " + ExecutionContextStr(ctx) + ": exception=" + ex.Message());
+                                }
+                                Console.Error() << ex.Message() << endl();
+                                Exit(1u);
+                            }
+                        }
+                        else
+                        {
+                            commandPID = pid;
+                        }
+                    }
+                    else if ((ctx & ExecutionContext.subshell) != ExecutionContext.none)
+                    {
+                        int pid = Fork();
+                        if (pid == 0)
+                        {
+                            try
+                            {
+                                if (shellEnvironment.log)
+                                {
+                                    LogMessage("shell.cmdproc", "executing simple command " + name);
+                                }
+                                if ((ctx & ExecutionContext.setLeader) != ExecutionContext.none)
+                                {
+                                    SetPGID(GetPID());
+                                    SetFGPID(0, GetPID());
+                                }
+                                for (const Pair<ustring, ustring>& var : variableAssignments)
+                                {
+                                    SetEnv(ToUtf8(var.first), ToUtf8(var.second));
+                                }
+                                for (const UniquePtr<Redirection>& redirection : redirections)
+                                {
+                                    redirection->Execute();
+                                }
+                                Exec(name, args);
+                            }
+                            catch (const Exception& ex)
+                            {
+                                if (shellEnvironment.log)
+                                {
+                                    LogMessage("shell.cmdproc", "error executing simple command with context " + ExecutionContextStr(ctx) + ": exception=" + ex.Message());
+                                }
+                                Console.Error() << ex.Message() << endl();
+                                Exit(1u);
+                            }
+                        }
+                        else
+                        {
+                            commandPID = pid;
+                        }
+                    }
+                }
+            }
+            catch (const Exception& ex)
+            {
+                Console.Error() << ex.Message() << endl();
+                return 1u;
+            }
+            return 0u;
+        }
+        public override nothrow string ToString() const
+        {
+            string s;
+            bool first = true;
+            for (const Pair<ustring, ustring>& var : variableAssignments)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    s.Append(' ');
+                }
+                s.Append(ToUtf8(var.first)).Append('=').Append(ToUtf8(var.second));
+            }
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                s.Append(' ');
+            }
+            s.Append(name);
+            for (const string& arg : args)
+            {
+                s.Append(' ');
+                s.Append(arg);
+            }
+            for (const UniquePtr<Redirection>& redirection : redirections)
+            {
+                s.Append(' ');
+                s.Append(redirection->ToString());
+            }
+            return s;
+        }
+        public nothrow void AddVariableAssignment(const ustring& varName, const ustring& varValue)
+        {
+            variableAssignments[varName] = varValue;
+        }
+        public nothrow void AddArgument(const string& arg) 
+        {
+            args.Add(arg);
+        }
+        public nothrow void AddRedirection(Redirection* redirection)
+        {
+            redirections.Add(UniquePtr<Redirection>(redirection));
+        }
+        public nothrow const string& Name() const
+        {
+            return name;
+        }
+        private string name;
+        private HashMap<ustring, ustring> variableAssignments;
+        private List<string> args;
+        private List<UniquePtr<Redirection>> redirections;
+    }
+
+    public class PipelineCommand : Command
+    {
+        public nothrow PipelineCommand(Command* leftCommand_, Command* rightCommand_) : leftCommand(leftCommand_), rightCommand(rightCommand_)
+        {
+        }
+        public override byte Execute(ShellEnvironment& shellEnvironment, int level, int rfd, int wfd, int ewfd, ExecutionContext ctx, int pgid, int& commandPID)
+        {
+            if (shellEnvironment.log)
+            {
+                LogMessage("shell.cmdproc", "executing pipeline command '" + ToString() + "' with context " + ExecutionContextStr(ctx) + ", level=" + ToString(level));
+            }
+            try
+            {
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "creating pipe");
+                }
+                int readFD = 0;
+                int writeFD = 0;
+                Pipe(&readFD, &writeFD);
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "parent read fd: " + ToString(rfd));
+                    LogMessage("shell.cmdproc", "parent write fd: " + ToString(wfd));
+                    LogMessage("shell.cmdproc", "pipe read fd: " + ToString(readFD));
+                    LogMessage("shell.cmdproc", "pipe write fd: " + ToString(writeFD));
+                }
+                byte result = RunChildren(shellEnvironment, level, readFD, writeFD, ctx, rfd, wfd, pgid, commandPID);
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "closing pipe read fd " + ToString(readFD));
+                }
+                Close(readFD);
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "closing pipe write fd " + ToString(writeFD));
+                }
+                Close(writeFD);
+            }
+            catch (const Exception& ex)
+            {
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "error executing pipeline command with context " + ExecutionContextStr(ctx) + ": exception=" + ex.Message());
+                }
+                Console.Error() << ex.Message() << endl();
+                return 1u;
+            }
+            return 0u;
+        }
+        public override nothrow string ToString() const
+        {
+            string s = "(";
+            s.Append(leftCommand->ToString());
+            s.Append(' ').Append('|').Append(' ').Append(rightCommand->ToString()).Append(')');
+            return s;
+        }
+        private byte RunChildren(ShellEnvironment& shellEnvironment, int level, int readFD, int writeFD, ExecutionContext ctx, int rfd, int wfd, int pgid, int& commandPID)
+        {
+            bool descriptorsSwapped = false;
+            if (shellEnvironment.log)
+            {
+                LogMessage("shell.cmdproc", "starting children");
+            }
+            try
+            {
+                ExecutionContext left = cast<ExecutionContext>(ExecutionContext.pipeWrite | ExecutionContext.setLeader);
+                int pid = 0;
+                byte leftResult = leftCommand->Execute(shellEnvironment, level + 1, readFD, writeFD, -1, left, pgid, pid);
+                pgid = pid;
+                if (leftResult != 0u)
+                {
+                    return leftResult;
+                }
+                ExecutionContext right = ExecutionContext.pipeRead;
+                if (level > 0)
+                {
+                    right = cast<ExecutionContext>(right | ExecutionContext.pipeWrite);
+                    Swap(writeFD, wfd);
+                }
+                byte rightResult = rightCommand->Execute(shellEnvironment, level + 1, readFD, writeFD, wfd, right, pgid, commandPID);
+                if (rightResult != 0u)
+                {
+                    return rightResult;
+                }
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "children started");
+                }
+            }
+            catch (const Exception& ex)
+            {
+                if (shellEnvironment.log)
+                {
+                    LogMessage("shell.cmdproc", "error executing children: exception=" + ex.Message());
+                }
+                Console.Error() << ex.Message() << endl();
+                Exit(1u);
+            }
+            return 0u;
+        }
+        private UniquePtr<Command> leftCommand;
+        private UniquePtr<Command> rightCommand;
+    }
+    
+    public nothrow byte MapExitCode(ushort exitCode)
+    {
+        if ((exitCode & 0xFF00u) != 0u)
+        {
+            return cast<byte>(128u + (exitCode >> 8u));
+        }
+        return cast<byte>(exitCode & 0xFFu);
+    }
+
+    public class CommandProcessor
+    {
+        public nothrow CommandProcessor(const List<Token>& tokens_, ShellEnvironment& shellEnvironment_) : 
+            tokens(tokens_), shellEnvironment(shellEnvironment_), tokenIndex(0), end(END, ustring(), 1, 1)
+        {
+        }
+        public byte Run()
+        {
+            NextToken();
+            if (token->id == WORD)
+            {
+                Command* command = ParsePipeline();
+                if (command != null)
+                {
+                    int commandPID = 0;
+                    if (shellEnvironment.log)
+                    {
+                        LogMessage("shell.cmdproc", "executing command " + command->ToString());
+                    }
+                    byte result = command->Execute(shellEnvironment, 0, -1, -1, -1, cast<ExecutionContext>(ExecutionContext.setLeader | ExecutionContext.subshell), 0, commandPID);
+                    if (shellEnvironment.log)
+                    {
+                        LogMessage("shell.cmdproc", "command PID is " + ToString(commandPID));
+                    }
+                    if (result != 0u)
+                    {
+                        if (shellEnvironment.log)
+                        {
+                            LogMessage("shell.cmdproc", "result of command is " + ToString(result));
+                        }
+                        return result;
+                    }
+                    ushort exitCode = 0u;
+                    ushort commandExitCode = 0u;
+                    int pid = wait(&exitCode);
+                    while (pid != -1)
+                    {
+                        if (shellEnvironment.log)
+                        {
+                            LogMessage("shell.cmdproc", "child " + ToString(pid) + " exited with code " + ToString(exitCode));
+                        }
+                        if (pid == commandPID)
+                        {
+                            commandExitCode = exitCode;
+                        }
+                        pid = wait(&exitCode);
+                    }
+                    byte retval = MapExitCode(commandExitCode);
+                    if (shellEnvironment.log)
+                    {
+                        LogMessage("shell.cmdproc", "result of command is " + ToString(retval));
+                    }
+                    return retval;
+                }
+                else
+                {
+                    return 0u;
+                }
+            }
+            return 1u;
+        }
+        private Command* ParsePipeline()
+        {
+            Command* left = ParseSimpleCommand();
+            while (token->id == PIPE)
+            {
+                NextToken();
+                Command* right = ParseSimpleCommand();
+                left = new PipelineCommand(left, right);
+            }
+            return left;
+        }
+        private Command* ParseSimpleCommand()
+        {
+            HashMap<ustring, ustring> commandVariables;
+            if (token->id == WORD)
+            {
+                ustring variableName;
+                ustring variableValue;
+                while (TryParseVariableAssignment(variableName, variableValue))
+                {
+                    commandVariables[variableName] = variableValue;
+                    NextToken();
+                }
+                Token* word = token;
+                if (token->id == WORD)
+                {
+                    string name = ToUtf8(token->value);
+                    SimpleCommand* simpleCommand = new SimpleCommand(name);
+                    for (const Pair<ustring, ustring>& var : commandVariables)
+                    {
+                        simpleCommand->AddVariableAssignment(var.first, var.second);
+                    }
+                    NextToken();
+                    while (token->id == WORD || token->id == LANGLE || token->id == RANGLE)
+                    {
+                        if (token->id == LANGLE)
+                        {
+                            int fd = 0;
+                            if (!token->value.IsEmpty())
+                            {
+                                fd = ParseInt(ToUtf8(token->value));
+                            }
+                            UniquePtr<Redirection> redirection(new InputRedirection(fd));
+                            NextToken();
+                            if (token->id == WORD)
+                            {
+                                redirection->filename = ToUtf8(token->value);
+                                simpleCommand->AddRedirection(redirection.Release());
+                                NextToken();
+                            }
+                            else
+                            {
+                                throw Exception("filename for redirection expected (line " + 
+                                    ToString(token->line) + ", column " + ToString(token->col) + ")");
+                            }
+                        }
+                        else if (token->id == RANGLE)
+                        {
+                            int fd = 1;
+                            if (!token->value.IsEmpty())
+                            {
+                                fd = ParseInt(ToUtf8(token->value));
+                            }
+                            NextToken();
+                            if (token->id == WORD)
+                            {
+                                UniquePtr<Redirection> redirection(new OutputRedirection(fd));
+                                redirection->filename = ToUtf8(token->value);
+                                simpleCommand->AddRedirection(redirection.Release());
+                                NextToken();
+                            }
+                            else if (token->id == RANGLE)
+                            {
+                                NextToken();
+                                if (token->id == WORD)
+                                {
+                                    UniquePtr<Redirection> redirection(new AppendRedirection(fd));
+                                    redirection->filename = ToUtf8(token->value);
+                                    simpleCommand->AddRedirection(redirection.Release());
+                                    NextToken();
+                                }
+                                else
+                                {
+                                    throw Exception("filename for redirection expected (line " + 
+                                        ToString(token->line) + ", column " + ToString(token->col) + ")");
+                                }
+                            }
+                            else
+                            {
+                                throw Exception("filename for redirection expected (line " + 
+                                    ToString(token->line) + ", column " + ToString(token->col) + ")");
+                            }
+                        }
+                        else if (token->id == WORD)
+                        {
+                            simpleCommand->AddArgument(ToUtf8(token->value));
+                            NextToken();
+                        }
+                    }
+                    return simpleCommand;
+                }
+                else
+                {
+                    if (commandVariables.IsEmpty())
+                    {
+                        throw Exception("command or variable assignment expected (line " + 
+                            ToString(word->line) + ", column " + ToString(word->col) + ")");
+                    }
+                    for (const Pair<ustring, ustring>& var : commandVariables)
+                    {
+                        shellEnvironment.variables[var.first] = var.second;
+                    }
+                }
+            }
+            return null;
+        }
+        private bool TryParseVariableAssignment(ustring& variableName, ustring& variableValue)
+        {
+            if (ParseVariableAssignment(token->value, shellEnvironment.home, shellEnvironment.users, variableName, variableValue))
+            {
+                ustring expandedValue;
+                Tokenizer tokenizer(variableValue, 1, 1, true, false);
+                List<Token> valueTokens = tokenizer.Tokenize();
+                valueTokens = ExpandParameters(valueTokens, shellEnvironment.variables);
+                RemoveQuotes(valueTokens);
+                bool first = true;
+                for (const Token& token : valueTokens)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        expandedValue.Append(' ');
+                    }
+                    expandedValue.Append(token.value);
+                }
+                variableValue = expandedValue;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        private void NextToken()
+        {
+            if (tokenIndex < tokens.Count())
+            {
+                const Token& t = tokens[tokenIndex++];
+                token = &t;
+            }
+            else
+            {
+                token = &end;
+            }
+        }
+        private const List<Token>& tokens;
+        private ShellEnvironment& shellEnvironment;
+        private int tokenIndex;
+        private Token end;
+        private Token* token;
+    }
+    
+    public void ProcessCommandLine(const List<Token>& tokens, ShellEnvironment& shellEnvironment)
+    {
+        CommandProcessor commandProcessor(tokens, shellEnvironment);
+        shellEnvironment.lastExitCode = commandProcessor.Run();
+    }
+}

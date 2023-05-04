@@ -1,0 +1,18 @@
+using System;
+using System.Xml.Serialization;
+
+namespace Cm.Service.Build
+{
+} // namespace Cm.Service.Build
+
+namespace Cm.Service.CodeCompletion
+{
+} // namespace Cm.Service.CodeCompletion
+
+namespace Cm.Service.Debug
+{
+} // namespace Cm.Service.Debug
+
+namespace Cm.Service.PortMap
+{
+} // namespace Cm.Service.PortMap

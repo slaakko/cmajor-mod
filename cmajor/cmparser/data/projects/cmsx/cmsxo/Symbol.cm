@@ -1,0 +1,486 @@
+using System;
+using System.Collections;
+
+namespace cmsx.object
+{
+    public const ulong undefinedValue = cast<ulong>(-1);
+
+    public enum Segment : byte
+    {
+        text = 0u, data = 1u, pool = 2u, stack = 3u, unknown = 255u
+    }
+
+    public string SegmentStr(Segment segment)
+    {
+        switch (segment)
+        {
+            case Segment.text: return "text";
+            case Segment.data: return "data";
+            case Segment.pool: return "pool";
+            case Segment.stack: return "stack";
+        }
+        return "-";
+    }
+
+    public enum Linkage : byte
+    {
+        internal_ = 0u, external = 1u, once = 2u, remove = 3u, undefined = 4u
+    }
+
+    public string LinkageStr(Linkage linkage)
+    {
+        switch (linkage)
+        {
+            case Linkage.internal_: return "internal";
+            case Linkage.external: return "external";
+            case Linkage.once: return "once";
+            case Linkage.remove: return "remove";
+            case Linkage.undefined: return "undefined";
+        }
+        return "";
+    }
+
+    public string ValueFlagStr(Value.Flag flags)
+    {
+        if (flags == Value.Flag.undefined)
+        {
+            return "U";
+        }
+        string s;
+        if ((flags & Value.Flag.definition) != Value.Flag.undefined)
+        {
+            s.Append('D');
+        }
+        if ((flags & Value.Flag.register) != Value.Flag.undefined)
+        {
+            s.Append('R');
+        }
+        if ((flags & Value.Flag.pure) != Value.Flag.undefined)
+        {
+            s.Append('P');
+        }
+        if ((flags & Value.Flag.address) != Value.Flag.undefined)
+        {
+            s.Append('A');
+        }
+        if ((flags & Value.Flag.function) != Value.Flag.undefined)
+        {
+            s.Append('F');
+        }
+        if ((flags & Value.Flag.structure) != Value.Flag.undefined)
+        {
+            s.Append('S');
+        }
+        return s;
+    }
+
+    public class Value
+    {
+        public enum Flag : byte
+        {
+            undefined = 0u,
+            definition = 1u << 0u,
+            register = 1u << 1u,
+            pure = 1u << 2u,
+            address = 1u << 3u,
+            function = 1u << 4u,
+            structure = 1u << 5u,
+            used = 1u << 6u
+        }
+        public nothrow Value() : flags(Flag.undefined), value(undefinedValue), symbol(null)
+        {
+        }
+        public nothrow Value(Flag flags_, ulong value_, Symbol* symbol_) : flags(flags_), value(value_), symbol(symbol_)
+        {
+        }
+        public nothrow inline void SetUndefined()
+        {
+            flags = Flag.undefined;
+        }
+        public nothrow inline void SetDefinition()
+        {
+            flags = cast<Flag>(flags | Flag.definition);
+        }
+        public nothrow inline void SetRegister()
+        {
+            flags = Flag.register;
+        }
+        public nothrow inline void SetPure()
+        {
+            flags = cast<Flag>(flags | Flag.pure);
+        }
+        public nothrow inline void SetAddress()
+        {
+            flags = cast<Flag>(flags | Flag.address);
+        }
+        public nothrow inline void SetFunction()
+        {
+            flags = cast<Flag>(flags | Flag.function);
+        }
+        public nothrow inline void SetStructure()
+        {
+            flags = cast<Flag>(flags | Flag.structure);
+        }
+        public nothrow inline void SetUsed()
+        {
+            flags = cast<Flag>(flags | Flag.used);
+        }
+        public nothrow inline bool GetFlag(Flag flag)
+        {
+            return (flags & flag) != Flag.undefined;
+        }
+        public Flag flags;
+        public ulong value;
+        public Symbol* symbol;
+    }
+
+    public string ValueStr(const Value& value)
+    {
+        string result = Format(ValueFlagStr(value.flags), 5) + " #" + ToHexString(value.value) + " ";
+        if (value.flags == Value.Flag.register)
+        {
+            result.Append(Format("$" + ToString(value.value), 20));
+        }
+        else
+        {
+            result.Append(Format(ToString(value.value), 20));
+        }
+        return result;
+    }
+
+    public class Symbol
+    {
+        public nothrow Symbol() : index(-1), segment(Segment.unknown), linkage(Linkage.internal_), parentIndex(-1), linkStart(-1), linkEnd(-1), alignment(1u)
+        {
+        }
+        public Symbol* Clone()
+        {
+            Symbol* clone = new Symbol();
+            clone->index = -1;
+            clone->name = name;
+            clone->segment = segment;
+            clone->linkage = linkage;
+            clone->value = value;
+            clone->start = start;
+            clone->length = length;
+            clone->section = section;
+            clone->parentIndex = -1;
+            clone->linkStart = linkStart;
+            clone->linkEnd = linkEnd;
+            clone->alignment = alignment;
+            return clone;
+        }
+        public int index;
+        public string name;
+        public string localName;
+        public Segment segment;
+        public Linkage linkage;
+        public Value value;
+        public ulong start;
+        public ulong length;
+        public Section* section;
+        public int parentIndex;
+        public int linkStart;
+        public int linkEnd;
+        public byte alignment;
+    }
+
+    public class SymbolTable
+    {
+        public SymbolTable(BinaryFile* file_, bool init) : file(file_)
+        {
+            if (init)
+            {
+                Symbol* ax = new Symbol();
+                ax->name = "ax";
+                ax->value = Value(Value.Flag.register, cmsx.machine.regAX, ax);
+                AddSymbol(ax);
+                Symbol* bx = new Symbol();
+                bx->name = "bx";
+                bx->value = Value(Value.Flag.register, cmsx.machine.regBX, bx);
+                AddSymbol(bx);
+                Symbol* cx = new Symbol();
+                cx->name = "cx";
+                cx->value = Value(Value.Flag.register, cmsx.machine.regCX, cx);
+                AddSymbol(cx);
+                Symbol* dx = new Symbol();
+                dx->name = "dx";
+                dx->value = Value(Value.Flag.register, cmsx.machine.regDX, dx);
+                AddSymbol(dx);
+                Symbol* ex = new Symbol();
+                ex->name = "ex";
+                ex->value = Value(Value.Flag.register, cmsx.machine.regEX, ex);
+                AddSymbol(ex);
+                Symbol* sp = new Symbol();
+                sp->name = "sp";
+                sp->value = Value(Value.Flag.register, cmsx.machine.regSP, sp);
+                AddSymbol(sp);
+                Symbol* fp = new Symbol();
+                fp->name = "fp";
+                fp->value = Value(Value.Flag.register, cmsx.machine.regFP, fp);
+                AddSymbol(fp);
+                Symbol* ix = new Symbol();
+                ix->name = "ix";
+                ix->value = Value(Value.Flag.register, cmsx.machine.regIX, ix);
+                AddSymbol(ix);
+                Symbol* rA = new Symbol();
+                rA->name = "rA";
+                rA->value = Value(Value.Flag.pure, cmsx.machine.Registers.rA, rA);
+                AddSymbol(rA);
+                Symbol* rB = new Symbol();
+                rB->name = "rB";
+                rB->value = Value(Value.Flag.pure, cmsx.machine.Registers.rB, rB);
+                AddSymbol(rB);
+                Symbol* rC = new Symbol();
+                rC->name = "rC";
+                rC->value = Value(Value.Flag.pure, cmsx.machine.Registers.rC, rC);
+                AddSymbol(rC);
+                Symbol* rD = new Symbol();
+                rD->name = "rD";
+                rD->value = Value(Value.Flag.pure, cmsx.machine.Registers.rD, rD);
+                AddSymbol(rD);
+                Symbol* rE = new Symbol();
+                rE->name = "rE";
+                rE->value = Value(Value.Flag.pure, cmsx.machine.Registers.rE, rE);
+                AddSymbol(rE);
+                Symbol* rF = new Symbol();
+                rF->name = "rF";
+                rF->value = Value(Value.Flag.pure, cmsx.machine.Registers.rF, rF);
+                AddSymbol(rF);
+                Symbol* rG = new Symbol();
+                rG->name = "rG";
+                rG->value = Value(Value.Flag.pure, cmsx.machine.Registers.rG, rG);
+                AddSymbol(rG);
+                Symbol* rH = new Symbol();
+                rH->name = "rH";
+                rH->value = Value(Value.Flag.pure, cmsx.machine.Registers.rH, rH);
+                AddSymbol(rH);
+                Symbol* rI = new Symbol();
+                rI->name = "rI";
+                rI->value = Value(Value.Flag.pure, cmsx.machine.Registers.rI, rI);
+                AddSymbol(rI);
+                Symbol* rJ = new Symbol();
+                rJ->name = "rJ";
+                rJ->value = Value(Value.Flag.pure, cmsx.machine.Registers.rJ, rJ);
+                AddSymbol(rJ);
+                Symbol* rK = new Symbol();
+                rK->name = "rK";
+                rK->value = Value(Value.Flag.pure, cmsx.machine.Registers.rK, rK);
+                AddSymbol(rK);
+                Symbol* rL = new Symbol();
+                rL->name = "rL";
+                rL->value = Value(Value.Flag.pure, cmsx.machine.Registers.rL, rL);
+                AddSymbol(rL);
+                Symbol* rM = new Symbol();
+                rM->name = "rM";
+                rM->value = Value(Value.Flag.pure, cmsx.machine.Registers.rM, rM);
+                AddSymbol(rM);
+                Symbol* rN = new Symbol();
+                rN->name = "rN";
+                rN->value = Value(Value.Flag.pure, cmsx.machine.Registers.rN, rN);
+                AddSymbol(rN);
+                Symbol* rO = new Symbol();
+                rO->name = "rO";
+                rO->value = Value(Value.Flag.pure, cmsx.machine.Registers.rO, rO);
+                AddSymbol(rO);
+                Symbol* rP = new Symbol();
+                rP->name = "rP";
+                rP->value = Value(Value.Flag.pure, cmsx.machine.Registers.rP, rP);
+                AddSymbol(rP);
+                Symbol* rQ = new Symbol();
+                rQ->name = "rQ";
+                rQ->value = Value(Value.Flag.pure, cmsx.machine.Registers.rQ, rQ);
+                AddSymbol(rQ);
+                Symbol* rR = new Symbol();
+                rR->name = "rR";
+                rR->value = Value(Value.Flag.pure, cmsx.machine.Registers.rR, rR);
+                AddSymbol(rR);
+                Symbol* rS = new Symbol();
+                rS->name = "rS";
+                rS->value = Value(Value.Flag.pure, cmsx.machine.Registers.rS, rS);
+                AddSymbol(rS);
+                Symbol* rT = new Symbol();
+                rT->name = "rT";
+                rT->value = Value(Value.Flag.pure, cmsx.machine.Registers.rT, rT);
+                AddSymbol(rT);
+                Symbol* rU = new Symbol();
+                rU->name = "rU";
+                rU->value = Value(Value.Flag.pure, cmsx.machine.Registers.rU, rU);
+                AddSymbol(rU);
+                Symbol* rV = new Symbol();
+                rV->name = "rV";
+                rV->value = Value(Value.Flag.pure, cmsx.machine.Registers.rV, rV);
+                AddSymbol(rV);
+                Symbol* rW = new Symbol();
+                rW->name = "rW";
+                rW->value = Value(Value.Flag.pure, cmsx.machine.Registers.rW, rW);
+                AddSymbol(rW);
+                Symbol* rX = new Symbol();
+                rX->name = "rX";
+                rX->value = Value(Value.Flag.pure, cmsx.machine.Registers.rX, rX);
+                AddSymbol(rX);
+                Symbol* rY = new Symbol();
+                rY->name = "rY";
+                rY->value = Value(Value.Flag.pure, cmsx.machine.Registers.rY, rY);
+                AddSymbol(rY);
+                Symbol* rZ = new Symbol();
+                rZ->name = "rZ";
+                rZ->value = Value(Value.Flag.pure, cmsx.machine.Registers.rZ, rZ);
+                AddSymbol(rZ);
+                Symbol* rBB = new Symbol();
+                rBB->name = "rBB";
+                rBB->value = Value(Value.Flag.pure, cmsx.machine.Registers.rBB, rBB);
+                AddSymbol(rBB);
+                Symbol* rTT = new Symbol();
+                rTT->name = "rTT";
+                rTT->value = Value(Value.Flag.pure, cmsx.machine.Registers.rTT, rTT);
+                AddSymbol(rTT);
+                Symbol* rWW = new Symbol();
+                rWW->name = "rWW";
+                rWW->value = Value(Value.Flag.pure, cmsx.machine.Registers.rWW, rWW);
+                AddSymbol(rWW);
+                Symbol* rXX = new Symbol();
+                rXX->name = "rXX";
+                rXX->value = Value(Value.Flag.pure, cmsx.machine.Registers.rXX, rXX);
+                AddSymbol(rXX);
+                Symbol* rYY = new Symbol();
+                rYY->name = "rYY";
+                rYY->value = Value(Value.Flag.pure, cmsx.machine.Registers.rYY, rYY);
+                AddSymbol(rYY);
+                Symbol* rZZ = new Symbol();
+                rZZ->name = "rZZ";
+                rZZ->value = Value(Value.Flag.pure, cmsx.machine.Registers.rZZ, rZZ);
+                AddSymbol(rZZ);
+            }
+        }
+        suppress SymbolTable(const SymbolTable&);
+        suppress void operator=(const SymbolTable&);
+        suppress SymbolTable(SymbolTable&&);
+        suppress void operator=(SymbolTable&&);
+        public nothrow const List<UniquePtr<Symbol>>& Symbols() const
+        {
+            return symbols;
+        }
+        public nothrow const List<UniquePtr<Symbol>>& InternalSymbols() const
+        {
+            return internalSymbols;
+        }
+        public Symbol* GetSymbol(int index) const
+        {
+            return symbols[index].Get();
+        }
+        public Symbol* GetSymbol(const string& name) const
+        {
+            Map<string, Symbol*>.ConstIterator it = table.CFind(name);
+            if (it != table.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Symbol* GetInternalSymbol(const string& name) const
+        {
+            Map<string, Symbol*>.ConstIterator it = internalTable.CFind(name);
+            if (it != internalTable.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Symbol* GetSymbolByAddress(ulong absoluteAddress) const
+        {
+            Map<ulong, Symbol*>.ConstIterator it = addressMap.CFind(absoluteAddress);
+            if (it != addressMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Symbol* GetSymbolByValue(ulong value) const
+        {
+            Map<ulong, Symbol*>.ConstIterator it = valueMap.CFind(value);
+            if (it != valueMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Symbol* GetRegisterSymbol(byte registerNumber) const
+        {
+            Map<byte, Symbol*>.ConstIterator it = registerMap.CFind(registerNumber);
+            if (it != registerMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void AddSymbol(Symbol* symbol, bool setIndex)
+        {
+            if (setIndex)
+            {
+                symbol->index = cast<int>(symbols.Count());
+            }
+            symbols.Add(UniquePtr<Symbol>(symbol));
+            table[symbol->name] = symbol;
+            if (symbol->value.flags == Value.Flag.register)
+            {
+                registerMap[cast<byte>(symbol->value.value)] = symbol;
+            }
+            valueMap[symbol->value.value] = symbol;
+        }
+        public void AddSymbol(Symbol* symbol)
+        {
+            AddSymbol(symbol, true);
+        }
+        public void AddSymbolToAddressMap(Symbol* symbol)
+        {
+            if (symbol->value.GetFlag(Value.Flag.address))
+            {
+                symbol->start = symbol->section->baseAddress + symbol->value.value;
+                addressMap[symbol->start] = symbol;
+            }
+        }
+        public void AddInternalSymbol(Symbol* internalSymbol, bool setIndex)
+        {
+            if (setIndex)
+            {
+                internalSymbol->index = cast<int>(internalSymbols.Count());
+            }
+            #assert(internalSymbol->linkage == Linkage.internal_);
+            internalSymbols.Add(UniquePtr<Symbol>(internalSymbol));
+            addressMap[internalSymbol->start] = internalSymbol;
+            if (internalSymbol->value.flags == Value.Flag.register)
+            {
+                registerMap[cast<byte>(internalSymbol->value.value)] = internalSymbol;
+            }
+            internalTable[internalSymbol->name] = internalSymbol;
+        }
+        public void AddInternalSymbol(Symbol* internalSymbol)
+        {
+            AddInternalSymbol(internalSymbol, true);
+        }
+        private BinaryFile* file;
+        private List<UniquePtr<Symbol>> symbols;
+        private List<UniquePtr<Symbol>> internalSymbols;
+        private Map<string, Symbol*> table;
+        private Map<string, Symbol*> internalTable;
+        private Map<ulong, Symbol*> addressMap;
+        private Map<byte, Symbol*> registerMap;
+        private Map<ulong, Symbol*> valueMap;
+    }
+}

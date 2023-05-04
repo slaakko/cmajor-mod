@@ -1,0 +1,125 @@
+using System;
+
+namespace System.Windows
+{
+    public enum TextBoxStyle : long
+    {
+        ES_AUTOHSCROLL = 128u, ES_AUTOVSCROLL = 64, ES_CENTER = 1, ES_LEFT = 0, ES_LOWERCASE = 16, ES_MULTILINE = 4, ES_NOHIDESEL = 256, ES_NUMBER = 8192, ES_OEMCONVERT = 1024, ES_PASSWORD = 32, ES_READONLY = 2048, ES_RIGHT = 2, ES_UPPERCASE = 8, ES_WANTRETURN = 4096
+    }
+
+    public nothrow ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams, TextBoxStyle textBoxStyle)
+    {
+        return controlCreateParams.SetWindowClassName("EDIT").SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White()).SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | textBoxStyle));
+    }
+
+    public nothrow ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return TextBoxControlCreateParams(controlCreateParams, cast<TextBoxStyle>(TextBoxStyle.ES_LEFT | TextBoxStyle.ES_AUTOHSCROLL));
+    }
+
+    public class TextBoxCreateParams
+    {
+        public nothrow TextBoxCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_)
+        {
+        }
+        public nothrow TextBoxCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+    }
+
+    public class TextBox : Control
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, selectAll = 1 << 0, multiline = 1 << 1
+        }
+        public TextBox(TextBoxStyle textBoxStyle, const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("EDIT", DefaultWindowClassStyle(), cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | textBoxStyle), DefaultExtendedWindowStyle(), backgroundColor, text, location, size, dock, anchors)
+        {
+            if ((textBoxStyle & TextBoxStyle.ES_MULTILINE) != 0)
+            {
+                SetMultiline();
+            }
+        }
+        public TextBox(const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(cast<TextBoxStyle>(TextBoxStyle.ES_LEFT | TextBoxStyle.ES_AUTOHSCROLL), Color.White(), text, location, size, dock, anchors)
+        {
+        }
+        public TextBox(const string& text) :
+            this(text, Point(), Size(), Dock.none, Anchors.none)
+        {
+        }
+        public TextBox(TextBoxCreateParams& createParams) :
+            base(createParams.controlCreateParams)
+        {
+            if ((cast<TextBoxStyle>(cast<long>(createParams.controlCreateParams.windowStyle)) & TextBoxStyle.ES_MULTILINE) != 0)
+            {
+                SetMultiline();
+            }
+        }
+        public inline nothrow bool IsMultiline() const
+        {
+            return (flags & Flags.multiline) != Flags.none;
+        }
+        private inline nothrow void SetMultiline()
+        {
+            flags = cast<Flags>(flags | Flags.multiline);
+        }
+        private inline nothrow void ResetMultiline()
+        {
+            flags = cast<Flags>(flags & ~Flags.multiline);
+        }
+        public void SelectAll()
+        {
+            if (Handle() != null)
+            {
+                WinSendMessage(Handle(), EM_SETSEL, 0u, -1);
+            }
+            else
+            {
+                SetSelectAllFlag();
+            }
+        }
+        public void Clear()
+        {
+            SetText(string());
+        }
+        protected override void OnCreated()
+        {
+            base->OnCreated();
+            Graphics graphics = Graphics.FromWindowHandle(Handle());
+            const FontHandle& fontHandle = GetFontHandle(graphics);
+            if (!fontHandle.IsNull())
+            {
+                SendSetFontMessage(fontHandle);
+            }
+            if (SelectAllFlagSet())
+            {
+                ResetSelectAllFlag();
+                SelectAll();
+            }
+        }
+        protected override void OnGotFocus()
+        {
+            base->OnGotFocus();
+            SelectAll();
+        }
+        private inline nothrow bool SelectAllFlagSet() const
+        {
+            return (flags & Flags.selectAll) != Flags.none;
+        }
+        private inline nothrow void SetSelectAllFlag()
+        {
+            flags = cast<Flags>(flags | Flags.selectAll);
+        }
+        private inline nothrow void ResetSelectAllFlag()
+        {
+            flags = cast<Flags>(flags & ~Flags.selectAll);
+        }
+        private Flags flags;
+    }
+
+} // namespace System.Windows

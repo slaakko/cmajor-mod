@@ -1,0 +1,301 @@
+using System;
+using System.IO;
+using System.Collections;
+using cmsx.util;
+using cmsx.machine;
+
+namespace cmsx.kernel
+{
+    public const int rootFSMaxFiles = 1024;
+
+    public const int rootFSMaxBlocks = 256 * 1024;
+
+    public class RootFileSystem : FileSystem
+    {
+        public RootFileSystem(int index_) :
+            base("root", index_, false), hostFile(null)
+        {
+        }
+        public override nothrow bool IsRootFileSystem() const
+        {
+            return true;
+        }
+        public override void Init()
+        {
+            if (Log())
+            {
+                LogMessage("fs.root", "init");
+            }
+            string cmajorRootDir = RtGetEnvironmentVariable("CMAJOR_ROOT");
+            if (cmajorRootDir.IsEmpty())
+            {
+                throw Exception("CMAJOR_ROOT environment variable not set. Please set it to contain /path/to/cmajor directory");
+            }
+            string fsDirPath = GetFullPath(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "projects"), "cmsx"), "fs"));
+            Directory.CreateDirectories(fsDirPath);
+            hostFilePath = GetFullPath(Path.Combine(fsDirPath, "rootfs"));
+            bool create = false;
+            if (!System.IO.File.Exists(hostFilePath))
+            {
+                create = true;
+            }
+            DiskDriver& diskDriver = GetDiskDriver();
+            hostFile = diskDriver.GetOrInsertHostFile(hostFilePath, true);
+            if (create)
+            {
+                CreateRootFs(rootFSMaxFiles, rootFSMaxBlocks);
+            }
+            if (blockBitmap.IsNull())
+            {
+                blockBitmap.Reset(new BlockBitmap(0));
+            }
+            if (inodeBitmap.IsNull())
+            {
+                inodeBitmap.Reset(new INodeBitmap(0));
+            }
+            INode* mntINode = inodeManager.PathToINode(null, "/mnt");
+            if (mntINode == null)
+            {
+                MakeDirectory(null, "/mnt", cast<int>(ParseOctal("755")));
+            }
+            else
+            {
+                INodePutter putter(mntINode);
+            }
+        }
+        public override int OpenDirectory(Process* process, const string& path, INode* dirINode, INodePutter& inodePutter)
+        {
+            int fd = process->fileTable.GetEmptyFileSlot();
+            process->fileTable.SetFile(fd, new DirectoryFile(dirINode));
+            inodePutter.ResetINode();
+            dirINode->ResetFlag(INode.Flags.locked);
+            return fd;
+        }
+        public override int ReadDirectory(Process* process, DirectoryFile* dirFile, ulong inodeNumberAddress, ulong entryNameAddress)
+        {
+            INode* dirINode = dirFile->DirINode();
+            if (Log())
+            {
+                LogMessage("fs.root.readdirectory", dirINode->ToString());
+            }
+            while (dirINode->GetFlag(INode.Flags.locked))
+            {
+                dirINode->AddWaitingProcess(process);
+                SleepProcess(process, inodeUnlockedEvent, cast<ulong>(cast<void*>(dirINode)), 0u);
+            }
+            {
+                INodeLock lock(dirINode);
+                while (dirFile->Offset() < dirINode->GetFileSize())
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    blockManager.GetBlockNumber(dirINode, dirFile->Offset(), blockNumber, blockOffset, false);
+                    if (blockNumber == 0)
+                    {
+                        return 0;
+                    }
+                    Block* block = blockManager.ReadBlock(BlockKey(blockNumber, dirINode->Key().fsNumber), null);
+                    BlockPutter putter(block);
+                    DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                    for (int index = blockOffset / directoryEntrySize; index < numDirectoryEntriesInBlock && dirFile->Offset() < dirINode->GetFileSize(); ++index)
+                    {
+                        DirectoryEntry directoryEntry = directoryBlock->GetDirectoryEntry(index);
+                        if (directoryEntry.inodeNumber == 0)
+                        {
+                            dirFile->SetOffset(dirFile->Offset() + directoryEntrySize);
+                        }
+                        else
+                        {
+                            WriteProcessMemory(GetMachine(), process, inodeNumberAddress, cast<ulong>(directoryEntry.inodeNumber), 4u, Protection.write);
+                            WriteProcessMemory(GetMachine(), process, entryNameAddress, cast<byte*>(cast<void*>(directoryEntry.name.Chars())), cast<ulong>(directoryEntry.name.Length() + 1), Protection.write);
+                            dirFile->SetOffset(dirFile->Offset() + directoryEntrySize);
+                            return 1;
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+        public override void ChangeMode(Process* process, const string& path, INode* inode, int mode)
+        {
+            if (process->uid != inode->UID())
+            {
+                throw SystemError(EPERM, "error changing mode of \'" + path + "\': user id of the process (" + ToString(process->uid) + ") does not match the owner (" + ToString(inode->UID()) + ") of the file");
+            }
+            inode->SetAccessMode(mode);
+        }
+        public override void ChangeOwner(Process* process, const string& path, INode* inode, int uid, int gid)
+        {
+            if (process->uid != 0)
+            {
+                throw SystemError(EPERM, "error changing owner of \'" + path + "\': not authorized");
+            }
+            inode->SetUID(uid);
+            inode->SetGID(gid);
+        }
+        public override void UpdateFileTimes(Process* process, const string& path, INode* inode, const DateTime& atime, const DateTime& mtime)
+        {
+            if (process->uid != inode->UID())
+            {
+                try
+                {
+                    if (atime != DateTime() || mtime != DateTime())
+                    {
+                        throw SystemError(EPERM, "access time or modification time not default and not owner of the file");
+                    }
+                    inode->CheckPermissions(process->uid, process->gid, Access.write);
+                }
+                catch (const Exception& ex)
+                {
+                    throw Exception("cannot change file \'" + path + "\' timestamps: " + ex.Message());
+                }
+            }
+            if (atime == DateTime())
+            {
+                inode->SetATime();
+            }
+            else
+            {
+                inode->SetATime(atime);
+            }
+            if (mtime == DateTime())
+            {
+                inode->SetMTime();
+            }
+            else
+            {
+                inode->SetMTime(mtime);
+            }
+        }
+        public override int AllocateBlockNumber()
+        {
+            return blockBitmap->AllocateBlockNumber();
+        }
+        public override void SetBlockFree(int blockNumber)
+        {
+            blockBitmap->SetBlockFree(blockNumber);
+        }
+        public override int GetFreeINodeNumber()
+        {
+            return inodeBitmap->GetFreeINodeNumber();
+        }
+        public override void SetFreeINodeNumber(int inodeNumber)
+        {
+            inodeBitmap->SetFreeINodeNumber(inodeNumber);
+        }
+        public override int GetFirstINodeBlockNumber() const
+        {
+            Block* block = blockManager.ReadBlock(BlockKey(0, 0), null);
+            BlockPutter putter(block);
+            SuperBlock* superBlock = cast<SuperBlock*>(block);
+            return superBlock->GetFirstINodeBlockNumber();
+        }
+        public override INodeKey GetRootDirINodeKey() const
+        {
+            Block* block = blockManager.ReadBlock(BlockKey(0, 0), null);
+            BlockPutter putter(block);
+            SuperBlock* superBlock = cast<SuperBlock*>(block);
+            return INodeKey(superBlock->GetRootDirINodeNumber(), 0);
+        }
+        public override HostFile* GetHostFile(int fsNumber) const
+        {
+            int hostFileIndex = GetHostFileIndex(fsNumber);
+            if (hostFileIndex != 0)
+            {
+                throw SystemError(EINVAL, "invalid file system number");
+            }
+            return hostFile;
+        }
+        public override int LastBlockNumber() const
+        {
+            Block* block = blockManager.ReadBlock(BlockKey(0, 0), null);
+            BlockPutter putter(block);
+            SuperBlock* superBlock = cast<SuperBlock*>(block);
+            return superBlock->GetLastBlockNumber();
+        }
+        public override void SetLastBlockNumber(int blockNumber, SuperBlock* sb)
+        {
+            if (sb != null && sb->Key().fsNumber == 0)
+            {
+                if (sb->GetLastBlockNumber() < blockNumber)
+                {
+                    sb->SetLastBlockNumber(blockNumber);
+                }
+            }
+            else
+            {
+                Block* block = blockManager.ReadBlock(BlockKey(0, 0), null);
+                BlockPutter putter(block);
+                SuperBlock* superBlock = cast<SuperBlock*>(block);
+                if (superBlock->GetLastBlockNumber() < blockNumber)
+                {
+                    superBlock->SetLastBlockNumber(blockNumber);
+                }
+            }
+        }
+        private void CreateRootFs(int maxFiles, int maxBlocks)
+        {
+            try
+            {
+                int numINodeBitmapBlocks = (maxFiles - 1) / (8 * blockSize) + 1;
+                int numBlockBitmapBlocks = (maxBlocks - 1) / (8 * blockSize) + 1;
+                int numINodeBlocks = (maxFiles - 1) / numINodesInBlock + 1;
+                {
+                    Block* block = blockManager.GetBlock(BlockKey(0, 0), null);
+                    block->Clear();
+                    BlockPutter putter(block);
+                    SuperBlock* superBlock = cast<SuperBlock*>(block);
+                    superBlock->SetLastBlockNumber(-1);
+                    superBlock->SetFirstINodeBitmapBlockNumber(1);
+                    superBlock->SetNumINodeBitmapBlocks(numINodeBitmapBlocks);
+                    superBlock->SetFirstBlockBitmapBlockNumber(superBlock->GetFirstINodeBitmapBlockNumber() + superBlock->GetNumINodeBitmapBlocks());
+                    superBlock->SetNumBlockBitmapBlocks(numBlockBitmapBlocks);
+                    superBlock->SetFirstINodeBlockNumber(superBlock->GetFirstBlockBitmapBlockNumber() + superBlock->GetNumBlockBitmapBlocks());
+                    superBlock->SetNumINodeBlocks(numINodeBlocks);
+                    superBlock->SetFirstDataBlockNumber(superBlock->GetFirstINodeBlockNumber() + superBlock->GetNumINodeBlocks());
+                    blockManager.WriteBlock(block, superBlock);
+                    superBlock->SetFlag(Block.Flags.valid);
+                }
+                blockBitmap.Reset(new BlockBitmap(0));
+                inodeBitmap.Reset(new INodeBitmap(0));
+                int rootDirINodeNumber = GetFreeINodeNumber();
+                {
+                    Block* block = blockManager.ReadBlock(BlockKey(0, 0), null);
+                    BlockPutter putter(block);
+                    SuperBlock* superBlock = cast<SuperBlock*>(block);
+                    superBlock->SetRootDirINodeNumber(rootDirINodeNumber);
+                    blockManager.WriteBlock(block, superBlock);
+                }
+                blockManager.Flush();
+                FileSystem* fs = GetMountTable().GetFileSystem(0);
+                fs->MakeDirectory(null, "/", cast<int>(ParseOctal("755")));
+                blockManager.Flush();
+            }
+            catch (const Exception& ex)
+            {
+                GetDiskDriver().Stop();
+                GetConsoleDriver().Stop();
+                throw;
+            }
+        }
+        public override nothrow bool HasMountDirKey(const INodeKey& mountDirKey) const
+        {
+            return false;
+        }
+        public override nothrow BlockManager* GetBlockManager()
+        {
+            return &blockManager;
+        }
+        public override nothrow INodeManager* GetINodeManager()
+        {
+            return &inodeManager;
+        }
+        private UniquePtr<BlockBitmap> blockBitmap;
+        private UniquePtr<INodeBitmap> inodeBitmap;
+        private string hostFilePath;
+        private HostFile* hostFile;
+        private RootBlockManager blockManager;
+        private RootINodeManager inodeManager;
+    }
+
+} // namespace cmsx.kernel

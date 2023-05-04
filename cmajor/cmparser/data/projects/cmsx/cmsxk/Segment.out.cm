@@ -1,0 +1,100 @@
+using System;
+
+namespace cmsx.kernel
+{
+    public const long maxSegmentDescriptors = 4096;
+
+    public class SegmentDescriptor
+    {
+        public nothrow SegmentDescriptor() :
+            startAddress(0u), baseAddress(0u), length(0u), increment(0u), useCount(1u), next(null)
+        {
+        }
+        public nothrow SegmentDescriptor(ulong startAddress_, ulong baseAddress_, ulong length_, ulong maxLength_, ulong increment_) :
+            startAddress(startAddress_), baseAddress(baseAddress_), length(length_), maxLength(maxLength_), increment(increment_), useCount(1u), next(null)
+        {
+        }
+        public ulong startAddress;
+        public ulong baseAddress;
+        public ulong length;
+        public ulong maxLength;
+        public ulong increment;
+        public byte useCount;
+        public SegmentDescriptor* next;
+    }
+
+    public class SegmentTable
+    {
+        static SegmentTable() :
+            instance(new SegmentTable())
+        {
+        }
+        public static nothrow SegmentTable& Instance()
+        {
+            return *instance;
+        }
+        public nothrow SegmentDescriptor* AllocateSegmentDescriptor()
+        {
+            if (freeSegmentDescriptor != null)
+            {
+                SegmentDescriptor* sd = freeSegmentDescriptor;
+                freeSegmentDescriptor = freeSegmentDescriptor->next;
+                return sd;
+            }
+            else if (unusedSegmentDescriptorIndex < maxSegmentDescriptors)
+            {
+                SegmentDescriptor* sd = &segmentDescriptors[unusedSegmentDescriptorIndex++];
+                return sd;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public nothrow void FreeSegmentDescriptor(SegmentDescriptor* sd)
+        {
+            *sd = SegmentDescriptor();
+            sd->next = freeSegmentDescriptor;
+            freeSegmentDescriptor = sd;
+        }
+        private static UniquePtr<SegmentTable> instance;
+        private SegmentDescriptor[maxSegmentDescriptors] segmentDescriptors;
+        private SegmentDescriptor* freeSegmentDescriptor;
+        private long unusedSegmentDescriptorIndex;
+    }
+
+    public nothrow SegmentDescriptor* CreateSegmentDescriptor(ulong startAddress, ulong baseAddress, ulong length)
+    {
+        return CreateSegmentDescriptor(startAddress, baseAddress, length, length, 0u);
+    }
+
+    public nothrow SegmentDescriptor* CreateSegmentDescriptor(ulong startAddress, ulong baseAddress, ulong minLength, ulong maxLength, ulong increment)
+    {
+        SegmentDescriptor* sd = SegmentTable.Instance().AllocateSegmentDescriptor();
+        if (sd != null)
+        {
+            sd->startAddress = startAddress;
+            sd->baseAddress = baseAddress;
+            sd->length = minLength;
+            sd->maxLength = maxLength;
+            sd->increment = increment;
+            sd->useCount = 1u;
+            sd->next = null;
+            return sd;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public nothrow void FreeSegmentDescriptor(SegmentDescriptor* sd)
+    {
+        #assert (sd->useCount == 0);
+        if (sd->useCount == 0u)
+        {
+            SegmentTable.Instance().FreeSegmentDescriptor(sd);
+        }
+    }
+
+} // namespace cmsx.kernel

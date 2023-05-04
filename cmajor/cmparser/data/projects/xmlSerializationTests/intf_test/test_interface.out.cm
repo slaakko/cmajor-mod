@@ -1,0 +1,81 @@
+using System;
+using System.Text;
+using System.Xml.Serialization;
+using model;
+
+namespace xmltest
+{
+    public void TestInterface()
+    {
+        try
+        {
+            XmlContainer container;
+            UniquePtr<Bicycle> bicycle = new Bicycle();
+            Add(bicycle.Get(), &container);
+            XmlSerializable serializableBicycle = *(bicycle.Get());
+            int classId = serializableBicycle.ClassId();
+            Console.Out() << classId << endl();
+            string className = serializableBicycle.ClassName();
+            Console.Out() << className << endl();
+            System.Dom.Document bicycleDoc;
+            System.Xml.Serialization.XmlSerializationContext ctx;
+            bicycleDoc.AppendChild(UniquePtr<System.Dom.Node>(serializableBicycle.ToXml("object", ctx)));
+            CodeFormatter formatter(Console.Out());
+            formatter.SetIndentSize(1);
+            bicycleDoc.Write(formatter);
+            UniquePtr<Car> car = new Car();
+            Add(car.Get(), &container);
+            XmlSerializable serializabledCar = *(car.Get());
+            int carClassId = serializabledCar.ClassId();
+            Console.Out() << carClassId << endl();
+            string carClassName = serializabledCar.ClassName();
+            Console.Out() << carClassName << endl();
+            System.Dom.Document carDoc;
+            carDoc.AppendChild(UniquePtr<System.Dom.Node>(serializabledCar.ToXml("object", ctx)));
+            carDoc.Write(formatter);
+            XmlSerializableProxy* bicycleProxy = container.Get(bicycle->ObjectId());
+            Bicycle* b = XmlCast<Bicycle>(bicycleProxy);
+            if (b != null)
+            {
+                Console.Out() << "bicycleProxy has Bicycle" << endl();
+            }
+            else
+            {
+                Console.Out() << "bicycleProxy has not Bicycle!!!" << endl();
+            }
+            Car* vc = XmlCast<Car>(bicycleProxy);
+            if (vc != null)
+            {
+                Console.Out() << "bicycleProxy has Car!!!" << endl();
+            }
+            else
+            {
+                Console.Out() << "bicycleProxy has not Car" << endl();
+            }
+            XmlSerializableProxy* carProxy = container.Get(car->ObjectId());
+            Car* c = XmlCast<Car>(carProxy);
+            if (c != null)
+            {
+                Console.Out() << "carProxy has Car" << endl();
+            }
+            else
+            {
+                Console.Out() << "carProxy has not Car!!!" << endl();
+            }
+            Bicycle* cv = XmlCast<Bicycle>(carProxy);
+            if (cv != null)
+            {
+                Console.Out() << "carProxy has Bicycle!!!" << endl();
+            }
+            else
+            {
+                Console.Out() << "carProxy has not Bicycle" << endl();
+            }
+        }
+        catch (const Exception& ex)
+        {
+            Console.Error() << ex.ToString() << endl();
+        }
+    }
+
+} // namespace xmltest

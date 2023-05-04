@@ -1,0 +1,46 @@
+using System;
+using System.Collections;
+using System.IO;
+
+namespace cmsx.object
+{
+    public class ClassIdMap
+    {
+        public ClassIdMap()
+        {
+        }
+        public void Read(const string& clsIdFileName)
+        {
+            BinaryReader reader = File.OpenBinary(clsIdFileName);
+            ulong n = reader.ReadULong();
+            for (ulong i = 0u; i < n; ++i)
+            {
+                try
+                {
+                    Uuid typeId = reader.ReadUuid();
+                    ulong classId = reader.ReadULong();
+                    ulong classIdHigh = reader.ReadULong();
+                    classIdMap[typeId] = classId;
+                }
+                catch (const Exception& ex)
+                {
+                    throw Exception("error reading class id map: " + ToString(n) + " total entries, trying to read entry " + ToString(i) + ": " + ex.ToString());
+                }
+            }
+        }
+        public ulong GetClassId(const Uuid& typeId) const
+        {
+            HashMap<Uuid, ulong>.ConstIterator it = classIdMap.CFind(typeId);
+            if (it != classIdMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                throw Exception("class id for type id " + ToString(typeId) + " not found");
+            }
+        }
+        private HashMap<Uuid, ulong> classIdMap;
+    }
+
+} // namespace cmsx.object

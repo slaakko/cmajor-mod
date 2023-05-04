@@ -1,0 +1,13 @@
+using System;
+
+namespace System.Xml.Serialization
+{
+    public class XmlSerializationException : Exception
+    {
+        public nothrow XmlSerializationException(const string& message_) :
+            base(message_)
+        {
+        }
+    }
+
+} // namespace System.Xml.Serialization

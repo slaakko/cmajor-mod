@@ -37,7 +37,6 @@ int main(int argc, const char** argv)
     {
         cmajor::build::Flags flags = cmajor::build::Flags::none;
         std::vector<std::string> files;
-        bool verbose = false;
         for (int i = 1; i < argc; ++i)
         {
             std::string arg = argv[i];
@@ -45,7 +44,7 @@ int main(int argc, const char** argv)
             {
                 if (arg == "--verbose")
                 {
-                    verbose = true;
+                    flags = flags | cmajor::build::Flags::verbose;
                 }
                 else if (arg == "--help")
                 {
@@ -83,7 +82,7 @@ int main(int argc, const char** argv)
                         }
                         case 'v':
                         {
-                            verbose = true;
+                            flags = flags | cmajor::build::Flags::verbose;
                             break;
                         }
                         case 's':
@@ -118,7 +117,7 @@ int main(int argc, const char** argv)
         {
             if (file.ends_with(".cm"))
             {
-                if (verbose)
+                if ((flags & cmajor::build::Flags::verbose) != cmajor::build::Flags::none)
                 {
                     std::cout << ">>> " << file << "\n";
                 }
@@ -127,19 +126,11 @@ int main(int argc, const char** argv)
             }
             else if (file.ends_with(".cmp"))
             {
-                if (verbose)
-                {
-                    std::cout << ">> " << file << "\n";
-                }
                 std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(flags, file, "debug", cmajor::ast::BackEnd::llvm, "llvm", fileMap);
             }
             else if (file.ends_with(".cms"))
             {
-                if (verbose)
-                {
-                    std::cout << "> " << file << "\n";
-                }
-                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolutionFile(file);
+                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolution(flags, file, "debug", cmajor::ast::BackEnd::llvm, "llvm");
             }
             else
             {

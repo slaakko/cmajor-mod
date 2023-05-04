@@ -1,0 +1,189 @@
+using System;
+using System.Text;
+using System.IO;
+
+namespace System.Xml.Serialization
+{
+    public enum XmlBundleKind : int
+    {
+        shallow = 0, deep = 1
+    }
+
+    public class XmlBundle : XmlContainer
+    {
+        public nothrow XmlBundle() :
+            base(), owning(false)
+        {
+        }
+        public ~XmlBundle()
+        {
+            if (owning)
+            {
+                DestroyNonownedObjects();
+            }
+        }
+        public nothrow bool IsOwning() const
+        {
+            return owning;
+        }
+        public nothrow void SetOwning()
+        {
+            owning = true;
+        }
+        public nothrow void ResetOwning()
+        {
+            owning = false;
+        }
+        public nothrow void DestroyNonownedObjects()
+        {
+            List<XmlSerializableProxy*> proxies = GetProxies();
+            List<XmlSerializableProxy*> toBeDestroyed;
+            for (XmlSerializableProxy* proxy : proxies)
+            {
+                if (!proxy->IsOwned())
+                {
+                    toBeDestroyed.Add(proxy);
+                }
+            }
+            for (XmlSerializableProxy* d : toBeDestroyed)
+            {
+                d->DestroyObject();
+            }
+            Clear();
+        }
+        public nothrow const Uuid& RootObjectId() const
+        {
+            return rootObjectId;
+        }
+        public override nothrow void SetRootObjectId(const Uuid& rootObjectId_)
+        {
+            rootObjectId = rootObjectId_;
+        }
+        public nothrow XmlSerializableProxy* Root() const
+        {
+            if (rootObjectId != Uuid())
+            {
+                return Get(rootObjectId);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public UniquePtr<System.Dom.Document> ToXmlDocument()
+        {
+            UniquePtr<System.Dom.Element> rootElement(new System.Dom.Element(u"xmlBundle"));
+            rootElement->SetAttribute(u"rootObjectId", ToUtf32(ToString(rootObjectId)));
+            List<XmlSerializableProxy*> proxies = GetProxies();
+            for (XmlSerializableProxy* proxy : proxies)
+            {
+                if (proxy->Object() != null)
+                {
+                    UniquePtr<System.Dom.Element> serializableElement = proxy->ToXml("object");
+                    rootElement->AppendChild(UniquePtr<System.Dom.Node>(serializableElement.Release()));
+                }
+            }
+            UniquePtr<System.Dom.Document> document(new System.Dom.Document());
+            document->AppendChild(UniquePtr<System.Dom.Node>(rootElement.Release()));
+            return document;
+        }
+        public string ToXmlString() const
+        {
+            return ToXmlString(1);
+        }
+        public string ToXmlString(int indent) const
+        {
+            UniquePtr<System.Dom.Document> document = ToXmlDocument();
+            StringWriter stringWriter;
+            CodeFormatter formatter(stringWriter);
+            formatter.SetIndentSize(indent);
+            document->Write(formatter);
+            return stringWriter.GetString();
+        }
+        public void ResolveXmlPtrs()
+        {
+            List<XmlSerializableProxy*> proxies = GetProxies();
+            for (XmlSerializableProxy* proxy : proxies)
+            {
+                List<XmlPtrBase*> ptrs = proxy->GetPtrs();
+                for (XmlPtrBase* ptr : ptrs)
+                {
+                    ptr->Resolve(this);
+                }
+            }
+        }
+        private Uuid rootObjectId;
+        private bool owning;
+    }
+
+    public UniquePtr<XmlBundle> ToXmlBundle(const string& xmlStr, const string& systemId)
+    {
+        return ToXmlBundle(xmlStr, systemId, true);
+    }
+
+    public UniquePtr<XmlBundle> ToXmlBundle(const string& xmlStr, const string& systemId, bool createOwningBundle)
+    {
+        UniquePtr<XmlBundle> bundle(new XmlBundle());
+        if (createOwningBundle)
+        {
+            bundle->SetOwning();
+        }
+        ustring content = ToUtf32(xmlStr);
+        UniquePtr<System.Dom.Document> document = System.Dom.ParseDocument(content, systemId);
+        UniquePtr<System.XPath.XPathObject> bundleObject = System.XPath.Evaluate(u"xmlBundle", document.Get());
+        if (!bundleObject.IsNull())
+        {
+            if (bundleObject.Get() is System.XPath.XPathNodeSet*)
+            {
+                System.XPath.XPathNodeSet* nodeSet = cast<System.XPath.XPathNodeSet*>(bundleObject.Get());
+                int length = nodeSet->Length();
+                if (length == 1)
+                {
+                    System.Dom.Node* node = (*nodeSet)[0];
+                    if (node is System.Dom.Element*)
+                    {
+                        System.Dom.Element* rootElement = cast<System.Dom.Element*>(node);
+                        ustring rootObjectIdAttr = rootElement->GetAttribute(u"rootObjectId");
+                        if (!rootObjectIdAttr.IsEmpty())
+                        {
+                            Uuid rootObjectId = ParseUuid(ToUtf8(rootObjectIdAttr));
+                            bundle->SetRootObjectId(rootObjectId);
+                        }
+                    }
+                    UniquePtr<System.XPath.XPathObject> object = System.XPath.Evaluate(u"xmlBundle/object", document.Get());
+                    if (!object.IsNull())
+                    {
+                        if (object.Get() is System.XPath.XPathNodeSet*)
+                        {
+                            System.XPath.XPathNodeSet* nodeSet = cast<System.XPath.XPathNodeSet*>(object.Get());
+                            int n = nodeSet->Length();
+                            for (int i = 0; i < n; ++i)
+                            {
+                                System.Dom.Node* node = (*nodeSet)[i];
+                                if (node is System.Dom.Element*)
+                                {
+                                    System.Dom.Element* element = cast<System.Dom.Element*>(node);
+                                    ustring classIdAttr = element->GetAttribute(u"classId");
+                                    if (!classIdAttr.IsEmpty())
+                                    {
+                                        int classId = ParseInt(ToUtf8(classIdAttr));
+                                        XmlSerializable xmlSerializable = XmlClassRegistry.Instance().CreateXmlSerializable(classId);
+                                        xmlSerializable.FromXml(element);
+                                        bundle->Add(xmlSerializable);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    bundle->ResolveXmlPtrs();
+                }
+                else
+                {
+                    throw XmlSerializationException("single \'xmlBundle\' element expected");
+                }
+            }
+        }
+        return bundle;
+    }
+
+} // namespace System.Xml.Serialization

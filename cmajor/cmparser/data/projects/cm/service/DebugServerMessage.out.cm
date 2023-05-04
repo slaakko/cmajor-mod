@@ -1,0 +1,447 @@
+using System;
+using System.Collections;
+using System.Xml.Serialization;
+
+namespace Cm.Service.Debug
+{
+    public enum MessageKind
+    {
+        none, startRequest, startReply, stopRequest, stopReply, genericErrorReply, continueRequest, continueReply, nextRequest, nextReply, stepRequest, stepReply, finishRequest, finishReply, untilRequest, untilReply, breakRequest, breakReply, deleteRequest, deleteReply, depthRequest, depthReply, framesRequest, framesReply, countRequest, countReply, evaluateChildRequest, evaluateChildReply, evaluateRequest, evaluateReply, targetRunningRequest, targetRunningReply, targetInputRequest, targetInputReply, targetOutputRequest, targetOutputReply, logMessageRequest, logMessageReply
+    }
+
+    [xml="true"]
+    public class Location
+    {
+        public string func;
+        public string file;
+        public int line;
+        public int scol;
+        public int ecol;
+        public int level;
+    }
+
+    public nothrow bool operator==(const Location& left, const Location& right)
+    {
+        return left.func == right.func && left.file == right.file && left.line == right.line && left.scol == right.scol && left.ecol == right.ecol && left.level == right.level;
+    }
+
+    [xml="true"]
+    public class Type
+    {
+        public string id;
+        public string name;
+    }
+
+    [xml="true"]
+    public class Result
+    {
+        public Type staticType;
+        public Type dynamicType;
+        public bool initialized;
+        public string value;
+    }
+
+    [xml="true"]
+    public class ChildResult
+    {
+        public string expr;
+        public string name;
+        public string type;
+        public string dynType;
+        public string value;
+        public int count;
+    }
+
+    [xml="true"]
+    public class TargetState
+    {
+        public nothrow void Reset()
+        {
+            stopReason.Clear();
+            exitCode.Clear();
+            breakpointId.Clear();
+            signalName.Clear();
+            signalMeaning.Clear();
+        }
+        public string stopReason;
+        public string exitCode;
+        public string breakpointId;
+        public string signalName;
+        public string signalMeaning;
+    }
+
+    [xml="true"]
+    public class SourceLoc
+    {
+        public string path;
+        public int line;
+    }
+
+    [xml="true"]
+    public class BreakpointInfo
+    {
+        public bool success;
+        public string breakpointId;
+        public int numInsts;
+        public Location location;
+        public string error;
+    }
+
+    [xml="true"]
+    public class StartDebugRequest
+    {
+        public nothrow StartDebugRequest()
+        {
+        }
+        public List<SourceLoc> breakpointLocations;
+    }
+
+    [xml="true"]
+    public class StartDebugReply
+    {
+        public nothrow StartDebugReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public List<BreakpointInfo> breakpointInfos;
+        public string error;
+    }
+
+    [xml="true"]
+    public class StopDebugRequest
+    {
+        public nothrow StopDebugRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class StopDebugReply
+    {
+        public nothrow StopDebugReply()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class GenericDebugErrorReply
+    {
+        public nothrow GenericDebugErrorReply()
+        {
+        }
+        public string errorMessage;
+    }
+
+    [xml="true"]
+    public class ContinueRequest
+    {
+        public nothrow ContinueRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class ContinueReply
+    {
+        public nothrow ContinueReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public string error;
+    }
+
+    [xml="true"]
+    public class NextRequest
+    {
+        public nothrow NextRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class NextReply
+    {
+        public nothrow NextReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public string error;
+    }
+
+    [xml="true"]
+    public class StepRequest
+    {
+        public nothrow StepRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class StepReply
+    {
+        public nothrow StepReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public string error;
+    }
+
+    [xml="true"]
+    public class FinishRequest
+    {
+        public nothrow FinishRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class FinishReply
+    {
+        public nothrow FinishReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public string error;
+    }
+
+    [xml="true"]
+    public class UntilRequest
+    {
+        public nothrow UntilRequest(const SourceLoc& sourceLoc_) :
+            sourceLoc(sourceLoc_)
+        {
+        }
+        public SourceLoc sourceLoc;
+    }
+
+    [xml="true"]
+    public class UntilReply
+    {
+        public nothrow UntilReply()
+        {
+        }
+        public bool success;
+        public Location location;
+        public TargetState state;
+        public string error;
+    }
+
+    [xml="true"]
+    public class BreakRequest
+    {
+        public nothrow BreakRequest()
+        {
+        }
+        public SourceLoc breakpointLocation;
+    }
+
+    [xml="true"]
+    public class BreakReply
+    {
+        public nothrow BreakReply()
+        {
+        }
+        public BreakpointInfo breakpointInfo;
+    }
+
+    [xml="true"]
+    public class DeleteRequest
+    {
+        public nothrow DeleteRequest()
+        {
+        }
+        public string breakpointId;
+    }
+
+    [xml="true"]
+    public class DeleteReply
+    {
+        public nothrow DeleteReply()
+        {
+        }
+        public bool success;
+        public string error;
+    }
+
+    [xml="true"]
+    public class DepthRequest
+    {
+        public nothrow DepthRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class DepthReply
+    {
+        public nothrow DepthReply()
+        {
+        }
+        public bool success;
+        public int depth;
+        public string error;
+    }
+
+    [xml="true"]
+    public class FramesRequest
+    {
+        public nothrow FramesRequest()
+        {
+        }
+        public int lowFrame;
+        public int highFrame;
+    }
+
+    [xml="true"]
+    public class FramesReply
+    {
+        public nothrow FramesReply()
+        {
+        }
+        public bool success;
+        public List<Location> frames;
+        public string error;
+    }
+
+    [xml="true"]
+    public class CountRequest
+    {
+        public nothrow CountRequest()
+        {
+        }
+        public string expression;
+    }
+
+    [xml="true"]
+    public class CountReply
+    {
+        public nothrow CountReply()
+        {
+        }
+        public bool success;
+        public int count;
+        public string error;
+    }
+
+    [xml="true"]
+    public class EvaluateChildRequest
+    {
+        public nothrow EvaluateChildRequest()
+        {
+        }
+        public string expression;
+        public int start;
+        public int count;
+    }
+
+    [xml="true"]
+    public class EvaluateChildReply
+    {
+        public nothrow EvaluateChildReply()
+        {
+        }
+        public bool success;
+        public List<ChildResult> results;
+        public string error;
+    }
+
+    [xml="true"]
+    public class EvaluateRequest
+    {
+        public nothrow EvaluateRequest()
+        {
+        }
+        public string expression;
+    }
+
+    [xml="true"]
+    public class EvaluateReply
+    {
+        public nothrow EvaluateReply()
+        {
+        }
+        public bool success;
+        public Result result;
+        public string error;
+    }
+
+    [xml="true"]
+    public class TargetRunningRequest
+    {
+        public nothrow TargetRunningRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class TargetRunningReply
+    {
+        public nothrow TargetRunningReply()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class TargetInputRequest
+    {
+        public nothrow TargetInputRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class TargetInputReply
+    {
+        public nothrow TargetInputReply()
+        {
+        }
+        public string line;
+        public bool eof;
+    }
+
+    [xml="true"]
+    public class TargetOutputRequest
+    {
+        public nothrow TargetOutputRequest()
+        {
+        }
+        public int handle;
+        public string output;
+    }
+
+    [xml="true"]
+    public class TargetOutputReply
+    {
+        public nothrow TargetOutputReply()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class LogDebugMessageRequest
+    {
+        public nothrow LogDebugMessageRequest()
+        {
+        }
+        public string logMessage;
+    }
+
+    [xml="true"]
+    public class LogDebugMessageReply
+    {
+        public nothrow LogDebugMessageReply()
+        {
+        }
+    }
+
+} // namespace Cm.Service.Debug

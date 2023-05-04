@@ -1,0 +1,23 @@
+using System;
+using MdbTokens;
+
+parser StatementParser
+{
+    uselexer MdbLexer;
+    main;
+
+    using MdbExprParser.Expression;
+
+    Statement : cmsx.debug.Node*
+        ::= PrintStatement:printStatement{ return printStatement; }
+        |   TraceStatement:traceStatement{ return traceStatement; }
+        ;
+
+    PrintStatement(var Span s) : cmsx.debug.Node*
+        ::= PRINT{ s = span; } Expression:expr{ s.end = span.end; return new cmsx.debug.PrintStatementNode(s, expr); }
+        ;
+
+    TraceStatement(var Span s) : cmsx.debug.Node*
+        ::= (TRACE{ s = span; } Expression:expr?){ s.end = span.end; return new cmsx.debug.TraceStatementNode(s, expr); }
+        ;
+}

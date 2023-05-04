@@ -1,0 +1,15 @@
+project cmsxa;
+target=library;
+reference <../cmsxm/cmsxm.cmp>;
+reference <../cmsxo/cmsxo.cmp>;
+source <Assembler.cm>;
+source <Assembly.cm>;
+source <AssemblyClassMap.cm>;
+source <AssemblyInstruction.cm>;
+source <AssemblyLexer.cm>;
+source <AssemblyParser.cm>;
+source <AssemblyTokens.cm>;
+source <Visitor.cm>;
+text <AssemblyLexer.lexer>;
+text <AssemblyParser.parser>;
+text <AssemblyParser.spg>;

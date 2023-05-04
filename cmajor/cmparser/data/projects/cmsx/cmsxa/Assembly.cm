@@ -1,0 +1,510 @@
+using System;
+using System.IO;
+using System.Collections;
+using Span = System.Lex.Span;
+
+namespace cmsx.assembly
+{
+    public const int IS = 256;
+    public const int EXTERN = 257;
+    public const int LINKONCE = 258;
+    public const int FUNC = 259;
+    public const int ENDF = 260;
+    public const int STRUCT = 261;
+    public const int ENDS = 262;
+    public const int BYTE = 263;
+    public const int WYDE = 264;
+    public const int TETRA = 265;
+    public const int OCTA = 266;
+    public const int CODE = 267;
+    public const int DATA = 268;
+    public const int DEBUG = 269;
+    public const int LDA = 270;
+    public const int SET = 271;
+    public const int BSPEC = 272;
+    public const int ESPEC = 273;
+    public const int numInsts = ESPEC + 1;
+
+    public const ulong FILEINFO = 0u; // file info discriminator
+    public const ulong FUNCINFO = 1u; // function info discriminator
+    public const ulong LINEINFO = 2u; // line info discriminator
+    public const ulong BEGINTRY = 3u; // begin try block discriminator
+    public const ulong ENDTRY = 4u; // end try block discriminator
+    public const ulong CATCH = 5u; // catch block discriminator
+    public const ulong BEGINCLEANUP = 6u; // begin cleanup dispatch discriminator
+    public const ulong ENDCLEANUP = 7u; // end cleanup dispatch discriminator
+
+    public class PseudoOpMap
+    {
+        static PseudoOpMap() : instance(new PseudoOpMap())
+        {
+        }
+        public static nothrow PseudoOpMap& Instance()
+        {
+            return *instance;
+        }
+        private PseudoOpMap()
+        {
+            codes["IS"] = IS;
+            codes["EXTERN"] = EXTERN;
+            codes["LINKONCE"] = LINKONCE;
+            codes["FUNC"] = FUNC;
+            codes["ENDF"] = ENDF;
+            codes["STRUCT"] = STRUCT;
+            codes["ENDS"] = ENDS;
+            codes["BYTE"] = BYTE;
+            codes["WYDE"] = WYDE;
+            codes["TETRA"] = TETRA;
+            codes["OCTA"] = OCTA;
+            codes[".CODE"] = CODE;
+            codes[".DATA"] = DATA;
+            codes[".DEBUG"] = DEBUG;
+            codes["LDA"] = LDA;
+            codes["SET"] = SET;
+            codes["BSPEC"] = BSPEC;
+            codes["ESPEC"] = ESPEC;
+            names[IS] = "IS";
+            names[EXTERN] = "EXTERN";
+            names[LINKONCE] = "LINKONCE";
+            names[FUNC] = "FUNC";
+            names[ENDF] = "ENDF";
+            names[STRUCT] = "STRUCT";
+            names[ENDS] = "ENDS";
+            names[BYTE] = "BYTE";
+            names[WYDE] = "WYDE";
+            names[TETRA] = "TETRA";
+            names[OCTA] = "OCTA";
+            names[CODE] = ".CODE";
+            names[DATA] = ".DATA";
+            names[DEBUG] = ".DEBUG";
+            names[LDA] = "LDA";
+            names[SET] = "SET";
+            names[BSPEC] = "BSPEC";
+            names[ESPEC] = "ESPEC";
+            for (const Pair<int, string>& codeName : names)
+            {
+                if (codeName.second.Length() > maxOpCodeNameLength)
+                {
+                    maxOpCodeNameLength = cast<int>(codeName.second.Length());
+                }
+            }
+        }
+        public nothrow int GetCode(const string& name) const
+        {
+            HashMap<string, int>.ConstIterator it = codes.CFind(name);
+            if (it != codes.CEnd())
+            {
+                return it->second;
+            }
+            return -1;
+        }
+        public string GetName(int code) const
+        {
+            HashMap<int, string>.ConstIterator it = names.CFind(code);
+            if (it != names.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                throw Exception("name for code '" + ToString(code) + "' not found");
+            }
+        }
+        public int MaxOpCodeNameLength() const
+        {
+            return maxOpCodeNameLength;
+        }
+        private static UniquePtr<PseudoOpMap> instance;
+        private HashMap<string, int> codes;
+        private HashMap<int, string> names;
+        private int maxOpCodeNameLength;
+    }
+
+    public string GetOpCodeStr(int opCode)
+    {
+        if (opCode < 256)
+        {
+            return cmsx.machine.GetOpCodeName(cast<byte>(opCode));
+        }
+        else
+        {
+            return PseudoOpMap.Instance().GetName(opCode);
+        }
+    }
+
+    public abstract class Node
+    {
+        public nothrow Node(const Span& span_) : span(span_)
+        {
+        }
+        public default virtual ~Node();
+        public abstract void Accept(Visitor& visitor);
+        public Span span;
+    }
+
+    public abstract class Constant : Node
+    {
+        public nothrow Constant(const Span& span_) : base(span_)
+        {
+        }
+    }
+
+    public abstract class IntegralConstant : Constant
+    {
+        public nothrow IntegralConstant(const Span& span_, ulong value_) : base(span_), value(value_)
+        {
+        }
+        public ulong value;
+    }
+
+    public class DecimalConstant : IntegralConstant
+    {
+        public nothrow DecimalConstant(const Span& span_, ulong value_) : base(span_, value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class HexConstant : IntegralConstant
+    {
+        public nothrow HexConstant(const Span& span_, ulong value_) : base(span_, value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public HexConstant* MakeHexConstant(const Span& span, const System.Lex.Token& token)
+    {
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == '#')
+        {
+            ++p;
+        }
+        string s = ToUtf8(ustring(p, e));
+        return new HexConstant(span, ParseHexULong(s));
+    }
+
+    public class CharacterConstant : Constant
+    {
+        public nothrow CharacterConstant(const Span& span_, uchar value_) : base(span_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public uchar value;
+    }
+
+    public CharacterConstant* MakeCharConstant(const Span& span, const System.Lex.Token& token)
+    {
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == '\'')
+        {
+            ++p;
+        }
+        return new CharacterConstant(span, *p);
+    }
+
+    public class StringConstant : Constant
+    {
+        public nothrow StringConstant(const Span& span_, const ustring& value_) : base(span_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public ustring value;
+    }
+
+    public StringConstant* MakeStringConstant(const Span& span, const System.Lex.Token& token)
+    {
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        uchar* start = p;
+        uchar* end = p;
+        while (p != e && *p != '"')
+        {
+            ++p;
+            end = p;
+        }
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        if (p != e)
+        {
+            Error("invalid string constant", span);
+        }
+        return new StringConstant(span, ustring(start, end));
+    }
+
+    public class ClsIdConstant : Constant
+    {
+        public nothrow ClsIdConstant(const Span& span_, const string& typeId_) : base(span_), typeId(typeId_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public string typeId;
+    }
+
+    public ClsIdConstant* MakeClsIdConstant(const Span& span, const System.Lex.Token& token)
+    {
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        uchar* start = p;
+        uchar* end = p;
+        if (p != e && *p == '$')
+        {
+            ++p;
+            if (p != e && *p == 'C')
+            {
+                ++p;
+                if (p != e && *p == 'L')
+                {
+                    ++p;
+                    if (p != e && *p == 'S')
+                    {
+                        ++p;
+                        if (p != e && *p == 'I')
+                        {
+                            ++p;
+                            if (p != e && *p == 'D')
+                            {
+                                ++p;
+                                if (p != e && *p == '(')
+                                {
+                                    ++p;
+                                    start = p;
+                                    while (p != e && *p != ')')
+                                    {
+                                        ++p;
+                                        end = p;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ustring s(start, end);
+        if (s.IsEmpty())
+        {
+            Error("invalid class identifier constant", span);
+        }
+        for (uchar c : s)
+        {
+            if (!IsAsciiHexDigit(c))
+            {
+                Error("invalid class identifier constant", span);
+            }
+        }
+        return new ClsIdConstant(span, ToUtf8(s));
+    }
+
+    public class SymbolNode : Node
+    {
+        public nothrow SymbolNode(const Span& span_, const string& name_, bool local_) : base(span_), name(name_), local(local_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public string name;
+        public bool local;
+    }
+
+    public SymbolNode* MakeLocalSymbolNode(const Span& span, const System.Lex.Token& token)
+    {
+        return new SymbolNode(span, ToUtf8(token.match.ToString()), true);
+    }
+
+    public SymbolNode* MakeSymbolNode(const Span& span, const System.Lex.Token& token)
+    {
+        return new SymbolNode(span, ToUtf8(token.match.ToString()), false);
+    }
+
+    public enum Direction
+    {
+        forward, backward
+    }
+
+    public class At : Node
+    {
+        public nothrow At(const Span& span_) : base(span_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public enum Operator : byte
+    {
+        unaryPlus, unaryMinus, complement, register, serial,
+        multiply, divide, fractionalDivide, modulus, shiftLeft, shiftRight, bitwiseAnd,
+        add, subtract, bitwiseOr, bitwiseXor
+    }
+
+    public class UnaryExpression : Node
+    {
+        public nothrow UnaryExpression(const Span& span_, Operator op_, Node* subject_) : base(span_), op(op_), subject(subject_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public Operator op;
+        public UniquePtr<Node> subject;
+    }
+
+    public class BinaryExpression : Node
+    {
+        public nothrow BinaryExpression(const Span& span_, Node* left_, Operator op_, Node* right_) : base(span_), left(left_), op(op_), right(right_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public Operator op;
+        public UniquePtr<Node> left;
+        public UniquePtr<Node> right;
+    }
+
+    public class ParenthesizedExpression : Node
+    {
+        public nothrow ParenthesizedExpression(const Span& span_, Node* subject_) : base(span_), subject(subject_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public UniquePtr<Node> subject;
+    }
+
+    public class OpCode : Node
+    {
+        public nothrow OpCode(const Span& span_, const string& name_) : base(span_), name(name_), value(-1)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public string name;
+        public int value;
+    }
+
+    public nothrow OpCode* MakeOpCode(const Span& span, const ustring& name)
+    {
+        return new OpCode(span, ToUtf8(name));
+    }
+
+    public class OperandList : Node
+    {
+        public nothrow OperandList(const Span& span_, Node* firstOperand_) : base(span_)
+        {
+            operands.Add(UniquePtr<Node>(firstOperand_));
+        }
+        suppress OperandList(const OperandList&);
+        suppress void operator=(const OperandList&);
+        suppress OperandList(OperandList&&);
+        suppress void operator=(OperandList&&);
+        public void AddOperand(Node* operand)
+        {
+            operands.Add(UniquePtr<Node>(operand));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public List<UniquePtr<Node>> operands;
+    }
+
+    public class Instruction : Node
+    {
+        public nothrow Instruction(const Span& span_, Node* label_, OpCode* opCode_, OperandList* operandList_) : base(span_), label(label_), opCode(opCode_), operandList(operandList_)
+        {
+        }
+        suppress Instruction(const Instruction&);
+        suppress void operator=(const Instruction&);
+        suppress Instruction(Instruction&&);
+        suppress void operator=(Instruction&&);
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public UniquePtr<Node> label;
+        public UniquePtr<OpCode> opCode;
+        public UniquePtr<OperandList> operandList;
+    }
+
+    Instruction* MakeModeInst(const Span& span, const System.Lex.Token& token)
+    {
+        ustring mode = ToLower(token.match.ToString());
+        if (mode == u"code")
+        {
+            return new Instruction(span, null, new OpCode(span, ".CODE"), null);
+        }
+        else if (mode == u"data")
+        {
+            return new Instruction(span, null, new OpCode(span, ".DATA"), null);
+        }
+        else if (mode == u"debug")
+        {
+            return new Instruction(span, null, new OpCode(span, ".DEBUG"), null);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void ProcessAssemblyFile(int index, const string& assemblyFilePath, bool verbose, const string& outdir)
+    {
+        if (verbose)
+        {
+            Console.Out() << "> " << assemblyFilePath << endl();
+        }
+        List<UniquePtr<Instruction>> instructions;
+        AssemblyLexer lexer(ToUtf32(File.ReadAllText(assemblyFilePath)), assemblyFilePath, index);
+        ScopedAssemblyLexerPtr lexerPtr(&lexer);
+        AssemblyParser.Parse(lexer, &instructions);
+        string objectFilePath = Path.ChangeExtension(assemblyFilePath, ".o");
+        if (!outdir.IsEmpty())
+        {
+            objectFilePath = Path.Combine(outdir, Path.GetFileNameWithoutExtension(assemblyFilePath) + ".o");
+        }
+        Assembler assembler(objectFilePath);
+        assembler.Assemble(instructions);
+        cmsx.object.LinkInternal(assembler.objectFile);
+        assembler.objectFile.Finalize();
+        if (verbose)
+        {
+            Console.Out() << "==> " << objectFilePath << endl();
+        }
+        assembler.WriteObjectFile();
+    }
+}

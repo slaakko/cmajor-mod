@@ -1,0 +1,300 @@
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    public class CommandList
+    {
+        public nothrow CommandList() :
+            currentIndex(0), commands()
+        {
+        }
+        public nothrow void SetMenuItems(MenuItem* undoMenuItem_, MenuItem* redoMenuItem_)
+        {
+            undoMenuItem = undoMenuItem_;
+            redoMenuItem = redoMenuItem_;
+            UpdateMenuItems();
+        }
+        public nothrow void AddCommand(Command* command)
+        {
+            command->Finalize();
+            if (currentIndex >= commands.Count())
+            {
+                commands.Add(UniquePtr<Command>(command));
+                currentIndex = cast<int>(commands.Count());
+            }
+            else
+            {
+                commands[currentIndex].Reset(command);
+                ++currentIndex;
+            }
+            commands.Resize(currentIndex);
+            UpdateMenuItems();
+        }
+        public nothrow bool CanUndo() const
+        {
+            return currentIndex > 0;
+        }
+        public nothrow void Undo()
+        {
+            if (CanUndo())
+            {
+                --currentIndex;
+                Command* command = commands[currentIndex].Get();
+                command->Undo();
+            }
+            UpdateMenuItems();
+        }
+        public nothrow bool CanRedo() const
+        {
+            return currentIndex < commands.Count();
+        }
+        public nothrow void Redo()
+        {
+            if (CanRedo())
+            {
+                Command* command = commands[currentIndex].Get();
+                command->Redo();
+                ++currentIndex;
+            }
+            UpdateMenuItems();
+        }
+        private void UpdateMenuItems()
+        {
+            if (CanUndo())
+            {
+                undoMenuItem->Enable();
+            }
+            else
+            {
+                undoMenuItem->Disable();
+            }
+            if (CanRedo())
+            {
+                redoMenuItem->Enable();
+            }
+            else
+            {
+                redoMenuItem->Disable();
+            }
+        }
+        private int currentIndex;
+        private List<UniquePtr<Command>> commands;
+        private MenuItem* undoMenuItem;
+        private MenuItem* redoMenuItem;
+    }
+
+    public abstract class Command
+    {
+        public nothrow Command(Diagram& diagram_) :
+            diagram(diagram_)
+        {
+        }
+        public virtual default ~Command();
+        public abstract nothrow void Finalize();
+        public abstract nothrow void Undo();
+        public abstract nothrow void Redo();
+        public inline nothrow Diagram& GetDiagram()
+        {
+            return diagram;
+        }
+        private Diagram& diagram;
+    }
+
+    public class ElementIndexPair
+    {
+        public nothrow ElementIndexPair(DiagramElement* element_, int index_) :
+            element(element_), index(index_)
+        {
+        }
+        public inline nothrow void Set(UniquePtr<DiagramElement>&& element_)
+        {
+            element = Rvalue(element_);
+        }
+        public inline nothrow DiagramElement* Get() const
+        {
+            return element.Get();
+        }
+        public inline nothrow DiagramElement* Release()
+        {
+            return element.Release();
+        }
+        public inline nothrow int Index() const
+        {
+            return index;
+        }
+        private UniquePtr<DiagramElement> element;
+        private int index;
+    }
+
+    public class DecreasingElementIndexPairOrder : Rel<ElementIndexPair>
+    {
+        public inline nothrow bool operator()(const ElementIndexPair& left, const ElementIndexPair& right) const
+        {
+            return left.Index() > right.Index();
+        }
+    }
+
+    public class DecreasingIndexOrder : Rel<int>
+    {
+        public inline nothrow bool operator()(int left, int right) const
+        {
+            return left > right;
+        }
+    }
+
+    public class DeleteElementsCommand : Command
+    {
+        public nothrow DeleteElementsCommand(Diagram& diagram) :
+            base(diagram)
+        {
+        }
+        public nothrow void AddDeletedElement(DiagramElement* element, int index)
+        {
+            deletedElements.Add(ElementIndexPair(element, index));
+        }
+        public override nothrow void Finalize()
+        {
+            Sort(deletedElements.Begin(), deletedElements.End(), DecreasingElementIndexPairOrder());
+        }
+        public override nothrow void Undo()
+        {
+            for (ElementIndexPair& deleted : deletedElements)
+            {
+                deleted.Get()->ResetSelected();
+                GetDiagram().InsertElement(deleted.Release(), deleted.Index());
+            }
+        }
+        public override nothrow void Redo()
+        {
+            for (ElementIndexPair& deleted : deletedElements)
+            {
+                deleted.Set(GetDiagram().RemoveElementByIndex(deleted.Index()));
+            }
+        }
+        private List<ElementIndexPair> deletedElements;
+    }
+
+    public class AddElementsCommand : Command
+    {
+        public nothrow AddElementsCommand(Diagram& diagram) :
+            base(diagram)
+        {
+        }
+        public nothrow void AddIndex(int index)
+        {
+            indeces.Add(index);
+        }
+        public override nothrow void Finalize()
+        {
+            Sort(indeces.Begin(), indeces.End(), DecreasingIndexOrder());
+        }
+        public override nothrow void Undo()
+        {
+            for (int index : indeces)
+            {
+                UniquePtr<DiagramElement> element = GetDiagram().RemoveElementByIndex(index);
+                addedElements.Add(ElementIndexPair(element.Release(), index));
+            }
+        }
+        public override nothrow void Redo()
+        {
+            for (ElementIndexPair& addedElement : addedElements)
+            {
+                addedElement.Get()->ResetSelected();
+                GetDiagram().InsertElement(addedElement.Release(), addedElement.Index());
+            }
+            addedElements.Clear();
+        }
+        private List<int> indeces;
+        private List<ElementIndexPair> addedElements;
+    }
+
+    public class ReplaceElementCommand : Command
+    {
+        public nothrow ReplaceElementCommand(Diagram& diagram, int elementIndex_) :
+            base(diagram), elementIndex(elementIndex_)
+        {
+            element.Reset(diagram.ReleaseElementByIndex(elementIndex));
+        }
+        public override nothrow void Finalize()
+        {
+        }
+        public override nothrow void Undo()
+        {
+            UniquePtr<DiagramElement> newElement(GetDiagram().ReleaseElementByIndex(elementIndex));
+            if (element.Get() is ContainerElement*)
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                HashMap<DiagramElement*, DiagramElement*> cloneMap;
+                cloneMap[newElement.Get()] = containerElement;
+                containerElement->MapChildObjects(cast<ContainerElement*>(newElement.Get()), cloneMap);
+            }
+            element.Get()->ResetSelected();
+            GetDiagram().SetElementByIndex(element.Release(), elementIndex);
+            element = Rvalue(newElement);
+        }
+        public override nothrow void Redo()
+        {
+            UniquePtr<DiagramElement> oldElement(GetDiagram().ReleaseElementByIndex(elementIndex));
+            if (element.Get() is ContainerElement*)
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                HashMap<DiagramElement*, DiagramElement*> cloneMap;
+                cloneMap[oldElement.Get()] = containerElement;
+                containerElement->MapChildObjects(cast<ContainerElement*>(oldElement.Get()), cloneMap);
+            }
+            element.Get()->ResetSelected();
+            GetDiagram().SetElementByIndex(element.Release(), elementIndex);
+            element = Rvalue(oldElement);
+        }
+        private int elementIndex;
+        private UniquePtr<DiagramElement> element;
+    }
+
+    public class MoveCommand : Command
+    {
+        public nothrow MoveCommand(Diagram& diagram) :
+            base(diagram)
+        {
+        }
+        public override nothrow void Finalize()
+        {
+        }
+        public nothrow void AddOldLocation(int index, const CompoundLocation& oldLocation)
+        {
+            indeces.Add(index);
+            oldLocations.Add(oldLocation);
+        }
+        public nothrow void AddNewLocation(const CompoundLocation& newLocation)
+        {
+            newLocations.Add(newLocation);
+        }
+        public override nothrow void Undo()
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                element->SetCompoundLocation(oldLocations[i]);
+            }
+        }
+        public override nothrow void Redo()
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = GetDiagram().GetElementByIndex(index);
+                element->SetCompoundLocation(newLocations[i]);
+            }
+            newLocations.Clear();
+        }
+        private List<int> indeces;
+        private List<CompoundLocation> oldLocations;
+        private List<CompoundLocation> newLocations;
+    }
+
+} // namespace spring

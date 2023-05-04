@@ -1,0 +1,347 @@
+using System;
+using System.Windows;
+
+namespace spring
+{
+    public const int clickThresholdMs = 250u;
+
+    public class Canvas : Control
+    {
+        public Canvas(const System.Windows.Color& backgroundColor, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("spring.canvas", DoubleClickWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(), backgroundColor, "canvas", location, size, dock, anchors), diagram(new Diagram()), operationCreated(false), buttonPressed(false)
+        {
+            diagram->SetCanvas(this);
+        }
+        public Canvas() :
+            this(System.Windows.Color.White(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none)
+        {
+        }
+        public nothrow void SetNoteCornerBitmap(Bitmap* noteCornerBitmap_)
+        {
+            noteCornerBitmap = noteCornerBitmap_;
+        }
+        public inline nothrow Bitmap* GetNoteCornerBitmap() const
+        {
+            return noteCornerBitmap;
+        }
+        public nothrow Diagram& GetDiagram()
+        {
+            return *diagram;
+        }
+        public nothrow void SetDiagram(Diagram* diagram_)
+        {
+            diagram.Reset(diagram_);
+            diagram->SetMenuItems(undoMenuItem, redoMenuItem);
+            diagram->SetCanvas(this);
+            diagram->SetChanged();
+            diagram->Invalidate();
+            diagram->ResetModified();
+            Invalidate();
+        }
+        public nothrow void SetViewOrigin(const PointF& viewOrigin_)
+        {
+            viewOrigin = viewOrigin_;
+            Invalidate();
+        }
+        public nothrow void SetModifiedStatusBarItem(StatusBarItem* modifiedStatusBarItem_)
+        {
+            modifiedStatusBarItem = modifiedStatusBarItem_;
+        }
+        public nothrow StatusBarItem* GetModifiedStatusBarItem() const
+        {
+            return modifiedStatusBarItem;
+        }
+        public nothrow void SetCopyMenuItem(MenuItem* copyMenuItem_)
+        {
+            copyMenuItem = copyMenuItem_;
+        }
+        public nothrow void SetCutMenuItem(MenuItem* cutMenuItem_)
+        {
+            cutMenuItem = cutMenuItem_;
+        }
+        public nothrow void SetPasteMenuItem(MenuItem* pasteMenuItem_)
+        {
+            pasteMenuItem = pasteMenuItem_;
+        }
+        public nothrow void SetUndoMenuItem(MenuItem* undoMenuItem_)
+        {
+            undoMenuItem = undoMenuItem_;
+        }
+        public nothrow void SetRedoMenuItem(MenuItem* redoMenuItem_)
+        {
+            redoMenuItem = redoMenuItem_;
+        }
+        protected override void SetCursor()
+        {
+            SetCursor(PointF());
+        }
+        void SetCursor(const PointF& location)
+        {
+            if (Tools.Current() is SelectTool*)
+            {
+                if (diagram->GetOperation() is ResizeRectangleSelectionOperation*)
+                {
+                    ResizeRectangleSelectionOperation* operation = cast<ResizeRectangleSelectionOperation*>(diagram->GetOperation());
+                    SetCursor(*operation->GetCursor());
+                    return;
+                }
+                else
+                {
+                    if (diagram->GetSelection() is RectangleSelection*)
+                    {
+                        RectangleSelection* selection = cast<RectangleSelection*>(diagram->GetSelection());
+                        SetCursor(*selection->GetCursor(location));
+                        return;
+                    }
+                }
+            }
+            if (buttonPressed)
+            {
+                SetCursor(*Tools.Current()->GetPressedCursor());
+            }
+            else
+            {
+                SetCursor(*Tools.Current()->GetCursor());
+            }
+        }
+        protected override void OnPaint(PaintEventArgs& args)
+        {
+            SetCursor();
+            Unit prevUnit = args.graphics.GetPageUnitChecked();
+            TextRenderingHint prevTextRenderingHint = args.graphics.GetTextRenderingHint();
+            args.graphics.SetTextRenderingHintChecked(TextRenderingHint.clearTypeGridFit);
+            SmoothingMode prevSmoothingMode = args.graphics.GetSmoothingModeChecked();
+            args.graphics.SetSmoothingModeChecked(SmoothingMode.highQuality);
+            args.graphics.SetPageUnitChecked(Unit.millimeter);
+            args.graphics.ClearChecked(BackgroundColor());
+            args.graphics.TranslateTransformChecked(-viewOrigin.x, -viewOrigin.y);
+            diagram->Draw(args.graphics);
+            args.graphics.SetTextRenderingHintChecked(prevTextRenderingHint);
+            args.graphics.SetPageUnitChecked(prevUnit);
+            args.graphics.SetSmoothingModeChecked(prevSmoothingMode);
+        }
+        public void KeyDown(KeyEventArgs& args)
+        {
+            switch (args.key)
+            {
+                case Keys.delete_: 
+                {
+                    DeleteSelection();
+                    break;
+                }
+                case Keys.escape: 
+                {
+                    diagram->CancelOperation();
+                    break;
+                }
+            }
+        }
+        protected override void OnMouseDown(MouseEventArgs& args)
+        {
+            base->OnMouseDown(args);
+            PointF location = ToDiagramLocation(args.location);
+            DiagramElement* element = null;
+            int index = diagram->GetIndexOfElementAt(location);
+            if (index != -1)
+            {
+                element = diagram->GetElementByIndex(index);
+            }
+            MouseButtons buttons = args.buttons;
+            bool shift = (buttons & MouseButtons.shift) != MouseButtons.none;
+            bool control = (buttons & MouseButtons.control) != MouseButtons.none;
+            bool left = (buttons & MouseButtons.lbutton) != MouseButtons.none;
+            bool right = (buttons & MouseButtons.rbutton) != MouseButtons.none;
+            mouseDownArgs = MouseArgs(diagram.Get(), location, index, element, shift, control, left, right);
+            operationCreated = false;
+            if (left)
+            {
+                buttonPressed = true;
+            }
+            SetCursor(location);
+        }
+        protected override void OnMouseMove(MouseEventArgs& args)
+        {
+            base->OnMouseMove(args);
+            PointF location = ToDiagramLocation(args.location);
+            MouseButtons buttons = args.buttons;
+            bool shift = (buttons & MouseButtons.shift) != MouseButtons.none;
+            bool control = (buttons & MouseButtons.control) != MouseButtons.none;
+            bool left = (buttons & MouseButtons.lbutton) != MouseButtons.none;
+            bool right = (buttons & MouseButtons.rbutton) != MouseButtons.none;
+            DiagramElement* element = null;
+            int index = -1;
+            if (left || right)
+            {
+                index = diagram->GetIndexOfElementAt(location);
+                if (index != -1)
+                {
+                    element = diagram->GetElementByIndex(index);
+                }
+            }
+            mouseMoveArgs = MouseArgs(diagram.Get(), location, index, element, shift, control, left, right);
+            if (Tools.Current()->CanMove())
+            {
+                if (left && !right && !shift && !control)
+                {
+                    if (!operationCreated)
+                    {
+                        operationCreated = true;
+                        Tools.Current()->CreateOperation(mouseDownArgs);
+                    }
+                    Tools.Current()->ContinueOperation(mouseMoveArgs);
+                }
+            }
+            else if (Tools.Current() is RelationshipTool*)
+            {
+                diagram->AdvanceOperation(mouseMoveArgs);
+            }
+            SetCursor(location);
+        }
+        protected override void OnMouseUp(MouseEventArgs& args)
+        {
+            base->OnMouseUp(args);
+            PointF location = ToDiagramLocation(args.location);
+            DiagramElement* element = null;
+            int index = diagram->GetIndexOfElementAt(location);
+            if (index != -1)
+            {
+                element = diagram->GetElementByIndex(index);
+            }
+            MouseButtons buttons = args.buttons;
+            bool shift = (buttons & MouseButtons.shift) != MouseButtons.none;
+            bool control = (buttons & MouseButtons.control) != MouseButtons.none;
+            bool left = (buttons & MouseButtons.lbutton) != MouseButtons.none;
+            bool right = (buttons & MouseButtons.rbutton) != MouseButtons.none;
+            mouseUpArgs = MouseArgs(diagram.Get(), location, index, element, shift, control, left, right);
+            if (Tools.Current()->CanMove())
+            {
+                Duration duration = mouseUpArgs.time - mouseDownArgs.time;
+                if (duration <= Duration.FromMilliseconds(clickThresholdMs))
+                {
+                    if (Tools.Current() is SelectTool*)
+                    {
+                        if (operationCreated)
+                        {
+                            operationCreated = false;
+                            Tools.Current()->CancelOperation(mouseUpArgs);
+                        }
+                        Tools.Current()->MouseClick(mouseUpArgs);
+                    }
+                }
+                else
+                {
+                    if (operationCreated)
+                    {
+                        operationCreated = false;
+                        Tools.Current()->CommitOperation(mouseUpArgs);
+                    }
+                }
+            }
+            else if (Tools.Current() is SimpleClickTool*)
+            {
+                Tools.Current()->MouseClick(mouseUpArgs);
+            }
+            buttonPressed = false;
+            SetCursor(location);
+        }
+        protected override void OnMouseDoubleClick(MouseEventArgs& args)
+        {
+            base->OnMouseDoubleClick(args);
+            PointF location = ToDiagramLocation(args.location);
+            int index = diagram->GetIndexOfElementAt(location);
+            DiagramElement* element = null;
+            if (index != -1)
+            {
+                element = diagram->GetElementByIndex(index);
+            }
+            MouseButtons buttons = args.buttons;
+            bool shift = (buttons & MouseButtons.shift) != MouseButtons.none;
+            bool control = (buttons & MouseButtons.control) != MouseButtons.none;
+            bool left = (buttons & MouseButtons.lbutton) != MouseButtons.none;
+            bool right = (buttons & MouseButtons.rbutton) != MouseButtons.none;
+            MouseArgs mouseDoubleClickArgs(diagram.Get(), location, index, element, shift, control, left, right);
+            Tools.Current()->MouseDoubleClick(mouseDoubleClickArgs);
+        }
+        public nothrow PointF ToDiagramLocation(const Point& controlLocation)
+        {
+            float x = ScreenMetrics.Get().HorizontalPixelsToMM(controlLocation.x);
+            float y = ScreenMetrics.Get().VerticalPixelsToMM(controlLocation.y);
+            PointF loc(x, y);
+            loc.Offset(viewOrigin.x, viewOrigin.y);
+            return loc;
+        }
+        public nothrow Point ToControlLocation(const PointF& diagramLocation)
+        {
+            PointF loc(diagramLocation);
+            loc.Offset(-viewOrigin.x, -viewOrigin.y);
+            int x = ScreenMetrics.Get().MMToHorizontalPixels(loc.x);
+            int y = ScreenMetrics.Get().MMToVerticalPixels(loc.y);
+            return Point(x, y);
+        }
+        private void DeleteSelection()
+        {
+            diagram->DeleteSelection();
+        }
+        public nothrow void EnableCopy()
+        {
+            if (copyMenuItem != null)
+            {
+                copyMenuItem->Enable();
+            }
+        }
+        public nothrow void EnableCut()
+        {
+            if (cutMenuItem != null)
+            {
+                cutMenuItem->Enable();
+            }
+        }
+        public nothrow void EnablePaste()
+        {
+            if (pasteMenuItem != null)
+            {
+                pasteMenuItem->Enable();
+            }
+        }
+        public nothrow void DisableCopy()
+        {
+            if (copyMenuItem != null)
+            {
+                copyMenuItem->Disable();
+            }
+        }
+        public nothrow void DisableCut()
+        {
+            if (cutMenuItem != null)
+            {
+                cutMenuItem->Disable();
+            }
+        }
+        public nothrow void DisablePaste()
+        {
+            if (pasteMenuItem != null)
+            {
+                pasteMenuItem->Disable();
+            }
+        }
+        public const PointF& ViewOrigin() const
+        {
+            return viewOrigin;
+        }
+        private UniquePtr<Diagram> diagram;
+        private Bitmap* noteCornerBitmap;
+        private StatusBarItem* modifiedStatusBarItem;
+        private MenuItem* copyMenuItem;
+        private MenuItem* cutMenuItem;
+        private MenuItem* pasteMenuItem;
+        private MenuItem* undoMenuItem;
+        private MenuItem* redoMenuItem;
+        private PointF viewOrigin;
+        private MouseArgs mouseDownArgs;
+        private MouseArgs mouseMoveArgs;
+        private MouseArgs mouseUpArgs;
+        private bool operationCreated;
+        private bool buttonPressed;
+    }
+
+} // namespace spring

@@ -1,0 +1,18 @@
+<solutionSettings classId="-1" className="SolutionSettings" objectId="00000000-0000-0000-0000-000000000000">
+    <callStackOpen value="false"/>
+    <localsViewOpen value="false"/>
+    <openFiles>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/Boot.cm"/>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/Console.cm"/>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/FileSystem.cm"/>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/INode.cm"/>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/Process.cm"/>
+        <item value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/RootFileSystem.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajorm/cmajor/projects/cmsx/cmsxk/FileSystem.cm"/>
+    <currentCursorLine value="92"/>
+    <breakpoints/>
+    <expandedProjects>
+        <item value="cmsxk"/>
+    </expandedProjects>
+</solutionSettings>

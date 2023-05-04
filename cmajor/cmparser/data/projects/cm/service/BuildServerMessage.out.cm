@@ -1,0 +1,197 @@
+using System;
+using System.Collections;
+using System.Xml.Serialization;
+
+namespace Cm.Service.Build
+{
+    [xml="true"]
+    public class StopBuildRequest
+    {
+        public nothrow StopBuildRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class StopBuildReply
+    {
+        public nothrow StopBuildReply()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class KeepAliveBuildRequest
+    {
+        public nothrow KeepAliveBuildRequest()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class KeepAliveBuildReply
+    {
+        public nothrow KeepAliveBuildReply()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class BuildRequest
+    {
+        public nothrow BuildRequest()
+        {
+        }
+        public string backend;
+        public string config;
+        public string optimizationLevel;
+        public string filePath;
+        public List<string> defines;
+        public string numBuildThreads;
+        public string toolChain;
+        public bool verbose;
+        public bool quiet;
+        public bool clean;
+        public bool strictNothrow;
+        public bool emitIR;
+        public bool emitOptIR;
+        public bool linkWithDebugRuntime;
+        public bool linkUsingMsLink;
+        public bool rebuild;
+        public bool buildAllDependencies;
+        public bool forceDebugInfo;
+        public bool forceNoDebugInfo;
+        public bool disableModuleCache;
+        public bool singleThreadedCompile;
+        public bool disableCodeGen;
+        public bool justMyCode;
+    }
+
+    [xml="true"]
+    public class CompileError
+    {
+        public string message;
+        public string project;
+        public string file;
+        public int line;
+        public int scol;
+        public int ecol;
+    }
+
+    [xml="true"]
+    public class BuildReply
+    {
+        public nothrow BuildReply()
+        {
+        }
+        public bool requestValid;
+        public string requestErrorMessage;
+        public string logException;
+        public string time;
+        public bool success;
+        public List<CompileError> errors;
+    }
+
+    [xml="true"]
+    public class LogBuildMessageRequest
+    {
+        public nothrow LogBuildMessageRequest()
+        {
+        }
+        public string message;
+    }
+
+    [xml="true"]
+    public class LogBuildMessageReply
+    {
+        public nothrow LogBuildMessageReply()
+        {
+        }
+        public bool ok;
+    }
+
+    [xml="true"]
+    public class BuildProgressMessage
+    {
+        public nothrow BuildProgressMessage()
+        {
+        }
+    }
+
+    [xml="true"]
+    public class GenericBuildErrorReply
+    {
+        public nothrow GenericBuildErrorReply()
+        {
+        }
+        public string error;
+    }
+
+    [xml="true"]
+    public class DefinitionSourceLocation
+    {
+        public nothrow DefinitionSourceLocation()
+        {
+        }
+        public nothrow DefinitionSourceLocation(const string& file_, int line_, int scol_, int ecol_) :
+            file(file_), line(line_), scol(scol_), ecol(ecol_)
+        {
+        }
+        public string file;
+        public int line;
+        public int scol;
+        public int ecol;
+    }
+
+    public nothrow bool operator==(const DefinitionSourceLocation& left, const DefinitionSourceLocation& right)
+    {
+        return left.file == right.file && left.line == right.line;
+    }
+
+    [xml="true"]
+    public class GetDefinitionRequest
+    {
+        public nothrow GetDefinitionRequest()
+        {
+        }
+        public string projectName;
+        public string projectFilePath;
+        public string backend;
+        public string config;
+        public string identifier;
+        public DefinitionSourceLocation identifierLocation;
+    }
+
+    [xml="true"]
+    public class GetDefinitionReply
+    {
+        public nothrow GetDefinitionReply()
+        {
+        }
+        public DefinitionSourceLocation definitionLocation;
+        public bool ok;
+        public string error;
+    }
+
+    [xml="true"]
+    public class CacheModuleRequest
+    {
+        public nothrow CacheModuleRequest()
+        {
+        }
+        public string projectName;
+        public string projectFilePath;
+        public string backend;
+        public string config;
+    }
+
+    [xml="true"]
+    public class CacheModuleReply
+    {
+        public nothrow CacheModuleReply()
+        {
+        }
+        public string error;
+    }
+
+} // namespace Cm.Service.Build

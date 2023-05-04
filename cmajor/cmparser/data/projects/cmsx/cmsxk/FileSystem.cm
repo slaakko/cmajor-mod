@@ -1,0 +1,1046 @@
+using System;
+using System.IO;
+using cmsx.machine;
+using cmsx.util;
+
+namespace cmsx.kernel
+{
+    public enum PathToINodeFlags : byte
+    {
+        none = 0u,
+        createEntry = 1u << 0u,
+        ignoreMountPoint = 1u << 1u
+    }
+
+    public const int statBufSize = 56;
+
+    public abstract class FileSystem
+    {
+        public nothrow FileSystem(const string& name_, int index_, bool readOnly_) : name(name_), index(index_), readOnly(readOnly_)
+        {
+        }
+        public default virtual ~FileSystem();
+        public virtual nothrow bool IsRootFileSystem() const
+        {
+            return false;
+        }
+        public virtual nothrow bool IsHostFileSystem() const
+        {
+            return false;
+        }
+        public abstract void Init();
+        public int Create(Process* process, const string& path, int mode, bool truncate)
+        {
+            if (Log())
+            {
+                LogMessage("fs.create", path);
+            }
+            DirectorySlot freeDirectorySlot;
+            INode* parent = null;
+            string name;
+            INode* inode = GetINodeManager()->PathToINode(process, path, PathToINodeFlags.createEntry, parent, freeDirectorySlot, name);
+            if (inode != null && inode->Type() != FileType.regular)
+            {
+                throw SystemError(EINVAL, "cannot create: file type of '" + path + "' is " + FileTypeStr(inode->Type()));
+            }
+            INodePutter parentPutter(parent);
+            INodePutter inodePutter;
+            if (inode != parent)
+            {
+                inodePutter.ResetINode(inode);
+            }
+            if (name.IsEmpty())
+            {
+                throw SystemError(EINVAL, "invalid path name '" + path + "'");
+            }
+            if (parent == null)
+            {
+                throw SystemError(EINVAL, "parent path of path '" + path + "' not found ");
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(parent->Key().fsNumber);
+            if (fs->IsReadOnly())
+            {
+                throw SystemError(EINVAL, "cannot create file " + path + "': file system '" + fs->Name() + "' is read-only");
+            }
+            if (inode != null)
+            {
+                if (truncate)
+                {
+                    GetBlockManager()->FreeBlocks(inode);
+                    inode->SetFileSize(0);
+                    inode->SetMTime();
+                }
+            }
+            else
+            {
+                try
+                {
+                    parent->CheckPermissions(process->uid, process->gid, Access.write);
+                }
+                catch (const SystemError& ex)
+                {
+                    throw SystemError(EPERM, "cannot write to directory '" + Path.GetDirectoryName(path) + "' using uid " + ToString(process->uid) + ": " + ex.message);
+                }
+                FileSystem* fs = GetMountTable().GetFileSystem(parent->Key().fsNumber);
+                int inodeNumber = fs->GetFreeINodeNumber();
+                INodeKey key(inodeNumber, parent->Key().fsNumber);
+                inode = GetINodeManager()->GetINode(key);
+                inodePutter.ResetINode(inode);
+                inode->SetType(FileType.regular);
+                if (mode == 0)
+                {
+                    mode = EncodeMode(INode.Flags.none, FileType.regular, cast<Access>(Access.read | Access.write), cast<Access>(Access.read | Access.write), cast<Access>(Access.read | Access.write));
+                }
+                mode = mode & ~process->umask;
+                inode->SetAccessMode(mode);
+                inode->SetUID(process->uid);
+                inode->SetGID(process->gid);
+                inode->SetFileSize(0);
+                inode->SetMTime();
+                Block* block = null;
+                if (freeDirectorySlot.blockNumber != invalidBlockNumber)
+                {
+                    block = GetBlockManager()->ReadBlock(BlockKey(freeDirectorySlot.blockNumber, parent->Key().fsNumber), null);
+                }
+                else
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    GetBlockManager()->GetBlockNumber(parent, freeDirectorySlot.offset, blockNumber, blockOffset, true);
+                    block = GetBlockManager()->GetBlock(BlockKey(blockNumber, parent->Key().fsNumber), null);
+                    block->Clear();
+                }
+                BlockPutter blockPutter(block);
+                DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                bool created = false;
+                for (int i = 0; i < numDirectoryEntriesInBlock; ++i)
+                {
+                    DirectoryEntry entry = directoryBlock->GetDirectoryEntry(i);
+                    if (entry.inodeNumber == 0)
+                    {
+                        entry.inodeNumber = inode->Key().inodeNumber;
+                        entry.name = name.Substring(0, nameMax -1);
+                        directoryBlock->SetDirectoryEntry(i, entry);
+                        if (freeDirectorySlot.blockNumber == invalidBlockNumber || freeDirectorySlot.offset >= parent->GetFileSize())
+                        {
+                            parent->SetFileSize(parent->GetFileSize() + directoryEntrySize);
+                        }
+                        created = true;
+                        break;
+                    }
+                }
+                if (created)
+                {
+                    directoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(directoryBlock, null);
+                    parent->SetMTime();
+                }
+                else
+                {
+                    throw SystemError(EFAIL, "no room for directory entry");
+                }
+            }
+            INodeLock lock(inode);
+            int fd = process->fileTable.GetEmptyFileSlot();
+            FilePtr* filePtr = new FilePtr(inode, cast<OpenFlags>(OpenFlags.read | OpenFlags.write | OpenFlags.create | OpenFlags.truncate));
+            RegularFile* regularFile = new RegularFile(name, filePtr);
+            process->fileTable.SetFile(fd, regularFile);
+            inodePutter.ResetINode();
+            return fd;
+        }
+        public int Open(Process* process, const string& path, OpenFlags flags, int mode)
+        {
+            if (Log())
+            {
+                LogMessage("fs.open", path);
+            }
+            if ((flags & OpenFlags.create) != OpenFlags.none)
+            {
+                return Create(process, path, mode, (flags & OpenFlags.truncate) != OpenFlags.none);
+            }
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter inodePutter(inode);
+            if (inode->Type() != FileType.regular && (flags & OpenFlags.write) != OpenFlags.none)
+            {
+                throw SystemError(EINVAL, "cannot open '" + path + "': for writing, file type is " + FileTypeStr(inode->Type()));
+            }
+            INodeLock lock(inode);
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            if (fs->IsReadOnly() && (flags & (OpenFlags.write | OpenFlags.append)) != OpenFlags.none)
+            {
+                throw SystemError(EINVAL, "cannot open '" + path + "' for writing: file system '" + fs->Name() + "' is read-only");
+            }
+            return fs->Open(process, inode, flags, path, inodePutter);
+        }
+        public virtual int Open(Process* process, INode* inode, OpenFlags flags, const string& path, INodePutter& inodePutter)
+        {
+            int fd = process->fileTable.GetEmptyFileSlot();
+            FilePtr* filePtr = new FilePtr(inode, flags);
+            RegularFile* regularFile = new RegularFile(Path.GetFileName(path), filePtr);
+            process->fileTable.SetFile(fd, regularFile);
+            inodePutter.ResetINode();
+            return fd;
+        }
+        public void Link(Process* process, const string& sourcePath, const string& targetPath)
+        {
+            if (Log())
+            {
+                LogMessage("fs.link", sourcePath + "->" + targetPath);
+            }
+            INode* source = GetINodeManager()->PathToINode(process, sourcePath);
+            if (source == null)
+            {
+                throw SystemError(ENOENT, "source path '" + sourcePath + "' does not exist");
+            }
+            if (Log())
+            {
+                LogMessage("fs.link", "source=" + source->ToString());
+            }
+            INodePutter sourcePutter(source);
+            DirectorySlot freeDirectorySlot;
+            INode* parent = null;
+            string name;
+            INode* inode = GetINodeManager()->PathToINode(process, targetPath, PathToINodeFlags.createEntry, parent, freeDirectorySlot, name);
+            INodePutter parentPutter(parent);
+            if (inode != null)
+            {
+                throw SystemError(EEXIST, "target path '" + targetPath + "' already exists");
+            }
+            if (name.IsEmpty())
+            {
+                throw SystemError(EINVAL, "invalid path name '" + targetPath + "'");
+            }
+            if (parent == null)
+            {
+                throw SystemError(EINVAL, "parent path of path '" + targetPath + "' not found ");
+            }
+            if (Log())
+            {
+                LogMessage("fs.link", "parent=" + parent->ToString());
+            }
+            try
+            {
+                parent->CheckPermissions(process->uid, process->gid, Access.write);
+            }
+            catch (const SystemError& ex)
+            {
+                throw SystemError(EPERM, "cannot write to directory '" + Path.GetDirectoryName(targetPath) + "' using uid " + ToString(process->uid) + ": " + ex.message);
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(parent->Key().fsNumber);
+            if (fs->IsReadOnly())
+            {
+                throw SystemError(EINVAL, "cannot link to path '" + targetPath + "': target file system '" + fs->Name() + "' is read-only");
+            }
+            if (source->Key().fsNumber != parent->Key().fsNumber)
+            {
+                throw SystemError(EINVAL, "cannot link across file systems: source file system number: " + ToString(source->Key().fsNumber) + ", target file system number: " + ToString(parent->Key().fsNumber));
+            }
+            Block* block = null;
+            if (freeDirectorySlot.blockNumber != invalidBlockNumber)
+            {
+                block = GetBlockManager()->ReadBlock(BlockKey(freeDirectorySlot.blockNumber, parent->Key().fsNumber), null);
+            }
+            else
+            {
+                int blockNumber = 0;
+                int blockOffset = 0;
+                GetBlockManager()->GetBlockNumber(parent, freeDirectorySlot.offset, blockNumber, blockOffset, true);
+                block = GetBlockManager()->GetBlock(BlockKey(blockNumber, parent->Key().fsNumber), null);
+                block->Clear();
+            }
+            BlockPutter blockPutter(block);
+            DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+            bool created = false;
+            for (int i = 0; i < numDirectoryEntriesInBlock; ++i)
+            {
+                DirectoryEntry entry = directoryBlock->GetDirectoryEntry(i);
+                if (entry.inodeNumber == 0)
+                {
+                    entry.inodeNumber = source->Key().inodeNumber;
+                    entry.name = name.Substring(0, nameMax - 1);
+                    directoryBlock->SetDirectoryEntry(i, entry);
+                    if (freeDirectorySlot.blockNumber == invalidBlockNumber || freeDirectorySlot.offset >= parent->GetFileSize())
+                    {
+                        parent->SetFileSize(parent->GetFileSize() + directoryEntrySize);
+                    }
+                    created = true;
+                    break;
+                }
+            }
+            if (created)
+            {
+                directoryBlock->SetFlag(Block.Flags.dirty);
+                GetBlockManager()->WriteBlock(directoryBlock, null);
+                parent->SetMTime();
+                parent->SetFlag(INode.Flags.dirty);
+                source->SetNumLinks(source->GetNumLinks() + 1);
+            }
+            else
+            {
+                throw SystemError(EFAIL, "no room for target directory entry");
+            }
+        }
+        public void Unlink(Process* process, const string& path)
+        {
+            if (Log())
+            {
+                LogMessage("fs.unlink", path);
+            }
+            string parentPath = Path.GetDirectoryName(path);
+            if (parentPath.IsEmpty())
+            {
+                if (path.StartsWith("/"))
+                {
+                    parentPath = "/";
+                }
+                else
+                {
+                    parentPath = ".";
+                }
+            }
+            string entryName = Path.GetFileName(path);
+            INode* parent = GetINodeManager()->PathToINode(process, parentPath);
+            if (parent == null)
+            {
+                throw SystemError(ENOENT, "directory '" + parentPath + "' does not exist");
+            }
+            INodePutter parentPutter(parent);
+            parent->ResetFlag(INode.Flags.locked);
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            parent->SetFlag(INode.Flags.locked);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            if (fs->IsReadOnly())
+            {
+                throw SystemError(EINVAL, "cannot unlink: file system '" + fs->Name() + "' is read-only");
+            }
+            try
+            {
+                parent->CheckPermissions(process->uid, process->gid, Access.write);
+            }
+            catch (const SystemError& ex)
+            {
+                throw SystemError(EPERM, "cannot write to directory '" + parentPath + "' using uid " + ToString(process->uid) + ": " + ex.message);
+            }
+            INodePutter inodePutter(inode);
+            if (Log())
+            {
+                LogMessage("fs.unlink", "parent=" + parent->ToString());
+                LogMessage("fs.unlink", "inode=" + inode->ToString());
+            }
+            long offset = 0;
+            bool entryReset = false;
+            while (!entryReset && offset < parent->GetFileSize())
+            {
+                int blockNumber = 0;
+                int blockOffset = 0;
+                GetBlockManager()->GetBlockNumber(parent, offset, blockNumber, blockOffset, false);
+                if (blockNumber == 0)
+                {
+                    throw SystemError(EFAIL, "directory block number not found from inode of '" + parentPath + "'");
+                }
+                Block* block = GetBlockManager()->ReadBlock(BlockKey(blockNumber, parent->Key().fsNumber), null);
+                BlockPutter putter(block);
+                DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                for (int index = blockOffset / directoryEntrySize; index < numDirectoryEntriesInBlock && offset < parent->GetFileSize(); ++index)
+                {
+                    DirectoryEntry entry = directoryBlock->GetDirectoryEntry(index);
+                    if (entry.name == entryName)
+                    {
+                        entry.inodeNumber = 0;
+                        directoryBlock->SetDirectoryEntry(index, entry);
+                        block->SetFlag(Block.Flags.dirty);
+                        GetBlockManager()->WriteBlock(block, null);
+                        parent->SetFlag(INode.Flags.dirty);
+                        entryReset = true;
+                        break;
+                    }
+                    offset = offset + directoryEntrySize;
+                }
+            }
+            if (!entryReset)
+            {
+                throw SystemError(EFAIL, "directory entry for '" + path + "' not found");
+            }
+            inode->SetNumLinks(inode->GetNumLinks() - 1);
+            if (Log())
+            {
+                LogMessage("fs.unlink", "return.inode=" + inode->ToString());
+            }
+        }
+        public void Rename(Process* process, const string& sourcePath, const string& targetPath)
+        {
+            if (Log())
+            {
+                LogMessage("fs.rename", "source=" + sourcePath + ".target=" + targetPath);
+            }
+            string sourceParentPath = Path.GetDirectoryName(sourcePath);
+            if (sourceParentPath.IsEmpty())
+            {
+                if (sourcePath.StartsWith("/"))
+                {
+                    sourceParentPath = "/";
+                }
+                else
+                {
+                    sourceParentPath = ".";
+                }
+            }
+            string sourceEntryName = Path.GetFileName(sourcePath);
+            string targetParentPath = Path.GetDirectoryName(targetPath);
+            if (targetParentPath.IsEmpty())
+            {
+                if (targetPath.StartsWith("/"))
+                {
+                    targetParentPath = "/";
+                }
+                else
+                {
+                    targetParentPath = ".";
+                }
+            }
+            string targetEntryName = Path.GetFileName(targetPath);
+            bool sameDirectory = false;
+            if (GetFullPath(sourceParentPath) == GetFullPath(targetParentPath))
+            {
+                sameDirectory = true;
+            }
+            INode* sourceParent = GetINodeManager()->PathToINode(process, sourceParentPath);
+            if (sourceParent == null)
+            {
+                throw SystemError(ENOENT, "directory '" + sourceParentPath + "' does not exist");
+            }
+            INodePutter sourceParentPutter(sourceParent);
+            FileSystem* sourceFS = GetMountTable().GetFileSystem(sourceParent->Key().fsNumber);
+            if (sourceFS->IsReadOnly())
+            {
+                throw SystemError(EINVAL, "cannot rename: file system '" + sourceFS->Name() + "' is read-only");
+            }
+            try
+            {
+                sourceParent->CheckPermissions(process->uid, process->gid, Access.write);
+            }
+            catch (const SystemError& ex)
+            {
+                throw SystemError(EPERM, "cannot write to directory '" + sourceParentPath + "' using uid " + ToString(process->uid) + ": " + ex.message);
+            }
+            BlockPutter sourcePutter;
+            DirectoryBlock* sourceDirectoryBlock = null;
+            int sourceIndex = -1;
+            long sourceOffset = 0;
+            bool sourceEntryFound = false;
+            while (!sourceEntryFound && sourceOffset < sourceParent->GetFileSize())
+            {
+                int blockNumber = 0;
+                int blockOffset = 0;
+                GetBlockManager()->GetBlockNumber(sourceParent, sourceOffset, blockNumber, blockOffset, false);
+                if (blockNumber == 0)
+                {
+                    throw SystemError(EFAIL, "directory block number not found from inode of '" + sourceParentPath + "'");
+                }
+                Block* block = GetBlockManager()->ReadBlock(BlockKey(blockNumber, sourceParent->Key().fsNumber), null);
+                BlockPutter putter(block);
+                DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                for (int index = blockOffset / directoryEntrySize; index < numDirectoryEntriesInBlock && sourceOffset < sourceParent->GetFileSize(); ++index)
+                {
+                    DirectoryEntry entry = directoryBlock->GetDirectoryEntry(index);
+                    if (entry.name == sourceEntryName)
+                    {
+                        if (sameDirectory)
+                        {
+                            entry.name = targetEntryName.Substring(0, nameMax - 1);
+                            directoryBlock->SetDirectoryEntry(index, entry);
+                            directoryBlock->SetFlag(Block.Flags.dirty);
+                            GetBlockManager()->WriteBlock(directoryBlock, null);
+                            sourceParent->SetMTime();
+                            sourceParent->SetFlag(INode.Flags.dirty);
+                            return;
+                        }
+                        else
+                        {
+                            sourcePutter.Reset(putter.Release());
+                            sourceDirectoryBlock = directoryBlock;
+                            sourceIndex = index;
+                            sourceEntryFound = true;
+                            break;
+                        }
+                    }
+                    sourceOffset = sourceOffset + directoryEntrySize;
+                }
+            }
+            DirectorySlot freeDirectorySlot;
+            INode* targetParent = null;
+            string name;
+            INode* target = GetINodeManager()->PathToINode(process, targetPath, PathToINodeFlags.createEntry, targetParent, freeDirectorySlot, name);
+            INodePutter targetParentPutter(targetParent);
+            INodePutter targetPutter;
+            if (target != null)
+            {
+                targetPutter.ResetINode(target);
+            }
+            if (targetParent == null)
+            {
+                throw SystemError(EINVAL, "directory path '" + targetParentPath + "' not found ");
+            }
+            try
+            {
+                targetParent->CheckPermissions(process->uid, process->gid, Access.write);
+            }
+            catch (const Exception& ex)
+            {
+                throw SystemError(EPERM, "cannot write to directory '" + targetParentPath + "' using uid " + ToString(process->uid) + ": " + ex.Message());
+            }
+            FileSystem* targetFS = GetMountTable().GetFileSystem(targetParent->Key().fsNumber);
+            if (targetFS->IsReadOnly())
+            {
+                throw SystemError(EINVAL, "cannot rename: target file system '" + targetFS->Name() + "' is read-only");
+            }
+            if (sourceParent->Key().fsNumber != targetParent->Key().fsNumber)
+            {
+                throw SystemError(EINVAL, "cannot rename across file systems: source file system number: " + ToString(sourceParent->Key().fsNumber) + ", target file system number: " + ToString(targetParent->Key().fsNumber));
+            }
+            if (target == null)
+            {
+                Block* targetBlock = null;
+                if (freeDirectorySlot.blockNumber != invalidBlockNumber)
+                {
+                    targetBlock = GetBlockManager()->ReadBlock(BlockKey(freeDirectorySlot.blockNumber, targetParent->Key().fsNumber), null);
+                }
+                else
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    GetBlockManager()->GetBlockNumber(targetParent, freeDirectorySlot.offset, blockNumber, blockOffset, true);
+                    targetBlock= GetBlockManager()->GetBlock(BlockKey(blockNumber, targetParent->Key().fsNumber), null);
+                    targetBlock->Clear();
+                }
+                BlockPutter targetBlockPutter(targetBlock);
+                DirectoryBlock* targetDirectoryBlock = cast<DirectoryBlock*>(targetBlock);
+                bool created = false;
+                for (int i = 0; i < numDirectoryEntriesInBlock; ++i)
+                {
+                    DirectoryEntry targetEntry = targetDirectoryBlock->GetDirectoryEntry(i);
+                    if (targetEntry.inodeNumber == 0)
+                    {
+                        DirectoryEntry sourceEntry = sourceDirectoryBlock->GetDirectoryEntry(sourceIndex);
+                        targetEntry.inodeNumber = sourceEntry.inodeNumber;
+                        targetEntry.name = targetEntryName.Substring(0, nameMax - 1);
+                        targetDirectoryBlock->SetDirectoryEntry(i, targetEntry);
+                        targetDirectoryBlock->SetFlag(Block.Flags.dirty);
+                        if (freeDirectorySlot.blockNumber == invalidBlockNumber || freeDirectorySlot.offset >= targetParent->GetFileSize())
+                        {
+                            targetParent->SetFileSize(targetParent->GetFileSize() + directoryEntrySize);
+                        }
+                        created = true;
+                        break;
+                    }
+                }
+                if (created)
+                {
+                    sourceDirectoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(sourceDirectoryBlock, null);
+                    targetDirectoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(targetDirectoryBlock, null);
+                    sourceParent->SetFlag(INode.Flags.dirty);
+                    sourceParent->SetMTime();
+                    targetParent->SetFlag(INode.Flags.dirty);
+                    targetParent->SetMTime();
+                }
+                else
+                {
+                    throw SystemError(EFAIL, "no room for target directory entry");
+                }
+            }
+            else
+            {
+                long offset = 0;
+                bool entrySet = false;
+                DirectoryBlock* targetDirectoryBlock = null;
+                while (!entrySet && offset < targetParent->GetFileSize())
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    GetBlockManager()->GetBlockNumber(targetParent, offset, blockNumber, blockOffset, false);
+                    if (blockNumber == 0)
+                    {
+                        throw SystemError(EFAIL, "directory block number not found from inode of '" + targetParentPath + "'");
+                    }
+                    Block* targetBlock = GetBlockManager()->ReadBlock(BlockKey(blockNumber, targetParent->Key().fsNumber), null);
+                    BlockPutter putter(targetBlock);
+                    #assert(targetBlock is DirectoryBlock*);
+                    targetDirectoryBlock = cast<DirectoryBlock*>(targetBlock);
+                    for (int index = blockOffset / directoryEntrySize; index < numDirectoryEntriesInBlock && offset < targetParent->GetFileSize(); ++index)
+                    {
+                        DirectoryEntry targetEntry = targetDirectoryBlock->GetDirectoryEntry(index);
+                        if (targetEntry.inodeNumber == target->Key().inodeNumber)
+                        {
+                            target->SetNumLinks(target->GetNumLinks() - 1);
+                            DirectoryEntry sourceEntry = sourceDirectoryBlock->GetDirectoryEntry(sourceIndex);
+                            targetEntry.inodeNumber = sourceEntry.inodeNumber;
+                            targetDirectoryBlock->SetDirectoryEntry(index, targetEntry);
+                            entrySet = true;
+                            break;
+                        }
+                        offset = offset + directoryEntrySize;
+                    }
+                }
+                if (entrySet)
+                {
+                    sourceDirectoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(sourceDirectoryBlock, null);
+                    targetDirectoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(targetDirectoryBlock, null);
+                    sourceParent->SetMTime();
+                    targetParent->SetMTime();
+                }
+                else
+                {
+                    throw SystemError(EFAIL, "directory entry for '" + targetPath + "' not found");
+                }
+            }
+        }
+        public void MakeDirectory(Process* process, const string& path, int mode)
+        {
+            if (Log())
+            {
+                LogMessage("fs.makedirectory", path);
+            }
+            if (process != null && path == "/")
+            {
+                throw SystemError(EEXIST, "directory '" + path + "' already exists");
+            }
+            DirectorySlot freeDirectorySlot;
+            INode* parent = null;
+            string name;
+            INode* inode = GetINodeManager()->PathToINode(process, path, PathToINodeFlags.createEntry, parent, freeDirectorySlot, name);
+            INodePutter parentPutter(parent);
+            if (Log())
+            {
+                if (parent != null)
+                {
+                    LogMessage("fs.makedirectory", "parent=" + parent->ToString());
+                }
+            }
+            if (parent != null)
+            {
+                FileSystem* fs = GetMountTable().GetFileSystem(parent->Key().fsNumber);
+                if (fs->IsReadOnly())
+                {
+                    throw SystemError(EINVAL, "cannot make directory: file system '" + fs->Name() + "' is read-only");
+                }
+            }
+            INodePutter inodePutter;
+            if (inode != parent)
+            {
+                inodePutter.ResetINode(inode);
+            }
+            if (path != "/")
+            {
+                if (name.IsEmpty())
+                {
+                    throw SystemError(EINVAL, "invalid path name '" + path + "'");
+                }
+                if (inode != null)
+                {
+                    throw SystemError(EEXIST, "directory '" + path + "' already exists");
+                }
+            }
+            if (process != null)
+            {
+                try
+                {
+                    parent->CheckPermissions(process->uid, process->gid, Access.write);
+                }
+                catch (const SystemError& ex)
+                {
+                    throw SystemError(EPERM, "cannot write to directory '" + Path.GetDirectoryName(path) + "' using uid " + ToString(process->uid) + ": " + ex.message);
+                }
+            }
+            if (!name.IsEmpty())
+            {
+                FileSystem* fs = GetMountTable().GetFileSystem(parent->Key().fsNumber);
+                int inodeNumber = fs->GetFreeINodeNumber();
+                INodeKey key(inodeNumber, parent->Key().fsNumber);
+                inode = GetINodeManager()->GetINode(key);
+                inodePutter.ResetINode(inode);
+                Block* block = null;
+                if (freeDirectorySlot.blockNumber != invalidBlockNumber)
+                {
+                    block = GetBlockManager()->ReadBlock(BlockKey(freeDirectorySlot.blockNumber, parent->Key().fsNumber), null);
+                }
+                else
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    GetBlockManager()->GetBlockNumber(parent, freeDirectorySlot.offset, blockNumber, blockOffset, true);
+                    block = GetBlockManager()->GetBlock(BlockKey(blockNumber, parent->Key().fsNumber), null);
+                    block->Clear();
+                }
+                BlockPutter blockPutter(block);
+                DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                bool created = false;
+                for (int i = 0; i < numDirectoryEntriesInBlock; ++i)
+                {
+                    DirectoryEntry entry = directoryBlock->GetDirectoryEntry(i);
+                    if (entry.inodeNumber == 0)
+                    {
+                        entry.inodeNumber = inode->Key().inodeNumber;
+                        entry.name = name.Substring(0, nameMax - 1);
+                        directoryBlock->SetDirectoryEntry(i, entry);
+                        if (freeDirectorySlot.blockNumber == invalidBlockNumber || freeDirectorySlot.offset >= parent->GetFileSize())
+                        {
+                            parent->SetFileSize(parent->GetFileSize() + directoryEntrySize);
+                        }
+                        created = true;
+                        break;
+                    }
+                }
+                if (created)
+                {
+                    directoryBlock->SetFlag(Block.Flags.dirty);
+                    GetBlockManager()->WriteBlock(directoryBlock, null);
+                    parent->SetMTime();
+                    parent->SetFlag(INode.Flags.dirty);
+                }
+                else
+                {
+                    throw SystemError(EFAIL, "no room for directory entry");
+                }
+            }
+            inode->SetType(FileType.directory);
+            if (path == "/" && process == null)
+            {
+                inode->SetUID(0);
+                inode->SetGID(0);
+            }
+            else
+            {
+                if (process == null)
+                {
+                    inode->SetUID(0);
+                    inode->SetGID(0);
+                }
+                else
+                {
+                    inode->SetUID(process->uid);
+                    inode->SetGID(process->gid);
+                }
+            }
+            if (mode == 0)
+            {
+                mode = EncodeMode(INode.Flags.none, FileType.directory,
+                    cast<Access>(Access.read | Access.write | Access.execute),
+                    cast<Access>(Access.read | Access.write | Access.execute),
+                    cast<Access>(Access.read | Access.write | Access.execute));
+            }
+            if (process != null)
+            {
+                mode = mode & ~process->umask;
+            }
+            inode->SetAccessMode(mode);
+            int blockNumber = 0;
+            int blockOffset = 0;
+            GetBlockManager()->GetBlockNumber(inode, 0, blockNumber, blockOffset, true);
+            Block* blck = GetBlockManager()->GetBlock(BlockKey(blockNumber, inode->Key().fsNumber), null);
+            blck->Clear();
+            BlockPutter putter(blck);
+            DirectoryBlock* dirBlock = cast<DirectoryBlock*>(blck);
+            int n = 0;
+            bool crtd = false;
+            for (int i = 0; i < numDirectoryEntriesInBlock; ++i)
+            {
+                DirectoryEntry entry = dirBlock->GetDirectoryEntry(i);
+                if (entry.inodeNumber == 0 && n == 0)
+                {
+                    entry.inodeNumber = parent->Key().inodeNumber;
+                    entry.name = "..";
+                    dirBlock->SetDirectoryEntry(i, entry);
+                    ++n;
+                }
+                else if (entry.inodeNumber == 0 && n == 1)
+                {
+                    entry.inodeNumber = inode->Key().inodeNumber;
+                    entry.name = ".";
+                    dirBlock->SetDirectoryEntry(i, entry);
+                    ++n;
+                    crtd = true;
+                    break;
+                }
+            }
+            if (crtd)
+            {
+                dirBlock->SetFlag(Block.Flags.dirty);
+                GetBlockManager()->WriteBlock(dirBlock, null);
+                inode->SetFileSize(inode->GetFileSize() + n * directoryEntrySize);
+                inode->SetMTime();
+            }
+            else
+            {
+                throw SystemError(EFAIL, "no room for directory entries");
+            }
+        }
+        public int OpenDirectory(Process* process, const string& path)
+        {
+            if (Log())
+            {
+                LogMessage("fs.opendirectory", path);
+            }
+            INode* dirINode = GetINodeManager()->PathToINode(process, path);
+            if (dirINode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter inodePutter(dirINode);
+            if (dirINode->Type() != FileType.directory)
+            {
+                throw SystemError(EINVAL, "cannot open directory '" + path + "': file type is " + FileTypeStr(dirINode->Type()));
+            }
+            FileSystem* fs = GetMountTable().GetFileSystem(dirINode->Key().fsNumber);
+            return fs->OpenDirectory(process, path, dirINode, inodePutter);
+        }
+        public abstract int OpenDirectory(Process* process, const string& path, INode* dirINode, INodePutter& inodePutter);
+        public abstract int ReadDirectory(Process* process, DirectoryFile* dirFile, ulong inodeNumberAddress, ulong entryNameAddress);
+        public string GetCurrentWorkingDirectory(Process* process)
+        {
+            if (Log())
+            {
+                LogMessage("fs.getcurrentworkingdirectory", "begin");
+            }
+            INode* rootINode = GetINodeManager()->GetINode(process->rootDirINodeKey);
+            INodePutter rootPutter(rootINode);
+            INode* dirINode = rootINode;
+            INodePutter wdNodePutter;
+            INodePutter parentPutter;
+            if (process->workingDirINodeKey != process->rootDirINodeKey)
+            {
+                dirINode = GetINodeManager()->GetINode(process->workingDirINodeKey);
+                wdNodePutter.ResetINode(dirINode);
+            }
+            INode* prevINode = null;
+            bool first = true;
+            string currentWorkindDirectoryPath;
+            while (prevINode != rootINode)
+            {
+                INode* parentINode = null;
+                bool found = false;
+                for (long offset = 0; !found && offset < dirINode->GetFileSize();)
+                {
+                    int blockNumber = 0;
+                    int blockOffset = 0;
+                    GetBlockManager()->GetBlockNumber(dirINode, offset, blockNumber, blockOffset, false);
+                    if (blockNumber == 0)
+                    {
+                        throw SystemError(EFAIL, "could not get block number for directory inode");
+                    }
+                    Block* block = GetBlockManager()->ReadBlock(BlockKey(blockNumber, dirINode->Key().fsNumber), null);
+                    BlockPutter putter(block);
+                    DirectoryBlock* directoryBlock = cast<DirectoryBlock*>(block);
+                    for (int index = blockOffset / directoryEntrySize; index < numDirectoryEntriesInBlock && offset < dirINode->GetFileSize(); ++index)
+                    {
+                        DirectoryEntry directoryEntry = directoryBlock->GetDirectoryEntry(index);
+                        if (!first && directoryEntry.inodeNumber == prevINode->Key().inodeNumber)
+                        {
+                            currentWorkindDirectoryPath = Path.Combine(directoryEntry.name, currentWorkindDirectoryPath);
+                            found = true;
+                        }
+                        if (directoryEntry.name == "..")
+                        {
+                            INodeKey key(directoryEntry.inodeNumber, dirINode->Key().fsNumber);
+                            if (key != dirINode->Key())
+                            {
+                                if (key != rootINode->Key())
+                                {
+                                    parentINode = GetINodeManager()->GetINode(key);
+                                    parentPutter.ResetINode(parentINode);
+                                }
+                                else
+                                {
+                                    parentINode = rootINode;
+                                }
+                            }
+                            else
+                            {
+                                parentINode = dirINode;
+                            }
+                        }
+                        offset = offset + directoryEntrySize;
+                    }
+                }
+                if (parentINode == null)
+                {
+                    throw SystemError(EFAIL, "parent inode entry not found");
+                }
+                if (found)
+                {
+                    prevINode = dirINode;
+                    dirINode = parentINode;
+                }
+                else if (first)
+                {
+                    prevINode = dirINode;
+                    dirINode = parentINode;
+                    first = false;
+                }
+                else
+                {
+                    throw SystemError(EFAIL, "could not find matching directory inode from parent inode");
+                }
+            }
+            currentWorkindDirectoryPath = Path.Combine("/", currentWorkindDirectoryPath);
+            if (Log())
+            {
+                LogMessage("fs.getcurrentworkingdirectory", "end.cwd=" + currentWorkindDirectoryPath);
+            }
+            return currentWorkindDirectoryPath;
+        }
+        public void ChDir(Process* process, const string& path)
+        {
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter putter(inode);
+            process->workingDirINodeKey = inode->Key();
+        }
+        public void Stat(Process* process, const string& path, ulong statBufAddress)
+        {
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter putter(inode);
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            fs->FillINode(inode);
+            Machine& machine = GetMachine();
+            byte[statBufSize] statBuf;
+            MemoryWriter writer(&statBuf[0], statBuf.Length());
+            writer.Write(inode->Key().inodeNumber);
+            writer.Write(inode->Key().fsNumber);
+            writer.Write(inode->Mode());
+            writer.Write(inode->UID());
+            writer.Write(inode->GID());
+            writer.Write(inode->GetNumLinks());
+            writer.Write(inode->GetFileSize());
+            writer.Write(inode->CTime());
+            writer.Write(inode->MTime());
+            writer.Write(inode->ATime());
+            WriteProcessMemory(machine, process, statBufAddress, &statBuf[0], cast<ulong>(statBuf.Length()), Protection.write);
+        }
+        public void ChangeMode(Process* process, const string& path, int mode)
+        {
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter putter(inode);
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            fs->ChangeMode(process, path, inode, mode);
+        }
+        public virtual void ChangeMode(Process* process, const string& path, INode* inode, int mode)
+        {
+            throw SystemError(EINVAL, "error changing mode of '" + path + "': file system '" + name + "' does not support chmod");
+        }
+        public void ChangeOwner(Process* process, const string& path, int uid, int gid)
+        {
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter putter(inode);
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            fs->ChangeOwner(process, path, inode, uid, gid);
+        }
+        public virtual void ChangeOwner(Process* process, const string& path, INode* inode, int uid, int gid)
+        {
+            throw SystemError(EINVAL, "error changing owner of '" + path + "': file system '" + name + "' does not support chown");
+        }
+        public void UpdateFileTimes(Process* process, const string& path, const DateTime& atime, const DateTime& mtime)
+        {
+            INode* inode = GetINodeManager()->PathToINode(process, path);
+            if (inode == null)
+            {
+                throw SystemError(ENOENT, "path '" + path + "' does not exist");
+            }
+            INodePutter putter(inode);
+            FileSystem* fs = GetMountTable().GetFileSystem(inode->Key().fsNumber);
+            fs->UpdateFileTimes(process, path, inode, atime, mtime);
+        }
+        public virtual void UpdateFileTimes(Process* process, const string& path, INode* inode, const DateTime& atime, const DateTime& mtime)
+        {
+            throw SystemError(EINVAL, "error updating file times of '" + path + "': file system '" + name + "' does not support utime");
+        }
+        public virtual void FillINode(INode* inode)
+        {
+        }
+        public abstract HostFile* GetHostFile(int fsNumber) const;
+        public abstract int AllocateBlockNumber();
+        public abstract void SetBlockFree(int blockNumber);
+        public abstract int GetFreeINodeNumber();
+        public abstract void SetFreeINodeNumber(int inodeNumber);
+        public abstract int GetFirstINodeBlockNumber() const;
+        public abstract INodeKey GetRootDirINodeKey() const;
+        public abstract int LastBlockNumber() const;
+        public abstract void SetLastBlockNumber(int blockNumber, SuperBlock* sb);
+        public abstract nothrow bool HasMountDirKey(const INodeKey& mountDirKey) const;
+        public abstract nothrow BlockManager* GetBlockManager();
+        public abstract nothrow INodeManager* GetINodeManager();
+        public nothrow inline const string& Name() const
+        {
+            return name;
+        }
+        public nothrow inline int Index() const
+        {
+            return index;
+        }
+        public nothrow inline bool IsReadOnly() const
+        {
+            return readOnly;
+        }
+        private string name;
+        private int index;
+        private bool readOnly;
+    }
+
+    public abstract class BlockManager
+    {
+        public default virtual ~BlockManager();
+        public Block* GetBlock(const BlockKey& key, SuperBlock* sb)
+        {
+            return GetBlock(key, sb, true, true);
+        }
+        public abstract Block* GetBlock(const BlockKey& key, SuperBlock* sb, bool sleep, bool setOwner);
+        public abstract nothrow void PutBlock(Block* block);
+        public abstract nothrow Block* ReadBlock(const BlockKey& key, SuperBlock* sb);
+        public abstract void WriteBlock(Block* block, SuperBlock* superBlock);
+        public abstract void FreeBlocks(INode* inode);
+        public abstract void GetBlockNumber(INode* inode, long offset, int& blockNumber, int& blockOffset, bool allocate);
+        public abstract int GetBlockNumber(INode* inode, int logicalBlockNumber) const;
+        public abstract void Flush();
+        public abstract nothrow string Name() const;
+    }
+
+    public abstract class INodeManager
+    {
+        public default virtual ~INodeManager();
+        public abstract INode* GetINode(const INodeKey& key);
+        public abstract void PutINode(INode* inode);
+        public INode* CallPathToINode(INodeManager* imgr, Process* process, const string& path)
+        {
+            return imgr->PathToINode(process, path);
+        }
+        public abstract INode* PathToINode(Process* process, const string& path);
+        public abstract INode* PathToINode(Process* process, const string& path, PathToINodeFlags flags, INode*& parent, DirectorySlot& freeDirectorySlot, string& name);
+        public abstract nothrow string Name() const;
+    }
+}

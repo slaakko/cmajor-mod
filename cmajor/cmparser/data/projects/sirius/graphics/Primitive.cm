@@ -1,0 +1,688 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using Sirius.Math;
+
+namespace Sirius.Graphics
+{
+    public enum ShadingAlgorithm
+    {
+        gouraudShading, phongShading
+    }
+
+    public class Vertex
+    {
+        public nothrow Vertex() :
+            id(-1), object(null), location(), worldLocation(), viewLocation(), projectedLocation(), viewPoint(), screenPoint(), intensity(0)
+        {
+        }
+        public explicit nothrow Vertex(const Vector& location_) :
+            id(-1), object(null), location(location_), worldLocation(), viewLocation(), projectedLocation(), viewPoint(), screenPoint(), intensity(0)
+        {
+        }
+        public nothrow inline void SetObject(PolygonMeshObject* object_)
+        {
+            object = object_;
+        }
+        public int id;
+        public PolygonMeshObject* object;
+        public Vector location;
+        public Vector worldLocation;
+        public Vector viewLocation;
+        public Vector projectedLocation;
+        public System.Windows.PointF viewPoint;
+        public System.Windows.Point screenPoint;
+        public List<int> polygonIndeces;
+        public Vector normal;
+        public Vector worldNormal;
+        public float intensity;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const Vertex& vertex)
+    {
+        writer << "vertex " << vertex.id << ":" << endl();
+        writer << "--------------------------------" << endl();
+        writer << "location: " << vertex.location << endl();
+        writer << "worldLocation: " << vertex.worldLocation << endl();
+        writer << "viewLocation: " << vertex.viewLocation << endl();
+        writer << "projectedLocation: " << vertex.projectedLocation << endl();
+        writer << "viewPoint: " << vertex.viewPoint.ToString() << endl();
+        writer << "screenPoint: " << vertex.screenPoint.ToString() << endl();
+        writer << "polygons: [";
+        bool first = true;
+        for (int pi : vertex.polygonIndeces)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                writer << ", ";
+            }
+            writer << pi;
+        }
+        writer << "]" << endl();
+        writer << "normal: " << vertex.normal << endl();
+        writer << "worldNormal: " << vertex.worldNormal << endl();
+        writer << "intensity: " << vertex.intensity << endl();
+        writer << "--------------------------------" << endl();
+        return writer;
+    }
+
+    public class Edge
+    {
+        public nothrow Edge(int startVertex_, int endVertex_) : startVertex(startVertex_), endVertex(endVertex_)
+        {
+        }
+        public int startVertex;
+        public int endVertex;
+    }
+
+    public class ScanLineData
+    {
+        public nothrow ScanLineData(float x_, float z_, float intensity_, const Vector& normal_) : x(x_), z(z_), intensity(intensity_), normal(normal_)
+        {
+        }
+        public default nothrow ScanLineData(ScanLineData&& that);
+        public default nothrow void operator=(ScanLineData&& that);
+        public float x;
+        public float z;
+        public float intensity;
+        public Vector normal;
+    }
+
+    public nothrow bool operator==(const ScanLineData& left, const ScanLineData& right)
+    {
+        return left.x == right.x && left.z == right.z && left.intensity == right.intensity;
+    }
+
+    public nothrow bool operator<(const ScanLineData& left, const ScanLineData& right)
+    {
+        if (left.x < right.x) return true;
+        if (left.x > right.x) return false;
+        if (left.z < right.z) return true;
+        if (left.z > right.z) return false;
+        return left.intensity < right.intensity;
+    }
+
+    public class PolygonRasterizingContext
+    {
+        public int iystart;
+        public int iyend;
+        public nothrow List<ScanLineData>& GetScanLineDataList(int iy)
+        {
+            int index = iy - iystart;
+            while (scanLineDataLists.Count() <= index)
+            {
+                scanLineDataLists.Add(List<ScanLineData>());
+            }
+            List<ScanLineData>& scanLineDataList = scanLineDataLists[index];
+            return scanLineDataList;
+        }
+        private List<List<ScanLineData>> scanLineDataLists;
+    }
+
+    public class Polygon
+    {
+        public nothrow Polygon() : id(-1), object(null)
+        {
+        }
+        public nothrow inline void SetObject(PolygonMeshObject* object_)
+        {
+            object = object_;
+        }
+        public nothrow void AddVertex(int vertexIndex)
+        {
+            vertexIndeces.Add(vertexIndex);
+        }
+        public nothrow string ToString() const
+        {
+            string s = "(";
+            for (int i = 0; i < vertexIndeces.Count(); ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                s.Append(System.ToString(vertexIndeces[i]));
+            }
+            s.Append(")");
+            return s;
+        }
+        public nothrow void CalculateNormal()
+        {
+            if (vertexIndeces.Count() < 3) return;
+            const Vertex& v0 = object->Vertices()[vertexIndeces[0]];
+            const Vertex& v1 = object->Vertices()[vertexIndeces[1]];
+            const Vertex& v2 = object->Vertices()[vertexIndeces[2]];
+            Vector a = v1.location - v0.location;
+            Vector b = v2.location - v0.location;
+            normal = Normalize(Cross(a, b));
+        }
+        public nothrow bool IsVisible(const Camera& camera) const
+        {
+            float dp = Dot(camera.ViewVector(), worldNormal);
+            return dp > 0.0f;
+        }
+        public nothrow List<Pair<Vertex*, Vertex*>> Edges() const
+        {
+            List<Pair<Vertex*, Vertex*>> edges;
+            if (vertexIndeces.Count() < 3) return edges;
+            const Vertex& v0 = object->Vertices()[vertexIndeces.Front()];
+            Vertex* p0 = &v0;
+            for (long i = 1; i < vertexIndeces.Count(); ++i)
+            {
+                const Vertex& v1 = object->Vertices()[vertexIndeces[i]];
+                Vertex* p1 = &v1;
+                edges.Add(MakePair(p0, p1));
+                p0 = p1;
+            }
+            const Vertex& v1 = object->Vertices()[vertexIndeces.Front()];
+            edges.Add(MakePair(p0, &v1));
+            return edges;
+        }
+        public nothrow Pair<Vertex*, Vertex*> GetMinMaxVertex() const
+        {
+            Vertex* minVertex = null;
+            Vertex* maxVertex = null;
+            int ymin = MaxValue<int>();
+            int ymax = MinValue<int>();
+            for (int i : vertexIndeces)
+            {
+                const Vertex& v = object->Vertices()[i];
+                if (v.screenPoint.y < ymin)
+                {
+                    minVertex = &v;
+                    ymin = v.screenPoint.y;
+                }
+                if (v.screenPoint.y > ymax)
+                {
+                    maxVertex = &v;
+                    ymax = v.screenPoint.y;
+                }
+            }
+            return MakePair(minVertex, maxVertex);
+        }
+        public nothrow void BuildScanLineData(PolygonRasterizingContext& context, const Pair<Vertex*, Vertex*>& minMaxVertex)
+        {
+            List<Pair<Vertex* , Vertex*>> edges = Edges();
+            context.iystart = minMaxVertex.first->screenPoint.y;
+            context.iyend = minMaxVertex.second->screenPoint.y;
+            for (int iy = context.iystart; iy < context.iyend; ++iy)
+            {
+                for (Pair<Vertex*, Vertex*>& edge : edges)
+                {
+                    Vertex* v = edge.first;
+                    int y0 = v->screenPoint.y;
+                    Vertex* u = edge.second;
+                    int y1 = u->screenPoint.y;
+                    if (y0 == y1) continue;
+                    if (y0 > y1)
+                    {
+                        Swap(y0, y1);
+                        Swap(v, u);
+                    }
+                    if (iy < y0 || iy >= y1) continue;
+                    int x0 = v->screenPoint.x;
+                    float z0 = v->viewLocation.z;
+                    float intensity0 = v->intensity;
+                    int x1 = u->screenPoint.x;
+                    float z1 = u->viewLocation.z;
+                    float intensity1 = u->intensity;
+                    float m = 1.0f * (iy - y0) / (y1 - y0);
+                    float x = x0 + m * (x1 - x0);
+                    float z = z0 + m * (z1 - z0);
+                    float intensity = intensity0 + m * (intensity1 - intensity0);
+                    Vector normal = (1 - m) * v->normal + m * u->normal;
+                    ScanLineData scanLineData(x, z, intensity, normal);
+                    List<ScanLineData>& scanLineDataList = context.GetScanLineDataList(iy);
+                    scanLineDataList.Add(scanLineData);
+                }
+            }
+        }
+        public nothrow void Rasterize(System.Windows.Bitmap& bitmap, ZBuffer& zbuffer, const LightSource& lightSource, const Camera& camera,
+            ShadingAlgorithm shadingAlgorithm, LogWriter* log)
+        {
+            PolygonRasterizingContext context;
+            LogWriter* lg = null;
+            if (id == 3)
+            {
+                lg = log;
+            }
+            Pair<Vertex*, Vertex*> minMaxVertex = GetMinMaxVertex();
+            if (log != null)
+            {
+                log->GetStreamWriter() << "min vertex: " << *(minMaxVertex.first) << endl();
+                log->GetStreamWriter() << "max vertex: " << *(minMaxVertex.second) << endl();
+            }
+            BuildScanLineData(context, minMaxVertex);
+            int iystart = context.iystart;
+            int iyend = context.iyend;
+            if (log != null)
+            {
+                log->GetStreamWriter() << "iystart = " << iystart << ", iyend = " << iyend << endl();
+            }
+            for (int iy = iystart; iy <= iyend; ++iy)
+            {
+                float y = iy;
+                List<ScanLineData>& scanLineDataList = context.GetScanLineDataList(iy);
+                Sort(scanLineDataList);
+                long n = scanLineDataList.Count();
+                if (log != null)
+                {
+                    log->GetStreamWriter() << "iy = " << iy << ", n = " << n << endl();
+                }
+                if (n < 2)
+                {
+                    continue;
+                }
+                long ndiv2 = n / 2;
+                for (long i = 0; i < ndiv2; ++i)
+                {
+                    const ScanLineData& left = scanLineDataList[2 * i];
+                    const ScanLineData& right = scanLineDataList[2 * i + 1];
+                    float xleft = left.x;
+                    float xright = right.x;
+                    float zleft = left.z;
+                    float zright = right.z;
+                    float intensityLeft = left.intensity;
+                    float intensityRight = right.intensity;
+                    Vector normalLeft = left.normal;
+                    Vector normalRight = right.normal;
+                    int ixleft = cast<int>(xleft);
+                    int ixright = cast<int>(xright);
+                    int dix = ixright - ixleft;
+                    if (log != null)
+                    {
+                        log->GetStreamWriter() << "dix=" << dix << ", xleft=" << xleft << ", xright=" << xright <<
+                        ", intensityLeft=" << intensityLeft << ", intensityRight=" << intensityRight << ", zleft=" << zleft << ", zright=" << zright << endl();
+                    }
+                    if (dix > 0)
+                    {
+                        for (int ix = ixleft; ix < ixright; ++ix)
+                        {
+                            float x = ix;
+                            float m = 1.0f * (ix - ixleft) / dix;
+                            float z = zleft + m * (zright - zleft);
+                            float intensity = 0;
+                            Vector normal = (1 - m) * normalLeft + m * normalRight;
+                            if (shadingAlgorithm == ShadingAlgorithm.gouraudShading)
+                            {
+                                intensity = intensityLeft + m * (intensityRight - intensityLeft);
+                            }
+                            else if (shadingAlgorithm == ShadingAlgorithm.phongShading)
+                            {
+                                Vector location(x, y, z);
+                                intensity = LightIntensity(lightSource, camera, location, normal, *object);
+                            }
+                            if (z < zbuffer.GetZ(ix, iy))
+                            {
+                                zbuffer.SetZ(ix, iy, z);
+                                System.Windows.Color color = object->GetColor();
+                                color.red = cast<byte>(intensity * color.red);
+                                color.green = cast<byte>(intensity * color.green);
+                                color.blue = cast<byte>(intensity * color.blue);
+                                bitmap.SetPixelChecked(ix, iy, color);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public int id;
+        public PolygonMeshObject* object;
+        public List<int> vertexIndeces;
+        public Vector normal;
+        public Vector worldNormal;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const Polygon& polygon)
+    {
+        writer << "polygon " << polygon.id << ":" << endl();
+        writer << "-------------------------------" << endl();
+        writer << "vertices: [";
+        bool first = true;
+        for (int vi : polygon.vertexIndeces)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                writer << ", ";
+            }
+            writer << vi;
+        }
+        writer << "]" << endl();
+        writer << "normal: " << polygon.normal << endl();
+        writer << "worldNormal: " << polygon.worldNormal << endl();
+        return writer;
+    }
+
+    public class BoundingSphere
+    {
+        public nothrow BoundingSphere() : center(), radius(0)
+        {
+        }
+        public nothrow BoundingSphere(const Vector& center_, float radius_) : center(center_), radius(radius_)
+        {
+        }
+        public Vector center;
+        public float radius;
+    }
+
+    public abstract class Object
+    {
+        public nothrow Object() : id(-1) {}
+        public default virtual ~Object();
+        public abstract nothrow Object* Clone() const;
+        public abstract nothrow void TransformLocal(const Matrix& localTransformation);
+        public abstract nothrow void TransformWorld();
+        public abstract nothrow void TransformWorld(const Matrix& worlTransformation);
+        public abstract nothrow void View(const Camera& camera, const LightSource& lightSource, const Screen& screen);
+        public abstract void Draw(const System.Windows.Pen& pen, System.Windows.Graphics& graphics);
+        public abstract void Paint(System.Windows.Bitmap& bitmap, ZBuffer& zbuffer, const LightSource& lightSource, const Camera& camera, const Screen& screen,
+            ShadingAlgorithm shadingAlgorithm, LogWriter* log);
+        public virtual void Write(TextWriter& writer) {}
+        public int id;
+    }
+
+    public abstract class CompositeObject : Object
+    {
+        public nothrow CompositeObject() : base()
+        {
+        }
+        public nothrow CompositeObject(List<UniquePtr<Object>>&& components_) : base(), components(components_)
+        {
+        }
+        public nothrow void AddComponent(Object* component)
+        {
+            components.Add(UniquePtr<Object>(component));
+        }
+        public nothrow List<UniquePtr<Object>> CloneComponents() const
+        {
+            List<UniquePtr<Object>> clonedComponents;
+            for (UniquePtr<Object>& component : components)
+            {
+                clonedComponents.Add(UniquePtr<Object>(component->Clone()));
+            }
+            return clonedComponents;
+        }
+        public override nothrow void TransformLocal(const Matrix& localTransformation)
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->TransformLocal(localTransformation);
+            }
+        }
+        public override nothrow void TransformWorld()
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->TransformWorld();
+            }
+        }
+        public override nothrow void TransformWorld(const Matrix& worldTransformation)
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->TransformWorld(worldTransformation);
+            }
+        }
+        public override nothrow void View(const Camera& camera, const LightSource& lightSource, const Screen& screen)
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->View(camera, lightSource, screen);
+            }
+        }
+        public override void Draw(const System.Windows.Pen& pen, System.Windows.Graphics& graphics)
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->Draw(pen, graphics);
+            }
+        }
+        public override void Paint(System.Windows.Bitmap& bitmap, ZBuffer& zbuffer, const LightSource& lightSource, const Camera& camera, const Screen& screen,
+            ShadingAlgorithm shadingAlgorithm, LogWriter* log)
+        {
+            for (UniquePtr<Object>& component : components)
+            {
+                component->Paint(bitmap, zbuffer, lightSource, camera, screen, shadingAlgorithm, log);
+            }
+        }
+        public nothrow const List<UniquePtr<Object>>& Components() const
+        {
+            return components;
+        }
+        private List<UniquePtr<Object>> components;
+    }
+
+    public nothrow System.Windows.PointF ViewPointFromProjectedLocation(const Vector& projectedLocation)
+    {
+        return System.Windows.PointF(projectedLocation.x / projectedLocation.w, projectedLocation.y / projectedLocation.w);
+    }
+
+    public nothrow nothrow System.Windows.Point ScreenPointFromViewPoint(const System.Windows.PointF& viewPoint, float halfScreenWidth, float halfScreenHeight)
+    {
+        return System.Windows.Point(cast<int>(viewPoint.x + halfScreenWidth), cast<int>(viewPoint.y + halfScreenHeight));
+    }
+
+    public nothrow System.Windows.PointF ViewPointFromScreenPoint(const System.Windows.Point& screenPoint, float halfScreenWidth, float halfScreenHeight)
+    {
+        return System.Windows.PointF(screenPoint.x - halfScreenWidth, screenPoint.y - halfScreenHeight);
+    }
+
+    public abstract class PolygonMeshObject : Object
+    {
+        public nothrow PolygonMeshObject() : base(), vertices(), edges(), polygons(), color(System.Windows.Color.White())
+        {
+        }
+        public nothrow PolygonMeshObject(const List<Vertex>& vertices_, const List<Edge>& edges_, const List<Polygon>& polygons_, const System.Windows.Color& color_) :
+            base(), vertices(vertices), edges(edges_), polygons(polygons_), color(color_)
+        {
+        }
+        public nothrow inline void AddVertex(const Vertex& vertex)
+        {
+            vertex.id = cast<int>(vertices.Count());
+            vertices.Add(vertex);
+            vertices.Back().SetObject(this);
+        }
+        public nothrow inline void AddEdge(const Edge& edge)
+        {
+            edges.Add(edge);
+        }
+        public nothrow inline void AddPolygon(const Polygon& polygon)
+        {
+            polygons.Add(polygon);
+            polygons.Back().SetObject(this);
+        }
+        public nothrow inline void AddPolygon(Polygon&& polygon)
+        {
+            polygon.id = cast<int>(polygons.Count());
+            polygons.Add(polygon);
+            polygons.Back().SetObject(this);
+        }
+        public nothrow void AddPolygonsToVertices()
+        {
+            int n = cast<int>(polygons.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Polygon& p = polygons[i];
+                for (int vi : p.vertexIndeces)
+                {
+                    Vertex& v = vertices[vi];
+                    v.polygonIndeces.Add(i);
+                }
+            }
+        }
+        public nothrow void CalculatePolygonNormals()
+        {
+            for (Polygon& p : polygons)
+            {
+                p.CalculateNormal();
+            }
+        }
+        public nothrow void CalculateVertexNormals()
+        {
+            for (Vertex& v : vertices)
+            {
+                Vector n;
+                for (int pi : v.polygonIndeces)
+                {
+                    Polygon& p = polygons[pi];
+                    n = n + p.normal;
+                }
+                v.normal = Normalize(n);
+            }
+        }
+        public override nothrow void TransformLocal(const Matrix& localTransformation)
+        {
+            for (Vertex& vertex : vertices)
+            {
+                vertex.location = localTransformation * vertex.location;
+            }
+        }
+        public override nothrow void TransformWorld()
+        {
+            for (Vertex& vertex : vertices)
+            {
+                vertex.worldLocation = vertex.location;
+                vertex.worldNormal = vertex.normal;
+            }
+            for (Polygon& polygon : polygons)
+            {
+                polygon.worldNormal = polygon.normal;
+            }
+        }
+        public override nothrow void TransformWorld(const Matrix& worldTransformation)
+        {
+            for (Vertex& vertex : vertices)
+            {
+                vertex.worldLocation = worldTransformation * vertex.location;
+                vertex.worldNormal = Normalize(worldTransformation * vertex.normal);
+            }
+            for (Polygon& polygon : polygons)
+            {
+                polygon.worldNormal = Normalize(worldTransformation * polygon.normal);
+            }
+        }
+        public override nothrow void View(const Camera& camera, const LightSource& lightSource, const Screen& screen)
+        {
+            float halfScreenWidth = screen.width / 2.0f;
+            float halfScreenHeight = screen.height / 2.0f;
+            for (Vertex& vertex : vertices)
+            {
+                vertex.viewLocation = camera.ViewMatrix() * vertex.worldLocation;
+                vertex.projectedLocation = camera.ProjectionMatrix() * vertex.viewLocation;
+                vertex.viewPoint = ViewPointFromProjectedLocation(vertex.projectedLocation);
+                vertex.screenPoint = ScreenPointFromViewPoint(vertex.viewPoint, halfScreenWidth, halfScreenHeight);
+                vertex.intensity = LightIntensity(lightSource, vertex);
+            }
+        }
+        public override void Draw(const System.Windows.Pen& pen, System.Windows.Graphics& graphics)
+        {
+            for (const Edge& edge : edges)
+            {
+                const Vertex& start = vertices[edge.startVertex];
+                const Vertex& end = vertices[edge.endVertex];
+                graphics.DrawLineChecked(pen, start.screenPoint, end.screenPoint);
+            }
+        }
+        public override void Paint(System.Windows.Bitmap& bitmap, ZBuffer& zbuffer, const LightSource& lightSource, const Camera& camera, const Screen& screen,
+            ShadingAlgorithm shadingAlgorithm, LogWriter* log)
+        {
+            for (const Polygon& polygon : polygons)
+            {
+                if (polygon.IsVisible(camera))
+                {
+                    polygon.Rasterize(bitmap, zbuffer, lightSource, camera, shadingAlgorithm, log);
+                }
+            }
+        }
+        public nothrow inline const List<Vertex>& Vertices() const
+        {
+            return vertices;
+        }
+        public nothrow inline const List<Edge>& Edges() const
+        {
+            return edges;
+        }
+        public nothrow inline const List<Polygon>& Polygons() const
+        {
+            return polygons;
+        }
+        public nothrow inline const System.Windows.Color& GetColor() const
+        {
+            return color;
+        }
+        public nothrow void SetColor(const System.Windows.Color& color_)
+        {
+            color = color_;
+        }
+        public nothrow void SetLightingFactors(float a, float d)
+        {
+            SetLightingFactors(a, d, 0, 0);
+        }
+        public nothrow void SetLightingFactors(float a, float d, float s, int n)
+        {
+            float sum = a + d + s;
+            ambientFactor = a / sum;
+            diffuseFactor = d / sum;
+            specularFactor = s / sum;
+            specularExponent = n;
+        }
+        public nothrow inline float AmbientFactor() const
+        {
+            return ambientFactor;
+        }
+        public nothrow inline float DiffuseFactor() const
+        {
+            return diffuseFactor;
+        }
+        public nothrow inline float SpecularFactor() const
+        {
+            return specularFactor;
+        }
+        public nothrow inline int SpecularExponent() const
+        {
+            return specularExponent;
+        }
+        public override void Write(TextWriter& writer)
+        {
+            writer << "object " << id << endl();
+            writer << "================================" << endl();
+            writer << "vertices:" << endl();
+            for (const Vertex& vertex : vertices)
+            {
+                writer << vertex << endl();
+            }
+            writer << "polygons:" << endl();
+            for (const Polygon& polygon : polygons)
+            {
+                writer << polygon << endl();
+            }
+            writer << "ambient factor " << ambientFactor << endl();
+            writer << "diffuse factor " << diffuseFactor << endl();
+            writer << "specular factor " << specularFactor << endl();
+            writer << "specular exponent " << specularExponent << endl();
+            writer << "================================" << endl();
+        }
+        private List<Vertex> vertices;
+        private List<Edge> edges;
+        private List<Polygon> polygons;
+        private float ambientFactor;
+        private float diffuseFactor;
+        private float specularFactor;
+        private int specularExponent;
+        private System.Windows.Color color;
+    }
+}
+

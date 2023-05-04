@@ -1,0 +1,193 @@
+using System;
+using System.Collections;
+
+namespace System.Xml.Serialization
+{
+    public class XmlContainer
+    {
+        public nothrow XmlContainer()
+        {
+        }
+        public virtual ~XmlContainer()
+        {
+            Clear();
+        }
+        public virtual nothrow void SetRootObjectId(const Uuid& objectId)
+        {
+        }
+        public nothrow long Count() const
+        {
+            return objectProxyMap.Count();
+        }
+        public nothrow bool IsEmpty() const
+        {
+            return objectProxyMap.IsEmpty();
+        }
+        public nothrow void Clear()
+        {
+            for (const Pair<void*, XmlSerializableProxy*>& p : objectProxyMap)
+            {
+                delete p.second;
+            }
+            idProxyMap.Clear();
+            objectProxyMap.Clear();
+        }
+        public void Add(XmlSerializable xmlSerializable)
+        {
+            XmlSerializableProxy* prev = Get(xmlSerializable.ObjectId());
+            if (prev != null)
+            {
+                throw XmlSerializationException("object \'" + ToString(prev->ObjectId()) + "\' already added to XML container");
+            }
+            XmlSerializableProxy* proxy = new XmlSerializableProxy(xmlSerializable);
+            idProxyMap[proxy->ObjectId()] = proxy;
+            objectProxyMap[proxy->Object()] = proxy;
+            proxy->SetContainer(this);
+        }
+        public nothrow XmlSerializableProxy* Get(const Uuid& objectId) const
+        {
+            HashMap<Uuid, XmlSerializableProxy*>.ConstIterator it = idProxyMap.CFind(objectId);
+            if (it != idProxyMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void Remove(const Uuid& objectId)
+        {
+            XmlSerializableProxy* proxy = Get(objectId);
+            if (proxy != null)
+            {
+                objectProxyMap.Remove(proxy->Object());
+                idProxyMap.Remove(objectId);
+                delete proxy;
+            }
+        }
+        public nothrow XmlSerializableProxy* GetProxy(void* object)
+        {
+            HashMap<void*, XmlSerializableProxy*>.ConstIterator it = objectProxyMap.CFind(object);
+            if (it != objectProxyMap.CEnd())
+            {
+                XmlSerializableProxy* proxy = it->second;
+                return proxy;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public List<XmlSerializableProxy*> GetProxies() const
+        {
+            List<XmlSerializableProxy*> proxies;
+            for (const Pair<void*, XmlSerializableProxy*>& p : objectProxyMap)
+            {
+                if (p.second != null)
+                {
+                    proxies.Add(p.second);
+                }
+            }
+            return proxies;
+        }
+        public void AddToBundle(XmlBundle& bundle, XmlBundleKind kind, int hops, XmlSerializable intf, HashSet<Uuid>& addedSet)
+        {
+            if (intf.ObjectId() == Uuid())
+            {
+                return;
+            }
+            if (addedSet.CFind(intf.ObjectId()) != addedSet.CEnd())
+            {
+                return;
+            }
+            bundle.Add(intf);
+            addedSet.Insert(intf.ObjectId());
+            if (kind == XmlBundleKind.deep && (hops == -1 || hops > 0))
+            {
+                List<XmlPtrBase*> ptrs = intf.GetPtrs();
+                for (XmlPtrBase* ptr : ptrs)
+                {
+                    if (ptr->TargetObjectId() != Uuid())
+                    {
+                        XmlSerializableProxy* target = Get(ptr->TargetObjectId());
+                        if (target != null)
+                        {
+                            int nextHops = -1;
+                            if (hops > 0)
+                            {
+                                nextHops = hops - 1;
+                            }
+                            AddToBundle(bundle, kind, nextHops, target->Interface(), addedSet);
+                        }
+                        else
+                        {
+                            XmlSerializable intf = ptr->Interface();
+                            XmlContainer* container = intf.Container();
+                            if (container != null)
+                            {
+                                target = container->Get(ptr->TargetObjectId());
+                                if (target != null)
+                                {
+                                    int nextHops = -1;
+                                    if (hops > 0)
+                                    {
+                                        nextHops = hops - 1;
+                                    }
+                                    container->AddToBundle(bundle, kind, nextHops, intf, addedSet);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public XmlBundle CreateBundle(void* object)
+        {
+            return CreateBundle(object, XmlBundleKind.shallow);
+        }
+        public XmlBundle CreateBundle(void* object, XmlBundleKind kind)
+        {
+            return CreateBundle(object, kind, -1);
+        }
+        public XmlBundle CreateBundle(void* object, XmlBundleKind kind, int hops)
+        {
+            HashSet<Uuid> addedSet;
+            XmlBundle bundle;
+            XmlSerializableProxy* proxy = GetProxy(object);
+            if (proxy != null)
+            {
+                bundle.SetRootObjectId(proxy->ObjectId());
+                XmlSerializable intf = proxy->Interface();
+                AddToBundle(bundle, kind, hops, intf, addedSet);
+            }
+            return bundle;
+        }
+        public HashMap<Uuid, XmlSerializableProxy*> idProxyMap;
+        public HashMap<void*, XmlSerializableProxy*> objectProxyMap;
+    }
+
+    public void Add<T>(T* object, XmlContainer* container)
+    {
+        XmlSerializable xmlSerializable(*object);
+        container->Add(xmlSerializable);
+    }
+
+    public void AddOrReplace<T>(T* object, XmlContainer* container)
+    {
+        XmlSerializable xmlSerializable(*object);
+        container->Remove(xmlSerializable.ObjectId());
+        container->Add(xmlSerializable);
+    }
+
+    public void RemoveFromContainer<T>(T* object)
+    {
+        XmlSerializable xmlSerializable(*object);
+        XmlContainer* container = xmlSerializable.Container();
+        if (container != null)
+        {
+            container->Remove(xmlSerializable.ObjectId());
+        }
+    }
+
+} // namespace System.Xml.Serialization

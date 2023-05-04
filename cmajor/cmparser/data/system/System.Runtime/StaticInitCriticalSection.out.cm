@@ -1,0 +1,17 @@
+namespace System.Runtime
+{
+    public class StaticInitCriticalSection
+    {
+        public explicit nothrow StaticInitCriticalSection(void* staticClassId_) :
+            staticClassId(staticClassId_)
+        {
+            RtBeginStaticInitCriticalSection(staticClassId);
+        }
+        public ~StaticInitCriticalSection()
+        {
+            RtEndStaticInitCriticalSection(staticClassId);
+        }
+        private void* staticClassId;
+    }
+
+} // namespace System.Runtime

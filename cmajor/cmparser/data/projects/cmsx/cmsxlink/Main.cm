@@ -1,0 +1,215 @@
+using System;
+using System.IO;
+using System.Collections;
+using cmsx.object;
+
+public nothrow const char* Version()
+{
+    return "4.0.0";
+}
+
+void PrintHelp()
+{
+    Console.Out() << "Cmajor System X Linker version " << Version() << endl();
+    Console.Out() << "Usage: cmsxlink [options] { file.o | file.a }" << endl();
+    Console.Out() << "Options:" << endl();
+    Console.Out() << "--help (-h)" << endl();
+    Console.Out() << "  Print help." << endl();
+    Console.Out() << "--verbose (-v)" << endl();
+    Console.Out() << "  Be verbose." << endl();
+    Console.Out() << "--out=FILE (-o=FILE)" << endl();
+    Console.Out() << "  Set output file name to FILE." << endl();
+    Console.Out() << "  Default is 'a.out'." << endl();
+    Console.Out() << "--clsid=FILE (-c=FILE)" << endl();
+    Console.Out() << "  Read class id's from FILE." << endl();
+    Console.Out() << "--min-stack-size=MINSTACKSIZE (-m=MINSTACKSIZE)" << endl();
+    Console.Out() << "  Set minimum size stack size to MINSTACKSIZE bytes." << endl();
+    Console.Out() << "  Default minimum stack size is 64 kilobytes." << endl();
+    Console.Out() << "--max-stack-size=MAXSTACKSIZE (-s=MAXSTACKSIZE)" << endl();
+    Console.Out() << "  Set maximum size stack size to MAXSTACKSIZE bytes." << endl();
+    Console.Out() << "  Default maximum stack size is 4 megabytes." << endl();
+    Console.Out() << "--stack-size-increment=INCREMENT (-i=INCREMENT)" << endl();
+    Console.Out() << "  Set stack size increment to INCREMENT bytes." << endl();
+    Console.Out() << "  Default stack size increment is 64 kilobytes." << endl();
+    Console.Out() << "--debug (-d)" << endl();
+    Console.Out() << "  Debug linking." << endl();
+}
+
+int main(int argc, const char** argv)
+{
+    try
+    {
+        string cmajorRootDir = RtGetEnvironmentVariable("CMAJOR_ROOT");
+        if (cmajorRootDir.IsEmpty())
+        {
+            throw Exception("please set CMAJOR_ROOT environment variable to /path/to/cmajor directory");
+        }
+        string mainPath = Path.Combine(cmajorRootDir, "projects/cmsx/build/main/lib/Main.o");
+        List<string> fileNames;
+        fileNames.Add(GetFullPath(mainPath));
+        bool verbose = false;
+        bool debug = false;
+        ulong minStackSize = 64u * cast<ulong>(1024u);
+        ulong maxStackSize = 4u * cast<ulong>(1024u) * cast<ulong>(1024u);
+        ulong stackSizeIncrement = 64u * cast<ulong>(1024u);
+        ulong initialPoolSize = 4u * cast<ulong>(1024u);
+        string executableFileName = GetFullPath("a.out");
+        string clsIdFileName;
+        bool userFilesGiven = false;
+        bool removeUnusedCode = true;
+        for (int i = 1; i < argc; ++i)
+        {
+            string arg = argv[i];
+            if (arg.StartsWith("--"))
+            {
+                if (arg == "--help")
+                {
+                    PrintHelp();
+                    return 1;
+                }
+                else if (arg == "--verbose")
+                {
+                    verbose = true;
+                }
+                else if (arg == "--debug")
+                {
+                    debug = true;
+                }
+                else if (arg.StartsWith("--out="))
+                {
+                    executableFileName = GetFullPath(arg.Substring(6));;
+                }
+                else if (arg.StartsWith("--clsid="))
+                {
+                    clsIdFileName = GetFullPath(arg.Substring(8));
+                }
+                else if (arg.StartsWith("--min-stack-size="))
+                {
+                    minStackSize = ParseULong(arg.Substring(17));
+                }
+                else if (arg.StartsWith("--max-stack-size="))
+                {
+                    maxStackSize = ParseULong(arg.Substring(17));
+                }
+                else if (arg.StartsWith("--stack-size-increment="))
+                {
+                    stackSizeIncrement = ParseULong(arg.Substring(23));
+                }
+                else
+                {
+                    throw Exception("unknown option '" + arg + "'");
+                }
+            }
+            else if (arg.StartsWith("-"))
+            {
+                if (arg.StartsWith("-o="))
+                {
+                    executableFileName = GetFullPath(arg.Substring(3));
+                }
+                else if (arg.StartsWith("-c="))
+                {
+                    clsIdFileName = GetFullPath(arg.Substring(3));
+                }
+                else if (arg.StartsWith("-m="))
+                {
+                    minStackSize = ParseULong(arg.Substring(3));
+                }
+                else if (arg.StartsWith("-s="))
+                {
+                    maxStackSize = ParseULong(arg.Substring(3));
+                }
+                else if (arg.StartsWith("-i="))
+                {
+                    stackSizeIncrement = ParseULong(arg.Substring(3));
+                }
+                else
+                {
+                    string options = arg.Substring(1);
+                    if (options.IsEmpty())
+                    {
+                        throw Exception("unknown option '" + arg + "'");
+                    }
+                    else
+                    {
+                        for (char o : options)
+                        {
+                            if (o == 'h')
+                            {
+                                PrintHelp();
+                                return 1;
+                            }
+                            else if (o == 'v')
+                            {
+                                verbose = true;
+                            }
+                            else if (o == 'd')
+                            {
+                                debug = true;
+                            }
+                            else
+                            {
+                                throw Exception("unknown option '-" + string(o) + "'");
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                fileNames.Add(GetFullPath(arg));
+                userFilesGiven = true;
+            }
+        }
+        if (executableFileName.IsEmpty())
+        {
+            PrintHelp();
+            throw Exception("output executable file name missing");
+        }
+        if (!userFilesGiven)
+        {
+            PrintHelp();
+            throw Exception("no object or library files given");
+        }
+        if (verbose)
+        {
+            Console.Out() << "Cmajor System X Linker version " << Version() << endl();
+        }
+        ClassIdMap classIdMap;
+        if (!clsIdFileName.IsEmpty())
+        {
+            classIdMap.Read(clsIdFileName);
+        }
+        List<UniquePtr<BinaryFile>> binaryFiles;
+        for (const string& fileName : fileNames)
+        {
+            if (verbose)
+            {
+                Console.Out() << "> " << fileName << endl();
+            }
+            UniquePtr<BinaryFile> binaryFile = ReadBinaryFile(fileName);
+            binaryFile->AddSymbolsToAddressMap();
+            binaryFiles.Add(Rvalue(binaryFile));
+        }
+        if (minStackSize > maxStackSize)
+        {
+            throw Exception("error: minimum stack size (" + ToString(minStackSize) + ") is greater than maximum stack size (" + ToString(maxStackSize) + ")");
+        }
+        if (stackSizeIncrement > maxStackSize - minStackSize)
+        {
+            throw Exception("error: stack size increment (" + ToString(stackSizeIncrement) + ") is greater than difference of maximum stack size (" + ToString(maxStackSize) +
+                ") and minimum stack size (" + ToString(minStackSize) + ")");
+        }
+        ExecutableFile executable(executableFileName, true, minStackSize, maxStackSize, stackSizeIncrement, initialPoolSize);
+        Link(executable, binaryFiles, classIdMap, removeUnusedCode, debug);
+        if (verbose)
+        {
+            Console.Out() << "==> " << executableFileName << endl();
+        }
+    }
+    catch (const Exception& ex)
+    {
+        Console.Error() << ex.Message() << endl();
+        return 1;
+    }
+    return 0;
+}

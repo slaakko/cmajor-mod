@@ -1,0 +1,31 @@
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum MessageBeepType : uint
+    {
+        MB_ICONASTERISK = 64u, MB_ICONEXCLAMATION = 48u, MB_ICONERROR = 16u, MB_ICONHAND = 16u, MB_ICONINFORMATION = 64u, MB_ICONQUESTION = 32u, MB_ICONSTOP = 16u, MB_ICONWARNING = 48u, MB_OK = 0u, MB_SIMPLE = 4294967295u
+    }
+
+    public nothrow bool MessageBeep()
+    {
+        return MessageBeep(MessageBeepType.MB_OK);
+    }
+
+    public nothrow bool MessageBeep(MessageBeepType beepType)
+    {
+        return System.Windows.API.MessageBeep(beepType);
+    }
+
+    public void MessageBeepChecked()
+    {
+        System.Windows.API.MessageBeepChecked(MessageBeepType.MB_OK);
+    }
+
+    public void MessageBeepChecked(MessageBeepType beepType)
+    {
+        System.Windows.API.MessageBeepChecked(beepType);
+    }
+
+} // namespace System.Windows

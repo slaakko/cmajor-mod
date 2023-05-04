@@ -1,0 +1,21 @@
+using System;
+using System.Collections;
+using System.Xml.Serialization;
+
+namespace model
+{
+    [xml="true"]
+    public class Bicycle : Vehicle
+    {
+        public float Price() const
+        {
+            return price;
+        }
+        public void SetPrice(float price_)
+        {
+            price = price_;
+        }
+        private float price;
+    }
+
+} // namespace model

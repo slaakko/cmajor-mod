@@ -1,0 +1,403 @@
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public const uint WM_DESTROY = 2u;
+
+    public const uint WM_SIZE = 5u;
+
+    public const uint WM_MOVE = 3u;
+
+    public const uint WM_ACTIVATE = 6u;
+
+    public const uint WM_SETFOCUS = 7u;
+
+    public const uint WM_KILLFOCUS = 8u;
+
+    public const uint WM_PAINT = 15u;
+
+    public const uint WM_CLOSE = 16u;
+
+    public const uint WM_SHOWWINDOW = 24u;
+
+    public const uint WM_DRAWITEM = 43u;
+
+    public const uint WM_SETFONT = 48u;
+
+    public const uint WM_GETFONT = 49u;
+
+    public const uint WM_KEYDOWN = 256u;
+
+    public const uint WM_KEYUP = 257u;
+
+    public const uint WM_CHAR = 258u;
+
+    public const uint WM_COMMAND = 273u;
+
+    public const uint WM_SYSCOMMAND = 274u;
+
+    public const uint WM_TIMER = 275u;
+
+    public const uint WM_HSCROLL = 276u;
+
+    public const uint WM_VSCROLL = 277u;
+
+    public const uint WM_MOUSEMOVE = 512u;
+
+    public const uint WM_LBUTTONDOWN = 513u;
+
+    public const uint WM_LBUTTONUP = 514u;
+
+    public const uint WM_LBUTTONDBLCLK = 515u;
+
+    public const uint WM_RBUTTONDOWN = 516u;
+
+    public const uint WM_RBUTTONUP = 517u;
+
+    public const uint WM_MOUSEWHEEL = 522u;
+
+    public const uint WM_MOUSELEAVE = 675u;
+
+    public const uint WM_CLIPBOARDUPDATE = 797u;
+
+    public const uint WM_USER = 1024u;
+
+    public const uint EM_SETSEL = 177u;
+
+    public const uint BM_SETSTYLE = 244u;
+
+    public const uint LB_GETCURSEL = 392u;
+
+    public const uint LB_ADDSTRING = 384u;
+
+    public const uint LB_DELETESTRING = 386u;
+
+    public const uint LB_SETCURSEL = 390u;
+
+    public const uint LB_INSERTSTRING = 385u;
+
+    public const uint LB_GETTOPINDEX = 398u;
+
+    public const uint LB_SETTOPINDEX = 407u;
+
+    public const uint LB_GETCOUNT = 2075u;
+
+    public const uint LB_GETTEXTLEN = 394u;
+
+    public const uint LB_GETTEXT = 393u;
+
+    public const uint BM_GETCHECK = 240u;
+
+    public const uint BM_SETCHECK = 241u;
+
+    public const ushort BN_CLICKED = 0u;
+
+    public const ushort BN_SETFOCUS = 6u;
+
+    public const ushort BN_KILLFOCUS = 7u;
+
+    public const ushort EN_CHANGE = 768u;
+
+    public const ushort EN_SETFOCUS = 256u;
+
+    public const ushort EN_KILLFOCUS = 512u;
+
+    public const ushort LBN_SETFOCUS = 4u;
+
+    public const ushort LBN_KILLFOCUS = 5u;
+
+    public const ushort LBN_SELCHANGE = 1u;
+
+    public const ushort BST_CHECKED = 1u;
+
+    public const ushort BST_UNCHECKED = 0u;
+
+    public const uint SIZE_MAXIMIZED = 2u;
+
+    public const uint SIZE_MINIMIZED = 1u;
+
+    public const uint SIZE_RESTORED = 0u;
+
+    public const uint ODT_MENU = 1u;
+
+    public const uint HOVER_DEFAULT = cast<uint>(-1);
+
+    public const uint TME_LEAVE = 2u;
+
+    public const uint SC_KEYMENU = 61696u;
+
+    public const uint SC_CLOSE = 61536u;
+
+    public const ushort SB_BOTTOM = 7u;
+
+    public const ushort SB_ENDSCROLL = 8u;
+
+    public const ushort SB_LINEDOWN = 1u;
+
+    public const ushort SB_LINEUP = 0u;
+
+    public const ushort SB_PAGEDOWN = 3u;
+
+    public const ushort SB_PAGEUP = 2u;
+
+    public const ushort SB_THUMBPOSITION = 4u;
+
+    public const ushort SB_THUMBTRACK = 5u;
+
+    public const ushort SB_TOP = 6u;
+
+    public const ushort SB_LEFT = 6u;
+
+    public const ushort SB_RIGHT = 7u;
+
+    public const ushort SB_LINELEFT = 0u;
+
+    public const ushort SB_LINERIGHT = 1u;
+
+    public const ushort SB_PAGELEFT = 2u;
+
+    public const ushort SB_PAGERIGHT = 3u;
+
+    public const uint CM_ENDMODAL = WM_USER + 1u;
+
+    public class PaintEventArgs
+    {
+        public nothrow PaintEventArgs(Graphics& graphics_, const Rect& clipRect_) :
+            graphics(graphics_), clipRect(clipRect_)
+        {
+        }
+        public Graphics& graphics;
+        public Rect clipRect;
+    }
+
+    public enum MouseButtons : uint
+    {
+        none = 0u, lbutton = 1u, rbutton = 2u, shift = 4u, control = 8u, mbutton = 16u, xbutton1 = 32u, xbutton2 = 64u
+    }
+
+    public class MouseEventArgs
+    {
+        public nothrow MouseEventArgs(const Point& location_, MouseButtons buttons_, int clicks_) :
+            location(location_), buttons(buttons_), clicks(clicks_)
+        {
+        }
+        public Point location;
+        public MouseButtons buttons;
+        public int clicks;
+    }
+
+    public class MouseWheelEventArgs : MouseEventArgs
+    {
+        public nothrow MouseWheelEventArgs(const Point& location_, MouseButtons buttons_, short distance_) :
+            base(location_, buttons_, 0), distance(distance_)
+        {
+        }
+        public short distance;
+        public bool handled;
+    }
+
+    public class KeyPressEventArgs
+    {
+        public nothrow KeyPressEventArgs(wchar keyChar_) :
+            keyChar(keyChar_), handled(false)
+        {
+        }
+        public wchar keyChar;
+        public bool handled;
+    }
+
+    public class KeyEventArgs
+    {
+        public nothrow KeyEventArgs(Keys key_) :
+            key(key_)
+        {
+        }
+        public Keys key;
+        public bool handled;
+        public bool suppressKeyPress;
+    }
+
+    public class TreeViewNodeMouseClickEventArgs
+    {
+        public nothrow TreeViewNodeMouseClickEventArgs(const Point& location_, MouseButtons buttons_, int clicks_, TreeViewNode* node_) :
+            location(location_), buttons(buttons_), clicks(clicks_), node(node_)
+        {
+        }
+        public Point location;
+        public MouseButtons buttons;
+        public int clicks;
+        public TreeViewNode* node;
+    }
+
+    public class TreeViewNodeEventArgs
+    {
+        public nothrow TreeViewNodeEventArgs(TreeViewNode* node_) :
+            node(node_)
+        {
+        }
+        public TreeViewNode* node;
+    }
+
+    public class ControlEventArgs
+    {
+        public nothrow ControlEventArgs(Control* control_) :
+            control(control_)
+        {
+        }
+        public Control* control;
+    }
+
+    public class SizeChangingEventArgs
+    {
+        public nothrow SizeChangingEventArgs(const Size& oldSize_, const Size& newSize_) :
+            oldSize(oldSize_), newSize(newSize_)
+        {
+        }
+        public Size oldSize;
+        public Size newSize;
+    }
+
+    public class RightClickEventArgs
+    {
+        public nothrow RightClickEventArgs(Control* control_, const Point& location_) :
+            control(control_), location(location_)
+        {
+        }
+        public Control* control;
+        public Point location;
+    }
+
+    public class ScrollEventArgs
+    {
+        public nothrow ScrollEventArgs(ushort request_) :
+            request(request_)
+        {
+        }
+        public ushort request;
+    }
+
+    public class TimerEventArgs
+    {
+        public nothrow TimerEventArgs(uint timerId_) :
+            timerId(timerId_)
+        {
+        }
+        public uint timerId;
+    }
+
+    public class Message
+    {
+        public nothrow Message(void* windowHandle_, uint msg_, uint wparam_, long lparam_, long result_) :
+            windowHandle(windowHandle_), msg(msg_), wparam(wparam_), lparam(lparam_), result(result_)
+        {
+        }
+        public inline nothrow ushort WParamLoWord() const
+        {
+            return cast<ushort>(wparam & 65535u);
+        }
+        public inline nothrow ushort WParamHiWord() const
+        {
+            return cast<ushort>((wparam >> 16u) & 65535u);
+        }
+        public inline nothrow void* LParamHandle() const
+        {
+            return cast<void*>(cast<ulong>(lparam));
+        }
+        public inline nothrow uint LParamLoDWord() const
+        {
+            return cast<uint>(lparam);
+        }
+        public inline nothrow uint LParamHiDWord() const
+        {
+            return cast<uint>((lparam >> 32u) & 4294967295u);
+        }
+        public inline nothrow int LParamX() const
+        {
+            return cast<int>(cast<short>(LParamLoDWord()));
+        }
+        public inline nothrow int LParamY() const
+        {
+            return cast<int>(cast<short>(LParamLoDWord() >> 16u));
+        }
+        public inline nothrow Size LParamSize() const
+        {
+            uint s = LParamLoDWord();
+            ushort sw = cast<ushort>(s);
+            ushort sh = cast<ushort>(s >> 16u);
+            return Size(cast<int>(sw), cast<int>(sh));
+        }
+        public inline nothrow Point LParamLocation() const
+        {
+            uint s = LParamLoDWord();
+            ushort sx = cast<ushort>(s);
+            ushort sy = cast<ushort>(s >> 16u);
+            return Point(cast<int>(sx), cast<int>(sy));
+        }
+        public void* windowHandle;
+        public uint msg;
+        public uint wparam;
+        public long lparam;
+        public long result;
+        public void* originalWndProc;
+    }
+
+    public class MessageNameMap
+    {
+        static MessageNameMap() :
+            instance(new MessageNameMap())
+        {
+        }
+        public static nothrow MessageNameMap& Instance()
+        {
+            return *instance;
+        }
+        public string GetMessageName(uint message) const
+        {
+            HashMap<uint, string>.ConstIterator it = map.CFind(message);
+            if (it != map.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "WM_" + ToHexString(message);
+            }
+        }
+        private MessageNameMap()
+        {
+            map[WM_DESTROY] = "WM_DESTROY";
+            map[WM_SIZE] = "WM_SIZE";
+            map[WM_MOVE] = "WM_MOVE";
+            map[WM_SETFOCUS] = "WM_SETFOCUS";
+            map[WM_KILLFOCUS] = "WM_KILLFOCUS";
+            map[WM_PAINT] = "WM_PAINT";
+            map[WM_CLOSE] = "WM_CLOSE";
+            map[WM_SHOWWINDOW] = "WM_SHOWWINDOW";
+            map[WM_DRAWITEM] = "WM_DRAWITEM";
+            map[WM_SETFONT] = "WM_SETFONT";
+            map[WM_GETFONT] = "WM_GETFONT";
+            map[WM_KEYDOWN] = "WM_KEYDOWN";
+            map[WM_KEYUP] = "WM_KEYUP";
+            map[WM_CHAR] = "WM_CHAR";
+            map[WM_COMMAND] = "WM_COMMAND";
+            map[WM_SYSCOMMAND] = "WM_SYSCOMMAND";
+            map[WM_TIMER] = "WM_TIMER";
+            map[WM_HSCROLL] = "WM_HSCROLL";
+            map[WM_VSCROLL] = "WM_VSCROLL";
+            map[WM_MOUSEMOVE] = "WM_MOUSEMOVE";
+            map[WM_LBUTTONDOWN] = "WM_LBUTTONDOWN";
+            map[WM_LBUTTONUP] = "WM_LBUTTONUP";
+            map[WM_LBUTTONDBLCLK] = "WM_LBUTTONDBLCLK";
+            map[WM_RBUTTONDOWN] = "WM_RBUTTONDOWN";
+            map[WM_RBUTTONUP] = "WM_RBUTTONUP";
+            map[WM_MOUSEWHEEL] = "WM_MOUSEWHEEL";
+            map[WM_MOUSELEAVE] = "WM_MOUSELEAVE";
+            map[WM_CLIPBOARDUPDATE] = "WM_CLIPBOARDUPDATE";
+            map[WM_USER] = "WM_USER";
+        }
+        private static UniquePtr<MessageNameMap> instance;
+        private HashMap<uint, string> map;
+    }
+
+} // namespace System.Windows

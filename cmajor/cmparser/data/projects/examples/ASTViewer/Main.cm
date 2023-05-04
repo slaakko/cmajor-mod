@@ -1,0 +1,296 @@
+using System;
+using System.Windows;
+using System.IO;
+using System.Collections;
+using System.Xml.Serialization;
+using Cm.Views;
+
+class MainWindow : Window
+{
+    public MainWindow() : base("Abstract Syntax Tree Viewer")
+    {
+        UniquePtr<MenuBar> menuBar(new MenuBar());
+        UniquePtr<MenuItem> fileItem(new MenuItem("&File"));
+        UniquePtr<MenuItem> openItem(new MenuItem("&Open..."));
+        openItem->SetShortcut(Keys.f3);
+        openItem->ClickEvent().AddHandler(OpenClick);
+        fileItem->AddMenuItem(openItem.Release());
+        fileItem->AddMenuItem(new MenuItemSeparator());
+        UniquePtr<MenuItem> exitMenuItem(new MenuItem("E&xit"));
+        exitMenuItem->SetShortcut(cast<Keys>(Keys.altModifier | Keys.f4));
+        exitMenuItem->ClickEvent().AddHandler(ExitClick);
+        fileItem->AddMenuItem(exitMenuItem.Release());
+        menuBar->AddMenuItem(fileItem.Release());
+        UniquePtr<MenuItem> viewItem(new MenuItem("&View"));
+        UniquePtr<MenuItem> updateItem(new MenuItem("&Update tree view"));
+        updateItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.u));
+        updateItem->ClickEvent().AddHandler(UpdateClick);
+        viewItem->AddMenuItem(updateItem.Release());
+        menuBar->AddMenuItem(viewItem.Release());
+        AddChild(menuBar.Release());
+        UniquePtr<SplitContainer> verticalSplitContainer;
+        UniquePtr<LogView> logView;
+        if (Debug.Log())
+        {
+            verticalSplitContainer.Reset(new SplitContainer(Orientation.vertical, 400, Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            logView.Reset(new LogView());
+            logView->SetScrollSubject();
+            Application.SetLogView(logView.Get());
+            UniquePtr<Control> borderedLogView(new BorderedControl(logView.Release(), BorderStyle.style3D, Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+            UniquePtr<Control> scrollableLogView(new ScrollableControl(borderedLogView.Release(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+            verticalSplitContainer->Pane2Container()->AddChild(scrollableLogView.Release());
+        }
+        UniquePtr<SplitContainer> horizontalSplitContainer(new SplitContainer(Orientation.horizontal, 600, Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+        treeView = new TreeView(TreeViewCreateParams(TreeViewControlCreateParams(ControlCreateParams().Defaults())).Defaults());
+        //treeView = new TreeView(Point(0, 0), Size(0, 0), Dock.none, Anchors.none);
+        treeView->NodeDoubleClickEvent().AddHandler(TreeViewNodeDoubleClick);
+        treeView->SetScrollSubject();
+        treeView->NodeEnterEvent().AddHandler(TreeViewNodeEnter);
+        treeView->NodeLeaveEvent().AddHandler(TreeViewNodeLeave);
+        treeView->NodeSelectedEvent().AddHandler(TreeViewNodeSelected);
+        UniquePtr<Control> paddedTreeView(new PaddedControl(treeView, Padding(4, 4, 4, 4), Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+        UniquePtr<Control> borderedTreeView(new BorderedControl(paddedTreeView.Release(), BorderStyle.style3D, Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+        UniquePtr<Control> scrollableTreeView(new ScrollableControl(borderedTreeView.Release(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+        horizontalSplitContainer->Pane1Container()->AddChild(scrollableTreeView.Release());
+        sourceCodeView = new CmajorSourceCodeView(Point(0, 0), Size(0, 0), Dock.fill, Anchors.none);
+        sourceCodeView->SetScrollSubject();
+        sourceCodeView->CaretPosChangedEvent().AddHandler(CaretPosChanged);
+        UniquePtr<Control> paddedSourceCodeView(new PaddedControl(sourceCodeView, Padding(4, 4, 4, 4), Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+        UniquePtr<Control> borderedSourceCodeView(new BorderedControl(paddedSourceCodeView.Release(), BorderStyle.style3D, Point(0, 0), Size(0, 0), Dock.none, Anchors.none));
+        UniquePtr<Control> scrollableSourceCodeView(new ScrollableControl(borderedSourceCodeView.Release(), Point(0, 0), Size(0, 0), Dock.fill, Anchors.none));
+        horizontalSplitContainer->Pane2Container()->AddChild(scrollableSourceCodeView.Release());
+        if (verticalSplitContainer.IsNull())
+        {
+            AddChild(horizontalSplitContainer.Release());
+        }
+        else
+        {
+            verticalSplitContainer->Pane1Container()->AddChild(horizontalSplitContainer.Release());
+            AddChild(verticalSplitContainer.Release());
+        }
+    }
+    public override void PrintWindowTree(int level)
+    {
+        LogView* log = Application.GetLogView();
+        if (log != null)
+        {
+            log->WriteLine("MainWindow." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + ParentText() + "[" + Rect(Location(), GetSize()).ToString() + "]");
+        }
+        Component* child = Children().FirstChild();
+        while (child != null)
+        {
+            if (child is Control*)
+            {
+                Control* childControl = cast<Control*>(child);
+                childControl->PrintWindowTree(level + 1);
+            }
+            child = child->NextSibling();
+        }
+    }
+    protected override void OnKeyDown(KeyEventArgs& args)
+    {
+        base->OnKeyDown(args);
+        if (!args.handled && args.key == cast<Keys>(Keys.altModifier | Keys.c))
+        {
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                logView->Clear();
+            }
+        }
+    }
+    private void ExitClick()
+    {
+        Close();
+    }
+    private void OpenClick()
+    {
+        try
+        {
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(Pair<string, string>("Cmajor source files (*.cm)", "*.cm"));
+            string initialDirectory;
+            const char* cmajorRoot = RtGetEnvironmentVariable("CMAJOR_ROOT");
+            string defaultFilePath;
+            if (cmajorRoot != null && *cmajorRoot != '\0')
+            {
+                initialDirectory = cmajorRoot;
+            }
+            string filePath;
+            string currentDirectory;
+            List<string> fileNames;
+            bool selected = System.Windows.API.GetOpenFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".cm",
+                OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST, currentDirectory, fileNames);
+            if (selected)
+            {
+                if (!fileNames.IsEmpty())
+                {
+                    filePath = Path.Combine(currentDirectory, fileNames[0]);
+                }
+                if (!filePath.IsEmpty() && File.Exists(filePath))
+                {
+                    treeView->SetRoot(null);
+                    content = ToUtf32(File.ReadAllText(filePath));
+                    lexer = CmajorLexer(content.Chars(), content.Chars() + content.Length(), filePath, 0);
+                    Cm.Parser.ParsingContext ctx;
+                    compileUnit = CompileUnitParser.Parse(lexer, &ctx);
+                    SyntaxTreeBuilder syntaxTreeBuilder(lexer);
+                    compileUnit->Accept(syntaxTreeBuilder);
+                    indexNodeMap = syntaxTreeBuilder.GetIndexNodeMap();
+                    for (const Pair<int, TreeViewNode*>& p : indexNodeMap)
+                    {
+                        indexNodeList.Add(p);
+                    }
+                    Sort(indexNodeList.Begin(), indexNodeList.End());
+                    nodeIndexMap = syntaxTreeBuilder.GetNodeIndexMap();
+                    treeView->SetRoot(syntaxTreeBuilder.GetRoot());
+                    sourceCodeView->SetTextContent(content);
+                    sourceCodeView->SetFocus();
+                }
+                else
+                {
+                    throw Exception("file path is empty or does not exist");
+                }
+            }
+        }
+        catch (const Exception& ex)
+        {
+            MessageBox.Show(ex.Message());
+        }
+    }
+    private void TreeViewNodeDoubleClick(TreeViewNodeMouseClickEventArgs& args)
+    {
+        TreeViewNode* node = args.node;
+        switch (node->GetState())
+        {
+            case TreeViewNode.State.collapsed: node->ExpandAll(); break;
+            case TreeViewNode.State.expanded: node->CollapseAll(); break;
+        }
+    }
+    private void TreeViewNodeEnter(TreeViewNodeEventArgs& args)
+    {
+        TreeViewNode* treeViewNode = args.node;
+        if (treeViewNode->Data() != null)
+        {
+            Cm.Ast.Node* node = cast<Cm.Ast.Node*>(treeViewNode->Data());
+            SyntaxNodeAttributeExtractor attributeExtractor;
+            node->Accept(attributeExtractor);
+            treeView->ShowToolTipWindow(attributeExtractor.s, treeViewNode);
+        }
+    }
+    private void TreeViewNodeLeave(TreeViewNodeEventArgs& args)
+    {
+        TreeViewNode* node = args.node;
+        treeView->HideToolTipWindow();
+    }
+    private void TreeViewNodeSelected(TreeViewNodeEventArgs& args)
+    {
+        TreeViewNode* node = args.node;
+        HashMap<TreeViewNode*, int>.ConstIterator it = nodeIndexMap.CFind(node);
+        if (it != nodeIndexMap.CEnd())
+        {
+            int index = it->second;
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                logView->WriteLine("index=" + ToString(index));
+            }
+            sourceCodeView->SetFocus();
+            sourceCodeView->SetCaretPosByCharIndex(index);
+        }
+    }
+    private void UpdateClick()
+    {
+        int caretLine = sourceCodeView->CaretLine();
+        int caretColumn = sourceCodeView->CaretColumn();
+        int index = sourceCodeView->GetCharIndex(caretLine, caretColumn);
+        if (index != -1)
+        {
+            Pair<int, TreeViewNode*> x(index, null);
+            List<Pair<int, TreeViewNode*>>.ConstIterator it = LowerBound(indexNodeList.CBegin(), indexNodeList.CEnd(), x);
+            if (it != indexNodeList.CBegin() && it == indexNodeList.CEnd())
+            {
+                --it;
+            }
+            int i = -1;
+            if (it != indexNodeList.CEnd())
+            {
+                int i = it->first;
+                if (i > index)
+                {
+                    if (it != indexNodeList.CBegin())
+                    {
+                        --it;
+                    }
+                }
+            }
+            if (it != indexNodeList.CEnd())
+            {
+                TreeViewNode* node = it->second;
+                treeView->Root()->CollapseAll();
+                TreeViewNode* p = node;
+                while (p != null)
+                {
+                    p->Expand();
+                    p = p->Parent();
+                }
+                treeView->Invalidate();
+                treeView->Update();
+                node->EnsureVisible();
+                treeView->Invalidate();
+            }
+        }
+    }
+    private void CaretPosChanged()
+    {
+        int caretLine = sourceCodeView->CaretLine();
+        int caretColumn = sourceCodeView->CaretColumn();
+        LogView* logView = Application.GetLogView();
+        if (logView != null)
+        {
+            logView->WriteLine("caret: (" + ToString(caretLine) + ", " + ToString(caretColumn) + ")");
+        }
+    }
+    private TreeView* treeView;
+    private CmajorSourceCodeView* sourceCodeView;
+    private ustring content;
+    private CmajorLexer lexer;
+    private UniquePtr<Cm.Ast.CompileUnitNode> compileUnit;
+    private HashMap<int, TreeViewNode*> indexNodeMap;
+    private List<Pair<int, TreeViewNode*>> indexNodeList;
+    private HashMap<TreeViewNode*, int> nodeIndexMap;
+}
+
+int main()
+{
+    try
+    {
+        //Debug.SetLog();
+        //Debug.SetDocking();
+        //Debug.SetWindowTree();
+        //Debug.SetPaint();
+
+        MainWindow mainWindow;
+        mainWindow.SetSmallIcon(Application.GetResourceManager().GetIcon("astviewer.icon"));
+        if (Debug.WindowTree())
+        {
+            mainWindow.PrintWindowTree(0);
+        }
+        int exitCode = Application.Run(mainWindow);
+        return exitCode;
+    }
+    catch (const Exception& ex)
+    {
+        MessageBox.Show(ex.Message(), "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+        try
+        {
+            StreamWriter errorWriter = File.CreateText("error.txt");
+            errorWriter << ex.ToString() << endl();
+        }
+        catch (const Exception&)
+        {
+        }
+        return 1;
+    }
+    return 0;
+}

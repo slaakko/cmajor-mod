@@ -1,0 +1,147 @@
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public inline nothrow int DefaultControlPadding()
+    {
+        return 4;
+    }
+
+    public nothrow ControlCreateParams& PaddedControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
+    {
+        return controlCreateParams.SetWindowClassName("System.Windows.PaddedControl").SetBackgroundColor(child->BackgroundColor());
+    }
+
+    public class PaddedControlCreateParams
+    {
+        public nothrow PaddedControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
+            controlCreateParams(controlCreateParams_), child(child_), padding(Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()))
+        {
+        }
+        public nothrow PaddedControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public nothrow PaddedControlCreateParams& SetPadding(const Padding& padding_)
+        {
+            padding = padding_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public Control* child;
+        public Padding padding;
+    }
+
+    public class PaddedControl : Control
+    {
+        public PaddedControl(Control* child_, const Padding& padding_, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("System.Windows.PaddedControl", DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(), child_->BackgroundColor(), "paddedControl", location, size, dock, anchors), container(this), child(child_), padding(padding_)
+        {
+            container.AddChild(child);
+            SetChildPos();
+        }
+        public PaddedControl(Control* child) :
+            this(child, Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()), Point(), Size(), Dock.none, Anchors.none)
+        {
+        }
+        public PaddedControl(PaddedControlCreateParams& createParams) :
+            base(createParams.controlCreateParams), container(this), child(createParams.child), padding(createParams.padding)
+        {
+            container.AddChild(child);
+            SetChildPos();
+        }
+        protected override nothrow bool IsDecoratorControl() const
+        {
+            return true;
+        }
+        public override nothrow Padding DefaultPadding() const
+        {
+            return padding;
+        }
+        protected override void OnLocationChanged()
+        {
+            base->OnLocationChanged();
+            SetChildPos();
+        }
+        protected override void OnSizeChanged(uint windowState)
+        {
+            base->OnSizeChanged(windowState);
+            SetChildPos();
+        }
+        protected override void OnChildContentChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        protected override void OnChildContentLocationChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentLocationChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentLocationChanged(args);
+            }
+        }
+        protected override void OnChildContentSizeChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentSizeChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentSizeChanged(args);
+            }
+        }
+        protected override void OnChildGotFocus(ControlEventArgs& args)
+        {
+            base->OnChildGotFocus(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildGotFocus(args);
+            }
+        }
+        protected override void OnChildLostFocus(ControlEventArgs& args)
+        {
+            base->OnChildLostFocus(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildLostFocus(args);
+            }
+        }
+        protected override void OnPaint(PaintEventArgs& args)
+        {
+            args.graphics.Clear(BackgroundColor());
+            base->OnPaint(args);
+        }
+        internal override nothrow Control* GetFirstEnabledTabStopControl() const
+        {
+            return child->GetFirstEnabledTabStopControl();
+        }
+        internal override nothrow Control* GetLastEnabledTabStopControl() const
+        {
+            return child->GetLastEnabledTabStopControl();
+        }
+        private void SetChildPos()
+        {
+            Point loc;
+            Size size = GetSize();
+            Rect childRect(loc, size);
+            childRect.location.x = loc.x + padding.left;
+            childRect.location.y = loc.x + padding.top;
+            childRect.size.w = size.w - padding.Horizontal();
+            childRect.size.h = size.h - padding.Vertical();
+            child->SetLocation(childRect.location);
+            child->SetSize(childRect.size);
+        }
+        private Container container;
+        private Control* child;
+        private Padding padding;
+    }
+
+} // namespace System.Windows

@@ -1,0 +1,719 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System.Collections;
+using System.IO;
+
+namespace System.Os
+{
+    public nothrow void Exit(byte exitCode)
+    {
+        exit(exitCode);
+    }
+    
+    public int Fork()
+    {
+        int result = fork();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void Exec(const string& program, const List<string>& args)
+    {
+        Exec(program, args, Environment.Instance());
+    }
+    
+    public void Exec(const string& program, const List<string>& args, const Environment& environment)
+    {
+        string prog = program;
+        bool hasExtension = Path.HasExtension(prog);
+        if (!hasExtension)
+        {
+            prog.Append(".x");
+        }
+        long size = prog.Length() + 1 + 16;
+        for (const string& arg : args)
+        {
+            size = size + arg.Length() + 1 + 16;
+        }
+        size = size + 16;
+        size = size + environment.Size();
+        size = size + 16;
+        UniquePtr<byte> block = cast<byte*>(MemAlloc(size));
+        MemoryWriter writer(block.Get(), size);
+        const char** argv = cast<const char**>(cast<void*>(block.Get()));
+        writer.Write(cast<long>(0));
+        for (const string& arg : args)
+        {
+            writer.Write(cast<long>(0));
+        }
+        writer.Write(cast<long>(0));
+        const char** envp = cast<const char**>(cast<void*>(block.Get() + writer.Offset()));
+        for (const Pair<string, string>& v : environment.Variables())
+        {
+            writer.Write(cast<long>(0));
+        }
+        writer.Write(cast<long>(0));
+        List<byte*> addresses;
+        addresses.Add(block.Get() + writer.Offset());
+        writer.Write(prog);
+        for (const string& arg : args)
+        {
+            addresses.Add(block.Get() + writer.Offset());
+            writer.Write(arg);
+        }
+        addresses.Add(null);
+        for (const Pair<string, string>& v : environment.Variables())
+        {
+            string env = v.first;
+            env.Append('=').Append(v.second);
+            addresses.Add(block.Get() + writer.Offset());
+            writer.Write(env);
+        }
+        addresses.Add(null);
+        MemoryWriter headerWriter(block.Get(), size);
+        for (byte* address : addresses)
+        {
+            headerWriter.Write(cast<ulong>(cast<void*>(address)));
+        }
+        int result = exec(prog.Chars(), argv, envp);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int Wait(byte* exitCode)
+    {
+        int result = wait(exitCode);
+        if (result == -1)
+        {
+            SystemError systemError = GetSystemError();
+            if (systemError.errorCode == ENOCHILD)
+            {
+                return -1;
+            }
+            else
+            {
+                throw systemError;
+            }
+        }
+        return result;
+    }
+    
+    public int WaitPid(int pid, byte* exitCode)
+    {
+        int result = waitpid(pid, exitCode);
+        if (result == -1)
+        {
+            SystemError systemError = GetSystemError();
+            if (systemError.errorCode == ENOCHILD)
+            {
+                return -1;
+            }
+            else
+            {
+                throw systemError;
+            }
+        }
+        return result;
+    }
+    
+    public int GetPid()
+    {
+        int result = getpid();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+
+    public int Create(const char* path, int mode)
+    {
+        int result = create(path, mode);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public int Open(const char* path, OpenFlags flags, int mode)
+    {
+        int result = open(path, flags, mode);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void Close(int fd)
+    {
+        int result = close(fd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public long Read(int fd, void* buffer, long count)
+    {
+        long result = read(fd, buffer, count);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public long Write(int fd, void* buffer, long count)
+    {
+        long result = write(fd, buffer, count);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public int IOCtl(int fd, IOControlItem item, byte* arg, long argSize)
+    {
+        int result = ioctl(fd, item, arg, argSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public long Seek(int fd, long pos, Origin origin)
+    {
+        long result = seek(fd, pos, origin);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public long Tell(int fd)
+    {
+        long result = tell(fd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void Unlink(const char* path)
+    {
+        int result = unlink(path);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void GetCWD(char* pathBuf, long bufSize)
+    {
+        int result = getcwd(pathBuf, bufSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void ChDir(const char* path)
+    {
+        int result = chdir(path);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void MkDir(const char* path)
+    {
+        MkDir(path, 0);
+    }
+    
+    public void MkDir(const char* path, int mode)
+    {
+        int result = mkdir(path, mode);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void UTime(const char* path, byte* timeBuf, long timeBufSize)
+    {
+        int result = utime(path, timeBuf, timeBufSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+
+    public int OpenDir(const char* dirPath)
+    {
+        int result = opendir(dirPath);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void CloseDir(int dfd)
+    {
+        int result = closedir(dfd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int ReadDir(int dfd, byte* dirEntryBuf, long dirEntryBufSize)
+    {
+        int result = readdir(dfd, dirEntryBuf, dirEntryBufSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public int OpenResource(const char* resource_name)
+    {
+        int rd = open_resource(resource_name);
+        if (rd == -1)
+        {
+            ThrowSystemError();
+        }
+        return rd;
+    }
+    
+    public void CloseResource(int rd)
+    {
+        int result = close_resource(rd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public long GetResourceSize(int rd)
+    {
+        long size = get_resource_size(rd);
+        if (size == -1)
+        {
+            ThrowSystemError();
+        }
+        return size;
+    }
+    
+    public void ReadResource(int rd, long offset, long size, byte* buffer)
+    {
+        int result = read_resource(rd, offset, size, buffer);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int Decompress(byte* buffer, long count)
+    {
+        int dd = decompress(buffer, count);
+        if (dd == -1)
+        {
+            ThrowSystemError();
+        }
+        return dd;
+    }
+    
+    public long GetDecompressedDataSize(int dd)
+    {
+        long size = get_decompressed_data_size(dd);
+        if (size == -1)
+        {
+            ThrowSystemError();
+        }
+        return size;
+    }
+    
+    public void GetDecompressedData(int dd, byte* buffer, long count)
+    {
+        int result = get_decompressed_data(dd, buffer, count);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void CloseDecompression(int dd)
+    {
+        int result = close_decompression(dd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public string GetHostName()
+    {
+        char[256] buffer;
+        int result = get_host_name(&buffer[0], 256);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return string(&buffer[0]);
+    }
+    
+    public string GetUserName()
+    {
+        char[256] buffer;
+        int result = get_user_name(&buffer[0], 256);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return string(&buffer[0]);
+    }    
+    
+    public void Pipe(int* readerFd, int* writerFd)
+    {
+        int result = pipe(readerFd, writerFd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int Dup(int fd)
+    {
+        int result = dup(fd);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void SetUID(int uid)
+    {
+        int result = setuid(uid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+
+    public void SetGID(int gid)
+    {
+        int result = setgid(gid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int GetUID()
+    {
+        int result = getuid();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+
+    public int GetGID()
+    {
+        int result = getgid();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void SetEUID(int euid)
+    {
+        int result = seteuid(euid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+
+    public void SetEGID(int egid)
+    {
+        int result = setegid(egid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int GetEUID()
+    {
+        int result = geteuid();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+
+    public int GetEGID()
+    {
+        int result = getegid();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public int UMask(int mask)
+    {
+        int result = umask(mask);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void ChMod(const char* path, int mode)
+    {
+        int result = chmod(path, mode);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void ChOwn(const char* path, int uid, int gid)
+    {
+        int result = chown(path, uid, gid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void Rename(const char* source, const char* target)
+    {
+        int result = rename(source, target);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void AddDirChangeNotification(const char* directories)
+    {
+        int result = add_dir_change_notification(directories);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void RemoveDirChangeNotifications()
+    {
+        int result = remove_dir_change_notifications();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public bool DirectoriesChanged() 
+    {
+        int result = directories_changed();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result == 1;
+    }
+    
+    public void ClearDirectoriesChanged()
+    {
+        int result = clear_directories_changed();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int MsgQ(const char* name)
+    {
+        int result = msgq(name);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void CloseMsgQ(int md)
+    {
+        int result = close_msgq(md);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void WaitMsg(int md)
+    {
+        int result = wait_msg(md);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void PutMsg(int md, byte* msgData, int msgSize)
+    {
+        int result = put_msg(md, msgData, msgSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int GetMsgQLength(int md)
+    {
+        int result = get_msgq_length(md);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public int GetMsgSize(int md)
+    {
+        int result = get_msg_size(md);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void GetMsg(int md, byte* buffer)
+    {
+        int result = get_msg(md, buffer);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void BindTerminal(int md)
+    {
+        int result = bind_terminal(md);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void UnbindTerminal()
+    {
+        int result = unbind_terminal();
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public void Tab(int fd, int putTabMsgQ, int getTabMsgQ)
+    {
+        byte[8] arg;
+        MemoryWriter writer(&arg[0], 8);
+        writer.Write(putTabMsgQ);
+        writer.Write(getTabMsgQ);
+        IOCtl(fd, IOControlItem.tab, &arg[0], 8);
+    }
+    
+    public void Untab(int fd)
+    {
+        IOCtl(fd, IOControlItem.untab, null, 0);
+    }
+    
+    public void PushPid(int fd, int pid)
+    {
+        byte[4] arg;
+        MemoryWriter writer(&arg[0], 4);
+        writer.Write(pid);
+        IOCtl(fd, IOControlItem.push_pid, &arg[0], 4);
+    }
+    
+    public void PopPid(int fd)
+    {
+        IOCtl(fd, IOControlItem.pop_pid, null, 0);
+    }
+    
+    public void TimerMsg(const Duration& duration, int md, byte* msgData, int msgSize)
+    {
+        int result = timer_msg(duration.Rep(), md, msgData, msgSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+    
+    public int Connect(const char* node, const char* service)
+    {
+        int result = connect(node, service);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        return result;
+    }
+    
+    public void Kill(int pid)
+    {
+        int result = kill(pid);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+    }
+	
+	public int Start(const char* prog)
+	{
+		int result = start(prog);
+		if (result == -1)
+		{
+			ThrowSystemError();
+		}
+		return result;
+	}
+	
+	public void Stop(int prog)
+	{
+		int result = stop(prog);
+		if (result == -1)
+		{
+			ThrowSystemError();
+		}
+	}
+}

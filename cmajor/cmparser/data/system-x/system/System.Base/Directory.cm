@@ -1,0 +1,259 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Os;
+
+namespace System.IO
+{
+    public const int pathMax = 4096;
+    public const int statBufSize = 70;
+
+    public string GetCurrentWorkingDirectory()
+    {
+        Buffer buffer(pathMax);
+        char* buf = cast<char*>(cast<void*>(buffer.Mem()));
+        long count = buffer.Size();
+        GetCWD(buf, count);
+        return string(buf);
+    }
+
+    public static class Directory
+    {
+        public static bool Exists(const string& directoryPath)
+        {
+            return DirectoryExists(directoryPath);
+        }
+        public static bool IsEmpty(const string& directoryPath)
+        {
+            return IsDirectoryEmpty(directoryPath);
+        }
+        public static void Create(const string& directoryPath)
+        {
+            Create(directoryPath, 0);
+        }
+        public static void Create(const string& directoryPath, int mode)
+        {
+            CreateDirectory(directoryPath, mode);
+        }
+        public static DateTime AccessTime(const string& directoryPath)
+        {
+            return GetDirectoryAccessTime(directoryPath);
+        }
+        public static DateTime ModificationTime(const string& directoryPath)
+        {
+            return GetDirectoryModificationTime(directoryPath);
+        }
+        public static void GetTimes(const string& directoryPath, DateTime& accessTime, DateTime& modificationTime)
+        {
+            GetDirectoryTimes(directoryPath, accessTime, modificationTime);
+        }
+        public static void SetTimes(const string& directoryPath, const DateTime& accessTime, const DateTime& modificationTime)
+        {
+            SetDirectoryTimes(directoryPath, accessTime, modificationTime);
+        }
+        public static void Remove(const string& directoryPath)
+        {
+            RemoveDirectory(directoryPath);
+        }
+    }
+    
+    public void CreateDirectory(const string& directoryPath)
+    {
+        CreateDirectory(directoryPath, 0);
+    }
+    
+    public void CreateDirectory(const string& directoryPath, int mode)
+    {
+        MkDir(directoryPath.Chars(), mode);
+    }
+  
+    public void CreateDirectories(const string& directoryPath)
+    {
+        CreateDirectories(directoryPath, 0);
+    }
+    
+    public void CreateDirectories(const string& directoryPath, int mode)
+    {
+        if (directoryPath.IsEmpty())
+        {
+            throw InvalidPathException("directory path is empty");
+        }
+        List<string> components = directoryPath.Split('/');
+        int n = cast<int>(components.Count());
+        string dir;
+        int next = 0;
+        if (components[0].IsEmpty())
+        {
+            dir = "/" + components[1];
+            next = 2;
+        }
+        else
+        {
+            dir = components[0];
+            next = 1;
+        }
+        if (!Directory.Exists(dir))
+        {
+            MkDir(dir.Chars(), mode);
+        }
+        for (int i = next; i < n; ++i)
+        {
+            dir = Path.Combine(dir, components[i]);
+            if (!Directory.Exists(dir))
+            {
+                MkDir(dir.Chars(), mode);
+            }
+        }
+    }
+    
+    public bool DirectoryExists(const string& dirPath)
+    {
+        byte[statBufSize] statBuf;
+        int result = stat(dirPath.Chars(), &statBuf[0], statBufSize);
+        if (result == -1) 
+        {
+            SystemError systemError = GetSystemError();
+            if (systemError.errorCode == ENOTFOUND)
+            {
+                return false;
+            }
+            else
+            {
+                ThrowSystemError();
+            }
+        }
+        else
+        {
+            FileStatus status;
+            GetFileStatus(&statBuf[0], status);
+            if (status.fileType == FileType.directory)
+            {
+                return true;
+            }
+            else
+            {
+                throw FileSystemException("path '" + dirPath + "' is not a directory path");
+            }
+        }
+    }
+    
+    public bool IsDirectoryEmpty(const string& dirPath)
+    {
+        if (!DirectoryExists(dirPath))
+        {
+            throw FileSystemException("directory path '" + dirPath + "' does not exist");
+        }
+        DirectoryEntry entry;
+        DirectoryReader reader(dirPath);
+        while (reader.Read(entry))
+        {
+            if (entry.IsDot() || entry.IsDotDot())
+            {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    public DateTime GetDirectoryAccessTime(const string& dirPath)
+    {
+        FileStatus status;
+        Stat(dirPath.Chars(), status);
+        if (status.fileType != FileType.directory)
+        {
+            throw FileSystemException("path '" + dirPath + "' is not a directory path");
+        }
+        return status.atime;
+    }
+    
+    public DateTime GetDirectoryModificationTime(const string& dirPath)
+    {
+        FileStatus status;
+        Stat(dirPath.Chars(), status);
+        if (status.fileType != FileType.directory)
+        {
+            throw FileSystemException("path '" + dirPath + "' is not a directory path");
+        }
+        return status.mtime;
+    }
+    
+    public void GetDirectoryTimes(const string& dirPath, DateTime& accessTime, DateTime& modificationTime)
+    {
+        FileStatus status;
+        Stat(dirPath.Chars(), status);
+        if (status.fileType != FileType.directory)
+        {
+            throw FileSystemException("path '" + dirPath + "' is not a directory path");
+        }
+        accessTime = status.atime;
+        modificationTime = status.mtime;
+    }
+    
+    public void SetDirectoryTimes(const string& dirPath, const DateTime& accessTime, const DateTime& modificationTime)
+    {
+        UTime(dirPath.Chars(), accessTime, modificationTime); 
+    }
+    
+    public class DirectoryEntry
+    {
+        public nothrow DirectoryEntry() : inodeNumber(-1), name()
+        {
+        }
+        public nothrow DirectoryEntry(int inodeNumber_, const string& name_) : inodeNumber(inodeNumber_), name(name_)
+        {
+        }
+        public nothrow bool IsDot() const
+        {
+            return name == ".";
+        }
+        public nothrow bool IsDotDot() const
+        {
+            return name == "..";
+        }
+        public int inodeNumber;
+        public string name;
+    }
+    
+    public const int directoryEntrySize = 256;
+    
+    public class DirectoryReader
+    {
+        public nothrow DirectoryReader(const string& dirPath) : dfd(OpenDir(dirPath.Chars()))
+        {
+        }
+        public bool Read(DirectoryEntry& dirEntry)
+        {
+            byte[directoryEntrySize] dirEntryBuf;
+            int result = ReadDir(dfd, &dirEntryBuf[0], directoryEntrySize);
+            if (result == 1)
+            {
+                MemoryReader reader(&dirEntryBuf[0], directoryEntrySize);
+                dirEntry.inodeNumber = reader.ReadInt();
+                dirEntry.name = reader.ReadString();
+                return true;
+            }
+            return false;
+        }
+        public ~DirectoryReader()
+        {
+            try
+            {
+                CloseDir(dfd);
+            }
+            catch (const Exception&)
+            {
+            }
+        }
+        private int dfd;
+    }
+
+    public void RemoveDirectory(const string& dirPath)
+    {
+        Unlink(dirPath.Chars());
+    }
+}

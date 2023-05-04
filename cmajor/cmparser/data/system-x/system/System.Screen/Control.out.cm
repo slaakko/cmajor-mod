@@ -1,0 +1,501 @@
+using System;
+
+namespace System.Screen
+{
+    public enum InvalidateKind
+    {
+        dontInvalidate = 0, invalidateIfNotDefault = 1, forceInvalidate = 2
+    }
+
+    public class InvalidateGuard
+    {
+        public nothrow InvalidateGuard(Control* control_, InvalidateKind invalidateKind_) :
+            control(control_), invalidateKind(invalidateKind_)
+        {
+            control->BeginInvalidate();
+        }
+        public ~InvalidateGuard()
+        {
+            control->EndInvalidate(invalidateKind);
+        }
+        private Control* control;
+        private InvalidateKind invalidateKind;
+    }
+
+    public class ControlCreateParams
+    {
+        public nothrow ControlCreateParams() :
+            location(Point.Default()), size(Size.Default()), foreColor(ConsoleColor.defaultColor), backColor(ConsoleColor.defaultColor)
+        {
+        }
+        public nothrow ControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public nothrow ControlCreateParams& SetLocation(const Point& location_)
+        {
+            location = location_;
+            return *this;
+        }
+        public nothrow ControlCreateParams& SetSize(const Size& size_)
+        {
+            size = size_;
+            return *this;
+        }
+        public nothrow ControlCreateParams& SetForeColor(ConsoleColor foreColor_)
+        {
+            foreColor = foreColor_;
+            return *this;
+        }
+        public nothrow ControlCreateParams& SetBackColor(ConsoleColor backColor_)
+        {
+            backColor = backColor_;
+            return *this;
+        }
+        public Point location;
+        public Size size;
+        public ConsoleColor foreColor;
+        public ConsoleColor backColor;
+    }
+
+    public enum ControlFlags
+    {
+        none = 0, disabled = 1 << 0
+    }
+
+    public class Control : Component
+    {
+        public nothrow Control(ControlCreateParams& createParams) :
+            flags(ControlFlags.none), handle(-1), location(createParams.location), size(createParams.size), foreColor(createParams.foreColor), backColor(createParams.backColor), invalidateCount(0)
+        {
+            Application.Instance().GetWindowManager().AddWindow(this);
+        }
+        public ~Control()
+        {
+            if (IsFocused())
+            {
+                Application.Instance().SetFocusedControl(null);
+            }
+            Application.Instance().GetWindowManager().RemoveWindow(this);
+        }
+        public nothrow int Handle() const
+        {
+            return handle;
+        }
+        public nothrow void SetHandle(int handle_)
+        {
+            handle = handle_;
+        }
+        public nothrow void SetDisabled()
+        {
+            if (!IsDisabled())
+            {
+                flags = cast<ControlFlags>(flags | ControlFlags.disabled);
+                OnEnabledChanged();
+                Invalidate(GetRect());
+            }
+        }
+        public nothrow void SetEnabled()
+        {
+            if (IsDisabled())
+            {
+                flags = cast<ControlFlags>(flags & ~ControlFlags.disabled);
+                OnEnabledChanged();
+                Invalidate(GetRect());
+            }
+        }
+        public nothrow bool IsDisabled() const
+        {
+            return (flags & ControlFlags.disabled) != ControlFlags.none;
+        }
+        public nothrow bool IsEnabled() const
+        {
+            return (flags & ControlFlags.disabled) == ControlFlags.none;
+        }
+        public nothrow const Point& Location() const
+        {
+            return location;
+        }
+        public nothrow void SetLocation(const Point& location_)
+        {
+            if (location != location_)
+            {
+                location = location_;
+                OnLocationChanged();
+                Invalidate();
+            }
+        }
+        public nothrow const Size& GetSize() const
+        {
+            return size;
+        }
+        public nothrow void SetSize(const Size& size_)
+        {
+            if (size != size_)
+            {
+                size = size_;
+                OnSizeChanged();
+                Invalidate();
+            }
+        }
+        public nothrow Rect GetRect() const
+        {
+            return Rect(location, size);
+        }
+        public nothrow Window* GetWindow() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is Window*)
+                    {
+                        return cast<Window*>(parent);
+                    }
+                    else if (parent is Control*)
+                    {
+                        return cast<Control*>(parent)->GetWindow();
+                    }
+                }
+            }
+            return null;
+        }
+        public nothrow Control* ParentControl() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is Control*)
+                    {
+                        return cast<Control*>(parent);
+                    }
+                }
+            }
+            return null;
+        }
+        public nothrow Control* NextControl() const
+        {
+            Component* nextSibling = NextSibling();
+            while (nextSibling != null)
+            {
+                if (nextSibling is Control*)
+                {
+                    return cast<Control*>(nextSibling);
+                }
+                nextSibling = nextSibling->NextSibling();
+            }
+            return null;
+        }
+        public nothrow Control* PrevControl() const
+        {
+            Component* prevSibling = PrevSibling();
+            while (prevSibling != null)
+            {
+                if (prevSibling is Control*)
+                {
+                    return cast<Control*>(prevSibling);
+                }
+                prevSibling = prevSibling->PrevSibling();
+            }
+            return null;
+        }
+        public nothrow Control* NextFocusableControl() const
+        {
+            Control* nextControl = NextControl();
+            while (nextControl != null)
+            {
+                if (nextControl->CanFocus())
+                {
+                    return nextControl;
+                }
+                nextControl = nextControl->NextControl();
+            }
+            return null;
+        }
+        public nothrow Control* PrevFocusableControl() const
+        {
+            Control* prevControl = PrevControl();
+            while (prevControl != null)
+            {
+                if (prevControl->CanFocus())
+                {
+                    return prevControl;
+                }
+                prevControl = prevControl->PrevControl();
+            }
+            return null;
+        }
+        public nothrow ConsoleColor ForeColor() const
+        {
+            return foreColor;
+        }
+        public nothrow void SetForeColor(ConsoleColor foreColor_)
+        {
+            if (foreColor != foreColor_)
+            {
+                foreColor = foreColor_;
+                OnForeColorChanged();
+                Invalidate();
+            }
+        }
+        public nothrow ConsoleColor BackColor() const
+        {
+            return backColor;
+        }
+        public nothrow void SetBackColor(ConsoleColor backColor_)
+        {
+            if (backColor != backColor_)
+            {
+                backColor = backColor_;
+                OnBackColorChanged();
+                Invalidate();
+            }
+        }
+        public nothrow void Timer(const Duration& duration, int timerId)
+        {
+            Application.Instance().Timer(duration, this, timerId);
+        }
+        public nothrow void BeginInvalidate()
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null && parentControl->InvalidateCount() > 0)
+            {
+                return;
+            }
+            if (invalidateCount == 0)
+            {
+                updateRect = Rect();
+            }
+            ++invalidateCount;
+        }
+        public nothrow void EndInvalidate(InvalidateKind invalidateKind)
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null && parentControl->InvalidateCount() > 0)
+            {
+                return;
+            }
+            --invalidateCount;
+            if (invalidateCount == 0 && invalidateKind != InvalidateKind.dontInvalidate)
+            {
+                if (!updateRect.IsEmpty())
+                {
+                    WriteScreenMessage message(updateRect, invalidateKind);
+                    message.SetTargetWindowHandle(handle);
+                    Application.Instance().PostMessage(message);
+                }
+            }
+        }
+        public nothrow int InvalidateCount() const
+        {
+            return invalidateCount;
+        }
+        public void Invalidate()
+        {
+            Invalidate(Rect.Default());
+        }
+        public void Invalidate(const Rect& rect)
+        {
+            InvalidateGuard guard(this, InvalidateKind.invalidateIfNotDefault);
+            if (updateRect.IsEmpty())
+            {
+                updateRect = rect;
+            }
+            else if (rect.IsDefault())
+            {
+                updateRect = Rect.Default();
+            }
+            else
+            {
+                updateRect = Rect.Union(updateRect, rect);
+            }
+        }
+        public nothrow void SetControlCursorPos(const Point& controlCursorPos_)
+        {
+            controlCursorPos = controlCursorPos_;
+        }
+        public nothrow const Point& ControlCursorPos() const
+        {
+            return controlCursorPos;
+        }
+        public virtual nothrow bool CanFocus() const
+        {
+            return IsEnabled();
+        }
+        public nothrow bool IsFocused() const
+        {
+            return Application.Instance().FocusedControl() == this;
+        }
+        public virtual nothrow Rect FocusRect() const
+        {
+            return GetRect();
+        }
+        public virtual void SetFocus()
+        {
+            Control* prevFocusedControl = Application.Instance().FocusedControl();
+            if (prevFocusedControl != this)
+            {
+                if (prevFocusedControl != null)
+                {
+                    prevFocusedControl->OnLostFocus();
+                }
+                Application.Instance().SetFocusedControl(this);
+                OnGotFocus();
+                if (prevFocusedControl != null)
+                {
+                    prevFocusedControl->Invalidate(prevFocusedControl->FocusRect());
+                }
+                Invalidate(FocusRect());
+            }
+        }
+        public virtual bool HandleMessage(Message* message)
+        {
+            return message->Dispatch(this);
+        }
+        public virtual bool HandleKeyPressed(KeyPressedMessage* message)
+        {
+            KeyEventArgs args(message->Key());
+            MenuBar* menuBar = Application.Instance().GetMenuBar();
+            if (menuBar != null)
+            {
+                menuBar->OnKeyPressed(args);
+                if (menuBar->IsOpen())
+                {
+                    return true;
+                }
+            }
+            if (args.Handled())
+            {
+                return true;
+            }
+            Control* focusedControl = Application.Instance().FocusedControl();
+            if (focusedControl != null)
+            {
+                focusedControl->OnKeyPressed(args);
+                if (args.Handled())
+                {
+                    return true;
+                }
+            }
+            OnKeyPressed(args);
+            return args.Handled();
+        }
+        public virtual bool HandleWriteScreen(WriteScreenMessage* message)
+        {
+            WriteScreenEventArgs args(message->GetRect());
+            OnWriteScreen(args);
+            return true;
+        }
+        public virtual bool HandleTimerMessage(TimerMessage* message)
+        {
+            TimerEventArgs args(message->TimerId());
+            OnTimer(args);
+            return true;
+        }
+        public virtual void OnLocationChanged()
+        {
+            locationChangedEvent.Fire();
+        }
+        public virtual void OnSizeChanged()
+        {
+            sizeChangedEvent.Fire();
+        }
+        public virtual void OnForeColorChanged()
+        {
+            foreColorChangedEvent.Fire();
+        }
+        public virtual void OnBackColorChanged()
+        {
+            backColorChangedEvent.Fire();
+        }
+        public virtual void OnEnabledChanged()
+        {
+            enabledChangedEvent.Fire();
+        }
+        public virtual void OnGotFocus()
+        {
+            gotFocusEvent.Fire();
+        }
+        public virtual void OnLostFocus()
+        {
+            lostFocusEvent.Fire();
+        }
+        public virtual void OnWriteScreen(WriteScreenEventArgs& args)
+        {
+            writeScreenEvent.Fire(args);
+        }
+        public virtual void OnKeyPressed(KeyEventArgs& args)
+        {
+            keyPressedEvent.Fire(args);
+        }
+        public virtual void OnTimer(TimerEventArgs& args)
+        {
+            timerEvent.Fire(args);
+        }
+        public nothrow Event<ChangedEventHandler>& LocationChangedEvent()
+        {
+            return locationChangedEvent;
+        }
+        public nothrow Event<ChangedEventHandler>& SizeChangedEvent()
+        {
+            return sizeChangedEvent;
+        }
+        public nothrow Event<ChangedEventHandler>& ForeColorChangedEvent()
+        {
+            return foreColorChangedEvent;
+        }
+        public nothrow Event<ChangedEventHandler>& BackColorChangedEvent()
+        {
+            return backColorChangedEvent;
+        }
+        public nothrow Event<ChangedEventHandler>& EnabledChangedEvent()
+        {
+            return enabledChangedEvent;
+        }
+        public nothrow Event<FocusEventHandler>& GotFocusEvent()
+        {
+            return gotFocusEvent;
+        }
+        public nothrow Event<FocusEventHandler>& LostFocusEvent()
+        {
+            return lostFocusEvent;
+        }
+        public nothrow Event<WriteScreenEventHandler, WriteScreenEventArgs>& WriteScreenEvent()
+        {
+            return writeScreenEvent;
+        }
+        public nothrow Event<KeyEventHandler, KeyEventArgs>& KeyPressedEvent()
+        {
+            return keyPressedEvent;
+        }
+        public nothrow Event<TimerEventHandler, TimerEventArgs> TimerEvent()
+        {
+            return timerEvent;
+        }
+        private ControlFlags flags;
+        private int handle;
+        private Point location;
+        private Size size;
+        private ConsoleColor foreColor;
+        private ConsoleColor backColor;
+        private Event<ChangedEventHandler> locationChangedEvent;
+        private Event<ChangedEventHandler> sizeChangedEvent;
+        private Event<ChangedEventHandler> foreColorChangedEvent;
+        private Event<ChangedEventHandler> backColorChangedEvent;
+        private Event<ChangedEventHandler> enabledChangedEvent;
+        private Event<FocusEventHandler> gotFocusEvent;
+        private Event<FocusEventHandler> lostFocusEvent;
+        private Event<WriteScreenEventHandler, WriteScreenEventArgs> writeScreenEvent;
+        private Event<KeyEventHandler, KeyEventArgs> keyPressedEvent;
+        private Event<TimerEventHandler, TimerEventArgs> timerEvent;
+        private int invalidateCount;
+        private Rect updateRect;
+        private Point controlCursorPos;
+    }
+
+} // namespace System.Screen

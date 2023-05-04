@@ -1,0 +1,289 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_Cm.Ast_BFF232E4680A917E861A5833139E3F88D9862A65"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "628D051407A3F548559C238CB2957FE9A0E74D76", 
+            "fileId" : "ArrayGeneratorVisitor_C384B89678D1E0C931A6FB9D8A7B4AE10A95FF1E", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ArrayGeneratorVisitor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E7662D2E83F770847B0A9AD43D62E431479A5E8E", 
+            "fileId" : "BasicType_938A03B0918BF9654D3267BB2FE0702E3D18A2E1", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/BasicType.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D027B5B01554A833FB9BA07614C05EA10F8A6F1A", 
+            "fileId" : "CharSet_771E0052E30DCF8398B28EDBDF15215D9CAAE372", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CharSet.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5E7FB8A3F533C5E8FE085565E43FD496DB6A7884", 
+            "fileId" : "CodeEmittingVisitor_6EAAE7FA27008C8D7103D2E06D8570EAF73B18E7", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeEmittingVisitor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E4483E9C7718D4EE94E138B3A066D2C187AF724C", 
+            "fileId" : "CodeEvaluationVisitor_35E91169385A4AB31A8B72101942FEDCFC6D179D", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeEvaluationVisitor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "99AC7A676C825F423F2621F38BDDF7D58B3B9672", 
+            "fileId" : "CodeGeneratorVisitor_BC28CD34869756BD5857F876FF533AD0B57A5535", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeGeneratorVisitor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "B8461BC31467505F0E180FD8D071B4822A5A9EB3", 
+            "fileId" : "CodeUtils_A1EA3887E1963B8F8F216A9558782056CBF264F0", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeUtils.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "E15E8F4CBB1E922EAB019E83A678F0F3AEE48A6F", 
+            "fileId" : "Domain_26072AAE751F962885845DC287D22CEF73338B6C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Domain.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "2B1C61740DC0A6015594C9BBFF8305B9F6B9E95E", 
+            "fileId" : "Expression_401A23C01B6863F18E51327A336C1E681A0D5248", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Expression.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "6B035B678C559AA3607F710EAC47CD4FD9F83C0E", 
+            "fileId" : "Identifier_E5D84FC703CD9A79AB30433C22417D778C090EFD", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Identifier.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "0A7732D94BDE4600E1DDD17C63D4EFAAB1EECB38", 
+            "fileId" : "LinkerVisitor_AA307027A3CB0253FFBF2015F639FF35026831D8", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/LinkerVisitor.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "2F2893B086A3409810FB8646BDEC633D89195C8A", 
+            "fileId" : "Literal_C3CE883C14A560B5179D8ED1DCB7241726A81BAB", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Literal.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5D5744E1088D8759C9BB2BC4790C5E5F87BE8518", 
+            "fileId" : "Main_47EA9E06015AD62E9A247B13ECAAFAF0AC9033BE", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Main.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "00DD6352D8B3D667946FCDA111C3C35C688C3D61", 
+            "fileId" : "NonterminalInfo_7708E10F9DAE707B57565947256D4C541145CDA0", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/NonterminalInfo.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5D5231A4542C6447D70422DEF3ACD062FED5DCB2", 
+            "fileId" : "Operator_D5008BB71DDC4D9446FFEF865F5B39F0944B5DE3", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Operator.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "EDCE8AC4A20CC1F4FA1F92EB46CA50AFD451C4DF", 
+            "fileId" : "Parser_A808D69F58ADCA82FA239DFEC9758EC5D7664A86", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Parser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "944E51FB58F8AAEE0B9FC209B41988F19C5D60D3", 
+            "fileId" : "ParserFile_83A38E21D68A28BA759BA49FF6BCA90B857D039E", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFile.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "06752794BD158F454E42406174D3F13E3780EF56", 
+            "fileId" : "ParserFileClassMap_62376F959C6A907D09E82A13C549EF9733EB63AD", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileClassMap.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "0C12EDB916D9B61FEBDDC795CB7B7087DB48774E", 
+            "fileId" : "ParserFileKeywords_A3116F7F1DA559313B877608E457649E3D7BE2F4", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileKeywords.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "4F65797181B36BB5CAB098762CA3C44A50BFCE06", 
+            "fileId" : "ParserFileLexer_2755CD612494F39570F995263B06186C0636C8F4", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileLexer.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "50132D273689B8AF039406F9FD564532B9751C9B", 
+            "fileId" : "ParserFileParser_ABDEA6E405449B57EC27F135E475EC227D1CB718", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileParser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "84707C11FEAA8FFAC8E7611E4971DF6D286A01C3", 
+            "fileId" : "ParserFileTokens_B6DD3C0AFD6174D3C2D8F0CA4DCEE3E0B28BCD01", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileTokens.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "5D89757ADD97B0F792A53B6797ABAC2C3315D896", 
+            "fileId" : "ParsingContext_0074CBF807F1250BEC3F34F90745CBC638BD936F", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParsingContext.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "AC4A5A7DAA79637E28E25D94DF1E14FC051E40A1", 
+            "fileId" : "ProjectFile_FDD43548D019936688E45D04A5268E12DC14FBE0", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFile.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "0BC6D659B05715627E2F00E18981773E26A6FE90", 
+            "fileId" : "ProjectFileClassMap_B5B0EDA060D92AE8D4F5FFFF400D579B6B81485E", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileClassMap.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "1F00CC8C06FA9DF44714FDD1A765EF143BC4BB98", 
+            "fileId" : "ProjectFileKeywords_21BCA98C4485E2C116190E3B63482C6AEF82784C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileKeywords.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "244F46CA34F27474713C5D13BF9CE8B4366A34FF", 
+            "fileId" : "ProjectFileLexer_C124E1F76F3FB9D41F71799E6051F2DC4E19EE41", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileLexer.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "BA6C1F454A19D6B5C6610B3FEFE92F3E39FEECAF", 
+            "fileId" : "ProjectFileParser_2984E17F903DE41A9164D93D588A55474279F605", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileParser.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "1FEE479EA767F1ED3091D3E8E9DD4B6655899512", 
+            "fileId" : "ProjectFileTokens_D9C2C01D704DB753BD0C3D6DDA4B824B016F554D", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileTokens.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D6D8BA2FDF12D1A9EF157037D5080B71A921D281", 
+            "fileId" : "Statement_34A0C19A371D3179CD801E3DA6BFDE86580EFC10", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Statement.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "9797768DC77D583BDE7FF5BD583DAA1F922B822B", 
+            "fileId" : "Template_7BA791CF10A5A703EC8BBB434588A675BF8AD962", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Template.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "214FDEF4A2C45DDDBFA83B5498E24F1097858B0B", 
+            "fileId" : "TokenValueParsers_C50F1E0F8D43BB93FCF367EB82A0ADD32A1A62DB", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/TokenValueParsers.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "ECCDDBC3297A4E05C17C3D578B05142DA6617C42", 
+            "fileId" : "TypeExpr_59483628B884F2B264BC8CF503BB844029A73D5A", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/TypeExpr.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D5056BF55088A96D3896330407AB6DE6D8915C8D", 
+            "fileId" : "Visitor_F367F1103A2D2FBF2A68B7B7D4ADBBB611460BF1", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Visitor.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/scmpg.cmp", 
+    "projectHash" : "1BAA40C38DEEE546E1E860720BCF3663A2DD3E35", 
+    "projectId" : "project_scmpg_C2B1EC4373F5A218BA7B1C1F7D523458ABD9E918", 
+    "projectName" : "scmpg", 
+    "target" : "program"
+}

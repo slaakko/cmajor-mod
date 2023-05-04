@@ -1,0 +1,57 @@
+using System;
+using System.Windows;
+
+namespace Cm.Views
+{
+    public class Editor : ContainerControl
+    {
+        public Editor(const string& filePath_) :
+            base("Cm.Views.Editor", DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(), DefaultControlBackgroundColor(), "editor", Point(), Size(), Dock.fill, Anchors.none), filePath(filePath_)
+        {
+        }
+        public inline nothrow const string& FilePath() const
+        {
+            return filePath;
+        }
+        public virtual nothrow bool IsDirty() const
+        {
+            return false;
+        }
+        public virtual nothrow void ResetDirty()
+        {
+        }
+        public virtual nothrow bool IsCCDirty() const
+        {
+            return false;
+        }
+        public virtual nothrow void ResetCCDirty()
+        {
+        }
+        public void Save()
+        {
+            if (IsDirty())
+            {
+                ResetDirty();
+                SaveTo(filePath);
+            }
+        }
+        public virtual void SaveTo(const string& filePath)
+        {
+        }
+        public virtual nothrow TextView* GetTextView() const
+        {
+            return null;
+        }
+        public virtual nothrow void Select()
+        {
+        }
+        public virtual nothrow void Undo()
+        {
+        }
+        public virtual nothrow void Redo()
+        {
+        }
+        private string filePath;
+    }
+
+} // namespace Cm.Views

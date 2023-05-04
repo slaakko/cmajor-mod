@@ -1,0 +1,147 @@
+{
+    "breakpoints" : 
+    {
+        "breakpointLists" : 
+        [
+            {
+                "breakpoints" : 
+                [
+                    {
+                        "condition" : "", 
+                        "disabled" : false, 
+                        "line" : "32"
+                    }
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+                    {
+                        "condition" : "", 
+                        "disabled" : false, 
+                        "line" : "57"
+                    }
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Parser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Scanner.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Ascii.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/AsciiChar.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Conversion.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/String.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/UnicodeChar.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/UniquePtr.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+                    {
+                        "condition" : "", 
+                        "disabled" : true, 
+                        "line" : "116"
+                    }
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Parser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Scanner.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/projects\/examples\/Calculator\/Token.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "D:\/work\/cmajorm\/cmajor\/system\/System.Base\/UniquePtr.cm"
+            }
+        ]
+    }
+    , 
+    "programArguments" : ""
+}

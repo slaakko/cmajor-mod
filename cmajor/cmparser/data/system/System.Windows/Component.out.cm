@@ -1,0 +1,74 @@
+using System;
+
+namespace System.Windows
+{
+    public abstract class Component
+    {
+        public nothrow Component() :
+            container(null), nextSibling(null), prevSibling(null)
+        {
+        }
+        public virtual ~Component()
+        {
+        }
+        public inline nothrow Container* GetContainer() const
+        {
+            return container;
+        }
+        internal nothrow void SetContainer(Container* container_)
+        {
+            container = container_;
+        }
+        public inline nothrow Component* NextSibling() const
+        {
+            return nextSibling;
+        }
+        internal nothrow void SetNextSibling(Component* nextSibling_)
+        {
+            nextSibling = nextSibling_;
+        }
+        public inline nothrow Component* PrevSibling() const
+        {
+            return prevSibling;
+        }
+        internal nothrow void SetPrevSibling(Component* prevSibling_)
+        {
+            prevSibling = prevSibling_;
+        }
+        internal nothrow void LinkBefore(Component* component)
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = component;
+            }
+            component->prevSibling = prevSibling;
+            component->nextSibling = this;
+            prevSibling = component;
+        }
+        internal nothrow void LinkAfter(Component* component)
+        {
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = component;
+            }
+            component->prevSibling = this;
+            component->nextSibling = nextSibling;
+            nextSibling = component;
+        }
+        internal nothrow void Unlink()
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = nextSibling;
+            }
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = prevSibling;
+            }
+        }
+        private Container* container;
+        private Component* nextSibling;
+        private Component* prevSibling;
+    }
+
+} // namespace System.Windows

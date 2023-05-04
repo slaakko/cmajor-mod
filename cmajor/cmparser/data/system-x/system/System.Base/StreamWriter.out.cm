@@ -1,0 +1,233 @@
+using System;
+
+namespace System.IO
+{
+    public class StreamWriter : TextWriter
+    {
+        public nothrow StreamWriter(const SharedPtr<Stream>& stream_) :
+            this(stream_, stream_->IsHostTextFile())
+        {
+        }
+        public nothrow StreamWriter(const SharedPtr<Stream>& stream_, bool expandLineEndings_) :
+            stream(stream_), expandLineEndings(expandLineEndings_)
+        {
+        }
+        public void Write(const char* x, long length)
+        {
+            if (expandLineEndings)
+            {
+                long start = 0;
+                for (long i = 0; i < length; ++i)
+                {
+                    if (x[i] == '\n')
+                    {
+                        if (i > start)
+                        {
+                            stream->Write(cast<byte*>(cast<void*>(x)) + start, i - start);
+                        }
+                        stream->Write(cast<byte*>(cast<void*>("\r\n")), 2);
+                        start = i + 1;
+                    }
+                }
+                if (length > start)
+                {
+                    stream->Write(cast<byte*>(cast<void*>(x)) + start, length - start);
+                }
+            }
+            else
+            {
+                stream->Write(cast<byte*>(cast<void*>(x)), length);
+            }
+        }
+        public override void Write(const string& x)
+        {
+            Write(x.Chars(), x.Length());
+        }
+        public override void Write(const wstring& x)
+        {
+            Write(ToUtf8(x));
+        }
+        public override void Write(const ustring& x)
+        {
+            Write(ToUtf8(x));
+        }
+        public override void Write(bool x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(char x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(wchar x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(uchar x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(sbyte x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(byte x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(short x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(ushort x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(int x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(uint x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(long x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(ulong x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(float x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(double x)
+        {
+            Write(ToString(x));
+        }
+        public override void Write(const Date& date)
+        {
+            Write(date.ToString());
+        }
+        public override void Write(const DateTime& dateTime)
+        {
+            Write(dateTime.ToString());
+        }
+        public override void WriteLine()
+        {
+            Write("\n", 1);
+        }
+        public override void WriteLine(const string& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const wstring& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const ustring& x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(bool x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(char x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(wchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(uchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(sbyte x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(byte x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(short x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(ushort x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(int x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(uint x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(long x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(ulong x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(float x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(double x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(const Date& date)
+        {
+            Write(date);
+            WriteLine();
+        }
+        public override void WriteLine(const DateTime& dateTime)
+        {
+            Write(dateTime);
+            WriteLine();
+        }
+        public nothrow const SharedPtr<Stream>& GetStream() const
+        {
+            return stream;
+        }
+        public inline nothrow bool ExpandLineEndings() const
+        {
+            return expandLineEndings;
+        }
+        public inline nothrow void SetExpandLineEndings(bool expandLineEndings_)
+        {
+            expandLineEndings = expandLineEndings_;
+        }
+        private SharedPtr<Stream> stream;
+        private bool expandLineEndings;
+    }
+
+} // namespace System.IO

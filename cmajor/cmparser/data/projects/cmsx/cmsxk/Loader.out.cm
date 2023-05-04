@@ -1,0 +1,114 @@
+using System;
+using System.Collections;
+using System.IO;
+using cmsx.machine;
+using cmsx.object;
+
+namespace cmsx.kernel
+{
+    public Section MakePoolSection(const List<string>& argv, const List<string>& environment, ulong& envDataAddress)
+    {
+        Section poolSection;
+        long n = argv.Count() + 1;
+        for (long i = 0; i < n; ++i)
+        {
+            poolSection.EmitULong(0u);
+        }
+        long envBeginPos = poolSection.pos;
+        envDataAddress = poolSegmentBaseAddress + poolSection.Address();
+        long m = environment.Count() + 1;
+        for (long i = 0; i < m; ++i)
+        {
+            poolSection.EmitULong(0u);
+        }
+        poolSection.Align(8u);
+        List<ulong> argAddresses;
+        for (const string& arg : argv)
+        {
+            argAddresses.Add(poolSegmentBaseAddress + poolSection.Address());
+            poolSection.EmitString(arg);
+        }
+        poolSection.Align(8u);
+        List<ulong> envAddresses;
+        for (const string& env : environment)
+        {
+            envAddresses.Add(poolSegmentBaseAddress + poolSection.Address());
+            poolSection.EmitString(env);
+        }
+        poolSection.pos = 0;
+        for (ulong argAddr : argAddresses)
+        {
+            poolSection.EmitULong(argAddr);
+        }
+        poolSection.pos = envBeginPos;
+        for (ulong envAddr : envAddresses)
+        {
+            poolSection.EmitULong(envAddr);
+        }
+        return poolSection;
+    }
+
+    public int Load(const string& programFileName, const List<string>& programArguments, int sid)
+    {
+        UniquePtr<BinaryFile> binaryFile = ReadBinaryFile(programFileName);
+        if (binaryFile.Get() is ExecutableFile*)
+        {
+            Machine& machine = GetMachine();
+            ProcessTable& processTable = GetProcessTable();
+            ExecutableFile* executable = cast<ExecutableFile*>(binaryFile.Get());
+            executable->AddSymbolsToAddressMap();
+            Section* codeSection = executable->GetCodeSection();
+            Section* dataSection = executable->GetDataSection();
+            Section* symbolSection = executable->GetSymbolSection();
+            string name = Path.GetFileName(programFileName);
+            List<string> argv;
+            argv.Add(name);
+            for (const string& arg : programArguments)
+            {
+                argv.Add(arg);
+            }
+            ulong envDataAddress = 0u;
+            Section poolSection = MakePoolSection(argv, List<string>(), envDataAddress);
+            long poolDataLength = Max(cast<long>(executable->InitialPoolSize()), poolSection.data.Count());
+            long poolSize = Align(poolDataLength, cast<long>(pageSize));
+            Symbol* mainFunctionSymbol = executable->GetSymbolTable().GetSymbol("Main");
+            Process* process = CreateSingleProcess(machine, processTable, name, mainFunctionSymbol->start, codeSection->BaseAddress(), codeSection->DataLength(), dataSection->DataLength(), cast<ulong>(poolSize), cast<ulong>(executable->MinStackSize()), cast<ulong>(executable->MaxStackSize()), cast<ulong>(executable->StackSizeIncrement()), sid);
+            if (codeSection->DataLength() > 0u)
+            {
+                WriteProcessMemory(machine, process, codeSection->BaseAddress(), codeSection->data.Begin().Ptr(), cast<ulong>(codeSection->data.Count()), Protection.execute);
+            }
+            if (dataSection->DataLength() > 0u)
+            {
+                WriteProcessMemory(machine, process, dataSection->BaseAddress(), dataSection->data.Begin().Ptr(), cast<ulong>(dataSection->data.Count()), Protection.write);
+            }
+            if (!poolSection.data.IsEmpty())
+            {
+                WriteProcessMemory(machine, process, poolSegmentBaseAddress, poolSection.data.Begin().Ptr(), cast<ulong>(poolSection.data.Count()), Protection.write);
+                int ax = cast<int>(argv.Count());
+                ulong bx = poolSegmentBaseAddress;
+                WriteProcessMemory(machine, process, process->regAXAddress, cast<ulong>(ax), 8u, Protection.write);
+                WriteProcessMemory(machine, process, process->regBXAddress, bx, 8u, Protection.write);
+                WriteProcessMemory(machine, process, process->regCXAddress, 0u, 8u, Protection.write);
+            }
+            ulong poolStart = poolSegmentBaseAddress + cast<ulong>(poolSize);
+            ulong poolEnd = poolSegmentBaseAddress + cast<ulong>(poolSize);
+            process->poolStart = poolStart;
+            process->poolEnd = poolEnd;
+            Symbol* functionTableSymbol = executable->GetSymbolTable().GetSymbol("@function_table");
+            process->functionTableAddress = functionTableSymbol->start;
+            process->functionTableLength = functionTableSymbol->length;
+            executable = cast<ExecutableFile*>(binaryFile.Release());
+            Kernel& kernel = Kernel.Instance();
+            kernel.SetExecutable(executable);
+            Session* session = kernel.CurrentSession();
+            session->fgpid = process->pid;
+            return process->pid;
+        }
+        else
+        {
+            Panic("file \'" + programFileName + "\' is not a CMSX executable");
+        }
+        return -1;
+    }
+
+} // namespace cmsx.kernel
