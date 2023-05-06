@@ -3,14 +3,6 @@ module cmajor.symbols.value;
 // Copyright (c) 2022 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/Value.hpp>
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <soulng/util/Unicode.hpp>
-*/
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
 import cmajor.symbols.type.symbol;
@@ -21,8 +13,6 @@ import cmajor.ir.emitter;
 import soul.ast.source.pos;
 import util;
 namespace cmajor::symbols {
-
-//using namespace soulng::unicode;
 
 const char* valueTypeStr[]
 {
