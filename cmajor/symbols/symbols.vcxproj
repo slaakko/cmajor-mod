@@ -206,13 +206,18 @@
     <ClCompile Include="template_symbol.cppm" />
     <ClCompile Include="trace.cppm" />
     <ClCompile Include="trap.cppm" />
+    <ClCompile Include="typedef_symbol.cpp" />
     <ClCompile Include="typedef_symbol.cppm" />
     <ClCompile Include="type_index.cppm" />
     <ClCompile Include="type_map.cpp" />
     <ClCompile Include="type_map.cppm" />
+    <ClCompile Include="type_symbol.cpp" />
     <ClCompile Include="type_symbol.cppm" />
+    <ClCompile Include="value.cpp" />
     <ClCompile Include="value.cppm" />
+    <ClCompile Include="variable_symbol.cpp" />
     <ClCompile Include="variable_symbol.cppm" />
+    <ClCompile Include="warning.cpp" />
     <ClCompile Include="warning.cppm" />
   </ItemGroup>
   <ItemGroup>
