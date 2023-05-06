@@ -212,7 +212,9 @@
     <ClCompile Include="type_map.cppm" />
     <ClCompile Include="type_symbol.cppm" />
     <ClCompile Include="value.cppm" />
+    <ClCompile Include="variable_symbol.cpp" />
     <ClCompile Include="variable_symbol.cppm" />
+    <ClCompile Include="warning.cpp" />
     <ClCompile Include="warning.cppm" />
   </ItemGroup>
   <ItemGroup>
