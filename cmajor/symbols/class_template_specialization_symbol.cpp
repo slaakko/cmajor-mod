@@ -1,4 +1,5 @@
-module cmajor.symbols.class_.template_specialization.symbol;
+module cmajor.symbols.class_template_specializations;
+
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
@@ -10,7 +11,7 @@ import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.symbols.variable.symbol;
 import cmajor.ir.emitter;
 import util;

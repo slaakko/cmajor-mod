@@ -13,7 +13,7 @@ import cmajor.symbols.symbol.table;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.exception;
 import cmajor.symbols.value;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.ir.emitter;
 import cmajor.ir.gen.object;
 import util;

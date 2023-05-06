@@ -1,11 +1,11 @@
-export module cmajor.symbols.class_.template_specialization.symbol;
+export module cmajor.symbols.class_template_specializations;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 import cmajor.symbols.scope;
-import cmajor.symbols.class_.type.symbol;
+import cmajor.symbols.classes;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.writer;
 import cmajor.ast.node;

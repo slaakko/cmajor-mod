@@ -2,7 +2,8 @@
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-export module cmajor.symbols.module_;
+
+export module cmajor.symbols.modules;
 
 import std.core;
 import cmajor.ast.project;

@@ -1,14 +1,14 @@
-export module cmajor.symbols.interface_.type.symbol;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
+export module cmajor.symbols.interfaces;
+
 import cmajor.symbols.type.symbol;
 
 import cmajor.symbols.function.symbol;
-import cmajor.symbols.class_.type.symbol;
+import cmajor.symbols.classes;
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import cmajor.ir.gen.object;

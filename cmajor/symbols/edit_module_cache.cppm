@@ -1,9 +1,9 @@
-export module cmajor.symbols.edit.module_.cache;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.edit_module_cache;
 
 import cmajor.ast.project;
 import std.core;
@@ -11,7 +11,7 @@ import std.core;
 export namespace cmajor::symbols {
 
 class Module;
-    using ReadProjectFunc = std::unique_ptr<cmajor::ast::Project>(*)(const std::string&);
+using ReadProjectFunc = std::unique_ptr<cmajor::ast::Project>(*)(const std::string&);
 
 void SetReadProjectFunction(ReadProjectFunc readProjectFunc);
 
@@ -48,16 +48,13 @@ public:
     EditModuleCache(EditModuleCache&&) = delete;
     EditModuleCache& operator=(const EditModuleCache&) = delete;
     EditModuleCache& operator=(EditModuleCache&&) = delete;
-    static EditModuleCache& Instance() { return *instance; }
+    static EditModuleCache& Instance();
     LoadEditModuleResult LoadEditModule(const std::string& projectFilePath, const std::string& backendStr, const std::string& configurationStr);
     Module* GetEditModule(const std::string& projectFilePath, const std::string& backendStr, const std::string& configurationStr);
 private:
-    static std::unique_ptr<EditModuleCache> instance;
     EditModuleCache();
     std::map<std::string, std::pair<Module*, std::string>> editModuleMap;
     std::vector<std::unique_ptr<Module>> editModules;
 };
 
-void InitEditModuleCache();
-void DoneEditModuleCache();
 } // namespace cmajor::symbols

@@ -1,4 +1,5 @@
 export module cmajor.ir.gen.object;
+
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license

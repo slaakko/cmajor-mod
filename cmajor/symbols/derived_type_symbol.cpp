@@ -1,15 +1,15 @@
-module cmajor.symbols.derived.type.symbol;
-
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module cmajor.symbols.derived.type.symbol;
 
 import soul.ast.source.pos;
 import cmajor.ir.emitter;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.value;
 import cmajor.symbols.exception;

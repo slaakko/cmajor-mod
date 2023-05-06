@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.symbols.template_.symbol;
+export module cmajor.symbols.templates;
 
 import cmajor.symbols.type.symbol;
 import soul.ast.source.pos;

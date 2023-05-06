@@ -20,12 +20,10 @@ public:
     cmajor::ast::AstWriter& GetAstWriter() { return astWriter; }
     util::BinaryStreamWriter& GetBinaryStreamWriter() { return astWriter.GetBinaryStreamWriter(); }
     void Write(Symbol* symbol);
-    //void SetLexers(std::vector<soulng::lexer::Lexer*>* lexers_); TODO
     void SetSpanConversionModuleId(const util::uuid& spanConversionModuleId_);
 private:
     cmajor::ast::AstWriter astWriter;
     util::uuid spanConversionModuleId;
-    //std::vector<soulng::lexer::Lexer*>* lexers;
 };
 
 } // namespace cmajor::symbols

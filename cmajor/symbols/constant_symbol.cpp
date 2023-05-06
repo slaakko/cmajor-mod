@@ -1,21 +1,9 @@
-module cmajor.symbols.constant.symbol;
-
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/ConstantSymbol.hpp>
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/ir/Emitter.hpp>
-#include <soulng/util/Unicode.hpp>
-*/
+
+module cmajor.symbols.constant.symbol;
 
 import soul.ast.source.pos;
 import cmajor.symbols.exception;
@@ -31,8 +19,6 @@ import util;
 import std.core;
 
 namespace cmajor::symbols {
-
-//using namespace soulng::unicode;
 
 ConstantSymbol::ConstantSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     Symbol(SymbolType::constantSymbol, sourcePos_, sourceModuleId_, name_), type(), evaluating(false), sizeOfValue(0), valuePos(0)

@@ -1,37 +1,17 @@
-module cmajor.symbols.function.symbol;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/ClassTemplateSpecializationSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Sha1.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <sstream>
-*/
 
-import cmajor.symbols.class_.template_specialization.symbol;
+module cmajor.symbols.function.symbol;
+
+import cmajor.symbols.class_template_specializations;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.exception;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.symbol.collector;
-import cmajor.symbols.template_.symbol;
+import cmajor.symbols.templates;
 import cmajor.symbols.variable.symbol;
 import soul.ast.source.pos;
 import cmajor.ast.node;
@@ -107,30 +87,26 @@ bool FunctionSymbolsEqual::operator()(FunctionSymbol* left, FunctionSymbol* righ
     return left == right;
 }
 
-//TODO: Seppo, fix this
 size_t FunctionSymbolHash::operator()(FunctionSymbol* fun) const
 {
     if (fun->Parent()->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
     {
         ClassTemplateSpecializationSymbol* specialization = static_cast<ClassTemplateSpecializationSymbol*>(fun->Parent());
-        //return boost::hash<util::uuid>()(specialization->TypeId()) ^ fun->GetIndex();
+        return HashValue(specialization->TypeId()) ^ fun->GetIndex();
     }
     else if (fun->IsTemplateSpecialization())
     {
-        //size_t hashValue = boost::hash<util::uuid>()(fun->FunctionTemplate()->FunctionId());
-        size_t hashValue = 0; // = fun->FunctionTemplate()->FunctionId();
+        size_t hashValue = HashValue(fun->FunctionTemplate()->FunctionId());
         int n = fun->TemplateArgumentTypes().size();
         for (int i = 0; i < n; ++i)
         {
-            //hashValue ^= boost::hash<util::uuid>()(fun->TemplateArgumentTypes()[i]->TypeId());
+            hashValue ^= HashValue(fun->TemplateArgumentTypes()[i]->TypeId());
         }
         return hashValue;
     }
     else if (GetGlobalFlag(GlobalFlags::release) && !fun->IsGeneratedFunction() && fun->IsInline())
     {
-        //return boost::hash<util::uuid>()(fun->FunctionId());
-        //return fun->FunctionId();
-        return 0;
+        return HashValue(fun->FunctionId());
     }
     return std::hash<FunctionSymbol*>()(fun);
 }
@@ -148,9 +124,7 @@ void ViableFunctionSet::Insert(FunctionSymbol* fun)
 class OperatorMangleMap
 {
 public:
-    static OperatorMangleMap& Instance() { /*Assert(instance, "operator mangle map not initialized");*/  return *instance; }
-    static void Init();
-    static void Done();
+    static OperatorMangleMap& Instance();
     std::u32string Mangle(const std::u32string& groupName);
 private:
     static std::unique_ptr<OperatorMangleMap> instance;
@@ -158,16 +132,10 @@ private:
     OperatorMangleMap();
 };
 
-std::unique_ptr<OperatorMangleMap> OperatorMangleMap::instance;
-
-void OperatorMangleMap::Init()
+OperatorMangleMap& OperatorMangleMap::Instance()
 {
-    instance.reset(new OperatorMangleMap());
-}
-
-void OperatorMangleMap::Done()
-{
-    instance.reset();
+    static OperatorMangleMap instance;
+    return instance;
 }
 
 OperatorMangleMap::OperatorMangleMap()
@@ -327,8 +295,7 @@ void FunctionGroupSymbol::AppendChildElements(soul::xml::Element* element, TypeM
             if (fun->IsProject())
             {
                 std::unique_ptr<soul::xml::Element> functionElement = fun->ToDomElement(typeMap);
-                //TODO
-                //element->AppendChild(std::unique_ptr<soul::xml::Node>(functionElement.release()));
+                element->AppendChild(functionElement.release());
             }
         }
     }
@@ -1446,19 +1413,16 @@ void* FunctionSymbol::IrType(cmajor::ir::Emitter& emitter)
 
 std::unique_ptr<soul::xml::Element> FunctionSymbol::CreateDomElement(TypeMap& typeMap)
 {
-/* TODO
     if (IsTemplateSpecialization()) return std::unique_ptr<soul::xml::Element>();
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"FunctionSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("FunctionSymbol"));
     if (returnType)
     {
-        std::unique_ptr<soul::xml::Element> returnTypeElement(new soul::xml::Element(U"returnType"));
+        std::unique_ptr<soul::xml::Element> returnTypeElement(soul::xml::MakeElement("returnType"));
         int typeId = typeMap.GetOrInsertType(returnType);
-        returnTypeElement->SetAttribute(U"ref", U"type_" + util::ToUtf32(std::to_string(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(returnTypeElement.release()));
+        returnTypeElement->SetAttribute("ref", "type_" + std::to_string(typeId));
+        element->AppendChild(returnTypeElement.release());
     }
     return element;
-    */
-    return std::unique_ptr<soul::xml::Element>();
 }
 
 std::u32string FunctionSymbol::Id() const
@@ -2312,18 +2276,14 @@ void ConversionFunctionSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
 
 std::unique_ptr<soul::xml::Element> ConversionFunctionSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    /*TODO
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"ConversionFunctionSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("ConversionFunctionSymbol"));
     if (ReturnType())
     {
-        std::unique_ptr<soul::xml::Element> returnTypeElement(new soul::xml::Element(U"returnType"));
+        std::unique_ptr<soul::xml::Element> returnTypeElement(soul::xml::MakeElement("returnType"));
         int typeId = typeMap.GetOrInsertType(ReturnType());
-        returnTypeElement->SetAttribute(U"ref", U"type_" + util::ToUtf32(std::to_string(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(returnTypeElement.release()));
+        returnTypeElement->SetAttribute("ref", "type_" + std::to_string(typeId));
+        element->AppendChild(returnTypeElement.release());
     }
-    return element;
-    */
-    std::unique_ptr<soul::xml::Element> element;
     return element;
 }
 
@@ -2338,13 +2298,4 @@ MemberExpressionTypeSymbol::MemberExpressionTypeSymbol(const soul::ast::SourcePo
 {
 }
 
-void InitFunctionSymbol()
-{
-    OperatorMangleMap::Init();
-}
-
-void DoneFunctionSymbol()
-{
-    OperatorMangleMap::Done();
-}
 } // namespace cmajor::symbols

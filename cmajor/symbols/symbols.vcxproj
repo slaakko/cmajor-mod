@@ -162,9 +162,11 @@
     <ClCompile Include="class_template_specialization_symbol.cppm" />
     <ClCompile Include="class_type_symbol.cpp" />
     <ClCompile Include="class_type_symbol.cppm" />
+    <ClCompile Include="concept_symbol.cpp" />
     <ClCompile Include="concept_symbol.cppm" />
     <ClCompile Include="constant_symbol.cpp" />
     <ClCompile Include="constant_symbol.cppm" />
+    <ClCompile Include="container_symbol.cpp" />
     <ClCompile Include="container_symbol.cppm" />
     <ClCompile Include="conversion_table.cpp" />
     <ClCompile Include="conversion_table.cppm" />
@@ -172,6 +174,7 @@
     <ClCompile Include="delegate_symbol.cppm" />
     <ClCompile Include="derived_type_symbol.cpp" />
     <ClCompile Include="derived_type_symbol.cppm" />
+    <ClCompile Include="edit_module_cache.cpp" />
     <ClCompile Include="edit_module_cache.cppm" />
     <ClCompile Include="enum_symbol.cpp" />
     <ClCompile Include="enum_symbol.cppm" />
@@ -179,11 +182,15 @@
     <ClCompile Include="error.cppm" />
     <ClCompile Include="exception.cpp" />
     <ClCompile Include="exception.cppm" />
+    <ClCompile Include="function_index.cpp" />
     <ClCompile Include="function_index.cppm" />
+    <ClCompile Include="function_symbol.cpp" />
     <ClCompile Include="function_symbol.cppm" />
+    <ClCompile Include="global_flags.cpp" />
     <ClCompile Include="global_flags.cppm" />
-    <ClCompile Include="init_done.cppm" />
+    <ClCompile Include="interface_type_symbol.cpp" />
     <ClCompile Include="interface_type_symbol.cppm" />
+    <ClCompile Include="keyword_symbol.cpp" />
     <ClCompile Include="keyword_symbol.cppm" />
     <ClCompile Include="meta.cppm" />
     <ClCompile Include="module.cppm" />
@@ -230,6 +237,9 @@
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lexer\lexer.vcxproj">
+      <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

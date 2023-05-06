@@ -2,10 +2,11 @@
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module cmajor.symbols.exception;
 
-import cmajor.symbols.module_.cache;
-import cmajor.symbols.module_;
+import cmajor.symbols.module_cache;
+import cmajor.symbols.modules;
 
 import std.core;
 

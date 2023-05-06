@@ -1,12 +1,12 @@
-module cmajor.symbols.conversion.table;
-
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
+module cmajor.symbols.conversion.table;
+
 import soul.ast.source.pos;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.symbols.function.symbol;
 import util;
 

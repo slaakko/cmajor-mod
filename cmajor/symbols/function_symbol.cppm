@@ -65,9 +65,7 @@ public:
     FunctionSymbol* GetFunction();
     void CollectViableFunctions(int arity, ViableFunctionSet& viableFunctions, Module* module);
     bool HasProjectMembers() const override;
-    //virtual void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const {}
     void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const override;
-    //void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const; This seems to compile.
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "FunctionGroupSymbol"; }
     void Check() override;
@@ -447,7 +445,5 @@ private:
     void* boundMemberExpression;
 };
 
-void InitFunctionSymbol();
-void DoneFunctionSymbol();
 } // namespace cmajor::symbols
 

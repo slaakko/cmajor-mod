@@ -1,19 +1,9 @@
-module cmajor.symbols.enum_.symbol;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/EnumSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <boost/uuid/uuid_io.hpp>
-*/
+
+module cmajor.symbols.enumerations;
 
 import soul.ast.source.pos;
 import cmajor.symbols.type.symbol;
@@ -22,15 +12,13 @@ import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import util;
 import std.core;
 
 namespace cmajor::symbols {
-
-//using namespace soulng::unicode;
 
 EnumTypeSymbol::EnumTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     TypeSymbol(SymbolType::enumTypeSymbol, sourcePos_, sourceModuleId_, name_), underlyingType()

@@ -1,8 +1,9 @@
-export module cmajor.symbols.global.flags;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.global.flags;
 
 import std.core;
 

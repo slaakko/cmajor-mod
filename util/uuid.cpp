@@ -150,4 +150,14 @@ uuid ParseUuid(const std::string& str)
     return uuid;
 }
 
+std::size_t HashValue(const uuid& u)
+{
+    std::size_t seed = 0;
+    for (auto x : u)
+    {
+        seed ^= static_cast<std::size_t>(x) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+}
+
 } // namespace util

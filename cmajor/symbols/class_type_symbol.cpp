@@ -1,6 +1,7 @@
 module;
 #include <boost/multiprecision/integer.hpp>
-module cmajor.symbols.class_.type.symbol;
+module cmajor.symbols.classes;
+
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
@@ -37,13 +38,13 @@ import cmajor.symbols.exception;
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.table;
-import cmajor.symbols.module_;
-import cmajor.symbols.class_.template_specialization.symbol;
-import cmajor.symbols.interface_.type.symbol;
-import cmajor.symbols.template_.symbol;
+import cmajor.symbols.modules;
+import cmajor.symbols.class_template_specializations;
+import cmajor.symbols.interfaces;
+import cmajor.symbols.templates;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.symbol.collector;
-import cmajor.symbols.concept_.symbol;
+import cmajor.symbols.concepts;
 import cmajor.ast.basic.type;
 import cmajor.ast.node;
 import cmajor.ast.classes;

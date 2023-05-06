@@ -1,22 +1,9 @@
-module cmajor.symbols.delegate_.symbol;
-
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/DelegateSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <boost/uuid/uuid_io.hpp>
-*/
+
+module cmajor.symbols.delegate_.symbol;
 
 import soul.ast.source.pos;
 import cmajor.ir.emitter;
@@ -28,7 +15,7 @@ import cmajor.symbols.symbol.table;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.global.flags;
-import cmajor.symbols.class_.type.symbol;
+import cmajor.symbols.classes;
 import util;
 import std.core;
 

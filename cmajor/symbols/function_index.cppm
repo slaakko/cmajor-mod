@@ -24,7 +24,6 @@ public:
     void Write(util::BinaryStreamWriter& writer);
 private:
     Module* module;
-    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionMap;
     std::map<util::uuid, FunctionSymbol*> functionMap;
     util::uuid mainFunctionId;
 };

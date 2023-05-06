@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.symbols.class_.type.symbol;
+export module cmajor.symbols.classes;
 
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.scope;

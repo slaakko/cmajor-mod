@@ -36,6 +36,7 @@ void IntsToUuid(uint64_t int1, uint64_t int2, uuid& id);
 void RandomUuid(uuid& id);
 std::string ToString(const uuid& uuid);
 uuid ParseUuid(const std::string& str);
+std::size_t HashValue(const uuid& u);
 
 inline uuid nil_uuid()
 {

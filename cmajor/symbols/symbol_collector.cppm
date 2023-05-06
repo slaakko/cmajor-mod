@@ -1,15 +1,15 @@
-export module cmajor.symbols.symbol.collector;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
+export module cmajor.symbols.symbol.collector;
+
 import cmajor.symbols.symbol;
 import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.constant.symbol;
 import cmajor.symbols.delegate_.symbol;
-import cmajor.symbols.enum_.symbol;
+import cmajor.symbols.enumerations;
 import cmajor.symbols.typedef_.symbol;
 import cmajor.symbols.variable.symbol;
 import std.core;
