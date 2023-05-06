@@ -6,7 +6,7 @@ module cmajor.symbols.value;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
 import cmajor.symbols.type.symbol;
-import cmajor.symbols.class_.type.symbol;
+import cmajor.symbols.classes;
 import cmajor.symbols.array.type.symbol;
 import cmajor.symbols.variable.symbol;
 import cmajor.ir.emitter;

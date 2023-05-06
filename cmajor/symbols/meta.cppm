@@ -1,8 +1,9 @@
-export module cmajor.symbols.meta;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.meta;
 
 import soul.ast.source.pos;
 import std.core;
@@ -27,5 +28,4 @@ public:
     std::unique_ptr<Value> Evaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
 };
 
-void MetaInit(SymbolTable& symbolTable);
 } // namespace cmajor::symbols

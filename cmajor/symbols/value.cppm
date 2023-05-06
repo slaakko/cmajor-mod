@@ -1,8 +1,9 @@
-export module cmajor.symbols.value;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.value;
 
 import soul.ast.source.pos;
 import cmajor.ir.emitter;
