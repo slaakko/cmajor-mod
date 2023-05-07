@@ -15,7 +15,7 @@ import cmajor.ast.namespaces;
 namespace cmajor::ast {
 
 AstReader::AstReader(const std::string& fileName_) :
-    fileStream(fileName_, util::OpenMode::binary | util::OpenMode::read), bufferedStream(fileStream), binaryStreamReader(bufferedStream) 
+    fileName(fileName_), fileStream(fileName, util::OpenMode::binary | util::OpenMode::read), bufferedStream(fileStream), binaryStreamReader(bufferedStream) 
 {
 }
 

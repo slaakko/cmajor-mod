@@ -143,7 +143,7 @@ public:
     SymbolTable& GetSymbolTable() { return *symbolTable; }
     bool HasSymbolTable() const { return symbolTable != nullptr; }
     void CreateSymbolTable();
-    uint32_t SymbolTablePos() const { return symbolTablePos; }
+    int64_t SymbolTablePos() const { return symbolTablePos; }
     FileTable& GetFileTable() { return fileTable; }
     void RegisterFileTable(FileTable* fileTable, Module* module);
     void MakeFilePathFileIndexMap();
@@ -154,8 +154,8 @@ public:
     //void SetLexers(std::vector<std::unique_ptr<CmajorLexer>>&& lexers_);
     //std::vector<soulng::lexer::Lexer*>* GetLexers();
     std::string GetFilePath(int32_t fileIndex) const;
-    std::u32string GetErrorLines(const soul::ast::SourcePos& sourcePos) const;
-    void GetColumns(const soul::ast::SourcePos& sourcePos, int32_t& startCol, int32_t& endCol) const;
+    //std::u32string GetErrorLines(const soul::ast::SourcePos& sourcePos) const; TODO
+    //void GetColumns(const soul::ast::SourcePos& sourcePos, int32_t& startCol, int32_t& endCol) const; TODO
     void Write(SymbolWriter& writer);
     void SetDirectoryPath(const std::string& directoryPath_);
     void SetObjectFileDirectoryPath(const std::string& objectFileDirectoryPath_);
@@ -291,8 +291,5 @@ std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId);
 bool HasRootModuleForCurrentThread();
 Module* GetRootModuleForCurrentThread();
 void SetRootModuleForCurrentThread(Module* rootModule_);
-
-void InitModule();
-void DoneModule();
 
 } // namespace cmajor::symbols

@@ -1,11 +1,12 @@
-export module cmajor.symbols.symbol.table;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
+export module cmajor.symbols.symbol.table;
+
 import cmajor.symbols.derived.type.symbol;
-import cmajor.symbols.namespace_.symbol;
+import cmajor.symbols.namespaces;
 import cmajor.symbols.conversion.table;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.writer;
@@ -125,7 +126,6 @@ struct ArrayKeyLess
 {
     bool operator()(const ArrayKey& left, const ArrayKey& right) const
     {
-        // TODO: Is this correct?
         if (left.elementType < right.elementType)
         {
             return true;
@@ -135,8 +135,8 @@ struct ArrayKeyLess
             return false;
         }
         else
-        { // HUH?
-            return true;
+        { 
+            return false;
         }
     }
 };
@@ -351,5 +351,6 @@ void InitCoreSymbolTable(SymbolTable& symbolTable);
 
 void InitSymbolTable();
 void DoneSymbolTable();
+
 } // namespace cmajor::symbols
 

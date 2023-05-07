@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.symbols.namespace_.symbol;
+export module cmajor.symbols.namespaces;
 
 import cmajor.symbols.container.symbol;
 import std.core;

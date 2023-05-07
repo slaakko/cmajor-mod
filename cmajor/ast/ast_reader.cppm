@@ -34,6 +34,7 @@ class AstReader
 {
 public:
     AstReader(const std::string& fileName_);
+    const std::string& FileName() const { return fileName; }
     util::BinaryStreamReader& GetBinaryStreamReader() { return binaryStreamReader; }
     Node* ReadNode();
     AttributeNode* ReadAttributeNode();
@@ -54,6 +55,7 @@ public:
     Specifiers ReadSpecifiers();
     soul::ast::SourcePos ReadSourcePos();
 private:
+    std::string fileName;
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;
     util::BinaryStreamReader binaryStreamReader;

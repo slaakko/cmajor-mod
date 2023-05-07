@@ -1,8 +1,9 @@
-module cmajor.symbols.operation;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module cmajor.symbols.operation;
 
 import cmajor.symbols.function.symbol;
 import std.core;
@@ -21,6 +22,7 @@ FunctionSymbol* Operation::Get(std::vector<Operation*>& operations)
     }
     return fun.get();
 }
+
 void Operation::Release()
 {
     fun.reset();

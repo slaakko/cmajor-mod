@@ -1,9 +1,9 @@
-export module cmajor.symbols.resource.table;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.resource.table;
 
 import util.binary.stream.reader;
 import util.binary.stream.writer;

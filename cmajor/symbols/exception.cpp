@@ -52,7 +52,7 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
             if (!fileName.empty())
             {
                 expandedMessage.append(" (file '" + fileName + "', line " + std::to_string(sourcePos.line) + ")");
-                expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(sourcePos)));
+                // expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(sourcePos))); TODO
             }
         }
     }
@@ -67,7 +67,7 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
             if (!fileName.empty())
             {
                 expandedMessage.append("\nsee reference to file '" + fileName + "', line " + std::to_string(referenceSourcePos.first.line));
-                expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(referenceSourcePos.first)));
+                // expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(referenceSourcePos.first))); TODO
             }
         }
     }
@@ -86,13 +86,13 @@ std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module_, const soul::a
     std::unique_ptr<util::JsonObject> json(new util::JsonObject());
     json->AddField(U"file", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(fileName))));
     json->AddField(U"line", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(sourcePos.line)))));
-    std::u32string text = module_->GetErrorLines(sourcePos);
+    // std::u32string text = module_->GetErrorLines(sourcePos); TODO
     int32_t startCol = 0;
     int32_t endCol = 0;
-    module_->GetColumns(sourcePos, startCol, endCol);
+    // module_->GetColumns(sourcePos, startCol, endCol); TODO
     json->AddField(U"startCol", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(startCol)))));
     json->AddField(U"endCol", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(endCol)))));
-    json->AddField(U"text", std::unique_ptr<util::JsonValue>(new util::JsonString(text)));
+    // json->AddField(U"text", std::unique_ptr<util::JsonValue>(new util::JsonString(text))); TODO
     return json;
 }
 /*

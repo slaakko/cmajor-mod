@@ -1,9 +1,9 @@
-export module cmajor.symbols.variable.symbol;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.variable.symbol;
 
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
@@ -14,8 +14,7 @@ import cmajor.symbols.value;
 import util.code.formatter;
 import std.core;
 
-export namespace cmajor::symbols
-{
+export namespace cmajor::symbols {
 
 class VariableSymbol : public Symbol
 {
@@ -124,7 +123,10 @@ private:
 class GlobalVariableSymbol : public VariableSymbol
 {
 public:
-    GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, const std::string& compileUnitId, const std::string& compileUnitFilePath_);
+/* TODO
+    GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, 
+       const std::string& compileUnitId, const std::string& compileUnitFilePath_);
+*/
     GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;

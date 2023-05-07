@@ -1,9 +1,9 @@
-export module cmajor.symbols.typedef_.symbol;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.typedefs;
 
 import cmajor.symbols.symbol;
 import soul.ast.source.pos;

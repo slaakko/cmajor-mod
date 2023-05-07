@@ -42,8 +42,6 @@ private:
     static std::unique_ptr<ModuleCache> instance;
     std::unordered_map<std::string, int> moduleMap;
     std::vector<std::unique_ptr<Module>> modules;
-    // TODO
-    //std::unordered_map<util::uuid, Module*, boost::hash<util::uuid>> moduleIdMap;
     std::map<util::uuid, Module*> moduleIdMap;
     void CollectModuleIndices(Module* module_, std::unordered_set<int>& moduleIndeces);
 };
@@ -67,4 +65,5 @@ void MoveNonSystemModulesTo(std::unique_ptr<ModuleCache>& cachePtr);
 Module* GetModuleById(const util::uuid& moduleId);
 void MapModule(Module* module_);
 void UpdateModuleCache();
+
 } // namespace cmajor::symbols

@@ -220,9 +220,9 @@ public:
     ContainerScope* ClassInterfaceOrNsScope();
     const ContainerScope* ClassInterfaceEnumDelegateOrNsScope() const;
     ContainerScope* ClassInterfaceEnumDelegateOrNsScope();
-    Module* GetModule() const { return module_; }
-    Module* GetModule() { return module_; }
-    void SetModule(Module* module__) { module_ = module__; }
+    Module* GetModule() const { return module; }
+    Module* GetModule() { return module; }
+    void SetModule(Module* module_) { module = module_; }
     const cmajor::ast::CompileUnitNode* GetCompileUnit() const { return compileUnit; }
     void SetCompileUnit(cmajor::ast::CompileUnitNode* compileUnit_) { compileUnit = compileUnit_; }
     const std::u32string& MangledName() const { return mangledName; }
@@ -239,7 +239,7 @@ public:
     virtual void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const {}
     virtual bool HasProjectMembers() const { return false; }
     virtual const char* ClassName() const { return "Symbol"; }
-    bool GetLocation(SymbolLocation& definitionLocation) const;
+    // bool GetLocation(SymbolLocation& definitionLocation) const; TODO
     const util::uuid& SourceModuleId() const { return sourceModuleId; }
     int SymbolIndex() const { return symbolIndex; }
     void SetSymbolIndex(int symbolIndex_) { symbolIndex = symbolIndex_; }
@@ -256,7 +256,7 @@ private:
     SymbolFlags flags;
     std::u32string mangledName;
     Symbol* parent;
-    Module* module_;
+    Module* module;
     cmajor::ast::CompileUnitNode* compileUnit;
     std::unique_ptr<cmajor::ast::AttributesNode> attributes;
     int symbolIndex;

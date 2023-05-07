@@ -34,6 +34,8 @@ enum class SystemDirKind : int
     regular = 0, repository = 1
 };
 
+std::string GetToolChain();
+
 class Project;
 class Solution;
 class CompileUnitNode;

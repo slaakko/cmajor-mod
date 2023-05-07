@@ -13,6 +13,11 @@ import util;
 
 namespace cmajor::ast {
 
+std::string GetToolChain()
+{
+    return "gcc";
+}
+
 std::string GetPlatform()
 {
 #ifdef _WIN32

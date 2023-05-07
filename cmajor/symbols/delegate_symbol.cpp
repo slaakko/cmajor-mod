@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.symbols.delegate_.symbol;
+module cmajor.symbols.delegate.symbol;
 
 import soul.ast.source.pos;
 import cmajor.ir.emitter;

@@ -18,8 +18,8 @@ import util;
 
 namespace cmajor::symbols {
 
-ContainerSymbol::ContainerSymbol(SymbolType symbolType_, const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    Symbol(symbolType_, span_, sourceModuleId_, name_)
+ContainerSymbol::ContainerSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    Symbol(symbolType_, sourcePos_, sourceModuleId_, name_)
 {
     containerScope->SetContainer(this);
 }
@@ -173,12 +173,12 @@ void ContainerSymbol::Clear()
     members.clear();
 }
 
-FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& span, const util::uuid& sourceModuleId)
+FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
     Symbol* symbol = containerScope->Lookup(groupName);
     if (!symbol)
     {
-        FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(span, sourceModuleId, groupName);
+        FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(sourcePos, sourceModuleId, groupName);
         AddMember(functionGroupSymbol);
         return functionGroupSymbol;
     }
@@ -188,16 +188,16 @@ FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32stri
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a function group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), span, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a function group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
     }
 }
 
-ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& span, const util::uuid& sourceModuleId)
+ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
     Symbol* symbol = containerScope->Lookup(groupName);
     if (!symbol)
     {
-        ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(span, sourceModuleId, groupName);
+        ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(sourcePos, sourceModuleId, groupName);
         AddMember(conceptGroupSymbol);
         return conceptGroupSymbol;
     }
@@ -207,16 +207,16 @@ ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a concept group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), span, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a concept group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
     }
 }
 
-ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::SourcePos& span, const util::uuid& sourceModuleId)
+ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
     Symbol* symbol = containerScope->Lookup(groupName);
     if (!symbol)
     {
-        ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(span, sourceModuleId, groupName);
+        ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(sourcePos, sourceModuleId, groupName);
         GetRootModuleForCurrentThread()->GetSymbolTable().SetTypeIdFor(classGroupTypeSymbol);
         AddMember(classGroupTypeSymbol);
         return classGroupTypeSymbol;
@@ -227,16 +227,16 @@ ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32st
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a class group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), span, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a class group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
     }
 }
 
-GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& span, const util::uuid& sourceModuleId)
+GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
     Symbol* symbol = containerScope->Lookup(groupName);
     if (!symbol)
     {
-        GlobalVariableGroupSymbol* globalVariableGroupSymbol = new GlobalVariableGroupSymbol(span, sourceModuleId, groupName);
+        GlobalVariableGroupSymbol* globalVariableGroupSymbol = new GlobalVariableGroupSymbol(sourcePos, sourceModuleId, groupName);
         AddMember(globalVariableGroupSymbol);
         return globalVariableGroupSymbol;
     }
@@ -246,7 +246,7 @@ GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const 
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a global variable group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), span, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a global variable group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
     }
 }
 
@@ -340,7 +340,7 @@ void ContainerSymbol::CopyFrom(const Symbol* that)
     }
 }
 
-DeclarationBlock::DeclarationBlock(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) : ContainerSymbol(SymbolType::declarationBlock, span_, sourceModuleId_, name_)
+DeclarationBlock::DeclarationBlock(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : ContainerSymbol(SymbolType::declarationBlock, sourcePos_, sourceModuleId_, name_)
 {
 }
 

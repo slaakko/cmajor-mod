@@ -9,7 +9,6 @@ import std.core;
 import cmajor.ast.node;
 import cmajor.ast.specifier;
 
-
 export namespace cmajor::ast {
 
 class IdentifierNode;

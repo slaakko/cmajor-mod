@@ -8,9 +8,9 @@ export module cmajor.symbols.symbol.collector;
 import cmajor.symbols.symbol;
 import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.constant.symbol;
-import cmajor.symbols.delegate_.symbol;
+import cmajor.symbols.delegate.symbol;
 import cmajor.symbols.enumerations;
-import cmajor.symbols.typedef_.symbol;
+import cmajor.symbols.typedefs;
 import cmajor.symbols.variable.symbol;
 import std.core;
 

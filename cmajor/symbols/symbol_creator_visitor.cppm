@@ -1,9 +1,9 @@
-export module cmajor.symbols.symbol.creator.visitor;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.symbol.creator.visitor;
 
 import cmajor.ast;
 
@@ -193,7 +193,7 @@ public:
     void Visit(cmajor::ast::UuidLiteralNode& uuidLiteralNode) override;
 
     void SetLeaveFunction() { leaveFunction = true; }
-    void InsertTracer(cmajor::ast::CompoundStatementNode* body);
+    void InsertTracer(cmajor::ast::CompoundStatementNode* body); 
     void SetEditMode() { editMode = true; }
     void SetSource(Source* source_) { source = source_; }
     const std::vector<std::string>& Errors() const { return errors; }

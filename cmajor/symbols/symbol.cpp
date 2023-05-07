@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,49 +12,29 @@ import cmajor.ast.specifier;
 import cmajor.ast.attribute;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
-import cmajor.symbols.namespace_.symbol;
+import cmajor.symbols.namespaces;
 import cmajor.symbols.exception;
-import cmajor.symbols.module_;
+import cmajor.symbols.modules;
 import cmajor.symbols.scope;
 import cmajor.symbols.basic.type.symbol;
+import cmajor.symbols.symbol.table;
+import cmajor.symbols.classes;
+import cmajor.symbols.interfaces;
+import cmajor.symbols.enumerations;
+import cmajor.symbols.delegate.symbol;
+import cmajor.symbols.module_cache;
+import cmajor.symbols.basic.type.operation;
+import cmajor.symbols.array.type.symbol;
+import cmajor.symbols.concepts;
+import cmajor.symbols.trap;
+import cmajor.symbols.variable.symbol;
+import cmajor.symbols.templates;
+import cmajor.symbols.constant.symbol;
+import cmajor.symbols.typedefs;
+import cmajor.symbols.class_template_specializations;
 import cmajor.ast.clone;
 import util.sha1;
 
-/*
-#include <cmajor/symbols/Symbol.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/BasicTypeSymbol.hpp>
-#include <cmajor/symbols/BasicTypeOperation.hpp>
-#include <cmajor/symbols/ArrayTypeSymbol.hpp>
-#include <cmajor/symbols/DerivedTypeSymbol.hpp>
-#include <cmajor/symbols/NamespaceSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/InterfaceTypeSymbol.hpp>
-#include <cmajor/symbols/DelegateSymbol.hpp>
-#include <cmajor/symbols/TypedefSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/ConstantSymbol.hpp>
-#include <cmajor/symbols/EnumSymbol.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <cmajor/symbols/ConceptSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/StringFunctions.hpp>
-#include <cmajor/symbols/KeywordSymbol.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Sha1.hpp>
-#ifdef _WIN32
-#include <cmajor/symbols/Trap.hpp>
-#endif
-*/
-
-
-// TODO Uncomment when most of .ixx files are done
-/*
 namespace cmajor::symbols {
 
 const char* symbolTypeStr[uint8_t(SymbolType::maxSymbol)] =
@@ -211,8 +191,8 @@ bool operator<(const SymbolLocation& left, const SymbolLocation& right)
 //     return SymbolLocation(module_->Id(), sourcePos.fileIndex, sourcePos.line, scol);
 // }
 
-Symbol::Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const boost::uuids::uuid& sourceModuleId_, const std::u32string& name_) :
-    symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), flags(SymbolFlags::project), parent(nullptr), module_(nullptr), compileUnit(nullptr), symbolIndex(-1)
+Symbol::Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), flags(SymbolFlags::project), parent(nullptr), module(nullptr), compileUnit(nullptr), symbolIndex(-1)
 {
 }
 
@@ -270,12 +250,12 @@ ContainerScope* Symbol::GetTypeScope()
 
 ContainerScope* Symbol::GetArrowScope()
 {
-    return module_->GetSymbolTable().GlobalNs().GetContainerScope();
+    return module->GetSymbolTable().GlobalNs().GetContainerScope();
 }
 
 const ContainerScope* Symbol::GetArrowScope() const
 {
-    return module_->GetSymbolTable().GlobalNs().GetContainerScope();
+    return module->GetSymbolTable().GlobalNs().GetContainerScope();
 }
 
 std::u32string Symbol::FullName() const
@@ -295,7 +275,7 @@ std::u32string Symbol::FullName() const
 
 std::u32string Symbol::FullNameWithSpecifiers() const
 {
-    std::u32string fullNameWithSpecifiers = ToUtf32(SymbolFlagStr(GetStableSymbolFlags()));
+    std::u32string fullNameWithSpecifiers = util::ToUtf32(SymbolFlagStr(GetStableSymbolFlags()));
     if (!fullNameWithSpecifiers.empty())
     {
         fullNameWithSpecifiers.append(1, U' ');
@@ -311,9 +291,9 @@ void* Symbol::IrObject(cmajor::ir::Emitter& emitter)
 
 void Symbol::ComputeMangledName()
 {
-    mangledName = ToUtf32(TypeString());
+    mangledName = util::ToUtf32(TypeString());
     mangledName.append(1, U'_').append(SimpleName());
-    mangledName.append(1, U'_').append(ToUtf32(util::GetSha1MessageDigest(ToUtf8(FullNameWithSpecifiers()))));
+    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()))));
 }
 
 std::string Symbol::GetSpecifierStr() const
@@ -331,7 +311,7 @@ std::string Symbol::Syntax() const
     }
     syntax.append(TypeString());
     syntax.append(1, ' ');
-    syntax.append(ToUtf8(DocName()));
+    syntax.append(util::ToUtf8(DocName()));
     syntax.append(1, ';');
     return syntax;
 }
@@ -345,12 +325,12 @@ void Symbol::CopyFrom(const Symbol* that)
     flags = that->flags;
     mangledName = that->mangledName;
     parent = that->parent;
-    module_ = that->module_;
+    module = that->module;
     compileUnit = that->compileUnit;
     if (that->attributes)
     {
         cmajor::ast::CloneContext cloneContext;
-        attributes.reset(static_cast<AttributesNode*>(that->attributes->Clone(cloneContext)));
+        attributes.reset(static_cast<cmajor::ast::AttributesNode*>(that->attributes->Clone(cloneContext)));
     }
 }
 
@@ -1071,7 +1051,7 @@ std::unique_ptr<soul::xml::Element> Symbol::ToDomElement(TypeMap& typeMap)
         std::u32string info = Info();
         if (!info.empty())
         {
-            element->SetAttribute(U"info", info);
+            element->SetAttribute("info", util::ToUtf8(info));
         }
         AppendChildElements(element.get(), typeMap);
     }
@@ -1080,18 +1060,18 @@ std::unique_ptr<soul::xml::Element> Symbol::ToDomElement(TypeMap& typeMap)
 
 std::unique_ptr<soul::xml::Element> Symbol::CreateDomElement(TypeMap& typeMap)
 {
-    return std::unique_ptr<soul::xml::Element>(new soul::xml::Element(ToUtf32(ClassName())));
+    return std::unique_ptr<soul::xml::Element>(soul::xml::MakeElement(ClassName()));
 }
 
 soul::xml::Element* Symbol::ToCCElement(int ccPrefixLength, const std::u32string& replacement, int symbolIndex) const
 {
-    soul::xml::Element* ccElement = new soul::xml::Element(U"symbol");
-    ccElement->SetAttribute(U"prefixLength", ToUtf32(std::to_string(ccPrefixLength)));
-    ccElement->SetAttribute(U"category", ToUtf32(GetSymbolCategoryStr()));
-    ccElement->SetAttribute(U"help", ToUtf32(GetSymbolHelp()));
-    ccElement->SetAttribute(U"completion", Name());
-    ccElement->SetAttribute(U"replacement", replacement);
-    ccElement->SetAttribute(U"symbolIndex", ToUtf32(std::to_string(symbolIndex)));
+    soul::xml::Element* ccElement = soul::xml::MakeElement("symbol");
+    ccElement->SetAttribute("prefixLength", std::to_string(ccPrefixLength));
+    ccElement->SetAttribute("category", GetSymbolCategoryStr());
+    ccElement->SetAttribute("help", GetSymbolHelp());
+    ccElement->SetAttribute("completion", util::ToUtf8(Name()));
+    ccElement->SetAttribute("replacement", util::ToUtf8(replacement));
+    ccElement->SetAttribute("symbolIndex", std::to_string(symbolIndex));
     return ccElement;
 }
 
@@ -1104,10 +1084,11 @@ std::string Symbol::GetSymbolHelp() const
 {
     std::string help = "(";
     help.append(GetSymbolCategoryDescription()).append(") ");
-    help.append(ToUtf8(FullName()));
+    help.append(util::ToUtf8(FullName()));
     return help;
 }
 
+/* TODO
 bool Symbol::GetLocation(SymbolLocation& definitionLocation) const
 {
     Module* sourceModule = GetModuleById(sourceModuleId);
@@ -1118,6 +1099,7 @@ bool Symbol::GetLocation(SymbolLocation& definitionLocation) const
     definitionLocation = SymbolLocation(sourceModule->Id(), sourcePos.fileIndex, sourcePos.line, scol);
     return true;
 }
+*/
 
 std::unique_ptr<Symbol> Symbol::RemoveMember(int symbolIndex)
 {
@@ -1138,7 +1120,7 @@ template<typename SymbolT>
 class ConcreteSymbolCreator : public SymbolCreator
 {
 public:
-    Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId, const std::u32string& name) override
+    Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name) override
     {
         return new SymbolT(sourcePos, sourceModuleId, name);
     }
@@ -1289,7 +1271,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::memberFunctionToClassDelegateSymbol, new ConcreteSymbolCreator<MemberFunctionToClassDelegateConversion>());
     Register(SymbolType::arrayLengthFunctionSymbol, new ConcreteSymbolCreator<ArrayLengthFunction>());
     Register(SymbolType::arrayBeginFunctionSymbol, new ConcreteSymbolCreator<ArrayBeginFunction>()),
-        Register(SymbolType::arrayEndFunctionSymbol, new ConcreteSymbolCreator<ArrayEndFunction>());
+    Register(SymbolType::arrayEndFunctionSymbol, new ConcreteSymbolCreator<ArrayEndFunction>());
     Register(SymbolType::arrayCBeginFunctionSymbol, new ConcreteSymbolCreator<ArrayCBeginFunction>());
     Register(SymbolType::arrayCEndFunctionSymbol, new ConcreteSymbolCreator<ArrayCEndFunction>());
     Register(SymbolType::interfaceTypeDefaultCtor, new ConcreteSymbolCreator<InterfaceTypeDefaultConstructor>());
@@ -1300,15 +1282,15 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::classToInterfaceConversion, new ConcreteSymbolCreator<ClassToInterfaceConversion>());
     Register(SymbolType::getObjectPtrFromInterfaceSymbol, new ConcreteSymbolCreator<GetObjectPtrFromInterface>());
     Register(SymbolType::globalVariableSymbol, new ConcreteSymbolCreator<GlobalVariableSymbol>());
-    Register(SymbolType::stringFunctionContainerSymbol, new ConcreteSymbolCreator<StringFunctionContainerSymbol>());
-    Register(SymbolType::stringLengthFunctionSymbol, new ConcreteSymbolCreator<StringLengthFunction>());
+    // Register(SymbolType::stringFunctionContainerSymbol, new ConcreteSymbolCreator<StringFunctionContainerSymbol>()); TODO
+    // Register(SymbolType::stringLengthFunctionSymbol, new ConcreteSymbolCreator<StringLengthFunction>()); TODO
     Register(SymbolType::axiomSymbol, new ConcreteSymbolCreator<AxiomSymbol>());
 #ifdef _WIN32
     Register(SymbolType::trap, new ConcreteSymbolCreator<TrapFunction>());
 #endif
 }
 
-Symbol* SymbolFactory::CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId, const std::u32string& name)
+Symbol* SymbolFactory::CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name)
 {
     const std::unique_ptr<SymbolCreator>& symbolCreator = symbolCreators[static_cast<uint8_t>(symbolType)];
     if (symbolCreator)
@@ -1345,5 +1327,4 @@ void DoneSymbol()
 }
 
 } // namespace cmajor::symbols
-*/
 

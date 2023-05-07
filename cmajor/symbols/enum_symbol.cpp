@@ -308,10 +308,11 @@ void EnumTypeDefaultConstructor::EmplaceFunction(FunctionSymbol* functionSymbol,
     }
 }
 
-void EnumTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
-    underlyingTypeDefaultConstructor->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeDefaultConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeDefaultConstructor::Check()
@@ -374,10 +375,10 @@ void EnumTypeCopyConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
 }
 
-void EnumTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
-    underlyingTypeCopyConstructor->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeCopyConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeCopyConstructor::Check()
@@ -440,10 +441,10 @@ void EnumTypeMoveConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
 }
 
-void EnumTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
-    underlyingTypeMoveConstructor->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeMoveConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeMoveConstructor::Check()
@@ -507,10 +508,10 @@ void EnumTypeCopyAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
 }
 
-void EnumTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
-    underlyingTypeCopyAssignment->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeCopyAssignment->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeCopyAssignment::Check()
@@ -574,10 +575,10 @@ void EnumTypeMoveAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
 }
 
-void EnumTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
-    underlyingTypeMoveAssignment->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeMoveAssignment->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeMoveAssignment::Check()
@@ -638,10 +639,10 @@ void EnumTypeReturn::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     }
 }
 
-void EnumTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeReturn, "underlying return not set");
-    underlyingTypeReturn->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeReturn->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeReturn::Check()
@@ -705,10 +706,10 @@ void EnumTypeEqualityOp::EmplaceFunction(FunctionSymbol* functionSymbol, int ind
     }
 }
 
-void EnumTypeEqualityOp::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeEqualityOp::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     //Assert(underlyingTypeEquality, "underlying equality not set");
-    underlyingTypeEquality->GenerateCall(emitter, genObjects, flags, span, moduleId);
+    underlyingTypeEquality->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
 void EnumTypeEqualityOp::Check()
@@ -769,7 +770,7 @@ void EnumTypeToUnderlyingTypeConversion::EmplaceType(TypeSymbol* typeSymbol, int
     }
 }
 
-void EnumTypeToUnderlyingTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void EnumTypeToUnderlyingTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
 }
 
@@ -835,7 +836,7 @@ void UnderlyingTypeToEnumTypeConversion::EmplaceType(TypeSymbol* typeSymbol, int
     }
 }
 
-void UnderlyingTypeToEnumTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void UnderlyingTypeToEnumTypeConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
 }
 

@@ -160,4 +160,9 @@ std::size_t HashValue(const uuid& u)
     return seed;
 }
 
+std::size_t UuidHash::operator()(const uuid& u) const
+{
+    return HashValue(u);
+}
+
 } // namespace util

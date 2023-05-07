@@ -16,8 +16,8 @@ import cmajor.ir.emitter;
 
 namespace cmajor::symbols {
 
-InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::interfaceTypeSymbol, span_, sourceModuleId_, name_), copyConstructor(nullptr)
+InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::interfaceTypeSymbol, sourcePos_, sourceModuleId_, name_), copyConstructor(nullptr)
 {
 }
 
@@ -134,7 +134,7 @@ void* InterfaceTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 }
 
 void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    MemberFunctionSymbol* interfaceMemberFunction, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    MemberFunctionSymbol* interfaceMemberFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -155,7 +155,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         cmajor::ir::GenObject* genObject = genObjects[i];
         genObject->Load(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
     }
-    emitter.SetCurrentDebugLocation(span);
+    emitter.SetCurrentDebugLocation(sourcePos);
     std::vector<void*> args;
     int n = interfaceMemberFunction->Parameters().size();
     if (interfaceMemberFunction->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -188,7 +188,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateCallInst(callee, args, bundles, span));
+                emitter.Stack().Push(emitter.CreateCallInst(callee, args, bundles, sourcePos));
             }
         }
         else
@@ -215,7 +215,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, span));
+                emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
             {
@@ -233,7 +233,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.CreateCallInst(callee, args, bundles, span);
+                emitter.CreateCallInst(callee, args, bundles, sourcePos);
             }
         }
         else
@@ -256,7 +256,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, span);
+                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
             emitter.SetCurrentBasicBlock(nextBlock);
         }
@@ -275,8 +275,8 @@ void InterfaceTypeSymbol::Check()
     }
 }
 
-InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, span_, sourceModuleId_, U"@interfaceDefaultCtor"), interfaceType(nullptr)
+InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, sourcePos_, sourceModuleId_, U"@interfaceDefaultCtor"), interfaceType(nullptr)
 {
 }
 
@@ -319,7 +319,7 @@ void InterfaceTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int in
 }
 
 void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -338,8 +338,8 @@ void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter,
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), interfacePtrPtr);
 }
 
-InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, span_, sourceModuleId_, U"@interfaceCopyCtor"), interfaceType(nullptr)
+InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, sourcePos_, sourceModuleId_, U"@interfaceCopyCtor"), interfaceType(nullptr)
 {
 }
 
@@ -385,7 +385,7 @@ void InterfaceTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
 }
 
 void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -410,8 +410,8 @@ void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, span_, sourceModuleId_, U"@interfaceMoveCtor"), interfaceType(nullptr)
+InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, sourcePos_, sourceModuleId_, U"@interfaceMoveCtor"), interfaceType(nullptr)
 {
 }
 
@@ -457,7 +457,7 @@ void InterfaceTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
 }
 
 void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -482,8 +482,8 @@ void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, span_, sourceModuleId_, U"@interfaceCopyAssignment"), interfaceType(nullptr)
+InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, sourcePos_, sourceModuleId_, U"@interfaceCopyAssignment"), interfaceType(nullptr)
 {
 }
 
@@ -531,7 +531,7 @@ void InterfaceTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
 }
 
 void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -556,8 +556,8 @@ void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, span_, sourceModuleId_, U"@interfaceMoveAssignment"), interfaceType(nullptr)
+InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, sourcePos_, sourceModuleId_, U"@interfaceMoveAssignment"), interfaceType(nullptr)
 {
 }
 
@@ -605,7 +605,7 @@ void InterfaceTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
 }
 
 void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -630,14 +630,14 @@ void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classToInterfaceConversion, span_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(nullptr), targetInterfaceType(nullptr), interfaceIndex(0)
+ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classToInterfaceConversion, sourcePos_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(nullptr), targetInterfaceType(nullptr), interfaceIndex(0)
 {
 }
 
 ClassToInterfaceConversion::ClassToInterfaceConversion(ClassTypeSymbol* sourceClassType_, InterfaceTypeSymbol* targetInterfaceType_, int32_t interfaceIndex_,
-    const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_) :
-    FunctionSymbol(SymbolType::classToInterfaceConversion, span_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(sourceClassType_),
+    const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_) :
+    FunctionSymbol(SymbolType::classToInterfaceConversion, sourcePos_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(sourceClassType_),
     targetInterfaceType(targetInterfaceType_), interfaceIndex(interfaceIndex_)
 {
     SetConversion();
@@ -689,7 +689,7 @@ std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesT
 }
 
 void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     void* classPtr = emitter.Stack().Pop();
     void* classPtrAsVoidPtr = emitter.CreateBitCast(classPtr, emitter.GetIrTypeForVoidPtrType());
@@ -718,8 +718,8 @@ void ClassToInterfaceConversion::Check()
     }
 }
 
-GetObjectPtrFromInterface::GetObjectPtrFromInterface(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, span_, sourceModuleId_, name_), interfaceType(nullptr)
+GetObjectPtrFromInterface::GetObjectPtrFromInterface(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, sourcePos_, sourceModuleId_, name_), interfaceType(nullptr)
 {
 }
 
@@ -764,7 +764,7 @@ void GetObjectPtrFromInterface::EmplaceType(TypeSymbol* typeSymbol, int index)
 }
 
 void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)

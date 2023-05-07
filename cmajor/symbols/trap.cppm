@@ -1,8 +1,9 @@
-export module cmajor.symbols.trap;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.trap;
 
 import cmajor.symbols.function.symbol;
 import soul.ast.source.pos;

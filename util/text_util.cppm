@@ -65,4 +65,25 @@ std::string Format(const std::string& s, int width, FormatWidth fw, FormatJustif
 std::string PlatformStringToUtf8(const std::string& platformString);
 std::string Utf8StringToPlatformString(const std::string& utf8String);
 
+template<typename StringT>
+std::vector<StringT> Split(const StringT& s, typename StringT::value_type c)
+{
+    std::vector<StringT> v;
+    int start = 0;
+    int n = int(s.length());
+    for (int i = 0; i < n; ++i)
+    {
+        if (s[i] == c)
+        {
+            v.push_back(s.substr(start, i - start));
+            start = i + 1;
+        }
+    }
+    if (start < n)
+    {
+        v.push_back(s.substr(start, n - start));
+    }
+    return v;
+}
+
 } // util

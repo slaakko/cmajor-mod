@@ -48,4 +48,9 @@ inline uuid random_uuid()
     return uuid::random();
 }
 
+struct UuidHash
+{
+    std::size_t operator()(const uuid& u) const;
+};
+
 } // namespace util

@@ -1,9 +1,9 @@
-export module cmajor.symbols.operation;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.operation;
 
 import std.core;
 
