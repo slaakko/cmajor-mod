@@ -222,6 +222,7 @@
     <ClCompile Include="symbol_table.cppm" />
     <ClCompile Include="symbol_writer.cpp" />
     <ClCompile Include="symbol_writer.cppm" />
+    <ClCompile Include="template_symbol.cpp" />
     <ClCompile Include="template_symbol.cppm" />
     <ClCompile Include="trace.cppm" />
     <ClCompile Include="trap.cppm" />
