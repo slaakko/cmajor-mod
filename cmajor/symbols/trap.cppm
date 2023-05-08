@@ -13,17 +13,17 @@ import std.core;
 
 export namespace cmajor::symbols {
 
-    class SymbolTable;
+class SymbolTable;
 
-    class TrapFunction : public FunctionSymbol
-    {
-    public:
-        TrapFunction(SymbolTable& symbolTable);
-        TrapFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
-        void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    };
+class TrapFunction : public FunctionSymbol
+{
+public:
+    TrapFunction(SymbolTable& symbolTable);
+    TrapFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+};
 
-    void InitTrap(SymbolTable& symbolTable);
+void InitTrap(SymbolTable& symbolTable);
 
 } // namespace cmajor::symbols
 

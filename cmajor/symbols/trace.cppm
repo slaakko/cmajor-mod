@@ -9,8 +9,8 @@ import std.core;
 
 export namespace cmajor::symbols {
 
-	int32_t GetTraceFunctionId(const std::string& functionFullName);
-	void ReadTraceTable();
-	void WriteTraceTable();
+int32_t GetTraceFunctionId(const std::string& functionFullName);
+void ReadTraceTable();
+void WriteTraceTable();
 
 } // namespace cmajor::symbols
