@@ -1,9 +1,9 @@
-export module cmajor.symbols.array.type.symbol;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.array.type.symbol;
 
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;

@@ -1,8 +1,9 @@
-export module cmajor.symbols.derived.type.symbol;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.derived.type.symbol;
 
 import cmajor.symbols.type.symbol;
 import std.core;

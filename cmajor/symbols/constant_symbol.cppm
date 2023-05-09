@@ -1,9 +1,9 @@
-export module cmajor.symbols.constant.symbol;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.constant.symbol;
 
 import cmajor.symbols.symbol;
 import cmajor.ast.specifier;

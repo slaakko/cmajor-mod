@@ -1,12 +1,10 @@
-export module cmajor.ir.gen.object;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/ir/IrApi.hpp>
-//#include <stdint.h>
+export module cmajor.ir.gen.object;
+
 import std.core;
 
 export namespace cmajor::ir {

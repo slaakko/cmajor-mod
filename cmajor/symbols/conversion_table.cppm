@@ -1,9 +1,9 @@
-export module cmajor.symbols.conversion.table;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.conversion.table;
 
 import cmajor.symbols.type.symbol;
 import soul.ast.source.pos;

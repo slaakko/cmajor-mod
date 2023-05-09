@@ -126,9 +126,9 @@ bool Find(const std::vector<int>& ruleContext, const std::vector<int>& ruleIds)
     return false;
 }
 
-std::vector<int> GetLineRuleContext(const std::u32string& cursorLine, const std::string& filePath, int index, const boost::uuids::uuid& moduleId, const std::vector<int>& globalRuleContext)
+std::vector<int> GetLineRuleContext(const std::u32string& cursorLine, const std::string& filePath, int index, const util::uuid& moduleId, const std::vector<int>& globalRuleContext)
 {
-    boost::uuids::uuid mid = moduleId;
+    util::uuid mid = moduleId;
     NothrowParsingContext parsingContext;
     CmajorNothrowLexer lexer(cursorLine.c_str(), cursorLine.c_str() + cursorLine.length(), filePath, index);
     lexer.SetFlag(LexerFlags::lcc);
@@ -164,7 +164,7 @@ std::vector<std::string> GetRuleNames(const std::vector<int>& rules)
     return ruleNames;
 }
 
-CCContext GetCCContext(const std::u32string& cursorLine, const std::string& filePath, int index, const boost::uuids::uuid& moduleId, const std::vector<int>& globalRuleContext)
+CCContext GetCCContext(const std::u32string& cursorLine, const std::string& filePath, int index, const util::uuid& moduleId, const std::vector<int>& globalRuleContext)
 {
 #ifdef DEBUG_CC
     {
@@ -396,12 +396,12 @@ void Source::Read()
     content = ToUtf32(str);
 }
 
-void Source::Parse(const boost::uuids::uuid& moduleId, int index)
+void Source::Parse(const util::uuid& moduleId, int index)
 {
     errors.clear();
     CmajorNothrowLexer lexer(Start(), End(), FilePath(), index);
     lexer.SetFlag(LexerFlags::gcc);
-    boost::uuids::uuid mid = moduleId;
+    util::uuid mid = moduleId;
     NothrowParsingContext parsingContext;
     std::unique_ptr<CompileUnitNode> parsedCompileUnit = NothrowCompileUnitParser::Parse(lexer, &mid, &parsingContext);
     rc.clear();
@@ -651,7 +651,7 @@ void Source::SetRuleContext()
 
 struct ParserData
 {
-    ParserData(bool& stop_, std::list<int>& indexQueue_, std::vector<std::exception_ptr>& exceptions_, Sources& sources_, const boost::uuids::uuid& moduleId_) :
+    ParserData(bool& stop_, std::list<int>& indexQueue_, std::vector<std::exception_ptr>& exceptions_, Sources& sources_, const util::uuid& moduleId_) :
         stop(stop_), indexQueue(indexQueue_), exceptions(exceptions_), sources(sources_), moduleId(moduleId_)
     {
     }
@@ -659,7 +659,7 @@ struct ParserData
     std::list<int>& indexQueue;
     std::vector<std::exception_ptr>& exceptions;
     Sources& sources;
-    boost::uuids::uuid moduleId;
+    util::uuid moduleId;
     std::mutex mtx;
 };
 
@@ -741,7 +741,7 @@ ParseResult Sources::Parse(Module* module)
         {
             indexQueue.push_back(i);
         }
-        boost::uuids::uuid moduleId = boost::uuids::nil_uuid();
+        util::uuid moduleId = boost::uuids::nil_uuid();
         if (module)
         {
             moduleId = module->Id();

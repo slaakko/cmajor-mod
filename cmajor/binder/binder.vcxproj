@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{6612dfb7-3015-447e-9576-d18668efa630}</ProjectGuid>
-    <RootNamespace>ir</RootNamespace>
+    <ProjectGuid>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</ProjectGuid>
+    <RootNamespace>binder</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -59,26 +59,22 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>cmajor.ird</TargetName>
+    <TargetName>cmajor.binderd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>cmajor.ir</TargetName>
+    <TargetName>cmajor.binder</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,10 +113,9 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -137,10 +132,9 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -151,19 +145,71 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="emitter.cpp" />
-    <ClCompile Include="emitter.cppm" />
-    <ClCompile Include="gen_object.cppm" />
-    <ClCompile Include="ir.cppm" />
-    <ClCompile Include="value_stack.cpp" />
-    <ClCompile Include="value_stack.cppm" />
+    <ClCompile Include="access.cppm" />
+    <ClCompile Include="attribute_binder.cppm" />
+    <ClCompile Include="bound_class.cppm" />
+    <ClCompile Include="bound_compile_unit.cppm" />
+    <ClCompile Include="bound_constraint.cppm" />
+    <ClCompile Include="bound_enum.cppm" />
+    <ClCompile Include="bound_expression.cppm" />
+    <ClCompile Include="bound_function.cppm" />
+    <ClCompile Include="bound_namespace.cppm" />
+    <ClCompile Include="bound_node.cppm" />
+    <ClCompile Include="bound_node_visitor.cppm" />
+    <ClCompile Include="bound_statement.cppm" />
+    <ClCompile Include="class_template_repository.cppm" />
+    <ClCompile Include="concept.cppm" />
+    <ClCompile Include="concept_repository.cppm" />
+    <ClCompile Include="constant_array_repository.cppm" />
+    <ClCompile Include="constant_structure_repository.cppm" />
+    <ClCompile Include="const_expr_function_repository.cppm" />
+    <ClCompile Include="control_flow_analyzer.cppm" />
+    <ClCompile Include="evaluator.cppm" />
+    <ClCompile Include="expression_binder.cppm" />
+    <ClCompile Include="function_template_repository.cppm" />
+    <ClCompile Include="inline_function_repository.cppm" />
+    <ClCompile Include="json_attribute_processor.cppm" />
+    <ClCompile Include="operation_repository.cppm" />
+    <ClCompile Include="overload_resolution.cppm" />
+    <ClCompile Include="statement_binder.cppm" />
+    <ClCompile Include="string_repository.cppm" />
+    <ClCompile Include="system_default_attribute_processor.cppm" />
+    <ClCompile Include="type_binder.cppm" />
+    <ClCompile Include="type_binding.cppm" />
+    <ClCompile Include="type_resolver.cppm" />
+    <ClCompile Include="uuid_repository.cppm" />
+    <ClCompile Include="xml_attribute_processor.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">
       <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\soul\parser\parser.vcxproj">
+      <Project>{536511be-fbac-449f-bd75-704655bdce4d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\soul\xml\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ast\ast.vcxproj">
+      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ir\ir.vcxproj">
+      <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lexer\lexer.vcxproj">
+      <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\parser\parser.vcxproj">
+      <Project>{067fedb4-998d-4efb-a2f4-70dc705264e1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

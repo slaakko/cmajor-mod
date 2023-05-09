@@ -5,8 +5,6 @@
 
 export module cmajor.ir.value.stack;
 
-//#include <cmajor/ir/IrApi.hpp>
-
 export namespace cmajor::ir {
 
 class ValueStack

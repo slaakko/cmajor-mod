@@ -213,6 +213,7 @@
     <ClCompile Include="string_functions.cppm" />
     <ClCompile Include="symbol.cpp" />
     <ClCompile Include="symbol.cppm" />
+    <ClCompile Include="symbols.cppm" />
     <ClCompile Include="symbol_collector.cppm" />
     <ClCompile Include="symbol_creator_visitor.cpp" />
     <ClCompile Include="symbol_creator_visitor.cppm" />

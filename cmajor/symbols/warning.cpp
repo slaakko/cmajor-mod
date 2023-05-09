@@ -31,7 +31,7 @@ std::unique_ptr<JsonValue> Warning::ToJson(Module* module) const
     {
         referencesArray->AddItem(std::move(def));
     }
-    for (const Span& sourcePos : references)
+    for (const soul::ast::SourcePos& sourcePos : references)
     {
         std::unique_ptr<JsonValue> ref = SpanToJson(module, sourcePos);
         if (ref)

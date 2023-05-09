@@ -1,8 +1,9 @@
-export module cmajor.symbols.basic.type.operation;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.basic.type.operation;
 
 import cmajor.symbols.value;
 import cmajor.symbols.function.symbol;

@@ -10,19 +10,6 @@ import soul.ast.source.pos;
 import cmajor.ir.value.stack;
 import util.uuid;
 
-/*
-#ifndef CMAJOR_IR_EMITTER_INCLUDED
-#define CMAJOR_IR_EMITTER_INCLUDED
-#include <cmajor/ir/IrApi.hpp>
-#include <cmajor/ir/ValueStack.hpp>
-#include <cmajor/common/Common.hpp>
-#include <soulng/lexer/SourcePos.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/nil_generator.hpp>
-#include <vector>
-#include <string>
-*/
-
 export namespace cmajor::ir {
 
 struct Pad

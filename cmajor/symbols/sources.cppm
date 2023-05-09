@@ -15,9 +15,6 @@ export namespace cmajor::symbols {
 class Module;
 class Symbol;
 class ContainerSymbol;
-class ContainerScope;
-class FileScope;
-struct CCSymbolEntry;
 
 enum class CCContext
 {

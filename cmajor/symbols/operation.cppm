@@ -22,5 +22,5 @@ protected:
 private:
     std::unique_ptr<FunctionSymbol> fun;
 };
-} // namespace cmajor::symbols
 
+} // namespace cmajor::symbols

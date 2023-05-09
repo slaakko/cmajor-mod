@@ -1,9 +1,9 @@
-export module cmajor.symbols.warning;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.warning;
 
 import soul.ast.source.pos;
 import std.core;

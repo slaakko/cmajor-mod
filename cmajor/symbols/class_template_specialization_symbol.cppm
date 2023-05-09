@@ -1,8 +1,9 @@
-export module cmajor.symbols.class_template_specializations;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.class_template_specializations;
 
 import cmajor.symbols.scope;
 import cmajor.symbols.classes;
@@ -14,9 +15,6 @@ import soul.ast.source.pos;
 import std.core;
 
 export namespace cmajor::symbols {
-
-//class ClassTypeSymbol;
-//class TypeSymbol;
 
 enum class ClassTemplateSpecializationFlags : uint8_t
 {

@@ -309,7 +309,7 @@ const std::u32string& SourceFileCache::GetFileContent(const std::string& filePat
 }
 
 /* TODO
-cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const boost::uuids::uuid& sourceModuleId)
+cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
     if (!sourcePos.Valid()) return cmajor::debug::SourceSpan();
     if (sourceModuleId.is_nil()) return cmajor::debug::SourceSpan();
@@ -1770,9 +1770,9 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
     util::BinaryStreamReader pdiReader(pdiFilePath);
     std::string projectName;
     std::string projectDirectoryPath;
-    boost::uuids::uuid moduleId;
+    util::uuid moduleId;
     int32_t numCompileUnits;
-    boost::uuids::uuid mainFunctionId;
+    util::uuid mainFunctionId;
     cmajor::debug::ReadProjectTableHeader(pdiReader, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
     cmajor::debug::WriteProjectTableHeader(cmdbWriter, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
     for (int32_t i = 0; i < numCompileUnits; ++i)
@@ -1788,8 +1788,8 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
         for (int32_t i = 0; i < numFunctionRecords; ++i)
         {
             int32_t fileIndex;
-            boost::uuids::uuid sourceModuleId;
-            boost::uuids::uuid functionId;
+            util::uuid sourceModuleId;
+            util::uuid functionId;
             cmajor::debug::ReadCompileUnitFunctionRecord(cudiReader, fileIndex, sourceModuleId, functionId);
             cmajor::debug::WriteCompileUnitFunctionRecord(cmdbWriter, fileIndex, sourceModuleId, functionId);
             int32_t numInstructionRecords;
@@ -1860,7 +1860,7 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
     cmajor::debug::WriteNumberOfFunctionIndexFunctionRecords(cmdbWriter, numFunctionIndexRecords);
     for (int32_t i = 0; i < numFunctionIndexRecords; ++i)
     {
-        boost::uuids::uuid functionId;
+        util::uuid functionId;
         std::string fullFunctionName;
         std::string mangledFunctionName;
         cmajor::debug::ReadFunctionIndexFunctionRecord(pdiReader, functionId, fullFunctionName, mangledFunctionName);
