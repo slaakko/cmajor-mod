@@ -145,13 +145,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="access.cpp" />
     <ClCompile Include="access.cppm" />
+    <ClCompile Include="attribute_binder.cpp" />
     <ClCompile Include="attribute_binder.cppm" />
+    <ClCompile Include="bound_class.cpp" />
     <ClCompile Include="bound_class.cppm" />
+    <ClCompile Include="bound_compile_unit.cpp" />
     <ClCompile Include="bound_compile_unit.cppm" />
+    <ClCompile Include="bound_constraint.cpp" />
     <ClCompile Include="bound_constraint.cppm" />
+    <ClCompile Include="bound_enum.cpp" />
     <ClCompile Include="bound_enum.cppm" />
+    <ClCompile Include="bound_expression.cpp" />
     <ClCompile Include="bound_expression.cppm" />
+    <ClCompile Include="bound_function.cpp" />
     <ClCompile Include="bound_function.cppm" />
     <ClCompile Include="bound_namespace.cppm" />
     <ClCompile Include="bound_node.cppm" />

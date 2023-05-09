@@ -9,9 +9,7 @@ import cmajor.binder.bound.node;
 import cmajor.symbols;
 import cmajor.ir;
 
-namespace cmajor::binder {
-
-class BoundNodeVisitor;
+export namespace cmajor::binder {
 
 class BoundClass : public BoundNode
 {
