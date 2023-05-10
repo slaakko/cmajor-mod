@@ -188,8 +188,12 @@
     <ClCompile Include="expression_binder.cpp" />
     <ClCompile Include="expression_binder.cppm" />
     <ClCompile Include="function_template_repository.cppm" />
+    <ClCompile Include="function_template_respotiory.cpp" />
+    <ClCompile Include="inline_function_repository.cpp" />
     <ClCompile Include="inline_function_repository.cppm" />
+    <ClCompile Include="json_attribute_processor.cpp" />
     <ClCompile Include="json_attribute_processor.cppm" />
+    <ClCompile Include="operation_repository.cpp" />
     <ClCompile Include="operation_repository.cppm" />
     <ClCompile Include="overload_resolution.cppm" />
     <ClCompile Include="statement_binder.cppm" />
