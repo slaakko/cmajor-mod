@@ -97,17 +97,21 @@ private:
 void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::DestructorSymbol* destructorSymbol, BoundCompileUnit& boundCompileUnit, 
     cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction,
     const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+
 void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol* staticConstructorSymbol, cmajor::ast::StaticConstructorNode* staticConstructorNode, 
     BoundCompileUnit& boundCompileUnit, BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, cmajor::symbols::ContainerScope* containerScope, 
     StatementBinder* statementBinder, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+
 void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructorSymbol, cmajor::ast::ConstructorNode* constructorNode, 
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction,
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, 
     bool generateDefault, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+
 void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFunctionSymbol, cmajor::ast::MemberFunctionNode* assignmentNode, 
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction,
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, 
     const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+
 void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbol, cmajor::ast::DestructorNode* destructorNode, BoundCompoundStatement* boundCompoundStatement, 
     BoundFunction* boundFunction, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, 
     const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
