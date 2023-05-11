@@ -1450,7 +1450,7 @@ void SourceWriter::Visit(AssertStatementNode& assertStatementNode)
     formatter.WriteLine(";");
 }
 
-void SourceWriter::Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode)
+void SourceWriter::Visit(cmajor::ast::ConditionalCompilationPartNode& conditionalCompilationPartNode)
 {
     int n = conditionalCompilationPartNode.Statements().Count();
     for (int i = 0; i < n; ++i)

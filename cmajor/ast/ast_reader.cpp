@@ -160,12 +160,12 @@ ConditionalCompilationExpressionNode* AstReader::ReadConditionalCompilationExpre
     }
 }
 
-ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
+cmajor::ast::ConditionalCompilationPartNode* AstReader::ReadConditionalCompilationPartNode()
 {
     Node* node = ReadNode();
     if (node->GetNodeType() == NodeType::conditionalCompilationPartNode)
     {
-        return static_cast<ConditionalCompilationPartNode*>(node);
+        return static_cast<cmajor::ast::ConditionalCompilationPartNode*>(node);
     }
     else
     {

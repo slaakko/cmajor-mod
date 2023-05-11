@@ -316,7 +316,7 @@ public:
     virtual void Visit(TryStatementNode& tryStatementNode) {}
     virtual void Visit(CatchNode& catchNode) {}
     virtual void Visit(AssertStatementNode& assertStatementNode) {}
-    virtual void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode) {}
+    virtual void Visit(cmajor::ast::ConditionalCompilationPartNode& conditionalCompilationPartNode) {}
     virtual void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode) {}
     virtual void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode) {}
     virtual void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode) {}

@@ -1365,20 +1365,20 @@ ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::
     }
 }
 
-void ConditionalCompilationPartNode::AddStatement(StatementNode* statement)
+void cmajor::ast::ConditionalCompilationPartNode::AddStatement(StatementNode* statement)
 {
     statement->SetParent(this);
     statements.Add(statement);
 }
 
-Node* ConditionalCompilationPartNode::Clone(CloneContext& cloneContext) const
+Node* cmajor::ast::ConditionalCompilationPartNode::Clone(CloneContext& cloneContext) const
 {
     ConditionalCompilationExpressionNode* clonedIfExpr = nullptr;
     if (expr)
     {
         clonedIfExpr = static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext));
     }
-    ConditionalCompilationPartNode* clone = new ConditionalCompilationPartNode(GetSourcePos(), ModuleId(), clonedIfExpr);
+    cmajor::ast::ConditionalCompilationPartNode* clone = new cmajor::ast::ConditionalCompilationPartNode(GetSourcePos(), ModuleId(), clonedIfExpr);
     int n = statements.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -1387,12 +1387,12 @@ Node* ConditionalCompilationPartNode::Clone(CloneContext& cloneContext) const
     return clone;
 }
 
-void ConditionalCompilationPartNode::Accept(Visitor& visitor)
+void cmajor::ast::ConditionalCompilationPartNode::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
 }
 
-void ConditionalCompilationPartNode::Write(AstWriter& writer)
+void cmajor::ast::ConditionalCompilationPartNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
     bool hasExpr = expr != nullptr;
@@ -1404,7 +1404,7 @@ void ConditionalCompilationPartNode::Write(AstWriter& writer)
     statements.Write(writer);
 }
 
-void ConditionalCompilationPartNode::Read(AstReader& reader)
+void cmajor::ast::ConditionalCompilationPartNode::Read(AstReader& reader)
 {
     Node::Read(reader);
     bool hasExpr = reader.GetBinaryStreamReader().ReadBool();
@@ -1423,7 +1423,7 @@ ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const s
 }
 
 ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* ifExpr_) :
-    StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(new ConditionalCompilationPartNode(sourcePos_, moduleId_, ifExpr_))
+    StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(new cmajor::ast::ConditionalCompilationPartNode(sourcePos_, moduleId_, ifExpr_))
 {
 }
 
@@ -1434,7 +1434,7 @@ void ConditionalCompilationStatementNode::AddIfStatement(StatementNode* statemen
 
 void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
 {
-    elifParts.Add(new ConditionalCompilationPartNode(sourcePos, moduleId_, expr));
+    elifParts.Add(new cmajor::ast::ConditionalCompilationPartNode(sourcePos, moduleId_, expr));
 }
 
 void ConditionalCompilationStatementNode::AddElifStatement(StatementNode* statement)
@@ -1446,7 +1446,7 @@ void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::Sour
 {
     if (!elsePart)
     {
-        elsePart.reset(new ConditionalCompilationPartNode(span, moduleId_));
+        elsePart.reset(new cmajor::ast::ConditionalCompilationPartNode(span, moduleId_));
     }
     elsePart->AddStatement(statement);
 }
@@ -1454,18 +1454,18 @@ void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::Sour
 Node* ConditionalCompilationStatementNode::Clone(CloneContext& cloneContext) const
 {
     ConditionalCompilationStatementNode* clone = new ConditionalCompilationStatementNode(GetSourcePos(), ModuleId());
-    ConditionalCompilationPartNode* clonedIfPart = static_cast<ConditionalCompilationPartNode*>(ifPart->Clone(cloneContext));
+    cmajor::ast::ConditionalCompilationPartNode* clonedIfPart = static_cast<cmajor::ast::ConditionalCompilationPartNode*>(ifPart->Clone(cloneContext));
     clone->ifPart.reset(clonedIfPart);
     int n = elifParts.Count();
     for (int i = 0; i < n; ++i)
     {
-        ConditionalCompilationPartNode* elifPart = elifParts[i];
-        ConditionalCompilationPartNode* clonedElifPart = static_cast<ConditionalCompilationPartNode*>(elifPart->Clone(cloneContext));
+        cmajor::ast::ConditionalCompilationPartNode* elifPart = elifParts[i];
+        cmajor::ast::ConditionalCompilationPartNode* clonedElifPart = static_cast<cmajor::ast::ConditionalCompilationPartNode*>(elifPart->Clone(cloneContext));
         clone->elifParts.Add(clonedElifPart);
     }
     if (elsePart)
     {
-        ConditionalCompilationPartNode* clonedElsePart = static_cast<ConditionalCompilationPartNode*>(elsePart->Clone(cloneContext));
+        cmajor::ast::ConditionalCompilationPartNode* clonedElsePart = static_cast<cmajor::ast::ConditionalCompilationPartNode*>(elsePart->Clone(cloneContext));
         clone->elsePart.reset(clonedElsePart);
     }
     return clone;
@@ -1504,17 +1504,17 @@ void ConditionalCompilationStatementNode::Read(AstReader& reader)
     }
 }
 
-void ConditionalCompilationStatementNode::SetIfPart(ConditionalCompilationPartNode* ifPart_)
+void ConditionalCompilationStatementNode::SetIfPart(cmajor::ast::ConditionalCompilationPartNode* ifPart_)
 {
     ifPart.reset(ifPart_);
 }
 
-void ConditionalCompilationStatementNode::AddElifPart(ConditionalCompilationPartNode* elifPart)
+void ConditionalCompilationStatementNode::AddElifPart(cmajor::ast::ConditionalCompilationPartNode* elifPart)
 {
     elifParts.Add(elifPart);
 }
 
-void ConditionalCompilationStatementNode::SetElsePart(ConditionalCompilationPartNode* elsePart_)
+void ConditionalCompilationStatementNode::SetElsePart(cmajor::ast::ConditionalCompilationPartNode* elsePart_)
 {
     elsePart.reset(elsePart_);
 }

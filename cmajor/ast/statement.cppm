@@ -585,11 +585,11 @@ private:
     std::unique_ptr<ConditionalCompilationExpressionNode> expr;
 };
 
-class ConditionalCompilationPartNode : public Node
+class cmajor::ast::ConditionalCompilationPartNode : public Node
 {
 public:
-    ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_);
+    cmajor::ast::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    cmajor::ast::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_);
     void AddStatement(StatementNode* statement);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
@@ -615,16 +615,16 @@ public:
     void AddElifExpr(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr);
     void AddElifStatement(StatementNode* statement);
     void AddElseStatement(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, StatementNode* statement);
-    ConditionalCompilationPartNode* IfPart() { return ifPart.get(); }
-    const NodeList<ConditionalCompilationPartNode>& ElifParts() const { return elifParts; }
-    ConditionalCompilationPartNode* ElsePart() { return elsePart.get(); }
-    void SetIfPart(ConditionalCompilationPartNode* ifPart_);
-    void AddElifPart(ConditionalCompilationPartNode* elifPart);
-    void SetElsePart(ConditionalCompilationPartNode* elsePart_);
+    cmajor::ast::ConditionalCompilationPartNode* IfPart() { return ifPart.get(); }
+    const NodeList<cmajor::ast::ConditionalCompilationPartNode>& ElifParts() const { return elifParts; }
+    cmajor::ast::ConditionalCompilationPartNode* ElsePart() { return elsePart.get(); }
+    void SetIfPart(cmajor::ast::ConditionalCompilationPartNode* ifPart_);
+    void AddElifPart(cmajor::ast::ConditionalCompilationPartNode* elifPart);
+    void SetElsePart(cmajor::ast::ConditionalCompilationPartNode* elsePart_);
 private:
-    std::unique_ptr<ConditionalCompilationPartNode> ifPart;
-    NodeList<ConditionalCompilationPartNode> elifParts;
-    std::unique_ptr<ConditionalCompilationPartNode> elsePart;
+    std::unique_ptr<cmajor::ast::ConditionalCompilationPartNode> ifPart;
+    NodeList<cmajor::ast::ConditionalCompilationPartNode> elifParts;
+    std::unique_ptr<cmajor::ast::ConditionalCompilationPartNode> elsePart;
 };
 
 } // namespace cmajor::ast

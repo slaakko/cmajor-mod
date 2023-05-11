@@ -212,6 +212,7 @@ std::string FileTable::GetFilePath(int32_t fileIndex) const
 {
     if (fileIndex >= 0 && fileIndex < filePaths.size())
     {
+        // TODO
         return filePaths[fileIndex];
     }
     return std::string();
@@ -1995,7 +1996,7 @@ __declspec(thread) Module* rootModule = nullptr;
 __thread Module* rootModule = nullptr;
 #endif
 
-std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
+std::string cmajor::symbols::GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
 {
     if (fileIndex == -1)
     {

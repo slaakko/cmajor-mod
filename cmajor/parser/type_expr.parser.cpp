@@ -24,6 +24,45 @@ using namespace soul::ast::source::pos;
 namespace cmajor::type::expr::parser {
 
 template<typename LexerT>
+std::unique_ptr<cmajor::ast::Node> TypeExprParser<LexerT>::Parse(LexerT& lexer, cmajor::parser::context::Context* context)
+{
+    std::unique_ptr<cmajor::ast::Node> value;
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (lexer.Log())
+    {
+        lexer.Log()->WriteBeginRule("parse");
+        lexer.Log()->IncIndent();
+    }
+    #endif
+    ++lexer;
+    soul::parser::Match match = TypeExprParser<LexerT>::TypeExpr(lexer, context);
+    value.reset(static_cast<cmajor::ast::Node*>(match.value));
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (lexer.Log())
+    {
+        lexer.Log()->DecIndent();
+        lexer.Log()->WriteEndRule("parse");
+    }
+    #endif
+    if (match.hit)
+    {
+        if (*lexer == soul::lexer::END_TOKEN)
+        {
+            return value;
+        }
+        else
+        {
+            lexer.ThrowFarthestError();
+        }
+    }
+    else
+    {
+        lexer.ThrowFarthestError();
+    }
+    return value;
+}
+
+template<typename LexerT>
 soul::parser::Match TypeExprParser<LexerT>::TypeExpr(LexerT& lexer, cmajor::parser::context::Context* context)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT

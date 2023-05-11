@@ -47,7 +47,7 @@ public:
     DefaultStatementNode* ReadDefaultStatementNode();
     CompoundStatementNode* ReadCompoundStatementNode();
     ConditionalCompilationExpressionNode* ReadConditionalCompilationExpressionNode();
-    ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
+    cmajor::ast::ConditionalCompilationPartNode* ReadConditionalCompilationPartNode();
     TemplateIdNode* ReadTemplateIdNode();
     WhereConstraintNode* ReadWhereConstraintNode();
     ConceptNode* ReadConceptNode();

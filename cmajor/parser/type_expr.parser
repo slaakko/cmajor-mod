@@ -18,6 +18,7 @@ export module cmajor.type.expr.parser;
 parser TypeExprParser
 {
     lexer cmajor::lexer::CmajorLexer<char32_t>;
+    main;
 
     using BasicTypeParser.BasicType;
     using ExpressionParser.Expression;

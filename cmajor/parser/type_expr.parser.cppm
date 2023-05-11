@@ -17,6 +17,7 @@ export namespace cmajor::type::expr::parser {
 template<typename LexerT>
 struct TypeExprParser
 {
+    static std::unique_ptr<cmajor::ast::Node> Parse(LexerT& lexer, cmajor::parser::context::Context* context);
     static soul::parser::Match TypeExpr(LexerT& lexer, cmajor::parser::context::Context* context);
     static soul::parser::Match PrefixTypeExpr(LexerT& lexer, cmajor::parser::context::Context* context);
     static soul::parser::Match PostfixTypeExpr(LexerT& lexer, cmajor::parser::context::Context* context);

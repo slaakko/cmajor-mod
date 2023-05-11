@@ -119,7 +119,7 @@ public:
     void Visit(TryStatementNode& tryStatementNode) override;
     void Visit(CatchNode& catchNode) override;
     void Visit(AssertStatementNode& assertStatementNode) override;
-    void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode) override;
+    void Visit(cmajor::ast::ConditionalCompilationPartNode& conditionalCompilationPartNode) override;
     void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode) override;
     void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode) override;
     void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode) override;
