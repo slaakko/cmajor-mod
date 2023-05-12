@@ -204,7 +204,9 @@
     <ClCompile Include="type_binder.cppm" />
     <ClCompile Include="type_binding.cppm" />
     <ClCompile Include="type_resolver.cppm" />
+    <ClCompile Include="uuid_repository.cpp" />
     <ClCompile Include="uuid_repository.cppm" />
+    <ClCompile Include="xml_attribute_processor.cpp" />
     <ClCompile Include="xml_attribute_processor.cppm" />
   </ItemGroup>
   <ItemGroup>
