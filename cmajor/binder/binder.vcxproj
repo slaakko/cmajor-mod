@@ -200,7 +200,9 @@
     <ClCompile Include="statement_binder.cpp" />
     <ClCompile Include="statement_binder.cppm" />
     <ClCompile Include="string_repository.cppm" />
+    <ClCompile Include="system_default_attribute_processor.cpp" />
     <ClCompile Include="system_default_attribute_processor.cppm" />
+    <ClCompile Include="type_binder.cpp" />
     <ClCompile Include="type_binder.cppm" />
     <ClCompile Include="type_binding.cppm" />
     <ClCompile Include="type_resolver.cppm" />
