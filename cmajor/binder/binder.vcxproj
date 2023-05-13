@@ -204,7 +204,9 @@
     <ClCompile Include="system_default_attribute_processor.cppm" />
     <ClCompile Include="type_binder.cpp" />
     <ClCompile Include="type_binder.cppm" />
+    <ClCompile Include="type_binding.cpp" />
     <ClCompile Include="type_binding.cppm" />
+    <ClCompile Include="type_resolver.cpp" />
     <ClCompile Include="type_resolver.cppm" />
     <ClCompile Include="uuid_repository.cpp" />
     <ClCompile Include="uuid_repository.cppm" />
