@@ -1,10 +1,13 @@
-module cmajor.binder.uuid.repository;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-//#include <cmajor/binder/UuidRepository.hpp>
+module;
+#include <util/assert.hpp>
+
+module cmajor.binder.uuid.repository;
+
 import util;
 
 namespace cmajor::binder {

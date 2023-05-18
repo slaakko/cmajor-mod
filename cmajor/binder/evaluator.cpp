@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.evaluator;
 
 import cmajor.binder.bound.compile.unit;
@@ -38,19 +41,19 @@ public:
     cmajor::symbols::ContainerSymbol* GetContainerSymbol() { return containerSymbol; }
     cmajor::symbols::Value* Clone() const override 
     { 
-        // Assert(false, "scoped value cannot be cloned"); TODO
+        Assert(false, "scoped value cannot be cloned"); 
         return nullptr; 
     }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
     cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override 
     { 
-        // Assert(false, "scoped value cannot be converted"); TODO 
+        Assert(false, "scoped value cannot be converted");
         return nullptr; 
     }
     void* IrValue(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "scoped value does not have ir value"); TODO 
+        Assert(false, "scoped value does not have ir value");
         return nullptr; 
     }
     cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return type; }
@@ -76,19 +79,19 @@ public:
     bool IsFunctionGroupValue() const override { return true; }
     cmajor::symbols::Value* Clone() const override 
     { 
-        // Assert(false, "function group value cannot be cloned"); TODO
+        Assert(false, "function group value cannot be cloned"); 
         return nullptr; 
     }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
     cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
     { 
-        /// Assert(false, "function group value cannot be converted"); TODO
+        Assert(false, "function group value cannot be converted"); 
         return nullptr; 
     }
     void* IrValue(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "function group value does not have ir value");  TODO
+        Assert(false, "function group value does not have ir value");  
         return nullptr; 
     }
     cmajor::symbols::FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
@@ -119,12 +122,12 @@ public:
     void Read(util::BinaryStreamReader& reader) override {}
     cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
     {
-        // Assert(false, "array reference value cannot be converted"); TODO
+        Assert(false, "array reference value cannot be converted");
         return nullptr; 
     }
     void* IrValue(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "array reference does not have ir value"); TODO
+        Assert(false, "array reference does not have ir value");
         return nullptr; 
     }
     cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return arrayValue->GetType(symbolTable); }
@@ -147,12 +150,12 @@ public:
     void Read(util::BinaryStreamReader& reader) override {}
     cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
     {
-        // Assert(false, "structured reference value cannot be converted"); TODO
+        Assert(false, "structured reference value cannot be converted");
         return nullptr; 
     }
     void* IrValue(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "structured reference does not have ir value"); TODO
+        Assert(false, "structured reference does not have ir value");
         return nullptr; 
     }
     cmajor::symbols::TypeSymbol* GetType(cmajor::symbols::SymbolTable* symbolTable) override { return structuredValue->GetType(symbolTable); }
@@ -175,7 +178,7 @@ public:
     void Read(util::BinaryStreamReader& reader) override {}
     cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
     { 
-        // Assert(false, "string reference value cannot be converted"); TODO
+        Assert(false, "string reference value cannot be converted");
         return nullptr; 
     }
     void* IrValue(cmajor::ir::Emitter& emitter) override { return stringValue->IrValue(emitter); }
@@ -3180,7 +3183,7 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
             }
             throw cmajor::symbols::Exception("node for constant symbol '" + util::ToUtf8(constantSymbol->FullName()) + "' not found from symbol table", sourcePos, moduleId);
         }
-        /// Assert(node->GetNodeType() == cmajor::ast::NodeType::constantNode, "constant node expected"); TODO
+        Assert(node->GetNodeType() == cmajor::ast::NodeType::constantNode, "constant node expected");
         cmajor::ast::ConstantNode* constantNode = static_cast<cmajor::ast::ConstantNode*>(node);
         constantSymbol->SetEvaluating();
         TypeBinder typeBinder(boundCompileUnit);
@@ -3188,7 +3191,7 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
         constantNode->Accept(typeBinder);
         constantSymbol->ResetEvaluating();
         cmajor::symbols::Value* constantValue = constantSymbol->GetValue();
-        // Assert(constantValue, "constant value expected"); TODO
+        Assert(constantValue, "constant value expected"); 
         value.reset(constantValue->Clone());
     }
 }
@@ -3212,17 +3215,17 @@ void Evaluator::EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* 
     else
     {
         cmajor::symbols::Symbol* symbol = enumConstantSymbol->Parent();
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enum type symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enum type symbol expected");
         cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = static_cast<cmajor::symbols::EnumTypeSymbol*>(symbol);
         cmajor::ast::Node* node = boundCompileUnit.GetSymbolTable().GetNode(enumTypeSymbol);
-        // Assert(node->GetNodeType() == cmajor::ast::NodeType::enumTypeNode, "enum type node expected"); TODO
+        Assert(node->GetNodeType() == cmajor::ast::NodeType::enumTypeNode, "enum type node expected"); 
         cmajor::ast::EnumTypeNode* enumTypeNode = static_cast<cmajor::ast::EnumTypeNode*>(node);
         TypeBinder typeBinder(boundCompileUnit);
         typeBinder.SetContainerScope(containerScope);
         enumTypeNode->Accept(typeBinder);
         enumConstantSymbol->ResetEvaluating();
         cmajor::symbols::Value* enumConstantValue = enumConstantSymbol->GetValue();
-        // Assert(enumConstantValue, "enum constant value expected"); TODO
+        Assert(enumConstantValue, "enum constant value expected"); 
         value.reset(enumConstantValue->Clone());
     }
 }

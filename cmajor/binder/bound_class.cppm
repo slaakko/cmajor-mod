@@ -6,6 +6,7 @@
 export module cmajor.binder.bound_class;
 
 import cmajor.binder.bound.node;
+import cmajor.binder.bound.expression;
 import cmajor.symbols;
 import cmajor.ir;
 

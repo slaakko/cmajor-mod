@@ -7,13 +7,15 @@ export module cmajor.ast.classes;
 
 import cmajor.ast.function;
 import cmajor.ast.identifier;
+import cmajor.ast.statement;
+import cmajor.ast.attribute;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
+import cmajor.ast.concepts;
+import cmajor.ast.templates;
+import cmajor.ast.parameter;
 
 export namespace cmajor::ast {
-
-class WhereConstraintNode;
-class AttributesNode;
 
 class ClassNode : public Node
 {

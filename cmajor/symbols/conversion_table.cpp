@@ -95,4 +95,5 @@ void ConversionTable::AddGeneratedConversion(std::unique_ptr<FunctionSymbol>&& g
 {
     generatedConversions.push_back(std::move(generatedConversion));
 }
+
 } // namespace cmajor::symbols

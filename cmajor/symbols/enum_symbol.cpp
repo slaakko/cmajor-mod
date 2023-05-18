@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.enumerations;
 
 import soul.ast.source.pos;
@@ -41,7 +44,7 @@ void EnumTypeSymbol::Read(SymbolReader& reader)
 
 void EnumTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     underlyingType = typeSymbol;
 }
 
@@ -275,7 +278,7 @@ EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(EnumTypeSymbol* enumType_
     AddMember(thisParam);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeDefaultConstructor = basicTypeSymbol->DefaultConstructor();
 }
@@ -283,7 +286,7 @@ EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(EnumTypeSymbol* enumType_
 void EnumTypeDefaultConstructor::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
+    Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
     const util::uuid& defaultConstructorId = underlyingTypeDefaultConstructor->FunctionId();
     writer.GetBinaryStreamWriter().Write(defaultConstructorId);
 }
@@ -304,14 +307,14 @@ void EnumTypeDefaultConstructor::EmplaceFunction(FunctionSymbol* functionSymbol,
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
     const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
+    Assert(underlyingTypeDefaultConstructor, "underlying default constructor not set");
     underlyingTypeDefaultConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -342,7 +345,7 @@ EnumTypeCopyConstructor::EnumTypeCopyConstructor(EnumTypeSymbol* enumType_) :
     AddMember(thatParam);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeCopyConstructor = basicTypeSymbol->CopyConstructor();
 }
@@ -350,7 +353,7 @@ EnumTypeCopyConstructor::EnumTypeCopyConstructor(EnumTypeSymbol* enumType_) :
 void EnumTypeCopyConstructor::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
+    Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
     const util::uuid& copyConstructorId = underlyingTypeCopyConstructor->FunctionId();
     writer.GetBinaryStreamWriter().Write(copyConstructorId);
 }
@@ -371,13 +374,13 @@ void EnumTypeCopyConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
+    Assert(underlyingTypeCopyConstructor, "underlying copy constructor not set");
     underlyingTypeCopyConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -408,7 +411,7 @@ EnumTypeMoveConstructor::EnumTypeMoveConstructor(EnumTypeSymbol* enumType_) :
     AddMember(thatParam);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeMoveConstructor = basicTypeSymbol->MoveConstructor();
 }
@@ -416,7 +419,7 @@ EnumTypeMoveConstructor::EnumTypeMoveConstructor(EnumTypeSymbol* enumType_) :
 void EnumTypeMoveConstructor::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
+    Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
     const util::uuid& moveConstructorId = underlyingTypeMoveConstructor->FunctionId();
     writer.GetBinaryStreamWriter().Write(moveConstructorId);
 }
@@ -437,13 +440,13 @@ void EnumTypeMoveConstructor::EmplaceFunction(FunctionSymbol* functionSymbol, in
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
+    Assert(underlyingTypeMoveConstructor, "underlying move constructor not set");
     underlyingTypeMoveConstructor->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -475,7 +478,7 @@ EnumTypeCopyAssignment::EnumTypeCopyAssignment(EnumTypeSymbol* enumType_, TypeSy
     SetReturnType(voidType_);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeCopyAssignment = basicTypeSymbol->CopyAssignment();
 }
@@ -483,7 +486,7 @@ EnumTypeCopyAssignment::EnumTypeCopyAssignment(EnumTypeSymbol* enumType_, TypeSy
 void EnumTypeCopyAssignment::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
+    Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
     const util::uuid& copyAssignmentId = underlyingTypeCopyAssignment->FunctionId();
     writer.GetBinaryStreamWriter().Write(copyAssignmentId);
 }
@@ -504,13 +507,13 @@ void EnumTypeCopyAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
+    Assert(underlyingTypeCopyAssignment, "underlying copy assignment not set");
     underlyingTypeCopyAssignment->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -542,7 +545,7 @@ EnumTypeMoveAssignment::EnumTypeMoveAssignment(EnumTypeSymbol* enumType_, TypeSy
     SetReturnType(voidType_);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeMoveAssignment = basicTypeSymbol->MoveAssignment();
 }
@@ -550,7 +553,7 @@ EnumTypeMoveAssignment::EnumTypeMoveAssignment(EnumTypeSymbol* enumType_, TypeSy
 void EnumTypeMoveAssignment::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
+    Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
     const util::uuid& moveAssignmentId = underlyingTypeMoveAssignment->FunctionId();
     writer.GetBinaryStreamWriter().Write(moveAssignmentId);
 }
@@ -571,13 +574,13 @@ void EnumTypeMoveAssignment::EmplaceFunction(FunctionSymbol* functionSymbol, int
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
+    Assert(underlyingTypeMoveAssignment, "underlying move assignment not set");
     underlyingTypeMoveAssignment->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -606,7 +609,7 @@ EnumTypeReturn::EnumTypeReturn(EnumTypeSymbol* enumType_) :
     SetReturnType(enumType_);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeReturn = basicTypeSymbol->ReturnFun();
 }
@@ -614,7 +617,7 @@ EnumTypeReturn::EnumTypeReturn(EnumTypeSymbol* enumType_) :
 void EnumTypeReturn::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeReturn, "underlying return not set");
+    Assert(underlyingTypeReturn, "underlying return not set");
     const util::uuid& returnId = underlyingTypeReturn->FunctionId();
     writer.GetBinaryStreamWriter().Write(returnId);
 }
@@ -635,13 +638,13 @@ void EnumTypeReturn::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeReturn, "underlying return not set");
+    Assert(underlyingTypeReturn, "underlying return not set");
     underlyingTypeReturn->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 
@@ -673,7 +676,7 @@ EnumTypeEqualityOp::EnumTypeEqualityOp(EnumTypeSymbol* enumType_, TypeSymbol* bo
     SetReturnType(boolType_);
     ComputeName();
     TypeSymbol* underlyingType = enumType_->UnderlyingType();
-    //Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
+    Assert(underlyingType->IsBasicTypeSymbol(), "basic type expected");
     BasicTypeSymbol* basicTypeSymbol = static_cast<BasicTypeSymbol*>(underlyingType);
     underlyingTypeEquality = basicTypeSymbol->EqualityOp();
 }
@@ -681,7 +684,7 @@ EnumTypeEqualityOp::EnumTypeEqualityOp(EnumTypeSymbol* enumType_, TypeSymbol* bo
 void EnumTypeEqualityOp::Write(SymbolWriter& writer)
 {
     FunctionSymbol::Write(writer);
-    //Assert(underlyingTypeEquality, "underlying equality not set");
+    Assert(underlyingTypeEquality, "underlying equality not set");
     const util::uuid& equalityId = underlyingTypeEquality->FunctionId();
     writer.GetBinaryStreamWriter().Write(equalityId);
 }
@@ -702,13 +705,13 @@ void EnumTypeEqualityOp::EmplaceFunction(FunctionSymbol* functionSymbol, int ind
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
 void EnumTypeEqualityOp::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(underlyingTypeEquality, "underlying equality not set");
+    Assert(underlyingTypeEquality, "underlying equality not set");
     underlyingTypeEquality->GenerateCall(emitter, genObjects, flags, sourcePos, moduleId);
 }
 

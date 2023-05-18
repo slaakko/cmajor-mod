@@ -28,4 +28,6 @@ public:
     std::unique_ptr<Value> Evaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
 };
 
+void MetaInit(SymbolTable& symbolTable);
+
 } // namespace cmajor::symbols

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.basic.type.symbol;
 
 import cmajor.symbols.type.symbol;
@@ -271,7 +274,7 @@ public:
     VoidTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     std::string TypeString() const override { return "void"; }
     void* IrType(cmajor::ir::Emitter& emitter) override { return emitter.GetIrTypeForVoid(); }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to create default value for void type");*/ return nullptr; }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to create default value for void type"); return nullptr; }
     void* CreateDIType(cmajor::ir::Emitter& emitter) override;
     bool IsVoidType() const override { return true; }
     const char* ClassName() const override { return "VoidTypeSymbol"; }

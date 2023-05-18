@@ -77,8 +77,8 @@ LoadEditModuleResult EditModuleCache::LoadEditModule(const std::string& projectF
     cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
     if (backendStr == "cpp")
     {
-        backend = cmajor::ast::BackEnd::cppcm;
-        SetBackEnd(cmajor::symbols::BackEnd::cmcpp);
+        backend = cmajor::ast::BackEnd::cpp;
+        SetBackEnd(cmajor::symbols::BackEnd::cpp);
     }
     else if (backendStr == "llvm")
     {

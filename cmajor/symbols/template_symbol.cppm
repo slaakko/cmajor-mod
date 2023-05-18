@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.templates;
 
 import cmajor.symbols.type.symbol;
@@ -23,14 +26,12 @@ public:
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void* IrType(cmajor::ir::Emitter& emitter) override 
     { 
-        // TODO
-        //Assert(false, "tried to get ir type of template parameter"); 
+        Assert(false, "tried to get ir type of template parameter"); 
         return nullptr; 
     }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override 
     {
-        // TODO
-        //Assert(false, "tried to create defualt ir value of template parameter"); 
+        Assert(false, "tried to create defualt ir value of template parameter"); 
         return nullptr; 
     }
     TypeSymbol* Unify(TypeSymbol* type, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;

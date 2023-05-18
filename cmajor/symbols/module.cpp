@@ -431,8 +431,8 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
 #endif 
 }
 
-void Import(cmajor::ast::Target target, Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
-    std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
+void Import(cmajor::ast::Target target, Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, 
+    std::vector<Module*>& modules, std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
 #ifdef MODULE_READING_DEBUG
     LogMessage(rootModule->LogStreamId(), "Import: begin " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
@@ -453,20 +453,15 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             if (!rootModule->IsSystemModule())
             {
                 cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
-                if (GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+                if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                 {
-                    backend = cmajor::ast::BackEnd::cmsx;
+                    backend = cmajor::ast::BackEnd::systemx;
                 }
-                else if (GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+                else if (GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    backend = cmajor::ast::BackEnd::cppcm;
+                    backend = cmajor::ast::BackEnd::cpp;
                 }
-                cmajor::ast::SystemDirKind systemDirKind = cmajor::ast::SystemDirKind::regular;
-                if (GetGlobalFlag(GlobalFlags::repository))
-                {
-                    systemDirKind = cmajor::ast::SystemDirKind::repository;
-                }
-                mfp = cmajor::ast::CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain(), systemDirKind);
+                mfp = cmajor::ast::CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain());
                 searchedDirectories.append("\n").append(mfp.generic_string());
                 mfp /= mfn;
                 if (!std::filesystem::exists(mfp))
@@ -524,20 +519,15 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
             if (!rootModule->IsSystemModule())
             {
                 cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
-                if (GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+                if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                 {
-                    backend = cmajor::ast::BackEnd::cmsx;
+                    backend = cmajor::ast::BackEnd::systemx;
                 }
-                else if (GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+                else if (GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    backend = cmajor::ast::BackEnd::cppcm;
+                    backend = cmajor::ast::BackEnd::cpp;
                 }
-                cmajor::ast::SystemDirKind systemDirKind = cmajor::ast::SystemDirKind::regular;
-                if (GetGlobalFlag(GlobalFlags::repository))
-                {
-                    systemDirKind = cmajor::ast::SystemDirKind::repository;
-                }
-                mfp = CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain(), systemDirKind);
+                mfp = CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain());
                 mfp /= mfn;
                 if (!std::filesystem::exists(mfp))
                 {
@@ -607,34 +597,24 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
     if (!rootModule->IsSystemModule() && !GetGlobalFlag(GlobalFlags::profile))
     {
         cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
-        if (GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+        if (GetBackEnd() == cmajor::symbols::BackEnd::systemx)
         {
-            backend = cmajor::ast::BackEnd::cmsx;
+            backend = cmajor::ast::BackEnd::systemx;
         }
-        else if (GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+        else if (GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
-            backend = cmajor::ast::BackEnd::cppcm;
+            backend = cmajor::ast::BackEnd::cpp;
         }
         if (first)
         {
             first = false;
             if (target == cmajor::ast::Target::winguiapp || target == cmajor::ast::Target::winapp || target == cmajor::ast::Target::winlib)
             {
-                cmajor::ast::SystemDirKind systemDirKind = cmajor::ast::SystemDirKind::regular;
-                if (GetGlobalFlag(GlobalFlags::repository))
-                {
-                    systemDirKind = cmajor::ast::SystemDirKind::repository;
-                }
-                allReferences.push_back(CmajorSystemWindowsModuleFilePath(GetConfig(), cmajor::ast::GetToolChain(), systemDirKind));
+                allReferences.push_back(cmajor::ast::CmajorSystemWindowsModuleFilePath(GetConfig(), cmajor::ast::GetToolChain()));
             }
             else
             {
-                cmajor::ast::SystemDirKind systemDirKind = cmajor::ast::SystemDirKind::regular;
-                if (GetGlobalFlag(GlobalFlags::repository))
-                {
-                    systemDirKind = cmajor::ast::SystemDirKind::repository;
-                }
-                allReferences.push_back(CmajorSystemModuleFilePath(GetConfig(), backend, cmajor::ast::GetToolChain(), systemDirKind));
+                allReferences.push_back(cmajor::ast::CmajorSystemModuleFilePath(GetConfig(), backend, cmajor::ast::GetToolChain()));
             }
         }
     }
@@ -725,7 +705,7 @@ Module::Module(const std::string& filePath, bool readRoot) :
     if (!fileTable.IsEmpty())
     {
 #ifdef _WIN32
-        if (GetBackEnd() == BackEnd::cmsx)
+        if (GetBackEnd() == BackEnd::systemx)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
         }
@@ -733,7 +713,7 @@ Module::Module(const std::string& filePath, bool readRoot) :
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
         }
-        else if (GetBackEnd() == BackEnd::cmcpp)
+        else if (GetBackEnd() == BackEnd::cpp)
         {
 /* TODO
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
@@ -750,7 +730,7 @@ Module::Module(const std::string& filePath, bool readRoot) :
 */
         }
 #else
-        if (GetBackEnd() == BackEnd::cmcpp)
+        if (GetBackEnd() == BackEnd::cpp)
         {
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
@@ -817,14 +797,14 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
         backend = cmajor::ast::BackEnd::llvm;
         break;
     }
-    case BackEnd::cmsx:
+    case BackEnd::systemx:
     {
-        backend = cmajor::ast::BackEnd::cmsx;
+        backend = cmajor::ast::BackEnd::systemx;
         break;
     }
-    case BackEnd::cmcpp:
+    case BackEnd::cpp:
     {
-        backend = cmajor::ast::BackEnd::cppcm;
+        backend = cmajor::ast::BackEnd::cpp;
         break;
     }
     }
@@ -850,7 +830,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     std::filesystem::create_directories(mfd);
     SetDirectoryPath(util::GetFullPath(mfd.generic_string()));
     SetObjectFileDirectoryPath(util::GetFullPath(mfd.generic_string()));
-    if (GetBackEnd() == BackEnd::cmcpp)
+    if (GetBackEnd() == BackEnd::cpp)
     {
 /* TODO
         const Tool& compilerTool = GetCompilerTool(GetPlatform(), cmajor::ast::GetToolChain());
@@ -881,7 +861,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     if (!this->fileTable.IsEmpty())
     {
 #ifdef _WIN32
-        if (GetBackEnd() == BackEnd::cmsx)
+        if (GetBackEnd() == BackEnd::systemx)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
         }
@@ -889,7 +869,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
         }
-        else if (GetBackEnd() == BackEnd::cmcpp)
+        else if (GetBackEnd() == BackEnd::cpp)
         {
 /* TODO
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
@@ -906,7 +886,7 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
 */
         }
 #else
-        if (GetBackEnd() == BackEnd::cmcpp)
+        if (GetBackEnd() == BackEnd::cpp)
         {
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
@@ -1052,8 +1032,8 @@ void Module::Write(SymbolWriter& writer)
 {
     ModuleTag tag;
     tag.Write(writer);
-    writer.GetBinaryStreamWriter().Write(static_cast<uint8_t>(flags & ~(ModuleFlags::root | ModuleFlags::immutable | ModuleFlags::compiling | ModuleFlags::fileIndexFilePathMapBuilt |
-        ModuleFlags::readFromModuleFile)));
+    writer.GetBinaryStreamWriter().Write(static_cast<uint8_t>(flags & 
+        ~(ModuleFlags::root | ModuleFlags::immutable | ModuleFlags::compiling | ModuleFlags::fileIndexFilePathMapBuilt | ModuleFlags::readFromModuleFile)));
     writer.GetBinaryStreamWriter().Write(name);
     writer.GetBinaryStreamWriter().Write(id);
     writer.GetBinaryStreamWriter().Write(static_cast<int8_t>(backend));
@@ -1233,7 +1213,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     if (!fileTable.IsEmpty())
     {
 #ifdef _WIN32
-        if (GetBackEnd() == BackEnd::cmsx)
+        if (GetBackEnd() == BackEnd::systemx)
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
         }
@@ -1241,7 +1221,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         {
             libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".lib").generic_string());
         }
-        else if (GetBackEnd() == BackEnd::cmcpp)
+        else if (GetBackEnd() == BackEnd::cpp)
         {
 /*          TODO
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
@@ -1258,7 +1238,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
 */
         }
 #else
-        if (GetBackEnd() == BackEnd::cmcpp)
+        if (GetBackEnd() == BackEnd::cpp)
         {
             const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
@@ -1520,7 +1500,7 @@ void Module::CheckUpToDate()
             {
                 objectFilePath = libDirPath / sfp.filename().replace_extension(".obj");
             }
-            else if (GetBackEnd() == BackEnd::cmcpp)
+            else if (GetBackEnd() == BackEnd::cpp)
             {
 /* TODO
                 const Tool& compilerTool = GetCompilerTool(GetPlatform(), cmajor::ast::GetToolChain());
@@ -1529,7 +1509,7 @@ void Module::CheckUpToDate()
                 objectFilePath = libDirPath / outputDirPath / sfp.filename().replace_extension(compilerTool.outputFileExtension);
 */
             }
-            else if (GetBackEnd() == BackEnd::cmsx)
+            else if (GetBackEnd() == BackEnd::systemx)
             {
                 objectFilePath = libDirPath / sfp.filename().replace_extension(".o");
             }

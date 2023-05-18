@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.scope;
 
 import cmajor.symbols.container.symbol;
@@ -15,22 +18,6 @@ import cmajor.symbols.exception;
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.variable.symbol;
 import util;
-
-/*
-#include <cmajor/symbols/Scope.hpp>
-#include <cmajor/symbols/ContainerSymbol.hpp>
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/NamespaceSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <sngcm/ast/Identifier.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Util.hpp>
-#include <algorithm>
-*/
 
 namespace cmajor::symbols {
 
@@ -796,7 +783,7 @@ void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::a
 {
     try
     {
-        // Assert(containerScope, "container scope is null"); TODO
+        Assert(containerScope, "container scope is null"); 
         std::u32string importedNamespaceName = namespaceImportNode->Ns()->Str();
         Symbol* symbol = containerScope->Lookup(importedNamespaceName, ScopeLookup::this_and_parent);
         if (symbol)

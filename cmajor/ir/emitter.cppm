@@ -44,8 +44,9 @@ public:
 class Emitter
 {
 public:
-    Emitter(ValueStack* stack_);
+    Emitter();
     virtual ~Emitter();
+    void SetStack(ValueStack* stack_) { stack = stack_; }
     ValueStack& Stack() { return *stack; }
     virtual void SetEmittingDelegate(EmittingDelegate* emittingDelegate_) = 0;
     virtual void* GetIrTypeForBool() = 0;

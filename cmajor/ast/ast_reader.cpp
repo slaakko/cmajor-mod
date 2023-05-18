@@ -2,6 +2,7 @@
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module cmajor.ast.reader;
 
 import cmajor.ast.node;
@@ -11,6 +12,7 @@ import cmajor.ast.templates;
 import cmajor.ast.statement;
 import cmajor.ast.identifier;
 import cmajor.ast.namespaces;
+import cmajor.ast.parameter;
 
 namespace cmajor::ast {
 

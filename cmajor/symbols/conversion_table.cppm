@@ -26,31 +26,12 @@ inline bool operator==(const ConversionTableEntry& left, const ConversionTableEn
 {
     return TypesEqual(left.sourceType, right.sourceType) && TypesEqual(left.targetType, right.targetType);
 }
-/* TODO
+
 struct ConversionTableEntryHash
 {
     size_t operator()(const ConversionTableEntry& entry) const
     {
-        return boost::hash<util::uuid>()(entry.sourceType->TypeId()) ^ boost::hash<util::uuid>()(entry.targetType->TypeId());
-    }
-};
-*/
-struct ConversionTableEntryLess
-{
-    bool operator()(const ConversionTableEntry& left, const ConversionTableEntry& right) const
-    {
-        if (left.sourceType < right.sourceType)
-        {
-            return true;
-        }
-        else if (left.sourceType > right.sourceType)
-        {
-            return false;
-        }
-        else
-        {
-            return left.targetType < right.targetType;
-        }
+        return util::HashValue(entry.sourceType->TypeId()) ^ util::HashValue(entry.targetType->TypeId());
     }
 };
 
@@ -72,9 +53,7 @@ public:
 private:
     Owner owner;
     Module* module;
-    // TODO
-    //std::unordered_map<ConversionTableEntry, FunctionSymbol*, ConversionTableEntryHash> conversionMap;
-    std::map<ConversionTableEntry, FunctionSymbol*, ConversionTableEntryLess> conversionMap;
+    std::unordered_map<ConversionTableEntry, FunctionSymbol*, ConversionTableEntryHash> conversionMap;
     std::vector<std::unique_ptr<FunctionSymbol>> generatedConversions;
 };
 } // namespace cmajor::symbols

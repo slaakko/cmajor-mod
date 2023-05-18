@@ -1,8 +1,12 @@
-module cmajor.binder.xml.attribute.processor;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.binder.xml.attribute.processor;
 
 import std.core;
 import cmajor.ast;
@@ -13,10 +17,10 @@ import cmajor.binder.type.resolver;
 import cmajor.binder.statement.binder;
 import cmajor.binder.bound.function;
 import cmajor.binder.bound_class;
+import cmajor.binder.bound.expression;
 import util;
 
 namespace cmajor::binder {
-
 
 XmlAttributeProcessor::XmlAttributeProcessor() : AttributeProcessor(U"xml")
 {
@@ -444,7 +448,6 @@ void XmlAttributeProcessor::GenerateStaticClassNameImplementation(cmajor::ast::A
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StringLiteralNode* classNameLiteralNode = new cmajor::ast::StringLiteralNode(sourcePos, moduleId, util::ToUtf8(classTypeSymbol->FullName()));
         cmajor::ast::ReturnStatementNode* returnStatementNode(new cmajor::ast::ReturnStatementNode(sourcePos, moduleId, classNameLiteralNode));
@@ -494,7 +497,6 @@ void XmlAttributeProcessor::GenerateCreateImplementation(cmajor::ast::AttributeN
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::IdentifierNode* classNode = new cmajor::ast::IdentifierNode(sourcePos, moduleId, classTypeSymbol->FullName());
         cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(sourcePos, moduleId, classNode);
@@ -549,7 +551,6 @@ void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::Attribut
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::AssignmentStatementNode* assignClassIdStatement = new cmajor::ast::AssignmentStatementNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"classId"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"classId_"));
         compoundStatementNode.AddStatement(assignClassIdStatement);
@@ -615,7 +616,6 @@ void XmlAttributeProcessor::GenerateDestroyObjectImplementation(cmajor::ast::Att
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -690,7 +690,6 @@ void XmlAttributeProcessor::GenerateObjectIdImplementation(cmajor::ast::Attribut
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -774,7 +773,6 @@ void XmlAttributeProcessor::GenerateSetObjectIdImplementation(cmajor::ast::Attri
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -848,7 +846,6 @@ void XmlAttributeProcessor::GenerateContainerImplementation(cmajor::ast::Attribu
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -922,7 +919,6 @@ void XmlAttributeProcessor::GenerateSetContainerImplementation(cmajor::ast::Attr
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -987,7 +983,6 @@ void XmlAttributeProcessor::GenerateClassIdImplementation(cmajor::ast::Attribute
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"classId"));
@@ -1045,7 +1040,6 @@ void XmlAttributeProcessor::GenerateClassNameImplementation(cmajor::ast::Attribu
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         cmajor::ast::TypeNameNode* typeNameNode = new cmajor::ast::TypeNameNode(sourcePos, moduleId, new cmajor::ast::DerefNode(sourcePos, moduleId, new cmajor::ast::ThisNode(sourcePos, moduleId)));
@@ -1112,7 +1106,6 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesImplementation(cmajor:
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::ArrowNode* setClassIdArrowNode = new cmajor::ast::ArrowNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"element"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"SetAttribute"));
         cmajor::ast::InvokeNode* invokeSetClassIdAttribute = new cmajor::ast::InvokeNode(sourcePos, moduleId, setClassIdArrowNode);
@@ -1199,7 +1192,6 @@ void XmlAttributeProcessor::GenerateToXmlPlainImplementation(cmajor::ast::Attrib
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::ConstructionStatementNode* constructionStatementNode = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId,
             new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"System.Xml.Serialization.XmlSerializationContext"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ctx"));
@@ -1273,7 +1265,6 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         if (HasXmlBaseClass(classTypeSymbol))
         {
@@ -1300,8 +1291,6 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
             constructionStatementNode->AddArgument(newElementNode);
             constructionStatementNode->SetAssignment();
             compoundStatementNode.AddStatement(constructionStatementNode);
-
-            //if (!ctx.GetFlag(sngxml.xmlser.XmlSerializationFlags.suppressMetadata)
 
             cmajor::ast::DotNode* dotNode = new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ctx"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"GetFlag"));
             cmajor::ast::InvokeNode* invokeNode = new cmajor::ast::InvokeNode(sourcePos, moduleId, dotNode);
@@ -1421,7 +1410,6 @@ void XmlAttributeProcessor::GenerateFromXmlImplementation(cmajor::ast::Attribute
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         if (HasXmlBaseClass(classTypeSymbol))
         {
@@ -1548,7 +1536,6 @@ void XmlAttributeProcessor::GenerateGetPtrsImplementation(cmajor::ast::Attribute
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         if (HasXmlBaseClass(classTypeSymbol))
         {
@@ -1694,7 +1681,6 @@ void XmlAttributeProcessor::GenerateIsOwnedImplementation(cmajor::ast::Attribute
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"isOwned"));
@@ -1754,7 +1740,6 @@ void XmlAttributeProcessor::GenerateSetOwnedImplementation(cmajor::ast::Attribut
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))
@@ -1825,7 +1810,6 @@ void XmlAttributeProcessor::GenerateResetOwnedImplementation(cmajor::ast::Attrib
         util::uuid moduleId = attribute->ModuleId();
         cmajor::ast::MemberFunctionNode memberFunctionNode(sourcePos, moduleId);
         cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        //TODO: compoundStatementNode.SetEndBraceSourcePos(sourcePos);
 
         cmajor::ast::StatementNode* statementNode = nullptr;
         if (HasXmlBaseClass(classTypeSymbol))

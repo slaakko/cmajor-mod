@@ -13,7 +13,7 @@ export namespace cmajor::ast {
 
 enum class BackEnd : int8_t
 {
-    llvm = 0, cmsx = 1, cppcm = 2
+    llvm = 0, systemx = 1, cpp = 2
 };
 
 enum class Config : int8_t
@@ -29,11 +29,6 @@ public:
 
 void SetModuleVersionTagVerifier(ModuleVersionTagVerifier* verifier);
 
-enum class SystemDirKind : int
-{
-    regular = 0, repository = 1
-};
-
 std::string GetToolChain();
 
 class Project;
@@ -41,11 +36,11 @@ class Solution;
 class CompileUnitNode;
 
 std::string CmajorRootDir();
-std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const std::string& toolChain, SystemDirKind systemDirKind);
+std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const std::string& toolChain);
 std::string CmajorResourceDir();
 std::string CmajorLogFileDir();
-std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, const std::string& toolChain, SystemDirKind systemDirKind);
-std::string CmajorSystemWindowsModuleFilePath(const std::string& config, const std::string& toolChanin, SystemDirKind systemDirKind);
+std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, const std::string& toolChain);
+std::string CmajorSystemWindowsModuleFilePath(const std::string& config, const std::string& toolChanin);
 std::string MakeCmajorRootRelativeFilePath(const std::string& filePath);
 std::string ExpandCmajorRootRelativeFilePath(const std::string& filePath);
 std::vector<Project*> GetReferencedProjects(Project* project, Solution* solution);
@@ -144,8 +139,7 @@ private:
 class Project
 {
 public:
-    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, const std::string& toolChain_,
-        SystemDirKind systemDirKind);
+    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, const std::string& toolChain_);
     Project(const Project&) = delete;
     Project& operator=(const Project&) = delete;
     const std::u32string& Name() const { return name; }

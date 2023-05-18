@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.symbol;
 
 import std.core;
@@ -274,7 +277,7 @@ class SymbolFactory
 public:
     static void Init();
     static void Done();
-    static SymbolFactory& Instance() { /*Assert(instance, "symbol factory not initialized");*/ return *instance; }
+    static SymbolFactory& Instance() { Assert(instance, "symbol factory not initialized");  return *instance; }
     Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name);
     void Register(SymbolType symbolType, SymbolCreator* creator);
 private:

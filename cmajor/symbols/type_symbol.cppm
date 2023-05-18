@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.type.symbol;
 
 import cmajor.symbols.container.symbol;
@@ -66,17 +69,12 @@ public:
     virtual bool ContainsTemplateParameter() const { return false; }
     virtual bool CompletelyBound() const { return IsBound(); }
     void SetTypeId(const util::uuid& typeId_) { typeId = typeId_; }
-    // TODO
-    const util::uuid& TypeId() const { /*Assert(!typeId.is_nil(), "type id not initialized"); TODO*/  return typeId; }
+    const util::uuid& TypeId() const { Assert(!typeId.is_nil(), "type id not initialized"); return typeId; }
     bool TypeIdNotSet() const { return typeId.is_nil(); }
     virtual const TypeDerivationRec& DerivationRec() const;
     virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual TypeSymbol* Unify(TypeSymbol* that, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
-    //virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
     virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
-
-    // TODO
-    //virtual bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested);
     virtual bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested);
     virtual ValueType GetValueType() const;
     virtual Value* MakeValue() const { return nullptr; }

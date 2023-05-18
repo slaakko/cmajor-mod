@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.bound.constraint;
 
 import cmajor.binder.bound.node.visitor;
@@ -52,7 +55,7 @@ bool BoundAtomicConstraint::Subsume(BoundConstraint* that) const
         }
         else // assert(false)
         {
-            // Assert(false, "unknown binary constraint type"); TODO
+            Assert(false, "unknown binary constraint type"); 
             return false;
         }
     }
@@ -157,7 +160,7 @@ bool BoundDisjunctiveConstraint::Subsume(BoundConstraint* that) const
         }
         else // assert(false)
         {
-            // Assert(false, "unknown binary constraint type"); TODO
+            Assert(false, "unknown binary constraint type"); 
             return false;
         }
     }
@@ -213,7 +216,7 @@ bool BoundConjunctiveConstraint::Subsume(BoundConstraint* that) const
         }
         else // assert(false)
         {
-            // Assert(false, "unknown binary constraint type"); TODO
+            Assert(false, "unknown binary constraint type"); 
             return false;
         }
     }

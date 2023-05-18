@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.bound.compile.unit;
 
 import cmajor.binder.bound.node.visitor;
@@ -280,11 +283,11 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         {
             objfp = (objectFileDirectory / fileName).replace_extension(".obj");
         }
-        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
         {
             objfp = (objectFileDirectory / fileName).replace_extension(".o");
         }
-        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
 /*          TODO
             std::string platform = GetPlatform();
@@ -903,7 +906,7 @@ void BoundCompileUnit::SetSystemRuntimeUnwindInfoSymbol(cmajor::symbols::TypeSym
 
 void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol()
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitUnwindInfo_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(soul::ast::SourcePos(), util::nil_uuid(), groupName);
@@ -921,7 +924,7 @@ void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol()
 void BoundCompileUnit::GenerateCompileUnitInitialization()
 {
     if (module.IsCore()) return;
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitCompileUnit_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(soul::ast::SourcePos(), util::nil_uuid(), groupName);
@@ -982,7 +985,7 @@ void BoundCompileUnit::GenerateCompileUnitInitialization()
 
 void BoundCompileUnit::GenerateGlobalInitializationFunction()
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     std::u32string groupName = U"GlobalInitCompileUnits";
     globalInitFunctionSymbol = new cmajor::symbols::FunctionSymbol(soul::ast::SourcePos(), util::nil_uuid(), groupName);
     globalInitFunctionSymbol->SetParent(&symbolTable.GlobalNs());
@@ -997,7 +1000,7 @@ void BoundCompileUnit::GenerateGlobalInitializationFunction()
     const std::set<std::string>& compileUnitIds = symbolTable.GetModule()->AllCompileUnitIds();
     for (const std::string& compileUnitId : compileUnitIds)
     {
-        // Assert(!compileUnitId.empty(), "compiler unit ID is empty"); TODO
+        Assert(!compileUnitId.empty(), "compiler unit ID is empty"); 
         std::u32string groupName = U"InitCompileUnit_" + util::ToUtf32(compileUnitId);
         cmajor::symbols::FunctionSymbol* initFunctionSymbol = new cmajor::symbols::FunctionSymbol(soul::ast::SourcePos(), util::nil_uuid(), groupName);
         initFunctionSymbol->SetParent(&symbolTable.GlobalNs());

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.basic.type.symbol;
 
 import cmajor.ast.reader;
@@ -135,7 +138,7 @@ void BasicTypeSymbol::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     case 6: equalityOp = functionSymbol; break;
     default:
     {
-        //TODO:Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
     }
 }

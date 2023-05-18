@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.binder.bound.compile.unit;
 
 import std.core;
@@ -44,7 +47,7 @@ public:
     cmajor::symbols::FileScope* ReleaseLastFileScope();
     cmajor::symbols::FileScope* FirstFileScope() const 
     { 
-        // Assert(!fileScopes.empty(), "file scopes empty");  TODO 
+        Assert(!fileScopes.empty(), "file scopes empty");  
         return fileScopes.front().get(); 
     }
     const std::vector<std::unique_ptr<cmajor::symbols::FileScope>>& FileScopes() const { return fileScopes; }

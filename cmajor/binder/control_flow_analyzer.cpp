@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.control.flow.analyzer;
 
 import cmajor.binder.bound_namespace;
@@ -11,6 +14,7 @@ import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
 import cmajor.binder.bound.node.visitor;
 import cmajor.binder.bound.compile.unit;
+import cmajor.binder.bound.expression;
 import cmajor.symbols;
 import util;
 
@@ -89,11 +93,11 @@ void ControlFlowAnalyzer::ResolveGoto(BoundGotoStatement& boundGotoStatement)
     {
         BoundStatement* targetStatement = it->second;
         BoundCompoundStatement* targetBlock = targetStatement->Block();
-        // Assert(targetBlock, "target block not found"); TODO
+        Assert(targetBlock, "target block not found"); 
         boundGotoStatement.SetTargetStatement(targetStatement);
         boundGotoStatement.SetTargetBlock(targetBlock);
         BoundCompoundStatement* gotoBlock = boundGotoStatement.Block();
-        // Assert(gotoBlock, "goto block not found"); TODO
+        Assert(gotoBlock, "goto block not found"); 
         while (gotoBlock && gotoBlock != targetBlock)
         {
             if (gotoBlock->Parent())
@@ -405,10 +409,10 @@ void ControlFlowAnalyzer::Visit(BoundCatchStatement& boundCatchStatement)
     boundCatchStatement.CatchBlock()->Accept(*this);
 }
 
-void AnalyzeControlFlow(BoundCompileUnit& boundCompileUUnit)
+void AnalyzeControlFlow(BoundCompileUnit& boundCompileUnit)
 {
     ControlFlowAnalyzer controlFlowAnalyzer;
-    boundCompileUUnit.Accept(controlFlowAnalyzer);
+    boundCompileUnit.Accept(controlFlowAnalyzer);
 }
 
 } // namespace cmajor::binder

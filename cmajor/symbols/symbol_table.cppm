@@ -55,47 +55,9 @@ struct ClassTemplateSpecializationKey
     std::vector<TypeSymbol*> templateArgumentTypes;
 };
 
-/*
-struct ConversionTableEntryLess
-{
-    bool operator()(const ConversionTableEntry& left, const ConversionTableEntry& right) const
-    {
-        if (left.sourceType < right.sourceType)
-        {
-            return true;
-        }
-        else if (left.sourceType > right.sourceType)
-        {
-            return false;
-        }
-        else
-        {
-            return left.targetType < right.targetType;
-        }
-    }
-};
-*/
-/*
 struct ClassTemplateSpecializationKeyHash
 {
-    size_t operator()(const ClassTemplateSpecializationKey& key) const
-    {
-        size_t x = boost::hash<util::uuid>()(key.classTemplate->TypeId());
-        int n = key.templateArgumentTypes.size();
-        for (int i = 0; i < n; ++i)
-        {
-            x = x ^ boost::hash<util::uuid>()(key.templateArgumentTypes[i]->TypeId());
-        }
-        return x;
-    }
-};
-*/
-struct ClassTemplateSpecializationKeyLess
-{
-    bool operator()(const ClassTemplateSpecializationKey& left, const ClassTemplateSpecializationKey& right) const
-    { // TODO
-        return true;
-    }
+    size_t operator()(const ClassTemplateSpecializationKey& key) const;
 };
 
 bool operator==(const ClassTemplateSpecializationKey& left, const ClassTemplateSpecializationKey& right);
@@ -111,34 +73,9 @@ struct ArrayKey
 bool operator==(const ArrayKey& left, const ArrayKey& right);
 bool operator!=(const ArrayKey& left, const ArrayKey& right);
 
-/*
 struct ArrayKeyHash
 {
-    size_t operator()(const ArrayKey& key) const
-    {
-        size_t x = boost::hash<util::uuid>()(key.elementType->TypeId());
-        x = x ^ std::hash<int64_t>()(key.size);
-        return x;
-    }
-};
-*/
-struct ArrayKeyLess
-{
-    bool operator()(const ArrayKey& left, const ArrayKey& right) const
-    {
-        if (left.elementType < right.elementType)
-        {
-            return true;
-        }
-        else if (left.elementType > right.elementType)
-        {
-            return false;
-        }
-        else
-        { 
-            return false;
-        }
-    }
+    size_t operator()(const ArrayKey& key) const;
 };
 
 void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode, Symbol* symbol);
@@ -305,31 +242,20 @@ private:
     int parameterIndex;
     int declarationBlockIndex;
     int axiomNumber;
-
-// TOOD
-    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionMap;
-    //std::map<util::uuid, FunctionSymbol*> functionMap;
-
-    //std::unordered_map<NamespaceSymbol*, NamespaceSymbol*> nsMap;
+    std::unordered_map<util::uuid, FunctionSymbol*, util::UuidHash> functionMap;
     std::map<NamespaceSymbol*, NamespaceSymbol*> nsMap;
     std::unordered_map<cmajor::ast::Node*, Symbol*> nodeSymbolMap;
     std::unordered_map<Symbol*, cmajor::ast::Node*> symbolNodeMap;
-    //std::unordered_map<util::uuid, Symbol*, boost::hash<util::uuid>> typeIdMap;
-    std::map<util::uuid, Symbol*> typeIdMap;
-    //std::unordered_map<util::uuid, FunctionSymbol*, boost::hash<util::uuid>> functionIdMap;
-    std::map<util::uuid, FunctionSymbol*> functionIdMap;
+    std::unordered_map<util::uuid, Symbol*, util::UuidHash> typeIdMap;
+    std::unordered_map<util::uuid, FunctionSymbol*, util::UuidHash> functionIdMap;
     std::unordered_map<std::u32string, TypeSymbol*> typeNameMap;
-    //std::unordered_map<util::uuid, std::u32string, boost::hash<util::uuid>> profiledFunctionNameMap;
-    std::map<util::uuid, std::u32string> profiledFunctionNameMap;
-    //std::unordered_map<util::uuid, std::vector<DerivedTypeSymbol*>, boost::hash<util::uuid>> derivedTypeMap;
-    std::map<util::uuid, std::vector<DerivedTypeSymbol*>> derivedTypeMap;
+    std::unordered_map<util::uuid, std::u32string, util::UuidHash> profiledFunctionNameMap;
+    std::unordered_map<util::uuid, std::vector<DerivedTypeSymbol*>, util::UuidHash> derivedTypeMap;
     std::vector<std::unique_ptr<DerivedTypeSymbol>> derivedTypes;
-    //std::unordered_map<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationKeyHash> classTemplateSpecializationMap;
-    std::map<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationKeyLess> classTemplateSpecializationMap;
+    std::unordered_map<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationKeyHash> classTemplateSpecializationMap;
     std::vector<std::unique_ptr<ClassTemplateSpecializationSymbol>> classTemplateSpecializations;
     std::unordered_map<ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationSymbol*> specializationCopyMap;
-    //std::unordered_map<ArrayKey, ArrayTypeSymbol*, ArrayKeyHash> arrayTypeMap;
-    std::map<ArrayKey, ArrayTypeSymbol*, ArrayKeyLess> arrayTypeMap;
+    std::unordered_map<ArrayKey, ArrayTypeSymbol*, ArrayKeyHash> arrayTypeMap;
     std::vector<std::unique_ptr<ArrayTypeSymbol>> arrayTypes;
     std::unordered_map<cmajor::ast::IdentifierNode*, FunctionSymbol*> invokeMap;
     std::unordered_map<cmajor::ast::Node*, Symbol*> mappedNodeSymbolMap;

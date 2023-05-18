@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.statement.binder;
 
 import cmajor.binder.bound_namespace;
@@ -272,7 +275,7 @@ void StatementBinder::Visit(cmajor::ast::NamespaceNode& namespaceNode)
 void StatementBinder::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
 {
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&enumTypeNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enum type symbols expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enum type symbols expected");
     cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = static_cast<cmajor::symbols::EnumTypeSymbol*>(symbol);
     std::unique_ptr<BoundEnumTypeDefinition> boundEnum(new BoundEnumTypeDefinition(enumTypeSymbol));
     boundCompileUnit.AddBoundNode(std::move(boundEnum));
@@ -282,7 +285,8 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&classNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+        symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
     cmajor::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol);
     if (classTypeSymbol->IsClassTemplate())
     {
@@ -316,7 +320,7 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
 void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
 {
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&memberVariableNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberVariableSymbol, "member variable symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberVariableSymbol, "member variable symbol expected");
     cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = static_cast<cmajor::symbols::MemberVariableSymbol*>(symbol);
     cmajor::symbols::TypeSymbol* typeSymbol = memberVariableSymbol->GetType();
     if (typeSymbol->IsClassTypeSymbol())
@@ -340,7 +344,7 @@ void StatementBinder::Visit(cmajor::ast::FunctionNode& functionNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&functionNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
     cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -360,7 +364,7 @@ void StatementBinder::Visit(cmajor::ast::FunctionNode& functionNode)
         compoundLevel = 0;
         functionNode.Body()->Accept(*this);
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); 
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         CheckFunctionReturnPaths(functionSymbol, functionNode, containerScope, boundCompileUnit);
@@ -390,7 +394,7 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&staticConstructorNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::staticConstructorSymbol, "static constructor symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::staticConstructorSymbol, "static constructor symbol expected");
     cmajor::symbols::StaticConstructorSymbol* staticConstructorSymbol = static_cast<cmajor::symbols::StaticConstructorSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -411,7 +415,7 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
         staticConstructorNode.Body()->Accept(*this);
         currentStaticConstructorNode = prevStaticConstructorNode;
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         CheckFunctionReturnPaths(staticConstructorSymbol, staticConstructorNode, containerScope, boundCompileUnit);
@@ -425,7 +429,7 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     soul::ast::SourcePos sourcePos;
     util::uuid moduleId = util::nil_uuid();
     if (boundFunction->GetFunctionSymbol()->DontThrow()) return;
@@ -528,7 +532,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&constructorNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol, "constructor symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol, "constructor symbol expected"); 
     cmajor::symbols::ConstructorSymbol* constructorSymbol = static_cast<cmajor::symbols::ConstructorSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -549,7 +553,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
         constructorNode.Body()->Accept(*this);
         currentConstructorNode = prevConstructorNode;
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
     }
@@ -578,7 +582,7 @@ void StatementBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&destructorNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol, "destructor symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol, "destructor symbol expected");
     cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -599,7 +603,7 @@ void StatementBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
         destructorNode.Body()->Accept(*this);
         currentDestructorNode = prevDestructorNode;
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
     }
@@ -628,7 +632,7 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&memberFunctionNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected");
     cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -649,13 +653,13 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         memberFunctionNode.Body()->Accept(*this);
         currentMemberFunctionNode = prevMemberFunctionNode;
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
     }
     else if (memberFunctionSymbol->IsDefault())
     {
-        // Assert(memberFunctionSymbol->GroupName() == U"operator=", "operator= expected"); TODO
+        Assert(memberFunctionSymbol->GroupName() == U"operator=", "operator= expected");
         cmajor::ast::MemberFunctionNode* prevMemberFunctionNode = currentMemberFunctionNode;
         currentMemberFunctionNode = &memberFunctionNode;
         std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId()));
@@ -679,7 +683,7 @@ void StatementBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunct
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&conversionFunctionNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol, "conversion function symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol, "conversion function symbol expected");
     cmajor::symbols::ConversionFunctionSymbol* conversionFunctionSymbol = static_cast<cmajor::symbols::ConversionFunctionSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
     {
@@ -695,7 +699,7 @@ void StatementBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunct
         compoundLevel = 0;
         conversionFunctionNode.Body()->Accept(*this);
         BoundStatement* boundStatement = statement.release();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         CheckFunctionReturnPaths(conversionFunctionSymbol, conversionFunctionNode, containerScope, boundCompileUnit);
@@ -710,7 +714,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&compoundStatementNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
     cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
     containerScope = declarationBlock->GetContainerScope();
     std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(compoundStatementNode.GetSourcePos(), compoundStatementNode.ModuleId()));
@@ -883,7 +887,7 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     containerScope, currentFunction, returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
                 if (conversionFound)
                 {
-                    // Assert(!functionMatch.argumentMatches.empty(), "argument match expected"); TODO
+                    Assert(!functionMatch.argumentMatches.empty(), "argument match expected");
                     ArgumentMatch argumentMatch = functionMatch.argumentMatches[0];
                     if (argumentMatch.preReferenceConversionFlags != cmajor::ir::OperationFlags::none)
                     {
@@ -1096,7 +1100,7 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&forStatementNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
     cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
     containerScope = declarationBlock->GetContainerScope();
     std::unique_ptr<BoundExpression> condition;
@@ -1212,7 +1216,7 @@ void StatementBinder::Visit(cmajor::ast::GotoStatementNode& gotoStatementNode)
 void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
 {
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&constructionStatementNode);
-    // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected");
     cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId(), localVariableSymbol);
@@ -1280,7 +1284,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         exceptionCapture = true;
     }
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (cmajor::symbols::GetConfig() == "debug")
         {
@@ -1298,8 +1302,8 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     cmajor::symbols::TypeSymbol* baseType = ptr->GetType()->BaseType();
     if (baseType->HasNontrivialDestructor())
     {
-        //Assert(baseType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-        // baseType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+        Assert(baseType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+             baseType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(baseType);
         std::vector<FunctionScopeLookup> lookups;
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -1330,11 +1334,11 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     arguments.push_back(std::move(memFreePtr));
     const char32_t* memFreeFunctionName = U"";
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         memFreeFunctionName = U"RtMemFree";
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         memFreeFunctionName = U"MemFree";
     }
@@ -1362,8 +1366,8 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
     cmajor::symbols::TypeSymbol* pointeeType = ptr->GetType()->RemovePointer(destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
     if (pointeeType->HasNontrivialDestructor())
     {
-        // Assert(pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-        // pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+        Assert(pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+            pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected");
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(pointeeType);
         std::vector<FunctionScopeLookup> lookups;
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -1582,13 +1586,13 @@ void StatementBinder::Visit(cmajor::ast::SwitchStatementNode& switchStatementNod
         {
             cmajor::ast::CaseStatementNode* caseS = switchStatementNode.Cases()[i];
             caseS->Accept(*this);
-            // Assert(statement->GetBoundNodeType() == BoundNodeType::boundCaseStatement, "case statement expected"); TODO
+            Assert(statement->GetBoundNodeType() == BoundNodeType::boundCaseStatement, "case statement expected");
             boundSwitchStatement->AddCaseStatement(std::unique_ptr<BoundCaseStatement>(static_cast<BoundCaseStatement*>(statement.release())));
         }
         if (switchStatementNode.Default())
         {
             switchStatementNode.Default()->Accept(*this);
-            // Assert(statement->GetBoundNodeType() == BoundNodeType::boundDefaultStatement, "default statement expected"); TODO
+            Assert(statement->GetBoundNodeType() == BoundNodeType::boundDefaultStatement, "default statement expected");
             boundSwitchStatement->SetDefaultStatement(std::unique_ptr<BoundDefaultStatement>(static_cast<BoundDefaultStatement*>(statement.release())));
         }
         for (const std::pair<BoundGotoCaseStatement*, cmajor::symbols::IntegralValue>& p : gotoCaseStatements)
@@ -1646,7 +1650,7 @@ void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
         cmajor::ast::Node* caseExprNode = caseStatementNode.CaseExprs()[i];
         std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction, caseExprNode->GetSourcePos(), caseExprNode->ModuleId());
         cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
-        // Assert(currentCaseValueMap, "current case value map not set"); TODO
+        Assert(currentCaseValueMap, "current case value map not set"); 
         auto it = currentCaseValueMap->find(integralCaseValue);
         if (it != currentCaseValueMap->cend())
         {
@@ -1695,7 +1699,7 @@ void StatementBinder::Visit(cmajor::ast::GotoCaseStatementNode& gotoCaseStatemen
     std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction, gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId());
     cmajor::symbols::Value* caseValuePtr = caseValue.get();
     BoundGotoCaseStatement* boundGotoCaseStatement = new BoundGotoCaseStatement(gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId(), std::move(caseValue));
-    // Assert(currentGotoCaseStatements, "current goto case statement vector not set"); TODO
+    Assert(currentGotoCaseStatements, "current goto case statement vector not set");
     currentGotoCaseStatements->push_back(std::make_pair(boundGotoCaseStatement, cmajor::symbols::IntegralValue(caseValuePtr)));
     AddStatement(boundGotoCaseStatement);
 }
@@ -1712,7 +1716,7 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
         throw cmajor::symbols::Exception("goto default statement must be enclosed in a case statement", gotoDefaultStatementNode.GetSourcePos(), gotoDefaultStatementNode.ModuleId());
     }
     BoundGotoDefaultStatement* boundGotoDefaultStatement = new BoundGotoDefaultStatement(gotoDefaultStatementNode.GetSourcePos(), gotoDefaultStatementNode.ModuleId());
-    // Assert(currentGotoDefaultStatements, "current goto default statement vector not set"); TODO
+    Assert(currentGotoDefaultStatements, "current goto default statement vector not set"); 
     currentGotoDefaultStatements->push_back(boundGotoDefaultStatement);
     AddStatement(boundGotoDefaultStatement);
 }
@@ -1737,14 +1741,14 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
             cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType(sourcePos, moduleId));
             cmajor::ast::IdentifierNode systemExceptionNode(sourcePos, moduleId, U"System.cmajor::symbols::Exception");
             cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope);
-            // Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type"); TODO
+            Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type");
             cmajor::symbols::ClassTypeSymbol* systemExceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(systemExceptionType);
             if (exceptionClassType == systemExceptionClassType || exceptionClassType->HasBaseClass(systemExceptionClassType))
             {
                 cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, exceptionClassType->FullName()));
                 cmajor::ast::CloneContext cloneContext;
                 newNode->AddArgument(throwStatementNode.Expression()->Clone(cloneContext));
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::ast::InvokeNode invokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtThrowException"));
                     invokeNode.AddArgument(newNode);
@@ -1752,7 +1756,7 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
                     AddStatement(new BoundThrowStatement(sourcePos, moduleId, std::move(throwCallExpr)));
                 }
-                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                 {
                     cmajor::ast::InvokeNode invokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"System"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Throw")));
                     invokeNode.AddArgument(newNode);
@@ -1797,7 +1801,7 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
         cmajor::ast::CatchNode* catchNode = tryStatementNode.Catches()[i];
         catchNode->Accept(*this);
         BoundStatement* s = statement.release();
-        // Assert(s->GetBoundNodeType() == BoundNodeType::boundCatchStatement, "catch statement expected"); TODO
+        Assert(s->GetBoundNodeType() == BoundNodeType::boundCatchStatement, "catch statement expected");
         BoundCatchStatement* catchStatement = static_cast<BoundCatchStatement*>(s);
         boundTryStatement->AddCatch(std::unique_ptr<BoundCatchStatement>(catchStatement));
     }
@@ -1823,21 +1827,21 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
     if (catchNode.Id())
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(catchNode.Id());
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); 
         catchVar = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
         boundCatchStatement->SetCatchVar(catchVar);
         currentFunction->GetFunctionSymbol()->AddLocalVariable(catchVar);
     }
     cmajor::ast::CompoundStatementNode handlerBlock(catchNode.CatchBlock()->GetSourcePos(), moduleId);
     handlerBlock.SetParent(catchNode.Parent());
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"void")),
             new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionAddr"));
         getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtGetException")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"void")),
             new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionAddr"));
@@ -1945,11 +1949,11 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
                 assertStatementNode.GetSourcePos().line)), symbolTable.GetTypeByName(U"int"))));
             std::unique_ptr<BoundExpression> assertExpression = BindExpression(assertStatementNode.AssertExpr(), boundCompileUnit, currentFunction, containerScope, this);
             const char32_t* failAssertionFunctionName = U"";
-            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
             {
                 failAssertionFunctionName = U"RtFailAssertion";
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
             {
                 failAssertionFunctionName = U"System.FailAssertion";
             }

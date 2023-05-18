@@ -20,7 +20,8 @@ class TrapFunction : public FunctionSymbol
 public:
     TrapFunction(SymbolTable& symbolTable);
     TrapFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
 };
 
 void InitTrap(SymbolTable& symbolTable);

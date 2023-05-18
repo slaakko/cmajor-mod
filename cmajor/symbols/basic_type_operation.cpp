@@ -1,8 +1,12 @@
-module cmajor.symbols.basic.type.operation;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.symbols.basic.type.operation;
 
 import soul.ast.source.pos;
 import util;
@@ -215,16 +219,14 @@ BasicTypeCopyCtor::BasicTypeCopyCtor(const soul::ast::SourcePos& sourcePos_, con
 
 void BasicTypeCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "copy constructor needs two objects");
+    Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
 }
 
 std::unique_ptr<Value> BasicTypeCopyCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const
 {
-    // TODO
-    //Assert(argumentValues.size() == 1, "one source value expected");
+    Assert(argumentValues.size() == 1, "one source value expected");
     return std::unique_ptr<Value>(argumentValues[0]->Clone());
 }
 
@@ -253,8 +255,7 @@ BasicTypeMoveCtor::BasicTypeMoveCtor(const soul::ast::SourcePos& sourcePos_, con
 
 void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "move constructor needs two objects");
+    Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -263,8 +264,7 @@ void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
 
 std::unique_ptr<Value> BasicTypeMoveCtor::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const
 {
-    // TODO
-    //Assert(argumentValues.size() == 1, "one source value expected");
+    Assert(argumentValues.size() == 1, "one source value expected");
     return std::unique_ptr<Value>(argumentValues[0]->Clone());
 }
 
@@ -294,8 +294,7 @@ BasicTypeCopyAssignment::BasicTypeCopyAssignment(const soul::ast::SourcePos& sou
 
 void BasicTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "copy assignment needs two objects");
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -326,8 +325,7 @@ BasicTypeMoveAssignment::BasicTypeMoveAssignment(const soul::ast::SourcePos& sou
 
 void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "move assignment needs two objects");
+    Assert(genObjects.size() == 2, "move assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -357,8 +355,7 @@ BasicTypeReturn::BasicTypeReturn(const soul::ast::SourcePos& sourcePos_, const u
 
 void BasicTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "return needs one object");
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 

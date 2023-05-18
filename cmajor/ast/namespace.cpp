@@ -10,6 +10,10 @@ import cmajor.ast.writer;
 import cmajor.ast.identifier;
 import cmajor.ast.visitor;
 import cmajor.ast.function;
+import cmajor.ast.statement;
+import cmajor.ast.concepts;
+import cmajor.ast.templates;
+import cmajor.ast.parameter;
 import util;
 
 namespace cmajor::ast {

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.interfaces;
 
 import cmajor.symbols.symbol.collector;
@@ -194,7 +197,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -207,7 +210,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block"); TODO
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -217,7 +220,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             {
                 emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -248,7 +251,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block"); TODO
+                Assert(unwindBlock, "no unwind block"); 
             }
             if (currentPad == nullptr)
             {
@@ -309,7 +312,7 @@ void InterfaceTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int in
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); 
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -375,7 +378,7 @@ void InterfaceTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); 
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -447,7 +450,7 @@ void InterfaceTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected");
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -521,7 +524,7 @@ void InterfaceTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected");
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -595,7 +598,7 @@ void InterfaceTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected");
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -667,12 +670,12 @@ void ClassToInterfaceConversion::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol, "class type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol, "class type expected"); 
         sourceClassType = static_cast<ClassTypeSymbol*>(typeSymbol);
     }
     else if (index == 2)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); 
         targetInterfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else
@@ -754,7 +757,7 @@ void GetObjectPtrFromInterface::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); TODO
+        Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type expected"); 
         interfaceType = static_cast<InterfaceTypeSymbol*>(typeSymbol);
     }
     else

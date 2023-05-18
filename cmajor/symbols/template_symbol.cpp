@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.templates;
 
 import cmajor.symbols.symbol.writer;
@@ -50,7 +53,7 @@ void TemplateParameterSymbol::Read(SymbolReader& reader)
 
 void TemplateParameterSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    // Assert(index == 0, "invalid emplace type index"); TODO
+    Assert(index == 0, "invalid emplace type index"); 
     defaultType = typeSymbol;
 }
 

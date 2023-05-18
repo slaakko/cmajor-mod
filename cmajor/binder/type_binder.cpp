@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.type.binder;
 
 import cmajor.binder.bound.compile.unit;
@@ -264,7 +267,7 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
     {
         cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&functionNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
         cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
         if (functionSymbol->IsBound()) return;
         functionSymbol->SetBound();
@@ -304,7 +307,7 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
             cmajor::ast::ParameterNode* parameterNode = functionNode.Parameters()[i];
             cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags);
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(parameterNode);
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected");
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
             parameterSymbol->SetType(parameterType);
             if (parameterType->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
@@ -313,7 +316,7 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
                 if (interfaceTypeSymbol->IsProject())
                 {
                     cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                    // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                    Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected");
                     cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                     BindInterface(interfaceTypeSymbol, interfaceNode, false);
                 }
@@ -327,7 +330,7 @@ void TypeBinder::Visit(cmajor::ast::FunctionNode& functionNode)
             if (interfaceTypeSymbol->IsProject())
             {
                 cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected");
                 cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                 BindInterface(interfaceTypeSymbol, interfaceNode, false);
             }
@@ -393,7 +396,8 @@ void TypeBinder::Visit(cmajor::ast::ClassNode& classNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&classNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+            symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); 
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol);
         BindClass(classTypeSymbol, &classNode, true);
     }
@@ -522,7 +526,7 @@ void TypeBinder::BindClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cm
                 if (baseClassSymbol->IsProject() && !cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::info))
                 {
                     cmajor::ast::Node* node = symbolTable.GetNode(baseClassSymbol);
-                    // Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); TODO
+                    Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); 
                     cmajor::ast::ClassNode* baseClassNode = static_cast<cmajor::ast::ClassNode*>(node);
                     BindClass(baseClassSymbol, baseClassNode, false);
                 }
@@ -545,7 +549,7 @@ void TypeBinder::BindClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cm
                 if (interfaceTypeSymbol->IsProject())
                 {
                     cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                    // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                    Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); 
                     cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                     BindInterface(interfaceTypeSymbol, interfaceNode, false);
                 }
@@ -614,7 +618,7 @@ void TypeBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&staticConstructorNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::staticConstructorSymbol, "static constructor symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::staticConstructorSymbol, "static constructor symbol expected"); 
         cmajor::symbols::StaticConstructorSymbol* staticConstructorSymbol = static_cast<cmajor::symbols::StaticConstructorSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -688,7 +692,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&constructorNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol, "constructor symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol, "constructor symbol expected");
         cmajor::symbols::ConstructorSymbol* constructorSymbol = static_cast<cmajor::symbols::ConstructorSymbol*>(symbol);
         if (constructorSymbol->IsBound()) return;
         constructorSymbol->SetBound();
@@ -715,7 +719,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
             constructorSymbol->SetTemplateSpecialization();
             constructorSymbol->SetLinkOnceOdrLinkage();
         }
-        // Assert(parent->IsClassTypeSymbol(), "class type symbol expected"); TODO
+        Assert(parent->IsClassTypeSymbol(), "class type symbol expected");
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
         int n = constructorNode.Parameters().Count();
         for (int i = 0; i < n; ++i)
@@ -723,7 +727,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
             cmajor::ast::ParameterNode* parameterNode = constructorNode.Parameters()[i];
             cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(parameterNode);
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); 
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
             parameterSymbol->SetType(parameterType);
             if (parameterType->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
@@ -732,7 +736,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
                 if (interfaceTypeSymbol->IsProject())
                 {
                     cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                    // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                    Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected");
                     cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                     BindInterface(interfaceTypeSymbol, interfaceNode, false);
                 }
@@ -824,7 +828,7 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&destructorNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol, "destructor symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol, "destructor symbol expected"); 
         cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -907,7 +911,7 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&memberFunctionNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected"); 
         cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(symbol);
         if (memberFunctionSymbol->IsBound()) return;
         memberFunctionSymbol->SetBound();
@@ -940,7 +944,7 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
             cmajor::ast::ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
             cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(parameterNode);
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); 
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
             parameterSymbol->SetType(parameterType);
             if (parameterType->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
@@ -949,7 +953,7 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
                 if (interfaceTypeSymbol->IsProject())
                 {
                     cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                    // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                    Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); 
                     cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                     BindInterface(interfaceTypeSymbol, interfaceNode, false);
                 }
@@ -963,7 +967,7 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
             if (interfaceTypeSymbol->IsProject())
             {
                 cmajor::ast::Node* node = symbolTable.GetNode(interfaceTypeSymbol);
-                // Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); TODO
+                Assert(node->GetNodeType() == cmajor::ast::NodeType::interfaceNode, "interface node expected"); 
                 cmajor::ast::InterfaceNode* interfaceNode = static_cast<cmajor::ast::InterfaceNode*>(node);
                 BindInterface(interfaceTypeSymbol, interfaceNode, false);
             }
@@ -1054,7 +1058,7 @@ void TypeBinder::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNo
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&conversionFunctionNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol, "conversion function symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol, "conversion function symbol expected");
         cmajor::symbols::ConversionFunctionSymbol* conversionFunctionSymbol = static_cast<cmajor::symbols::ConversionFunctionSymbol*>(symbol);
         if (conversionFunctionSymbol->IsBound()) return;
         conversionFunctionSymbol->SetBound();
@@ -1150,7 +1154,7 @@ void TypeBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&memberVariableNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberVariableSymbol, "member variable symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberVariableSymbol, "member variable symbol expected"); 
         cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = static_cast<cmajor::symbols::MemberVariableSymbol*>(symbol);
         memberVariableSymbol->SetSpecifiers(memberVariableNode.GetSpecifiers());
         memberVariableSymbol->ComputeMangledName();
@@ -1170,7 +1174,7 @@ void TypeBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
                     containerScope, memberVariableNode.GetSourcePos(), memberVariableNode.ModuleId());
             }
             cmajor::ast::Node* node = symbolTable.GetNode(memberVariableClassType);
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
             cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(node);
             BindClass(memberVariableClassType, classNode, false);
         }
@@ -1205,7 +1209,7 @@ void TypeBinder::Visit(cmajor::ast::InterfaceNode& interfaceNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&interfaceNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol, "interface type symbol expected");TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol, "interface type symbol expected");
         cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(symbol);
         BindInterface(interfaceTypeSymbol, &interfaceNode, true);
     }
@@ -1292,7 +1296,7 @@ void TypeBinder::Visit(cmajor::ast::DelegateNode& delegateNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&delegateNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol, "delegate type symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol, "delegate type symbol expected"); 
         cmajor::symbols::DelegateTypeSymbol* delegateTypeSymbol = static_cast<cmajor::symbols::DelegateTypeSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -1306,7 +1310,7 @@ void TypeBinder::Visit(cmajor::ast::DelegateNode& delegateNode)
             cmajor::ast::ParameterNode* parameterNode = delegateNode.Parameters()[i];
             cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(parameterNode);
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); 
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
             parameterSymbol->SetType(parameterType);
         }
@@ -1374,7 +1378,7 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&classDelegateNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
         cmajor::symbols::ClassDelegateTypeSymbol* classDelegateTypeSymbol = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -1395,7 +1399,7 @@ void TypeBinder::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
             cmajor::ast::ParameterNode* parameterNode = classDelegateNode.Parameters()[i];
             cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(parameterNode);
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol, "parameter symbol expected"); 
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
             parameterSymbol->SetType(parameterType);
             cmajor::symbols::ParameterSymbol* memberParam = new cmajor::symbols::ParameterSymbol(classDelegateNode.GetSourcePos(), classDelegateNode.ModuleId(), 
@@ -1487,7 +1491,7 @@ void TypeBinder::Visit(cmajor::ast::ConceptNode& conceptNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&conceptNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conceptSymbol, "concept symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::conceptSymbol, "concept symbol expected"); 
         cmajor::symbols::ConceptSymbol* conceptSymbol = static_cast<cmajor::symbols::ConceptSymbol*>(symbol);
         BindConcept(conceptSymbol, &conceptNode);
     }
@@ -1542,7 +1546,7 @@ void TypeBinder::BindConcept(cmajor::symbols::ConceptSymbol* conceptSymbol, cmaj
             if (refinedConceptSymbol->IsProject())
             {
                 cmajor::ast::Node* node = symbolTable.GetNode(refinedConceptSymbol);
-                // Assert(node->GetNodeType() == cmajor::ast::NodeType::conceptNode, "concept node expected"); TODO
+                Assert(node->GetNodeType() == cmajor::ast::NodeType::conceptNode, "concept node expected"); 
                 cmajor::ast::ConceptNode* refinedConceptNode = static_cast<cmajor::ast::ConceptNode*>(node);
                 BindConcept(refinedConceptSymbol, refinedConceptNode);
             }
@@ -1579,7 +1583,7 @@ void TypeBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatementNode
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&compoundStatementNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
         cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
         cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
         containerScope = declarationBlock->GetContainerScope();
@@ -1719,7 +1723,7 @@ void TypeBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&forStatementNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
         cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
         cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
         containerScope = declarationBlock->GetContainerScope();
@@ -1756,7 +1760,7 @@ void TypeBinder::Visit(cmajor::ast::ConstructionStatementNode& constructionState
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&constructionStatementNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); 
         cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
         cmajor::symbols::TypeSymbol* type = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
         localVariableSymbol->SetType(type);
@@ -1952,14 +1956,14 @@ void TypeBinder::Visit(cmajor::ast::CatchNode& catchNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&catchNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected"); 
         cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
         cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
         containerScope = declarationBlock->GetContainerScope();
         if (catchNode.Id())
         {
             cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(catchNode.Id());
-            // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); TODO
+            Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected");
             cmajor::symbols::LocalVariableSymbol* exceptionVarSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
             cmajor::symbols::TypeSymbol* type = ResolveType(catchNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
             if (type->BaseType()->IsClassTypeSymbol())
@@ -1967,12 +1971,12 @@ void TypeBinder::Visit(cmajor::ast::CatchNode& catchNode)
                 cmajor::symbols::ClassTypeSymbol* exceptionVarClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
                 cmajor::ast::IdentifierNode systemExceptionNode(catchNode.GetSourcePos(), catchNode.ModuleId(), U"System.cmajor::symbols::Exception");
                 cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
-                // Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type"); TODO
+                Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type"); 
                 cmajor::symbols::ClassTypeSymbol* systemExceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(systemExceptionType);
                 if (exceptionVarClassType->IsProject())
                 {
                     cmajor::ast::Node* exceptionVarNode = symbolTable.GetNode(exceptionVarClassType);
-                    // Assert(exceptionVarNode->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); TODO
+                    Assert(exceptionVarNode->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); 
                     cmajor::ast::ClassNode* exceptionVarClassNode = static_cast<cmajor::ast::ClassNode*>(exceptionVarNode);
                     BindClass(exceptionVarClassType, exceptionVarClassNode, false);
                 }
@@ -2265,7 +2269,7 @@ void TypeBinder::Visit(cmajor::ast::TypedefNode& typedefNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&typedefNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::typedefSymbol, "typedef symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::typedefSymbol, "typedef symbol expected");
         cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
         BindTypedef(typedefSymbol, &typedefNode, true);
     }
@@ -2341,7 +2345,7 @@ void TypeBinder::Visit(cmajor::ast::ConstantNode& constantNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&constantNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constantSymbol, "constant symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::constantSymbol, "constant symbol expected");
         cmajor::symbols::ConstantSymbol* constantSymbol = static_cast<cmajor::symbols::ConstantSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -2402,7 +2406,7 @@ void TypeBinder::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&enumTypeNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enumerated type symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol, "enumerated type symbol expected"); 
         cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = static_cast<cmajor::symbols::EnumTypeSymbol*>(symbol);
         if (enumTypeSymbol->IsBound()) return;
         enumTypeSymbol->SetBound();
@@ -2497,7 +2501,7 @@ void TypeBinder::Visit(cmajor::ast::EnumConstantNode& enumConstantNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&enumConstantNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumConstantSymbol, "enumeration constant symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumConstantSymbol, "enumeration constant symbol expected");
         cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
         enumConstantSymbol->ComputeMangledName();
         enumConstantSymbol->SetEvaluating();
@@ -2535,7 +2539,7 @@ void TypeBinder::Visit(cmajor::ast::GlobalVariableNode& globalVariableNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&globalVariableNode);
-        // Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::globalVariableSymbol, "global variable symbol expected"); TODO
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::globalVariableSymbol, "global variable symbol expected");
         cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = static_cast<cmajor::symbols::GlobalVariableSymbol*>(symbol);
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {

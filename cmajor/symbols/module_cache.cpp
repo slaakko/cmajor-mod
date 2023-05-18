@@ -6,6 +6,9 @@
 module cmajor.symbols.module_cache;
 
 import cmajor.symbols.modules;
+import cmajor.symbols.meta;
+import cmajor.symbols.global.flags;
+import cmajor.symbols.trap;
 
 namespace cmajor::symbols {
 
@@ -156,7 +159,7 @@ void ModuleCache::PutModule(std::unique_ptr<Module>&& module)
             {
                 throw std::runtime_error("module cache: invalid module index");
             }
-            module->SetFlag(ModuleFlags::readFromModuleFile);
+            // module->SetFlag(ModuleFlags::readFromModuleFile); do not reread
             modules[moduleIndex] = std::move(module);
         }
         else
@@ -330,17 +333,15 @@ std::recursive_mutex mtx;
 
 void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target)
 {
-/*  TODO
     std::lock_guard<std::recursive_mutex> lock(mtx);
     rootModule->PrepareForCompilation(references, target);
     cmajor::symbols::MetaInit(rootModule->GetSymbolTable());
 #ifdef _WIN32
-    if (GetBackEnd() == BackEnd::cmsx && rootModule->Name() == U"System.Core")
+    if (GetBackEnd() == BackEnd::systemx && rootModule->Name() == U"System.Core")
     {
         cmajor::symbols::InitTrap(rootModule->GetSymbolTable());
     }
 #endif
-*/
 }
 
 Module* GetModuleFromModuleCache(const std::string& moduleFilePath)
@@ -448,6 +449,20 @@ void UpdateModuleCache()
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
     ModuleCache::Instance().Update();
+}
+
+namespace {
+
+struct Init
+{
+    Init();
+};
+
+Init::Init()
+{
+    InitModuleCache();
+}
+
 }
 
 } // namespace cmajor::symbols

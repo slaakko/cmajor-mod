@@ -116,6 +116,8 @@
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -135,6 +137,7 @@
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -149,6 +152,7 @@
     <ClCompile Include="access.cppm" />
     <ClCompile Include="attribute_binder.cpp" />
     <ClCompile Include="attribute_binder.cppm" />
+    <ClCompile Include="binder.cppm" />
     <ClCompile Include="bound_class.cpp" />
     <ClCompile Include="bound_class.cppm" />
     <ClCompile Include="bound_compile_unit.cpp" />

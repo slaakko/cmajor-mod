@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.expression.binder;
 
 import cmajor.binder.bound.compile.unit;
@@ -449,7 +452,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
         if (currentClass)
         {
             cmajor::symbols::ClassTypeSymbol* cp = memberVariableSymbol->ContainingClassNoThrow();
-            // Assert(cp, "class type symbol expected"); TODO
+            Assert(cp, "class type symbol expected");
             if (cp == currentClass)
             {
                 accessFromOwnScope = true;
@@ -478,7 +481,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
                 }
                 else
                 {
-                    // Assert(false, "this param expected"); TODO
+                    Assert(false, "this param expected");
                 }
             }
             else if (thisParam)
@@ -1059,8 +1062,8 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                     if (!classPtr->GetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr))
                     {
                         cmajor::symbols::Symbol* parent = symbol->Parent();
-                        // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-                        // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+                        Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+                            parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected");
                         cmajor::symbols::ClassTypeSymbol* owner = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
                         if (classType->HasBaseClass(owner))
                         {
@@ -1093,8 +1096,8 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                     if (!bmv->GetMemberVariableSymbol()->IsStatic())
                     {
                         cmajor::symbols::Symbol* parent = symbol->Parent();
-                        // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-                        // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+                        Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+                            parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); 
                         cmajor::symbols::ClassTypeSymbol* owner = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
                         if (classType->HasBaseClass(owner))
                         {
@@ -1239,8 +1242,8 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
                     if (!classPtr->GetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr))
                     {
                         cmajor::symbols::Symbol* parent = symbol->Parent();
-                        // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-                        // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+                        Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+                            parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); 
                         cmajor::symbols::ClassTypeSymbol* owner = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
                         if (classType->HasBaseClass(owner))
                         {
@@ -1267,8 +1270,8 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
                     if (!bmv->GetMemberVariableSymbol()->IsStatic())
                     {
                         cmajor::symbols::Symbol* parent = symbol->Parent();
-                        // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-                        // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); TODO
+                        Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+                            parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type expected"); 
                         cmajor::symbols::ClassTypeSymbol* owner = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
                         if (classType->HasBaseClass(owner))
                         {
@@ -1320,7 +1323,7 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
         }
         cmajor::symbols::TypeSymbol* pointerType = type->AddPointer(node.GetSourcePos(), node.ModuleId());
         cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSourcePos(), node.ModuleId());
-        // Assert(expression->GetBoundNodeType() == BoundNodeType::boundFunctionCall, "function call expected"); TODO
+        Assert(expression->GetBoundNodeType() == BoundNodeType::boundFunctionCall, "function call expected");
         BoundFunctionCall* boundFunctionCall = static_cast<BoundFunctionCall*>(expression.get());
         boundFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary)), pointerType)));
         if (type->IsClassTypeSymbol())
@@ -2536,7 +2539,7 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
         castNode.GetSourcePos(), castNode.ModuleId());
     if (conversionFound)
     {
-        // Assert(!functionMatch.argumentMatches.empty(), "argument match expected"); TODO
+        Assert(!functionMatch.argumentMatches.empty(), "argument match expected");
         ArgumentMatch& argumentMatch = functionMatch.argumentMatches[0];
         if (argumentMatch.preReferenceConversionFlags != cmajor::ir::OperationFlags::none)
         {
@@ -2665,7 +2668,7 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
     cmajor::ast::CloneContext cloneContext;
     cmajor::ast::InvokeNode* invokeMemAlloc = nullptr;
     bool memDebug = boundCompileUnit.GetModule().IsSymbolDefined(U"MEM_DEBUG");
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         if (memDebug)
         {
@@ -2676,7 +2679,7 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
             invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"RtMemAlloc"));
         }
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::DotNode(newNode.GetSourcePos(), newNode.ModuleId(),
             new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"System"), 

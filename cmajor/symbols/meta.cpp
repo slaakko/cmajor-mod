@@ -13,15 +13,6 @@ import cmajor.symbols.value;
 import cmajor.symbols.array.type.symbol;
 import util;
 
-/*
-#include <cmajor/symbols/Meta.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <soulng/util/Unicode.hpp>
-*/
-
 namespace cmajor::symbols {
 
 IntrinsicFunction::IntrinsicFunction()

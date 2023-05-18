@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.concepts;
 
 import cmajor.binder.bound.compile.unit;
@@ -1302,7 +1305,7 @@ std::unique_ptr<BoundConcept> Instantiate(cmajor::symbols::ConceptSymbol* concep
     if (!conceptNode)
     {
         cmajor::ast::Node* node = boundCompileUnit.GetSymbolTable().GetNode(conceptSymbol);
-        // Assert(node->IsConceptNode(), "concept node expected"); TODO
+        Assert(node->IsConceptNode(), "concept node expected"); 
         conceptNode = static_cast<cmajor::ast::ConceptNode*>(node);
     }
     int n = conceptSymbol->Arity();

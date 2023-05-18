@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.type.symbol;
 
 import cmajor.symbols.classes;
@@ -27,7 +30,7 @@ TypeSymbol::TypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourc
 void TypeSymbol::Write(SymbolWriter& writer)
 {
     ContainerSymbol::Write(writer);
-    //Assert(!typeId.is_nil(), "type id not set");
+    Assert(!typeId.is_nil(), "type id not set");
     writer.GetBinaryStreamWriter().Write(typeId);
 }
 

@@ -8,7 +8,7 @@ import util;
 
 namespace cmajor::ir {
 
-Emitter::Emitter(ValueStack* stack_) : stack(stack_)
+Emitter::Emitter() : stack(nullptr)
 {
 }
 

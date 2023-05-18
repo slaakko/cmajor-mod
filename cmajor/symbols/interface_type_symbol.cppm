@@ -6,9 +6,9 @@
 export module cmajor.symbols.interfaces;
 
 import cmajor.symbols.type.symbol;
-
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.classes;
+import cmajor.symbols.variable.symbol;
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import cmajor.ir.gen.object;

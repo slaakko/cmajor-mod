@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.inline_function_repository;
 
 import cmajor.binder.bound.compile.unit;
@@ -11,6 +14,7 @@ import cmajor.binder.statement.binder;
 import cmajor.binder.bound_class;
 import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
+import cmajor.binder.bound.expression;
 import util;
 
 namespace cmajor::binder {
@@ -38,7 +42,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     {
         node = inlineFunction->GetFunctionNode();
         symbolTable.MapNode(node, inlineFunction);
-        // Assert(node, "function node not read"); TODO
+        Assert(node, "function node not read");
     }
     cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(node);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
@@ -114,7 +118,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         statementBinder.SetContainerScope(functionSymbol->GetContainerScope());
         functionInstanceNode->Body()->Accept(statementBinder);
         BoundStatement* boundStatement = statementBinder.ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         boundCompileUnit.AddBoundNode(std::move(boundFunction));
@@ -165,7 +169,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         {
             cmajor::symbols::ConstructorSymbol* constructorSymbol = static_cast<cmajor::symbols::ConstructorSymbol*>(functionSymbol.get());
             cmajor::ast::Node* node = symbolTable.GetNode(functionSymbol.get());
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::constructorNode, "constructor node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::constructorNode, "constructor node expected");
             cmajor::ast::ConstructorNode* constructorNode = static_cast<cmajor::ast::ConstructorNode*>(node);
             statementBinder.SetCurrentConstructor(constructorSymbol, constructorNode);
         }
@@ -173,7 +177,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         {
             cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(functionSymbol.get());
             cmajor::ast::Node* node = symbolTable.GetNode(functionSymbol.get());
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::destructorNode, "destructor node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::destructorNode, "destructor node expected");
             cmajor::ast::DestructorNode* destructorNode = static_cast<cmajor::ast::DestructorNode*>(node);
             statementBinder.SetCurrentDestructor(destructorSymbol, destructorNode);
         }
@@ -181,13 +185,13 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         {
             cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol.get());
             cmajor::ast::Node* node = symbolTable.GetNode(functionSymbol.get());
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::memberFunctionNode, "member function node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::memberFunctionNode, "member function node expected");
             cmajor::ast::MemberFunctionNode* memberFunctionNode = static_cast<cmajor::ast::MemberFunctionNode*>(node);
             statementBinder.SetCurrentMemberFunction(memberFunctionSymbol, memberFunctionNode);
         }
         functionInstanceNode->Body()->Accept(statementBinder);
         BoundStatement* boundStatement = statementBinder.ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         boundClass->AddMember(std::move(boundFunction));

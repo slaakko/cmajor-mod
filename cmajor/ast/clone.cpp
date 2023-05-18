@@ -5,6 +5,11 @@
 module cmajor.ast.clone;
 
 import cmajor.ast.function;
+import cmajor.ast.statement;
+import cmajor.ast.concepts;
+import cmajor.ast.templates;
+import cmajor.ast.identifier;
+import cmajor.ast.parameter;
 
 namespace cmajor::ast {
 

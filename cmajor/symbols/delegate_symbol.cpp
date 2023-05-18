@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.delegate.symbol;
 
 import soul.ast.source.pos;
@@ -54,7 +57,7 @@ void DelegateTypeSymbol::Read(SymbolReader& reader)
 
 void DelegateTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     returnType = typeSymbol;
 }
 
@@ -285,7 +288,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -298,7 +301,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -309,7 +312,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
                 void* invokeInst = emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
                 emitter.Stack().Push(invokeInst);
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -331,7 +334,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -344,7 +347,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -354,7 +357,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             {
                 emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -427,7 +430,7 @@ void DelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int ind
 {
     if (index == 1)
     {
-        //Assert(typeSymbol->GetSymbolType() == SymbolType::delegateTypeSymbol, "delegate type symbol expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::delegateTypeSymbol, "delegate type symbol expected");
         delegateType = static_cast<DelegateTypeSymbol*>(typeSymbol);
     }
     else
@@ -438,7 +441,7 @@ void DelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int ind
 
 void DelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 1, "default constructor needs one object");
+    Assert(genObjects.size() == 1, "default constructor needs one object");
     emitter.Stack().Push(delegateType->CreateDefaultIrValue(emitter));
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -473,7 +476,7 @@ DelegateTypeCopyConstructor::DelegateTypeCopyConstructor(DelegateTypeSymbol* del
 
 void DelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 2, "copy constructor needs two objects");
+    Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -499,7 +502,7 @@ DelegateTypeMoveConstructor::DelegateTypeMoveConstructor(DelegateTypeSymbol* del
 
 void DelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 2, "move constructor needs two objects");
+    Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -528,7 +531,7 @@ DelegateTypeCopyAssignment::DelegateTypeCopyAssignment(DelegateTypeSymbol* deleg
 
 void DelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 2, "copy assignment needs two objects");
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -555,7 +558,7 @@ DelegateTypeMoveAssignment::DelegateTypeMoveAssignment(DelegateTypeSymbol* deleg
 
 void DelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 2, "move assignment needs two objects");
+    Assert(genObjects.size() == 2, "move assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -579,7 +582,7 @@ DelegateTypeReturn::DelegateTypeReturn(DelegateTypeSymbol* delegateType) : Funct
 
 void DelegateTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 1, "return needs one object");
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -605,7 +608,7 @@ DelegateTypeEquality::DelegateTypeEquality(DelegateTypeSymbol* delegateType, Typ
 
 void DelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 2, "operator== needs two objects");
+    Assert(genObjects.size() == 2, "operator== needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -922,7 +925,7 @@ void ClassDelegateTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
 
 void ClassDelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(!genObjects.empty(), "gen objects is empty");
+    Assert(!genObjects.empty(), "gen objects is empty");
     genObjects[0]->Load(emitter, flags);
     void* classDelegatePtr = emitter.Stack().Pop();
     void* delegatePtr = emitter.GetDelegateFromClassDelegate(classDelegatePtr);
@@ -998,7 +1001,7 @@ void ClassDelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, in
 {
     if (index == 1)
     {
-        //Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
         classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
     }
     else
@@ -1009,7 +1012,7 @@ void ClassDelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, in
 
 void ClassDelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 1, "default constructor needs one object");
+    Assert(genObjects.size() == 1, "default constructor needs one object");
     void* objectValue = emitter.CreateDefaultIrValueForVoidPtrType();
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* ptr = emitter.Stack().Pop();
@@ -1244,7 +1247,7 @@ std::vector<LocalVariableSymbol*> MemberFunctionToClassDelegateConversion::Creat
 
 void MemberFunctionToClassDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //Assert(genObjects.size() == 1, "MemberFunctionToClassDelegateConversion needs one temporary object");
+    Assert(genObjects.size() == 1, "MemberFunctionToClassDelegateConversion needs one temporary object");
     void* objectValue = emitter.Stack().Pop();
     if (!objectValue)
     {

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.operation.repository;
 
 import cmajor.binder.bound.compile.unit;
@@ -43,7 +46,7 @@ PointerDefaultCtor::PointerDefaultCtor(cmajor::symbols::TypeSymbol* type_, const
 
 void PointerDefaultCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 1, "default constructor needs one object"); TODO
+    Assert(genObjects.size() == 1, "default constructor needs one object"); 
     if (!nullValue)
     {
         nullValue = emitter.CreateDefaultIrValueForPtrType(type->IrType(emitter));
@@ -118,7 +121,7 @@ PointerCopyCtor::PointerCopyCtor(cmajor::symbols::TypeSymbol* type_, const soul:
 
 void PointerCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy constructor needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
     {
@@ -199,7 +202,7 @@ PointerMoveCtor::PointerMoveCtor(cmajor::symbols::TypeSymbol* type_, const soul:
 
 void PointerMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "move constructor needs two objects"); TODO
+    Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -283,7 +286,7 @@ PointerCopyAssignment::PointerCopyAssignment(cmajor::symbols::TypeSymbol* type_,
 
 void PointerCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy assignment needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -359,7 +362,7 @@ PointerMoveAssignment::PointerMoveAssignment(cmajor::symbols::TypeSymbol* type_,
 
 void PointerMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy assignment needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -434,7 +437,7 @@ PointerReturn::PointerReturn(cmajor::symbols::TypeSymbol* type_, const soul::ast
 
 void PointerReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 1, "return needs one object"); TODO
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
     {
@@ -508,7 +511,7 @@ PointerPlusOffset::PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, 
 
 void PointerPlusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator+ needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator+ needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -589,7 +592,7 @@ OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cma
 
 void OffsetPlusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator+ needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator+ needs two objects"); 
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -671,7 +674,7 @@ PointerMinusOffset::PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_
 
 void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator- needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator- needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -753,7 +756,7 @@ PointerMinusPointer::PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerTyp
 
 void PointerMinusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator- needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator- needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -828,7 +831,7 @@ PointerEqual::PointerEqual(cmajor::symbols::TypeSymbol* pointerType_, cmajor::sy
 
 void PointerEqual::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator== needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator== needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -903,7 +906,7 @@ PointerLess::PointerLess(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symb
 
 void PointerLess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "operator< needs two objects"); TODO
+    Assert(genObjects.size() == 2, "operator< needs two objects"); 
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -977,7 +980,7 @@ PointerArrow::PointerArrow(cmajor::symbols::TypeSymbol* type_, const soul::ast::
 
 void PointerArrow::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 1, "return needs one object"); TODO
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1046,7 +1049,7 @@ LvalueRefefenceCopyCtor::LvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* ty
 
 void LvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "reference copy constructor needs two objects"); TODO
+    Assert(genObjects.size() == 2, "reference copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -1119,7 +1122,7 @@ LvalueReferenceCopyAssignment::LvalueReferenceCopyAssignment(cmajor::symbols::Ty
 
 void LvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy assignment needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -1196,7 +1199,7 @@ LvalueReferenceMoveAssignment::LvalueReferenceMoveAssignment(cmajor::symbols::Ty
 
 void LvalueReferenceMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy assignment needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -1272,7 +1275,7 @@ LvalueReferenceReturn::LvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_,
 
 void LvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 1, "return needs one object"); TODO
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1340,7 +1343,7 @@ RvalueRefefenceCopyCtor::RvalueRefefenceCopyCtor(cmajor::symbols::TypeSymbol* ty
 
 void RvalueRefefenceCopyCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "reference copy constructor needs two objects"); TODO
+    Assert(genObjects.size() == 2, "reference copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
@@ -1413,7 +1416,7 @@ RvalueReferenceCopyAssignment::RvalueReferenceCopyAssignment(cmajor::symbols::Ty
 
 void RvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 2, "copy assignment needs two objects"); TODO
+    Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
@@ -1485,7 +1488,7 @@ RvalueReferenceReturn::RvalueReferenceReturn(cmajor::symbols::TypeSymbol* type_,
 
 void RvalueReferenceReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // Assert(genObjects.size() == 1, "return needs one object"); TODO
+    Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -3177,16 +3180,16 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     cmajor::symbols::Symbol* parent = staticConstructorSymbol->Parent();
-    // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-    // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+    Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+        parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
     try
     {
-        // Assert(classType->InitializedVar(), "initialized variable expected"); TODO
+        Assert(classType->InitializedVar(), "initialized variable expected");
         std::unique_ptr<BoundIfStatement> ifStatement(new BoundIfStatement(sourcePos, moduleId, std::unique_ptr<BoundExpression>(new BoundMemberVariable(sourcePos, moduleId, classType->InitializedVar())),
             std::unique_ptr<BoundStatement>(new BoundReturnStatement(std::unique_ptr<BoundFunctionCall>(nullptr), sourcePos, moduleId)), std::unique_ptr<BoundStatement>(nullptr)));
         boundCompoundStatement->AddStatement(std::move(ifStatement));
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
             cmajor::ast::IdentifierNode staticInitCriticalSection(sourcePos, moduleId, U"System.Runtime.StaticInitCriticalSection");
             cmajor::symbols::TypeSymbol* staticInitCriticalSectionClassType = ResolveType(&staticInitCriticalSection, boundCompileUnit, containerScope);
@@ -3290,7 +3293,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 if (memberVariableClassTypeWithDestructor)
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3306,7 +3309,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, sourcePos, moduleId);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(enqueueDestructorCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                     {
                         std::vector<FunctionScopeLookup> atExitLookups;
                         atExitLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3349,7 +3352,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 if (memberVariableClassTypeWithDestructor)
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3365,7 +3368,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, sourcePos, moduleId);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(enqueueDestructorCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                     {
                         std::vector<FunctionScopeLookup> atExitLookups;
                         atExitLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3400,8 +3403,8 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     cmajor::symbols::Symbol* parent = constructorSymbol->Parent();
-    // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-    // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+    Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+        parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); 
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
     if (generateDefault)
     {
@@ -3418,7 +3421,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                 classType->StaticConstructor())))));
         }
         cmajor::symbols::ParameterSymbol* thisParam = constructorSymbol->GetThisParam();
-        // Assert(thisParam, "this parameter expected"); TODO
+        Assert(thisParam, "this parameter expected");
         cmajor::ast::ThisInitializerNode* thisInitializer = nullptr;
         cmajor::ast::BaseInitializerNode* baseInitializer = nullptr;
         std::unordered_map<std::u32string, cmajor::ast::MemberInitializerNode*> memberInitializerMap;
@@ -3723,8 +3726,8 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     cmajor::symbols::Symbol* parent = assignmentFunctionSymbol->Parent();
-    // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-    // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+    Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+        parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
     if (generateDefault)
     {
@@ -3736,7 +3739,7 @@ void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFu
     try
     {
         cmajor::symbols::ParameterSymbol* thisParam = assignmentFunctionSymbol->GetThisParam();
-        // Assert(thisParam, "this parameter expected"); TODO
+        Assert(thisParam, "this parameter expected");
         if (assignmentFunctionSymbol->IsCopyAssignment())
         {
             if (classType->BaseClass())
@@ -3867,13 +3870,13 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     cmajor::symbols::Symbol* parent = destructorSymbol->Parent();
-    // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-    // parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected"); TODO
+    Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+        parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
     try
     {
         cmajor::symbols::ParameterSymbol* thisParam = destructorSymbol->GetThisParam();
-        // Assert(thisParam, "this parameter expected"); TODO
+        Assert(thisParam, "this parameter expected");
         if (classType->IsPolymorphic())
         {
             cmajor::symbols::ParameterSymbol* thisParam = destructorSymbol->Parameters()[0];

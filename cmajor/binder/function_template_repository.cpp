@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.function_template_repository;
 
 import cmajor.binder.bound.compile.unit;
@@ -63,9 +66,9 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     {
         node = functionTemplate->GetFunctionNode();
         symbolTable.MapNode(node, functionTemplate);
-        // Assert(node, "function node not read"); TODO
+        Assert(node, "function node not read"); 
     }
-    // Assert(node->GetNodeType() == NodeType::functionNode, "function node expected");TODO
+    Assert(node->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected");
     cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(node);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
         new cmajor::ast::IdentifierNode(functionNode->GetSourcePos(), functionNode->ModuleId(), U"")));
@@ -102,7 +105,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     symbolCreatorVisitor.InsertTracer(functionInstanceNode->Body());
     globalNs->Accept(symbolCreatorVisitor);
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);
-    // Assert(symbol->GetSymbolType() == SymbolType::functionSymbol, "function symbol expected"); TODO
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
     cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
     functionSymbol->SetLinkOnceOdrLinkage();
     functionSymbol->SetTemplateSpecialization();

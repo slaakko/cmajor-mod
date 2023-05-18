@@ -14,6 +14,7 @@ import cmajor.symbols.resource.table;
 import cmajor.symbols.warning;
 import cmajor.symbols.type.index;
 import cmajor.symbols.sources;
+import soul.lexer;
 import util.code.formatter;
 import util.binary.stream.reader;
 import util.binary.stream.writer;
@@ -55,7 +56,8 @@ const uint8_t currentModuleFormat = moduleFormat_18;
 
 enum class ModuleFlags : uint8_t
 {
-    none = 0, system = 1 << 0, core = 1 << 1, root = 1 << 2, immutable = 1 << 3, compiling = 1 << 4, fileIndexFilePathMapBuilt = 1 << 5, readFromModuleFile = 1 << 6, programModule = 1 << 7
+    none = 0, system = 1 << 0, core = 1 << 1, root = 1 << 2, immutable = 1 << 3, compiling = 1 << 4, fileIndexFilePathMapBuilt = 1 << 5, readFromModuleFile = 1 << 6, 
+    programModule = 1 << 7
 };
 
 inline ModuleFlags operator|(ModuleFlags left, ModuleFlags right)
@@ -230,6 +232,7 @@ public:
     ParseResult ParseSource(const std::string& sourceFilePath, const std::u32string& sourceCode);
     std::string GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext);
     std::string GetParamHelpList(const std::string& sourceFilePath, int symbolIndex);
+    soul::lexer::FileMap& FileMap() { return fileMap; }
 private:
     uint8_t format;
     ModuleFlags flags;
@@ -284,6 +287,7 @@ private:
     TypeIndex typeIndex;
     SourceFileCache sourceFileCache;
     std::unique_ptr<Sources> sources;
+    soul::lexer::FileMap fileMap;
     void CheckUpToDate();
 };
 

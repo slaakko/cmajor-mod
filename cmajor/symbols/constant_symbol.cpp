@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.constant.symbol;
 
 import soul.ast.source.pos;
@@ -87,8 +90,7 @@ Value* ConstantSymbol::GetValue()
         util::FileStream file(filePathReadFrom, util::OpenMode::read | util::OpenMode::binary);
         util::BufferedStream bufferedFile(file);
         util::BinaryStreamReader reader(bufferedFile);
-        //TODO
-        //reader.Skip(valuePos);
+        reader.GetStream().Seek(valuePos, util::Origin::seekSet);
         value.reset(type->MakeValue());
         if (!value)
         {
@@ -101,7 +103,7 @@ Value* ConstantSymbol::GetValue()
 
 void ConstantSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     type = typeSymbol;
 }
 

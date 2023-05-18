@@ -1,9 +1,13 @@
-module cmajor.symbols.class_template_specializations;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.symbols.class_template_specializations;
+
 import cmajor.ast.reader;
 import cmajor.ast.writer;
 import soul.ast.source.pos;
@@ -100,7 +104,7 @@ void ClassTemplateSpecializationSymbol::EmplaceType(TypeSymbol* typeSymbol, int 
     {
         if (index == -1)
         {
-            //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol, "class type symbol expected");
+            Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol, "class type symbol expected");
             classTemplate = static_cast<ClassTypeSymbol*>(typeSymbol);
         }
         else
@@ -108,7 +112,7 @@ void ClassTemplateSpecializationSymbol::EmplaceType(TypeSymbol* typeSymbol, int 
             int typeArgumentIndex = -(index + 2);
             if (typeArgumentIndex < 0 || typeArgumentIndex >= templateArgumentTypes.size())
             {
-                //TODO:Assert(false, "invalid emplace type index in class template specialization");
+                Assert(false, "invalid emplace type index in class template specialization");
             }
             templateArgumentTypes[typeArgumentIndex] = typeSymbol;
         }

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.class_template_repository;
 
 import cmajor.binder.bound.compile.unit;
@@ -12,6 +15,7 @@ import cmajor.binder.statement.binder;
 import cmajor.binder.bound_class;
 import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
+import cmajor.binder.bound.expression;
 import cmajor.binder.concepts;
 
 namespace cmajor::binder {
@@ -36,9 +40,9 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
     if (!node)
     {
         node = classTemplate->GetClassNode();
-        // Assert(node, "class node not read"); TODO
+        Assert(node, "class node not read"); 
     }
-    // Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); TODO
+    Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); 
     cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(node);
     int numFileScopeAdded = 0;
     int nu = classTemplate->UsingNodes().Count();
@@ -113,9 +117,9 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     if (!node)
     {
         node = classTemplate->GetClassNode();
-        // Assert(node, "class node not read"); TODO
+        Assert(node, "class node not read"); 
     }
-    // Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); TODO
+    Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
     cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(node);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(classNode->GetSourcePos(), classNode->ModuleId(), new cmajor::ast::IdentifierNode(classNode->GetSourcePos(), classNode->ModuleId(), U"")));
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
@@ -231,7 +235,7 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
     {
         cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
         cmajor::symbols::Symbol* parent = memberFunction->Parent();
-        // Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class template specialization expected"); TODO
+        Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class template specialization expected"); 
         cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(parent);
         std::pair<util::uuid, int> classIdMemFunIndexPair = std::make_pair(classTemplateSpecialization->TypeId(), memberFunction->GetIndex());
         if (classIdMemberFunctionIndexSet.find(classIdMemFunIndexPair) != classIdMemberFunctionIndexSet.cend())
@@ -241,7 +245,7 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             instantiatedMemberFunctions.insert(memberFunction);
             return true;
         }
-        // Assert(classTemplateSpecialization->IsBound(), "class template specialization not bound"); TODO
+        Assert(classTemplateSpecialization->IsBound(), "class template specialization not bound"); 
         cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(memberFunction);
         if (!node)
         {
@@ -300,13 +304,13 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             fileScope->AddContainerScope(classTemplate->Ns()->GetContainerScope());
         }
         boundCompileUnit.AddFileScope(fileScope);
-        // Assert(node->IsFunctionNode(), "function node expected"); TODO
+        Assert(node->IsFunctionNode(), "function node expected");
         cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(node);
         if (memberFunction->IsDefault())
         {
             functionInstanceNode->SetBodySource(new cmajor::ast::CompoundStatementNode(sourcePos, moduleId));
         }
-        // Assert(functionInstanceNode->BodySource(), "body source expected"); TODO
+        Assert(functionInstanceNode->BodySource(), "body source expected"); 
         cmajor::ast::CloneContext cloneContext;
         functionInstanceNode->SetBody(static_cast<cmajor::ast::CompoundStatementNode*>(functionInstanceNode->BodySource()->Clone(cloneContext)));
         if (functionInstanceNode->WhereConstraint())
@@ -364,7 +368,7 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         {
             cmajor::symbols::ConstructorSymbol* constructorSymbol = static_cast<cmajor::symbols::ConstructorSymbol*>(memberFunction);
             cmajor::ast::Node* node = symbolTable.GetNode(memberFunction);
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::constructorNode, "constructor node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::constructorNode, "constructor node expected");
             cmajor::ast::ConstructorNode* constructorNode = static_cast<cmajor::ast::ConstructorNode*>(node);
             statementBinder.SetCurrentConstructor(constructorSymbol, constructorNode);
         }
@@ -372,7 +376,7 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         {
             cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(memberFunction);
             cmajor::ast::Node* node = symbolTable.GetNode(memberFunction);
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::destructorNode, "destructor node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::destructorNode, "destructor node expected"); 
             cmajor::ast::DestructorNode* destructorNode = static_cast<cmajor::ast::DestructorNode*>(node);
             statementBinder.SetCurrentDestructor(destructorSymbol, destructorNode);
         }
@@ -380,13 +384,13 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         {
             cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(memberFunction);
             cmajor::ast::Node* node = symbolTable.GetNode(memberFunction);
-            // Assert(node->GetNodeType() == cmajor::ast::NodeType::memberFunctionNode, "member function node expected"); TODO
+            Assert(node->GetNodeType() == cmajor::ast::NodeType::memberFunctionNode, "member function node expected");
             cmajor::ast::MemberFunctionNode* memberFunctionNode = static_cast<cmajor::ast::MemberFunctionNode*>(node);
             statementBinder.SetCurrentMemberFunction(memberFunctionSymbol, memberFunctionNode);
         }
         functionInstanceNode->Body()->Accept(statementBinder);
         BoundStatement* boundStatement = statementBinder.ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); 
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         std::u32string instantiatedMemberFunctionMangledName = boundFunction->GetFunctionSymbol()->MangledName();

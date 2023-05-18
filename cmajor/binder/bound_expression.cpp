@@ -3,6 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
+
 module cmajor.binder.bound.expression;
 
 import cmajor.binder.type.resolver;
@@ -189,7 +193,7 @@ BoundExpression* BoundMemberVariable::Clone()
 void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
     emitter.SetCurrentDebugLocation(GetSourcePos());
-    // Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); TODO
+    Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); 
     if (memberVariableSymbol->IsStatic())
     {
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(memberVariableSymbol->Parent());
@@ -237,7 +241,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
 void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
     emitter.SetCurrentDebugLocation(GetSourcePos());
-    // Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); TODO
+    Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); 
     void* value = emitter.Stack().Pop();
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
@@ -868,7 +872,7 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         cmajor::ir::OperationFlags callFlags = flags & cmajor::ir::OperationFlags::functionCallFlags;
         if (GetFlag(BoundExpressionFlags::virtualCall))
         {
-            // Assert(!arguments.empty(), "nonempty argument list expected"); TODO
+            Assert(!arguments.empty(), "nonempty argument list expected"); 
             genObjects[0]->SetType(arguments[0]->GetType());
             callFlags = callFlags | cmajor::ir::OperationFlags::virtualCall;
         }
@@ -1485,14 +1489,14 @@ BoundExpression* BoundIsExpression::Clone()
 
 void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
-        // Assert(exprType->IsPointerType(), "pointer type expected"); TODO
+        Assert(exprType->IsPointerType(), "pointer type expected"); 
         cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(GetSourcePos(), ModuleId());
-        // Assert(leftType->IsClassTypeSymbol(), "class type expected"); TODO
+        Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
@@ -1515,14 +1519,14 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         emitter.Stack().Push(emitter.CreateCall(dynamicInitAndCompareFn, args));
         DestroyTemporaries(emitter);
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
-        // Assert(exprType->IsPointerType(), "pointer type expected"); TODO
+        Assert(exprType->IsPointerType(), "pointer type expected"); 
         cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(GetSourcePos(), ModuleId());
-        // Assert(leftType->IsClassTypeSymbol(), "class type expected"); TODO
+        Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
@@ -1582,14 +1586,14 @@ BoundExpression* BoundAsExpression::Clone()
 
 void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmcpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
-        // Assert(exprType->IsPointerType(), "pointer type expected"); TODO
+        Assert(exprType->IsPointerType(), "pointer type expected"); 
         cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(GetSourcePos(), ModuleId());
-        // Assert(leftType->IsClassTypeSymbol(), "class type expected"); TODO
+        Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
@@ -1628,14 +1632,14 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         variable->Load(emitter, cmajor::ir::OperationFlags::none);
         DestroyTemporaries(emitter);
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cmsx)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         expr->Load(emitter, cmajor::ir::OperationFlags::none);
         void* thisPtr = emitter.Stack().Pop();
         cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
-        // Assert(exprType->IsPointerType(), "pointer type expected"); TODO
+        Assert(exprType->IsPointerType(), "pointer type expected"); 
         cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer(GetSourcePos(), ModuleId());
-        // Assert(leftType->IsClassTypeSymbol(), "class type expected"); TODO
+        Assert(leftType->IsClassTypeSymbol(), "class type expected"); 
         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
         cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
         if (leftClassType != leftVmtPtrHolderClass)
@@ -1705,9 +1709,9 @@ void BoundTypeNameExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
     classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thisPtr = emitter.Stack().Pop();
     cmajor::symbols::TypeSymbol* classPtrType = static_cast<cmajor::symbols::TypeSymbol*>(classPtr->GetType());
-    // Assert(classPtrType->IsPointerType(), "pointer type expected"); TODO
+    Assert(classPtrType->IsPointerType(), "pointer type expected"); 
     cmajor::symbols::TypeSymbol* type = classPtrType->BaseType();
-    // Assert(type->IsClassTypeSymbol(), "class type expected"); TODO
+    Assert(type->IsClassTypeSymbol(), "class type expected");
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
     cmajor::symbols::ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
     if (classType != vmtPtrHolderClass)
@@ -1757,9 +1761,9 @@ void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
     classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thisPtr = emitter.Stack().Pop();
     cmajor::symbols::TypeSymbol* classPtrType = static_cast<cmajor::symbols::TypeSymbol*>(classPtr->GetType());
-    // Assert(classPtrType->IsPointerType(), "pointer type expected"); TODO
+    Assert(classPtrType->IsPointerType(), "pointer type expected");
     cmajor::symbols::TypeSymbol* type = classPtrType->BaseType();
-    // Assert(type->IsClassTypeSymbol(), "class type expected"); TODO
+    Assert(type->IsClassTypeSymbol(), "class type expected");
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
     cmajor::symbols::ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
     if (classType != vmtPtrHolderClass)

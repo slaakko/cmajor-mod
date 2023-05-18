@@ -6,6 +6,7 @@
 export module cmajor.symbols.variable.symbol;
 
 import cmajor.ast.specifier;
+import cmajor.ast.parameter;
 import cmajor.ir.emitter;
 import soul.ast.source.pos;
 import soul.xml.element;

@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.function.symbol;
 
 import cmajor.ast.function;
@@ -10,6 +13,10 @@ import cmajor.ast.concepts;
 import cmajor.ast.specifier;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
+import cmajor.ast.statement;
+import cmajor.ast.templates;
+import cmajor.ast.parameter;
+import cmajor.symbols.variable.symbol;
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.symbol;
 import cmajor.symbols.container.symbol;
@@ -194,7 +201,7 @@ public:
     bool IsCopyAssignment() const;
     bool IsMoveAssignment() const;
     virtual int StartParamIndex() const { return 0; }
-    const util::uuid& FunctionId() const { /* TODO Assert(!functionId.is_nil(), "function id not initialized");*/  return functionId; }
+    const util::uuid& FunctionId() const { Assert(!functionId.is_nil(), "function id not initialized"); return functionId; }
     void SetFunctionId(const util::uuid& functionId_) { functionId = functionId_; }
     const std::u32string& GroupName() const { return groupName; }
     void SetGroupName(const std::u32string& groupName_);
@@ -420,8 +427,8 @@ class FunctionGroupTypeSymbol : public TypeSymbol
 public:
     FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_);
     bool IsExportSymbol() const override { return false; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get ir type of function group type");*/ return nullptr; }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get default ir value of function group type");*/ return nullptr; }
+    void* IrType(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get ir type of function group type"); return nullptr; }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get default ir value of function group type"); return nullptr; }
     const FunctionGroupSymbol* FunctionGroup() const { return functionGroup; }
     FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
     void* BoundFunctionGroup() const { return boundFunctionGroup; }
@@ -436,8 +443,8 @@ class MemberExpressionTypeSymbol : public TypeSymbol
 public:
     MemberExpressionTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, void* boundMemberExpression_);
     bool IsExportSymbol() const override { return false; }
-    void* IrType(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get ir type of member expression type");*/  return nullptr; }
-    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { /* TODO Assert(false, "tried to get default ir value of member expression type");*/ return nullptr; }
+    void* IrType(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get ir type of member expression type");  return nullptr; }
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get default ir value of member expression type"); return nullptr; }
     std::string TypeString() const override { return "member_expression_type"; }
     void* BoundMemberExpression() const { return boundMemberExpression; }
     const char* ClassName() const override { return "MemberExpressionTypeSymbol"; }

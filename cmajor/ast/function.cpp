@@ -14,6 +14,7 @@ import cmajor.ast.templates;
 import cmajor.ast.concepts;
 import cmajor.ast.parameter;
 import cmajor.ast.statement;
+import cmajor.ast.identifier;
 
 namespace cmajor::ast {
 

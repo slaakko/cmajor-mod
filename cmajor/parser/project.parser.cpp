@@ -132,7 +132,7 @@ soul::parser::Match ProjectParser<LexerT>::Project(LexerT& lexer, std::string co
                             }
                             if (match.hit)
                             {
-                                projectFile.reset(new cmajor::ast::Project(name->value, lexer.FileName(), config, backend, toolChain, cmajor::ast::SystemDirKind::regular));
+                                projectFile.reset(new cmajor::ast::Project(name->value, lexer.FileName(), config, backend, toolChain));
                             }
                             *parentMatch7 = match;
                         }

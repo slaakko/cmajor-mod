@@ -1,8 +1,12 @@
-module cmajor.symbols.array.type.symbol;
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.symbols.array.type.symbol;
 
 import cmajor.ast.reader;
 import cmajor.ast.writer;
@@ -154,8 +158,7 @@ void ArrayLengthFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // TODO
-        //Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
         arrayType = static_cast<ArrayTypeSymbol*>(typeSymbol);
     }
     else
@@ -167,8 +170,7 @@ void ArrayLengthFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 void ArrayLengthFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     emitter.SetCurrentDebugLocation(sourcePos);
-    // TODO
-    //Assert(genObjects.size() == 1, "array length needs one object");
+    Assert(genObjects.size() == 1, "array length needs one object");
     void* size = emitter.CreateIrValueForLong(arrayType->Size());
     emitter.Stack().Push(size);
 }
@@ -223,7 +225,7 @@ void ArrayBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
         arrayType = static_cast<ArrayTypeSymbol*>(typeSymbol);
     }
     else
@@ -234,8 +236,7 @@ void ArrayBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 
 void ArrayBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "array begin needs one object");
+    Assert(genObjects.size() == 1, "array begin needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
@@ -288,8 +289,7 @@ void ArrayEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // TODO
-        //Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
         arrayType = static_cast<ArrayTypeSymbol*>(typeSymbol);
     }
     else
@@ -300,8 +300,7 @@ void ArrayEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 
 void ArrayEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "array end needs one object");
+    Assert(genObjects.size() == 1, "array end needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
@@ -354,8 +353,7 @@ void ArrayCBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        // TODO
-        //Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
         arrayType = static_cast<ArrayTypeSymbol*>(typeSymbol);
     }
     else
@@ -366,8 +364,7 @@ void ArrayCBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 
 void ArrayCBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "array cbegin needs one object");
+    Assert(genObjects.size() == 1, "array cbegin needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
@@ -420,7 +417,7 @@ void ArrayCEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 1)
     {
-        //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::arrayTypeSymbol, "array type expected");
         arrayType = static_cast<ArrayTypeSymbol*>(typeSymbol);
     }
     else
@@ -431,8 +428,7 @@ void ArrayCEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
 
 void ArrayCEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "array cend needs one object");
+    Assert(genObjects.size() == 1, "array cend needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
@@ -474,7 +470,7 @@ void ArrayTypeDefaultConstructor::SetTemporariesForElementTypeDefaultCtor(std::v
 
 void ArrayTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 2, "array type default constructor needs two objects: one array type object and one loop variable temporary");
+    Assert(genObjects.size() == 2, "array type default constructor needs two objects: one array type object and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
     cmajor::ir::GenObject* loopVar = genObjects[1];
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -550,7 +546,7 @@ void ArrayTypeCopyConstructor::SetTemporariesForElementTypeCopyCtor(std::vector<
 
 void ArrayTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 3, "copy constructor needs three objects: two array type objects and one loop variable temporary");
+    Assert(genObjects.size() == 3, "copy constructor needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
     cmajor::ir::GenObject* loopVar = genObjects[2];
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -637,7 +633,7 @@ void ArrayTypeMoveConstructor::SetTemporariesForElementTypeMoveCtor(std::vector<
 
 void ArrayTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 3, "move constructor needs three objects: two array type objects and one loop variable temporary");
+    Assert(genObjects.size() == 3, "move constructor needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
     cmajor::ir::GenObject* loopVar = genObjects[2];
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -720,7 +716,7 @@ void ArrayTypeCopyAssignment::SetTemporariesForElementTypeCopyAssignment(std::ve
 
 void ArrayTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 3, "copy assignment needs three objects: two array type objects and one loop variable temporary");
+    Assert(genObjects.size() == 3, "copy assignment needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
     cmajor::ir::GenObject* loopVar = genObjects[2];
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -809,7 +805,7 @@ void ArrayTypeMoveAssignment::SetTemporariesForElementTypeMoveAssignment(std::ve
 
 void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 3, "move assignment needs three objects: two array type objects and one loop variable temporary");
+    Assert(genObjects.size() == 3, "move assignment needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
     cmajor::ir::GenObject* loopVar = genObjects[2];
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -886,7 +882,7 @@ ArrayTypeElementAccess::ArrayTypeElementAccess(ArrayTypeSymbol* arrayType_) :
 
 void ArrayTypeElementAccess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    //TODO:Assert(genObjects.size() == 2, "element access needs two objects");
+    Assert(genObjects.size() == 2, "element access needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* ptr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);

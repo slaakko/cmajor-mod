@@ -11,6 +11,6 @@ export namespace cmajor::binder {
 
 class BoundCompileUnit;
 
-void AnalyzeControlFlow(BoundCompileUnit& boundCompileUUnit);
+void AnalyzeControlFlow(BoundCompileUnit& boundCompileUnit);
 
 } // namespace cmajor::binder

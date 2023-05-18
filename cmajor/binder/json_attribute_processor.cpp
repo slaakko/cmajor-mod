@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.json.attribute.processor;
 
 import cmajor.binder.statement.binder;
@@ -12,6 +15,7 @@ import cmajor.binder.bound.function;
 import cmajor.binder.bound_class;
 import cmajor.binder.type.resolver;
 import cmajor.binder.bound.compile.unit;
+import cmajor.binder.bound.expression;
 import cmajor.ast;
 import util;
 
@@ -413,7 +417,7 @@ void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::Attr
         compoundStatementNode.Accept(*statementBinder);
         statementBinder->SetContainerScope(containerScope);
         BoundStatement* boundStatement = statementBinder->ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         statementBinder->CurrentClass()->AddMember(std::move(boundFunction));
@@ -510,7 +514,7 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
         compoundStatementNode.Accept(*statementBinder);
         statementBinder->SetContainerScope(containerScope);
         BoundStatement* boundStatement = statementBinder->ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         statementBinder->CurrentClass()->AddMember(std::move(boundFunction));
@@ -609,7 +613,7 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
         compoundStatementNode.Accept(*statementBinder);
         statementBinder->SetContainerScope(containerScope);
         BoundStatement* boundStatement = statementBinder->ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         statementBinder->CurrentClass()->AddMember(std::move(boundFunction));
@@ -672,7 +676,7 @@ void JsonAttributeProcessor::GenerateToJsonImplementation(cmajor::ast::Attribute
         compoundStatementNode.Accept(*statementBinder);
         statementBinder->SetContainerScope(containerScope);
         BoundStatement* boundStatement = statementBinder->ReleaseStatement();
-        // Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); TODO
+        Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
         statementBinder->CurrentClass()->AddMember(std::move(boundFunction));

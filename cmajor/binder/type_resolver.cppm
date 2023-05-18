@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.binder.type.resolver;
 
 import std.core;
@@ -23,12 +26,12 @@ public:
     cmajor::symbols::NamespaceSymbol* Ns() { return ns; }
     void* IrType(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "tried to get ir type of namespace type");  TODO
+        Assert(false, "tried to get ir type of namespace type");  
         return nullptr; 
     }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override 
     { 
-        // Assert(false, "tried to create default ir value of namespace type");  TODO
+        Assert(false, "tried to create default ir value of namespace type");
         return nullptr; 
     }
     const char* ClassName() const override { return "NamespaceTypeSymbol"; }

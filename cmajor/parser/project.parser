@@ -26,7 +26,7 @@ parser ProjectParser
             QualifiedId:name
             SEMICOLON
             {
-                projectFile.reset(new cmajor::ast::Project(name, lexer.FileName(), config, backend, toolChain, cmajor::ast::SystemDirKind::regular));
+                projectFile.reset(new cmajor::ast::Project(name, lexer.FileName(), config, backend, toolChain));
             }
             (
                 Declaration:declaration{ projectFile->AddDeclaration(declaration); }

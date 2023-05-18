@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.symbols.basic.type.operation;
 
 import cmajor.symbols.value;
@@ -362,8 +365,7 @@ BasicTypeUnaryOperation<UnOp>::BasicTypeUnaryOperation(SymbolType symbolType, Ty
 template<typename UnOp>
 void BasicTypeUnaryOperation<UnOp>::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "unary operation needs one object");
+    Assert(genObjects.size() == 1, "unary operation needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* arg = emitter.Stack().Pop();
     emitter.SetCurrentDebugLocation(sourcePos);
@@ -436,8 +438,7 @@ BasicTypeBinaryOperation<BinOp>::BasicTypeBinaryOperation(SymbolType symbolType,
 template<typename BinOp>
 void BasicTypeBinaryOperation<BinOp>::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "binary operation needs two objects");
+    Assert(genObjects.size() == 2, "binary operation needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -587,8 +588,7 @@ BasicTypeDefaultCtor<DefaultOp>::BasicTypeDefaultCtor(SymbolType symbolType, Typ
 template<typename DefaultOp>
 void BasicTypeDefaultCtor<DefaultOp>::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 1, "default constructor needs one object");
+    Assert(genObjects.size() == 1, "default constructor needs one object");
     emitter.Stack().Push(DefaultOp::Generate(emitter));
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::functionCallFlags & flags);
 }
@@ -1060,8 +1060,7 @@ BasicTypeComparisonOperation<ComparisonOp>::BasicTypeComparisonOperation(SymbolT
 template<typename ComparisonOp>
 void BasicTypeComparisonOperation<ComparisonOp>::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
-    // TODO
-    //Assert(genObjects.size() == 2, "comparison operation needs two objects");
+    Assert(genObjects.size() == 2, "comparison operation needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);

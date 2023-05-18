@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.derived.type.symbol;
 
 import soul.ast.source.pos;
@@ -381,7 +384,7 @@ void DerivedTypeSymbol::Read(SymbolReader& reader)
 
 void DerivedTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     baseType = typeSymbol;
     if (!baseType)
     {

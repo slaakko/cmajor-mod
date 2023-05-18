@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.binder.overload.resolution;
 
 import cmajor.binder.bound.compile.unit;
@@ -481,7 +484,7 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
     int n = std::min(arity, function->Arity());
     if (!function->IsVarArg())
     {
-        // Assert(arity == function->Arity(), "wrong arity"); TODO
+        Assert(arity == function->Arity(), "wrong arity");
     }
     for (int i = 0; i < n; ++i)
     {
@@ -814,8 +817,8 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
     }
     else if (castRequired)
     {
-        // Assert(sourceType, "source type not set"); TODO
-        // Assert(targetType, "target type not set"); TODO
+        Assert(sourceType, "source type not set");
+        Assert(targetType, "target type not set");
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
             exception.reset(new cmajor::symbols::CastOverloadException("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
@@ -832,8 +835,8 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
     }
     else if (cannotBindConstArgToNonConstParam)
     {
-        // Assert(sourceType, "source type not set"); TODO
-        // Assert(targetType, "target type not set"); TODO
+        Assert(sourceType, "source type not set");
+        Assert(targetType, "target type not set");
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
             exception.reset(new cmajor::symbols::CannotBindConstToNonconstOverloadException("overload resolution failed: '" + overloadName +
@@ -1254,7 +1257,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                         cmajor::ast::Node* node = boundCompileUnit.GetSymbolTable().GetNodeNoThrow(viableFunction);
                         if (node)
                         {
-                            // Assert(node->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected"); TODO
+                            Assert(node->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected");
                             cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(node);
                             cmajor::ast::ConstraintNode* constraint = functionNode->WhereConstraint();
                             if (constraint)

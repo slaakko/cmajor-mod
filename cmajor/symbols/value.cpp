@@ -1,8 +1,13 @@
-module cmajor.symbols.value;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.symbols.value;
+
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
 import cmajor.symbols.type.symbol;
@@ -4177,12 +4182,12 @@ void* UuidValue::IrValue(cmajor::ir::Emitter& emitter)
 
 void UuidValue::Write(util::BinaryStreamWriter& writer)
 {
-    //Assert(false, "write for uuid value not supported");
+    Assert(false, "write for uuid value not supported");
 }
 
 void UuidValue::Read(util::BinaryStreamReader& reader)
 {
-    //Assert(false, "read for uuid value not supported");
+    Assert(false, "read for uuid value not supported");
 }
 
 Value* UuidValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const

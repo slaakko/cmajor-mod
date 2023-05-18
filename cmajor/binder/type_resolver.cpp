@@ -3,8 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.binder.type.resolver;
+module;
+#include <util/assert.hpp>
 
+module cmajor.binder.type.resolver;
 
 import cmajor.binder.type.binder;
 import cmajor.binder.evaluator;
@@ -242,7 +244,7 @@ void TypeResolver::ResolveSymbol(cmajor::ast::Node& node, cmajor::ast::Identifie
                 TypeBinder typeBinder(boundCompileUnit);
                 typeBinder.SetContainerScope(typedefSymbol->Parent()->GetContainerScope());
                 cmajor::ast::Node* node = symbolTable.GetNode(typedefSymbol);
-                // Assert(node->GetNodeType() == cmajor::ast::NodeType::typedefNode, "typedef node expected"); TODO
+                Assert(node->GetNodeType() == cmajor::ast::NodeType::typedefNode, "typedef node expected");
                 cmajor::ast::TypedefNode* typedefNode = static_cast<cmajor::ast::TypedefNode*>(node);
                 typeBinder.BindTypedef(typedefSymbol, typedefNode, false);
             }

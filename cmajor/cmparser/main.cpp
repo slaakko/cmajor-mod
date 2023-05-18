@@ -53,7 +53,7 @@ int main(int argc, const char** argv)
                 }
                 else if (arg == "--single-threaded")
                 {
-                    flags = flags | cmajor::build::Flags::singleThreaded;
+                    flags = flags | cmajor::build::Flags::singleThreadedParse;
                 }
                 else if (arg == "--ast")
                 {
@@ -87,7 +87,7 @@ int main(int argc, const char** argv)
                         }
                         case 's':
                         {
-                            flags = flags | cmajor::build::Flags::singleThreaded;
+                            flags = flags | cmajor::build::Flags::singleThreadedParse;
                             break;
                         }
                         case 'a':
@@ -122,15 +122,15 @@ int main(int argc, const char** argv)
                     std::cout << ">>> " << file << "\n";
                 }
                 int fileIndex = fileMap.MapFile(file);
-                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(flags, fileIndex, fileMap);
+                std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::build::ParseSourceFile(fileIndex, fileMap, flags);
             }
             else if (file.ends_with(".cmp"))
             {
-                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(flags, file, "debug", cmajor::ast::BackEnd::llvm, "llvm", fileMap);
+                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(file, "debug", cmajor::ast::BackEnd::llvm, "llvm", fileMap, flags);
             }
             else if (file.ends_with(".cms"))
             {
-                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolution(flags, file, "debug", cmajor::ast::BackEnd::llvm, "llvm");
+                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolution(file, "debug", cmajor::ast::BackEnd::llvm, "llvm", flags);
             }
             else
             {

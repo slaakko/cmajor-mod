@@ -19,7 +19,7 @@ void PrintSourceFile(const std::string& outFilePath, cmajor::ast::Node* compileU
     compileUnitNode->Accept(writer);
 }
 
-std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(Flags flags, int fileIndex, soul::lexer::FileMap& fileMap) 
+std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, soul::lexer::FileMap& fileMap, Flags flags)
 {
     std::string sourceFilePath = fileMap.GetFilePath(fileIndex);
     std::string content = util::ReadFile(sourceFilePath);
@@ -73,11 +73,11 @@ std::unique_ptr<cmajor::ast::Solution> ParseSolutionFile(const std::string& solu
     return solution;
 }
 
-void ParseSingleThreaded(Flags flags, cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap)
+void ParseSingleThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap, Flags flags)
 {
     for (int fileIndex : fileIndeces)
     {
-        std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = ParseSourceFile(flags, fileIndex, fileMap);
+        std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = ParseSourceFile(fileIndex, fileMap, flags);
         project->AddCompileUnit(compileUnit.release());
     }
 }
@@ -117,7 +117,7 @@ void ParseThreadFunc(ParsingThreadData* threadData)
         }
         try
         {
-            std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = ParseSourceFile(threadData->flags, fileIndex, threadData->fileMap);
+            std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = ParseSourceFile(fileIndex, threadData->fileMap, threadData->flags);
             threadData->compileUnits[fileIndex] = std::move(compileUnit);
         }
         catch (...)
@@ -128,7 +128,7 @@ void ParseThreadFunc(ParsingThreadData* threadData)
     }
 }
 
-void ParseMultiThreaded(Flags flags, cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap)
+void ParseMultiThreaded(cmajor::ast::Project* project, const std::vector<int>& fileIndeces, soul::lexer::FileMap& fileMap, Flags flags)
 {
     ParsingThreadData threadData(flags, fileMap, fileIndeces.size());
     for (int fileIndex : fileIndeces)
@@ -159,32 +159,36 @@ void ParseMultiThreaded(Flags flags, cmajor::ast::Project* project, const std::v
     }
 }
 
-std::unique_ptr<cmajor::ast::Project> ParseProject(Flags flags, const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend,
-    const std::string& toolChain, soul::lexer::FileMap& fileMap)
+void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap& fileMap, Flags flags)
+{
+    std::vector<int> fileIndeces;
+    for (const auto& sourceFilePath : project->SourceFilePaths())
+    {
+        fileIndeces.push_back(fileMap.MapFile(sourceFilePath));
+    }
+    if ((flags & Flags::singleThreadedParse) != Flags::none)
+    {
+        ParseSingleThreaded(project, fileIndeces, fileMap, flags);
+    }
+    else
+    {
+        ParseMultiThreaded(project, fileIndeces, fileMap, flags);
+    }
+}
+
+std::unique_ptr<cmajor::ast::Project> ParseProject(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend,
+    const std::string& toolChain, soul::lexer::FileMap& fileMap, Flags flags)
 {
     if ((flags & Flags::verbose) != Flags::none)
     {
         std::cout << ">> " << projectFilePath << "\n";
     }
     std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend, toolChain);
-    std::vector<int> fileIndeces;
-    for (const auto& sourceFilePath : project->SourceFilePaths())
-    {
-        fileIndeces.push_back(fileMap.MapFile(sourceFilePath));
-    }
-    if ((flags & Flags::singleThreaded) != Flags::none)
-    {
-        ParseSingleThreaded(flags, project.get(), fileIndeces, fileMap);
-    }
-    else
-    {
-        ParseMultiThreaded(flags, project.get(), fileIndeces, fileMap);
-    }
     return project;
 }
 
-std::unique_ptr<cmajor::ast::Solution> ParseSolution(Flags flags, const std::string& solutionFilePath, const std::string& config, cmajor::ast::BackEnd backend,
-    const std::string& toolChain)
+std::unique_ptr<cmajor::ast::Solution> ParseSolution(const std::string& solutionFilePath, const std::string& config, cmajor::ast::BackEnd backend,
+    const std::string& toolChain, Flags flags)
 {
     if ((flags & Flags::verbose) != Flags::none)
     {
@@ -194,7 +198,7 @@ std::unique_ptr<cmajor::ast::Solution> ParseSolution(Flags flags, const std::str
     for (const auto& projectFilePath : solution->ProjectFilePaths())
     {
         soul::lexer::FileMap fileMap;
-        std::unique_ptr<cmajor::ast::Project> project = ParseProject(flags, projectFilePath, config, backend, toolChain, fileMap);
+        std::unique_ptr<cmajor::ast::Project> project = ParseProject(projectFilePath, config, backend, toolChain, fileMap, flags);
         solution->AddProject(std::move(project));
     }
     return solution;

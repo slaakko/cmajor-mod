@@ -1,21 +1,13 @@
-module cmajor.symbols.variable.symbol;
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/TypeSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Sha1.hpp>
-#include <algorithm>
-*/
+
+module;
+#include <util/assert.hpp>
+
+module cmajor.symbols.variable.symbol;
+
 import soul.ast.source.pos;
 import cmajor.symbols.exception;
 import cmajor.symbols.symbol.writer;
@@ -29,8 +21,6 @@ import util;
 import std.core;
 
 namespace cmajor::symbols {
-
-//using namespace soulng::unicode;
 
 VariableSymbol::VariableSymbol(SymbolType symbolType_, const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     Symbol(symbolType_, sourcePos_, sourceModuleId_, name_), type()
@@ -53,7 +43,7 @@ void VariableSymbol::Read(SymbolReader& reader)
 
 void VariableSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     type = typeSymbol;
 }
 
@@ -315,8 +305,8 @@ void MemberVariableSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
 
 void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64_t offsetInBits)
 {
-    //Assert(layoutIndex != -1, "invalid layout index");
-    //Assert(Parent() && Parent()->IsClassTypeSymbol(), "parent class type expected");
+    Assert(layoutIndex != -1, "invalid layout index");
+    Assert(Parent() && Parent()->IsClassTypeSymbol(), "parent class type expected");
     ClassTypeSymbol* parentClassType = static_cast<ClassTypeSymbol*>(Parent());
     std::pair<util::uuid, int32_t> memberVariableId = std::make_pair(parentClassType->TypeId(), layoutIndex);
     void* localDIType = emitter.GetDIMemberType(memberVariableId);

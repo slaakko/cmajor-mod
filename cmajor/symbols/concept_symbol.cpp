@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.concepts;
 
 import cmajor.symbols.type.map;
@@ -12,6 +15,7 @@ import cmajor.symbols.templates;
 import cmajor.symbols.modules;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.symbol.collector;
+import cmajor.ast.parameter;
 import util;
 
 namespace cmajor::symbols {
@@ -23,7 +27,7 @@ ConceptGroupSymbol::ConceptGroupSymbol(const soul::ast::SourcePos& sourcePos_, c
 
 void ConceptGroupSymbol::AddConcept(ConceptSymbol* conceptSymbol)
 {
-    // Assert(conceptSymbol->GroupName() == Name(), "wrong concept group"); TODO
+    Assert(conceptSymbol->GroupName() == Name(), "wrong concept group"); 
     int arity = conceptSymbol->Arity();
     auto it = arityConceptMap.find(arity);
     if (it != arityConceptMap.cend())
@@ -128,7 +132,7 @@ ConceptSymbol::ConceptSymbol(const soul::ast::SourcePos& sourcePos_, const util:
 void ConceptSymbol::Write(SymbolWriter& writer)
 {
     ContainerSymbol::Write(writer);
-    // Assert(!typeId.is_nil(), "type id not initialized"); TODO
+    Assert(!typeId.is_nil(), "type id not initialized"); 
     writer.GetBinaryStreamWriter().Write(typeId);
     writer.GetBinaryStreamWriter().Write(groupName);
     util::uuid refineConceptId = util::nil_uuid();
@@ -142,11 +146,11 @@ void ConceptSymbol::Write(SymbolWriter& writer)
     for (uint32_t i = 0; i < n; ++i)
     {
         TemplateParameterSymbol* templateParameter = templateParameters[i];
-        // Assert(!templateParameter->TypeId().is_nil(), "type id not initialized"); TODO
+        Assert(!templateParameter->TypeId().is_nil(), "type id not initialized"); 
         writer.GetBinaryStreamWriter().Write(templateParameter->TypeId());
     }
     cmajor::ast::Node* node = GetRootModuleForCurrentThread()->GetSymbolTable().GetNode(this);
-    // Assert(node->IsConceptNode(), "concept node expected"); TODO
+    Assert(node->IsConceptNode(), "concept node expected"); 
     writer.GetAstWriter().Write(node);
     writer.GetBinaryStreamWriter().Write(hasSource);
 }

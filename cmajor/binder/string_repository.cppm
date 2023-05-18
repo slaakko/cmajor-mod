@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 export module cmajor.binder.string.repository;
 
 import std.core;
@@ -41,14 +44,14 @@ int StringRepository<StringT, CharPtrT>::Install(const StringT& str)
 template<class StringT, class CharPtrT>
 const StringT& StringRepository<StringT, CharPtrT>::GetString(int id) const
 {
-    // Assert(id >= 0 && id < strings.size(), "invalid string id"); TODO
+    Assert(id >= 0 && id < strings.size(), "invalid string id");
     return strings[id];
 }
 
 template<class StringT, class CharPtrT>
 CharPtrT StringRepository<StringT, CharPtrT>::CharPtr(int id) const
 {
-    // Assert(id >= 0 && id < strings.size(), "invalid string id"); TODO
+    Assert(id >= 0 && id < strings.size(), "invalid string id");
     return reinterpret_cast<CharPtrT>(strings[id].c_str());
 }
 

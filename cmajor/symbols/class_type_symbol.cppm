@@ -7,6 +7,7 @@ export module cmajor.symbols.classes;
 
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.scope;
+import cmajor.symbols.variable.symbol;
 import soul.ast.source.pos;
 import cmajor.ir.emitter;
 import cmajor.ast.classes;

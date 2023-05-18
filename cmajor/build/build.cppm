@@ -6,3 +6,5 @@
 export module cmajor.build;
 
 export import cmajor.build.parsing;
+export import cmajor.build.compiling;
+export import cmajor.build.flags;

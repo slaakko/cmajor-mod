@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.function.symbol;
 
 import cmajor.symbols.class_template_specializations;
@@ -13,6 +16,8 @@ import cmajor.symbols.symbol.table;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.templates;
 import cmajor.symbols.variable.symbol;
+import cmajor.symbols.classes;
+import cmajor.ast.parameter;
 import soul.ast.source.pos;
 import cmajor.ast.node;
 import cmajor.ast.function;
@@ -197,7 +202,7 @@ void FunctionGroupSymbol::ComputeMangledName()
 void FunctionGroupSymbol::AddFunction(FunctionSymbol* function)
 {
     if (function->IsProgramMain()) return;
-    //Assert(function->GroupName() == Name(), "wrong function group");
+    Assert(function->GroupName() == Name(), "wrong function group");
     if (function->IsVarArg())
     {
         varArgFunctions.push_back(function);
@@ -480,7 +485,7 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::SourcePo
 void FunctionSymbol::Write(SymbolWriter& writer)
 {
     ContainerSymbol::Write(writer);
-    //Assert(!functionId.is_nil(), "function id not initialized");
+    Assert(!functionId.is_nil(), "function id not initialized");
     writer.GetBinaryStreamWriter().Write(functionId);
     writer.GetBinaryStreamWriter().Write(index);
     writer.GetBinaryStreamWriter().Write(groupName);
@@ -601,7 +606,7 @@ void FunctionSymbol::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
     }
     else
     {
-        //Assert(false, "invalid emplace function index");
+        Assert(false, "invalid emplace function index");
     }
 }
 
@@ -948,7 +953,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -961,7 +966,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -971,7 +976,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             {
                 emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -993,7 +998,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -1006,7 +1011,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -1016,7 +1021,7 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             {
                 emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -1027,12 +1032,12 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
 void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     int na = genObjects.size();
-    //Assert(na > 0, "nonempty argument list expected");
-    //Assert(VmtIndex() != -1, "member function has invalid vmt index");
+    Assert(na > 0, "nonempty argument list expected");
+    Assert(VmtIndex() != -1, "member function has invalid vmt index");
     cmajor::ir::GenObject* classPtrArg = genObjects[0];
     TypeSymbol* type = static_cast<TypeSymbol*>(classPtrArg->GetType());
-    //Assert(type, "type expected");
-    //Assert(type->BaseType()->IsClassTypeSymbol(), "class type pointer expected");
+    Assert(type, "type expected");
+    Assert(type->BaseType()->IsClassTypeSymbol(), "class type pointer expected");
     ClassTypeSymbol* classType = static_cast<ClassTypeSymbol*>(type->BaseType());
     ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
     void* callee = nullptr;
@@ -1091,7 +1096,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -1104,7 +1109,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -1114,7 +1119,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             {
                 emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -1136,7 +1141,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         else
         {
             void* nextBlock = nullptr;
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 nextBlock = emitter.CreateBasicBlock("next");
             }
@@ -1149,7 +1154,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             if (unwindBlock == nullptr)
             {
                 unwindBlock = handlerBlock;
-                //Assert(unwindBlock, "no unwind block");
+                Assert(unwindBlock, "no unwind block");
             }
             if (currentPad == nullptr)
             {
@@ -1159,7 +1164,7 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             {
                 emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
-            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+            if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
                 emitter.SetCurrentBasicBlock(nextBlock);
             }
@@ -1958,7 +1963,7 @@ std::u32string DestructorSymbol::CodeName() const
 
 bool DestructorSymbol::DontThrow() const
 {
-    if (GetBackEnd() == BackEnd::cmcpp)
+    if (GetBackEnd() == BackEnd::cpp)
     {
         return !HasCleanup();
     }

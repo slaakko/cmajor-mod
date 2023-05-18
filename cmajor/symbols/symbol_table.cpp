@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.symbol.table;
 
 import cmajor.symbols.type.symbol;
@@ -58,6 +61,17 @@ import util;
 
 namespace cmajor::symbols {
 
+size_t ClassTemplateSpecializationKeyHash::operator()(const ClassTemplateSpecializationKey& key) const
+{
+    size_t x = util::HashValue(key.classTemplate->TypeId());
+    int n = key.templateArgumentTypes.size();
+    for (int i = 0; i < n; ++i)
+    {
+        x = x ^ util::HashValue(key.templateArgumentTypes[i]->TypeId());
+    }
+    return x;
+}
+
 bool operator==(const ClassTemplateSpecializationKey& left, const ClassTemplateSpecializationKey& right)
 {
     if (!TypesEqual(left.classTemplate, right.classTemplate)) return false;
@@ -85,6 +99,13 @@ bool operator==(const ArrayKey& left, const ArrayKey& right)
 bool operator!=(const ArrayKey& left, const ArrayKey& right)
 {
     return !(left == right);
+}
+
+size_t ArrayKeyHash::operator()(const ArrayKey& key) const
+{
+    size_t x = util::HashValue(key.elementType->TypeId());
+    x = x ^ std::hash<int64_t>()(key.size);
+    return x;
 }
 
 void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode, Symbol* symbol)
@@ -283,7 +304,7 @@ void SymbolTable::Import(const SymbolTable& symbolTable)
         }
         else
         {
-            //Assert(false, "type or concept symbol expected"); TODO
+            Assert(false, "type or concept symbol expected"); 
         }
     }
     for (const auto& pair : symbolTable.functionIdMap)
@@ -791,7 +812,7 @@ void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFun
         }
         else
         {
-            // Assert(false, "class or interface expected"); TODO
+            Assert(false, "class or interface expected"); 
         }
         thisParam->SetType(thisParamType);
         thisParam->SetBound();
@@ -1152,7 +1173,7 @@ void SymbolTable::AddTypeOrConceptSymbolToTypeIdMap(Symbol* typeOrConceptSymbol)
     }
     else
     {
-        // Assert(false, "type or concept symbol expected"); TODO
+        Assert(false, "type or concept symbol expected"); 
     }
 }
 
@@ -1227,7 +1248,7 @@ void SymbolTable::EmplaceTypeOrConceptRequest(SymbolReader& reader, Symbol* forS
         }
         else
         {
-            // Assert(false, "internal error: type or concept symbol expected"); TODO
+            Assert(false, "internal error: type or concept symbol expected"); 
         }
     }
     else
@@ -1280,7 +1301,7 @@ void SymbolTable::ProcessTypeConceptAndFunctionRequests(const std::vector<TypeOr
             }
             else
             {
-                // Assert(false, "internal error: type or concept symbol expected"); TODO
+                Assert(false, "internal error: type or concept symbol expected"); 
             }
         }
         else

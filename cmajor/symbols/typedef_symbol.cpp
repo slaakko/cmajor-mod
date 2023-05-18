@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.typedefs;
 
 import cmajor.symbols.symbol.table;
@@ -38,7 +41,7 @@ void TypedefSymbol::Read(SymbolReader& reader)
 
 void TypedefSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
-    //Assert(index == 0, "invalid emplace type index");
+    Assert(index == 0, "invalid emplace type index");
     type = typeSymbol;
 }
 

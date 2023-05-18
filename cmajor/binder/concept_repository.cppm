@@ -6,6 +6,7 @@
 export module cmajor.binder.concept_repository;
 
 import std.core;
+import cmajor.ast;
 import cmajor.binder.bound.constraint;
 
 export namespace cmajor::binder {

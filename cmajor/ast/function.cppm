@@ -8,13 +8,14 @@ export module cmajor.ast.function;
 import std.core;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
+import cmajor.ast.attribute;
+import cmajor.ast.statement;
+import cmajor.ast.templates;
+import cmajor.ast.identifier;
+import cmajor.ast.concepts;
+import cmajor.ast.parameter;
 
 export namespace cmajor::ast {
-
-class AttributesNode;
-class WhereConstraintNode;
-class CompoundStatementNode;
-class TemplateParameterNode;
 
 class FunctionNode : public Node
 {

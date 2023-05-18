@@ -1,36 +1,14 @@
-module;
-#include <boost/multiprecision/integer.hpp>
-module cmajor.symbols.classes;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
-/*
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <cmajor/symbols/InterfaceTypeSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/SymbolCollector.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <sngcm/ast/Literal.hpp>
-#include <sngcm/ast/TypeExpr.hpp>
-#include <sngcm/ast/BasicType.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Sha1.hpp>
-#include <soulng/util/Uuid.hpp>
-#include <soulng/util/Prime.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-*/
+
+module;
+#include <util/assert.hpp>
+#include <boost/multiprecision/integer.hpp>
+
+module cmajor.symbols.classes;
+
 import soul.ast.source.pos;
 import cmajor.symbols.global.flags;
 import cmajor.ir.emitter;
@@ -73,11 +51,11 @@ int32_t GetTypeIdVmtIndexOffset()
 
 int32_t GetClassNameVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
     {
         return 4;
     }
-    else if (GetBackEnd() == BackEnd::cmsx)
+    else if (GetBackEnd() == BackEnd::systemx)
     {
         return 2;
     }
@@ -89,11 +67,11 @@ int32_t GetClassNameVmtIndexOffset()
 
 int32_t GetImtsVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
     {
         return 5;
     }
-    else if (GetBackEnd() == BackEnd::cmsx)
+    else if (GetBackEnd() == BackEnd::systemx)
     {
         return 3;
     }
@@ -105,11 +83,11 @@ int32_t GetImtsVmtIndexOffset()
 
 int32_t GetFunctionVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cmcpp)
+    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
     {
         return 6;
     }
-    else if (GetBackEnd() == BackEnd::cmsx)
+    else if (GetBackEnd() == BackEnd::systemx)
     {
         return 4;
     }
@@ -125,13 +103,13 @@ ClassGroupTypeSymbol::ClassGroupTypeSymbol(const soul::ast::SourcePos& sourcePos
 
 void* ClassGroupTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
 {
-    //TODO:Assert(false, "tried to get ir type of class group");
+    Assert(false, "tried to get ir type of class group");
     return nullptr;
 }
 
 void* ClassGroupTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 {
-    //TODO:Assert(false, "tried to create default ir value of class group");
+    Assert(false, "tried to create default ir value of class group");
     return nullptr;
 }
 
@@ -393,7 +371,7 @@ void ClassTypeSymbol::Read(SymbolReader& reader)
     {
         usingNodes.Read(reader.GetAstReader());
         cmajor::ast::Node* node = reader.GetAstReader().ReadNode();
-        //TODO:Assert(node->GetNodeType() == NodeType::classNode, "class node expected");
+        Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
         cmajor::ast::ClassNode* clsNode = static_cast<cmajor::ast::ClassNode*>(node);
         classNode.reset(clsNode);
         bool hasPrototype = reader.GetBinaryStreamReader().ReadBool();
@@ -459,7 +437,7 @@ void ClassTypeSymbol::Read(SymbolReader& reader)
     {
         if (destructor->VmtIndex() != -1)
         {
-            //TODO:Assert(destructor->VmtIndex() < vmt.size(), "invalid destructor vmt index");
+            Assert(destructor->VmtIndex() < vmt.size(), "invalid destructor vmt index");
             vmt[destructor->VmtIndex()] = destructor;
         }
     }
@@ -467,7 +445,7 @@ void ClassTypeSymbol::Read(SymbolReader& reader)
     {
         if (memberFunction->VmtIndex() != -1)
         {
-            //TODO:Assert(memberFunction->VmtIndex() < vmt.size(), "invalid member function vmt index");
+            Assert(memberFunction->VmtIndex() < vmt.size(), "invalid member function vmt index");
             vmt[memberFunction->VmtIndex()] = memberFunction;
         }
     }
@@ -507,19 +485,19 @@ void ClassTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     if (index == 0)
     {
-        //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol || typeSymbol->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classTypeSymbol || typeSymbol->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol, "class type symbol expected");
         baseClass = static_cast<ClassTypeSymbol*>(typeSymbol);
     }
     else if (index >= 1)
     {
         if (index == prototypeIndex)
         {
-            //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol, "class template specialization expected");
+            Assert(typeSymbol->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol, "class template specialization expected");
             SetPrototype(static_cast<ClassTemplateSpecializationSymbol*>(typeSymbol));
         }
         else if (index < objectLayoutIndex)
         {
-            //TODO:Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type symbol expected");
+            Assert(typeSymbol->GetSymbolType() == SymbolType::interfaceTypeSymbol, "interface type symbol expected");
             InterfaceTypeSymbol* interfaceTypeSymbol = static_cast<InterfaceTypeSymbol*>(typeSymbol);
             implementedInterfaces[index - 1] = interfaceTypeSymbol;
         }
@@ -869,7 +847,7 @@ void ClassTypeSymbol::CreateDestructorSymbol()
         destructorSymbol->SetAccess(SymbolAccess::public_);
         destructorSymbol->AddMember(thisParam);
         AddMember(destructorSymbol);
-        //TODO:Assert(destructor, "destructor expected");
+        Assert(destructor, "destructor expected");
         if (GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
         {
             destructor->SetLinkOnceOdrLinkage();
@@ -1542,7 +1520,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     std::string imtObjectName = ImtObjectName(index);
     void* imtType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), imt.size());
     void* imtObject = emitter.GetOrInsertGlobal(imtObjectName, imtType);
-    if (GetBackEnd() != BackEnd::cmcpp)
+    if (GetBackEnd() != BackEnd::cpp)
     {
         void* comdat = emitter.GetOrInsertAnyComdat(imtObjectName, imtObject);
     }
@@ -1552,7 +1530,7 @@ void* ClassTypeSymbol::CreateImt(cmajor::ir::Emitter& emitter, int index)
     {
         FunctionSymbol* memFun = imt[i];
         void* interfaceFun = emitter.GetOrInsertFunction(util::ToUtf8(memFun->MangledName()), memFun->IrType(emitter), memFun->DontThrow());
-        if (GetBackEnd() == BackEnd::cmcpp)
+        if (GetBackEnd() == BackEnd::cpp)
         {
             irImt.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), interfaceFun));
         }
@@ -1570,7 +1548,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     std::string imtArrayObjectName = ImtArrayObjectName(emitter);
     void* imtsArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), implementedInterfaces.size());
     void* imtsArrayObject = emitter.GetOrInsertGlobal(imtArrayObjectName, imtsArrayType);
-    if (GetBackEnd() != BackEnd::cmcpp)
+    if (GetBackEnd() != BackEnd::cpp)
     {
         void* comdat = emitter.GetOrInsertAnyComdat(imtArrayObjectName, imtsArrayObject);
     }
@@ -1579,7 +1557,7 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
     for (int i = 0; i < n; ++i)
     {
         void* irImt = CreateImt(emitter, i);
-        if (GetBackEnd() == BackEnd::cmcpp)
+        if (GetBackEnd() == BackEnd::cpp)
         {
             imtsArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), irImt));
         }
@@ -1611,7 +1589,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
     {
         emitter.SetVmtObjectCreated(this);
         bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
-        if ((GetBackEnd() == BackEnd::cmcpp || GetBackEnd() == BackEnd::cmsx) && !specialization)
+        if ((GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx) && !specialization)
         {
             if (VmtEmitted())
             {
@@ -1661,7 +1639,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
             }
         }
-        else if (GetBackEnd() == BackEnd::cmcpp)
+        else if (GetBackEnd() == BackEnd::cpp)
         {
             vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType()); // 128-bit class id, initially 0, dynamically initialized
             vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
@@ -1697,7 +1675,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
             }
         }
-        else if (GetBackEnd() == BackEnd::cmsx)
+        else if (GetBackEnd() == BackEnd::systemx)
         {
             std::string typeId = util::ToString(TypeId());
             vmtArray.push_back(emitter.GetClsIdValue(typeId)); // 128-bit type id

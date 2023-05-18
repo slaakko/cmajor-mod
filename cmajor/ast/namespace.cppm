@@ -6,12 +6,11 @@
 export module cmajor.ast.namespaces;
 
 import std.core;
+import cmajor.ast.identifier;
 import cmajor.ast.node;
 import cmajor.ast.node.list;
 
 export namespace cmajor::ast {
-
-class IdentifierNode;
 
 enum class NsFlags : int8_t
 {
