@@ -40,8 +40,8 @@ public:
     void SetHasDefault() { hasDefault = true; }
     void SetDefaultType(TypeSymbol* defaultType_) { defaultType = defaultType_; }
     TypeSymbol* DefaultType() { return defaultType; }
-    //TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, 
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "TemplateParameterSymbol"; }
     std::string GetSymbolCategoryStr() const override { return "TP"; }

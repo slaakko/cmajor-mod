@@ -150,20 +150,20 @@ void TypedefSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
         throw Exception("typedef cannot be unit_test", GetSourcePos(), SourceModuleId());
     }
 }
-/*TODO
+
 std::unique_ptr<soul::xml::Element> TypedefSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"TypedefSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("TypedefSymbol"));
     if (type)
     {
-        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
+        std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
         int typeId = typeMap.GetOrInsertType(type);
-        typeElement->SetAttribute(U"ref", U"type_" + ToUtf32(util::ToString(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(typeElement.release()));
+        typeElement->SetAttribute("ref", "type_" + util::ToString(typeId));
+        element->AppendChild(typeElement.release());
     }
     return element;
 }
-*/
+
 void TypedefSymbol::Check()
 {
     Symbol::Check();

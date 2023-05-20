@@ -1,0 +1,2372 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum GraphicsStatus : int
+    {
+        ok = 0,
+        genericError = 1,
+        invalidParameter = 2,
+        outOfMemory = 3,
+        objectBusy = 4,
+        insufficientBuffer = 5,
+        notImplemented = 6,
+        win32Error = 7,
+        wrongState = 8,
+        aborted = 9,
+        fileNotFound = 10,
+        valueOverflow = 11,
+        accessDenied = 12,
+        unknownImageFormat = 13,
+        fontFamilyNotFound = 14,
+        fontStyleNotFound = 15,
+        notTrueTypeFont = 16,
+        unsupportedGdiplusVersion = 17,
+        gdiplusNotInitialized = 18,
+        propertyNotFound = 19,
+        propertyNotSupported = 20,
+        profileNotFound = 21
+    }
+
+    public string GraphicsStatusStr(GraphicsStatus status)
+    {
+        switch (status)
+        {
+            case GraphicsStatus.ok: return "ok";
+            case GraphicsStatus.genericError: return "generic error";
+            case GraphicsStatus.invalidParameter: return "invalid parameter";
+            case GraphicsStatus.outOfMemory: return "out of memory";
+            case GraphicsStatus.objectBusy: return "object busy";
+            case GraphicsStatus.insufficientBuffer: return "insufficient buffer";
+            case GraphicsStatus.notImplemented: return "not implemented";
+            case GraphicsStatus.win32Error: return "WIN32 error";
+            case GraphicsStatus.wrongState: return "wrong state";
+            case GraphicsStatus.aborted: return "aborted";
+            case GraphicsStatus.fileNotFound: return "file not found";
+            case GraphicsStatus.valueOverflow: return "value overflow";
+            case GraphicsStatus.accessDenied: return "access denied";
+            case GraphicsStatus.unknownImageFormat: return "unknown image format";
+            case GraphicsStatus.fontFamilyNotFound: return "font family not found";
+            case GraphicsStatus.fontStyleNotFound: return "font style not found";
+            case GraphicsStatus.notTrueTypeFont: return "not True Type font";
+            case GraphicsStatus.unsupportedGdiplusVersion: return "unsupported GDI+ version";
+            case GraphicsStatus.gdiplusNotInitialized: return "GDI+ not initialized";
+            case GraphicsStatus.propertyNotFound: return "property not found";
+            case GraphicsStatus.propertyNotSupported: return "property not supported";
+            case GraphicsStatus.profileNotFound: return "profile not found";
+        }
+        return "graphics error";
+    }
+
+    public void CheckGraphicsStatus(GraphicsStatus status)
+    {
+        if (status != GraphicsStatus.ok)
+        {
+            throw Exception("GDI+ error: " + GraphicsStatusStr(status));
+        }
+    }
+
+    public class Point
+    {
+        public nothrow Point() : x(0), y(0)
+        {
+        }
+        public nothrow Point(int x_, int y_) : x(x_), y(y_)
+        {
+        }
+        public default nothrow Point(const Point&);
+        public default nothrow void operator=(const Point&);
+        public static nothrow Point Default()
+        {
+            return Point(CW_USEDEFAULT, CW_USEDEFAULT);
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(x) + ", " + ToString(y) + ")";
+        }
+        public nothrow inline void Offset(int dx, int dy)
+        {
+            x = x + dx;
+            y = y + dy;
+        }
+        public int x;
+        public int y;
+    }
+
+    public nothrow inline bool operator==(const Point& left, const Point& right)
+    {
+        return left.x == right.x && left.y == right.y;
+    }
+
+    public class Size
+    {
+        public nothrow Size() : h(0), w(0)
+        {
+        }
+        public nothrow Size(int w_, int h_) : w(w_), h(h_)
+        {
+        }
+        public default nothrow Size(const Size&);
+        public default nothrow void operator=(const Size&);
+        public static nothrow Size Default()
+        {
+            return Size(CW_USEDEFAULT, CW_USEDEFAULT);
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(w) + ", " + ToString(h) + ")";
+        }
+        public int w;
+        public int h;
+    }
+
+    public nothrow inline bool operator==(const Size& left, const Size& right)
+    {
+        return left.w == right.w && left.h == right.h;
+    }
+
+    public class PointF
+    {
+        public nothrow PointF() : x(0.0f), y(0.0f)
+        {
+        }
+        public nothrow PointF(float x_, float y_) : x(x_), y(y_)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(x) + ", " + ToString(y) + ")";
+        }
+        public nothrow inline void Offset(float dx, float dy)
+        {
+            x = x + dx;
+            y = y + dy;
+        }
+        public float x;
+        public float y;
+    }
+
+    public nothrow inline bool operator==(const PointF& left, const PointF& right)
+    {
+        return left.x == right.x && left.y == right.y;
+    }
+
+    public nothrow float Distance(const PointF& start, const PointF& end)
+    {
+        float dx = Abs(start.x - end.x);
+        float dy = Abs(start.y - end.y);
+        float distance = cast<float>(Sqrt(dx * dx + dy * dy));
+        return distance;
+    }
+
+    public class Vector
+    {
+        public nothrow Vector() : x(0), y(0)
+        {
+        }
+        public nothrow Vector(float x_, float y_) : x(x_), y(y_)
+        {
+        }
+        public nothrow explicit Vector(const PointF& point) : x(point.x), y(point.y)
+        {
+        }
+        public nothrow float Length() const
+        {
+            return cast<float>(Sqrt(x * x + y * y));
+        }
+        public nothrow PointF ToPoint() const
+        {
+            return PointF(x, y);
+        }
+        public float x;
+        public float y;
+    }
+
+    public nothrow inline bool operator==(const Vector& v, const Vector& u)
+    {
+        return v.x == u.x && v.y == u.y;
+    }
+
+    public nothrow Vector operator*(const Vector& v, float a)
+    {
+        return Vector(v.x * a, v.y * a);
+    }
+
+    public nothrow Vector operator*(float a, const Vector& v)
+    {
+        return Vector(v.x * a, v.y * a);
+    }
+
+    public nothrow Vector operator+(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x + right.x, left.y + right.y);
+    }
+
+    public nothrow Vector operator-(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x - right.x, left.y - right.y);
+    }
+
+    public nothrow Vector UnitVector(const Vector& v)
+    {
+        float length = v.Length();
+        return v * (1 / length);
+    }
+
+    // Dot product of vectors u and v:
+
+    public nothrow float Dot(const Vector& u, const Vector& v)
+    {
+        return u.x * v.x + u.y * v.y;
+    }
+
+    public nothrow float ProjectionFactor(const Vector& a, const Vector& b)
+    {
+        return Dot(a, b * (1 / b.Length()));
+    }
+
+    // Projection of vector a onto b:
+
+    public nothrow Vector Projection(const Vector& a, const Vector& b)
+    {
+        return UnitVector(b) * ProjectionFactor(a, b);
+    }
+
+    //  MainDirection returns:
+    //      0, if angle between vector v and positive x axis is between 315 and 45 degrees clockwise
+    //      90, if angle between vector v and positive x axis is between 45 and 135 degrees clockwise
+    //      180, if angle between vector v and positive x axis is between 135 and 225 degrees clockwise
+    //      270, if angle between vector v and positive x axis is between 225 and 315 degrees clockwise
+    //      In this coordinate system x axis points to the right and y axis points downwards.
+
+    public nothrow int MainDirection(const Vector& v)
+    {
+        if (v.x >= 0)
+        {
+            if (v.y >= 0)
+            {
+                Vector u(1, -1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 90;
+                }
+            }
+            else
+            {
+                Vector u(-1, -1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 270;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        else
+        {
+            if (v.y >= 0)
+            {
+                Vector u(1, 1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 90;
+                }
+                else
+                {
+                    return 180;
+                }
+            }
+            else
+            {
+                Vector u(-1, 1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 180;
+                }
+                else
+                {
+                    return 270;
+                }
+            }
+        }
+    }
+
+    public nothrow Vector Rotate(const Vector& v, double angleRad)
+    {
+        double cosTheta = Cos(angleRad);
+        double sinTheta = Sin(angleRad);
+        Vector r(cast<float>(v.x * cosTheta - v.y * sinTheta), cast<float>(v.x * sinTheta + v.y * cosTheta));
+        return r;
+    }
+
+    public class Line
+    {
+        public nothrow Line() : start(), end()
+        {
+        }
+        public nothrow Line(const PointF& start_, const PointF& end_) : start(start_), end(end_)
+        {
+        }
+        public nothrow Line(const PointF& start_, const Vector& v) : start(start_), end(Vector(Vector(start) + v).ToPoint())
+        {
+        }
+        public nothrow float Length() const
+        {
+            return Distance(start, end);
+        }
+        public nothrow Vector ToVector() const
+        {
+            return Vector(end.x - start.x, end.y - start.y);
+        }
+        public PointF start;
+        public PointF end;
+    }
+
+    public inline nothrow bool operator==(const Line& left, const Line& right)
+    {
+        return left.start == right.start && left.end == right.end;
+    }
+
+    public nothrow Line Rotate(const Line& line, float angleDeg)
+    {
+        double angleRad = PI() / 180.0 * angleDeg;
+        Vector v = line.ToVector();
+        Vector r = Rotate(v, angleRad);
+        Line result(line.start, r);
+        return result;
+    }
+
+    public class SizeF
+    {
+        public nothrow SizeF() : w(0.0f), h(0.0f)
+        {
+        }
+        public nothrow SizeF(float w_, float h_) : w(w_), h(h_)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(w) + ", " + ToString(h) + ")";
+        }
+        public float w;
+        public float h;
+    }
+
+    public nothrow inline bool operator==(const SizeF& left, const SizeF& right)
+    {
+        return left.w == right.w && left.h == right.h;
+    }
+
+    public class Rect
+    {
+        public nothrow Rect() : location(), size()
+        {
+        }
+        public nothrow Rect(const Point& location_, const Size& size_) : location(location_), size(size_)
+        {
+        }
+        public nothrow Rect(const WinRect& winRect) : location(winRect.left, winRect.top), size(winRect.right - winRect.left, winRect.bottom - winRect.top)
+        {
+        }
+        public nothrow WinRect ToWinRect() const
+        {
+            return WinRect(location.x, location.y, location.x + size.w, location.y + size.h);
+        }
+        public nothrow inline bool IsEmpty() const
+        {
+            return size.w == 0 && size.h == 0;
+        }
+        public nothrow inline int Left() const
+        {
+            return location.x;
+        }
+        public nothrow inline int Right() const
+        {
+            return location.x + size.w;
+        }
+        public nothrow inline int Top() const
+        {
+            return location.y;
+        }
+        public nothrow inline int Bottom() const
+        {
+            return location.y + size.h;
+        }
+        public nothrow inline bool Contains(const Point& p)
+        {
+            return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
+        }
+        public nothrow inline void Inflate(int dx, int dy)
+        {
+            location.x = location.x - dx;
+            location.y = location.y - dy;
+            size.w = size.w + 2 * dx;
+            size.h = size.h + 2 * dy;
+        }
+        public nothrow inline void Offset(int dx, int dy)
+        {
+            location.Offset(dx, dy);
+        }
+        public nothrow bool IntersectsWith(const Rect& that) const
+        {
+            return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
+        }
+        public static nothrow Rect Union(const Rect& a, const Rect& b)
+        {
+            int right = Max(a.Right(), b.Right());
+            int bottom = Max(a.Bottom(), b.Bottom());
+            int left = Min(a.Left(), b.Left());
+            int top = Min(a.Top(), b.Top());
+            return Rect(Point(left, top), Size(right - left, bottom - top));
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
+        }
+        public Point location;
+        public Size size;
+    }
+
+    public nothrow inline bool operator==(const Rect& left, const Rect& right)
+    {
+        return left.location == right.location && left.size == right.size;
+    }
+
+    public class RectF
+    {
+        public nothrow RectF() : location(), size()
+        {
+        }
+        public nothrow RectF(const PointF& location_, const SizeF& size_) : location(location_), size(size_)
+        {
+        }
+        public nothrow inline float Left() const
+        {
+            return location.x;
+        }
+        public nothrow inline float Right() const
+        {
+            return location.x + size.w;
+        }
+        public nothrow inline float Top() const
+        {
+            return location.y;
+        }
+        public nothrow inline float Bottom() const
+        {
+            return location.y + size.h;
+        }
+        public nothrow string ToString() const
+        {
+            return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
+        }
+        public nothrow inline bool IsEmpty() const
+        {
+            return size.w == 0 && size.h == 0;
+        }
+        public nothrow inline bool Contains(const PointF& p)
+        {
+            return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
+        }
+        public nothrow inline void Inflate(float dx, float dy)
+        {
+            location.x = location.x - dx;
+            location.y = location.y - dy;
+            size.w = size.w + 2 * dx;
+            size.h = size.h + 2 * dy;
+        }
+        public nothrow inline void Offset(float dx, float dy)
+        {
+            location.Offset(dx, dy);
+        }
+        public nothrow bool IntersectsWith(const RectF& that) const
+        {
+            return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
+        }
+        public static nothrow RectF Union(const RectF& a, const RectF& b)
+        {
+            float right = Max(a.Right(), b.Right());
+            float bottom = Max(a.Bottom(), b.Bottom());
+            float left = Min(a.Left(), b.Left());
+            float top = Min(a.Top(), b.Top());
+            return RectF(PointF(left, top), SizeF(right - left, bottom - top));
+        }
+        public PointF location;
+        public SizeF size;
+    }
+
+    public enum LineCap : int
+    {
+        flat = 0,
+        square = 1,
+        round = 2,
+        triangle = 3,
+        noAnchor = 0x10,
+        squareAnchor = 0x11,
+        roundAnchopr = 0x12,
+        diamondAnchor = 0x13,
+        arrowAnchor = 0x14,
+        custom = 0xff,
+        anchorMask = 0xf0
+    }
+
+    public enum LineJoin : int
+    {
+        miter = 0,
+        bevel = 1,
+        round = 2,
+        miterClipped = 3
+    }
+
+    public enum DashCap : int
+    {
+        flat = 0,
+        round = 2,
+        triangle = 3
+    }
+
+    public enum DashStyle : int
+    {
+        solid = 0,
+        dash = 1,
+        dot = 2,
+        dashDot = 3,
+        dashDotDot = 4,
+        custom = 5
+    }
+
+    public nothrow string ToString(DashStyle dashStyle)
+    {
+        switch (dashStyle)
+        {
+            case DashStyle.solid: return "solid";
+            case DashStyle.dash: return "dash";
+            case DashStyle.dot: return "dot";
+            case DashStyle.dashDot: return "dashDot";
+            case DashStyle.dashDotDot: return "dashDotDot";
+            case DashStyle.custom: return "custom";
+        }
+        return string();
+    }
+
+    public class Pen
+    {
+        public enum Alignment : int
+        {
+            center = 0, inset = 1
+        }
+        public Pen(const Color& color, float width) : nativePen(WinGraphicsCreatePen(color.alpha, color.red, color.green, color.blue, width))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+        }
+        public Pen(const Color& color) : this(color, 1.0f)
+        {
+        }
+        public Pen(const Pen& that) : nativePen(WinGraphicsClonePen(that.nativePen))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+        }
+        public nothrow Pen(Pen&& that) : nativePen(that.nativePen)
+        {
+            that.nativePen = null;
+        }
+        public void operator=(const Pen& that)
+        {
+            if (nativePen != that.nativePen)
+            {
+                if (nativePen != null)
+                {
+                    WinGraphicsDeletePen(nativePen);
+                }
+                nativePen = WinGraphicsClonePen(that.nativePen);
+                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+            }
+        }
+        public default nothrow void operator=(Pen&& that);
+        public ~Pen()
+        {
+            if (nativePen != null)
+            {
+                WinGraphicsDeletePen(nativePen);
+            }
+        }
+        public nothrow Alignment GetAlignment() const
+        {
+            return cast<Alignment>(WinGraphicsPenGetAlignment(nativePen));
+        }
+        public nothrow GraphicsStatus SetAlignment(Alignment alignment)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetAlignment(nativePen, cast<int>(alignment)));
+        }
+        public void SetAlignmentChecked(Alignment alignment)
+        {
+            CheckGraphicsStatus(SetAlignment(alignment));
+        }
+        public nothrow Brush GetBrush() const
+        {
+            Brush brush;
+            brush.SetNativeBrush(WinGraphicsPenGetBrush(nativePen));
+            return brush;
+        }
+        public nothrow GraphicsStatus SetBrush(const Brush& brush)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetBrush(nativePen, brush.NativeBrush()));
+        }
+        public void SetBrushChecked(const Brush& brush)
+        {
+            CheckGraphicsStatus(SetBrush(brush));
+        }
+        public nothrow GraphicsStatus GetColor(Color& color) const
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenGetColor(nativePen, color.alpha, color.red, color.green, color.blue));
+        }
+        public Color GetColorChecked() const
+        {
+            Color color;
+            CheckGraphicsStatus(GetColor(color));
+            return color;
+        }
+        public nothrow GraphicsStatus SetColor(const Color& color)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetColor(nativePen, color.alpha, color.red, color.green, color.blue));
+        }
+        public LineCap GetStartCap() const
+        {
+            return cast<LineCap>(WinGraphicsPenGetStartCap(nativePen));
+        }
+        public nothrow GraphicsStatus SetStartCap(LineCap startCap)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetStartCap(nativePen, cast<int>(startCap)));
+        }
+        public void SetStartCapChecked(LineCap startCap)
+        {
+            CheckGraphicsStatus(SetStartCap(startCap));
+        }
+        public LineCap GetEndCap() const
+        {
+            return cast<LineCap>(WinGraphicsPenGetEndCap(nativePen));
+        }
+        public nothrow GraphicsStatus SetEndCap(LineCap endCap)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetEndCap(nativePen, cast<int>(endCap)));
+        }
+        public void SetEndCapChecked(LineCap endCap)
+        {
+            CheckGraphicsStatus(SetEndCap(endCap));
+        }
+        public DashCap GetDashCap() const
+        {
+            return cast<DashCap>(WinGraphicsPenGetDashCap(nativePen));
+        }
+        public nothrow GraphicsStatus SetDashCap(DashCap dashCap)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetDashCap(nativePen, cast<int>(dashCap)));
+        }
+        public void SetDashCapChecked(DashCap dashCap)
+        {
+            CheckGraphicsStatus(SetDashCap(dashCap));
+        }
+        public nothrow float GetDashOffset() const
+        {
+            return WinGraphicsPenGetDashOffset(nativePen);
+        }
+        public nothrow GraphicsStatus SetDashOffset(float dashOffset)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetDashOffset(nativePen, dashOffset));
+        }
+        public void SetDashOffsetChecked(float dashOffset)
+        {
+            CheckGraphicsStatus(SetDashOffset(dashOffset));
+        }
+        public nothrow DashStyle GetDashStyle() const
+        {
+            return cast<DashStyle>(WinGraphicsPenGetDashStyle(nativePen));
+        }
+        public nothrow GraphicsStatus SetDashStyle(DashStyle dashStyle)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetDashStyle(nativePen, cast<int>(dashStyle)));
+        }
+        public void SetDashStyleChecked(DashStyle dashStyle)
+        {
+            CheckGraphicsStatus(SetDashStyle(dashStyle));
+        }
+        public LineJoin GetLineJoin() const
+        {
+            return cast<LineJoin>(WinGraphicsPenGetLineJoin(nativePen));
+        }
+        public nothrow GraphicsStatus SetLineJoin(LineJoin lineJoin)
+        {
+            return cast<GraphicsStatus>(WinGraphicsPenSetLineJoin(nativePen, cast<int>(lineJoin)));
+        }
+        public void SetLineJoinChecked(LineJoin lineJoin)
+        {
+            CheckGraphicsStatus(SetLineJoin(lineJoin));
+        }
+        public nothrow inline void* NativePen() const
+        {
+            return nativePen;
+        }
+        private void* nativePen;
+    }
+
+    public class PenKey
+    {
+        public nothrow PenKey(const Color& color_, float width_, DashStyle dashStyle_) : color(color_), width(width_), dashStyle(dashStyle_)
+        {
+        }
+        public nothrow string ToString() const
+        {
+            return color.ToString() + ":" + System.ToString(width) + ":" + ToString(dashStyle);
+        }
+        public Color color;
+        public float width;
+        public DashStyle dashStyle;
+    }
+
+    public nothrow bool operator==(const PenKey& left, const PenKey& right)
+    {
+        return left.color == right.color && left.width == right.width && left.dashStyle == right.dashStyle;
+    }
+
+    public nothrow ulong GetHashCode(const PenKey& penKey)
+    {
+        return GetHashCode(penKey.ToString());
+    }
+
+    public abstract class Brush
+    {
+        public nothrow Brush() : nativeBrush(null)
+        {
+        }
+        public nothrow void SetNativeBrush(const void* nativeBrush_)
+        {
+            nativeBrush = nativeBrush_;
+        }
+        public virtual ~Brush()
+        {
+        }
+        public virtual nothrow const void* NativeBrush() const
+        {
+            return nativeBrush;
+        }
+        private const void* nativeBrush;
+    }
+
+    public class SolidBrush : Brush
+    {
+        public SolidBrush(const Color& color) : nativeSolidBrush(WinGraphicsCreateSolidBrush(color.alpha, color.red, color.green, color.blue))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+            SetNativeBrush(nativeSolidBrush);
+        }
+        public SolidBrush(const SolidBrush& that) : nativeSolidBrush(WinGraphicsCloneSolidBrush(that.nativeSolidBrush))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+            SetNativeBrush(nativeSolidBrush);
+        }
+        public nothrow SolidBrush(SolidBrush&& that) : nativeSolidBrush(that.nativeSolidBrush)
+        {
+            that.SetNativeBrush(null);
+            that.nativeSolidBrush = null;
+        }
+        public void operator=(const SolidBrush& that)
+        {
+            if (nativeSolidBrush != that.nativeSolidBrush)
+            {
+                if (nativeSolidBrush != null)
+                {
+                    WinGraphicsDeleteSolidBrush(nativeSolidBrush);
+                }
+                nativeSolidBrush = WinGraphicsCloneSolidBrush(that.nativeSolidBrush);
+                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+                SetNativeBrush(nativeSolidBrush);
+            }
+        }
+        public nothrow void operator=(SolidBrush&& that)
+        {
+            const void* thatNativeBrush = that.NativeBrush();
+            const void* nativeBrush = NativeBrush();
+            Swap(thatNativeBrush, nativeBrush);
+            that.SetNativeBrush(thatNativeBrush);
+            SetNativeBrush(nativeBrush);
+            Swap(nativeSolidBrush, that.nativeSolidBrush);
+        }
+        public ~SolidBrush()
+        {
+            if (nativeSolidBrush != null)
+            {
+                WinGraphicsDeleteSolidBrush(nativeSolidBrush);
+            }
+        }
+        public override nothrow const void* NativeBrush() const
+        {
+            return nativeSolidBrush;
+        }
+        private void* nativeSolidBrush;
+    }
+
+    public class NativeHandle
+    {
+        public explicit nothrow NativeHandle(const void* handle_) : handle(handle_)
+        {
+        }
+        public void* handle;
+    }
+
+    public class FontFamily
+    {
+        public FontFamily() : nativeFontFamily(WinGraphicsCreateEmptyFontFamily()), owned(true)
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+        }
+        public FontFamily(const string& familyName) : nativeFontFamily(WinGraphicsCreateFontFamily(familyName.Chars())), owned(true)
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+        }
+        public explicit nothrow FontFamily(const NativeHandle& nativeHandle_) : nativeFontFamily(nativeHandle_.handle), owned(false) // stock font family not owned
+        {
+        }
+        public FontFamily(const FontFamily& that) : nativeFontFamily(null), owned(that.owned)
+        {
+            if (owned)
+            {
+                nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
+                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+            }
+            else
+            {
+                nativeFontFamily = that.nativeFontFamily; // stock font family not cloned
+            }
+        }
+        public nothrow FontFamily(FontFamily&& that) : nativeFontFamily(that.nativeFontFamily), owned(that.owned)
+        {
+            that.nativeFontFamily = null;
+            that.owned = false;
+        }
+        public void operator=(const FontFamily& that)
+        {
+            if (nativeFontFamily != that.nativeFontFamily)
+            {
+                if (nativeFontFamily != null && owned)
+                {
+                    WinGraphicsDeleteFontFamily(nativeFontFamily);
+                }
+                if (that.owned)
+                {
+                    nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
+                    CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+                    owned = true;
+                }
+                else
+                {
+                    nativeFontFamily = that.nativeFontFamily; // stock font family not cloned
+                    owned = false;
+                }
+            }
+        }
+        public default nothrow void operator=(FontFamily&&);
+        public ~FontFamily()
+        {
+            if (nativeFontFamily != null && owned)
+            {
+                WinGraphicsDeleteFontFamily(nativeFontFamily);
+            }
+        }
+        public nothrow GraphicsStatus GetFamilyName(string& familyName) const
+        {
+            wchar* str = null;
+            GraphicsStatus status = cast<GraphicsStatus>(WinGraphicsGetFontFamilyName(nativeFontFamily, str));
+            if (status == GraphicsStatus.ok)
+            {
+                familyName = ToUtf8(str);
+            }
+            return status;
+        }
+        public string GetFamilyNameChecked() const
+        {
+            string familyName;
+            CheckGraphicsStatus(GetFamilyName(familyName));
+            return familyName;
+        }
+        public static nothrow FontFamily GenericMonospace()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericMonospaceFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public static nothrow FontFamily GenericSansSerif()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericSansSerifFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public static nothrow FontFamily GenericSerif()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericSerifFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public nothrow inline void* NativeFontFamily() const
+        {
+            return nativeFontFamily;
+        }
+        private void* nativeFontFamily;
+        private bool owned;
+    }
+
+    public enum FontStyle : int
+    {
+        regular = 0,
+        bold = 1 << 0,
+        italic = 1 << 1,
+        boldItalic = bold | italic,
+        underline = 1 << 2,
+        strikeOut = 1 << 3
+    }
+
+    public nothrow ulong GetHashCode(FontStyle fontStyle)
+    {
+        return cast<ulong>(cast<int>(fontStyle));
+    }
+
+    public enum Unit : int
+    {
+        world = 0,
+        display = 1,
+        pixel = 2,
+        point = 3,
+        inch = 4,
+        document = 5,
+        millimeter = 6
+    }
+
+    public class FontHandle
+    {
+        public nothrow FontHandle(void* hfont_) : hfont(hfont_)
+        {
+        }
+        suppress FontHandle(const FontHandle&);
+        suppress void operator=(const FontHandle&);
+        public nothrow FontHandle(FontHandle&& that) : hfont(that.hfont)
+        {
+            that.hfont = null;
+        }
+        public default nothrow void operator=(FontHandle&&);
+        public ~FontHandle()
+        {
+            if (hfont != null)
+            {
+                WinDeleteObject(hfont);
+            }
+        }
+        public nothrow inline bool IsNull() const
+        {
+            return hfont == null;
+        }
+        public nothrow inline void* HFont() const
+        {
+            return hfont;
+        }
+        private void* hfont;
+    }
+
+    public class Font
+    {
+        public Font(const FontFamily& family, float emSize, FontStyle style, Unit unit) : nativeFont(WinGraphicsCreateFont(family.NativeFontFamily(), emSize, style, unit))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(nativeFont)));
+        }
+        public Font(const FontFamily& family, float emSize) : this(family, emSize, FontStyle.regular, Unit.point)
+        {
+        }
+        public nothrow Font(void* nativeFont_) : nativeFont(nativeFont_)
+        {
+        }
+        public nothrow Font() : this(null)
+        {
+        }
+        public Font(const Font& that) : nativeFont(WinGraphicsCloneFont(that.nativeFont))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(nativeFont)));
+        }
+        public nothrow Font(Font&& that) : nativeFont(that.nativeFont)
+        {
+            that.nativeFont = null;
+        }
+        public void operator=(const Font& that)
+        {
+            if (nativeFont != that.nativeFont)
+            {
+                if (nativeFont != null)
+                {
+                    WinGraphicsDeleteFont(nativeFont);
+                }
+                nativeFont = WinGraphicsCloneFont(that.nativeFont);
+            }
+        }
+        public default nothrow void operator=(Font&&);
+        public ~Font()
+        {
+            if (nativeFont != null)
+            {
+                WinGraphicsDeleteFont(nativeFont);
+            }
+        }
+        public nothrow bool IsNull() const
+        {
+            return nativeFont == null;
+        }
+        public nothrow float GetSize() const
+        {
+            return WinGraphicsGetFontSize(nativeFont);
+        }
+        public nothrow float GetHeight(const Graphics& graphics) const
+        {
+            return WinGraphicsGetFontHeight(nativeFont, graphics.NativeGraphics());
+        }
+        public nothrow FontStyle GetStyle() const
+        {
+            return cast<FontStyle>(WinGraphicsGetFontStyle(nativeFont));
+        }
+        public nothrow GraphicsStatus GetFamily(FontFamily& fontFamily)
+        {
+            return cast<GraphicsStatus>(WinGraphicsGetFontFamily(nativeFont, fontFamily.NativeFontFamily()));
+        }
+        public FontFamily GetFamilyChecked()
+        {
+            FontFamily fontFamily;
+            CheckGraphicsStatus(GetFamily(fontFamily));
+            return fontFamily;
+        }
+        public static Font FromHFont(void* hdc, void* hfont)
+        {
+            Font font(WinGraphicsCreateFontFromHFont(hdc, hfont));
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(font.NativeFont())));
+            return font;
+        }
+        public nothrow GraphicsStatus ToHFont(const Graphics& graphics, FontHandle& fontHandle)
+        {
+            void* hfont = null;
+            GraphicsStatus status = cast<GraphicsStatus>(WinGraphicsFontToHFont(nativeFont, graphics.NativeGraphics(), hfont));
+            if (status == GraphicsStatus.ok)
+            {
+                fontHandle = FontHandle(hfont);
+            }
+            return status;
+        }
+        public FontHandle ToHFontChecked(const Graphics& graphics)
+        {
+            FontHandle fontHandle(null);
+            CheckGraphicsStatus(ToHFont(graphics, fontHandle));
+            return fontHandle;
+        }
+        public nothrow inline void* NativeFont() const
+        {
+            return nativeFont;
+        }
+        private void* nativeFont;
+    }
+
+    public nothrow string ToString(FontStyle style)
+    {
+        string s;
+        if (style == FontStyle.regular)
+        {
+            s.Append("regular");
+        }
+        else
+        {
+            if ((style & FontStyle.bold) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("bold");
+            }
+            if ((style & FontStyle.italic) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("italic");
+            }
+            if ((style & FontStyle.underline) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("underline");
+            }
+            if ((style & FontStyle.strikeOut) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("strikeOut");
+            }
+        }
+        return s;
+    }
+
+    public FontStyle ParseFontStyle(const string& fontStyleStr)
+    {
+        FontStyle fontStyle = FontStyle.regular;
+        List<string> components = fontStyleStr.Split('.');
+        for (const string& component : components)
+        {
+            if (component == "bold")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.bold);
+            }
+            else if (component == "italic")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.italic);
+            }
+            else if (component == "underline")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.underline);
+            }
+            else if (component == "strikeOut")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.strikeOut);
+            }
+        }
+        return fontStyle;
+    }
+
+    public class FontKey
+    {
+        public nothrow FontKey(const string& family_, float size_, FontStyle style_) : family(family_), size(size_), style(style_)
+        {
+        }
+        public nothrow string ToString()
+        {
+            string s = ToLower(family);
+            s.Append('.').Append(System.ToString(size)).Append('.').Append(ToString(style));
+            return s;
+        }
+        public string family;
+        public float size;
+        public FontStyle style;
+    }
+
+    public nothrow bool operator==(const FontKey& left, const FontKey& right)
+    {
+        return ToLower(left.family) == ToLower(right.family) && left.size == right.size && left.style == right.style;
+    }
+
+    public nothrow ulong GetHashCode(const FontKey& fontKey)
+    {
+        return GetHashCode(fontKey.ToString());
+    }
+
+    public enum StringAlignment : int
+    {
+        near, center, far
+    }
+
+    public enum HotKeyPrefix : int
+    {
+        none, show, hide
+    }
+
+    public class StringFormat
+    {
+        public StringFormat() : nativeFormat(WinGraphicsCreateDefaultStringFormat()), owned(true)
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+        }
+        public StringFormat(const NativeHandle& nativeHandle_) : nativeFormat(nativeHandle_.handle), owned(false) // generic stock string formats are not owned
+        {
+        }
+        public StringFormat(const StringFormat& that) : nativeFormat(null), owned(that.owned)
+        {
+            if (owned)
+            {
+                nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
+                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+            }
+            else
+            {
+                nativeFormat = that.nativeFormat;
+            }
+        }
+        public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment, HotKeyPrefix hotKeyPrefix) : this()
+        {
+            SetAlignmentChecked(horizontalAlignment);
+            SetLineAlignmentChecked(verticalAlignment);
+            SetHotKeyPrefixChecked(hotKeyPrefix);
+        }
+        public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment) : this(horizontalAlignment, verticalAlignment, HotKeyPrefix.none)
+        {
+        }
+        public nothrow StringFormat(StringFormat&& that) : nativeFormat(that.nativeFormat), owned(that.owned)
+        {
+            that.nativeFormat = null;
+            that.owned = false;
+        }
+        public void operator=(const StringFormat& that)
+        {
+            if (nativeFormat != that.nativeFormat)
+            {
+                if (nativeFormat != null && owned)
+                {
+                    WinGraphicsDeleteStringFormat(nativeFormat);
+                }
+                if (that.owned)
+                {
+                    nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
+                    CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+                    owned = true;
+                }
+                else
+                {
+                    nativeFormat = that.nativeFormat;
+                    owned = false;
+                }
+            }
+        }
+        public default nothrow void operator=(StringFormat&&);
+        public ~StringFormat()
+        {
+            if (nativeFormat != null && owned)
+            {
+                WinGraphicsDeleteStringFormat(nativeFormat);
+            }
+        }
+        public nothrow GraphicsStatus SetAlignment(StringAlignment alignment)
+        {
+            return cast<GraphicsStatus>(WinGraphicsStringFormatSetAlignment(nativeFormat, alignment));
+        }
+        public void SetAlignmentChecked(StringAlignment alignment)
+        {
+            CheckGraphicsStatus(SetAlignment(alignment));
+        }
+        public nothrow GraphicsStatus SetLineAlignment(StringAlignment alignment)
+        {
+            return cast<GraphicsStatus>(WinGraphicsStringFormatSetLineAlignment(nativeFormat, alignment));
+        }
+        public void SetLineAlignmentChecked(StringAlignment alignment)
+        {
+            CheckGraphicsStatus(SetLineAlignment(alignment));
+        }
+        public nothrow GraphicsStatus SetHotKeyPrefix(HotKeyPrefix hotKeyPrefix)
+        {
+            return cast<GraphicsStatus>(WinGraphicsStringFormatSetHotKeyPrefix(nativeFormat, hotKeyPrefix));
+        }
+        public void SetHotKeyPrefixChecked(HotKeyPrefix hotKeyPrefix)
+        {
+            CheckGraphicsStatus(SetHotKeyPrefix(hotKeyPrefix));
+        }
+        public nothrow inline void* NativeFormat() const
+        {
+            return nativeFormat;
+        }
+        public static nothrow StringFormat GenericDefault()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericDefaultStringFormat());
+            return StringFormat(nativeHandle);
+        }
+        public static nothrow StringFormat GenericTypographic()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericTypographicStringFormat());
+            return StringFormat(nativeHandle);
+        }
+        private void* nativeFormat;
+        private bool owned;
+    }
+
+    public enum TextRenderingHint : int
+    {
+        systemDefault = 0,
+        singleBitPerPixelGridFit = 1,
+        singleBitPerPixel = 2,
+        antiAliasGridFit = 3,
+        antiAlias = 4,
+        clearTypeGridFit = 5
+    }
+
+    internal class PaintGuard
+    {
+        public nothrow PaintGuard(void* hdc_, void* paintStruct_) : hdc(hdc_), paintStruct(paintStruct_)
+        {
+        }
+        public ~PaintGuard()
+        {
+            if (hdc != null)
+            {
+                EndPaint(hdc, paintStruct);
+            }
+        }
+        private void* hdc;
+        private void* paintStruct;
+    }
+
+    public enum CombineMode : int
+    {
+        replace, intersect, union, xor, exclude, complement
+    }
+
+    public class Region
+    {
+        public Region() : nativeRegion(WinGraphicsCreateRegion())
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+        }
+        public Region(const Region& that) : nativeRegion(WinGraphicsCloneRegion(that.nativeRegion))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+        }
+        public nothrow Region(Region&& that) : nativeRegion(that.nativeRegion)
+        {
+            that.nativeRegion = null;
+        }
+        public void operator=(const Region& that)
+        {
+            if (nativeRegion != null)
+            {
+                WinGraphicsDeleteRegion(nativeRegion);
+            }
+            nativeRegion = WinGraphicsCloneRegion(that.nativeRegion);
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+        }
+        public nothrow default void operator=(Region&&);
+        public ~Region()
+        {
+            if (nativeRegion != null)
+            {
+                WinGraphicsDeleteRegion(nativeRegion);
+            }
+        }
+        public nothrow inline void* NativeRegion() const
+        {
+            return nativeRegion;
+        }
+        private void* nativeRegion;
+    }
+
+    // image formats: image/bmp, image/jpeg, image/gif, image/tiff, image/png
+
+    public enum ImageFormat : int
+    {
+        bmp, jpeg, gif, tiff, png
+    }
+
+    public nothrow const char* GetImageFormat(ImageFormat format)
+    {
+        switch (format)
+        {
+            case ImageFormat.bmp: return "image/bmp";
+            case ImageFormat.jpeg: return "image/jpeg";
+            case ImageFormat.gif: return "image/gif";
+            case ImageFormat.tiff: return "image/tiff";
+            case ImageFormat.png: return "image/png";
+        }
+        return "";
+    }
+
+    public nothrow GraphicsStatus GetEncoderClsId(const char* imageFormat, Uuid& clsid)
+    {
+        return cast<GraphicsStatus>(WinGraphicsGetEncoderClsId(imageFormat, &clsid));
+    }
+
+    public Uuid GetEncoderClsIdChecked(const char* imageFormat)
+    {
+        Uuid clsid;
+        CheckGraphicsStatus(GetEncoderClsId(imageFormat, clsid));
+        return clsid;
+    }
+
+    public class Image
+    {
+        public nothrow Image() : nativeImage(null)
+        {
+        }
+        public nothrow Image(void* nativeImage_) : nativeImage(nativeImage_)
+        {
+        }
+        public Image(const string& fileName, bool useEmbeddedColorManagement) : nativeImage(WinGraphicsCreateImage(fileName.Chars(), useEmbeddedColorManagement))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+        }
+        public Image(const Image& that) : nativeImage(WinGraphicsCloneImage(that.nativeImage))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+        }
+        public nothrow Image(Image&& that) : nativeImage(that.nativeImage)
+        {
+            that.nativeImage = null;
+        }
+        public void operator=(const Image& that)
+        {
+            if (nativeImage != null)
+            {
+                WinGraphicsDeleteImage(nativeImage);
+            }
+            nativeImage = WinGraphicsCloneImage(that.nativeImage);
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+        }
+        public nothrow default void operator=(Image&&);
+        public virtual ~Image()
+        {
+            if (nativeImage != null)
+            {
+                WinGraphicsDeleteImage(nativeImage);
+            }
+        }
+        public nothrow uint GetHeight() const
+        {
+            return WinGraphicsImageGetHeight(nativeImage);
+        }
+        public nothrow uint GetWidth() const
+        {
+            return WinGraphicsImageGetWidth(nativeImage);
+        }
+        public GraphicsStatus Save(const char* fileName, const Uuid& encoderClsId)
+        {
+            return cast<GraphicsStatus>(WinGraphicsImageSave(nativeImage, fileName, &encoderClsId));
+        }
+        public void SaveChecked(const char* fileName, const Uuid& encoderClsId)
+        {
+            CheckGraphicsStatus(Save(fileName, encoderClsId));
+        }
+        public nothrow void* NativeImage() const
+        {
+            return nativeImage;
+        }
+        private void* nativeImage;
+    }
+
+    public const int pixelFormatIndexed = 0x00010000;
+    public const int pixelFormatGDI = 0x00020000;
+    public const int pixelFormatAlpha = 0x00040000;
+    public const int pixelFormatPAlpha = 0x00080000;
+    public const int pixelFormatExtended = 0x00100000;
+    public const int pixelFormatCanonical = 0x00200000;
+
+    public enum PixelFormat : int
+    {
+        pixelFormat1bppIndexed = 1 | (1 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat4bppIndexed = 2 | (4 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat8bppIndexed = 3 | ( 8 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat16bppGrayScale = 4 | (16 << 8) | pixelFormatExtended,
+        pixelFormat16bppRGB555 = 5 | (16 << 8) | pixelFormatGDI,
+        pixelFormat16bppRGB565 = 6 | (16 << 8) | pixelFormatGDI,
+        pixelFormat16bppARGB1555 = 7 | (16 << 8) | pixelFormatAlpha | pixelFormatGDI,
+        pixelFormat24bppRGB = 8 | (24 << 8) | pixelFormatGDI,
+        pixelFormat32bppRGB = 9 | (32 << 8) | pixelFormatGDI,
+        pixelFormat32bppARGB = 10 | (32 << 8) | pixelFormatAlpha | pixelFormatGDI | pixelFormatCanonical,
+        pixelFormat32bppPARGB = 11 | (32 << 8) | pixelFormatAlpha | pixelFormatPAlpha | pixelFormatGDI,
+        pixelFormat48bppRGB = 12 | (48 << 8) | pixelFormatExtended,
+        pixelFormat64bppARGB = 13 | (64 << 8) | pixelFormatAlpha | pixelFormatCanonical | pixelFormatExtended,
+        pixelFormat64bppPARGB = 14 | (64 << 8) | pixelFormatAlpha | pixelFormatPAlpha | pixelFormatExtended,
+        pixelFormat32bppCMYK = 15 | (32 << 8),
+        pixelFormatMax = 16
+    }
+
+    public class Bitmap : Image
+    {
+        public nothrow Bitmap() : base()
+        {
+        }
+        public nothrow Bitmap(void* nativeHandle_) : base(nativeHandle_)
+        {
+        }
+        public Bitmap(const string& fileName, bool useEmbeddedColorManagement) : base(WinGraphicsCreateBitmap(fileName.Chars(), useEmbeddedColorManagement))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+        }
+        public Bitmap(int width, int height, const Graphics& graphics) : base(WinGraphicsCreateBitmapWidthHeight(width, height, graphics.NativeGraphics()))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+        }
+        public Bitmap(const WinBitmap& winBitmap, void* palette) : base(WinGraphicsCreateBitmapWinBitmap(winBitmap.Handle(), palette))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+        }
+        public Bitmap(const Icon& icon) : base(WinGraphicsCreateBitmapIcon(icon.Handle()))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+        }
+        public static Bitmap FromResource(const string& resourceName)
+        {
+            Bitmap bitmap(WinGraphicsCreateBitmapResource(resourceName.Chars()));
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(bitmap.NativeImage())));
+            return bitmap;
+        }
+        public nothrow GraphicsStatus GetPixel(int x, int y, Color& color) const
+        {
+            return cast<GraphicsStatus>(WinGraphicsBitmapGetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue));
+        }
+        public Color GetPixelChecked(int x, int y) const
+        {
+            Color color;
+            CheckGraphicsStatus(GetPixel(x, y, color));
+            return color;
+        }
+        public nothrow GraphicsStatus SetPixel(int x, int y, const Color& color)
+        {
+            return cast<GraphicsStatus>(WinGraphicsBitmapSetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue));
+        }
+        public void SetPixelChecked(int x, int y, const Color& color)
+        {
+            CheckGraphicsStatus(SetPixel(x, y, color));
+        }
+        public Bitmap ToGrayBitmap(PixelFormat pixelFormat, const Color& bitmapTransparentColor)
+        {
+            int w = cast<int>(GetWidth());
+            int h = cast<int>(GetHeight());
+            Bitmap grayBitmap(WinGraphicsCloneBitmap(NativeImage(), 0, 0, w, h, pixelFormat));
+            for (int y = 0; y < h; ++y)
+            {
+                for(int x = 0; x < w; ++x)
+                {
+                    Color color = grayBitmap.GetPixelChecked(x, y);
+                    Color gray = color.ToGray(bitmapTransparentColor);
+                    grayBitmap.SetPixelChecked(x, y, gray);
+                }
+            }
+            return grayBitmap;
+        }
+        public Bitmap ToGrayBitmap()
+        {
+            return ToGrayBitmap(PixelFormat.pixelFormat24bppRGB, Color.DefaultBitmapTransparent());
+        }
+        public ~Bitmap()
+        {
+        }
+    }
+
+    public enum MatrixOrder
+    {
+        prepend, append
+    }
+
+    public class Matrix
+    {
+        public Matrix() : nativeMatrix(WinGraphicsCreateMatrix())
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+        }
+        public Matrix(const Rect& rect, const Point& pt) : nativeMatrix(WinGraphicsCreateMatrixRectPoint(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+        }
+        public Matrix(const RectF& rect, const PointF& pt) : nativeMatrix(WinGraphicsCreateMatrixRectFPointF(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+        }
+        public Matrix(const Matrix& that) : nativeMatrix(WinGraphicsCloneMatrix(that.nativeMatrix))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+        }
+        public nothrow Matrix(Matrix&& that) : nativeMatrix(that.nativeMatrix)
+        {
+            that.nativeMatrix = null;
+        }
+        public void operator=(const Matrix& that)
+        {
+            if (nativeMatrix != null)
+            {
+                WinGraphicsDeleteMatrix(nativeMatrix);
+            }
+            nativeMatrix = WinGraphicsCloneMatrix(that.nativeMatrix);
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+        }
+        public nothrow default void operator=(Matrix&&);
+        public ~Matrix()
+        {
+            if (nativeMatrix != null)
+            {
+                WinGraphicsDeleteMatrix(nativeMatrix);
+            }
+        }
+        public GraphicsStatus Multiply(const Matrix& that, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(order)));
+        }
+        public GraphicsStatus Multiply(const Matrix& that)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(MatrixOrder.prepend)));
+        }
+        public void MultiplyChecked(const Matrix& that, MatrixOrder order)
+        {
+            CheckGraphicsStatus(Multiply(that, order));
+        }
+        public void MultiplyChecked(const Matrix& that)
+        {
+            CheckGraphicsStatus(Multiply(that, MatrixOrder.prepend));
+        }
+        public nothrow GraphicsStatus Reset()
+        {
+            return cast<GraphicsStatus>(WinGraphicsResetMatrix(nativeMatrix));
+        }
+        public void ResetChecked()
+        {
+            CheckGraphicsStatus(Reset());
+        }
+        public nothrow GraphicsStatus Invert()
+        {
+            return cast<GraphicsStatus>(WinGraphicsInvertMatrix(nativeMatrix));
+        }
+        public void InvertChecked()
+        {
+            CheckGraphicsStatus(Invert());
+        }
+        public nothrow float OffsetX() const
+        {
+            return WinGraphicsMatrixOffsetX(nativeMatrix);
+        }
+        public nothrow float OffsetY() const
+        {
+            return WinGraphicsMatrixOffsetY(nativeMatrix);
+        }
+        public nothrow GraphicsStatus Rotate(float angle, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(order)));
+        }
+        public nothrow GraphicsStatus Rotate(float angle)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(MatrixOrder.prepend)));
+        }
+        public void RotateChecked(float angle, MatrixOrder order)
+        {
+            CheckGraphicsStatus(Rotate(angle));
+        }
+        public void RotateChecked(float angle)
+        {
+            CheckGraphicsStatus(Rotate(angle, MatrixOrder.prepend));
+        }
+        public nothrow GraphicsStatus RotateAt(float angle, const PointF& center, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixRotateAt(nativeMatrix, angle, center.x, center.y, cast<int>(order)));
+        }
+        public void RotateAtChecked(float angle, const PointF& center, MatrixOrder order)
+        {
+            CheckGraphicsStatus(RotateAt(angle, center, order));
+        }
+        public nothrow GraphicsStatus RotateAt(float angle, const PointF& center)
+        {
+            return RotateAt(angle, center, MatrixOrder.prepend);
+        }
+        public void RotateAtChecked(float angle, const PointF& center)
+        {
+            CheckGraphicsStatus(RotateAt(angle, center, MatrixOrder.prepend));
+        }
+        public nothrow GraphicsStatus Scale(float scaleX, float scaleY, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixScale(nativeMatrix, scaleX, scaleY, cast<int>(order)));
+        }
+        public void ScaleChecked(float scaleX, float scaleY, MatrixOrder order)
+        {
+            CheckGraphicsStatus(Scale(scaleX, scaleY, order));
+        }
+        public nothrow GraphicsStatus Scale(float scaleX, float scaleY)
+        {
+            return Scale(scaleX, scaleY, MatrixOrder.prepend);
+        }
+        public void ScaleChecked(float scaleX, float scaleY)
+        {
+            CheckGraphicsStatus(Scale(scaleX, scaleY, MatrixOrder.prepend));
+        }
+        public nothrow GraphicsStatus Shear(float shearX, float shearY, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixShear(nativeMatrix, shearX, shearY, cast<int>(order)));
+        }
+        public void ShearChecked(float shearX, float shearY, MatrixOrder order)
+        {
+            CheckGraphicsStatus(Shear(shearX, shearY, order));
+        }
+        public nothrow GraphicsStatus Shear(float shearX, float shearY)
+        {
+            return Shear(shearX, shearY, MatrixOrder.prepend);
+        }
+        public void ShearChecked(float shearX, float shearY)
+        {
+            ShearChecked(shearX, shearY, MatrixOrder.prepend);
+        }
+        public nothrow GraphicsStatus Translate(float offsetX, float offsetY, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixTranslate(nativeMatrix, offsetX, offsetY, cast<int>(order)));
+        }
+        public void TranslateChecked(float offsetX, float offsetY, MatrixOrder order)
+        {
+            CheckGraphicsStatus(Translate(offsetX, offsetY, order));
+        }
+        public nothrow GraphicsStatus Translate(float offsetX, float offsetY)
+        {
+            return Translate(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        public void TranslateChecked(float offsetX, float offsetY)
+        {
+            TranslateChecked(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        public nothrow GraphicsStatus SetElements(float m11, float m12, float m21, float m22, float dx, float dy)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixSetElements(nativeMatrix, m11, m12, m21, m22, dx, dy));
+        }
+        public void SetElementsChecked(float m11, float m12, float m21, float m22, float dx, float dy)
+        {
+            CheckGraphicsStatus(SetElements(m11, m12, m21, m22, dx, dy));
+        }
+        public nothrow GraphicsStatus TransformPoints(List<Point>& points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixTransformPoints(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count())));
+        }
+        public void TransformPointsChecked(List<Point>& points)
+        {
+            CheckGraphicsStatus(TransformPoints(points));
+        }
+        public nothrow GraphicsStatus TransformPoints(List<PointF>& points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMatrixTransformPointsF(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count())));
+        }
+        public void TransformPointsChecked(List<PointF>& points)
+        {
+            CheckGraphicsStatus(TransformPoints(points));
+        }
+        public nothrow inline void* NativeMatrix() const
+        {
+            return nativeMatrix;
+        }
+        private void* nativeMatrix;
+    }
+
+    public Matrix operator*(const Matrix& left, const Matrix& right) // multiply matrix 'right' from left by matrix 'left' and return result
+    {
+        Matrix product(right);
+        product.MultiplyChecked(left);
+        return product;
+    }
+
+    public Matrix Rotate(const Matrix& m, float angle) // create clockwise rotation matrix from given matrix and angle in degrees and return it
+    {
+        Matrix rm(m);
+        rm.RotateChecked(angle);
+        return rm;
+    }
+
+    public Matrix RotateAt(const Matrix& m, float angle, const PointF& center) // create clockwise rotation matrix of rotation about point 'center' and return it
+    {
+        Matrix rm(m);
+        rm.RotateAtChecked(angle, center);
+        return rm;
+    }
+
+    public Matrix Scale(const Matrix& m, float scaleX, float scaleY) // create scaling matrix from given matrix and scale factors in X and Y direction and return it
+    {
+        Matrix sm(m);
+        sm.ScaleChecked(scaleX, scaleY);
+        return sm;
+    }
+
+    public Matrix Shear(const Matrix& m, float shearX, float shearY) // create shearing matrix from given matrix and horizontal and vertical shearing factors and return it
+    {
+        Matrix sm(m);
+        sm.ShearChecked(shearX, shearY);
+        return sm;
+    }
+
+    public Matrix Translate(const Matrix& m, float offsetX, float offsetY) // create translation matrix from given matrix and horizontal and vertical offsets and return it
+    {
+        Matrix tm(m);
+        tm.TranslateChecked(offsetX, offsetY);
+        return tm;
+    }
+
+    public Matrix Invert(const Matrix& m)
+    {
+        Matrix im(m);
+        im.InvertChecked();
+        return im;
+    }
+
+    public enum GraphicsState : uint
+    {
+        state = 0u
+    }
+
+    public enum SmoothingMode : int
+    {
+        invalid = -1,
+        default_ = 0,
+        highSpeed = 1,
+        highQuality = 2,
+        none = 3,
+        antiAlias = 4
+    }
+
+    public enum ColorAdjustType : int
+    {
+        default_ = 0,
+        bitmap = 1,
+        brush = 2,
+        pen = 3,
+        text = 4,
+        count = 5,
+        any = 6
+    }
+
+    public class ImageAttributes
+    {
+        public ImageAttributes() : nativeImageAttributes(WinGraphicsCreateDefaultImageAttributes())
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+        }
+        public ImageAttributes(const ImageAttributes& that) : nativeImageAttributes(WinGraphicsCloneImageAttributes(that.nativeImageAttributes))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+        }
+        public nothrow ImageAttributes(ImageAttributes&& that) : nativeImageAttributes(that.nativeImageAttributes)
+        {
+            that.nativeImageAttributes = null;
+        }
+        public void operator=(const ImageAttributes& that)
+        {
+            if (nativeImageAttributes != that.nativeImageAttributes)
+            {
+                if (that.nativeImageAttributes != null)
+                {
+                    WinGraphicsDeleteImageAttributes(that.nativeImageAttributes);
+                }
+                nativeImageAttributes = WinGraphicsCloneImageAttributes(that.nativeImageAttributes);
+                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+            }
+        }
+        public default nothrow void operator=(ImageAttributes&&);
+        public ~ImageAttributes()
+        {
+            if (nativeImageAttributes != null)
+            {
+                WinGraphicsDeleteImageAttributes(nativeImageAttributes);
+            }
+        }
+        public nothrow GraphicsStatus SetColorKey(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
+        {
+            return cast<GraphicsStatus>(WinGraphicsImageAttributesSetColorKey(nativeImageAttributes, colorLow.alpha, colorLow.red, colorLow.green, colorLow.blue,
+                colorHigh.alpha, colorHigh.red, colorHigh.green, colorHigh.blue, cast<int>(type)));
+        }
+        public void SetColorKeyChecked(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(SetColorKey(colorLow, colorHigh, type)));
+        }
+        public nothrow void* NativeImageAttributes() const
+        {
+            return nativeImageAttributes;
+        }
+        private void* nativeImageAttributes;
+    }
+
+    public class Graphics
+    {
+        public nothrow Graphics() : nativeGraphics(null)
+        {
+        }
+        public Graphics(void* hdc) : nativeGraphics(WinCreateGraphics(hdc))
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+        }
+        public Graphics(const NativeHandle& nativeHandle) : nativeGraphics(nativeHandle.handle)
+        {
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+        }
+        public static Graphics FromWindowHandle(void* windowHandle)
+        {
+            NativeHandle nativeHandle = WinCreateGraphicsFromWindowHandle(windowHandle);
+            return Graphics(nativeHandle);
+        }
+        public static Graphics FromImage(const Image& image)
+        {
+            NativeHandle nativeHandle = WinCreateGraphicsFromImage(image.NativeImage());
+            return Graphics(nativeHandle);
+        }
+        suppress Graphics(const Graphics&);
+        public nothrow Graphics(Graphics&& that) : nativeGraphics(that.nativeGraphics)
+        {
+            that.nativeGraphics = null;
+        }
+        suppress void operator=(const Graphics&);
+        public default nothrow void operator=(Graphics&&);
+        public ~Graphics()
+        {
+            if (nativeGraphics != null)
+            {
+                WinDeleteGraphics(nativeGraphics);
+            }
+        }
+        public nothrow void* GetHDC() const
+        {
+            return WinGraphicsGetHDC(nativeGraphics);
+        }
+        public nothrow GraphicsStatus DrawLine(const Pen& pen, const Point& start, const Point& end)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawLine(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y));
+        }
+        public void DrawLineChecked(const Pen& pen, const Point& start, const Point& end)
+        {
+            CheckGraphicsStatus(DrawLine(pen, start, end));
+        }
+        public nothrow GraphicsStatus DrawLine(const Pen& pen, const PointF& start, const PointF& end)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawLineF(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y));
+        }
+        public void DrawLineChecked(const Pen& pen, const PointF& start, const PointF& end)
+        {
+            CheckGraphicsStatus(DrawLine(pen, start, end));
+        }
+        public nothrow GraphicsStatus DrawLines(const Pen& pen, int numPoints, const Point* points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawLines(nativeGraphics, pen.NativePen(), numPoints, points));
+        }
+        public void DrawLinesChecked(const Pen& pen, int numPoints, const Point* points)
+        {
+            CheckGraphicsStatus(DrawLines(pen, numPoints, points));
+        }
+        public nothrow GraphicsStatus DrawLines(const Pen& pen, int numPoints, const PointF* points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawLinesF(nativeGraphics, pen.NativePen(), numPoints, points));
+        }
+        public void DrawLinesChecked(const Pen& pen, int numPoints, const PointF* points)
+        {
+            CheckGraphicsStatus(DrawLines(pen, numPoints, points));
+        }
+        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const PointF& origin, const Brush& brush)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawString(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, brush.NativeBrush()));
+        }
+        public void DrawStringChecked(const string& str, const Font& font, const PointF& origin, const Brush& brush)
+        {
+            CheckGraphicsStatus(DrawString(str, font, origin, brush));
+        }
+        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(),
+                origin.x, origin.y, format.NativeFormat(), brush.NativeBrush()));
+        }
+        public void DrawStringChecked(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
+        {
+            CheckGraphicsStatus(DrawString(str, font, origin, format, brush));
+        }
+        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                rect.location.x, rect.location.y, rect.size.w, rect.size.h,
+                format.NativeFormat(), brush.NativeBrush()));
+        }
+        public void DrawStringChecked(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
+        {
+            CheckGraphicsStatus(DrawString(str, font, rect, format, brush));
+        }
+        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format,
+            SizeF& size, int* codePointsFitted, int* linesFilled)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(),
+                size.w, size.h, codePointsFitted, linesFilled));
+        }
+        public SizeF MeasureStringChecked(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format, int* codePointsFitted, int* linesFilled)
+        {
+            SizeF size;
+            CheckGraphicsStatus(MeasureString(str, font, layoutRectSize, format, size, codePointsFitted, linesFilled));
+            return size;
+        }
+        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format, SizeF& size)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(),
+                size.w, size.h, null, null));
+        }
+        public SizeF MeasureStringChecked(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format)
+        {
+            SizeF size;
+            CheckGraphicsStatus(MeasureString(str, font, layoutRectSize, format, size));
+            return size;
+        }
+        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format,
+            RectF& boundingBox, int* codePointsFitted, int* linesFilled)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
+                codePointsFitted, linesFilled));
+        }
+        public RectF MeasureStringChecked(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format, int* codePointsFitted, int* linesFilled)
+        {
+            RectF boundingBox;
+            CheckGraphicsStatus(MeasureString(str, font, layoutRect, format, boundingBox, codePointsFitted, linesFilled));
+            return boundingBox;
+        }
+        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format, RectF& boundingBox)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
+                null, null));
+        }
+        public RectF MeasureStringChecked(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format)
+        {
+            RectF boundingBox;
+            CheckGraphicsStatus(MeasureString(str, font, layoutRect, format, boundingBox));
+            return boundingBox;
+        }
+        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, RectF& boundingBox)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h));
+        }
+        public RectF MeasureStringChecked(const string& str, const Font& font, const PointF& origin, const StringFormat& format)
+        {
+            RectF boundingBox;
+            CheckGraphicsStatus(MeasureString(str, font, origin, format, boundingBox));
+            return boundingBox;
+        }
+        public nothrow TextRenderingHint GetTextRenderingHint()
+        {
+            return cast<TextRenderingHint>(WinGraphicsGetTextRenderingHint(nativeGraphics));
+        }
+        public nothrow GraphicsStatus SetTextRenderingHint(TextRenderingHint textRenderingHint)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetTextRenderingHint(nativeGraphics, cast<int>(textRenderingHint)));
+        }
+        public void SetTextRenderingHintChecked(TextRenderingHint textRenderingHint)
+        {
+            CheckGraphicsStatus(SetTextRenderingHint(textRenderingHint));
+        }
+        public nothrow GraphicsStatus Clear(const Color& color)
+        {
+            return cast<GraphicsStatus>(WinGraphicsClear(nativeGraphics, color.alpha, color.red, color.green, color.blue));
+        }
+        public void ClearChecked(const Color& color)
+        {
+            CheckGraphicsStatus(Clear(color));
+        }
+        public nothrow GraphicsStatus DrawRectangle(const Pen& pen, const Rect& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawRectangle(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void DrawRectangleChecked(const Pen& pen, const Rect& rect)
+        {
+            CheckGraphicsStatus(DrawRectangle(pen, rect));
+        }
+        public nothrow GraphicsStatus DrawRectangle(const Pen& pen, const RectF& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawRectangleF(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void DrawRectangleChecked(const Pen& pen, const RectF& rect)
+        {
+            CheckGraphicsStatus(DrawRectangle(pen, rect));
+        }
+        public nothrow GraphicsStatus FillRectangle(const Brush& brush, const Rect& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsFillRectangle(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void FillRectangleChecked(const Brush& brush, const Rect& rect)
+        {
+            CheckGraphicsStatus(FillRectangle(brush, rect));
+        }
+        public nothrow GraphicsStatus FillRectangle(const Brush& brush, const RectF& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsFillRectangleF(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void FillRectangleChecked(const Brush& brush, const RectF& rect)
+        {
+            CheckGraphicsStatus(FillRectangle(brush, rect));
+        }
+        public nothrow GraphicsStatus FillPolygon(const Brush& brush, int numPoints, const Point* points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsFillPolygon(nativeGraphics, brush.NativeBrush(), numPoints, points));
+        }
+        public void FillPolygonChecked(const Brush& brush, int numPoints, const Point* points)
+        {
+            CheckGraphicsStatus(FillPolygon(brush, numPoints, points));
+        }
+        public nothrow GraphicsStatus FillPolygon(const Brush& brush, int numPoints, const PointF* points)
+        {
+            return cast<GraphicsStatus>(WinGraphicsFillPolygonF(nativeGraphics, brush.NativeBrush(), numPoints, points));
+        }
+        public void FillPolygonChecked(const Brush& brush, int numPoints, const PointF* points)
+        {
+            CheckGraphicsStatus(FillPolygon(brush, numPoints, points));
+        }
+        public nothrow GraphicsStatus DrawArc(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawArc(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h, startAngle, sweepAngle));
+        }
+        public void DrawArcChecked(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
+        {
+            CheckGraphicsStatus(DrawArc(pen, rect, startAngle, sweepAngle));
+        }
+        public nothrow GraphicsStatus DrawEllipse(const Pen& pen, const RectF& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawEllipse(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void DrawEllipseChecked(const Pen& pen, const RectF& rect)
+        {
+            CheckGraphicsStatus(DrawEllipse(pen, rect));
+        }
+        public nothrow GraphicsStatus FillEllipse(const Brush& brush, const RectF& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsFillEllipse(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void FillEllipseChecked(const Brush& brush, const RectF& rect)
+        {
+            CheckGraphicsStatus(FillEllipse(brush, rect));
+        }
+        public nothrow GraphicsStatus DrawImage(const Image& image, const PointF& point)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawImagePoint(nativeGraphics, image.NativeImage(), point.x, point.y));
+        }
+        public void DrawImageChecked(const Image& image, const PointF& point)
+        {
+            CheckGraphicsStatus(DrawImage(image, point));
+        }
+        public nothrow GraphicsStatus DrawImage(const Image& image, const RectF& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawImageRect(nativeGraphics, image.NativeImage(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+        }
+        public void DrawImageChecked(const Image& image, const RectF& rect)
+        {
+            CheckGraphicsStatus(DrawImage(image, rect));
+        }
+        public nothrow GraphicsStatus DrawImage(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawImageWithAttributes(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                srcX, srcY, srcW, srcH, srcUnit, attributes.NativeImageAttributes()));
+        }
+        public void DrawImageChecked(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            CheckGraphicsStatus(DrawImage(image, destRect, srcX, srcY, srcW, srcH, srcUnit, attributes));
+        }
+        public nothrow GraphicsStatus DrawImage(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            return cast<GraphicsStatus>(WinGraphicsDrawImageWithAttributesF(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                sourceRect.location.x, sourceRect.location.y, sourceRect.size.w, sourceRect.size.h, srcUnit, attributes.NativeImageAttributes()));
+        }
+        public void DrawImageChecked(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            CheckGraphicsStatus(DrawImage(image, destRect, sourceRect, srcUnit, attributes));
+        }
+        public nothrow GraphicsStatus GetClip(Region& region)
+        {
+            return cast<GraphicsStatus>(WinGraphicsGetClip(nativeGraphics, region.NativeRegion()));
+        }
+        public Region GetClipChecked()
+        {
+            Region region;
+            CheckGraphicsStatus(GetClip(region));
+            return region;
+        }
+        public nothrow GraphicsStatus SetClip(const Rect& rect, CombineMode combineMode)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, combineMode));
+        }
+        public nothrow GraphicsStatus SetClip(const Rect& rect)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, CombineMode.replace));
+        }
+        public void SetClipChecked(const Rect& rect, CombineMode combineMode)
+        {
+            CheckGraphicsStatus(SetClip(rect, combineMode));
+        }
+        public void SetClipChecked(const Rect& rect)
+        {
+            CheckGraphicsStatus(SetClip(rect, CombineMode.replace));
+        }
+        public nothrow GraphicsStatus SetClip(const Region& region)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetClipRegion(nativeGraphics, region.NativeRegion()));
+        }
+        public void SetClipChecked(const Region& region)
+        {
+            CheckGraphicsStatus(SetClip(region));
+        }
+        public nothrow GraphicsState Save()
+        {
+            return cast<GraphicsState>(WinGraphicsSave(nativeGraphics));
+        }
+        public GraphicsState SaveChecked()
+        {
+            GraphicsState state = Save();
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            return state;
+        }
+        public nothrow GraphicsStatus Restore(GraphicsState graphicsState)
+        {
+            return cast<GraphicsStatus>(WinGraphicsRestore(nativeGraphics, cast<uint>(graphicsState)));
+        }
+        public void RestoreChecked(GraphicsState graphicsState)
+        {
+            CheckGraphicsStatus(Restore(graphicsState));
+        }
+        public nothrow GraphicsStatus GetTransform(Matrix& m)
+        {
+            return cast<GraphicsStatus>(WinGraphicsGetTransform(nativeGraphics, m.NativeMatrix()));
+        }
+        public void GetTransformChecked(Matrix& m)
+        {
+            CheckGraphicsStatus(GetTransform(m));
+        }
+        public nothrow GraphicsStatus SetTransform(Matrix& m)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetTransform(nativeGraphics, m.NativeMatrix()));
+        }
+        public void SetTransformChecked(Matrix& m)
+        {
+            CheckGraphicsStatus(SetTransform(m));
+        }
+        public nothrow GraphicsStatus MultiplyTransform(const Matrix& matrix, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsMultiplyTransform(nativeGraphics, matrix.NativeMatrix(), cast<int>(order)));
+        }
+        public void MultiplyTransformChecked(const Matrix& matrix, MatrixOrder order)
+        {
+            CheckGraphicsStatus(MultiplyTransform(matrix, order));
+        }
+        public nothrow GraphicsStatus MultiplyTransform(const Matrix& matrix)
+        {
+            return MultiplyTransform(matrix, MatrixOrder.prepend);
+        }
+        public void MultiplyTransformChecked(const Matrix& matrix)
+        {
+            CheckGraphicsStatus(MultiplyTransform(matrix));
+        }
+        public nothrow GraphicsStatus ResetTransform()
+        {
+            return cast<GraphicsStatus>(WinGraphicsResetTransform(nativeGraphics));
+        }
+        public void ResetTransformChecked()
+        {
+            CheckGraphicsStatus(ResetTransform());
+        }
+        public nothrow GraphicsStatus RotateTransform(float angle, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsRotateTransform(nativeGraphics, angle, cast<int>(order)));
+        }
+        public void RotateTransformChecked(float angle, MatrixOrder order)
+        {
+            CheckGraphicsStatus(RotateTransform(angle, order));
+        }
+        public nothrow GraphicsStatus RotateTransform(float angle)
+        {
+            return RotateTransform(angle, MatrixOrder.prepend);
+        }
+        public void RotateTransformChecked(float angle)
+        {
+            RotateTransformChecked(angle, MatrixOrder.prepend);
+        }
+        public nothrow GraphicsStatus ScaleTransform(float scaleX, float scaleY, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsScaleTransform(nativeGraphics, scaleX, scaleY, cast<int>(order)));
+        }
+        public void ScaleTransformChecked(float scaleX, float scaleY, MatrixOrder order)
+        {
+            CheckGraphicsStatus(ScaleTransform(scaleX, scaleY, order));
+        }
+        public nothrow GraphicsStatus ScaleTransform(float scaleX, float scaleY)
+        {
+            return ScaleTransform(scaleX, scaleY, MatrixOrder.prepend);
+        }
+        public void ScaleTransformChecked(float scaleX, float scaleY)
+        {
+            ScaleTransformChecked(scaleX, scaleY, MatrixOrder.prepend);
+        }
+        public nothrow GraphicsStatus TranslateTransform(float offsetX, float offsetY, MatrixOrder order)
+        {
+            return cast<GraphicsStatus>(WinGraphicsTranslateTransform(nativeGraphics, offsetX, offsetY, cast<int>(order)));
+        }
+        public void TranslateTransformChecked(float offsetX, float offsetY, MatrixOrder order)
+        {
+            CheckGraphicsStatus(TranslateTransform(offsetX, offsetY, order));
+        }
+        public nothrow GraphicsStatus TranslateTransform(float offsetX, float offsetY)
+        {
+            return TranslateTransform(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        public void TranslateTransformChecked(float offsetX, float offsetY)
+        {
+            TranslateTransformChecked(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        public nothrow Unit GetPageUnit()
+        {
+            return cast<Unit>(WinGraphicsGetPageUnit(nativeGraphics));
+        }
+        public Unit GetPageUnitChecked()
+        {
+            Unit unit = GetPageUnit();
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            return unit;
+        }
+        public nothrow GraphicsStatus SetPageUnit(Unit unit)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetPageUnit(nativeGraphics, cast<int>(unit)));
+        }
+        public void SetPageUnitChecked(Unit unit)
+        {
+            CheckGraphicsStatus(SetPageUnit(unit));
+        }
+        public nothrow float GetPageScale()
+        {
+            return WinGraphicsGetPageScale(nativeGraphics);
+        }
+        public float GetPageScaleChecked()
+        {
+            float scale = GetPageScale();
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            return scale;
+        }
+        public nothrow GraphicsStatus SetPageScale(float scale)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetPageScale(nativeGraphics, scale));
+        }
+        public void SetPageScaleChecked(float scale)
+        {
+            CheckGraphicsStatus(SetPageScale(scale));
+        }
+        public nothrow float GetDpiX()
+        {
+            return WinGraphicsGetDpiX(nativeGraphics);
+        }
+        public nothrow float GetDpiY()
+        {
+            return WinGraphicsGetDpiY(nativeGraphics);
+        }
+        public nothrow SmoothingMode GetSmoothingMode()
+        {
+            return cast<SmoothingMode>(WinGraphicsGetSmoothingMode(nativeGraphics));
+        }
+        public SmoothingMode GetSmoothingModeChecked()
+        {
+            SmoothingMode smoothingMode = GetSmoothingMode();
+            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            return smoothingMode;
+        }
+        public nothrow GraphicsStatus SetSmoothingMode(SmoothingMode smoothingMode)
+        {
+            return cast<GraphicsStatus>(WinGraphicsSetSmoothingMode(nativeGraphics, smoothingMode));
+        }
+        public void SetSmoothingModeChecked(SmoothingMode smoothingMode)
+        {
+            CheckGraphicsStatus(SetSmoothingMode(smoothingMode));
+        }
+        public nothrow inline const void* NativeGraphics() const
+        {
+            return nativeGraphics;
+        }
+        private void* nativeGraphics;
+    }
+}
+

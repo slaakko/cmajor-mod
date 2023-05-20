@@ -120,20 +120,20 @@ std::u32string ParameterSymbol::CodeName() const
     }
     return VariableSymbol::CodeName();
 }
-/* TODO
+
 std::unique_ptr<soul::xml::Element> ParameterSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"ParameterSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("ParameterSymbol"));
     if (GetType())
     {
-        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
+        std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
         int typeId = typeMap.GetOrInsertType(GetType());
-        typeElement->SetAttribute(U"ref", U"type_" + util::ToUtf32(util::ToString(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(typeElement.release()));
+        typeElement->SetAttribute("ref", "type_" + util::ToString(typeId));
+        element->AppendChild(typeElement.release());
     }
     return element;
 }
-*/
+
 ParameterSymbol* ParameterSymbol::Clone() const
 {
     ParameterSymbol* clone = new ParameterSymbol(GetSourcePos(), SourceModuleId(), Name());
@@ -156,20 +156,20 @@ LocalVariableSymbol::LocalVariableSymbol(const soul::ast::SourcePos&  sourcePos_
     VariableSymbol(SymbolType::localVariableSymbol, sourcePos_, sourceModuleId_, name_)
 {
 }
-/*TODO
+
 std::unique_ptr<soul::xml::Element> LocalVariableSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"LocalVariableSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("LocalVariableSymbol"));
     if (GetType())
     {
-        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
+        std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
         int typeId = typeMap.GetOrInsertType(GetType());
-        typeElement->SetAttribute(U"ref", U"type_" + util::ToUtf32(util::ToString(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(typeElement.release()));
+        typeElement->SetAttribute("ref", "type_" + util::ToString(typeId));
+        element->AppendChild(typeElement.release());
     }
     return element;
 }
-*/
+
 std::string LocalVariableSymbol::GetSymbolHelp() const
 {
     if (!GetType()) return std::string();
@@ -320,20 +320,20 @@ void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64
     }
     return localDIType;
 }
-/*TODO
+
 std::unique_ptr<soul::xml::Element> MemberVariableSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(U"MemberVariableSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("MemberVariableSymbol"));
     if (GetType())
     {
-        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
+        std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
         int typeId = typeMap.GetOrInsertType(GetType());
-        typeElement->SetAttribute(U"ref", U"type_" + util::ToUtf32(util::ToString(typeId)));
-        element->AppendChild(std::unique_ptr<soul::xml::Node>(typeElement.release()));
+        typeElement->SetAttribute("ref", "type_" + util::ToString(typeId));
+        element->AppendChild(typeElement.release());
     }
     return element;
 }
-*/
+
 void MemberVariableSymbol::Check()
 {
     VariableSymbol::Check();

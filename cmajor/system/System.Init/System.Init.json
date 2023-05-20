@@ -1,0 +1,34 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_System.Lex_C72743696E4DA1806F5F187CAA84CC1A375CBF65", 
+        "project_System.IO.Compression_EAFA331803F16891F1ACBDDC6FA536CAD1A8906C"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "19917ABA7F1069673029DB07BBE2E4B1638CE17B", 
+            "fileId" : "Compression_70ED74D13B5AF7B0A885B959F684B65A74D4D82B", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Init\/Compression.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "88A6966DC86C0C67F16897B38B60D6E7A80343BC", 
+            "fileId" : "Initializer_51109E30A5E36F76FA345B7A1E053409F3CD7893", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Init\/Initializer.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Init\/System.Init.cmp", 
+    "projectHash" : "BADC142195D566745DCF15DE14E43FDA5F720C29", 
+    "projectId" : "project_System.Init_785A14AF85D903EECAD408BC60258FA952D1000A", 
+    "projectName" : "System.Init", 
+    "target" : "library"
+}

@@ -1,0 +1,318 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public abstract class ContainerControl : Control
+    {
+        public ContainerControl(const string& windowClassName, WindowClassStyle windowClassStyle, WindowStyle style, ExtendedWindowStyle exStyle,
+            const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base(windowClassName, windowClassStyle, style, exStyle, backgroundColor, text, location, size, dock, anchors), children(this)
+        {
+        }
+        public ContainerControl(ControlCreateParams& createParams) : base(createParams), children(this)
+        {
+        }
+        public void AddChild(Control* child)
+        {
+            children.AddChild(child);
+            ControlEventArgs args(child);
+            OnControlAdded(args);
+        }
+        public UniquePtr<Control> RemoveChild(Control* child)
+        {
+            UniquePtr<Component> childComponent = children.RemoveChild(child);
+            ControlEventArgs args(child);
+            OnControlRemoved(args);
+            return UniquePtr<Control>(childComponent.Release() as Control*);
+        }
+        public void InsertChildBefore(Control* child, Control* before)
+        {
+            children.InsertBefore(child, before);
+            ControlEventArgs args(child);
+            OnControlAdded(args);
+        }
+        public void InsertChildAfter(Control* child, Control* after)
+        {
+            children.InsertAfter(child, after);
+            ControlEventArgs args(child);
+            OnControlAdded(args);
+        }
+        public nothrow const Container& Children() const
+        {
+            return children;
+        }
+        public nothrow override ContainerControl* GetContainerControl() const
+        {
+            return this;
+        }
+        internal nothrow override Control* GetFirstEnabledTabStopControl() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetFirstEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal nothrow override Control* GetLastEnabledTabStopControl() const
+        {
+            Component* child = children.LastChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetLastEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->PrevSibling();
+            }
+            return null;
+        }
+        protected override void OnSizeChanging(SizeChangingEventArgs& args)
+        {
+            base->OnSizeChanging(args);
+            int dx = args.newSize.w - args.oldSize.w;
+            int dy = args.newSize.h - args.oldSize.h;
+            MoveChildren(dx, dy);
+        }
+        protected override void OnChildSizeChanged(ControlEventArgs& args)
+        {
+            base->OnChildSizeChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->FireChildSizeChanged(args);
+            }
+        }
+        protected override void OnChildContentLocationChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentLocationChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentLocationChanged(args);
+            }
+        }
+        protected override void OnChildContentChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        protected override void OnChildContentSizeChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentSizeChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentSizeChanged(args);
+            }
+        }
+        protected override void OnChildGotFocus(ControlEventArgs& args)
+        {
+            base->OnChildContentChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        protected override void OnChildLostFocus(ControlEventArgs& args)
+        {
+            base->OnChildLostFocus(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        public override void PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                log->WriteLine(string(' ', level) + "ContainerControl." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+            }
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    childControl->PrintWindowTree(level + 1);
+                }
+                child = child->NextSibling();
+            }
+        }
+        protected override bool ProcessMessage(Message& message)
+        {
+            switch (message.msg)
+            {
+                case WM_SIZE:
+                {
+                    Size newSize = message.LParamSize();
+                    Size oldSize = GetSize();
+                    if (newSize != oldSize)
+                    {
+                        Rect parentRect(Point(), newSize);
+                        int dx = newSize.w - oldSize.w;
+                        int dy = newSize.h - oldSize.h;
+                        MoveChildren(dx, dy);
+                        uint windowState = message.wparam;
+                        SetSizeInternal(newSize, windowState);
+                        DockChildren();
+                        OnSizeChanged(windowState);
+                    }
+                    message.result = 0;
+                    return true;
+                }
+                case WM_PAINT: case WM_MOVE: case WM_MOUSEMOVE: case WM_MOUSELEAVE: case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK: case WM_RBUTTONDOWN: case WM_RBUTTONUP:
+                case WM_CHAR: case WM_KEYDOWN: case WM_KEYUP: case WM_SYSCOMMAND: case WM_HSCROLL: case WM_VSCROLL: case WM_MOUSEWHEEL:
+                case WM_SETFOCUS: case WM_KILLFOCUS: case WM_TIMER: case WM_COMMAND: case WM_SHOWWINDOW: case WM_CLIPBOARDUPDATE:
+                {
+                    return base->ProcessMessage(message);
+                }
+            }
+            return false;
+        }
+        public void MoveChildren(int dx, int dy)
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    if (childControl->GetDock() == Dock.none)
+                    {
+                        childControl->MoveWindow(dx, dy);
+                    }
+                }
+                child = child->NextSibling();
+            }
+        }
+        public void DockChildren()
+        {
+            Rect parentRect(Point(), GetSize());
+            DockChildren(parentRect);
+        }
+        public void DockChildren(Rect& parentRect)
+        {
+            List<Control*> filledControls;
+            List<ContainerControl*> containers;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    switch (childControl->GetDock())
+                    {
+                        case Dock.none: break;
+                        case Dock.fill: filledControls.Add(childControl); break;
+                        default:
+                        {
+                            childControl->DockWindow(parentRect);
+                            break;
+                        }
+                    }
+                    if (childControl is ContainerControl*)
+                    {
+                        ContainerControl* containerChild = cast<ContainerControl*>(childControl);
+                        containers.Add(containerChild);
+                    }
+                }
+                child = child->NextSibling();
+            }
+            for (Control* filledControl : filledControls)
+            {
+                filledControl->DockWindow(parentRect);
+            }
+            for (ContainerControl* container : containers)
+            {
+                container->DockChildren();
+            }
+        }
+        internal override void PaintAll(PaintEventArgs& args, bool skipMenuBar)
+        {
+            try
+            {
+                base->PaintAll(args, skipMenuBar);
+                Control* topControl = TopControl();
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is Control*)
+                    {
+                        Control* childControl = cast<Control*>(child);
+                        if (childControl != topControl)
+                        {
+                            bool skip = false;
+                            if (skipMenuBar)
+                            {
+                                if (childControl is MenuBar*)
+                                {
+                                    skip = true;
+                                }
+                                else if (childControl is MenuBox*)
+                                {
+                                    MenuBox* menuBox = cast<MenuBox*>(childControl);
+                                    if (!menuBox->PaintThisMenuBox())
+                                    {
+                                        skip = true;
+                                    }
+                                }
+                            }
+                            if (!skip)
+                            {
+                                GraphicsState state = args.graphics.SaveChecked();
+                                Point loc = childControl->Location();
+                                args.graphics.SetClipChecked(Rect(childControl->Location(), childControl->GetSize()));
+                                args.graphics.TranslateTransformChecked(loc.x, loc.y);
+                                childControl->PaintAll(args, skipMenuBar);
+                                args.graphics.RestoreChecked(state);
+                            }
+                        }
+                    }
+                    child = child->NextSibling();
+                }
+                if (topControl != null)
+                {
+                    GraphicsState state = args.graphics.SaveChecked();
+                    Point loc = topControl->Location();
+                    args.graphics.SetClipChecked(Rect(topControl->Location(), topControl->GetSize()));
+                    args.graphics.TranslateTransformChecked(loc.x, loc.y);
+                    topControl->PaintAll(args, skipMenuBar);
+                    args.graphics.RestoreChecked(state);
+                }
+            }
+            catch (const Exception& ex)
+            {
+                MessageBox.Show(ex.Message());
+            }
+        }
+        private Container children;
+    }
+}

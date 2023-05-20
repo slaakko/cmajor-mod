@@ -154,6 +154,8 @@
     <ClCompile Include="emitter.cpp" />
     <ClCompile Include="emitter.cppm" />
     <ClCompile Include="emitting_context.cppm" />
+    <ClCompile Include="emittin_context.cpp" />
+    <ClCompile Include="gen_object.cpp" />
     <ClCompile Include="gen_object.cppm" />
     <ClCompile Include="ir.cppm" />
     <ClCompile Include="value_stack.cpp" />

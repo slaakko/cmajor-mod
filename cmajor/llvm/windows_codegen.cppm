@@ -15,6 +15,8 @@ class WindowsCodeGenerator : public LLvmCodeGenerator
 {
 public:
     WindowsCodeGenerator(cmajor::ir::Emitter* emitter_);
+private:
+    cmajor::ir::Emitter* emitter;
 };
 
 } // namespace cmajor::llvm

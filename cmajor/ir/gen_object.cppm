@@ -65,4 +65,5 @@ public:
 private:
     void* value;
 };
+
 } // namespace cmajor::ir

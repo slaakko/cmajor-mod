@@ -72,9 +72,8 @@ public:
     void SetFlag(ClassTemplateSpecializationFlags flag) { flags = flags | flag; }
     bool GetFlag(ClassTemplateSpecializationFlags flag) const { return (flags & flag) != ClassTemplateSpecializationFlags::none; }
     void ResetFlag(ClassTemplateSpecializationFlags flag) { flags = flags & ~flag; }
-    // TODO
-    //TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::unordered_map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, 
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     std::u32string Id() const override;
     const char* ClassName() const override { return "ClassTemplateSpecializationSymbol"; }
     void Check() override;

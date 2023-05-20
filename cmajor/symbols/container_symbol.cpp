@@ -21,7 +21,7 @@ namespace cmajor::symbols {
 ContainerSymbol::ContainerSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
     Symbol(symbolType_, sourcePos_, sourceModuleId_, name_)
 {
-    containerScope->SetContainer(this);
+    containerScope.SetContainer(this);
 }
 
 void ContainerSymbol::Write(SymbolWriter& writer)
@@ -100,7 +100,7 @@ void ContainerSymbol::AddMember(Symbol* member)
     }
     else
     {
-        containerScope->Install(member);
+        containerScope.Install(member);
     }
 }
 
@@ -133,7 +133,7 @@ void ContainerSymbol::AddOwnedMember(Symbol* ownedMember)
     }
     else
     {
-        containerScope->Install(ownedMember);
+        containerScope.Install(ownedMember);
     }
 }
 
@@ -151,7 +151,7 @@ std::unique_ptr<Symbol> ContainerSymbol::RemoveMember(int symbolIndex)
     }
     if (symbol->IsInstalled())
     {
-        containerScope->Uninstall(symbol.get());
+        containerScope.Uninstall(symbol.get());
     }
     return symbol;
 }
@@ -169,13 +169,13 @@ void ContainerSymbol::Accept(SymbolCollector* collector)
 
 void ContainerSymbol::Clear()
 {
-    containerScope->Clear();
+    containerScope.Clear();
     members.clear();
 }
 
 FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
-    Symbol* symbol = containerScope->Lookup(groupName);
+    Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
         FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(sourcePos, sourceModuleId, groupName);
@@ -194,7 +194,7 @@ FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32stri
 
 ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
-    Symbol* symbol = containerScope->Lookup(groupName);
+    Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
         ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(sourcePos, sourceModuleId, groupName);
@@ -213,7 +213,7 @@ ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string
 
 ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
-    Symbol* symbol = containerScope->Lookup(groupName);
+    Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
         ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(sourcePos, sourceModuleId, groupName);
@@ -233,7 +233,7 @@ ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32st
 
 GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
 {
-    Symbol* symbol = containerScope->Lookup(groupName);
+    Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
         GlobalVariableGroupSymbol* globalVariableGroupSymbol = new GlobalVariableGroupSymbol(sourcePos, sourceModuleId, groupName);
@@ -333,10 +333,10 @@ void ContainerSymbol::CopyFrom(const Symbol* that)
 {
     Symbol::CopyFrom(that);
     const ContainerSymbol* thatContainer = static_cast<const ContainerSymbol*>(that);
-    containerScope->SetParentScope(Parent()->GetContainerScope());
-    for (const std::pair<std::u32string, Symbol*>& p : thatContainer->containerScope->SymbolMap())
+    containerScope.SetParentScope(Parent()->GetContainerScope());
+    for (const std::pair<std::u32string, Symbol*>& p : thatContainer->containerScope.SymbolMap())
     {
-        containerScope->Install(p.second);
+        containerScope.Install(p.second);
     }
 }
 

@@ -1,0 +1,49 @@
+{
+    "dependsOnProjects" : 
+    [
+        "project_System.Base_514D5BCBAECBEF9F086039ACAD4EBAECD3607969"
+    ]
+    , 
+    "error" : "", 
+    "fileInfos" : 
+    [
+        {
+            "content" : "", 
+            "fileHash" : "80976D611824F96475DCC641BE701D64988C9304", 
+            "fileId" : "NetworkByteStream_2A47196F1E8FA132812594586A41CA6C070E183C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Sockets\/NetworkByteStream.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "F78F0EDB3E6485A5207280E7FA563C7A2A8C29FB", 
+            "fileId" : "TcpClient_0D6AAFE8C39DBE157A960B9376B4A4B9E4E5BDBA", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Sockets\/TcpClient.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "4D37698BBF4E92C93AE86552892636DDF91F88D9", 
+            "fileId" : "TcpListener_6BA717812914994EDC0B6726AD24500D35D3438C", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Sockets\/TcpListener.cm", 
+            "info" : ""
+        }
+        , 
+        {
+            "content" : "", 
+            "fileHash" : "D43AFEDA977A1F3630D9D70F8AE97BCC6BEA8905", 
+            "fileId" : "TcpSocket_0146A843176EA7364F6D227CAE89E0D2DF579368", 
+            "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Sockets\/TcpSocket.cm", 
+            "info" : ""
+        }
+    ]
+    , 
+    "info" : "", 
+    "projectFilePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Sockets\/System.Net.Sockets.cmp", 
+    "projectHash" : "185263811A66B30F304011CE79358301C35F9E98", 
+    "projectId" : "project_System.Net.Sockets_0FA0FCB8C1524AB1F3C17C07DA0E548E5DCF060E", 
+    "projectName" : "System.Net.Sockets", 
+    "target" : "library"
+}

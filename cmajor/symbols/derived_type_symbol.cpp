@@ -558,7 +558,7 @@ TypeSymbol* DerivedTypeSymbol::Unify(TypeSymbol* sourceType, const soul::ast::So
     return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(newBaseType, UnifyDerivations(derivationRec, sourceType->DerivationRec()), sourcePos, moduleId);
 }
 
-bool DerivedTypeSymbol::IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested)
+bool DerivedTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested)
 {
     if (tested.find(TypeId()) != tested.cend()) return TypesEqual(type, this);
     tested.insert(TypeId());

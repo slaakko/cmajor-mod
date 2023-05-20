@@ -19,7 +19,7 @@ void CreateSymbols(cmajor::symbols::SymbolTable& symbolTable, cmajor::ast::Proje
 std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> BindTypes(cmajor::symbols::Module* module, cmajor::ast::Project* project,
     cmajor::binder::AttributeBinder* attributeBinder, bool& stop);
 
-void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits, 
+void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits, 
     std::vector<std::string>& objectFilePaths, bool& stop);
 
 } // namespace cmajor::build

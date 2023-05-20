@@ -92,8 +92,7 @@ public:
     const TypeDerivationRec& DerivationRec() const override { return derivationRec; }
     TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* Unify(TypeSymbol* sourceType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    //bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested) override;
-    bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested) override;
+    bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested) override;
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
     std::u32string Info() const override { return Name(); }

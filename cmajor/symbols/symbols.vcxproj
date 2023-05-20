@@ -210,10 +210,12 @@
     <ClCompile Include="sources.cppm" />
     <ClCompile Include="source_file_module_map.cpp" />
     <ClCompile Include="source_file_module_map.cppm" />
+    <ClCompile Include="string_functions.cpp" />
     <ClCompile Include="string_functions.cppm" />
     <ClCompile Include="symbol.cpp" />
     <ClCompile Include="symbol.cppm" />
     <ClCompile Include="symbols.cppm" />
+    <ClCompile Include="symbol_collector.cpp" />
     <ClCompile Include="symbol_collector.cppm" />
     <ClCompile Include="symbol_creator_visitor.cpp" />
     <ClCompile Include="symbol_creator_visitor.cppm" />

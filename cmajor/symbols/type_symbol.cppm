@@ -75,7 +75,7 @@ public:
     virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual TypeSymbol* Unify(TypeSymbol* that, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
     virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
-    virtual bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested);
+    virtual bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested);
     virtual ValueType GetValueType() const;
     virtual Value* MakeValue() const { return nullptr; }
     std::u32string Id() const override;

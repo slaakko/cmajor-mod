@@ -1948,30 +1948,21 @@ void SymbolTable::ReadSymbolDefinitionMap(SymbolReader& reader)
 class IntrinsicConcepts
 {
 public:
-    static void Init();
-    static void Done();
-    static IntrinsicConcepts& Instance() { return *instance; }
+    static IntrinsicConcepts& Instance();
     void AddIntrinsicConcept(cmajor::ast::ConceptNode* intrinsicConcept);
     const std::vector<std::unique_ptr<cmajor::ast::ConceptNode>>& GetIntrinsicConcepts() const { return intrinsicConcepts; }
     bool Initialized() const { return initialized; }
     void SetInitialized() { initialized = true; }
 private:
-    static std::unique_ptr<IntrinsicConcepts> instance;
     std::vector<std::unique_ptr<cmajor::ast::ConceptNode>> intrinsicConcepts;
     IntrinsicConcepts();
     bool initialized;
 };
 
-std::unique_ptr<IntrinsicConcepts> IntrinsicConcepts::instance;
-
-void IntrinsicConcepts::Init()
+IntrinsicConcepts& IntrinsicConcepts::Instance()
 {
-    instance.reset(new IntrinsicConcepts());
-}
-
-void IntrinsicConcepts::Done()
-{
-    instance.reset();
+    static IntrinsicConcepts instance;
+    return instance;
 }
 
 IntrinsicConcepts::IntrinsicConcepts() : initialized(false)
@@ -2091,16 +2082,6 @@ void CreateClassFile(const std::string& executableFilePath, SymbolTable& symbolT
     }
 }
 */
-
-void InitSymbolTable()
-{
-    IntrinsicConcepts::Init();
-}
-
-void DoneSymbolTable()
-{
-    IntrinsicConcepts::Done();
-}
 
 } // namespace cmajor::symbols
 

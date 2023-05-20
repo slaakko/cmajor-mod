@@ -5,6 +5,7 @@
 
 module cmajor.symbols.type.map;
 
+import cmajor.symbols.type.symbol;
 import util;
 
 namespace cmajor::symbols {
@@ -12,7 +13,7 @@ namespace cmajor::symbols {
 TypeMap::TypeMap() : nextClassTemplateSpecializationId(1), nextOtherTypeId(1000000)
 {
 }
-/*
+
 int TypeMap::GetOrInsertType(TypeSymbol* type)
 {
     auto it = typeMap.find(type);
@@ -32,14 +33,14 @@ int TypeMap::GetOrInsertType(TypeSymbol* type)
             typeId = nextOtherTypeId++;
         }
         typeMap[type] = typeId;
-        std::unique_ptr<soul::xml::Element> typeElement(new soul::xml::Element(U"type"));
-        typeElement->SetAttribute(U"id", U"type_" + ToUtf32(std::to_string(typeId)));
-        typeElement->AppendChild(std::move(type->ToDomElement(*this)));
+        std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
+        typeElement->SetAttribute("id", "type_" + std::to_string(typeId));
+        std::unique_ptr<soul::xml::Element> domElement = type->ToDomElement(*this);
+        typeElement->AppendChild(domElement.release());
         typeIdTypeElementMap[typeId] = std::move(typeElement);
         return typeId;
     }
 }
-*/
 
 std::vector<std::unique_ptr<soul::xml::Element>> TypeMap::TypeElements()
 {

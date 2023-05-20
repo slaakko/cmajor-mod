@@ -1,0 +1,17 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml.Serialization
+{
+    public class XmlSerializationException : Exception
+    {
+        public nothrow XmlSerializationException(const string& message_) : base(message_)
+        {
+        }
+    }
+}
+

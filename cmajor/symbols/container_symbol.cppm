@@ -29,8 +29,8 @@ public:
     void Clear();
     std::string TypeString() const override { return "container"; }
     bool IsContainerSymbol() const override { return true; }
-    const ContainerScope* GetContainerScope() const override { return containerScope.get(); }
-    ContainerScope* GetContainerScope() override { return containerScope.get(); }
+    const ContainerScope* GetContainerScope() const override { return &containerScope; }
+    ContainerScope* GetContainerScope() override { return &containerScope; }
     const std::vector<std::unique_ptr<Symbol>>& Members() const { return members; }
     std::vector<std::unique_ptr<Symbol>>& Members() { return members; }
     void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const override;
@@ -42,7 +42,7 @@ public:
     virtual bool IsImmutable() const { return false; }
 private:
     std::vector<std::unique_ptr<Symbol>> members;
-    std::unique_ptr<ContainerScope> containerScope;
+    ContainerScope containerScope;
     std::unordered_map<int32_t, FunctionSymbol*> functionIndexMap;
     FunctionGroupSymbol* MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
     ConceptGroupSymbol* MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);

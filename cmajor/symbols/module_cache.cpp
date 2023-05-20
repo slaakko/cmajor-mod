@@ -463,6 +463,8 @@ Init::Init()
     InitModuleCache();
 }
 
+Init init;
+
 }
 
 } // namespace cmajor::symbols

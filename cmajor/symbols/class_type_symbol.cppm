@@ -131,8 +131,7 @@ public:
     void CollectMembers(SymbolCollector* collector);
     void Dump(util::CodeFormatter& formatter) override;
     // TODO
-    //bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested) override;
-    bool IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested) override;
+    bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested) override;
     virtual bool IsPrototypeTemplateSpecialization() const { return false; }
     bool CompletelyBound() const override { return IsBound() && !StatementsNotBound(); }
     void CreateDestructorSymbol();

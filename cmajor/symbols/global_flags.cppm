@@ -85,4 +85,5 @@ int32_t GetNumUnitTestAssertions();
 void EndUnitTest(bool prevUnitTest);
 void SetAssertionLineNumberVector(std::vector<int32_t>* assertionLineNumberVector_);
 void AddAssertionLineNumber(int32_t lineNumber);
+
 } // namespace cmajor::symbols

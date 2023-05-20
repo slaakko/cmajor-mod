@@ -1,0 +1,450 @@
+{
+    "breakpoints" : 
+    {
+        "breakpointLists" : 
+        [
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Algorithm.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Ansi.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Ascii.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/BufferedByteStream.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Compression.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Console.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Conversion.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Directory.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/LogWriter.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Math.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/String.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Time.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/Utility.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Dom\/CharacterData.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Json\/JsonExport.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Lex\/ClassMap.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Lex\/Lexeme.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Lex\/Lexer.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Net.Http\/HttpFieldValueParser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Runtime\/Runtime.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Runtime\/Tracer.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Runtime\/Win.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Application.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Assert.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/BorderedControl.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Button.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/ContainerControl.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Control.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/EditCommand.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Graphics.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/IconListView.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/LogView.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Menu.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Message.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Metrics.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Panel.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/ScrollableControl.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/SourceCodeView.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/SplitContainer.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/StatusBar.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/TabControl.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/TextView.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/ToolBar.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/TreeView.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Windows\/Window.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Xml.Serialization\/XmlClassRegistry.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Xml.Serialization\/XmlExport.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Xml.Serialization\/XmlImport.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System\/System.cm"
+            }
+        ]
+    }
+    , 
+    "programArguments" : ""
+}

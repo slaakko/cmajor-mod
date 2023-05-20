@@ -642,8 +642,8 @@ void ImportModules(cmajor::ast::Target target, Module* rootModule, Module* modul
 Module::Module() :
     format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::uuid::random()),
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
-    symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), debugLogIndent(0), index(-1),
-    buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
+    symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), 
+    debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
 {
 }
 
@@ -1912,6 +1912,7 @@ void Module::UpdateSourceFileModuleMap()
 
 ParseResult Module::ParseSources()
 {
+/*  TODO
     if (sources)
     {
         ParseResult parseResult = sources->Parse(this);
@@ -1929,13 +1930,18 @@ ParseResult Module::ParseSources()
         result.error = "sources not set";
         return result;
     }
+*/
+    ParseResult result;
+    result.ok = false;
+    result.error = "sources not set";
+    return result;
 }
 
 ParseResult Module::ParseSource(const std::string& sourceFilePath, const std::u32string& sourceCode)
 {
     if (sources)
     {
-        return sources->ParseSource(this, sourceFilePath, sourceCode);
+        // TODO: return sources->ParseSource(this, sourceFilePath, sourceCode); TODO
     }
     else
     {
@@ -1944,30 +1950,36 @@ ParseResult Module::ParseSource(const std::string& sourceFilePath, const std::u3
         result.error = "sources not set";
         return result;
     }
+    ParseResult result;
+    result.ok = false;
+    result.error = "sources not set";
+    return result;
 }
 
 std::string Module::GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext)
 {
     if (sources)
     {
-        return sources->GetCCList(this, sourceFilePath, ccText, cursorLine, ruleContext);
+        // TODO: return sources->GetCCList(this, sourceFilePath, ccText, cursorLine, ruleContext);
     }
     else
     {
         throw std::runtime_error("sources not set");
     }
+    throw std::runtime_error("sources not set");
 }
 
 std::string Module::GetParamHelpList(const std::string& sourceFilePath, int symbolIndex)
 {
     if (sources)
     {
-        return sources->GetParamHelpList(this, sourceFilePath, symbolIndex);
+        // TODO: return sources->GetParamHelpList(this, sourceFilePath, symbolIndex);
     }
     else
     {
         throw std::runtime_error("sources not set");
     }
+    throw std::runtime_error("sources not set");
 }
 
 #ifdef _WIN32

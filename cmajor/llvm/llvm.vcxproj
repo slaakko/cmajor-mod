@@ -158,6 +158,7 @@
     <ClCompile Include="interface.cppm" />
     <ClCompile Include="llvm.cppm" />
     <ClCompile Include="value_stack.cppm" />
+    <ClCompile Include="windows_codegen.cpp" />
     <ClCompile Include="windows_codegen.cppm" />
   </ItemGroup>
   <ItemGroup>

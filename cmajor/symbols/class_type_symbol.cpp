@@ -807,8 +807,8 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
     }
     formatter.DecIndent();
 }
-/* TODO
-bool ClassTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, boost::hash<util::uuid>>& tested)
+
+bool ClassTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested)
 {
     if (tested.find(TypeId()) != tested.cend())
     {
@@ -833,7 +833,7 @@ bool ClassTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uui
     }
     return false;
 }
-*/
+
 void ClassTypeSymbol::CreateDestructorSymbol()
 {
     if (!destructor)
@@ -1345,9 +1345,7 @@ bool ClassTypeSymbol::IsRecursive()
         for (int i = 0; i < n; ++i)
         {
             TypeSymbol* elementType = objectLayout[i];
-            //TODO
-            //std::unordered_set<util::uuid, boost::hash<util::uuid>> tested;
-            std::set<util::uuid> tested;
+            std::unordered_set<util::uuid, util::UuidHash> tested;
             if (elementType->IsRecursive(this, tested))
             {
                 SetRecursive();

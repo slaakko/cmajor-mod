@@ -1,9 +1,9 @@
-export module cmajor.symbols.string.functions;
-
 // =================================
 // Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
+export module cmajor.symbols.string.functions;
 
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;

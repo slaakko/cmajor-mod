@@ -28,8 +28,25 @@ struct uuid
 };
 
 bool operator==(const uuid& left, const uuid& right);
+
 inline bool operator!=(const uuid& left, const uuid& right) { return !(left == right); }
+
 bool operator<(const uuid& left, const uuid& right);
+
+inline bool operator>(const uuid& left, const uuid& right)
+{
+    return right < left;
+}
+
+inline bool operator<=(const uuid& left, const uuid& right)
+{
+    return !(left > right);
+}
+
+inline bool operator>=(const uuid& left, const uuid& right)
+{
+    return !(left < right);
+}
 
 void UuidToInts(const uuid& id, uint64_t& int1, uint64_t& int2);
 void IntsToUuid(uint64_t int1, uint64_t int2, uuid& id);

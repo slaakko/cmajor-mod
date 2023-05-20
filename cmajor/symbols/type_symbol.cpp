@@ -86,7 +86,7 @@ TypeSymbol* TypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivat
     return this;
 }
 
-bool TypeSymbol::IsRecursive(TypeSymbol* type, std::set<util::uuid>& tested)
+bool TypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested)
 {
     if (tested.find(TypeId()) != tested.cend()) return TypesEqual(type, this);
     tested.insert(TypeId());

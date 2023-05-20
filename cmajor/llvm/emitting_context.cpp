@@ -61,7 +61,7 @@ LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : contex
     targetTriple = ::llvm::sys::getDefaultTargetTriple();
 #endif
     triple = ::llvm::Triple(targetTriple);
-
+    static ::llvm::codegen::RegisterCodeGenFlags registerCodeGenFlags;
     std::string error;
     const ::llvm::Target* target = ::llvm::TargetRegistry::lookupTarget(::llvm::codegen::getMArch(), triple, error);
     if (!target)

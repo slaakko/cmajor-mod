@@ -164,32 +164,24 @@ uint32_t AccessFlag(cmajor::ir::Emitter& emitter, SymbolAccess access)
 
 bool operator==(const SymbolLocation& left, const SymbolLocation& right)
 {
-    // TODO
-    //return left.moduleId == right.moduleId && left.fileIndex == right.fileIndex && left.line == right.line && left.scol == right.scol;
-    return true;
+    return left.moduleId == right.moduleId && left.fileIndex == right.fileIndex && left.line == right.line && left.scol == right.scol;
 }
 
 bool operator<(const SymbolLocation& left, const SymbolLocation& right)
 {
-    // TODO
-    // if (left.moduleId < right.moduleId) return true;
-    // if (left.moduleId > right.moduleId) return false;
-    // if (left.fileIndex < right.fileIndex) return true;
-    // if (left.fileIndex > right.fileIndex) return false;
-    // if (left.line < right.line) return true;
-    // if (left.line > right.line) return false;
+    if (left.moduleId < right.moduleId) return true;
+    if (left.moduleId > right.moduleId) return false;
+    if (left.fileIndex < right.fileIndex) return true;
+    if (left.fileIndex > right.fileIndex) return false;
+    if (left.line < right.line) return true;
+    if (left.line > right.line) return false;
     return left.scol < right.scol;
-    
-    return true;
 }
-// TODO
-// SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module* module)
-// {
-//     int32_t scol = 0;
-//     int32_t ecol = 0;
-//     module_->GetColumns(sourcePos, scol, ecol);
-//     return SymbolLocation(module_->Id(), sourcePos.fileIndex, sourcePos.line, scol);
-// }
+
+SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module* module)
+{
+     return SymbolLocation(module->Id(), sourcePos.file, sourcePos.line, sourcePos.col);
+}
 
 Symbol::Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), flags(SymbolFlags::project), parent(nullptr), module(nullptr), compileUnit(nullptr), symbolIndex(-1)
