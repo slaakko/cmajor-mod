@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{846f8ef1-64d7-4e89-96ee-edd591438dbf}</ProjectGuid>
-    <RootNamespace>build</RootNamespace>
+    <ProjectGuid>{229de3f8-fa43-4ee2-8370-4d3c8ed47875}</ProjectGuid>
+    <RootNamespace>common</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>cmajor.buildd</TargetName>
+    <TargetName>soul.commond</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>cmajor.build</TargetName>
+    <TargetName>soul.common</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -113,11 +113,10 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -134,10 +133,10 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -148,70 +147,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="action.cpp" />
-    <ClCompile Include="action.cppm" />
-    <ClCompile Include="build.cppm" />
-    <ClCompile Include="building.cpp" />
-    <ClCompile Include="building.cppm" />
-    <ClCompile Include="compiling.cpp" />
-    <ClCompile Include="compiling.cppm" />
-    <ClCompile Include="flags.cppm" />
-    <ClCompile Include="install.cpp" />
-    <ClCompile Include="install.cppm" />
-    <ClCompile Include="parsing.cpp" />
-    <ClCompile Include="parsing.cppm" />
+    <ClCompile Include="token_parser.cppm" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\soul\ast\ast.vcxproj">
-      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\lexer\lexer.vcxproj">
-      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\parser\parser.vcxproj">
-      <Project>{536511be-fbac-449f-bd75-704655bdce4d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\rex\rex.vcxproj">
-      <Project>{679d89a0-4e43-4cf7-8e81-acc6b357e222}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\xml\dom\dom.vcxproj">
-      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\xml\dom_parser\dom_parser.vcxproj">
-      <Project>{a04570d9-27be-464f-b3a5-6c6b1943d493}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\xml\processor\processor.vcxproj">
-      <Project>{1ad67257-5fbe-45a6-a3bf-161bf9778089}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\xml\xml_parser\xml_parser.vcxproj">
-      <Project>{21e6c1c2-daa6-4f4e-954e-b56538d46244}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\soul\xml\xpath\xpath.vcxproj">
-      <Project>{99d0a844-4ee3-4c0a-9eeb-45eb9fedca05}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ast\ast.vcxproj">
-      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\backend\backend.vcxproj">
-      <Project>{f9426554-e003-4b1d-9431-04a894271dca}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\binder\binder.vcxproj">
-      <Project>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ir\ir.vcxproj">
-      <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
-      <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
     </ProjectReference>
     <ProjectReference Include="..\parser\parser.vcxproj">
-      <Project>{067fedb4-998d-4efb-a2f4-70dc705264e1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\symbols\symbols.vcxproj">
-      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+      <Project>{536511be-fbac-449f-bd75-704655bdce4d}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

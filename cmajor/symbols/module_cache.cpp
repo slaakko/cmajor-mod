@@ -171,7 +171,7 @@ void ModuleCache::PutModule(std::unique_ptr<Module>&& module)
                 moduleMap[module->FilePathReadFrom()] = moduleIndex;
             }
             module->SetIndex(moduleIndex);
-            module->SetFlag(ModuleFlags::readFromModuleFile);
+            // module->SetFlag(ModuleFlags::readFromModuleFile); do not reread
             modules.push_back(std::move(module));
         }
     }

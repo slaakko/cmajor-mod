@@ -1,0 +1,45 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.xml.xpath.lexer;
+
+import soul.xml.xpath.token;
+import soul.xml.xpath.keyword;
+import soul.xml.xpath.expr;
+
+lexer XPathLexer
+{
+    rules
+    {
+        "{separators}"{ }
+        "{name}" { return NAME; }
+        "{number}" { return NUMBER; }
+        "{dq_string}" { return DQ_STRING; }
+        "{sq_string}" { return SQ_STRING; }
+        "=" { return EQ; }
+        "!=" { return NEQ; }
+        "<=" { return LEQ; }
+        ">=" { return GEQ; }
+        "<" { return LESS; }
+        ">" { return GREATER; }
+        "\+" { return PLUS; }
+        "-" { return MINUS; }
+        "\*" { return STAR; }
+        "\|" { return UNION; }
+        "//" { return SLASH_SLASH; }
+        "/" { return SLASH; }
+        "\.\." { return DOT_DOT; }
+        "\." { return DOT; }
+        "::" { return COLON_COLON; }
+        ":" { return COLON; }
+        "$" { return DOLLAR; }
+        "," { return COMMA; }
+        "@" { return AT; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+    }
+}

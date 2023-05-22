@@ -25,6 +25,8 @@ void PrintHelp()
     std::cout << "  Be verbose." << "\n";
     std::cout << "--single-threaded | -s" << "\n";
     std::cout << "  Single-threaded compile." << "\n";
+    std::cout << "--rebuild | -r" << "\n";
+    std::cout << "  Rebuild." << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -50,6 +52,10 @@ int main(int argc, const char** argv)
                 else if (arg == "--single-threaded")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
+                }
+                else if (arg == "--rebuild")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
                 }
                 else
                 {
@@ -78,6 +84,11 @@ int main(int argc, const char** argv)
                             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
                             break;
                         }
+                        case 'r':
+                        {
+                            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
+                            break;
+                        }
                         default:
                         {
                             throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
@@ -90,6 +101,7 @@ int main(int argc, const char** argv)
                 files.push_back(util::GetFullPath(arg));
             }
         }
+        cmajor::symbols::SetUseModuleCache(true);
         std::set<std::string> builtProjects;
         for (const auto& file : files)
         {

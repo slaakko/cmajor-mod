@@ -69,6 +69,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -116,7 +117,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4624;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4624</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -137,8 +138,8 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);;$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5050;4267;4244;4624</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>

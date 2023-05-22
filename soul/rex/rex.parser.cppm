@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/soul/rex/rex.parser' using soul parser generator spg version 4.1.0
+// this file has been automatically generated from 'C:/work/soul-mod/soul/rex/rex.parser' using soul parser generator spg version 4.1.0
 
 export module soul.rex.parser;
 
