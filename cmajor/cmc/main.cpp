@@ -32,6 +32,7 @@ void PrintHelp()
 int main(int argc, const char** argv)
 {
     std::unique_ptr<cmajor::symbols::Module> rootModule;
+    std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     try
     {
         std::vector<std::string> files;
@@ -111,7 +112,7 @@ int main(int argc, const char** argv)
             }
             else if (file.ends_with(".cms"))
             {
-                // todo
+                cmajor::build::BuildSolution(file, rootModules);
             }
             else
             {

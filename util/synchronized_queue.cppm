@@ -66,7 +66,7 @@ template<class T>
 void SynchronizedQueue<T>::Exit()
 {
     exiting = true;
-    itemAvailableOrExiting.notify_one();
+    itemAvailableOrExiting.notify_all();
 }
 
 } // namespace util
