@@ -124,10 +124,8 @@ private:
 class GlobalVariableSymbol : public VariableSymbol
 {
 public:
-/* TODO
     GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, 
        const std::string& compileUnitId, const std::string& compileUnitFilePath_);
-*/
     GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;

@@ -103,6 +103,7 @@ soul::parser::Match CompileUnitParser<LexerT>::CompileUnit(LexerT& lexer, cmajor
             if (match.hit)
             {
                 compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName()));
+                context->SetCompileUnitNode(compileUnitNode.get());
             }
             *parentMatch1 = match;
         }

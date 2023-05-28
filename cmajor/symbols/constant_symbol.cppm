@@ -50,8 +50,8 @@ private:
     TypeSymbol* type;
     std::unique_ptr<Value> value;
     bool evaluating;
-    uint32_t sizeOfValue;
-    uint32_t valuePos;
+    int64_t sizeOfValue;
+    int64_t valuePos;
     std::string filePathReadFrom;
     std::u32string strValue;
 };

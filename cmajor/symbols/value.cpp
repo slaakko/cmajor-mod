@@ -251,15 +251,14 @@ Value::Value(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_
 Value::~Value()
 {
 }
-/* TODO
+
 std::unique_ptr<soul::xml::Element> Value::ToDomElement()
 {
-    std::u32string className = util::ToUtf32(ClassName());
-    std::unique_ptr<soul::xml::Element> element(new soul::xml::Element(className));
-    element->SetAttribute(U"info", util::ToUtf32(ToString()));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement(ClassName()));
+    element->SetAttribute("info", ToString());
     return element;
 }
-*/
+
 BoolValue::BoolValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool value_) : Value(sourcePos_, moduleId_, ValueType::boolValue), value(value_)
 {
 }

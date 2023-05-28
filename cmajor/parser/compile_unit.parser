@@ -44,8 +44,13 @@ parser CompileUnitParser
     using TemplateParser.InstantiationRequest;
 
     CompileUnit(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnitNode) : cmajor::ast::CompileUnitNode*
-        ::= empty{ compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName())); }
+        ::= empty
+        { 
+            compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName())); 
+            context->SetCompileUnitNode(compileUnitNode.get());
+        }
         (
+            
             NamespaceContent(context, compileUnitNode->GlobalNs()):content
         )
         {

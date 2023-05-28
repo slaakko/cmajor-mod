@@ -8,6 +8,8 @@ module cmajor.symbols.edit_module_cache;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.modules;
 import cmajor.symbols.module_cache;
+import cmajor.symbols.sources; 
+import cmajor.ast;
 import util;
 
 namespace cmajor::symbols {
@@ -107,7 +109,7 @@ LoadEditModuleResult EditModuleCache::LoadEditModule(const std::string& projectF
     module->SetCurrentToolName(U"cmccs");
     module->SetFlag(cmajor::symbols::ModuleFlags::compiling);
     PrepareModuleForCompilation(module.get(), project->References(), project->GetTarget());
-    module->SetSources(new Sources(project->SourceFilePaths()));
+    // TODO module->SetSources(new Sources(project->SourceFilePaths()));
     ParseResult parseResult = module->ParseSources();
     result.ok = parseResult.ok;
     result.numberOfErrors = parseResult.numberOfErrors;

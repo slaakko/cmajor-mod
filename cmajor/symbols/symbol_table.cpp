@@ -1043,11 +1043,9 @@ ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode
 
 GlobalVariableSymbol* SymbolTable::AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode)
 {
-    GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSourcePos(), globalVariableNode.ModuleId(), globalVariableNode.Id()->Str());
-/* TODO ^^^
+    //GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSourcePos(), globalVariableNode.ModuleId(), globalVariableNode.Id()->Str());
     GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSourcePos(), globalVariableNode.ModuleId(), globalVariableNode.Id()->Str(), 
         globalVariableNode.CompileUnit()->Id(), globalVariableNode.CompileUnit()->FilePath());
-*/
     globalVariableSymbol->SetSpecifiers(globalVariableNode.GetSpecifiers());
     globalVariableSymbol->SetCompileUnit(currentCompileUnit);
     globalVariableSymbol->SetModule(module);
@@ -1729,12 +1727,10 @@ void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* i
     identifierSymbolDefinitionMap[identifierNode] = symbol;
     SymbolLocation identifierLocation = MakeSymbolLocation(identifierNode->GetSourcePos(), module);
     SymbolLocation definitionLocation;
-/*  TODO
     if (symbol->GetLocation(definitionLocation))
     {
         symbolDefinitionMap[identifierLocation] = definitionLocation;
     }
-*/
 }
 
 SymbolLocation* SymbolTable::GetDefinitionLocation(const SymbolLocation& identifierLocation)

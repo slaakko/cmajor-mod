@@ -159,7 +159,7 @@ void ModuleCache::PutModule(std::unique_ptr<Module>&& module)
             {
                 throw std::runtime_error("module cache: invalid module index");
             }
-            // module->SetFlag(ModuleFlags::readFromModuleFile); do not reread
+            module->SetFlag(ModuleFlags::readFromModuleFile); // reread
             modules[moduleIndex] = std::move(module);
         }
         else
@@ -171,7 +171,7 @@ void ModuleCache::PutModule(std::unique_ptr<Module>&& module)
                 moduleMap[module->FilePathReadFrom()] = moduleIndex;
             }
             module->SetIndex(moduleIndex);
-            // module->SetFlag(ModuleFlags::readFromModuleFile); do not reread
+            module->SetFlag(ModuleFlags::readFromModuleFile);
             modules.push_back(std::move(module));
         }
     }

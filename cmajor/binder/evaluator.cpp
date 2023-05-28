@@ -592,8 +592,8 @@ cmajor::symbols::Value* UnaryMinus(cmajor::symbols::Value* subject, const soul::
 
 UnaryOperatorFun unaryMinus[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 {
-    NotSupported, NotSupported, UnaryMinus<cmajor::symbols::SByteValue>, UnaryMinus<cmajor::symbols::ByteValue>, UnaryMinus<cmajor::symbols::ShortValue>, UnaryMinus<cmajor::symbols::UShortValue>, UnaryMinus<cmajor::symbols::IntValue>, NotSupported,
-    UnaryMinus<cmajor::symbols::LongValue>, NotSupported, UnaryMinus<cmajor::symbols::FloatValue>, UnaryMinus<cmajor::symbols::DoubleValue>, NotSupported, NotSupported, NotSupported,
+    NotSupported, NotSupported, UnaryMinus<cmajor::symbols::SByteValue>, UnaryMinus<cmajor::symbols::ByteValue>, UnaryMinus<cmajor::symbols::ShortValue>, UnaryMinus<cmajor::symbols::UShortValue>, UnaryMinus<cmajor::symbols::IntValue>, UnaryMinus<cmajor::symbols::UIntValue>,
+    UnaryMinus<cmajor::symbols::LongValue>, UnaryMinus<cmajor::symbols::ULongValue>, UnaryMinus<cmajor::symbols::FloatValue>, UnaryMinus<cmajor::symbols::DoubleValue>, NotSupported, NotSupported, NotSupported,
     NotSupported, NotSupported, NotSupported, NotSupported, NotSupported, NotSupported, NotSupported
 };
 

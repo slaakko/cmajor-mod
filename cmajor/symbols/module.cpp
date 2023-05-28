@@ -3,8 +3,15 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+// #define RESOURCE_DEBUG
+
 module cmajor.symbols.modules;
 
+import std.filesystem;
+import cmajor.symbols.symbol.writer;
+import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.module_cache;
@@ -13,9 +20,7 @@ import cmajor.symbols.classes;
 import cmajor.symbols.interfaces;
 import cmajor.symbols.concepts;
 import cmajor.symbols.source.file.module_map;
-import cmajor.ast.project;
 import util;
-import std.filesystem;
 
 namespace cmajor::symbols {
 
@@ -25,7 +30,6 @@ public:
     static SystemModuleSet& Instance();
     bool IsSystemModule(const std::u32string& moduleName) const;
 private:
-    static std::unique_ptr<SystemModuleSet> instance;
     std::unordered_set<std::u32string> systemModuleNames;
     SystemModuleSet();
 };
@@ -76,26 +80,34 @@ bool IsSystemModule(const std::u32string& moduleName)
     return SystemModuleSet::Instance().IsSystemModule(moduleName);
 }
 
+/* TODO
 class ContainerClassTemplateMap
 {
 public:
-    ContainerClassTemplateMap& Instance();
-    // cmajor::debug::ContainerClassTemplateKind GetContainerClassTemplateKind(const std::u32string& fullClassName) const; TODO
+    static void Init();
+    static void Done();
+    static ContainerClassTemplateMap& Instance() { Assert(instance, "container class template map not initialized"); return *instance; }
+    cmajor::debug::ContainerClassTemplateKind GetContainerClassTemplateKind(const std::u32string& fullClassName) const;
 private:
     static std::unique_ptr<ContainerClassTemplateMap> instance;
-    // std::unordered_map<std::u32string, cmajor::debug::ContainerClassTemplateKind> containerClassTemplateMap; TODO
+    std::unordered_map<std::u32string, cmajor::debug::ContainerClassTemplateKind> containerClassTemplateMap;
     ContainerClassTemplateMap();
 };
 
-ContainerClassTemplateMap& ContainerClassTemplateMap::Instance()
+void ContainerClassTemplateMap::Init()
 {
-    static ContainerClassTemplateMap instance;
-    return instance;
+    instance.reset(new ContainerClassTemplateMap());
 }
+
+void ContainerClassTemplateMap::Done()
+{
+    instance.reset();
+}
+
+std::unique_ptr<ContainerClassTemplateMap> ContainerClassTemplateMap::instance;
 
 ContainerClassTemplateMap::ContainerClassTemplateMap()
 {
-    /* TODO
     containerClassTemplateMap[U"System.Collections.ForwardList<T>"] = cmajor::debug::ContainerClassTemplateKind::forwardList;
     containerClassTemplateMap[U"System.Collections.HashMap<K, T, H, C>"] = cmajor::debug::ContainerClassTemplateKind::hashMap;
     containerClassTemplateMap[U"System.Collections.HashSet<T, H, C>"] = cmajor::debug::ContainerClassTemplateKind::hashSet;
@@ -105,10 +117,8 @@ ContainerClassTemplateMap::ContainerClassTemplateMap()
     containerClassTemplateMap[U"System.Collections.Queue<T>"] = cmajor::debug::ContainerClassTemplateKind::queue;
     containerClassTemplateMap[U"System.Collections.Set<T, C>"] = cmajor::debug::ContainerClassTemplateKind::set;
     containerClassTemplateMap[U"System.Collections.Stack<T>"] = cmajor::debug::ContainerClassTemplateKind::stack;
-    */
 }
 
-/* TODO
 cmajor::debug::ContainerClassTemplateKind ContainerClassTemplateMap::GetContainerClassTemplateKind(const std::u32string& fullClassName) const
 {
     auto it = containerClassTemplateMap.find(fullClassName);
@@ -212,7 +222,6 @@ std::string FileTable::GetFilePath(int32_t fileIndex) const
 {
     if (fileIndex >= 0 && fileIndex < filePaths.size())
     {
-        // TODO
         return filePaths[fileIndex];
     }
     return std::string();
@@ -309,17 +318,6 @@ const std::u32string& SourceFileCache::GetFileContent(const std::string& filePat
     }
 }
 
-/* TODO
-cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
-{
-    if (!sourcePos.Valid()) return cmajor::debug::SourceSpan();
-    if (sourceModuleId.is_nil()) return cmajor::debug::SourceSpan();
-    Module* module = GetModuleById(sourceModuleId);
-    if (!module) return cmajor::debug::SourceSpan();
-    return module->SpanToSourceSpan(sourcePos);
-}
-*/
-
 void Visit(std::vector<Module*>& finishReadOrder, Module* module, std::unordered_set<Module*>& visited, std::unordered_set<Module*>& tempVisit,
     std::unordered_map<Module*, ModuleDependency*>& dependencyMap, const Module* rootModule)
 {
@@ -370,7 +368,7 @@ std::vector<Module*> CreateFinishReadOrder(std::vector<Module*>& modules, std::u
 void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool all, bool readRoot)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "FinishReads: begin " + util::ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "FinishReads: begin " + ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
     rootModule->IncDebugLogIndent();
 #endif 
     int n = finishReadOrder.size() - 1;
@@ -384,7 +382,7 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
         if (!module->HasSymbolTable() || (module == rootModule && all && readRoot))
         {
 #ifdef MODULE_READING_DEBUG
-            LogMessage(rootModule->LogStreamId(), "FinishReads: reading " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
+            LogMessage(rootModule->LogStreamId(), "FinishReads: reading " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
 #endif 
             module->CreateSymbolTable();
             std::vector<TypeOrConceptRequest> typeAndConceptRequests;
@@ -394,7 +392,7 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             std::vector<ArrayTypeSymbol*> arrayTypes;
             std::vector<DerivedTypeSymbol*> derivedTypes;
             SymbolReader reader(module->FilePathReadFrom());
-            // reader.GetAstReader().SetModuleMaps(rootModule->Id(), module->GetModuleNameTable(), rootModule->GetModuleIdMap()); TODO
+            // TODO reader.GetAstReader().SetModuleMaps(rootModule->Id(), module->GetModuleNameTable(), rootModule->GetModuleIdMap());
             reader.SetModule(module);
             reader.SetArrayTypesTarget(&arrayTypes);
             reader.SetDerivedTypesTarget(&derivedTypes);
@@ -420,22 +418,22 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
         else
         {
 #ifdef MODULE_READING_DEBUG
-            LogMessage(rootModule->LogStreamId(), "FinishReads: " + util::ToUtf8(module->Name()) + " in cache", rootModule->DebugLogIndent());
+            LogMessage(rootModule->LogStreamId(), "FinishReads: " + ToUtf8(module->Name()) + " in cache", rootModule->DebugLogIndent());
 #endif 
             rootModule->GetSymbolTable().Import(module->GetSymbolTable());
         }
     }
 #ifdef MODULE_READING_DEBUG
     rootModule->DecDebugLogIndent();
-    LogMessage(rootModule->LogStreamId(), "FinishReads: end " + util::ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "FinishReads: end " + ToUtf8(rootModule->Name()), rootModule->DebugLogIndent());
 #endif 
 }
 
-void Import(cmajor::ast::Target target, Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, 
-    std::vector<Module*>& modules, std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
+void Import(cmajor::ast::Target target, Module* rootModule, Module* module, const std::vector<std::string>& references, std::unordered_set<std::string>& importSet, std::vector<Module*>& modules,
+    std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "Import: begin " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "Import: begin " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
     rootModule->IncDebugLogIndent();
 #endif 
     for (const std::string& reference : references)
@@ -461,7 +459,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     backend = cmajor::ast::BackEnd::cpp;
                 }
-                mfp = cmajor::ast::CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain());
+                mfp = CmajorSystemLibDir(config, backend, cmajor::ast::GetToolChain());
                 searchedDirectories.append("\n").append(mfp.generic_string());
                 mfp /= mfn;
                 if (!std::filesystem::exists(mfp))
@@ -500,7 +498,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 readMap[moduleFilePath] = referencedModule;
                 importSet.insert(moduleFilePath);
                 SymbolReader reader(moduleFilePath);
-                // reader.GetAstReader().SetModuleMaps(rootModule->Id(), referencedModule->GetModuleNameTable(), rootModule->GetModuleIdMap()); TODO
+                // TODO reader.GetAstReader().SetModuleMaps(rootModule->Id(), referencedModule->GetModuleNameTable(), rootModule->GetModuleIdMap());
                 referencedModule->ReadHeader(target, reader, rootModule, importSet, modules, moduleDependencyMap, readMap, first);
                 module->AddReferencedModule(referencedModule);
                 if (module != rootModule)
@@ -570,7 +568,7 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                     }
                 }
 #ifdef MODULE_READING_DEBUG
-                LogMessage(rootModule->LogStreamId(), "Import: " + util::ToUtf8(module->Name()) + " references " + util::ToUtf8(referencedModule->Name()), rootModule->DebugLogIndent());
+                LogMessage(rootModule->LogStreamId(), "Import: " + ToUtf8(module->Name()) + " references " + ToUtf8(referencedModule->Name()), rootModule->DebugLogIndent());
 #endif
             }
             else
@@ -590,7 +588,7 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
     std::unordered_map<std::string, ModuleDependency*>& moduleDependencyMap, std::unordered_map<std::string, Module*>& readMap, bool& first)
 {
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: begin " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: begin " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
     rootModule->IncDebugLogIndent();
 #endif 
     std::vector<std::string> allReferences = references;
@@ -621,7 +619,7 @@ void ImportModulesWithReferences(cmajor::ast::Target target,
     Import(target, rootModule, module, allReferences, importSet, modules, moduleDependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
     rootModule->DecDebugLogIndent();
-    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: end " + util::ToUtf8(module->Name()), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "ImportModulesWithReferences: end " + ToUtf8(module->Name()), rootModule->DebugLogIndent());
 #endif 
 }
 
@@ -640,10 +638,11 @@ void ImportModules(cmajor::ast::Target target, Module* rootModule, Module* modul
 }
 
 Module::Module() :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::uuid::random()),
+    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
-    symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), 
-    debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
+    symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
+    systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
+    config(cmajor::ast::Config::debug), functionIndex(this)
 {
 }
 
@@ -652,11 +651,11 @@ Module::Module(const std::string& filePath) : Module(filePath, false)
 }
 
 Module::Module(const std::string& filePath, bool readRoot) :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::uuid::random()),
+    format(currentModuleFormat), flags(ModuleFlags::none), name(), id(util::random_uuid()),
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
     symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
-    systemCoreModule(nullptr), debugLogIndent(0),
-    index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
+    systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
+    config(cmajor::ast::Config::debug), functionIndex(this)
 {
     SymbolReader reader(filePath);
     ModuleTag expectedTag;
@@ -666,12 +665,12 @@ Module::Module(const std::string& filePath, bool readRoot) :
     {
         if (tag.bytes[i] != expectedTag.bytes[i])
         {
-            throw std::runtime_error("Invalid Cmajor module tag read from file '" + filePath + "', please rebuild module from sources");
+            throw std::runtime_error("Invalid Cmajor module tag read from file '" + reader.GetAstReader().FileName() + "', please rebuild module from sources");
         }
     }
     if (tag.bytes[3] != expectedTag.bytes[3])
     {
-        throw std::runtime_error("Cmajor module format version mismatch reading from file '" + filePath +
+        throw std::runtime_error("Cmajor module format version mismatch reading from file '" + reader.GetAstReader().FileName() +
             "': format " + std::string(1, expectedTag.bytes[3]) + " expected, format " + std::string(1, tag.bytes[3]) + " read, please rebuild module from sources");
     }
     flags = ModuleFlags(reader.GetBinaryStreamReader().ReadByte());
@@ -692,7 +691,7 @@ Module::Module(const std::string& filePath, bool readRoot) :
     std::unordered_map<std::string, Module*> readMap;
     if (SystemModuleSet::Instance().IsSystemModule(name)) SetSystemModule();
     SymbolReader reader2(filePath);
-    // reader2.GetAstReader().SetModuleMaps(rootModule->Id(), this->GetModuleNameTable(), rootModule->GetModuleIdMap()); TODO
+    // TODO reader2.GetAstReader().SetModuleMaps(rootModule->Id(), this->GetModuleNameTable(), rootModule->GetModuleIdMap());
     bool first = true;
     ReadHeader(cmajor::ast::Target::library, reader2, rootModule, importSet, modules, moduleDependencyMap, readMap, first);
     moduleDependencyMap[originalFilePath] = &moduleDependency;
@@ -715,38 +714,38 @@ Module::Module(const std::string& filePath, bool readRoot) :
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-/* TODO
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*          TODO
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "windows"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "windows"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
 */
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "linux"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "linux"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
         }
         else
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = GetFullPath(boost::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
         }
 #endif
     }
@@ -762,10 +761,9 @@ Module::Module(const std::string& filePath, bool readRoot) :
 }
 
 Module::Module(const std::u32string& name_, const std::string& filePath_, cmajor::ast::Target target) :
-    format(currentModuleFormat), flags(ModuleFlags::none), name(name_), id(util::uuid::random()),
+    format(currentModuleFormat), flags(ModuleFlags::none), name(name_), id(util::random_uuid()),
     originalFilePath(filePath_), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
-    symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
-    systemCoreModule(nullptr), debugLogIndent(0),
+    symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), debugLogIndent(0),
     index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
 {
     if (SystemModuleSet::Instance().IsSystemModule(name))
@@ -832,10 +830,10 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     SetObjectFileDirectoryPath(util::GetFullPath(mfd.generic_string()));
     if (GetBackEnd() == BackEnd::cpp)
     {
-/* TODO
-        const Tool& compilerTool = GetCompilerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*      TODO
+        const Tool& compilerTool = GetCompilerTool(GetPlatform(), GetToolChain());
         const Configuration& configuration = GetToolConfiguration(compilerTool, GetConfig());
-        SetObjectFileDirectoryPath(util::GetFullPath((mfd / configuration.outputDirectory).generic_string()));
+        SetObjectFileDirectoryPath(GetFullPath((mfd / configuration.outputDirectory).generic_string()));
 */
     }
     if (name == U"System.Core")
@@ -871,38 +869,40 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-/* TODO
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*          TODO
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "windows"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "windows"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
 */
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(originalFilePath), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "linux"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "linux"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(originalFilePath))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
+*/
         }
         else
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = GetFullPath(boost::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
         }
 #endif
     }
@@ -951,22 +951,6 @@ void Module::MakeFilePathFileIndexMap()
     }
 }
 
-/*
-void Module::SetLexers(std::vector<std::unique_ptr<CmajorLexer>>&& lexers_)
-{
-    lexers = std::move(lexers_);
-    for (const auto& lexer : lexers)
-    {
-        lexerVec.push_back(lexer.get());
-    }
-}
-
-std::vector<soulng::lexer::Lexer*>* Module::GetLexers()
-{
-    return &lexerVec;
-}
-*/
-
 std::string Module::GetFilePath(int32_t fileIndex) const
 {
     if (fileIndex == -1)
@@ -976,64 +960,12 @@ std::string Module::GetFilePath(int32_t fileIndex) const
     return fileTable.GetFilePath(fileIndex);
 }
 
-/* TODO
-
-std::u32string Module::GetErrorLines(const soul::ast::SourcePos& sourcePos) const
-{
-    if (sourcePos.file >= 0)
-    {
-        if (GetFlag(ModuleFlags::compiling))
-        {
-            if (sourcePos.file < lexers.size())
-            {
-                return lexers[sourcePos.fileIndex]->ErrorLines(sourcePos);
-            }
-        }
-        else
-        {
-            std::string filePath = GetFilePath(sourcePos.fileIndex);
-            if (filePath.empty())
-            {
-                return std::u32string();
-            }
-            std::u32string content = ToUtf32(soulng::util::ReadFile(filePath));
-            return soulng::lexer::GetErrorLines(content.c_str(), content.c_str() + content.length(), sourcePos);
-        }
-    }
-    return std::u32string();
-}
-
-void Module::GetColumns(const soul::ast::SourcePos& sourcePos, int32_t& startCol, int32_t& endCol) const
-{
-    if (sourcePos.fileIndex >= 0)
-    {
-        if (GetFlag(ModuleFlags::compiling))
-        {
-            if (sourcePos.fileIndex < lexers.size())
-            {
-                return lexers[sourcePos.fileIndex]->GetColumns(sourcePos, startCol, endCol);
-            }
-        }
-        else
-        {
-            std::string filePath = GetFilePath(sourcePos.fileIndex);
-            if (filePath.empty())
-            {
-                return;
-            }
-            std::u32string content = ToUtf32(soulng::util::ReadFile(filePath));
-            return soulng::lexer::GetColumns(content.c_str(), content.c_str() + content.length(), sourcePos, startCol, endCol);
-        }
-    }
-}
-*/
-
 void Module::Write(SymbolWriter& writer)
 {
     ModuleTag tag;
     tag.Write(writer);
-    writer.GetBinaryStreamWriter().Write(static_cast<uint8_t>(flags & 
-        ~(ModuleFlags::root | ModuleFlags::immutable | ModuleFlags::compiling | ModuleFlags::fileIndexFilePathMapBuilt | ModuleFlags::readFromModuleFile)));
+    writer.GetBinaryStreamWriter().Write(static_cast<uint8_t>(flags & ~(ModuleFlags::root | ModuleFlags::immutable | ModuleFlags::compiling | ModuleFlags::fileIndexFilePathMapBuilt |
+        ModuleFlags::readFromModuleFile)));
     writer.GetBinaryStreamWriter().Write(name);
     writer.GetBinaryStreamWriter().Write(id);
     writer.GetBinaryStreamWriter().Write(static_cast<int8_t>(backend));
@@ -1069,9 +1001,9 @@ void Module::Write(SymbolWriter& writer)
     for (int i = 0; i < nres; ++i)
     {
         const Resource& resource = resourceTable.Resources()[i];
-        LogMessage(LogStreamId(), "Module.Write: " + util::ToUtf8(name) + ": resource name=" + util::ToUtf8(resource.name) + ", file=" + resource.filePath);
+        LogMessage(LogStreamId(), "Module.Write: " + ToUtf8(name) + ": resource name=" + ToUtf8(resource.name) + ", file=" + resource.filePath);
     }
-    LogMessage(LogStreamId(), "Module.Write: " + util::ToUtf8(name) + ": " + std::to_string(nres) + " resources written", DebugLogIndent());
+    LogMessage(LogStreamId(), "Module.Write: " + ToUtf8(name) + ": " + std::to_string(nres) + " resources written", DebugLogIndent());
 #endif
 #endif
     uint32_t efn = exportedFunctions.size();
@@ -1104,7 +1036,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     if (headerRead)
     {
 #ifdef MODULE_READING_DEBUG
-        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached begin " + util::ToUtf8(name), rootModule->DebugLogIndent());
+        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached begin " + ToUtf8(name), rootModule->DebugLogIndent());
         rootModule->IncDebugLogIndent();
 #endif 
         rootModule->RegisterFileTable(&fileTable, this);
@@ -1119,13 +1051,13 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
 #ifdef _WIN32
         int nres = resourceTable.Resources().size();
 #ifdef RESOURCE_DEBUG
-        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached " + util::ToUtf8(name) + ": " + std::to_string(nres) + " resources", rootModule->DebugLogIndent());
+        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached " + ToUtf8(name) + ": " + std::to_string(nres) + " resources", rootModule->DebugLogIndent());
 #endif
         for (int i = 0; i < nres; ++i)
         {
             Resource resource = resourceTable.Resources()[i];
 #ifdef RESOURCE_DEBUG
-            LogMessage(rootModule->LogStreamId(), "ReadHeader: " + util::ToUtf8(name) + ": resource name=" + util::ToUtf8(resource.name) + ", file=" + resource.filePath);
+            LogMessage(rootModule->LogStreamId(), "ReadHeader: " + ToUtf8(name) + ": resource name=" + ToUtf8(resource.name) + ", file=" + resource.filePath);
 #endif 
             if (!rootModule->globalResourceTable.Contains(resource.name))
             {
@@ -1149,7 +1081,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
         rootModule->DecDebugLogIndent();
-        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached end " + util::ToUtf8(name), rootModule->DebugLogIndent());
+        LogMessage(rootModule->LogStreamId(), "ReadHeader: cached end " + ToUtf8(name), rootModule->DebugLogIndent());
 #endif 
         return;
     }
@@ -1186,7 +1118,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         RegisterFileTable(&fileTable, this);
     }
 #ifdef MODULE_READING_DEBUG
-    LogMessage(rootModule->LogStreamId(), "ReadHeader: read begin " + util::ToUtf8(name), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "ReadHeader: read begin " + ToUtf8(name), rootModule->DebugLogIndent());
     rootModule->IncDebugLogIndent();
 #endif
     std::string cmajorRootRelativeFilePath = reader.GetBinaryStreamReader().ReadUtf8String();
@@ -1224,33 +1156,35 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         else if (GetBackEnd() == BackEnd::cpp)
         {
 /*          TODO
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(filePathReadFrom), configuration.outputDirectory), util::Path::GetFileName(filePathReadFrom))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(filePathReadFrom), configuration.outputDirectory), Path::GetFileName(filePathReadFrom))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "windows"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(filePathReadFrom))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "windows"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(filePathReadFrom))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
 */
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*          TODO
+            const Tool& libraryManagerTool = GetLibraryManagerTool(GetPlatform(), GetToolChain());
             const Configuration& configuration = GetToolConfiguration(libraryManagerTool, GetConfig());
-            libraryFilePath = util::GetFullPath(
-                std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(filePathReadFrom), configuration.outputDirectory), util::Path::GetFileName(filePathReadFrom))).replace_extension(
+            libraryFilePath = GetFullPath(
+                boost::filesystem::path(Path::Combine(Path::Combine(Path::GetDirectoryName(filePathReadFrom), configuration.outputDirectory), Path::GetFileName(filePathReadFrom))).replace_extension(
                     libraryManagerTool.outputFileExtension).generic_string());
-            if (IsSystemModule() && cmajor::ast::GetToolChain() == "vs")
+            if (IsSystemModule() && GetToolChain() == "vs")
             {
-                libraryFilePath = util::GetFullPath(std::filesystem::path(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(cmajor::ast::CmajorRootDir(),
-                    "system"), "platform"), "linux"), "cpp"), cmajor::ast::GetToolChain()),
-                    GetConfig()), configuration.outputDirectory), util::Path::GetFileName(filePathReadFrom))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
+                libraryFilePath = GetFullPath(boost::filesystem::path(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(Path::Combine(CmajorRootDir(),
+                    "system"), "platform"), "linux"), "cpp"), GetToolChain()),
+                    GetConfig()), configuration.outputDirectory), Path::GetFileName(filePathReadFrom))).replace_extension(libraryManagerTool.outputFileExtension).generic_string());
             }
+*/
         }
         else
         {
@@ -1279,13 +1213,13 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     resourceTable.Read(reader.GetBinaryStreamReader());
     int nres = resourceTable.Resources().size();
 #ifdef RESOURCE_DEBUG
-    LogMessage(rootModule->LogStreamId(), "ReadHeader: " + util::ToUtf8(name) + ": " + std::to_string(nres) + " resources read", rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "ReadHeader: " + ToUtf8(name) + ": " + std::to_string(nres) + " resources read", rootModule->DebugLogIndent());
 #endif
     for (int i = 0; i < nres; ++i)
     {
         Resource resource = resourceTable.Resources()[i];
 #ifdef RESOURCE_DEBUG
-        LogMessage(rootModule->LogStreamId(), "ReadHeader: " + util::ToUtf8(name) + ": resource name=" + util::ToUtf8(resource.name) + ", file=" + resource.filePath);
+        LogMessage(rootModule->LogStreamId(), "ReadHeader: " + ToUtf8(name) + ": resource name=" + ToUtf8(resource.name) + ", file=" + resource.filePath);
 #endif 
         if (!rootModule->globalResourceTable.Contains(resource.name))
         {
@@ -1314,11 +1248,11 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         rootModule->allExportedData.push_back(data);
     }
     CheckUpToDate();
-    symbolTablePos = reader.GetBinaryStreamReader().Position();
+    symbolTablePos = reader.GetBinaryStreamReader().GetStream().Tell();
     ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
 #ifdef MODULE_READING_DEBUG
     rootModule->DecDebugLogIndent();
-    LogMessage(rootModule->LogStreamId(), "ReadHeader: read end " + util::ToUtf8(name), rootModule->DebugLogIndent());
+    LogMessage(rootModule->LogStreamId(), "ReadHeader: read end " + ToUtf8(name), rootModule->DebugLogIndent());
 #endif 
     MakeFilePathFileIndexMap();
 }
@@ -1502,8 +1436,8 @@ void Module::CheckUpToDate()
             }
             else if (GetBackEnd() == BackEnd::cpp)
             {
-/* TODO
-                const Tool& compilerTool = GetCompilerTool(GetPlatform(), cmajor::ast::GetToolChain());
+/*
+                const Tool& compilerTool = GetCompilerTool(GetPlatform(), GetToolChain());
                 const Configuration& configuration = GetToolConfiguration(compilerTool, GetConfig());
                 std::string outputDirPath = configuration.outputDirectory;
                 objectFilePath = libDirPath / outputDirPath / sfp.filename().replace_extension(compilerTool.outputFileExtension);
@@ -1702,10 +1636,10 @@ void Module::WriteProjectDebugInfoFile(const std::string& projectDebufInfoFilePa
 /*  TODO
     util::BinaryStreamWriter writer(projectDebufInfoFilePath);
     int32_t numCompileUnits = fileTable.NumFilePaths();
-    cmajor::debug::WriteProjectTableHeader(writer, util::ToUtf8(name), util::Path::GetDirectoryName(originalFilePath), Id(), numCompileUnits, functionIndex.GetMainFunctionId());
+    cmajor::debug::WriteProjectTableHeader(writer, ToUtf8(name), Path::GetDirectoryName(originalFilePath), Id(), numCompileUnits, functionIndex.GetMainFunctionId());
     for (int32_t i = 0; i < numCompileUnits; ++i)
     {
-        std::string compileUnitBaseName = util::Path::GetFileNameWithoutExtension(fileTable.GetFilePath(i));
+        std::string compileUnitBaseName = Path::GetFileNameWithoutExtension(fileTable.GetFilePath(i));
         cmajor::debug::WriteProjectTableRecord(writer, compileUnitBaseName);
     }
     int32_t n = fileTable.NumFilePaths();
@@ -1725,9 +1659,9 @@ void Module::WriteProjectDebugInfoFile(const std::string& projectDebufInfoFilePa
 void Module::WriteCmdbFile(const std::string& cmdbFilePath)
 {
 /*  TODO
-    util::BinaryStreamWriter cmdbWriter(cmdbFilePath);
+    BinaryStreamWriter cmdbWriter(cmdbFilePath);
     cmajor::debug::WriteCmdbFileTag(cmdbWriter);
-    std::string mainProjectName = util::ToUtf8(name);
+    std::string mainProjectName = ToUtf8(name);
     cmajor::debug::WriteMainProjectName(cmdbWriter, mainProjectName);
     int32_t numProjects = 0;
     uint32_t numProjectsPos = cmdbWriter.Pos();
@@ -1747,13 +1681,13 @@ void Module::WriteCmdbFile(const std::string& cmdbFilePath)
 void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numProjects, Module* rootModule)
 {
 /*  TODO
-    std::string pdiFilePath = util::Path::ChangeExtension(originalFilePath, ".pdi");
-    util::BinaryStreamReader pdiReader(pdiFilePath);
+    std::string pdiFilePath = Path::ChangeExtension(originalFilePath, ".pdi");
+    BinaryReader pdiReader(pdiFilePath);
     std::string projectName;
     std::string projectDirectoryPath;
-    util::uuid moduleId;
+    boost::uuids::uuid moduleId;
     int32_t numCompileUnits;
-    util::uuid mainFunctionId;
+    boost::uuids::uuid mainFunctionId;
     cmajor::debug::ReadProjectTableHeader(pdiReader, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
     cmajor::debug::WriteProjectTableHeader(cmdbWriter, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
     for (int32_t i = 0; i < numCompileUnits; ++i)
@@ -1761,16 +1695,16 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
         std::string compileUnitBaseName;
         cmajor::debug::ReadProjectTableRecord(pdiReader, compileUnitBaseName);
         cmajor::debug::WriteProjectTableRecord(cmdbWriter, compileUnitBaseName);
-        std::string cudiFilePath = util::Path::Combine(projectDirectoryPath, compileUnitBaseName + ".cudi");
-        util::BinaryStreamReader cudiReader(cudiFilePath);
+        std::string cudiFilePath = Path::Combine(projectDirectoryPath, compileUnitBaseName + ".cudi");
+        BinaryReader cudiReader(cudiFilePath);
         int32_t numFunctionRecords;
         cmajor::debug::ReadNumberOfCompileUnitFunctionRecords(cudiReader, numFunctionRecords);
         cmajor::debug::WriteNumberOfCompileUnitFunctionRecords(cmdbWriter, numFunctionRecords);
         for (int32_t i = 0; i < numFunctionRecords; ++i)
         {
             int32_t fileIndex;
-            util::uuid sourceModuleId;
-            util::uuid functionId;
+            boost::uuids::uuid sourceModuleId;
+            boost::uuids::uuid functionId;
             cmajor::debug::ReadCompileUnitFunctionRecord(cudiReader, fileIndex, sourceModuleId, functionId);
             cmajor::debug::WriteCompileUnitFunctionRecord(cmdbWriter, fileIndex, sourceModuleId, functionId);
             int32_t numInstructionRecords;
@@ -1779,12 +1713,12 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
             for (int32_t i = 0; i < numInstructionRecords; ++i)
             {
                 int32_t cppLineNumber;
-                cmajor::debug::SourceSpan sourcePos;
+                cmajor::debug::SourceSpan span;
                 int32_t cppLineIndex;
                 int16_t scopeId;
                 int16_t flags;
-                cmajor::debug::ReadInstructionRecord(cudiReader, cppLineNumber, sourcePos, cppLineIndex, scopeId, flags);
-                cmajor::debug::WriteInstructionRecord(cmdbWriter, cppLineNumber, sourcePos, cppLineIndex, scopeId, flags);
+                cmajor::debug::ReadInstructionRecord(cudiReader, cppLineNumber, span, cppLineIndex, scopeId, flags);
+                cmajor::debug::WriteInstructionRecord(cmdbWriter, cppLineNumber, span, cppLineIndex, scopeId, flags);
             }
             int32_t numScopes;
             cmajor::debug::ReadNumberOfScopes(cudiReader, numScopes);
@@ -1809,11 +1743,11 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
             for (int32_t i = 0; i < controlFlowGraphNodeCount; ++i)
             {
                 int32_t nodeId;
-                cmajor::debug::SourceSpan sourcePos;
+                cmajor::debug::SourceSpan span;
                 int32_t cppLineIndex;
                 int32_t cppLineNumber;
-                cmajor::debug::ReadControlFlowGraphNode(cudiReader, nodeId, sourcePos, cppLineIndex, cppLineNumber);
-                cmajor::debug::WriteControlFlowGraphNode(cmdbWriter, nodeId, sourcePos, cppLineIndex, cppLineNumber);
+                cmajor::debug::ReadControlFlowGraphNode(cudiReader, nodeId, span, cppLineIndex, cppLineNumber);
+                cmajor::debug::WriteControlFlowGraphNode(cmdbWriter, nodeId, span, cppLineIndex, cppLineNumber);
                 int32_t edgeCount;
                 cmajor::debug::ReadControlFlowGraphNodeEdgeCount(cudiReader, edgeCount);
                 cmajor::debug::WriteControlFlowGraphNodeEdgeCount(cmdbWriter, edgeCount);
@@ -1841,7 +1775,7 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
     cmajor::debug::WriteNumberOfFunctionIndexFunctionRecords(cmdbWriter, numFunctionIndexRecords);
     for (int32_t i = 0; i < numFunctionIndexRecords; ++i)
     {
-        util::uuid functionId;
+        boost::uuids::uuid functionId;
         std::string fullFunctionName;
         std::string mangledFunctionName;
         cmajor::debug::ReadFunctionIndexFunctionRecord(pdiReader, functionId, fullFunctionName, mangledFunctionName);
@@ -1857,36 +1791,6 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
     ++numProjects;
 */
 }
-
-/* TODO
-cmajor::debug::SourceSpan Module::SpanToSourceSpan(const soul::ast::SourcePos& sourcePos)
-{
-    if (!sourcePos.Valid()) return cmajor::debug::SourceSpan();
-    cmajor::debug::SourceSpan sourceSpan;
-    sourceSpan.line = sourcePos.line;
-    if (GetFlag(ModuleFlags::compiling))
-    {
-        CmajorLexer* lexer = lexers[sourcePos.fileIndex].get();
-        int32_t startCol = 0;
-        int32_t endCol = 0;
-        lexer->GetColumns(sourcePos, startCol, endCol);
-        sourceSpan.scol = static_cast<int16_t>(startCol);
-        sourceSpan.ecol = static_cast<int16_t>(endCol);
-    }
-    else
-    {
-        std::lock_guard<std::recursive_mutex> lck(lock);
-        std::string filePath = GetFilePath(sourcePos.fileIndex);
-        const std::u32string& content = sourceFileCache.GetFileContent(filePath);
-        int32_t startCol = 0;
-        int32_t endCol = 0;
-        soulng::lexer::GetColumns(content.c_str(), content.c_str() + content.length(), sourcePos, startCol, endCol);
-        sourceSpan.scol = static_cast<int16_t>(startCol);
-        sourceSpan.ecol = static_cast<int16_t>(endCol);
-    }
-    return sourceSpan;
-}
-*/
 
 int32_t Module::GetFileIndexForFilePath(const std::string& filePath) const
 {
@@ -1939,9 +1843,10 @@ ParseResult Module::ParseSources()
 
 ParseResult Module::ParseSource(const std::string& sourceFilePath, const std::u32string& sourceCode)
 {
+/*  TODO
     if (sources)
     {
-        // TODO: return sources->ParseSource(this, sourceFilePath, sourceCode); TODO
+        return sources->ParseSource(this, sourceFilePath, sourceCode);
     }
     else
     {
@@ -1950,6 +1855,7 @@ ParseResult Module::ParseSource(const std::string& sourceFilePath, const std::u3
         result.error = "sources not set";
         return result;
     }
+*/
     ParseResult result;
     result.ok = false;
     result.error = "sources not set";
@@ -1958,28 +1864,32 @@ ParseResult Module::ParseSource(const std::string& sourceFilePath, const std::u3
 
 std::string Module::GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext)
 {
+/*  TODO
     if (sources)
     {
-        // TODO: return sources->GetCCList(this, sourceFilePath, ccText, cursorLine, ruleContext);
+        return sources->GetCCList(this, sourceFilePath, ccText, cursorLine, ruleContext);
     }
     else
     {
         throw std::runtime_error("sources not set");
     }
-    throw std::runtime_error("sources not set");
+*/
+    return std::string();
 }
 
 std::string Module::GetParamHelpList(const std::string& sourceFilePath, int symbolIndex)
 {
+/*  TODO
     if (sources)
     {
-        // TODO: return sources->GetParamHelpList(this, sourceFilePath, symbolIndex);
+        return sources->GetParamHelpList(this, sourceFilePath, symbolIndex);
     }
     else
     {
         throw std::runtime_error("sources not set");
     }
-    throw std::runtime_error("sources not set");
+*/
+    return std::string();
 }
 
 #ifdef _WIN32
@@ -1988,7 +1898,7 @@ __declspec(thread) Module* rootModule = nullptr;
 __thread Module* rootModule = nullptr;
 #endif
 
-std::string cmajor::symbols::GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
+std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
 {
     if (fileIndex == -1)
     {
@@ -2061,16 +1971,20 @@ void SystemModuleVersionTagVerifier::VerifyModuleVersionTag(const std::string& m
 
 SystemModuleVersionTagVerifier verifier;
 
-struct InitModule
+namespace {
+
+struct Init
 {
-    InitModule();
+    Init();
 };
 
-InitModule::InitModule()
+Init::Init()
 {
     cmajor::ast::SetModuleVersionTagVerifier(&verifier);
 }
 
-InitModule initModule;
+Init init;
+
+}
 
 } // namespace cmajor::symbols

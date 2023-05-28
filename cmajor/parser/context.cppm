@@ -7,6 +7,7 @@ export module cmajor.parser.context;
 
 import std.core;
 import util.uuid;
+import cmajor.ast;
 
 export namespace cmajor::parser::context {
 
@@ -37,6 +38,8 @@ public:
     void BeginParsingTypeExpr();
     void EndParsingTypeExpr();
     bool ParsingTypeExpr() const { return parsingTypeExpr; }
+    cmajor::ast::CompileUnitNode* CompileUnitNode() const { return compileUnitNode; }
+    void SetCompileUnitNode(cmajor::ast::CompileUnitNode* compileUnitNode_);
 private:
     util::uuid moduleId;
     bool parsingTemplateId;
@@ -53,6 +56,7 @@ private:
     std::stack<bool> parsingIsOrAsStack;
     bool parsingTypeExpr;
     std::stack<bool> parsingTypeExprStack;
+    cmajor::ast::CompileUnitNode* compileUnitNode;
 };
 
 } // namespace cmajor::parser::context

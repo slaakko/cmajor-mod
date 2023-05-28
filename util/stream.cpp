@@ -17,7 +17,7 @@ StreamObserver::~StreamObserver()
 {
 }
 
-Stream::Stream()
+Stream::Stream() : position(0), observers()
 {
 }
 

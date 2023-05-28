@@ -93,7 +93,8 @@ void ContainerScope::Install(Symbol* symbol)
         Symbol* prev = it->second;
         if (prev != symbol)
         {
-            throw Exception("symbol '" + util::ToUtf8(symbol->Name()) + "' already defined", symbol->GetSourcePos(), symbol->SourceModuleId(), prev->GetSourcePos(), prev->SourceModuleId());
+            throw Exception("symbol '" + util::ToUtf8(symbol->Name()) + "' already defined", symbol->GetSourcePos(), symbol->SourceModuleId(), prev->GetSourcePos(), 
+                prev->SourceModuleId());
         }
     }
     else

@@ -186,17 +186,15 @@ bool ClassGroupTypeSymbol::HasProjectMembers() const
 
 void ClassGroupTypeSymbol::AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const
 {
-    /*TODO
     for (const auto& p : arityClassMap)
     {
         ClassTypeSymbol* cls = p.second;
         std::unique_ptr<soul::xml::Element> classElement = cls->ToDomElement(typeMap);
         if (cls->IsProject())
         {
-            element->AppendChild(std::unique_ptr<soul::xml::node>(classElement.release()));
+            element->AppendChild(classElement.release());
         }
     }
-    */
 }
 
 void ClassGroupTypeSymbol::Check()

@@ -6,23 +6,25 @@
 export module cmajor.symbols.modules;
 
 import std.core;
-import cmajor.ast.project;
-import cmajor.symbols.function.index;
-import cmajor.symbols.symbol.writer;
-import cmajor.symbols.symbol.reader;
 import cmajor.symbols.resource.table;
 import cmajor.symbols.warning;
+import cmajor.symbols.function.index;
 import cmajor.symbols.type.index;
 import cmajor.symbols.sources;
-import soul.lexer;
+import cmajor.ast.project;
+import soul.lexer.file.map;
 import util.code.formatter;
-import util.binary.stream.reader;
 import util.binary.stream.writer;
+import util.binary.stream.reader;
 
 export namespace cmajor::symbols {
 
+class SymbolWriter;
+class SymbolReader;
+class SymbolTable;
+class Sources;
+
 bool IsSystemModule(const std::u32string& moduleName);
-//cmajor::debug::ContainerClassTemplateKind GetContainerClassTemplateKind(const std::u32string& fullClassName);
 
 extern const char* cmajorModuleTag;
 
@@ -56,8 +58,7 @@ const uint8_t currentModuleFormat = moduleFormat_18;
 
 enum class ModuleFlags : uint8_t
 {
-    none = 0, system = 1 << 0, core = 1 << 1, root = 1 << 2, immutable = 1 << 3, compiling = 1 << 4, fileIndexFilePathMapBuilt = 1 << 5, readFromModuleFile = 1 << 6, 
-    programModule = 1 << 7
+    none = 0, system = 1 << 0, core = 1 << 1, root = 1 << 2, immutable = 1 << 3, compiling = 1 << 4, fileIndexFilePathMapBuilt = 1 << 5, readFromModuleFile = 1 << 6, programModule = 1 << 7
 };
 
 inline ModuleFlags operator|(ModuleFlags left, ModuleFlags right)
@@ -78,7 +79,6 @@ inline ModuleFlags operator~(ModuleFlags flags)
 std::string ModuleFlagStr(ModuleFlags flags);
 
 class Module;
-class Sources;
 struct ParseResult;
 
 class ModuleDependency
@@ -121,8 +121,6 @@ private:
     std::unordered_map<std::string, std::unique_ptr<std::u32string>> fileContentMap;
 };
 
-//cmajor::debug::SourceSpan MakeSourceSpan(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
-
 class Module
 {
 public:
@@ -153,11 +151,7 @@ public:
     ResourceTable& GetResourceTable() { return resourceTable; }
     ResourceTable& GetGlobalResourceTable() { return globalResourceTable; }
 #endif
-    //void SetLexers(std::vector<std::unique_ptr<CmajorLexer>>&& lexers_);
-    //std::vector<soulng::lexer::Lexer*>* GetLexers();
     std::string GetFilePath(int32_t fileIndex) const;
-    //std::u32string GetErrorLines(const soul::ast::SourcePos& sourcePos) const; TODO
-    //void GetColumns(const soul::ast::SourcePos& sourcePos, int32_t& startCol, int32_t& endCol) const; TODO
     void Write(SymbolWriter& writer);
     void SetDirectoryPath(const std::string& directoryPath_);
     void SetObjectFileDirectoryPath(const std::string& objectFileDirectoryPath_);
@@ -222,12 +216,11 @@ public:
     void WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numProjects, Module* rootModule);
     std::unordered_map<int16_t, std::string>* GetModuleNameTable() { return &moduleNameTable; }
     std::unordered_map<std::string, int16_t>* GetModuleIdMap() { return &moduleIdMap; }
-    //cmajor::debug::SourceSpan SpanToSourceSpan(const soul::ast::SourcePos& sourcePos);
     int32_t GetFileIndexForFilePath(const std::string& filePath) const;
     void UpdateSourceFileModuleMap();
     std::recursive_mutex& Lock() { return lock; }
-    void SetSources(Sources* sources_) { sources.reset(sources_); }
-    Sources* GetSources() const { return sources.get(); }
+    // void SetSources(Sources* sources_) { sources.reset(sources_); }
+    // Sources* GetSources() const { return sources.get(); }
     ParseResult ParseSources();
     ParseResult ParseSource(const std::string& sourceFilePath, const std::u32string& sourceCode);
     std::string GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext);
@@ -254,8 +247,6 @@ private:
 #endif
     std::vector<FileTable*> fileTables;
     std::unordered_map<std::string, int32_t> filePathFileIndexMap;
-    //std::vector<std::unique_ptr<CmajorLexer>> lexers;
-    //std::vector<soulng::lexer::Lexer*> lexerVec;
     std::unordered_map<int16_t, std::string> moduleNameTable;
     std::unordered_map<std::string, int16_t> moduleIdMap;
     std::vector<std::string> exportedFunctions;
@@ -286,7 +277,7 @@ private:
     FunctionIndex functionIndex;
     TypeIndex typeIndex;
     SourceFileCache sourceFileCache;
-    std::unique_ptr<Sources> sources;
+    // std::unique_ptr<Sources> sources;
     soul::lexer::FileMap fileMap;
     void CheckUpToDate();
 };

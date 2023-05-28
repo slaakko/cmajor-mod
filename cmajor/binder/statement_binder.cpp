@@ -1739,9 +1739,9 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
         if (boundExceptionExpr->GetType()->PlainType(sourcePos, moduleId)->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType(sourcePos, moduleId));
-            cmajor::ast::IdentifierNode systemExceptionNode(sourcePos, moduleId, U"System.cmajor::symbols::Exception");
+            cmajor::ast::IdentifierNode systemExceptionNode(sourcePos, moduleId, U"System.Exception");
             cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope);
-            Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type");
+            Assert(systemExceptionType->IsClassTypeSymbol(), "System.Exception not of class type");
             cmajor::symbols::ClassTypeSymbol* systemExceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(systemExceptionType);
             if (exceptionClassType == systemExceptionClassType || exceptionClassType->HasBaseClass(systemExceptionClassType))
             {
@@ -1766,7 +1766,7 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("exception class must be derived from System.cmajor::symbols::Exception class", throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
+                throw cmajor::symbols::Exception("exception class must be derived from System.Exception class", throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
             }
         }
         else

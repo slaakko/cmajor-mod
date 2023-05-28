@@ -472,13 +472,12 @@ std::u32string MakeGlobalVariableName(const std::u32string& groupName, const std
     return name;
 }
 
-/* TODO
-GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, const std::string& compileUnitId, const std::string& compileUnitFilePath_) :
-    VariableSymbol(SymbolType::globalVariableSymbol, sourcePos_, sourceModuleId_, MakeGlobalVariableName(groupName_, compileUnitId)), groupName(groupName_), compileUnitFilePath(compileUnitFilePath_),
-    globalVariableGroup(nullptr)
+GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, 
+    const std::string& compileUnitId, const std::string& compileUnitFilePath_) :
+    VariableSymbol(SymbolType::globalVariableSymbol, sourcePos_, sourceModuleId_, MakeGlobalVariableName(groupName_, compileUnitId)), groupName(groupName_), 
+    compileUnitFilePath(compileUnitFilePath_), globalVariableGroup(nullptr)
 {
 }
-*/
 
 GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     VariableSymbol(SymbolType::globalVariableSymbol, sourcePos_, sourceModuleId_, name_), globalVariableGroup(nullptr)
@@ -664,4 +663,5 @@ std::unique_ptr<Symbol> GlobalVariableSymbol::RemoveFromParent()
     }
     return symbol;
 }
+
 } // namespace cmajor::symbols

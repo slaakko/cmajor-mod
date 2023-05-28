@@ -1080,18 +1080,13 @@ std::string Symbol::GetSymbolHelp() const
     return help;
 }
 
-/* TODO
 bool Symbol::GetLocation(SymbolLocation& definitionLocation) const
 {
     Module* sourceModule = GetModuleById(sourceModuleId);
     if (!sourceModule) return false;
-    int32_t scol = 0;
-    int32_t ecol = 0;
-    sourceModule->GetColumns(sourcePos, scol, ecol);
-    definitionLocation = SymbolLocation(sourceModule->Id(), sourcePos.fileIndex, sourcePos.line, scol);
+    definitionLocation = SymbolLocation(sourceModule->Id(), sourcePos.file, sourcePos.line, sourcePos.col);
     return true;
 }
-*/
 
 std::unique_ptr<Symbol> Symbol::RemoveMember(int symbolIndex)
 {
@@ -1118,17 +1113,11 @@ public:
     }
 };
 
-void SymbolFactory::Init()
+SymbolFactory& SymbolFactory::Instance()
 {
-    instance.reset(new SymbolFactory());
+    static SymbolFactory instance;
+    return instance;
 }
-
-void SymbolFactory::Done()
-{
-    instance.reset();
-}
-
-std::unique_ptr<SymbolFactory> SymbolFactory::instance;
 
 SymbolFactory::SymbolFactory()
 {
@@ -1306,16 +1295,6 @@ Symbol* SymbolFactory::CreateSymbol(SymbolType symbolType, const soul::ast::Sour
 void SymbolFactory::Register(SymbolType symbolType, SymbolCreator* creator)
 {
     symbolCreators[static_cast<uint8_t>(symbolType)] = std::unique_ptr<SymbolCreator>(creator);
-}
-
-void InitSymbol()
-{
-    SymbolFactory::Init();
-}
-
-void DoneSymbol()
-{
-    SymbolFactory::Done();
 }
 
 } // namespace cmajor::symbols

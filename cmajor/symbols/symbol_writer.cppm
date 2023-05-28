@@ -20,10 +20,8 @@ public:
     cmajor::ast::AstWriter& GetAstWriter() { return astWriter; }
     util::BinaryStreamWriter& GetBinaryStreamWriter() { return astWriter.GetBinaryStreamWriter(); }
     void Write(Symbol* symbol);
-    void SetSpanConversionModuleId(const util::uuid& spanConversionModuleId_);
 private:
     cmajor::ast::AstWriter astWriter;
-    util::uuid spanConversionModuleId;
 };
 
 } // namespace cmajor::symbols

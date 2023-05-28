@@ -38,7 +38,7 @@ parser GlobalVariableParser
             SEMICOLON
         )
         {
-            return new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers, type, id, initializer);
+            return new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers, type, id, initializer, context->CompileUnitNode());
         }
         ;
 }

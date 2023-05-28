@@ -17,7 +17,8 @@ class GlobalVariableNode : public Node
 {
 public:
     GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* initializer_);
+    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* initializer_, 
+        CompileUnitNode* cu_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -28,11 +29,13 @@ public:
     const IdentifierNode* Id() const { return id.get(); }
     IdentifierNode* Id() { return id.get(); }
     Node* Initializer() { return initializer.get(); }
+    CompileUnitNode* CompileUnit() const { return cu; }
 private:
     Specifiers specifiers;
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> initializer;
+    CompileUnitNode* cu;
 };
 
 } // namespace cmajor::ast

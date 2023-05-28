@@ -820,6 +820,10 @@ void ExpressionBinder::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
     boundCompileUnit.SetLatestIdentifier(&identifierNode);
     std::u32string name = identifierNode.Str();
+    if (name == U"compileUnitUnwindInfoInitList")
+    {
+        int x = 0;
+    }
     cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
     if (!symbol)
     {

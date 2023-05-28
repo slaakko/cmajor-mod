@@ -176,7 +176,7 @@ soul::parser::Match GlobalVariableParser<LexerT>::GlobalVariable(LexerT& lexer, 
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "GlobalVariable");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers->value, type.release(), id.release(), initializer.release()));
+                return soul::parser::Match(true, new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers->value, type.release(), id.release(), initializer.release(), context->CompileUnitNode()));
             }
         }
         *parentMatch0 = match;

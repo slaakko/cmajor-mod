@@ -120,10 +120,19 @@ int main(int argc, const char** argv)
             }
         }
     }
+    catch (const cmajor::symbols::Exception& ex)
+    {
+        std::cerr << ex.What() << std::endl;
+        return 1;
+    }
     catch (const std::exception& ex)
     {
         std::cerr << ex.what() << std::endl;
         return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "unknown exception" << std::endl;
     }
     return 0;
 }

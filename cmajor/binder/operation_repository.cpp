@@ -3157,7 +3157,7 @@ BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::sy
                 new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"System"),
                 new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ExitEntry")),
                 new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"exit@entry@" + 
-                    util::ToUtf32(std::to_string(boundCompileUnit.GetNextExitEntryIndex()))), nullptr);
+                    util::ToUtf32(std::to_string(boundCompileUnit.GetNextExitEntryIndex()))), nullptr, boundCompileUnit.GetCompileUnitNode());
             globalVariableNode.Accept(symbolCreatorVisitor);
             TypeBinder typeBinder(boundCompileUnit);
             typeBinder.SetContainerScope(containerScope);

@@ -399,7 +399,8 @@ void* DoubleTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForDouble();
 }
 
-CharTypeSymbol::CharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::charTypeSymbol, sourcePos_, sourceModuleId_, name_)
+CharTypeSymbol::CharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::charTypeSymbol, sourcePos_, sourceModuleId_, name_)
 {
 }
 
@@ -418,7 +419,8 @@ void* CharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForChar();
 }
 
-WCharTypeSymbol::WCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::wcharTypeSymbol, sourcePos_, sourceModuleId_, name_)
+WCharTypeSymbol::WCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::wcharTypeSymbol, sourcePos_, sourceModuleId_, name_)
 {
 }
 
@@ -437,7 +439,8 @@ void* WCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForWChar();
 }
 
-UCharTypeSymbol::UCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::ucharTypeSymbol, sourcePos_, sourceModuleId_, name_)
+UCharTypeSymbol::UCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::ucharTypeSymbol, sourcePos_, sourceModuleId_, name_)
 {
 }
 

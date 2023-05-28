@@ -1969,9 +1969,9 @@ void TypeBinder::Visit(cmajor::ast::CatchNode& catchNode)
             if (type->BaseType()->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* exceptionVarClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
-                cmajor::ast::IdentifierNode systemExceptionNode(catchNode.GetSourcePos(), catchNode.ModuleId(), U"System.cmajor::symbols::Exception");
+                cmajor::ast::IdentifierNode systemExceptionNode(catchNode.GetSourcePos(), catchNode.ModuleId(), U"System.Exception");
                 cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
-                Assert(systemExceptionType->IsClassTypeSymbol(), "System.cmajor::symbols::Exception not of class type"); 
+                Assert(systemExceptionType->IsClassTypeSymbol(), "System.Exception not of class type"); 
                 cmajor::symbols::ClassTypeSymbol* systemExceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(systemExceptionType);
                 if (exceptionVarClassType->IsProject())
                 {
@@ -1986,12 +1986,12 @@ void TypeBinder::Visit(cmajor::ast::CatchNode& catchNode)
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("exception variable must be of class type equal to System.cmajor::symbols::Exception class or derive from it", catchNode.TypeExpr()->GetSourcePos(), catchNode.TypeExpr()->ModuleId());
+                    throw cmajor::symbols::Exception("exception variable must be of class type equal to System.Exception class or derive from it", catchNode.TypeExpr()->GetSourcePos(), catchNode.TypeExpr()->ModuleId());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("exception variable must be of class type equal to System.cmajor::symbols::Exception class or derive from it", catchNode.TypeExpr()->GetSourcePos(), catchNode.TypeExpr()->ModuleId());
+                throw cmajor::symbols::Exception("exception variable must be of class type equal to System.Exception class or derive from it", catchNode.TypeExpr()->GetSourcePos(), catchNode.TypeExpr()->ModuleId());
             }
         }
         catchNode.CatchBlock()->Accept(*this);

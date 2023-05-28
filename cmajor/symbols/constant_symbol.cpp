@@ -36,18 +36,16 @@ void ConstantSymbol::Write(SymbolWriter& writer)
     writer.GetBinaryStreamWriter().Write(hasComplexValue);
     if (hasComplexValue)
     {
-        /* TODO: Seppo, fix this
-        uint32_t sizePos = writer.GetBinaryStreamWriter().Pos();
-        uint32_t sizeOfValue = 0;
-        writer.GetBinaryStreamWriter().Write(sizeOfValue);
-        uint32_t startPos = writer.GetBinaryStreamWriter().Pos();
+        int64_t sizePos = writer.GetBinaryStreamWriter().GetStream().Tell();
+        int64_t size = 0;
+        writer.GetBinaryStreamWriter().Write(size);
+        int64_t startPos = writer.GetBinaryStreamWriter().GetStream().Tell();
         value->Write(writer.GetBinaryStreamWriter());
-        uint32_t endPos = writer.GetBinaryStreamWriter().Pos();
-        sizeOfValue = endPos - startPos;
-        writer.GetBinaryStreamWriter().Seek(sizePos);
-        writer.GetBinaryStreamWriter().Write(sizeOfValue);
-        writer.GetBinaryStreamWriter().Seek(endPos);
-        */
+        int64_t endPos = writer.GetBinaryStreamWriter().GetStream().Tell();
+        size = endPos - startPos;
+        writer.GetBinaryStreamWriter().GetStream().Seek(sizePos, util::Origin::seekSet);
+        writer.GetBinaryStreamWriter().Write(size);
+        writer.GetBinaryStreamWriter().GetStream().Seek(endPos, util::Origin::seekSet);
     }
     else
     {
@@ -65,12 +63,9 @@ void ConstantSymbol::Read(SymbolReader& reader)
     bool hasComplexValue = reader.GetBinaryStreamReader().ReadBool();
     if (hasComplexValue)
     {
-        /* TODO: Seppo, fix this
-        sizeOfValue = reader.GetBinaryStreamReader().ReadUInt();
-        valuePos = reader.GetBinaryStreamReader().Pos();
-        reader.GetBinaryStreamReader().Skip(sizeOfValue);
-        filePathReadFrom = reader.GetBinaryStreamReader().FileName();
-        */
+        sizeOfValue = reader.GetBinaryStreamReader().ReadLong();
+        valuePos = reader.GetBinaryStreamReader().GetStream().Tell();
+        reader.GetBinaryStreamReader().GetStream().Seek(valuePos + sizeOfValue, util::Origin::seekSet);
     }
     else
     {
@@ -88,8 +83,7 @@ Value* ConstantSymbol::GetValue()
             throw Exception("internal error: could not read value: value file name not set", GetSourcePos(), SourceModuleId());
         }
         util::FileStream file(filePathReadFrom, util::OpenMode::read | util::OpenMode::binary);
-        util::BufferedStream bufferedFile(file);
-        util::BinaryStreamReader reader(bufferedFile);
+        util::BinaryStreamReader reader(file);
         reader.GetStream().Seek(valuePos, util::Origin::seekSet);
         value.reset(type->MakeValue());
         if (!value)

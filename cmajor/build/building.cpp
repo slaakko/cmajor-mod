@@ -186,6 +186,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 cmajor::symbols::SymbolWriter writer(project->ModuleFilePath());
                 rootModule->Write(writer);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
+                rootModule->ResetFlag(cmajor::symbols::ModuleFlags::root);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
@@ -226,7 +227,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
         }
     }
-    catch (const cmajor::symbols::Error& ex)
+    catch (const cmajor::symbols::Exception& ex)
     {
         util::LogMessage(-1, "project: " + util::ToUtf8(project->Name()) + ": " + ex.Message());
         throw;

@@ -242,7 +242,7 @@ public:
     virtual void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const {}
     virtual bool HasProjectMembers() const { return false; }
     virtual const char* ClassName() const { return "Symbol"; }
-    // bool GetLocation(SymbolLocation& definitionLocation) const; TODO
+    bool GetLocation(SymbolLocation& definitionLocation) const; 
     const util::uuid& SourceModuleId() const { return sourceModuleId; }
     int SymbolIndex() const { return symbolIndex; }
     void SetSymbolIndex(int symbolIndex_) { symbolIndex = symbolIndex_; }
@@ -275,9 +275,7 @@ public:
 class SymbolFactory
 {
 public:
-    static void Init();
-    static void Done();
-    static SymbolFactory& Instance() { Assert(instance, "symbol factory not initialized");  return *instance; }
+    static SymbolFactory& Instance();
     Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name);
     void Register(SymbolType symbolType, SymbolCreator* creator);
 private:
@@ -285,9 +283,6 @@ private:
     std::vector<std::unique_ptr<SymbolCreator>> symbolCreators;
     SymbolFactory();
 };
-
-void InitSymbol();
-void DoneSymbol();
 
 } // namespace cmajor::symbols
 
