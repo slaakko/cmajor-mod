@@ -6,7 +6,7 @@
 module;
 #include <util/assert.hpp>
 
-module cmajor.symbols.typedefs;
+module cmajor.symbols.alias.type;
 
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.symbol.writer;
@@ -20,18 +20,18 @@ import std.core;
 
 namespace cmajor::symbols {
 
-TypedefSymbol::TypedefSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(SymbolType::typedefSymbol, sourcePos_, sourceModuleId_, name_), type()
+AliasTypeSymbol::AliasTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
+    Symbol(SymbolType::aliasTypeSymbol, sourcePos_, sourceModuleId_, name_), type()
 {
 }
 
-void TypedefSymbol::Write(SymbolWriter& writer)
+void AliasTypeSymbol::Write(SymbolWriter& writer)
 {
     Symbol::Write(writer);
     writer.GetBinaryStreamWriter().Write(type->TypeId());
 }
 
-void TypedefSymbol::Read(SymbolReader& reader)
+void AliasTypeSymbol::Read(SymbolReader& reader)
 {
     Symbol::Read(reader);
     util::uuid typeId;
@@ -39,26 +39,26 @@ void TypedefSymbol::Read(SymbolReader& reader)
     reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 0);
 }
 
-void TypedefSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
+void AliasTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
 {
     Assert(index == 0, "invalid emplace type index");
     type = typeSymbol;
 }
 
-bool TypedefSymbol::IsExportSymbol() const
+bool AliasTypeSymbol::IsExportSymbol() const
 {
     return Symbol::IsExportSymbol();
 }
 
-void TypedefSymbol::Accept(SymbolCollector* collector)
+void AliasTypeSymbol::Accept(SymbolCollector* collector)
 {
     if (IsProject() && Access() == SymbolAccess::public_)
     {
-        collector->AddTypedef(this);
+        collector->AddAliasType(this);
     }
 }
 
-void TypedefSymbol::Dump(util::CodeFormatter& formatter)
+void AliasTypeSymbol::Dump(util::CodeFormatter& formatter)
 {
     formatter.WriteLine(util::ToUtf8(Name()));
     formatter.WriteLine("full name: " + util::ToUtf8(FullNameWithSpecifiers()));
@@ -66,14 +66,14 @@ void TypedefSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("type: " + util::ToUtf8(type->FullName()));
 }
 
-std::string TypedefSymbol::Syntax() const
+std::string AliasTypeSymbol::Syntax() const
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
     {
         syntax.append(1, ' ');
     }
-    syntax.append("typedef ");
+    syntax.append("alias type ");
     syntax.append(util::ToUtf8(GetType()->DocName()));
     syntax.append(1, ' ');
     syntax.append(util::ToUtf8(DocName()));
@@ -81,79 +81,79 @@ std::string TypedefSymbol::Syntax() const
     return syntax;
 }
 
-void TypedefSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
+void AliasTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
 {
     cmajor::ast::Specifiers accessSpecifiers = specifiers & cmajor::ast::Specifiers::access_;
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be static", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be virtual", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be override", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be abstract", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be inline", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be explicit", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be external", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be suppressed", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be default", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be constexpr", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be cdecl", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be nothrow", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be throw", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be new", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be const", GetSourcePos(), SourceModuleId());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("typedef cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be unit_test", GetSourcePos(), SourceModuleId());
     }
 }
 
-std::unique_ptr<soul::xml::Element> TypedefSymbol::CreateDomElement(TypeMap& typeMap)
+std::unique_ptr<soul::xml::Element> AliasTypeSymbol::CreateDomElement(TypeMap& typeMap)
 {
-    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("TypedefSymbol"));
+    std::unique_ptr<soul::xml::Element> element(soul::xml::MakeElement("AliasTypeSymbol"));
     if (type)
     {
         std::unique_ptr<soul::xml::Element> typeElement(soul::xml::MakeElement("type"));
@@ -164,16 +164,16 @@ std::unique_ptr<soul::xml::Element> TypedefSymbol::CreateDomElement(TypeMap& typ
     return element;
 }
 
-void TypedefSymbol::Check()
+void AliasTypeSymbol::Check()
 {
     Symbol::Check();
     if (!type)
     {
-        throw SymbolCheckException("typedef symbol contains null type pointer", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("alias type symbol contains null type pointer", GetSourcePos(), SourceModuleId());
     }
 }
 
-std::string TypedefSymbol::GetSymbolHelp() const
+std::string AliasTypeSymbol::GetSymbolHelp() const
 {
     if (!type) return std::string();
     std::string help = Symbol::GetSymbolHelp();

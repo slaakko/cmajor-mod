@@ -95,7 +95,6 @@ int CompileUnitNode::GetColumn(const soul::ast::SourcePos& sourcePos) const
 {
     if (sourcePos.IsValid())
     {
-        //int32_t pos = sourcePos.start;
         int32_t pos = sourcePos.pos;
         auto it = std::lower_bound(lineStarts.cbegin(), lineStarts.cend(), pos);
         if (it != lineStarts.cend())

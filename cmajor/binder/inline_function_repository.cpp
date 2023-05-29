@@ -15,6 +15,7 @@ import cmajor.binder.bound_class;
 import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
 import cmajor.binder.bound.expression;
+import cmajor.binder.type.resolver;
 import util;
 
 namespace cmajor::binder {
@@ -68,7 +69,9 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
             }
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
-                // primaryFileScope->InstallAlias(containerScope, static_cast<AliasNode*>(usingNode)); TODO
+                cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(usingNode);
+                cmajor::symbols::TypeSymbol* type = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                primaryFileScope->InstallAlias(aliasNode, type); 
             }
         }
         boundCompileUnit.AddFileScope(primaryFileScope);

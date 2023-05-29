@@ -49,6 +49,7 @@ public:
     void Visit(cmajor::ast::IdentifierNode& identifierNode) override;
     void Visit(cmajor::ast::TemplateIdNode& templateIdNode) override;
     void Visit(cmajor::ast::DotNode& dotNode) override;
+    void Visit(cmajor::ast::AliasNode& aliasNode) override;
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
@@ -236,24 +237,31 @@ void TypeResolver::ResolveSymbol(cmajor::ast::Node& node, cmajor::ast::Identifie
     {
         switch (symbol->GetSymbolType())
         {
-        case cmajor::symbols::SymbolType::typedefSymbol:
+        case cmajor::symbols::SymbolType::aliasTypeSymbol:
         {
-            cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
-            if (typedefSymbol->IsProject() && !typedefSymbol->IsBound())
+            cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+            if (aliasTypeSymbol->IsProject() && !aliasTypeSymbol->IsBound())
             {
                 TypeBinder typeBinder(boundCompileUnit);
-                typeBinder.SetContainerScope(typedefSymbol->Parent()->GetContainerScope());
-                cmajor::ast::Node* node = symbolTable.GetNode(typedefSymbol);
-                Assert(node->GetNodeType() == cmajor::ast::NodeType::typedefNode, "typedef node expected");
-                cmajor::ast::TypedefNode* typedefNode = static_cast<cmajor::ast::TypedefNode*>(node);
-                typeBinder.BindTypedef(typedefSymbol, typedefNode, false);
+                typeBinder.SetContainerScope(aliasTypeSymbol->Parent()->GetContainerScope());
+                cmajor::ast::Node* node = symbolTable.GetNode(aliasTypeSymbol);
+                if (node->IsTypedefNode())
+                {
+                    cmajor::ast::TypedefNode* typedefNode = static_cast<cmajor::ast::TypedefNode*>(node);
+                    typeBinder.BindTypedef(aliasTypeSymbol, typedefNode, false);
+                }
+                else if (node->IsAliasNode())
+                {
+                    cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(node);
+                    typeBinder.BindAlias(aliasTypeSymbol, aliasNode, false);
+                }
             }
-            type = typedefSymbol->GetType();
+            type = aliasTypeSymbol->GetType();
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
             {
-                symbolTable.MapSymbol(idNode, typedefSymbol);
+                symbolTable.MapSymbol(idNode, aliasTypeSymbol);
             }
-            cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, typedefSymbol);
+            cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, aliasTypeSymbol);
             break;
         }
         case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
@@ -446,6 +454,28 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
         else
         {
             throw cmajor::symbols::Exception("type symbol '" + util::ToUtf8(name) + "' not found", dotNode.GetSourcePos(), dotNode.ModuleId());
+        }
+    }
+}
+
+void TypeResolver::Visit(cmajor::ast::AliasNode& aliasNode)
+{
+    type = ResolveType(aliasNode.TypeExpr(), boundCompileUnit, containerScope, flags, currentClass);
+    if (type && type->GetSymbolType() == cmajor::symbols::SymbolType::classGroupTypeSymbol)
+    {
+        cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
+        if (currentClass && classGroup->Name() == currentClass->Name())
+        {
+            type = currentClass;
+        }
+        else
+        {
+            type = classGroup->GetClass(0);
+        }
+        if (!type)
+        {
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", aliasNode.GetSourcePos(), aliasNode.ModuleId(),
+                type->GetSourcePos(), type->SourceModuleId());
         }
     }
 }

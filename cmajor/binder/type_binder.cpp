@@ -64,7 +64,10 @@ void UsingNodeAdder::Visit(cmajor::ast::NamespaceNode& namespaceNode)
 
 void UsingNodeAdder::Visit(cmajor::ast::AliasNode& aliasNode)
 {
-    // boundCompileUnit.FirstFileScope()->InstallAlias(containerScope, &aliasNode); TODO
+    cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&aliasNode);
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::aliasTypeSymbol, "alias type symbol expected");
+    cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+    boundCompileUnit.FirstFileScope()->InstallAlias(&aliasNode, aliasTypeSymbol->GetType());
 }
 
 void UsingNodeAdder::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
@@ -203,7 +206,11 @@ void TypeBinder::Visit(cmajor::ast::AliasNode& aliasNode)
 {
     try
     {
-        // boundCompileUnit.FirstFileScope()->InstallAlias(containerScope, &aliasNode); TODO
+        cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&aliasNode);
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::aliasTypeSymbol, "alias type symbol expected");
+        cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+        BindAlias(aliasTypeSymbol, &aliasNode, true);
+        boundCompileUnit.FirstFileScope()->InstallAlias(&aliasNode, aliasTypeSymbol->GetType());
         usingNodes.push_back(&aliasNode);
     }
     catch (const cmajor::symbols::Exception& ex)
@@ -2269,9 +2276,9 @@ void TypeBinder::Visit(cmajor::ast::TypedefNode& typedefNode)
     try
     {
         cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&typedefNode);
-        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::typedefSymbol, "typedef symbol expected");
-        cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
-        BindTypedef(typedefSymbol, &typedefNode, true);
+        Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::aliasTypeSymbol, "alias type symbol expected");
+        cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+        BindTypedef(aliasTypeSymbol, &typedefNode, true);
     }
     catch (const cmajor::symbols::Exception& ex)
     {
@@ -2297,24 +2304,67 @@ void TypeBinder::Visit(cmajor::ast::TypedefNode& typedefNode)
     }
 }
 
-void TypeBinder::BindTypedef(cmajor::symbols::TypedefSymbol* typedefSymbol, cmajor::ast::TypedefNode* typedefNode, bool fromOwnCompileUnit)
+void TypeBinder::BindTypedef(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, cmajor::ast::TypedefNode* typedefNode, bool fromOwnCompileUnit)
 {
     try
     {
-        if (typedefSymbol->IsBound()) return;
-        typedefSymbol->SetBound();
+        if (aliasTypeSymbol->IsBound()) return;
+        aliasTypeSymbol->SetBound();
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
-            symbolTable.MapSymbol(typedefNode->Id(), typedefSymbol);
+            symbolTable.MapSymbol(typedefNode->Id(), aliasTypeSymbol);
         }
-        typedefSymbol->SetSpecifiers(typedefNode->GetSpecifiers());
-        typedefSymbol->ComputeMangledName();
+        aliasTypeSymbol->SetSpecifiers(typedefNode->GetSpecifiers());
+        aliasTypeSymbol->ComputeMangledName();
         if (!fromOwnCompileUnit)
         {
             AddUsingNodesToCurrentCompileUnit(typedefNode);
         }
         cmajor::symbols::TypeSymbol* typeSymbol = ResolveType(typedefNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
-        typedefSymbol->SetType(typeSymbol);
+        aliasTypeSymbol->SetType(typeSymbol);
+    }
+    catch (const cmajor::symbols::Exception& ex)
+    {
+        if (editMode)
+        {
+            errors.push_back(ex.Message());
+        }
+        else
+        {
+            throw;
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (editMode)
+        {
+            errors.push_back(ex.what());
+        }
+        else
+        {
+            throw;
+        }
+    }
+}
+
+void TypeBinder::BindAlias(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, cmajor::ast::AliasNode* aliasNode, bool fromOwnCompileUnit)
+{
+    try
+    {
+        if (aliasTypeSymbol->IsBound()) return;
+        aliasTypeSymbol->SetBound();
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+        {
+            symbolTable.MapSymbol(aliasNode->Id(), aliasTypeSymbol);
+        }
+        aliasTypeSymbol->SetSpecifiers(aliasNode->GetSpecifiers());
+        aliasTypeSymbol->ComputeMangledName();
+        cmajor::symbols::TypeSymbol* typeSymbol = ResolveType(aliasNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+        aliasTypeSymbol->SetType(typeSymbol);
+        if (!fromOwnCompileUnit)
+        {
+            AddUsingNodesToCurrentCompileUnit(aliasNode);
+        }
     }
     catch (const cmajor::symbols::Exception& ex)
     {
@@ -2432,12 +2482,12 @@ void TypeBinder::Visit(cmajor::ast::EnumTypeNode& enumTypeNode)
             cmajor::ast::EnumConstantNode* enumConstantNode = enumTypeNode.Constants()[i];
             enumConstantNode->Accept(*this);
         }
-        cmajor::symbols::TypedefSymbol* underlyingTypedef = new cmajor::symbols::TypedefSymbol(enumTypeNode.GetSourcePos(), enumTypeNode.ModuleId(), U"UnderlyingType");
-        underlyingTypedef->SetModule(module);
-        underlyingTypedef->SetAccess(cmajor::symbols::SymbolAccess::public_);
-        underlyingTypedef->SetType(underlyingType);
-        underlyingTypedef->SetBound();
-        enumTypeSymbol->AddMember(underlyingTypedef);
+        cmajor::symbols::AliasTypeSymbol* underlyingAliasType = new cmajor::symbols::AliasTypeSymbol(enumTypeNode.GetSourcePos(), enumTypeNode.ModuleId(), U"UnderlyingType");
+        underlyingAliasType->SetModule(module);
+        underlyingAliasType->SetAccess(cmajor::symbols::SymbolAccess::public_);
+        underlyingAliasType->SetType(underlyingType);
+        underlyingAliasType->SetBound();
+        enumTypeSymbol->AddMember(underlyingAliasType);
         cmajor::symbols::EnumTypeDefaultConstructor* defaultConstructor = new cmajor::symbols::EnumTypeDefaultConstructor(enumTypeSymbol);
         symbolTable.SetFunctionIdFor(defaultConstructor);
         enumTypeSymbol->AddMember(defaultConstructor);

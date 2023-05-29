@@ -30,7 +30,7 @@ import cmajor.symbols.trap;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.templates;
 import cmajor.symbols.constant.symbol;
-import cmajor.symbols.typedefs;
+import cmajor.symbols.alias.type;
 import cmajor.symbols.class_template_specializations;
 import cmajor.ast.clone;
 import util.sha1;
@@ -44,7 +44,7 @@ const char* symbolTypeStr[uint8_t(SymbolType::maxSymbol)] =
     "arrayTypeSymbol", "derivedTypeSymbol",
     "namespaceSymbol", "functionSymbol", "staticConstructorSymbol", "constructorSymbol", "destructorSymbol", "memberFunctionSymbol", "conversionFunctionSymbol", "functionGroupSymbol",
     "classGroupTypeSymbol", "classTypeSymbol", "interfaceTypeSymbol", "conceptGroupSymbol", "conceptSymbol",
-    "delegateTypeSymbol", "classDelegateTypeSymbol", "declarationBlock", "typedefSymbol", "constantSymbol", "enumTypeSymbol", "enumConstantSymbol",
+    "delegateTypeSymbol", "classDelegateTypeSymbol", "declarationBlock", "aliasTypeSymbol", "constantSymbol", "enumTypeSymbol", "enumConstantSymbol",
     "templateParameterSymbol", "boundTemplateParameterSymbol", "parameterSymbol", "localVariableSymbol", "memberVariableSymbol",
     "basicTypeUnaryPlus", "basicTypeIntUnaryMinus", "basicTypeFloatUnaryMinus", "basicTypeComplement", "basicTypeAdd", "basicTypeFAdd", "basicTypeSub", "basicTypeFSub", "basicTypeMul", "basicTypeFMul",
     "basicTypeSDiv", "basicTypeUDiv", "basicTypeFDiv", "basicTypeSRem", "basicTypeURem", "basicTypeAnd", "basicTypeOr", "basicTypeXor", "basicTypeShl", "basicTypeAShr", "basicTypeLShr",
@@ -1157,7 +1157,7 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::delegateTypeSymbol, new ConcreteSymbolCreator<DelegateTypeSymbol>());
     Register(SymbolType::classDelegateTypeSymbol, new ConcreteSymbolCreator<ClassDelegateTypeSymbol>());
     Register(SymbolType::declarationBlock, new ConcreteSymbolCreator<DeclarationBlock>());
-    Register(SymbolType::typedefSymbol, new ConcreteSymbolCreator<TypedefSymbol>());
+    Register(SymbolType::aliasTypeSymbol, new ConcreteSymbolCreator<AliasTypeSymbol>());
     Register(SymbolType::constantSymbol, new ConcreteSymbolCreator<ConstantSymbol>());
     Register(SymbolType::enumTypeSymbol, new ConcreteSymbolCreator<EnumTypeSymbol>());
     Register(SymbolType::enumConstantSymbol, new ConcreteSymbolCreator<EnumConstantSymbol>());

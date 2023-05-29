@@ -1625,9 +1625,14 @@ void Evaluator::Visit(cmajor::ast::NamespaceImportNode& namespaceImportNode)
 
 void Evaluator::Visit(cmajor::ast::AliasNode& aliasNode)
 {
+    cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&aliasNode);
+    Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::aliasTypeSymbol, "alias type symbol expected");
+    cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+    cmajor::symbols::TypeSymbol* type = aliasTypeSymbol->GetType();
+    EvaluateSymbol(type, aliasNode.GetSourcePos());
     if (currentFileScope)
     {
-        // currentFileScope->InstallAlias(containerScope, &aliasNode); TODO
+        currentFileScope->InstallAlias(&aliasNode, type); 
     }
 }
 
@@ -3097,6 +3102,11 @@ void Evaluator::EvaluateSymbol(cmajor::symbols::Symbol* symbol, const soul::ast:
     {
         cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
         EvaluateEnumConstantSymbol(enumConstantSymbol, sourcePos);
+    }
+    else if (symbol->IsAliasTypeSymbol())
+    {
+        cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+        EvaluateSymbol(aliasTypeSymbol->GetType(), sourcePos);
     }
     else if (symbol->IsContainerSymbol())
     {

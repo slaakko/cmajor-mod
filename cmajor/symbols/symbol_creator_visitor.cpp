@@ -121,6 +121,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::AliasNode& aliasNode)
     {
         aliasNode.Id()->Accept(*this);
         aliasNode.TypeExpr()->Accept(*this);
+        AliasTypeSymbol* symbol = symbolTable.AddAliasType(aliasNode);
         if (editMode)
         {
             symbolTable.AddAliasNode(&aliasNode);
@@ -2651,7 +2652,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConditionalCompilationStatementNod
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::TypedefNode& typedefNode)
 {
-    TypedefSymbol* symbol = symbolTable.AddTypedef(typedefNode);
+    AliasTypeSymbol* symbol = symbolTable.AddAliasType(typedefNode);
     symbolTable.SetCursorContainer(typedefNode);
 /*  TODO 
     if (level == 0 && source)

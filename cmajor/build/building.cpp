@@ -78,6 +78,17 @@ void SetDefines(cmajor::symbols::Module* module, const std::string& definesFileP
     }
 }
 
+void Preprocess(cmajor::ast::Project* project)
+{
+    for (std::unique_ptr<cmajor::ast::CompileUnitNode>& compileUnit : project->CompileUnits())
+    {
+        if (compileUnit->GlobalNs()->HasUnnamedNs())
+        {
+            cmajor::ast::AddNamespaceImportsForUnnamedNamespaces(*compileUnit);
+        }
+    }
+}
+
 void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, bool& stop, bool resetRootModule, std::set<std::string>& builtProjects)
 {
     try
@@ -169,6 +180,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 bool prevPreparing = rootModule->Preparing();
                 rootModule->SetPreparing(true);
                 cmajor::symbols::PrepareModuleForCompilation(rootModule.get(), project->References(), project->GetTarget());
+                Preprocess(project);
                 CreateSymbols(rootModule->GetSymbolTable(), project, stop);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {

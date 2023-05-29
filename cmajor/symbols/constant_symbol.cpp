@@ -66,6 +66,7 @@ void ConstantSymbol::Read(SymbolReader& reader)
         sizeOfValue = reader.GetBinaryStreamReader().ReadLong();
         valuePos = reader.GetBinaryStreamReader().GetStream().Tell();
         reader.GetBinaryStreamReader().GetStream().Seek(valuePos + sizeOfValue, util::Origin::seekSet);
+        filePathReadFrom = reader.GetAstReader().FileName();
     }
     else
     {

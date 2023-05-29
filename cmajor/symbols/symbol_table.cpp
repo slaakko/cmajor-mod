@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -22,42 +22,12 @@ import cmajor.symbols.variable.symbol;
 import cmajor.symbols.templates;
 import cmajor.symbols.interfaces;
 import cmajor.symbols.delegate.symbol;
-import cmajor.symbols.typedefs;
+import cmajor.symbols.alias.type;
 import cmajor.symbols.constant.symbol;
 import cmajor.symbols.enumerations;
 import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.basic.type.operation;
 import util;
-
-/*
-#include <cmajor/symbols/SymbolTable.hpp>
-#include <cmajor/symbols/SymbolWriter.hpp>
-#include <cmajor/symbols/SymbolReader.hpp>
-#include <cmajor/symbols/BasicTypeSymbol.hpp>
-#include <cmajor/symbols/BasicTypeOperation.hpp>
-#include <cmajor/symbols/FunctionSymbol.hpp>
-#include <cmajor/symbols/ClassTypeSymbol.hpp>
-#include <cmajor/symbols/InterfaceTypeSymbol.hpp>
-#include <cmajor/symbols/DelegateSymbol.hpp>
-#include <cmajor/symbols/TypedefSymbol.hpp>
-#include <cmajor/symbols/VariableSymbol.hpp>
-#include <cmajor/symbols/ConstantSymbol.hpp>
-#include <cmajor/symbols/EnumSymbol.hpp>
-#include <cmajor/symbols/Exception.hpp>
-#include <cmajor/symbols/TemplateSymbol.hpp>
-#include <cmajor/symbols/ConceptSymbol.hpp>
-#include <cmajor/symbols/StringFunctions.hpp>
-#include <cmajor/symbols/GlobalFlags.hpp>
-#include <cmajor/symbols/Module.hpp>
-#include <cmajor/symbols/ModuleCache.hpp>
-#include <cmajor/symbols/DebugFlags.hpp>
-#include <sngcm/ast/Identifier.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <soulng/util/Log.hpp>
-#include <soulng/util/Time.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-*/
 
 namespace cmajor::symbols {
 
@@ -1020,14 +990,24 @@ void SymbolTable::AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode)
     container->AddMember(localVariableSymbol);
 }
 
-TypedefSymbol* SymbolTable::AddTypedef(cmajor::ast::TypedefNode& typedefNode)
+AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::AliasNode& aliasNode)
 {
-    TypedefSymbol* typedefSymbol = new TypedefSymbol(typedefNode.GetSourcePos(), typedefNode.ModuleId(), typedefNode.Id()->Str());
-    typedefSymbol->SetCompileUnit(currentCompileUnit);
-    typedefSymbol->SetModule(module);
-    MapNode(&typedefNode, typedefSymbol);
-    container->AddMember(typedefSymbol);
-    return typedefSymbol;
+    AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(aliasNode.GetSourcePos(), aliasNode.ModuleId(), aliasNode.Id()->Str());
+    aliasTypeSymbol->SetCompileUnit(currentCompileUnit);
+    aliasTypeSymbol->SetModule(module);
+    MapNode(&aliasNode, aliasTypeSymbol);
+    container->AddMember(aliasTypeSymbol);
+    return aliasTypeSymbol;
+}
+
+AliasTypeSymbol* SymbolTable::AddAliasType(cmajor::ast::TypedefNode& typedefNode)
+{
+    AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(typedefNode.GetSourcePos(), typedefNode.ModuleId(), typedefNode.Id()->Str());
+    aliasTypeSymbol->SetCompileUnit(currentCompileUnit);
+    aliasTypeSymbol->SetModule(module);
+    MapNode(&typedefNode, aliasTypeSymbol);
+    container->AddMember(aliasTypeSymbol);
+    return aliasTypeSymbol;
 }
 
 ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode)
@@ -1043,7 +1023,6 @@ ConstantSymbol* SymbolTable::AddConstant(cmajor::ast::ConstantNode& constantNode
 
 GlobalVariableSymbol* SymbolTable::AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode)
 {
-    //GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSourcePos(), globalVariableNode.ModuleId(), globalVariableNode.Id()->Str());
     GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSourcePos(), globalVariableNode.ModuleId(), globalVariableNode.Id()->Str(), 
         globalVariableNode.CompileUnit()->Id(), globalVariableNode.CompileUnit()->FilePath());
     globalVariableSymbol->SetSpecifiers(globalVariableNode.GetSpecifiers());
@@ -1388,7 +1367,7 @@ TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivat
     derivedTypes.push_back(std::unique_ptr<DerivedTypeSymbol>(derivedType));
     if (derivedType->IsPointerType() && !derivedType->BaseType()->IsVoidType() && !derivedType->IsReferenceType())
     {
-        TypedefSymbol* valueType = new TypedefSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"ValueType");
+        AliasTypeSymbol* valueType = new AliasTypeSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"ValueType");
         valueType->SetModule(module);
         valueType->SetAccess(SymbolAccess::public_);
         valueType->SetType(derivedType->RemovePointer(sourcePos, moduleId));
@@ -1399,13 +1378,13 @@ TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivat
         }
         valueType->SetBound();
         derivedType->AddMember(valueType);
-        TypedefSymbol* referenceType = new TypedefSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"ReferenceType");
+        AliasTypeSymbol* referenceType = new AliasTypeSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"ReferenceType");
         referenceType->SetModule(module);
         referenceType->SetAccess(SymbolAccess::public_);
         referenceType->SetType(valueType->GetType()->AddLvalueReference(sourcePos, moduleId));
         referenceType->SetBound();
         derivedType->AddMember(referenceType);
-        TypedefSymbol* pointerType = new TypedefSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"PointerType");
+        AliasTypeSymbol* pointerType = new AliasTypeSymbol(baseType->GetSourcePos(), baseType->SourceModuleId(), U"PointerType");
         pointerType->SetModule(module);
         pointerType->SetAccess(SymbolAccess::public_);
         pointerType->SetType(derivedType);
@@ -1518,13 +1497,13 @@ ArrayTypeSymbol* SymbolTable::MakeArrayType(TypeSymbol* elementType, int64_t siz
     ArrayCEndFunction* arrayCEndFunction = new ArrayCEndFunction(arrayType);
     SetFunctionIdFor(arrayCEndFunction);
     arrayType->AddMember(arrayCEndFunction);
-    TypedefSymbol* iterator = new TypedefSymbol(sourcePos, moduleId, U"Iterator");
+    AliasTypeSymbol* iterator = new AliasTypeSymbol(sourcePos, moduleId, U"Iterator");
     iterator->SetModule(module);
     iterator->SetAccess(SymbolAccess::public_);
     iterator->SetType(arrayType->ElementType()->AddPointer(sourcePos, moduleId));
     iterator->SetBound();
     arrayType->AddMember(iterator);
-    TypedefSymbol* constIterator = new TypedefSymbol(sourcePos, moduleId, U"ConstIterator");
+    AliasTypeSymbol* constIterator = new AliasTypeSymbol(sourcePos, moduleId, U"ConstIterator");
     constIterator->SetModule(module);
     constIterator->SetAccess(SymbolAccess::public_);
     constIterator->SetType(arrayType->ElementType()->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId));

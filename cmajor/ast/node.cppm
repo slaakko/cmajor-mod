@@ -79,6 +79,8 @@ public:
     virtual bool IsIntrinsicConceptNode() const { return false; }
     virtual bool IsConditionalCompilationExpressionNode() const { return false; }
     bool IsNamespaceNode() const { return nodeType == NodeType::namespaceNode; }
+    bool IsTypedefNode() const { return nodeType == NodeType::typedefNode; }
+    bool IsAliasNode() const { return nodeType == NodeType::aliasNode; }
     virtual Specifiers GetSpecifiers() const { return Specifiers::none; }
     const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
     void SetSourcePos(const soul::ast::SourcePos& sourcePos_) { sourcePos = sourcePos_; }

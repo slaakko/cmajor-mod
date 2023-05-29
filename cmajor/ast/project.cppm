@@ -202,6 +202,7 @@ public:
     void Save();
     void AddCompileUnit(CompileUnitNode* compileUnit);
     const std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() const { return compileUnits; }
+    std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() { return compileUnits; }
 private:
     BackEnd backend;
     std::string toolChain;

@@ -36,12 +36,12 @@ class SymbolCollector;
 
 enum class SymbolType : uint8_t
 {
-    boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol, longTypeSymbol, ulongTypeSymbol, floatTypeSymbol, doubleTypeSymbol,
-    charTypeSymbol, wcharTypeSymbol, ucharTypeSymbol, voidTypeSymbol, nullPtrTypeSymbol,
+    boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol, longTypeSymbol, ulongTypeSymbol, floatTypeSymbol, 
+    doubleTypeSymbol, charTypeSymbol, wcharTypeSymbol, ucharTypeSymbol, voidTypeSymbol, nullPtrTypeSymbol,
     arrayTypeSymbol, derivedTypeSymbol,
     namespaceSymbol, functionSymbol, staticConstructorSymbol, constructorSymbol, destructorSymbol, memberFunctionSymbol, conversionFunctionSymbol, functionGroupSymbol,
     classGroupTypeSymbol, classTypeSymbol, classTemplateSpecializationSymbol, interfaceTypeSymbol, conceptGroupSymbol, conceptSymbol,
-    delegateTypeSymbol, classDelegateTypeSymbol, declarationBlock, typedefSymbol, constantSymbol, enumTypeSymbol, enumConstantSymbol,
+    delegateTypeSymbol, classDelegateTypeSymbol, declarationBlock, aliasTypeSymbol, constantSymbol, enumTypeSymbol, enumConstantSymbol,
     templateParameterSymbol, boundTemplateParameterSymbol, parameterSymbol, localVariableSymbol, memberVariableSymbol,
     basicTypeUnaryPlus, basicTypeIntUnaryMinus, basicTypeFloatUnaryMinus, basicTypeComplement, basicTypeAdd, basicTypeFAdd, basicTypeSub, basicTypeFSub, basicTypeMul, basicTypeFMul,
     basicTypeSDiv, basicTypeUDiv, basicTypeFDiv, basicTypeSRem, basicTypeURem, basicTypeAnd, basicTypeOr, basicTypeXor, basicTypeShl, basicTypeAShr, basicTypeLShr,
@@ -165,6 +165,7 @@ public:
     virtual std::string Syntax() const;
     virtual void CopyFrom(const Symbol* that);
     virtual void Check();
+    bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
     void SetMangledName(const std::u32string& mangledName_);
     SymbolAccess Access() const { return SymbolAccess(flags & SymbolFlags::access); }
     void SetAccess(SymbolAccess access_) { flags = flags | SymbolFlags(access_); }

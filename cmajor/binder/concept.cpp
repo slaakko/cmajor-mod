@@ -407,10 +407,10 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
         {
             switch (symbol->GetSymbolType())
             {
-            case cmajor::symbols::SymbolType::typedefSymbol:
+            case cmajor::symbols::SymbolType::aliasTypeSymbol:
             {
-                cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
-                type = typedefSymbol->GetType();
+                cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+                type = aliasTypeSymbol->GetType();
                 break;
             }
             case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
@@ -493,10 +493,10 @@ void ConstraintChecker::Visit(cmajor::ast::DotNode& dotNode)
     {
         switch (symbol->GetSymbolType())
         {
-        case cmajor::symbols::SymbolType::typedefSymbol:
+        case cmajor::symbols::SymbolType::aliasTypeSymbol:
         {
-            cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
-            type = typedefSymbol->GetType();
+            cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+            type = aliasTypeSymbol->GetType();
             break;
         }
         case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
@@ -1425,7 +1425,8 @@ bool CheckConstraint(cmajor::ast::ConstraintNode* constraint, const cmajor::ast:
             case cmajor::ast::NodeType::aliasNode:
             {
                 cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(usingNode);
-                // fileScope->InstallAlias(containerScope, aliasNode); TODO
+                cmajor::symbols::TypeSymbol* type = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                fileScope->InstallAlias(aliasNode, type); 
                 break;
             }
             case cmajor::ast::NodeType::namespaceImportNode:

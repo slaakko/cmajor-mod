@@ -23,7 +23,7 @@ class Module;
 class FunctionSymbol;
 class ClassTypeSymbol;
 class ConceptSymbol;
-class TypedefSymbol;
+class AliasTypeSymbol;
 class ConstantSymbol;
 class ArrayTypeSymbol;
 class ClassTemplateSpecializationSymbol;
@@ -138,7 +138,8 @@ public:
     void EndDeclarationBlock();
     void AddLocalVariable(cmajor::ast::ConstructionStatementNode& constructionStatementNode);
     void AddLocalVariable(cmajor::ast::IdentifierNode& identifierNode);
-    TypedefSymbol* AddTypedef(cmajor::ast::TypedefNode& typedefNode);
+    AliasTypeSymbol* AddAliasType(cmajor::ast::AliasNode& aliasNode);
+    AliasTypeSymbol* AddAliasType(cmajor::ast::TypedefNode& typedefNode);
     ConstantSymbol* AddConstant(cmajor::ast::ConstantNode& constantNode);
     GlobalVariableSymbol* AddGlobalVariable(cmajor::ast::GlobalVariableNode& globalVariableNode);
     void BeginEnumType(cmajor::ast::EnumTypeNode& enumTypeNode);

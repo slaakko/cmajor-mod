@@ -65,9 +65,9 @@ void SymbolCollector::AddInterface(InterfaceTypeSymbol* interface_)
     interfaces.push_back(interface_);
 }
 
-void SymbolCollector::AddTypedef(TypedefSymbol* typedef_)
+void SymbolCollector::AddAliasType(AliasTypeSymbol* alias)
 {
-    typedefs.push_back(typedef_);
+    aliasTypes.push_back(alias);
 }
 
 void SymbolCollector::AddMemberVariable(MemberVariableSymbol* memberVariable)
@@ -91,7 +91,7 @@ void SymbolCollector::SortByFullName()
     std::sort(classes.begin(), classes.end(), ByFullName());
     std::sort(interfaces.begin(), interfaces.end(), ByFullName());
     std::sort(functions.begin(), functions.end(), ByFullName());
-    std::sort(typedefs.begin(), typedefs.end(), ByFullName());
+    std::sort(aliasTypes.begin(), aliasTypes.end(), ByFullName());
     std::sort(concepts.begin(), concepts.end(), ByFullName());
     std::sort(delegates.begin(), delegates.end(), ByFullName());
     std::sort(classDelegates.begin(), classDelegates.end(), ByFullName());
@@ -112,7 +112,7 @@ void SymbolCollector::SortByDocName()
     std::sort(classes.begin(), classes.end(), ByDocName());
     std::sort(interfaces.begin(), interfaces.end(), ByDocName());
     std::sort(functions.begin(), functions.end(), ByDocName());
-    std::sort(typedefs.begin(), typedefs.end(), ByDocName());
+    std::sort(aliasTypes.begin(), aliasTypes.end(), ByDocName());
     std::sort(concepts.begin(), concepts.end(), ByDocName());
     std::sort(delegates.begin(), delegates.end(), ByDocName());
     std::sort(classDelegates.begin(), classDelegates.end(), ByDocName());
@@ -128,7 +128,7 @@ bool SymbolCollector::IsEmpty() const
     if (!classes.empty()) return false;
     if (!interfaces.empty()) return false;
     if (!functions.empty()) return false;
-    if (!typedefs.empty()) return false;
+    if (!aliasTypes.empty()) return false;
     if (!concepts.empty()) return false;
     if (!delegates.empty()) return false;
     if (!classDelegates.empty()) return false;

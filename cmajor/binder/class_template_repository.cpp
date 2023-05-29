@@ -60,7 +60,7 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
                 cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(usingNode);
-                // fileScope->InstallAlias(containerScope, aliasNode); TODO
+
             }
         }
         boundCompileUnit.AddFileScope(fileScope);
@@ -296,7 +296,8 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
                 cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(usingNode);
-                // fileScope->InstallAlias(containerScope, aliasNode); TODO
+                cmajor::symbols::TypeSymbol* type = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                fileScope->InstallAlias(aliasNode, type); 
             }
         }
         if (!classTemplate->Ns()->IsGlobalNamespace())

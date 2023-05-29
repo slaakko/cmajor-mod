@@ -71,7 +71,8 @@ public:
     void Visit(cmajor::ast::ConditionalCompilationStatementNode& conditionalCompilationStatementNode) override;
 
     void Visit(cmajor::ast::TypedefNode& typedefNode) override;
-    void BindTypedef(cmajor::symbols::TypedefSymbol* typedefSymbol, cmajor::ast::TypedefNode* typedefNode, bool fromOwnCompileUnit);
+    void BindTypedef(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, cmajor::ast::TypedefNode* typedefNode, bool fromOwnCompileUnit);
+    void BindAlias(cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol, cmajor::ast::AliasNode* aliasNode, bool fromOwnCompileUnit);
     void Visit(cmajor::ast::ConstantNode& constantNode) override;
     void Visit(cmajor::ast::EnumTypeNode& enumTypeNode) override;
     void Visit(cmajor::ast::EnumConstantNode& enumConstantNode) override;

@@ -10,7 +10,7 @@ import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.constant.symbol;
 import cmajor.symbols.delegate.symbol;
 import cmajor.symbols.enumerations;
-import cmajor.symbols.typedefs;
+import cmajor.symbols.alias.type;
 import cmajor.symbols.variable.symbol;
 import std.core;
 
@@ -40,7 +40,7 @@ public:
     void AddEnumerationConstant(EnumConstantSymbol* enumConstant);
     void AddFunction(FunctionSymbol* function);
     void AddInterface(InterfaceTypeSymbol* interface_);
-    void AddTypedef(TypedefSymbol* typedef_);
+    void AddAliasType(AliasTypeSymbol* alias_);
     void AddMemberVariable(MemberVariableSymbol* memberVariable);
     void AddGlobalVariable(GlobalVariableSymbol* globalVariable);
     void SortByFullName();
@@ -49,7 +49,7 @@ public:
     const std::vector<ClassTypeSymbol*>& Classes() const { return classes; }
     const std::vector<InterfaceTypeSymbol*>& Interfaces() const { return interfaces; }
     const std::vector<FunctionSymbol*>& Functions() const { return functions; }
-    const std::vector<TypedefSymbol*>& Typedefs() const { return typedefs; }
+    const std::vector<AliasTypeSymbol*>& AliasTypes() const { return aliasTypes; }
     const std::vector<ConceptSymbol*>& Concepts() const { return concepts; }
     const std::vector<DelegateTypeSymbol*>& Delegates() const { return delegates; }
     const std::vector<ClassDelegateTypeSymbol*>& ClassDelegates() const { return classDelegates; }
@@ -63,7 +63,7 @@ private:
     std::vector<ClassTypeSymbol*> classes;
     std::vector<InterfaceTypeSymbol*> interfaces;
     std::vector<FunctionSymbol*> functions;
-    std::vector<TypedefSymbol*> typedefs;
+    std::vector<AliasTypeSymbol*> aliasTypes;
     std::vector<ConceptSymbol*> concepts;
     std::vector<ConstantSymbol*> constants;
     std::vector<DelegateTypeSymbol*> delegates;

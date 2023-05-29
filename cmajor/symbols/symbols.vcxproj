@@ -120,7 +120,7 @@
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -231,8 +231,8 @@
     <ClCompile Include="trace.cppm" />
     <ClCompile Include="trap.cpp" />
     <ClCompile Include="trap.cppm" />
-    <ClCompile Include="typedef_symbol.cpp" />
-    <ClCompile Include="typedef_symbol.cppm" />
+    <ClCompile Include="alias_type_symbol.cpp" />
+    <ClCompile Include="alias_type_symbol.cppm" />
     <ClCompile Include="type_index.cppm" />
     <ClCompile Include="type_map.cpp" />
     <ClCompile Include="type_map.cppm" />

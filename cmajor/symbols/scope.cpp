@@ -88,6 +88,7 @@ void ContainerScope::Install(Symbol* symbol)
     auto it = symbolMap.find(symbol->Name());
     if (symbol->GetSymbolType() != SymbolType::namespaceSymbol &&
         symbol->GetSymbolType() != SymbolType::declarationBlock &&
+        symbol->GetSymbolType() != SymbolType::aliasTypeSymbol &&
         it != symbolMap.cend())
     {
         Symbol* prev = it->second;
@@ -754,30 +755,17 @@ FileScope::FileScope()
 {
 }
 
-/*
-void FileScope::InstallAlias(ContainerScope* containerScope, cmajor::ast::AliasNode* aliasNode)
-{
-//  Assert(containerScope, "container scope is null"); TODO
-    std::u32string qualifiedName = aliasNode->Qid()->Str();
-    Symbol* symbol = containerScope->Lookup(qualifiedName, ScopeLookup::this_and_parent);
-    if (symbol)
-    {
-        std::u32string aliasName = aliasNode->Id()->Str();
-        aliasSymbolMap[aliasName] = symbol;
-    }
-    else
-    {
-        throw Exception("referred symbol '" + ToUtf8(aliasNode->Qid()->Str()) + "' not found", aliasNode->Qid()->GetSourcePos(), aliasNode->Qid()->ModuleId());
-    }
-}
-*/
-
 void FileScope::AddContainerScope(ContainerScope* containerScope)
 {
     if (std::find(containerScopes.begin(), containerScopes.end(), containerScope) == containerScopes.end())
     {
         containerScopes.push_back(containerScope);
     }
+}
+
+void FileScope::InstallAlias(cmajor::ast::AliasNode* aliasNode, TypeSymbol* type)
+{
+    aliasMap[aliasNode->Id()->Str()] = type;
 }
 
 void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::ast::NamespaceImportNode* namespaceImportNode)
@@ -827,15 +815,13 @@ Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
         throw std::runtime_error("file scope supports only this scope lookup");
     }
     std::unordered_set<Symbol*> foundSymbols;
-/*
-    auto it = aliasSymbolMap.find(name);
-    if (it != aliasSymbolMap.cend())
+    auto it = aliasMap.find(name);
+    if (it != aliasMap.cend())
     {
-        Symbol* symbol = it->second;
+        TypeSymbol* symbol = it->second;
         foundSymbols.insert(symbol);
     }
     else
-*/
     {
         for (ContainerScope* containerScope : containerScopes)
         {
@@ -886,17 +872,15 @@ std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& pref
 std::vector<CCSymbolEntry> FileScope::LookupBeginWith(const std::u32string& prefix, ScopeLookup lookup) const
 {
     std::vector<CCSymbolEntry> matches;
-/*  TODO
-    auto it = aliasSymbolMap.lower_bound(prefix);
-    if (it != aliasSymbolMap.cend())
+    auto it = aliasMap.lower_bound(prefix);
+    if (it != aliasMap.cend())
     {
-        while (it != aliasSymbolMap.cend() && StartsWith(it->first, prefix))
+        while (it != aliasMap.cend() && it->first.starts_with(prefix))
         {
             matches.push_back(CCSymbolEntry(it->second, prefix.length(), it->second->Name()));
             ++it;
         }
     }
-*/
     for (ContainerScope* containerScope : containerScopes)
     {
         std::vector<CCSymbolEntry> m = containerScope->LookupBeginWith(prefix, ScopeLookup::this_);

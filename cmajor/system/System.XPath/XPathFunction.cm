@@ -7,7 +7,6 @@ using System.Collections;
 
 namespace System.XPath
 {
-    using NodeType = System.Dom.NodeType;
     public abstract class XPathFunction
     {
         public XPathFunction(const ustring& name_, int minArity_, int maxArity_) :

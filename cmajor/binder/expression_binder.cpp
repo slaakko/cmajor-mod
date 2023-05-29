@@ -390,18 +390,18 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
         }
         break;
     }
-    case cmajor::symbols::SymbolType::typedefSymbol:
+    case cmajor::symbols::SymbolType::aliasTypeSymbol:
     {
-        cmajor::symbols::TypedefSymbol* typedefSymbol = static_cast<cmajor::symbols::TypedefSymbol*>(symbol);
-        CheckAccess(boundFunction->GetFunctionSymbol(), typedefSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, typedefSymbol->GetType()));
+        cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
+        CheckAccess(boundFunction->GetFunctionSymbol(), aliasTypeSymbol);
+        expression.reset(new BoundTypeExpression(sourcePos, moduleId, aliasTypeSymbol->GetType()));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
-            symbolTable.MapSymbol(idNode, typedefSymbol);
+            symbolTable.MapSymbol(idNode, aliasTypeSymbol);
         }
         if (idNode)
         {
-            cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, typedefSymbol);
+            cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, aliasTypeSymbol);
         }
         break;
     }
@@ -820,10 +820,6 @@ void ExpressionBinder::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
     boundCompileUnit.SetLatestIdentifier(&identifierNode);
     std::u32string name = identifierNode.Str();
-    if (name == U"compileUnitUnwindInfoInitList")
-    {
-        int x = 0;
-    }
     cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
     if (!symbol)
     {

@@ -733,14 +733,14 @@ void ClassTypeSymbol::Dump(util::CodeFormatter& formatter)
             interface->Dump(formatter);
         }
     }
-    if (!collector.Typedefs().empty())
+    if (!collector.AliasTypes().empty())
     {
         formatter.WriteLine();
-        formatter.WriteLine("TYPEDEFS");
-        for (TypedefSymbol* typedef_ : collector.Typedefs())
+        formatter.WriteLine("ALIAS TYPES");
+        for (AliasTypeSymbol* aliasType : collector.AliasTypes())
         {
             formatter.WriteLine();
-            typedef_->Dump(formatter);
+            aliasType->Dump(formatter);
         }
     }
     if (!collector.Concepts().empty())

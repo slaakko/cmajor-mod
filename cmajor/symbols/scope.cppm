@@ -17,6 +17,7 @@ class Symbol;
 class ContainerSymbol;
 class NamespaceSymbol;
 class FunctionSymbol;
+class TypeSymbol;
 class Module;
 class ViableFunctionSet;
 
@@ -115,6 +116,7 @@ class FileScope : public Scope
 public:
     FileScope();
     void AddContainerScope(ContainerScope* containerScope);
+    void InstallAlias(cmajor::ast::AliasNode* aliasNode, TypeSymbol* type);
     void InstallNamespaceImport(ContainerScope* containerScope, cmajor::ast::NamespaceImportNode* namespaceImportNode);
     Symbol* Lookup(const std::u32string& name) const override;
     Symbol* Lookup(const std::u32string& name, ScopeLookup lookup) const override;
@@ -124,6 +126,7 @@ public:
         Module* module);
 private:
     std::vector<ContainerScope*> containerScopes;
+    std::map<std::u32string, TypeSymbol*> aliasMap;
 };
 
 } // namespace cmajor::symbols

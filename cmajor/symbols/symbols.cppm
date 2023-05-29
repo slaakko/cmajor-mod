@@ -44,7 +44,7 @@ export import cmajor.symbols.trace;
 export import cmajor.symbols.trap;
 export import cmajor.symbols.type.map;
 export import cmajor.symbols.type.symbol;
-export import cmajor.symbols.typedefs;
+export import cmajor.symbols.alias.type;
 export import cmajor.symbols.value;
 export import cmajor.symbols.variable.symbol;
 export import cmajor.symbols.warning;
