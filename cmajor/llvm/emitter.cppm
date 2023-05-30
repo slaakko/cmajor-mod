@@ -39,13 +39,6 @@ public:
     void* GetIrTypeForDelegateType(void* retType, const std::vector<void*>& paramTypes) override;
     void* GetIrTypeForVoidPtrType() override;
     void* GetIrTypeForStructType(const std::vector<void*>& elementTypes) override;
-    void* CreateFwdIrTypeForClassType() override;
-    void SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes) override;
-    void* GetIrTypeByTypeId(const util::uuid& typeId) override;
-    void SetIrTypeByTypeId(const util::uuid& typeId, void* irType) override;
-    void* GetIrTypeForPtrType(void* baseIrType) override;
-    std::string GetIrTypeName(void* irType) override;
-    std::string MakeVmtVariableName(const std::string& vmtObjectName) override;
     void* CreateDefaultIrValueForBool() override;
     void* CreateDefaultIrValueForSByte() override;
     void* CreateDefaultIrValueForByte() override;
@@ -86,6 +79,13 @@ public:
     void* CreateIrValueForConstantStruct(void* structIrType, const std::vector<void*>& elementConstants) override;
     void* CreateIrValueForUuid(void* uuidConstant) override;
     void* GetConversionValue(void* type, void* from) override;
+    void* CreateFwdIrTypeForClassType() override;
+    void SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes) override;
+    void* GetIrTypeByTypeId(const util::uuid& typeId) override;
+    void SetIrTypeByTypeId(const util::uuid& typeId, void* irType) override;
+    void* GetIrTypeForPtrType(void* baseIrType) override;
+    std::string GetIrTypeName(void* irType) override;
+    std::string MakeVmtVariableName(const std::string& vmtObjectName) override;
     void* CreateDITypeForBool() override;
     void* CreateDITypeForSByte() override;
     void* CreateDITypeForByte() override;
@@ -104,7 +104,7 @@ public:
     void* CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements) override;
     void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSpan, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
         const std::string& mangledName, void* baseClassDIType) override;
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
     void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
@@ -226,7 +226,6 @@ public:
     void SetSourceFileName(const std::string& sourceFileName) override;
     void SetDICompileUnit(void* diCompileUnit_) override;
     void SetDIFile(void* diFile_) override;
-    // void SetColumnSpanProvider(cmajor::common::ColumnSpanProvider* columnSpanProvider_) override { columnSpanProvider = columnSpanProvider_; }
     void SaveObjectPointer(void* objectPointer_) override;
     void SetObjectPointer(void* objectPointer_) override;
     void* GetObjectPointer() override;

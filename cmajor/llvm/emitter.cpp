@@ -6,15 +6,25 @@
 module;
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/Type.h>
 
 module cmajor.llvm.emitter;
 
 import cmajor.llvm.value.stack;
+import util;
 
 namespace cmajor::llvm {
 
 using ArgVector = ::llvm::SmallVector<::llvm::Value*, 4>;
+
+struct UuidIntPairHash
+{
+    size_t operator()(const std::pair<util::uuid, int32_t>& p) const
+    {
+        return std::hash<int32_t>()(p.second) ^ util::HashValue(p.first);
+    }
+};
 
 struct LLvmEmitterImpl
 {
@@ -28,6 +38,28 @@ struct LLvmEmitterImpl
     ::llvm::DataLayout* dataLayout;
     ::llvm::DICompileUnit* diCompileUnit;
     ::llvm::DIFile* diFile;
+    std::unique_ptr<::llvm::DIBuilder> diBuilder;
+    ::llvm::DIBuilder* currentDIBuilder;
+    std::unordered_map<util::uuid, ::llvm::Type*, util::UuidHash> irTypeTypeIdMap;
+    std::unordered_map<::llvm::DIType*, util::uuid> fwdDeclarationMap;
+    std::unordered_map<util::uuid, ::llvm::DIType*, util::UuidHash> diTypeTypeIdMap;
+    std::unordered_map<::llvm::DIType*, std::string> diTypeNameMap;
+    std::unordered_map<std::pair<util::uuid, int32_t>, ::llvm::DIDerivedType*, UuidIntPairHash> diMemberTypeMap;
+    std::unordered_map<util::uuid, void*, util::UuidHash> classPtrMap;
+    std::unordered_map<void*, std::string> classNameMap;
+    bool inPrologue;
+    std::vector<::llvm::DIScope*> scopes;
+    ::llvm::DebugLoc currentDebugLocation;
+    ::llvm::DIScope* CurrentScope()
+    {
+        ::llvm::DIScope* currentScope = diCompileUnit;
+        if (!scopes.empty())
+        {
+            currentScope = scopes.back();
+        }
+        return currentScope;
+    }
+    ::llvm::Function* function;
 };
 
 LLvmEmitterImpl::LLvmEmitterImpl(cmajor::ir::EmittingContext* emittingContext_) : 
@@ -38,7 +70,10 @@ LLvmEmitterImpl::LLvmEmitterImpl(cmajor::ir::EmittingContext* emittingContext_) 
     module(nullptr),
     dataLayout(nullptr),
     diCompileUnit(nullptr),
-    diFile(nullptr)
+    diFile(nullptr),
+    currentDIBuilder(nullptr),
+    inPrologue(false),
+    function(nullptr)
 {
 }
 
@@ -637,6 +672,443 @@ void* LLvmEmitter::CreateSave()
 void* LLvmEmitter::GetConversionValue(void* type, void* from)
 {
     return nullptr;
+}
+
+void* LLvmEmitter::CreateFwdIrTypeForClassType()
+{
+    return ::llvm::StructType::create(impl->Context());
+}
+
+void LLvmEmitter::SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes)
+{
+    ::llvm::StructType* structType = static_cast<::llvm::StructType*>(forwardDeclaredType);
+    std::vector<::llvm::Type*> elementIrTypes;
+    for (void* elementType : elementTypes)
+    {
+        elementIrTypes.push_back(static_cast<::llvm::Type*>(elementType));
+    }
+    structType->setBody(elementIrTypes);
+}
+
+void* LLvmEmitter::GetIrTypeByTypeId(const util::uuid& typeId)
+{
+    auto it = impl->irTypeTypeIdMap.find(typeId);
+    if (it != impl->irTypeTypeIdMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void LLvmEmitter::SetIrTypeByTypeId(const util::uuid& typeId, void* irType)
+{
+    impl->irTypeTypeIdMap[typeId] = static_cast<::llvm::Type*>(irType);
+}
+
+void* LLvmEmitter::GetIrTypeForPtrType(void* baseIrType)
+{
+    return ::llvm::PointerType::get(static_cast<::llvm::Type*>(baseIrType), 0);
+}
+
+std::string LLvmEmitter::GetIrTypeName(void* irType)
+{
+    return std::string();
+}
+
+std::string LLvmEmitter::MakeVmtVariableName(const std::string& vmtObjectName)
+{
+    return std::string();
+}
+
+void* LLvmEmitter::CreateDITypeForBool()
+{
+    return impl->diBuilder->createBasicType("bool", 8, ::llvm::dwarf::DW_ATE_boolean);
+}
+
+void* LLvmEmitter::CreateDITypeForSByte()
+{
+    return impl->diBuilder->createBasicType("sbyte", 8, ::llvm::dwarf::DW_ATE_signed);
+}
+
+void* LLvmEmitter::CreateDITypeForByte()
+{
+    return impl->diBuilder->createBasicType("byte", 8, ::llvm::dwarf::DW_ATE_unsigned);
+}
+
+void* LLvmEmitter::CreateDITypeForShort()
+{
+    return impl->diBuilder->createBasicType("short", 16, ::llvm::dwarf::DW_ATE_signed);
+}
+
+void* LLvmEmitter::CreateDITypeForUShort() 
+{
+    return impl->diBuilder->createBasicType("ushort", 16, ::llvm::dwarf::DW_ATE_unsigned);
+}
+
+void* LLvmEmitter::CreateDITypeForInt()
+{
+    return impl->diBuilder->createBasicType("int", 32, ::llvm::dwarf::DW_ATE_signed);
+}
+
+void* LLvmEmitter::CreateDITypeForUInt()
+{
+    return impl->diBuilder->createBasicType("uint", 32, ::llvm::dwarf::DW_ATE_unsigned);
+}
+
+void* LLvmEmitter::CreateDITypeForLong()
+{
+    return impl->diBuilder->createBasicType("long", 64, ::llvm::dwarf::DW_ATE_signed);
+}
+
+void* LLvmEmitter::CreateDITypeForULong()
+{
+    return impl->diBuilder->createBasicType("ulong", 64, ::llvm::dwarf::DW_ATE_unsigned);
+}
+
+void* LLvmEmitter::CreateDITypeForFloat()
+{
+    return impl->diBuilder->createBasicType("float", 32, ::llvm::dwarf::DW_ATE_float);
+}
+
+void* LLvmEmitter::CreateDITypeForDouble()
+{
+    return impl->diBuilder->createBasicType("double", 64, ::llvm::dwarf::DW_ATE_float);
+}
+
+void* LLvmEmitter::CreateDITypeForChar()
+{
+    return impl->diBuilder->createBasicType("char", 8, ::llvm::dwarf::DW_ATE_unsigned_char);
+}
+
+void* LLvmEmitter::CreateDITypeForWChar()
+{
+    return impl->diBuilder->createBasicType("wchar", 16, ::llvm::dwarf::DW_ATE_unsigned_char);
+}
+
+void* LLvmEmitter::CreateDITypeForUChar()
+{
+    return impl->diBuilder->createBasicType("uchar", 32, ::llvm::dwarf::DW_ATE_unsigned_char);
+}
+
+void* LLvmEmitter::CreateDITypeForVoid()
+{
+    return impl->diBuilder->createUnspecifiedType("void");
+}
+
+void* LLvmEmitter::CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements)
+{
+    // todo...
+    std::vector<::llvm::Metadata*> metadataElements;
+    return impl->diBuilder->createArrayType(elements.size(), 8, static_cast<::llvm::DIType*>(elementDIType), impl->diBuilder->getOrCreateArray(metadataElements));
+}
+
+#if (LLVM_VERSION_MAJOR >= 10)
+
+void* LLvmEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, 
+    const util::uuid& moduleId)
+{
+    uint64_t sizeInBits = impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)))->getSizeInBits();
+    uint64_t alignInBits = 8 * impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)))->getAlignment().value();
+    uint64_t offsetInBits = 0; 
+    return impl->diBuilder->createReplaceableCompositeType(::llvm::dwarf::DW_TAG_class_type, name, nullptr, 
+        static_cast<::llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line,
+        0, sizeInBits, alignInBits, ::llvm::DINode::DIFlags::FlagZero, mangledName);
+}
+
+#else
+
+void* LLvmEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos,
+    const util::uuid& moduleId)
+{
+    uint64_t sizeInBits = impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)))->getSizeInBits();
+    uint32_t alignInBits = 8 * impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)))->getAlignment();
+    uint64_t offsetInBits = 0; // todo?
+    return impl->diBuilder->createReplaceableCompositeType(::llvm::dwarf::DW_TAG_class_type, name, nullptr, static_cast<::llvm::DIFile*>(
+        GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line,
+        0, sizeInBits, alignInBits, ::llvm::DINode::DIFlags::FlagZero, mangledName);
+}
+
+#endif
+
+void* LLvmEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+{
+    if (sourcePos.file == -1)
+    {
+        return impl->diFile;
+    }
+    std::string sourceFilePath = GetSourceFilePath(sourcePos, moduleId);
+    if (sourceFilePath.empty())
+    {
+        return impl->diFile;
+    }
+    ::llvm::DIFile* file = impl->diBuilder->createFile(util::Path::GetFileName(sourceFilePath), util::Path::GetDirectoryName(sourceFilePath));
+    return file;
+}
+
+uint64_t LLvmEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
+{
+    const ::llvm::StructLayout* structLayout = impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(classIrType)));
+    uint64_t offsetInBits = structLayout->getElementOffsetInBits(layoutIndex);
+    return offsetInBits;
+}
+
+#if (LLVM_VERSION_MAJOR >= 10)
+
+void* LLvmEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId, 
+    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+{
+    std::vector<::llvm::Metadata*> elements;
+    const ::llvm::StructLayout* structLayout = impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)));
+    for (void* element : memberVariableElements)
+    {
+        elements.push_back(static_cast<::llvm::Metadata*>(element));
+    }
+    ::llvm::MDNode* templateParams = nullptr;
+    uint64_t sizeInBits = structLayout->getSizeInBits();
+    uint64_t alignInBits = 8 * structLayout->getAlignment().value();
+    uint64_t offsetInBits = 0; // todo?
+    ::llvm::DINode::DIFlags flags = ::llvm::DINode::DIFlags::FlagZero;
+    return impl->diBuilder->createClassType(static_cast<::llvm::DIScope*>(CurrentScope()), name, static_cast<::llvm::DIFile*>(GetDebugInfoForFile(classSourcePos, moduleId)), 
+        classSourcePos.line, sizeInBits, alignInBits, offsetInBits,
+        flags, static_cast<::llvm::DIType*>(baseClassDIType), impl->diBuilder->getOrCreateArray(elements), static_cast<::llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
+}
+
+#else
+
+void* LLvmEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId,
+    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+{
+    std::vector<::llvm::Metadata*> elements;
+    const ::llvm::StructLayout* structLayout = impl->dataLayout->getStructLayout(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(irType)));
+    for (void* element : memberVariableElements)
+    {
+        elements.push_back(static_cast<::llvm::Metadata*>(element));
+    }
+    ::llvm::MDNode* templateParams = nullptr;
+    uint64_t sizeInBits = structLayout->getSizeInBits();
+    uint32_t alignInBits = 8 * structLayout->getAlignment();
+    uint64_t offsetInBits = 0; // todo?
+    ::llvm::DINode::DIFlags flags = ::llvm::DINode::DIFlags::FlagZero;
+    return impl->diBuilder->createClassType(static_cast<::llvm::DIScope*>(CurrentScope()), name, static_cast<::llvm::DIFile*>(
+        GetDebugInfoForFile(classSourcePos, moduleId)), classSourcePos.line, sizeInBits, alignInBits, offsetInBits,
+        flags, static_cast<::llvm::DIType*>(baseClassDIType), impl->diBuilder->getOrCreateArray(elements), static_cast<::llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
+}
+
+
+#endif
+
+void* LLvmEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t value)
+{
+    return impl->diBuilder->createEnumerator(name, value);
+}
+
+void* LLvmEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+{
+    std::vector<::llvm::Metadata*> elements;
+    for (void* element : enumConstantElements)
+    {
+        elements.push_back(static_cast<::llvm::Metadata*>(element));
+    }
+    return impl->diBuilder->createEnumerationType(nullptr, name, static_cast<::llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits,
+        impl->diBuilder->getOrCreateArray(elements), static_cast<::llvm::DIType*>(underlyingDIType), mangledName);
+}
+
+void LLvmEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
+{
+    impl->fwdDeclarationMap[static_cast<::llvm::DIType*>(fwdDeclaration)] = typeId;
+}
+
+void* LLvmEmitter::GetDITypeByTypeId(const util::uuid& typeId) const
+{
+    auto it = impl->diTypeTypeIdMap.find(typeId);
+    if (it != impl->diTypeTypeIdMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void LLvmEmitter::SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName)
+{
+    impl->diTypeTypeIdMap[typeId] = static_cast<::llvm::DIType*>(diType);
+    impl->diTypeNameMap[static_cast<::llvm::DIType*>(diType)] = typeName;
+}
+
+void* LLvmEmitter::GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId)
+{
+    auto it = impl->diMemberTypeMap.find(memberVariableId);
+    if (it != impl->diMemberTypeMap.cend())
+    {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void LLvmEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType)
+{
+    impl->diMemberTypeMap[memberVariableId] = static_cast<::llvm::DIDerivedType*>(diType);
+}
+
+void* LLvmEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+{
+    ::llvm::DINode::DIFlags flags = ::llvm::DINode::DIFlags::FlagZero;
+    return impl->diBuilder->createMemberType(static_cast<::llvm::DIType*>(scope), name, static_cast<::llvm::DIFile*>(
+        GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits, offsetInBits, flags,
+        static_cast<::llvm::DIType*>(diType));
+}
+
+void* LLvmEmitter::CreateConstDIType(void* diType)
+{
+    return impl->diBuilder->createQualifiedType(::llvm::dwarf::DW_TAG_const_type, static_cast<::llvm::DIType*>(diType));
+}
+
+void* LLvmEmitter::CreateLValueRefDIType(void* diType)
+{
+    return impl->diBuilder->createReferenceType(::llvm::dwarf::DW_TAG_reference_type, static_cast<::llvm::DIType*>(diType));
+}
+
+void* LLvmEmitter::CreateRValueRefDIType(void* diType)
+{
+    return impl->diBuilder->createReferenceType(::llvm::dwarf::DW_TAG_rvalue_reference_type, static_cast<::llvm::DIType*>(diType));
+}
+
+void* LLvmEmitter::CreatePointerDIType(void* diType)
+{
+    return impl->diBuilder->createPointerType(static_cast<::llvm::DIType*>(diType), 64);
+}
+
+void* LLvmEmitter::CreateUnspecifiedDIType(const std::string& name) 
+{
+    return impl->diBuilder->createUnspecifiedType(name);
+}
+
+void LLvmEmitter::MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className)
+{
+    if (impl->classPtrMap.find(typeId) == impl->classPtrMap.cend())
+    {
+        impl->classPtrMap[typeId] = classPtr;
+        impl->classNameMap[classPtr] = className;
+    }
+}
+
+uint64_t LLvmEmitter::GetSizeInBits(void* irType)
+{
+    return impl->dataLayout->getTypeSizeInBits(static_cast<::llvm::Type*>(irType));
+}
+
+uint64_t LLvmEmitter::GetAlignmentInBits(void* irType)
+{
+    return 8 * impl->dataLayout->getABITypeAlignment(static_cast<::llvm::Type*>(irType));
+}
+
+#if (LLVM_VERSION_MAJOR < 12)
+
+::llvm::DebugLoc GetDebugLocation(LLvmEmitterImpl* impl, const soul::ast::SourcePos& sourcePos)
+{
+    if (!impl->diCompileUnit || !sourcePos.IsValid() || !impl->currentDIBuilder) return ::llvm::DebugLoc();
+    return ::llvm::DebugLoc::get(sourcePos.line, sourcePos.col, static_cast<::llvm::DIScope*>(CurrentScope()));
+}
+
+#else
+
+::llvm::DebugLoc GetDebugLocation(LLvmEmitterImpl* impl, const soul::ast::SourcePos& sourcePos)
+{
+    if (!impl->diCompileUnit || !sourcePos.IsValid() || !impl->currentDIBuilder) return ::llvm::DebugLoc();
+    return ::llvm::DILocation::get(impl->Context(), sourcePos.line, sourcePos.col, impl->CurrentScope());
+}
+
+#endif
+
+void LLvmEmitter::PushScope(void* scope)
+{
+    impl->scopes.push_back(static_cast<::llvm::DIScope*>(scope));
+}
+
+void LLvmEmitter::PopScope()
+{
+    impl->scopes.pop_back();
+}
+
+void* LLvmEmitter::CurrentScope()
+{
+    return impl->CurrentScope();
+}
+
+void LLvmEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+{
+    if (!impl->diCompileUnit || !impl->currentDIBuilder) return;
+    if (impl->inPrologue || !sourcePos.IsValid())
+    {
+        impl->currentDebugLocation = ::llvm::DebugLoc();
+        impl->builder.SetCurrentDebugLocation(impl->currentDebugLocation);
+    }
+    else
+    {
+        impl->currentDebugLocation = GetDebugLocation(impl.get(), sourcePos);
+        impl->builder.SetCurrentDebugLocation(impl->currentDebugLocation);
+    }
+}
+
+void* LLvmEmitter::GetArrayBeginAddress(void* arrayPtr)
+{
+    ArgVector elementIndeces;
+    elementIndeces.push_back(impl->builder.getInt64(0));
+    elementIndeces.push_back(impl->builder.getInt64(0));
+    ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+    return beginPtr;
+}
+
+void* LLvmEmitter::GetArrayEndAddress(void* arrayPtr, uint64_t size)
+{
+    ArgVector elementIndeces;
+    elementIndeces.push_back(impl->builder.getInt64(0));
+    elementIndeces.push_back(impl->builder.getInt64(size));
+    ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+    return endPtr;
+}
+
+void* LLvmEmitter::CreateBasicBlock(const std::string& name)
+{
+    return ::llvm::BasicBlock::Create(impl->Context(), name, impl->function);
+}
+
+void* LLvmEmitter::CreateIncludeBasicBlockInstruction(void* basicBlock)
+{
+    return nullptr;
+}
+
+void LLvmEmitter::PushParentBlock()
+{
+}
+
+void LLvmEmitter::PopParentBlock()
+{
+}
+
+void LLvmEmitter::SetHandlerBlock(void* tryBlock, void* catchBlock)
+{
+}
+
+void LLvmEmitter::SetCleanupBlock(void* cleanupBlock)
+{
+}
+
+int LLvmEmitter::GetBasicBlockId(void* basicBlock)
+{
+    return -1;
+}
+
+void LLvmEmitter::SetInPrologue(bool inPrologue_) 
+{ 
+    impl->inPrologue = inPrologue_; 
 }
 
 } // cmajor::llvm

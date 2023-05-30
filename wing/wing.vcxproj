@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{d9913dcb-1325-426c-95b1-f80d2751d081}</ProjectGuid>
-    <RootNamespace>llvm</RootNamespace>
+    <ProjectGuid>{8816feee-17b7-4a20-963a-66bfa236b867}</ProjectGuid>
+    <RootNamespace>wing</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -59,26 +59,22 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\config\build.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>cmajor.llvmd</TargetName>
+    <TargetName>wingd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>cmajor.llvm</TargetName>
+    <TargetName>wing</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,14 +110,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4624;4146</DisableSpecificWarnings>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -135,13 +130,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS;_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4624;4146</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -152,27 +147,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="codegen.cppm" />
-    <ClCompile Include="emitter.cpp" />
-    <ClCompile Include="emitter.cppm" />
-    <ClCompile Include="emitting_context.cpp" />
-    <ClCompile Include="emitting_context.cppm" />
-    <ClCompile Include="interface.cpp" />
-    <ClCompile Include="interface.cppm" />
-    <ClCompile Include="llvm.cppm" />
-    <ClCompile Include="value_stack.cppm" />
-    <ClCompile Include="windows_codegen.cpp" />
-    <ClCompile Include="windows_codegen.cppm" />
+    <ClCompile Include="base.cpp" />
+    <ClCompile Include="graphics.cpp" />
+    <ClCompile Include="graphics.cppm" />
+    <ClCompile Include="keys.cpp" />
+    <ClCompile Include="keys.cppm" />
+    <ClCompile Include="base.cppm" />
+    <ClCompile Include="window_manager.cpp" />
+    <ClCompile Include="window_manager.cppm" />
+    <ClCompile Include="wing.cppm" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\util\util.vcxproj">
+    <ProjectReference Include="..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\codegen\codegen.vcxproj">
-      <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\ir\ir.vcxproj">
-      <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
