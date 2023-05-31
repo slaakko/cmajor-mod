@@ -22,6 +22,7 @@ public:
     const std::string& TargetTripleStr() const override;
     void* Triple() const override;
     void* TargetMachine() override;
+    void* DataLayout() const override;
 private:
     int optimizationLevel;
     LLvmEmittingContextImpl* impl;

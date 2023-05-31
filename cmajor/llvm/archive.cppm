@@ -3,16 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.llvm.codegen;
+export module cmajor.llvm.archive;
 
 import std.core;
-import cmajor.codegen;
 
 export namespace cmajor::llvm {
 
-class LLvmCodeGenerator : public cmajor::codegen::CodeGenerator
-{
-public:
-};
+void Archive(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths);
 
-} // namespace cmajor::llvm
+} // cmajor::llvm

@@ -5,6 +5,7 @@
 
 export module cmajor.llvm;
 
+export import cmajor.llvm.archive;
 export import cmajor.llvm.interface;
 export import cmajor.llvm.codegen;
 export import cmajor.llvm.codegen.windows;

@@ -119,7 +119,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4624;4146</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4624;4146;4996</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4624;4146</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4624;4146;4996</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR);$(LLVM_SRC_INCLUDE_DIR);$(LLVM_BUILD_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -152,7 +152,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="codegen.cppm" />
+    <ClCompile Include="archive.cpp" />
+    <ClCompile Include="archive.cppm" />
+    <ClCompile Include="archive_windows.cpp" />
+    <ClCompile Include="archive_windows.cppm" />
+    <ClCompile Include="llvm_codegen.cpp" />
+    <ClCompile Include="llvm_codegen.cppm" />
     <ClCompile Include="emitter.cpp" />
     <ClCompile Include="emitter.cppm" />
     <ClCompile Include="emitting_context.cpp" />
@@ -168,11 +173,17 @@
     <ProjectReference Include="..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\binder\binder.vcxproj">
+      <Project>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\codegen\codegen.vcxproj">
       <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

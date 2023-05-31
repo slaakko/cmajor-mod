@@ -25,12 +25,11 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
     std::string content = util::ReadFile(sourceFilePath);
     std::u32string ucontent = util::ToUtf32(content);
     auto lexer = cmajor::lexer::MakeLexer(ucontent.c_str(), ucontent.c_str() + ucontent.length(), sourceFilePath);
-    int32_t file = fileMap.MapFile(sourceFilePath);
-    lexer.SetFile(file);
+    lexer.SetFile(fileIndex);
     using LexerType = decltype(lexer);
     cmajor::parser::context::Context context;
     std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::compile::unit::parser::CompileUnitParser<LexerType>::Parse(lexer, &context);
-    fileMap.AddFileContent(file, std::move(ucontent), lexer.GetLineStartIndeces());
+    fileMap.AddFileContent(fileIndex, std::move(ucontent), lexer.GetLineStartIndeces());
     if ((flags & Flags::ast) != Flags::none)
     {
         std::string astFilePath = util::Path::ChangeExtension(sourceFilePath, ".ast");

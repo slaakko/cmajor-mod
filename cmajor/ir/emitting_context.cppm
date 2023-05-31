@@ -18,6 +18,7 @@ public:
     virtual const std::string& TargetTripleStr() const = 0;
     virtual void* Triple() const = 0;
     virtual void* TargetMachine() = 0;
+    virtual void* DataLayout() const = 0;
 };
 
 } // namespace cmajor::ir

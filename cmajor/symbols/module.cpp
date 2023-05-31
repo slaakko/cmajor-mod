@@ -957,7 +957,8 @@ std::string Module::GetFilePath(int32_t fileIndex) const
     {
         return std::string();
     }
-    return fileTable.GetFilePath(fileIndex);
+    // return fileTable.GetFilePath(fileIndex);
+    return fileMap.GetFilePath(fileIndex);
 }
 
 void Module::Write(SymbolWriter& writer)

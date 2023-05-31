@@ -17,7 +17,7 @@ std::unique_ptr<cmajor::ir::EmittingContext> CreateEmittingContext(int optimizat
 
 std::unique_ptr<cmajor::ir::Emitter> CreateEmitter(cmajor::ir::EmittingContext* emittingContext)
 {
-    return std::unique_ptr<cmajor::ir::Emitter>();
+    return std::unique_ptr<cmajor::ir::Emitter>(new cmajor::llvm::LLvmEmitter(emittingContext));
 }
 
 } // namespace cmajor::llvm

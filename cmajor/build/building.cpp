@@ -10,6 +10,7 @@ import cmajor.build.compiling;
 import cmajor.build.flags;
 import cmajor.build.install;
 import cmajor.build.parsing;
+import cmajor.build.archiving;
 import cmajor.binder;
 import cmajor.ast;
 import std.filesystem;
@@ -177,6 +178,11 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     flags = flags | Flags::singleThreadedParse;
                 }
                 ParseSourceFiles(project, rootModule->FileMap(), flags);
+                int n = rootModule->FileMap().NextFileId();
+                for (int fileId = 0; fileId < n; ++fileId)
+                {
+                    rootModule->GetFileTable().RegisterFilePath(rootModule->FileMap().GetFilePath(fileId));
+                }
                 bool prevPreparing = rootModule->Preparing();
                 rootModule->SetPreparing(true);
                 cmajor::symbols::PrepareModuleForCompilation(rootModule.get(), project->References(), project->GetTarget());
@@ -199,11 +205,17 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 rootModule->Write(writer);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::root);
+                project->SetModuleFilePath(rootModule->OriginalFilePath());
+                project->SetLibraryFilePath(rootModule->LibraryFilePath());
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
                 }
                 RunBuildActions(*project, variables);
+                if (!objectFilePaths.empty())
+                {
+                    Archive(project, objectFilePaths);
+                }
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), std::to_string(rootModule->GetSymbolTable().NumSpecializations()) + " class template specializations, " +
@@ -211,8 +223,6 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         std::to_string(rootModule->GetSymbolTable().NumSpecializationsCopied()) + " copied.");
                     util::LogMessage(project->LogStreamId(), "Project '" + util::ToUtf8(project->Name()) + "' built successfully.");
                 }
-                project->SetModuleFilePath(rootModule->OriginalFilePath());
-                project->SetLibraryFilePath(rootModule->LibraryFilePath());
                 if (rootModule->IsSystemModule())
                 {
                     project->SetSystemProject();

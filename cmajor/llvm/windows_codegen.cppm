@@ -6,7 +6,6 @@
 export module cmajor.llvm.codegen.windows;
 
 import std.core;
-import cmajor.ir;
 import cmajor.llvm.codegen;
 
 export namespace cmajor::llvm {
@@ -15,8 +14,18 @@ class WindowsCodeGenerator : public LLvmCodeGenerator
 {
 public:
     WindowsCodeGenerator(cmajor::ir::Emitter* emitter_);
-private:
-    cmajor::ir::Emitter* emitter;
+    void Visit(cmajor::binder::BoundReturnStatement& boundReturnStatement) override;
+    void Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCaseStatement) override;
+    void Visit(cmajor::binder::BoundGotoDefaultStatement& boundGotoDefaultStatement) override;
+    void Visit(cmajor::binder::BoundBreakStatement& boundBreakStatement) override;
+    void Visit(cmajor::binder::BoundContinueStatement& boundContinueStatement) override;
+    void Visit(cmajor::binder::BoundGotoStatement& boundGotoStatement) override;
+    void Visit(cmajor::binder::BoundTryStatement& boundTryStatement) override;
+    void Visit(cmajor::binder::BoundRethrowStatement& boundRethrowStatement) override;
+protected:
+    void CreateCleanup() override;
+    void* GetPersonalityFunction() const override;
+    void GenerateCodeForCleanups() override;
 };
 
 } // namespace cmajor::llvm

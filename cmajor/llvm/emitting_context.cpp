@@ -28,6 +28,7 @@ struct LLvmEmittingContextImpl
     std::string targetTriple;
     ::llvm::Triple triple;
     std::unique_ptr<::llvm::TargetMachine> targetMachine;
+    std::unique_ptr<::llvm::DataLayout> dataLayout;
 };
 
 LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : context(new ::llvm::LLVMContext()), passRegistry(nullptr)
@@ -100,6 +101,7 @@ LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : contex
     {
         throw std::runtime_error("error: could not allocate LLVM target machine");
     }
+    dataLayout.reset(new ::llvm::DataLayout(targetMachine->createDataLayout()));
 }
 
 LLvmEmittingContext::LLvmEmittingContext(int optimizationLevel_) : optimizationLevel(optimizationLevel_), impl(new LLvmEmittingContextImpl(optimizationLevel))
@@ -129,6 +131,11 @@ void* LLvmEmittingContext::Triple() const
 void* LLvmEmittingContext::TargetMachine()
 {
     return impl->targetMachine.get();
+}
+
+void* LLvmEmittingContext::DataLayout() const
+{
+    return impl->dataLayout.get();
 }
 
 } // cmajor::llvm

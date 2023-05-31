@@ -16,6 +16,8 @@ class LLvmEmitter : public cmajor::ir::Emitter
 {
 public:
     LLvmEmitter(cmajor::ir::EmittingContext* emittingContext_);
+    ~LLvmEmitter();
+    cmajor::ir::EmittingContext* EmittingContext() const override;
     void SetEmittingDelegate(cmajor::ir::EmittingDelegate* emittingDelegate_) override;
     void* GetIrTypeForBool() override;
     void* GetIrTypeForSByte() override;
@@ -247,8 +249,7 @@ public:
     void PushScope(void* scope) override;
     void PopScope() override;
     void* CurrentScope() override;
-    // int GetColumn(const soul::ast::SourcePos& sourcePos) const;
-    // void StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized, cmajor::common::ColumnSpanProvider* columnSpanProvider_) override;
+    void StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized) override;
     void FinalizeDebugInfo() override;
     void EndDebugInfo() override;
     void* CreateDebugInfoForNamespace(void* scope, const std::string& name) override;
@@ -338,9 +339,9 @@ public:
     void* CreateMDStruct() override;
     void* CreateMDBasicBlockRef(void* bb) override;
     int GetMDStructId(void* mdStruct) override;
+    void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
     void AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem) override;
     void SetFunctionMdId(void* function, int mdId) override;
-    // void SetCurrentSourceLocation(int32_t line, int16_t scol, int16_t ecol) override;
     void* GetMDStructRefForSourceFile(const std::string& sourceFileName) override;
     void SetMetadataRef(void* inst, void* mdStructRef) override;
     void FinalizeFunction(void* function, bool hasCleanup) override;
@@ -358,10 +359,10 @@ public:
     void DebugPrintDebugInfo(const std::string& filePath) override;
     void BeginSubstituteLineNumber(int32_t lineNumber) override;
     void EndSubstituteLineNumber() override;
-    void SetBoundCompileUnit(void* boundCompileUnit_) override { }
-    void* GetBoundCompileUnit() const override { return nullptr; }
+    void SetBoundCompileUnit(void* boundCompileUnit_) override;
+    void* GetBoundCompileUnit() const override;
 private:
-    std::unique_ptr<LLvmEmitterImpl> impl;
+    LLvmEmitterImpl* impl;
     cmajor::ir::EmittingDelegate* emittingDelegate;
 };
 

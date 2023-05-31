@@ -9,6 +9,7 @@ import std.core;
 import soul.ast.source.pos;
 import cmajor.ir.value.stack;
 import util.uuid;
+import cmajor.ir.emitting.context;
 
 export namespace cmajor::ir {
 
@@ -48,6 +49,7 @@ public:
     virtual ~Emitter();
     void SetStack(ValueStack* stack_) { stack = stack_; }
     ValueStack& Stack() { return *stack; }
+    virtual cmajor::ir::EmittingContext* EmittingContext() const = 0;
     virtual void SetEmittingDelegate(EmittingDelegate* emittingDelegate_) = 0;
     virtual void* GetIrTypeForBool() = 0;
     virtual void* GetIrTypeForSByte() = 0;
@@ -300,9 +302,8 @@ public:
     virtual void SetSourceFileName(const std::string& sourceFileName) = 0;
     virtual void SetDICompileUnit(void* diCompileUnit_) = 0;
     virtual void SetDIFile(void* diFile_) = 0;
-    //virtual void SetColumnSourcePosProvider(cmajor::common::ColumnSourcePosProvider* columnSourcePosProvider_) = 0;
     virtual void ResetCurrentDebugLocation() = 0;
-    //virtual void StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized, cmajor::common::ColumnSourcePosProvider* columnSourcePosProvider_) = 0;
+    virtual void StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized) = 0;
     virtual void FinalizeDebugInfo() = 0;
     virtual void EndDebugInfo() = 0;
     virtual void EmitIrText(const std::string& filePath) = 0;
@@ -370,7 +371,7 @@ public:
     virtual void AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem) = 0;
     virtual void SetFunctionMdId(void* function, int mdId) = 0;
     virtual void* GetMDStructRefForSourceFile(const std::string& sourceFileName) = 0;
-    virtual void SetCurrentSourceSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) = 0;
+    virtual void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) = 0;
     virtual void SetMetadataRef(void* inst, void* mdStructRef) = 0;
     virtual void FinalizeFunction(void* function, bool hasCleanup) = 0;
     virtual int Install(const std::string& str) = 0;
