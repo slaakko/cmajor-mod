@@ -164,6 +164,8 @@
     <ClCompile Include="flags.cppm" />
     <ClCompile Include="install.cpp" />
     <ClCompile Include="install.cppm" />
+    <ClCompile Include="main_unit.cpp" />
+    <ClCompile Include="main_unit.cppm" />
     <ClCompile Include="parsing.cpp" />
     <ClCompile Include="parsing.cppm" />
   </ItemGroup>

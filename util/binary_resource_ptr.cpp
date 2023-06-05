@@ -27,13 +27,13 @@ BinaryResourcePtr::BinaryResourcePtr(const std::string& moduleName, const std::s
     {
         throw WindowsException(GetLastError());
     }
-    HGLOBAL handle = LoadResource(nullptr, res);
+    HGLOBAL handle = LoadResource(moduleHandle, res);
     if (!handle)
     {
         throw WindowsException(GetLastError());
     }
     data = static_cast<uint8_t*>(LockResource(handle));
-    size = SizeofResource(nullptr, res);
+    size = SizeofResource(moduleHandle, res);
 }
 
 } // util

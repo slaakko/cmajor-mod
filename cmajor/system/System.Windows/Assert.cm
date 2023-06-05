@@ -1,11 +1,12 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 using System;
 using System.Windows;
 
+/*
 public void WindowsAssertionFailureFunction(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber)
 {
     string assertionFailureStr = "assertion ";
@@ -13,3 +14,4 @@ public void WindowsAssertionFailureFunction(const char* assertion, const char* f
     MessageBox.Show(assertionFailureStr, "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
     RtExit(253);
 }
+*/

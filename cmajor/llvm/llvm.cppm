@@ -9,3 +9,5 @@ export import cmajor.llvm.archive;
 export import cmajor.llvm.interface;
 export import cmajor.llvm.codegen;
 export import cmajor.llvm.codegen.windows;
+export import cmajor.llvm.link;
+export import cmajor.llvm.link.windows;

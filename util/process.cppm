@@ -3,13 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util_inc/native_process.hpp>
+
 export module util.process;
 
 import std.core;
 
 export namespace util {
-
-class NativeProcess;
 
 class Process
 {
@@ -26,6 +27,7 @@ public:
         stdOut = 1, stdErr = 2
     };
     Process(const std::string& command, Redirections redirections);
+    ~Process();
     bool Running();
     void WaitForExit();
     int ExitCode() const;
@@ -35,7 +37,7 @@ public:
     std::string ReadToEnd(StdHandle handle);
     void WriteLine(const std::string& line);
 private:
-    std::unique_ptr<NativeProcess> nativeProcess;
+    util_inc::NativeProcess* nativeProcess;
 };
 
 constexpr Process::Redirections operator|(Process::Redirections left, Process::Redirections right)

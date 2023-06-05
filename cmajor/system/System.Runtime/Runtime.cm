@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,6 +10,7 @@ public extern cdecl nothrow void RtDone();
 public extern cdecl nothrow ulong RtDynamicInitVmt(void* vmt);
 public extern cdecl nothrow int RtArgc();
 public extern cdecl nothrow const char** RtArgv();
+public extern cdecl nothrow void RtFailAssertion(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
 public extern cdecl nothrow void RtExit(int exitCode);
 public extern cdecl nothrow void* RtMemAlloc(long size);
 public extern cdecl nothrow void* RtMemAllocInfo(long size, const char* info);
@@ -19,10 +20,6 @@ public extern cdecl nothrow void RtMemZero(void* ptr, long size);
 public extern cdecl nothrow void RtBeginStaticInitCriticalSection(void* staticClassId);
 public extern cdecl nothrow void RtEndStaticInitCriticalSection(void* staticClassId);
 public extern cdecl nothrow void RtEnqueueDestruction(void* destructor, void* arg);
-public delegate void AssertionFailureFunction(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
-public extern cdecl nothrow bool RtIsUserAssertionFailureFunctionSet();
-public extern cdecl nothrow void RtSetUserAssertionFailureFunction(AssertionFailureFunction userAssertionFailureFunc);
-public extern cdecl nothrow void RtFailAssertion(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
 public extern cdecl void RtThrowException(void* exception, void* exceptionTypeId);
 public extern cdecl nothrow bool RtHandleException(void* exceptionTypeId);
 public extern cdecl nothrow void* RtGetException();
@@ -197,20 +194,10 @@ public extern cdecl nothrow void RtSetInputZlib(void* inChunck, uint inAvail, vo
 public extern cdecl nothrow int RtDeflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int flush);
 public extern cdecl nothrow int RtInflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle);
 public extern cdecl nothrow const char* RtRetvalStrZlib(int retVal);
-public extern cdecl nothrow int RtInitBZip2(int mode, int compressionLevel, int compressionWorkFactor, void** handle);
-public extern cdecl nothrow void RtDoneBZip2(int mode, void* handle);
-public extern cdecl nothrow void RtSetInputBZip2(void* inChunk, uint inAvail, void* handle);
-public extern cdecl nothrow int RtCompressBZip2(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int action);
-public extern cdecl nothrow int RtDecompressBZip2(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle);
-public extern cdecl nothrow const char* RtRetvalStrBZip2(int retVal);
 public extern cdecl nothrow void RtStartUnitTest(int numAssertions, const char* unitTestFilePath, long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray);
 public extern cdecl nothrow void RtEndUnitTest(const char* testName, int exitCode);
 public extern cdecl nothrow void RtSetUnitTestAssertionResult(int assertionIndex, bool assertionResult, int lineNumber);
 public extern cdecl nothrow void RtSetUnitTestException(const char* exceptionStr);
-public extern cdecl nothrow void RtProfileStartFunction(void* functionId);
-public extern cdecl nothrow void RtProfileEndFunction(void* functionId);
-public extern cdecl nothrow void RtStartProfiling(long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray);
-public extern cdecl nothrow void RtEndProfiling();
 public extern cdecl nothrow int RtExecute(const char* command);
 public extern cdecl nothrow int RtBeginExec(const char* command);
 public extern cdecl nothrow void RtAddRedirection(int execHandle, int handle, const char* file);
@@ -221,43 +208,6 @@ public extern cdecl nothrow void RtEndGetPathToExecutable(int pathHandle);
 public extern cdecl nothrow const char* RtGetOsInfo();
 public extern cdecl nothrow char RtAsciiToUpper(char c);
 public extern cdecl nothrow char RtAsciiToLower(char c);
-public extern cdecl nothrow void RtInitScreen();
-public extern cdecl nothrow void RtDoneScreen();
-public extern cdecl nothrow void RtRaw();
-public extern cdecl nothrow void RtNoRaw();
-public extern cdecl nothrow void RtCBreak();
-public extern cdecl nothrow void RtNoCBreak();
-public extern cdecl nothrow void RtKeyPad();
-public extern cdecl nothrow void RtEcho();
-public extern cdecl nothrow void RtNoEcho();
-public extern cdecl nothrow void RtCursSet(int visibility);
-public extern cdecl nothrow void RtRefresh();
-public extern cdecl nothrow void RtGetMaxYX(int* rows, int* cols);
-public extern cdecl nothrow void RtErase();
-public extern cdecl nothrow void RtClear();
-public extern cdecl nothrow void RtClearToEol();
-public extern cdecl nothrow void RtGetYX(int* row, int* col);
-public extern cdecl nothrow void RtMove(int row, int col);
-public extern cdecl nothrow void RtAddCh(int ch);
-public extern cdecl nothrow void RtAddStr(const char* str);
-public extern cdecl nothrow int RtGetCh(); // key codes translated to System.Runtime/Keys.cm
-public extern cdecl nothrow int RtGetRawCh(); // key codes returned by PdCurses/ncurses library (not translated)
-public extern cdecl nothrow int RtTranslateCh(int ch); // translate a raw key code
-public extern cdecl nothrow void RtGetNStr(char* str, int size);
-public extern cdecl nothrow void RtAttrOn(int attrs);
-public extern cdecl nothrow void RtAttrOff(int attrs);
-public extern cdecl nothrow void RtAttrSet(int attrs);
-public extern cdecl nothrow void RtStartColor();
-public extern cdecl nothrow void RtInitPair(short n, short foregroundColor, short backgroundColor);
-public extern cdecl nothrow int RtColorPair(short n);
-public extern cdecl nothrow short RtWhite();
-public extern cdecl nothrow short RtBlack();
-public extern cdecl nothrow short RtBlue();
-public extern cdecl nothrow short RtGreen();
-public extern cdecl nothrow short RtRed();
-public extern cdecl nothrow short RtCyan();
-public extern cdecl nothrow short RtMagenta();
-public extern cdecl nothrow short RtYellow();
 public extern cdecl nothrow bool RtRunningOnWsl();
 public extern cdecl nothrow void RtBeginUnwindInfoInit();
 public extern cdecl nothrow void RtEndUnwindInfoInit();

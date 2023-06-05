@@ -5,7 +5,9 @@
 
 export module util.init.done;
 
-namespace util {
+import std.core;
+
+export namespace util {
 
 void Init();
 void Done();

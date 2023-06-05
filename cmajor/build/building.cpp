@@ -11,8 +11,10 @@ import cmajor.build.flags;
 import cmajor.build.install;
 import cmajor.build.parsing;
 import cmajor.build.archiving;
+import cmajor.build.main.unit;
 import cmajor.binder;
 import cmajor.ast;
+import cmajor.llvm;
 import std.filesystem;
 import util;
 
@@ -201,10 +203,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 rootModule->SetPreparing(prevPreparing);
                 std::vector<std::string> objectFilePaths;
                 Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, stop);
+                GenerateMainUnit(project, rootModule.get(), objectFilePaths);
                 cmajor::symbols::SymbolWriter writer(project->ModuleFilePath());
                 rootModule->Write(writer);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
-                rootModule->ResetFlag(cmajor::symbols::ModuleFlags::root);
                 project->SetModuleFilePath(rootModule->OriginalFilePath());
                 project->SetLibraryFilePath(rootModule->LibraryFilePath());
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
@@ -216,6 +218,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 {
                     Archive(project, objectFilePaths);
                 }
+                cmajor::llvm::Link(project, rootModule.get());
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), std::to_string(rootModule->GetSymbolTable().NumSpecializations()) + " class template specializations, " +

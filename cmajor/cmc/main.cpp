@@ -27,6 +27,12 @@ void PrintHelp()
     std::cout << "  Single-threaded compile." << "\n";
     std::cout << "--rebuild | -r" << "\n";
     std::cout << "  Rebuild." << "\n";
+    std::cout << "--config=CONFIG | -c=CONFIG" << "\n";
+    std::cout << "  Compile using CONFIG configuration. CONFIG=('debug'|'release'), default is 'debug'" << "\n";
+    std::cout << "--opt-level=LEVEL| -O=LEVEL" << "\n";
+    std::cout << "  Set optimization level to LEVEL (0-3). Defaults: LEVEL=0 for 'debug' configuration and LEVEL=2 for 'release' configuration." << "\n";
+    std::cout << "--emit-llvm | -l" << "\n";
+    std::cout << "  Emit intermediate LLVM code to FILE.ll files\n" << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -58,6 +64,48 @@ int main(int argc, const char** argv)
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
                 }
+                else if (arg == "--emit-llvm")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
+                }
+                else if (arg == "--link-with-debug-runtime")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                }
+                else if (arg.find('=') != std::string::npos)
+                {
+                    std::vector<std::string> components = util::Split(arg, '=');
+                    if (components.size() == 2)
+                    {
+                        if (components[0] == "--config")
+                        {
+                            if (components[1] == "release")
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::release);
+                            }
+                            else if (components[1] != "debug")
+                            {
+                                throw std::runtime_error("unknown configuration '" + components[1] + "'");
+                            }
+                        }
+                        else if (components[0] == "--opt-level")
+                        {
+                            int optimizationLevel = std::stoi(components[1]);
+                            if (optimizationLevel >= 0 && optimizationLevel <= 3)
+                            {
+                                cmajor::symbols::SetOptimizationLevel(optimizationLevel);
+                            }
+                            else
+                            {
+                                throw std::runtime_error("unknown optimization level '" + components[1] + "'");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("invalid argument '" + arg + "'");
+                    }
+                }
                 else
                 {
                     throw std::runtime_error("unknown option '" + arg + "'");
@@ -66,33 +114,80 @@ int main(int argc, const char** argv)
             else if (arg.starts_with("-"))
             {
                 std::string options = arg.substr(1);
-                for (char o : options)
+                if (options.find('=') != std::string::npos)
                 {
-                    switch (o)
+                    std::vector<std::string> components = util::Split(options, '=');
+                    if (components.size() == 2)
                     {
-                        case 'h':
+                        if (components[0] == "c")
                         {
-                            PrintHelp();
-                            return 1;
+                            if (components[1] == "release")
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::release);
+                            }
+                            else if (components[1] != "debug")
+                            {
+                                throw std::runtime_error("unknown configuration '" + components[1] + "'");
+                            }
                         }
-                        case 'v':
+                        else if (components[0] == "O")
                         {
-                            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
-                            break;
+                            int optimizationLevel = std::stoi(components[1]);
+                            if (optimizationLevel >= 0 && optimizationLevel <= 3)
+                            {
+                                cmajor::symbols::SetOptimizationLevel(optimizationLevel);
+                            }
+                            else
+                            {
+                                throw std::runtime_error("unknown optimization level '" + components[1] + "'");
+                            }
                         }
-                        case 's':
+                    }
+                    else
+                    {
+                        throw std::runtime_error("invalid argument '" + arg + "'");
+                    }
+                }
+                else
+                {
+                    for (char o : options)
+                    {
+                        switch (o)
                         {
-                            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
-                            break;
-                        }
-                        case 'r':
-                        {
-                            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
-                            break;
-                        }
-                        default:
-                        {
-                            throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
+                            case 'h':
+                            {
+                                PrintHelp();
+                                return 1;
+                            }
+                            case 'v':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
+                                break;
+                            }
+                            case 's':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
+                                break;
+                            }
+                            case 'r':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
+                                break;
+                            }
+                            case 'l':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
+                                break;
+                            }
+                            case 'd':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                                break;
+                            }
+                            default:
+                            {
+                                throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
+                            }
                         }
                     }
                 }

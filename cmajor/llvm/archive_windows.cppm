@@ -9,6 +9,6 @@ import std.core;
 
 export namespace cmajor::llvm {
 
-void ArchiveCoff(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths);
+void ArchiveWindows(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths);
 
 } // cmajor::llvm

@@ -4,48 +4,59 @@
 // =================================
 
 module;
-#include <util/native_process.hpp>
+#include <util_inc/native_process.hpp>
 
 module util.process;
 
+#ifndef NDEBUG
+#pragma comment(lib, "util_incd")
+#else
+#pragma comment(lib, "util_inc")
+#endif
+
 namespace util {
 
-NativeProcess::Redirections ConvertRedirections(Process::Redirections redirections)
+util_inc::NativeProcess::Redirections ConvertRedirections(Process::Redirections redirections)
 {
-    NativeProcess::Redirections result = NativeProcess::Redirections::none;
+    util_inc::NativeProcess::Redirections result = util_inc::NativeProcess::Redirections::none;
     if ((redirections & Process::Redirections::processStdIn) != Process::Redirections::none)
     {
-        result = result | NativeProcess::Redirections::processStdIn;
+        result = result | util_inc::NativeProcess::Redirections::processStdIn;
     }
     if ((redirections & Process::Redirections::processStdOut) != Process::Redirections::none)
     {
-        result = result | NativeProcess::Redirections::processStdOut;
+        result = result | util_inc::NativeProcess::Redirections::processStdOut;
     }
     if ((redirections & Process::Redirections::processStdErr) != Process::Redirections::none)
     {
-        result = result | NativeProcess::Redirections::processStdErr;
+        result = result | util_inc::NativeProcess::Redirections::processStdErr;
     }
     return result;
 }
 
-NativeProcess::StdHandle ConvertHandle(Process::StdHandle stdHandle)
+util_inc::NativeProcess::StdHandle ConvertHandle(Process::StdHandle stdHandle)
 {
     switch (stdHandle)
     {
         case Process::StdHandle::stdOut:
         {
-            return NativeProcess::StdHandle::stdOut;
+            return util_inc::NativeProcess::StdHandle::stdOut;
         }
         case Process::StdHandle::stdErr:
         {
-            return NativeProcess::StdHandle::stdErr;
+            return util_inc::NativeProcess::StdHandle::stdErr;
         }
     }
-    return NativeProcess::StdHandle::stdOut;
+    return util_inc::NativeProcess::StdHandle::stdOut;
 }
 
-Process::Process(const std::string& command, Redirections redirections) : nativeProcess(new NativeProcess(command, ConvertRedirections(redirections)))
+Process::Process(const std::string& command, Redirections redirections) : nativeProcess(new util_inc::NativeProcess(command, ConvertRedirections(redirections)))
 {
+}
+
+Process::~Process()
+{
+    delete nativeProcess;
 }
 
 bool Process::Running()
@@ -90,7 +101,7 @@ void Process::WriteLine(const std::string& line)
 
 int GetPid()
 {
-    return GetNativePid();
+    return util_inc::GetNativePid();
 }
 
 } // namespace util

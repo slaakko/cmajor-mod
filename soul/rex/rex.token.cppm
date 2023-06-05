@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/soul-mod/soul/rex/rex.token' using soul lexer generator version 4.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/soul/rex/rex.token' using soul lexer generator version 4.0.0
 
 export module soul.rex.token;
 

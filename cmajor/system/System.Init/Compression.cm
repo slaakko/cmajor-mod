@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -21,6 +21,7 @@ namespace System.Init.Compression
         expandStream.CopyTo(*out);
     }
 
+/*
     public void CompressBZ2(SharedPtr<ByteStream>& in, SharedPtr<ByteStream>& out)
     {
          BZip2Stream compressStream(out, CompressionMode.compress);
@@ -32,6 +33,7 @@ namespace System.Init.Compression
         BZip2Stream expandStream(in, CompressionMode.decompress);
         expandStream.CopyTo(*out);
     }
+*/
 
     public byte GetSystemCompressionMethod()
     {
@@ -60,7 +62,7 @@ namespace System.Init.Compression
         System.IO.getSystemCompressionMethod = GetSystemCompressionMethod;
         System.IO.compressFunctions[deflateCompression] = CompressDeflate;
         System.IO.expandFunctions[deflateCompression] = ExpandDeflate;
-        System.IO.compressFunctions[bzip2Compression] = CompressBZ2;
-        System.IO.expandFunctions[bzip2Compression] = ExpandBZ2;
+        //System.IO.compressFunctions[bzip2Compression] = CompressBZ2;
+        //System.IO.expandFunctions[bzip2Compression] = ExpandBZ2;
     }
 }

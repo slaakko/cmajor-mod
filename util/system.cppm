@@ -10,5 +10,6 @@ import std.core;
 export namespace util {
 
 std::string GetPathToExecutable();
+std::string GetPathToModule(void* moduleHandle);
 
 } // util;

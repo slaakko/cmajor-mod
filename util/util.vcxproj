@@ -204,15 +204,12 @@
     <ClCompile Include="memory_stream.cppm" />
     <ClCompile Include="memory_writer.cpp" />
     <ClCompile Include="memory_writer.cppm" />
-    <ClCompile Include="native_process.cpp">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_WIN32_WINNT=0x0601;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">_WIN32_WINNT=0x0601;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
+    <ClCompile Include="multiprecision.cpp" />
+    <ClCompile Include="multiprecision.cppm" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="path.cppm" />
     <ClCompile Include="prime.cpp" />
     <ClCompile Include="prime.cppm" />
-    <ClCompile Include="native_process.hpp" />
     <ClCompile Include="process.cpp" />
     <ClCompile Include="process.cppm" />
     <ClCompile Include="rand.cpp" />

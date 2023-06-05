@@ -3,12 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef UTIL_PROCESS_INCLUDED
-#define UTIL_PROCESS_INCLUDED
+#ifndef UTIL_NATIVE_PROCESS_INCLUDED
+#define UTIL_NATIVE_PROCESS_INCLUDED
 #include <string>
 #include <memory>
 
-namespace util {
+namespace util_inc {
 
 class NativeProcessImpl;
 
@@ -52,6 +52,6 @@ constexpr NativeProcess::Redirections operator&(NativeProcess::Redirections left
 
 int GetNativePid();
 
-} // namespace util
+} // namespace util_inc
 
-#endif // UTIL_PROCESS_INCLUDED
+#endif // UTIL_NATIVE_PROCESS_INCLUDED

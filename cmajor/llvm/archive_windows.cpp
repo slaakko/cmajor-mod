@@ -66,7 +66,7 @@ static void appendFile(std::vector<::llvm::NewArchiveMember>& members,
     members.emplace_back(mb);
 }
 
-void ArchiveCoff(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths)
+void ArchiveWindows(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths)
 {
     ::llvm::BumpPtrAllocator alloc;
     ::llvm::StringSaver saver(alloc);

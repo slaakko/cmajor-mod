@@ -179,11 +179,11 @@ public:
     ConversionTable& GetConversionTable() { return conversionTable; }
     const ConversionTable& GetConversionTable() const { return conversionTable; }
     void AddPolymorphicClass(ClassTypeSymbol* polymorphicClass);
-    const std::unordered_set<ClassTypeSymbol*>& PolymorphicClasses() const { return polymorphicClasses; }
+    const std::set<ClassTypeSymbol*>& PolymorphicClasses() const { return polymorphicClasses; }
     void AddClassHavingStaticConstructor(ClassTypeSymbol* classHavingStaticConstructor);
-    const std::unordered_set<ClassTypeSymbol*>& ClassesHavingStaticConstructor() const { return classesHavingStaticConstructor; }
+    const std::set<ClassTypeSymbol*>& ClassesHavingStaticConstructor() const { return classesHavingStaticConstructor; }
     void AddJsonClass(const std::u32string& jsonClass);
-    const std::unordered_set<std::u32string>& JsonClasses() const { return jsonClasses; }
+    const std::set<std::u32string>& JsonClasses() const { return jsonClasses; }
     std::vector<TypeSymbol*> Types() const;
     void Copy(const SymbolTable& that);
     ClassTypeSymbol* CurrentClass() { return currentClass; }
@@ -262,9 +262,9 @@ private:
     std::unordered_map<cmajor::ast::Node*, Symbol*> mappedNodeSymbolMap;
     std::vector<std::unique_ptr<FunctionSymbol>> functionSymbols;
     ConversionTable conversionTable;
-    std::unordered_set<ClassTypeSymbol*> polymorphicClasses;
-    std::unordered_set<ClassTypeSymbol*> classesHavingStaticConstructor;
-    std::unordered_set<std::u32string> jsonClasses;
+    std::set<ClassTypeSymbol*> polymorphicClasses;
+    std::set<ClassTypeSymbol*> classesHavingStaticConstructor;
+    std::set<std::u32string> jsonClasses;
     int numSpecializationsCopied;
     int numSpecializationsNew;
     int GetNextDeclarationBlockIndex() { return declarationBlockIndex++; }

@@ -12,7 +12,7 @@ namespace cmajor::llvm {
 void Archive(const std::string& libraryFilePath, const std::vector<std::string>& objectFilePaths)
 {
 #ifdef _WIN32
-    ArchiveCoff(libraryFilePath, objectFilePaths);
+    ArchiveWindows(libraryFilePath, objectFilePaths);
 #else
     // todo
 #endif

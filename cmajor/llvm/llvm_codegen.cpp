@@ -1377,7 +1377,7 @@ void LLvmCodeGenerator::CreateCleanup()
 
 std::string LLvmCodeGenerator::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 { 
-    return cmajor::symbols::GetSourceFilePath(sourcePos.line, moduleId);
+    return cmajor::symbols::GetSourceFilePath(sourcePos.file, moduleId);
 }
 
 cmajor::ir::Pad* LLvmCodeGenerator::CurrentPad()

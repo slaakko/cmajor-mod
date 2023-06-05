@@ -3,7 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#include <util/native_process.hpp>
+#include <util_inc/native_process.hpp>
+#include <util_inc/text_util.hpp>
 #include <boost/process.hpp>
 #ifdef _WIN32
 #include <boost/process/windows.hpp>
@@ -14,9 +15,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-import util.text.util;
 
-namespace util {
+namespace util_inc {
 
 class NativeProcessImpl
 {
@@ -308,4 +308,4 @@ int GetNativePid()
 #endif
 }
 
-} // namespace util
+} // namespace util_inc
