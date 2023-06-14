@@ -158,6 +158,8 @@
     <ClCompile Include="llvm.cppm" />
     <ClCompile Include="selector.cpp" />
     <ClCompile Include="selector.cppm" />
+    <ClCompile Include="systemx.cpp" />
+    <ClCompile Include="systemx.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\codegen\codegen.vcxproj">
@@ -168,6 +170,9 @@
     </ProjectReference>
     <ProjectReference Include="..\llvm\llvm.vcxproj">
       <Project>{d9913dcb-1325-426c-95b1-f80d2751d081}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system-x\backend\backend.vcxproj">
+      <Project>{b4430f33-0890-4ff5-a10b-e553a0cc5193}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

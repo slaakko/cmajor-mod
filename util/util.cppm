@@ -5,6 +5,7 @@
 
 export module util;
 
+export import util.align;
 export import util.stream;
 export import util.file.stream;
 export import util.memory.stream;
@@ -39,4 +40,5 @@ export import util.prime;
 export import util.synchronized.queue;
 export import util.process;
 export import util.multiprecision;
+export import util.fiber;
 export import util.init.done;

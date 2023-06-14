@@ -1,0 +1,38 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions cmajor.systemx.assembler.expr
+{
+    space = "[ \t]+";
+    newline = "\n\r|\n|\r";
+    digit = "[0-9]";
+    decimal_constant = "{digit}+";
+    hexdigit = "[0-9a-fA-F]";
+    hex_constant = "#{hexdigit}+";
+    char_constant = "'[^'\n\r]'";
+    string_constant = "\"[^\"\n\r]*\"";
+    clsid_constant = "$CLSID\(([-]|{hexdigit})+\)";
+    local_symbol = "@{digit}+";
+    symbol = "({unicode_id_start}|:|_)({unicode_id_cont}|:|_|@)*";
+    at = "@";
+    plus = "\+";
+    minus = "-";
+    tilde = "~";
+    dollar = "$";
+    amp = "&";
+    ast = "\*";
+    slash_slash = "//";
+    slash = "/";
+    percent = "%";
+    shift_left = "<<";
+    shift_right = ">>";
+    bar = "\|";
+    caret = "^";
+    dot = "\.";
+    lparen = "\(";
+    rparen = "\)";
+    semicolon = ";";
+    comma = ",";
+}

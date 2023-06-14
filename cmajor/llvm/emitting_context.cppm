@@ -17,7 +17,6 @@ class LLvmEmittingContext : public cmajor::ir::EmittingContext
 public:
     LLvmEmittingContext(int optimizationLevel_);
     ~LLvmEmittingContext();
-    void* NativeContext() override;
     int OptimizationLevel() const override { return optimizationLevel; }
     const std::string& TargetTripleStr() const override;
     void* Triple() const override;

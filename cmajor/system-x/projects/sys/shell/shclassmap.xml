@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+ <resource name="shclassmap" type="binary" file="shclassmap.classmap.deflate"/>
+</resources>

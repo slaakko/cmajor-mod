@@ -1,0 +1,110 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+enum Config
+{
+	none = 0, debug = 1 << 0, release = 1 << 1, both = debug | release
+}
+
+abstract class Command
+{
+    public abstract void Execute();
+}
+
+class PutCommand : Command
+{
+    public nothrow PutCommand(const string& path_, bool force_) : path(path_), force(force_)
+    {
+    }
+    public override void Execute()
+    {
+        if (path.EndsWith(".cmp"))
+		{
+			project.Reset(ParseProjectFile(path));
+			PutProject(project.Get(), force);
+		}
+		else if (path.EndsWith(".cms"))
+		{
+			solution.Reset(ParseSolutionFile(path));
+			PutSolution(solution.Get(), force);
+		}
+		else
+		{
+			throw Exception("solution (.cms) or project (.cmp) file expected ('" + path + "')");
+		}
+    }
+	public nothrow Project* GetProject() const
+	{
+		return project.Get();
+	}
+    private string path;
+	private bool force;
+	private UniquePtr<Project> project;
+	private UniquePtr<Solution> solution;
+}
+
+class GetCommand : Command
+{
+    public nothrow GetCommand(const string& path_, bool force_) : path(path_), force(force_)
+    {
+    }
+    public override void Execute()
+    {
+        if (path.EndsWith(".cmp"))
+		{
+			project.Reset(ParseProjectFile(path));
+			GetProject(project.Get(), force);
+		}
+		else if (path.EndsWith(".cms"))
+		{
+			solution.Reset(ParseSolutionFile(path));
+			GetSolution(solution.Get(), force);
+		}
+		else
+		{
+			throw Exception("solution (.cms) or project (.cmp) file expected ('" + path + "')");
+		}
+    }
+	public nothrow Project* GetProject() const
+	{
+		return project.Get();
+	}
+    private string path;
+	private bool force;
+	private UniquePtr<Project> project;
+	private UniquePtr<Solution> solution;
+}
+
+class BuildCommand : Command
+{
+	public nothrow BuildCommand(const string& path_, Config config_) : path(path_), config(config_)
+	{
+	}
+	public override void Execute()
+	{
+        if (path.EndsWith(".cmp"))
+		{
+			project.Reset(ParseProjectFile(path));
+			PutProject(project.Get(), false);
+			BuildProject(project.Get(), config);
+		}
+		else if (path.EndsWith(".cms"))
+		{
+			solution.Reset(ParseSolutionFile(path));
+			PutSolution(solution.Get(), false);
+			BuildSolution(solution.Get(), config);
+		}
+		else
+		{
+			throw Exception("solution (.cms) or project (.cmp) file expected ('" + path + "')");
+		}
+	}
+	private string path;
+	private Config config;
+	private UniquePtr<Project> project;
+	private UniquePtr<Solution> solution;
+}

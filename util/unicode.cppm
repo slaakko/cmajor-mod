@@ -1027,11 +1027,10 @@ private:
     std::vector<uint32_t> extendedPageStarts;
 };
 
-const uint8_t soul_ucd_version_1 = '1';
-const uint8_t soul_ucd_version_2 = '2';
-const uint8_t soul_ucd_version_3 = '3';
-const uint8_t soul_ucd_version_4 = '4';
-const uint8_t current_soul_ucd_version = soul_ucd_version_4;
+const uint8_t cmajor_ucd_version_1 = '1';
+const uint8_t cmajor_ucd_version_2 = '2';
+const uint8_t cmajor_ucd_version_3 = '3';
+const uint8_t current_cmajor_ucd_version = cmajor_ucd_version_3;
 
 enum class CharacterTableDataSource
 {

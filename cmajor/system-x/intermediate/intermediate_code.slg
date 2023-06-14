@@ -1,0 +1,5 @@
+project cmajor.systemx.intermediate.code.lexer;
+tokens <intermediate_code.token>;
+keywords <intermediate_code.keyword>;
+expressions <intermediate_code.expr>;
+lexer <intermediate_code.lexer>;

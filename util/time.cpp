@@ -561,6 +561,13 @@ DateTime ToDateTime(time_t time)
     return DateTime(Date(1900 + localTime->tm_year, static_cast<Month>(1 + localTime->tm_mon), static_cast<int8_t>(localTime->tm_mday)), localTime->tm_hour * 3600 + localTime->tm_min * 60 + localTime->tm_sec);
 }
 
+DateTime ToDateTime(const std::filesystem::file_time_type& time)
+{
+    auto t = std::chrono::clock_cast<std::chrono::system_clock>(time);
+    std::time_t tim = std::chrono::system_clock::to_time_t(t);
+    return ToDateTime(tim);
+}
+
 void TimeInit()
 {
     TimestampProvider::Init();

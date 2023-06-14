@@ -151,19 +151,30 @@ int main(int argc, const char** argv)
                     {
                         std::string fileMask = util::Path::GetFileName(path);
                         std::filesystem::directory_iterator it(dir);
-                        while (it != std::filesystem::directory_iterator())
+                        if (it != std::filesystem::directory_iterator())
                         {
-                            std::filesystem::directory_entry entry(*it);
-                            if (std::filesystem::is_regular_file(entry.path()))
+                            while (it != std::filesystem::directory_iterator())
                             {
-                                std::string fileName = util::Path::GetFileName(entry.path().generic_string());
-                                if (soul::rex::FilePatternMatch(fileName, fileMask))
+                                std::filesystem::directory_entry entry(*it);
+                                if (std::filesystem::is_regular_file(entry.path()))
                                 {
-                                    std::string path = util::Path::Combine(dir, fileName);
-                                    paths.push_back(path);
+                                    std::string fileName = util::Path::GetFileName(entry.path().generic_string());
+                                    if (soul::rex::FilePatternMatch(fileName, fileMask))
+                                    {
+                                        std::string path = util::Path::Combine(dir, fileName);
+                                        paths.push_back(path);
+                                    }
+                                    else
+                                    {
+                                        paths.push_back(path);
+                                    }
                                 }
+                                ++it;
                             }
-                            ++it;
+                        }
+                        else
+                        {
+                            paths.push_back(dir);
                         }
                     }
                     else
@@ -181,7 +192,7 @@ int main(int argc, const char** argv)
             PrintHelp();
             return 1;
         }
-        if (paths.size() == 2 && std::filesystem::is_regular_file(paths.front()) && std::filesystem::is_regular_file(paths.back()))
+        if (paths.size() == 2 && std::filesystem::is_regular_file(paths.front()) && std::filesystem::is_regular_file(paths.back()) || !std::filesystem::exists(paths.back()))
         {
             std::string source = util::GetFullPath(paths.front());
             std::string dest = util::GetFullPath(paths.back());
@@ -201,7 +212,6 @@ int main(int argc, const char** argv)
         {
             return 1;
         }
-
     }
     catch (const std::exception& ex)
     {

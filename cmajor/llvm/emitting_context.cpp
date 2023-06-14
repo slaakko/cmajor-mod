@@ -23,7 +23,6 @@ namespace cmajor::llvm {
 struct LLvmEmittingContextImpl
 {
     LLvmEmittingContextImpl(int optimizationLevel);
-    std::unique_ptr<::llvm::LLVMContext> context;
     ::llvm::PassRegistry* passRegistry;
     std::string targetTriple;
     ::llvm::Triple triple;
@@ -31,7 +30,7 @@ struct LLvmEmittingContextImpl
     std::unique_ptr<::llvm::DataLayout> dataLayout;
 };
 
-LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : context(new ::llvm::LLVMContext()), passRegistry(nullptr)
+LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : passRegistry(nullptr)
 {
     ::llvm::InitializeAllTargets();
     ::llvm::InitializeAllTargetMCs();
@@ -41,6 +40,7 @@ LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : contex
     passRegistry = ::llvm::PassRegistry::getPassRegistry();
     initializeCore(*passRegistry);
     initializeCodeGen(*passRegistry);
+
     initializeLoopStrengthReducePass(*passRegistry);
     initializeLowerIntrinsicsPass(*passRegistry);
     initializeEntryExitInstrumenterPass(*passRegistry);
@@ -74,28 +74,28 @@ LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : contex
     ::llvm::CodeGenOpt::Level optLevel = ::llvm::CodeGenOpt::None;
     switch (optimizationLevel)
     {
-        case 0:
-        {
-            optLevel = ::llvm::CodeGenOpt::None; 
-            break;
-        }
-        case 1:
-        {
-            optLevel = ::llvm::CodeGenOpt::Less;
-            break;
-        }
-        case 2:
-        {
-            optLevel = ::llvm::CodeGenOpt::Default;
-            break;
-        }
-        case 3:
-        {
-            optLevel = ::llvm::CodeGenOpt::Aggressive;
-            break;
-        }
+    case 0:
+    {
+        optLevel = ::llvm::CodeGenOpt::None;
+        break;
     }
-    targetMachine.reset(target->createTargetMachine(triple.getTriple(), ::llvm::codegen::getCPUStr(), ::llvm::codegen::getFeaturesStr(), options, 
+    case 1:
+    {
+        optLevel = ::llvm::CodeGenOpt::Less;
+        break;
+    }
+    case 2:
+    {
+        optLevel = ::llvm::CodeGenOpt::Default;
+        break;
+    }
+    case 3:
+    {
+        optLevel = ::llvm::CodeGenOpt::Aggressive;
+        break;
+    }
+    }
+    targetMachine.reset(target->createTargetMachine(triple.getTriple(), ::llvm::codegen::getCPUStr(), ::llvm::codegen::getFeaturesStr(), options,
         ::llvm::codegen::getExplicitRelocModel(), ::llvm::codegen::getExplicitCodeModel(), optLevel));
     if (!targetMachine)
     {
@@ -111,11 +111,6 @@ LLvmEmittingContext::LLvmEmittingContext(int optimizationLevel_) : optimizationL
 LLvmEmittingContext::~LLvmEmittingContext()
 {
     delete impl;
-}
-
-void* LLvmEmittingContext::NativeContext()
-{
-    return impl->context.get();
 }
 
 const std::string& LLvmEmittingContext::TargetTripleStr() const

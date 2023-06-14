@@ -272,6 +272,6 @@ private:
 
 cmajor::ast::ConstantNode* MakePolymorphicClassArray(const std::set<ClassTypeSymbol*>& polymorphicClasses, const std::u32string& arrayName);
 cmajor::ast::ConstantNode* MakeStaticClassArray(const std::set<ClassTypeSymbol*>& classesHavingStaticConstructor, const std::u32string& arrayName);
-void MakeClassIdFile(const std::unordered_set<ClassTypeSymbol*>& polymorphicClasses, const std::string& classIdFileName);
+void MakeClassIdFile(const std::set<ClassTypeSymbol*>& polymorphicClasses, const std::string& classIdFileName);
 
 } // namespace cmajor::symbols

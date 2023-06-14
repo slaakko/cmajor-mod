@@ -1,0 +1,59 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.RegularExpressions;
+
+void Expand(List<ShellToken>& tokens, ShellEnvironment& environment, Params& params, Context& context, TokenFlags globalFlags)
+{
+    if (environment.Debug())
+    {
+        Terminal.Out() << "tokens before expansions:" << endl();
+        PrintTokens(tokens);
+    }
+    if ((globalFlags & TokenFlags.brace) != TokenFlags.none)
+    {
+        tokens = BraceExpand(tokens);
+        if (environment.Debug())
+        {
+            Terminal.Out() << "tokens after brace expansion:" << endl();
+            PrintTokens(tokens);
+        }
+    }
+    if ((globalFlags & TokenFlags.hasTilde) != TokenFlags.none)
+    {
+        tokens = TildeExpand(tokens);
+        if (environment.Debug())
+        {
+            Terminal.Out() << "tokens after tilde expansion:" << endl();
+            PrintTokens(tokens);
+        }
+    }
+    if ((globalFlags & TokenFlags.hasDollar) != TokenFlags.none)
+    {
+        tokens = ParameterExpand(tokens, environment, params, globalFlags, context);
+        if (environment.Debug())
+        {
+            Terminal.Out() << "tokens after parameter expansion:" << endl();
+            PrintTokens(tokens);
+        }
+    }
+    if ((globalFlags & TokenFlags.hasPatternChar) != TokenFlags.none)
+    {
+        tokens = FilenameExpand(tokens, context);
+        if (environment.Debug())
+        {
+            Terminal.Out() << "tokens after filename expansion:" << endl();
+            PrintTokens(tokens);
+        }
+    }
+    tokens = MakeWords(tokens);
+    if (environment.Debug())
+    {
+        Terminal.Out() << "tokens after expansions:" << endl();
+        PrintTokens(tokens);
+    }
+}

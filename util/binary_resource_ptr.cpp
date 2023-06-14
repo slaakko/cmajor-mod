@@ -20,17 +20,25 @@ BinaryResourcePtr::BinaryResourcePtr(const std::string& moduleName, const std::s
     HMODULE moduleHandle = GetModuleHandleW((LPCWSTR)moduleNameStr.c_str());
     if (!moduleHandle)
     {
-        throw WindowsException(GetLastError());
+        WindowsException windowsException(GetLastError());
+        throw std::runtime_error("error: error getting resource '" + resourceName + "' from module '" + moduleName + "': could not get module handle: " +
+            windowsException.ErrorMessage());
     }
     HRSRC res = FindResourceW(moduleHandle, (LPCWSTR)resourceNameStr.c_str(), RT_RCDATA);
     if (!res)
     {
-        throw WindowsException(GetLastError());
+        std::string resourceFileName = resourceName + ".rc";
+        WindowsException windowsException(GetLastError());
+        throw std::runtime_error("error: error getting resource '" + resourceName + "' from module '" + moduleName + "': could not find resource: " +
+            windowsException.ErrorMessage() + ": note: please add resource file '" + resourceFileName + "' to the C++ project that makes executable '" + moduleName + "'");
     }
     HGLOBAL handle = LoadResource(moduleHandle, res);
     if (!handle)
     {
-        throw WindowsException(GetLastError());
+        std::string resourceFileName = resourceName + ".rc";
+        WindowsException windowsException(GetLastError());
+        throw std::runtime_error("error: error loading resource '" + resourceName + "' from module '" + moduleName + ": " +
+            windowsException.ErrorMessage() + ": note: please add resource file '" + resourceFileName + "' to the C++ project that makes executable '" + moduleName + "'");
     }
     data = static_cast<uint8_t*>(LockResource(handle));
     size = SizeofResource(moduleHandle, res);

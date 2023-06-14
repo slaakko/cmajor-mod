@@ -1,0 +1,1 @@
+<configuration clockTickMilliseconds="250" gid="0" kernelStackSize="16384" maxFilesystems="64" maxOpenFiles="256" maxProcs="1024" numBlockHashQueues="16" numCachedBlocks="256" numCachedINodes="256" numINodeHashQueues="16" numLocalRegs="8" numProcessors="1" rootFSMaxFiles="1024" rootFSNumBlocks="16384" uid="1" umask="000"/>

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{b8bfd71d-f1bd-4278-950c-9db2901f0062}</ProjectGuid>
+    <RootNamespace>intermediate</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>cmajor.systemx.intermediated</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>cmajor.systemx.intermediate</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267;4244;4996;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267;4244;4996;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="code.cpp" />
+    <ClCompile Include="code.cppm" />
+    <ClCompile Include="codegen.cpp" />
+    <ClCompile Include="codegen.cppm" />
+    <ClCompile Include="compile_unit.cpp" />
+    <ClCompile Include="compile_unit.cppm" />
+    <ClCompile Include="compute_succ_pred_pass.cpp" />
+    <ClCompile Include="compute_succ_pred_pass.cppm" />
+    <ClCompile Include="context.cpp" />
+    <ClCompile Include="context.cppm" />
+    <ClCompile Include="data.cpp" />
+    <ClCompile Include="data.cppm" />
+    <ClCompile Include="dominator_tree_cooper.cpp" />
+    <ClCompile Include="dominator_tree_cooper.cppm" />
+    <ClCompile Include="dominator_tree_pass.cpp" />
+    <ClCompile Include="dominator_tree_pass.cppm" />
+    <ClCompile Include="entry_exit_pass.cpp" />
+    <ClCompile Include="entry_exit_pass.cppm" />
+    <ClCompile Include="error.cpp" />
+    <ClCompile Include="error.cppm" />
+    <ClCompile Include="function_pass_driver.cpp" />
+    <ClCompile Include="function_pass_driver.cppm" />
+    <ClCompile Include="init_done.cpp" />
+    <ClCompile Include="init_done.cppm" />
+    <ClCompile Include="intermediate.cppm" />
+    <ClCompile Include="intermediate_code.lexer.cpp" />
+    <ClCompile Include="intermediate_code.lexer.cppm" />
+    <ClCompile Include="intermediate_code.parser.cpp" />
+    <ClCompile Include="intermediate_code.parser.cppm" />
+    <ClCompile Include="intermediate_code.token.cppm" />
+    <ClCompile Include="intermediate_code_rules.cpp" />
+    <ClCompile Include="intermediate_code_rules.cppm" />
+    <ClCompile Include="linear_scan_register_allocator.cpp" />
+    <ClCompile Include="linear_scan_register_allocator.cppm" />
+    <ClCompile Include="metadata.cpp" />
+    <ClCompile Include="metadata.cppm" />
+    <ClCompile Include="module_pass_driver.cpp" />
+    <ClCompile Include="module_pass_driver.cppm" />
+    <ClCompile Include="opt_codegen.cpp" />
+    <ClCompile Include="opt_codegen.cppm" />
+    <ClCompile Include="parser.cpp" />
+    <ClCompile Include="parser.cppm" />
+    <ClCompile Include="pass.cpp" />
+    <ClCompile Include="pass.cppm" />
+    <ClCompile Include="passes.cpp" />
+    <ClCompile Include="passes.cppm" />
+    <ClCompile Include="pass_manager.cpp" />
+    <ClCompile Include="pass_manager.cppm" />
+    <ClCompile Include="register_allocator.cpp" />
+    <ClCompile Include="register_allocator.cppm" />
+    <ClCompile Include="simple_assembly_codegen_pass.cpp" />
+    <ClCompile Include="simple_assembly_codegen_pass.cppm" />
+    <ClCompile Include="simple_assembly_code_generator.cpp" />
+    <ClCompile Include="simple_assembly_code_generator.cppm" />
+    <ClCompile Include="simplify_cfg_pass.cpp" />
+    <ClCompile Include="simplify_cfg_pass.cppm" />
+    <ClCompile Include="types.cpp" />
+    <ClCompile Include="types.cppm" />
+    <ClCompile Include="util.cppm" />
+    <ClCompile Include="verify.cpp" />
+    <ClCompile Include="verify.cppm" />
+    <ClCompile Include="visit.cpp" />
+    <ClCompile Include="visit.cppm" />
+    <ClCompile Include="visitor.cpp" />
+    <ClCompile Include="visitor.cppm" />
+    <ClCompile Include="writer.cpp" />
+    <ClCompile Include="writer.cppm" />
+    <ClCompile Include="write_cfg_pass.cpp" />
+    <ClCompile Include="write_cfg_pass.cppm" />
+    <ClCompile Include="write_dominator_tree_pass.cpp" />
+    <ClCompile Include="write_dominator_tree_pass.cppm" />
+    <ClCompile Include="write_pass.cpp" />
+    <ClCompile Include="write_pass.cppm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom_parser\dom_parser.vcxproj">
+      <Project>{a04570d9-27be-464f-b3a5-6c6b1943d493}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\xpath\xpath.vcxproj">
+      <Project>{99d0a844-4ee3-4c0a-9eeb-45eb9fedca05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\assembler\assembler.vcxproj">
+      <Project>{32543a9f-385e-4471-9146-cb8733f0e3c8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\machine\machine.vcxproj">
+      <Project>{5af98f03-2215-4a25-b653-733a91e17456}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="intemediate_code.expr" />
+    <None Include="intermediate_code.keyword" />
+    <None Include="intermediate_code.lexer" />
+    <None Include="intermediate_code.parser" />
+    <None Include="intermediate_code.slg" />
+    <None Include="intermediate_code.spg" />
+    <None Include="intermediate_code.token" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

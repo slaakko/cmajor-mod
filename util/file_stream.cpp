@@ -75,11 +75,11 @@ FileStream::FileStream(const std::string& filePath_, OpenMode openMode) : filePa
         mode += "b";
     }
     std::string nativeFilePath = Utf8StringToPlatformString(filePath);
-    errno_t error = fopen_s(&file, nativeFilePath.c_str(), mode.c_str());
-    if (error)
+    file = fopen(nativeFilePath.c_str(), mode.c_str());
+    if (!file)
     {
         char buf[4096];
-        strerror_s(buf, sizeof(buf), error);
+        strerror_s(buf, sizeof(buf), errno);
         throw std::runtime_error("could not open file '" + std::string(filePath) + "': " + PlatformStringToUtf8(buf));
     }
     needToClose = true;

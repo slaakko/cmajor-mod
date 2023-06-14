@@ -1538,8 +1538,8 @@ std::unique_ptr<CharacterTable> CharacterTable::instance;
 
 const uint8_t headerMagic[8] =
 {
-    static_cast<uint8_t>('S'), static_cast<uint8_t>('O'), static_cast<uint8_t>('U'), static_cast<uint8_t>('L'),
-    static_cast<uint8_t>('U'), static_cast<uint8_t>('C'), static_cast<uint8_t>('D'), current_soul_ucd_version
+    static_cast<uint8_t>('C'), static_cast<uint8_t>('M'), static_cast<uint8_t>('A'), static_cast<uint8_t>('J'),
+    static_cast<uint8_t>('U'), static_cast<uint8_t>('C'), static_cast<uint8_t>('D'), current_cmajor_ucd_version
 };
 
 CharacterTable::CharacterTable() : dataSource(CharacterTableDataSource::file), data(nullptr), size(0), headerRead(false), extendedHeaderStart(0), extendedHeaderEnd(0), extendedHeaderRead(false)

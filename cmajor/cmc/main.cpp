@@ -5,6 +5,7 @@
 
 import std.core;
 import std.filesystem;
+import cmajor.backend;
 import cmajor.build;
 import cmajor.symbols;
 import util;
@@ -198,16 +199,19 @@ int main(int argc, const char** argv)
             }
         }
         cmajor::symbols::SetUseModuleCache(true);
+        cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::llvmBackEnd);
+        cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
+        std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = backend->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
         std::set<std::string> builtProjects;
         for (const auto& file : files)
         {
             if (file.ends_with(".cmp"))
             {
-                cmajor::build::BuildProject(file, rootModule, builtProjects);
+                cmajor::build::BuildProject(file, rootModule, emittingContext.get(), builtProjects);
             }
             else if (file.ends_with(".cms"))
             {
-                cmajor::build::BuildSolution(file, rootModules);
+                cmajor::build::BuildSolution(file, rootModules, emittingContext.get());
             }
             else
             {

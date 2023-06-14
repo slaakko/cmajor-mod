@@ -1,0 +1,16 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Os;
+
+void ChangeMode(int mode, const List<string>& files)
+{
+    for (const string& file : files)
+    {
+        ChMod(file.Chars(), mode);
+    }
+}

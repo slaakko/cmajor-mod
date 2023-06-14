@@ -1,0 +1,193 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.assembler.parser;
+
+[interface]import cmajor.systemx.assembler.assembler;
+[implementation]import cmajor.systemx.assembler.lexer;
+[implementation]import cmajor.systemx.assembler.token;
+[implementation]import cmajor.systemx.assembler.expression;
+
+parser AssemblyParser
+{
+    lexer cmajor::systemx::assembler::lexer::AssemblyLexer<char32_t>;
+    main;
+
+    AssemblyFile(Assembler* assembler)
+        ::= AssemblyLine(assembler):assemblyLine*
+        ;
+
+    AssemblyLine(Assembler* assembler)
+        ::= CommentLine(assembler):commentLine
+        |   EmptyLine(assembler):emptyLine
+        |   ModeLine(assembler):modeLine
+        |   InstructionLine(assembler):instructionLine
+        ;
+
+    CommentLine(Assembler* assembler)
+        ::= Comment:cmt NEWLINE{ assembler->IncLine(); }
+        ;
+
+    Comment
+        ::= SPACE? (any - (NEWLINE | DECIMAL_CONSTANT | SYMBOL | LOCAL_SYMBOL | DOT | SEMICOLON | AT)) (any - NEWLINE)*
+        ;
+
+    EmptyLine(Assembler* assembler)
+        ::= SPACE? NEWLINE{ assembler->EmptyLine(); }
+        ;
+
+    ModeLine(Assembler* assembler, var soul::ast::SourcePos sp, var std::string mode)
+        ::= 
+        (
+            SPACE?
+            DOT{ sp = lexer.GetSourcePos(pos); }
+            SYMBOL{ mode = util::ToUtf8(lexer.GetToken(pos).ToString()); }
+            SPACE?
+            NEWLINE{ assembler->IncLine(); }
+        )
+        {
+            assembler->AddModeInstruction(mode, sp);
+        }
+        ;
+
+    InstructionLine(Assembler* assembler)
+        ::= Instruction(assembler):left
+            (SPACE? SEMICOLON Instruction(assembler):right)* Comment:cmt? NEWLINE{ assembler->InstructionLine(); }
+        ;
+
+    Instruction(Assembler* assembler, var cmajor::systemx::assembler::Instruction* instruction, var std::unique_ptr<cmajor::systemx::assembler::OpCode> opc) 
+        ::= 
+        (
+            Label(assembler):lbl
+            SplitLine(assembler, lbl != nullptr):splitLine
+            OpCode(assembler):opcode
+            { 
+                opc.reset(opcode); 
+                soul::ast::SourcePos sp = opc->GetSourcePos(); 
+                instruction = new cmajor::systemx::assembler::Instruction(sp, lbl, opc.release()); 
+            }
+            Operands(assembler, instruction):operands
+        )
+        {
+            assembler->AddInstruction(instruction);
+        }
+        ;
+
+    Label(Assembler* assembler) : cmajor::systemx::assembler::Symbol*
+        ::= LOCAL_SYMBOL{ return new cmajor::systemx::assembler::LocalSymbol(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   SYMBOL{ return new cmajor::systemx::assembler::GlobalSymbol(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   empty{ return nullptr; }
+        ;
+
+    SplitLine(Assembler* assembler, bool hasLabel)
+        ::= SPACE (NEWLINE SPACE)?
+        |   empty{ pass = hasLabel; } NEWLINE{ assembler->IncLine(); } SPACE
+        ;
+
+    OpCode(Assembler* assembler, var soul::ast::SourcePos sp) : cmajor::systemx::assembler::OpCode*
+        ::= 
+        (
+            (DECIMAL_CONSTANT{ sp = lexer.GetSourcePos(pos); })? SYMBOL{ if (!sp.IsValid()) sp = lexer.GetSourcePos(pos); }
+        )
+        {
+            return new cmajor::systemx::assembler::OpCode(sp, util::ToUtf8(lexer.GetToken(pos).ToString()));
+        }
+        ;
+
+    Operands(Assembler* assembler, cmajor::systemx::assembler::Instruction* instruction)
+        ::= 
+        (   SPACE? Expression(assembler):left{ instruction->AddOperand(left); } (COMMA Expression(assembler):right{ instruction->AddOperand(right); })*
+        |   SPACE? empty
+        )
+        ;
+
+    Expression(Assembler* assembler, var soul::ast::SourcePos sourcePos, var std::unique_ptr<cmajor::systemx::assembler::Node> expr) : cmajor::systemx::assembler::Node*
+        ::= 
+        (
+            Term(assembler):left{ expr.reset(left); sourcePos = lexer.GetSourcePos(pos); } 
+            (
+                WeakOperator:op 
+                Term(assembler):right{ expr.reset(new cmajor::systemx::assembler::BinaryExpression(sourcePos, op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    WeakOperator : cmajor::systemx::assembler::Operator 
+        ::= PLUS{ return cmajor::systemx::assembler::Operator::add; }
+        |   MINUS{ return cmajor::systemx::assembler::Operator::subtract; }
+        |   BAR{ return cmajor::systemx::assembler::Operator::bitwise_or; }
+        |   CARET{ return cmajor::systemx::assembler::Operator::bitwise_xor; }
+        ;
+
+    Term(Assembler* assembler, var soul::ast::SourcePos sourcePos, var std::unique_ptr<cmajor::systemx::assembler::Node> expr) : cmajor::systemx::assembler::Node*
+        ::= 
+        (
+            PrimaryExpression(assembler):left{ expr.reset(left); sourcePos = lexer.GetSourcePos(pos); } 
+            (
+                StrongOperator:op 
+                PrimaryExpression(assembler):right{ expr.reset(new cmajor::systemx::assembler::BinaryExpression(sourcePos, op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    StrongOperator : cmajor::systemx::assembler::Operator 
+        ::= AST{ return cmajor::systemx::assembler::Operator::multiply; }
+        |   SLASH{ return cmajor::systemx::assembler::Operator::divide; }
+        |   SLASHSLASH{ return cmajor::systemx::assembler::Operator::fractional_divide; }
+        |   PERCENT{ return cmajor::systemx::assembler::Operator::modulus; }
+        |   SHIFT_LEFT{ return cmajor::systemx::assembler::Operator::shift_left; }
+        |   SHIFT_RIGHT{ return cmajor::systemx::assembler::Operator::shift_right; }
+        |   AMP{ return cmajor::systemx::assembler::Operator::bitwise_and; }
+        ;
+
+    PrimaryExpression(Assembler* assembler, var soul::ast::SourcePos sp, var std::unique_ptr<cmajor::systemx::assembler::Node> expr) : cmajor::systemx::assembler::Node*
+        ::= 
+        (   LocalSymbol(assembler):localSymbol{ expr.reset(localSymbol); }
+        |   Constant(assembler):constant{ expr.reset(constant); }
+        |   Symbol(assembler):symbol{ expr.reset(symbol); }
+        |   At(assembler):at{ expr.reset(at); }
+        |   LPAREN Expression(assembler):pexpr{ sp = lexer.GetSourcePos(pos); expr.reset(new cmajor::systemx::assembler::ParenthesizedExpression(sp, pexpr)); } RPAREN
+        |   UnaryOperator:op{ sp = lexer.GetSourcePos(pos); } 
+            PrimaryExpression(assembler):primaryExpr{ expr.reset(new cmajor::systemx::assembler::UnaryExpression(sp, op, primaryExpr)); }
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    UnaryOperator : cmajor::systemx::assembler::Operator 
+        ::= PLUS{ return cmajor::systemx::assembler::Operator::unaryPlus; }
+        |   MINUS{ return cmajor::systemx::assembler::Operator::unaryMinus; }
+        |   TILDE{ return cmajor::systemx::assembler::Operator::complement; }
+        |   DOLLAR{ return cmajor::systemx::assembler::Operator::reg; }
+        |   AMP{ return cmajor::systemx::assembler::Operator::serial; }
+        ;
+
+    LocalSymbol(Assembler* assembler) : cmajor::systemx::assembler::Node*
+        ::= LOCAL_SYMBOL{ return new cmajor::systemx::assembler::LocalSymbol(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    Constant(Assembler* assembler) : cmajor::systemx::assembler::Node*
+        ::= DECIMAL_CONSTANT{ return assembler->MakeDecimalConstant(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   HEX_CONSTANT{ return assembler->MakeHexConstant(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   CHAR_CONSTANT{ return assembler->MakeCharConstant(lexer.GetSourcePos(pos), lexer.GetToken(pos).ToString()); }
+        |   STRING_CONSTANT{ return assembler->MakeStringConstant(lexer.GetSourcePos(pos), lexer.GetToken(pos).ToString()); }
+        |   CLSID_CONSTANT{ return assembler->MakeClsIdConstant(lexer.GetSourcePos(pos), lexer.GetToken(pos).ToString()); }
+        ;
+
+    Symbol(Assembler* assembler) : cmajor::systemx::assembler::Node*
+        ::= SYMBOL{ return new cmajor::systemx::assembler::GlobalSymbol(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    At(Assembler* assembler) : cmajor::systemx::assembler::Node*
+        ::= AT{ return new cmajor::systemx::assembler::At(lexer.GetSourcePos(pos)); }
+        ;
+}

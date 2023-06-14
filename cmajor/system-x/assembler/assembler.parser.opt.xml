@@ -1,0 +1,479 @@
+<parserFile>
+ <grammar name="AssemblyParser">
+  <rule first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, DOT, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" name="AssemblyFile">
+   <kleene first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, DOT, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+    <nonterminal first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, DOT, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="AssemblyLine"/>
+   </kleene>
+  </rule>
+  <rule first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, DOT, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" name="AssemblyLine">
+   <choice first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, DOT, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+    <choice first="{#, *, DOT, NEWLINE, SPACE, SYMBOL}">
+     <choice first="{#, *, NEWLINE, SPACE}">
+      <nonterminal first="{#, *, NEWLINE, SPACE}" ruleName="CommentLine"/>
+      <nonterminal first="{#, NEWLINE, SPACE}" ruleName="EmptyLine"/>
+     </choice>
+     <nonterminal first="{#, DOT, NEWLINE, SPACE, SYMBOL}" ruleName="ModeLine"/>
+    </choice>
+    <nonterminal first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="InstructionLine"/>
+   </choice>
+  </rule>
+  <rule first="{#, *, NEWLINE, SPACE}" name="CommentLine">
+   <sequence first="{#, *, NEWLINE, SPACE}">
+    <nonterminal first="{#, *, SPACE}" ruleName="Comment"/>
+    <action first="{NEWLINE}">
+     <token first="{NEWLINE}" name="NEWLINE"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, *, SPACE}" name="Comment">
+   <sequence first="{#, *, SPACE}">
+    <sequence first="{#, *, SPACE}">
+     <optional first="{#, SPACE}">
+      <token first="{SPACE}" name="SPACE"/>
+     </optional>
+     <group first="{*}">
+      <difference first="{*}">
+       <any first="{*}"/>
+       <group first="{}">
+        <choice first="{}">
+         <choice first="{}">
+          <choice first="{}">
+           <choice first="{}">
+            <choice first="{}">
+             <choice first="{}">
+              <token first="{}" name="NEWLINE"/>
+              <token first="{}" name="DECIMAL_CONSTANT"/>
+             </choice>
+             <token first="{}" name="SYMBOL"/>
+            </choice>
+            <token first="{}" name="LOCAL_SYMBOL"/>
+           </choice>
+           <token first="{}" name="DOT"/>
+          </choice>
+          <token first="{}" name="SEMICOLON"/>
+         </choice>
+         <token first="{}" name="AT"/>
+        </choice>
+       </group>
+      </difference>
+     </group>
+    </sequence>
+    <kleene first="{#, *}">
+     <group first="{*}">
+      <difference first="{*}">
+       <any first="{*}"/>
+       <token first="{}" name="NEWLINE"/>
+      </difference>
+     </group>
+    </kleene>
+   </sequence>
+  </rule>
+  <rule first="{#, NEWLINE, SPACE}" name="EmptyLine">
+   <sequence first="{#, NEWLINE, SPACE}">
+    <optional first="{#, SPACE}">
+     <token first="{SPACE}" name="SPACE"/>
+    </optional>
+    <action first="{NEWLINE}">
+     <token first="{NEWLINE}" name="NEWLINE"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, DOT, NEWLINE, SPACE, SYMBOL}" name="ModeLine">
+   <action first="{#, DOT, NEWLINE, SPACE, SYMBOL}">
+    <group first="{#, DOT, NEWLINE, SPACE, SYMBOL}">
+     <sequence first="{#, DOT, NEWLINE, SPACE, SYMBOL}">
+      <sequence first="{#, DOT, SPACE, SYMBOL}">
+       <sequence first="{#, DOT, SPACE, SYMBOL}">
+        <sequence first="{#, DOT, SPACE}">
+         <optional first="{#, SPACE}">
+          <token first="{SPACE}" name="SPACE"/>
+         </optional>
+         <action first="{DOT}">
+          <token first="{DOT}" name="DOT"/>
+         </action>
+        </sequence>
+        <action first="{SYMBOL}">
+         <token first="{SYMBOL}" name="SYMBOL"/>
+        </action>
+       </sequence>
+       <optional first="{#, SPACE}">
+        <token first="{SPACE}" name="SPACE"/>
+       </optional>
+      </sequence>
+      <action first="{NEWLINE}">
+       <token first="{NEWLINE}" name="NEWLINE"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" name="InstructionLine">
+   <sequence first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+    <sequence first="{#, *, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+     <sequence first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+      <nonterminal first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Instruction"/>
+      <kleene first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+       <group first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+        <sequence first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SEMICOLON, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+         <sequence first="{#, SEMICOLON, SPACE}">
+          <optional first="{#, SPACE}">
+           <token first="{SPACE}" name="SPACE"/>
+          </optional>
+          <token first="{SEMICOLON}" name="SEMICOLON"/>
+         </sequence>
+         <nonterminal first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Instruction"/>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+     <optional first="{#, *, SPACE}">
+      <nonterminal first="{#, *, SPACE}" ruleName="Comment"/>
+     </optional>
+    </sequence>
+    <action first="{NEWLINE}">
+     <token first="{NEWLINE}" name="NEWLINE"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" name="Instruction">
+   <action first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+    <group first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+     <sequence first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, NEWLINE, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+      <sequence first="{#, DECIMAL_CONSTANT, LOCAL_SYMBOL, NEWLINE, SPACE, SYMBOL}">
+       <sequence first="{#, LOCAL_SYMBOL, NEWLINE, SPACE, SYMBOL}">
+        <nonterminal first="{#, LOCAL_SYMBOL, SYMBOL}" ruleName="Label"/>
+        <nonterminal first="{#, NEWLINE, SPACE}" ruleName="SplitLine"/>
+       </sequence>
+       <action first="{#, DECIMAL_CONSTANT, SYMBOL}">
+        <nonterminal first="{#, DECIMAL_CONSTANT, SYMBOL}" ruleName="OpCode"/>
+       </action>
+      </sequence>
+      <nonterminal first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Operands"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, LOCAL_SYMBOL, SYMBOL}" name="Label">
+   <choice first="{#, LOCAL_SYMBOL, SYMBOL}">
+    <switch first="{LOCAL_SYMBOL, SYMBOL}">
+     <case first="{LOCAL_SYMBOL}">
+      <action first="{LOCAL_SYMBOL}">
+       <token first="{LOCAL_SYMBOL}" name="LOCAL_SYMBOL"/>
+      </action>
+     </case>
+     <case first="{SYMBOL}">
+      <action first="{SYMBOL}">
+       <token first="{SYMBOL}" name="SYMBOL"/>
+      </action>
+     </case>
+    </switch>
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, NEWLINE, SPACE}" name="SplitLine">
+   <choice first="{#, NEWLINE, SPACE}">
+    <sequence first="{SPACE}">
+     <token first="{SPACE}" name="SPACE"/>
+     <optional first="{#, NEWLINE}">
+      <group first="{NEWLINE}">
+       <sequence first="{NEWLINE}">
+        <token first="{NEWLINE}" name="NEWLINE"/>
+        <token first="{SPACE}" name="SPACE"/>
+       </sequence>
+      </group>
+     </optional>
+    </sequence>
+    <sequence first="{#, NEWLINE, SPACE}">
+     <sequence first="{#, NEWLINE}">
+      <action first="{#}">
+       <empty first="{#}"/>
+      </action>
+      <action first="{NEWLINE}">
+       <token first="{NEWLINE}" name="NEWLINE"/>
+      </action>
+     </sequence>
+     <token first="{SPACE}" name="SPACE"/>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{#, DECIMAL_CONSTANT, SYMBOL}" name="OpCode">
+   <action first="{#, DECIMAL_CONSTANT, SYMBOL}">
+    <group first="{#, DECIMAL_CONSTANT, SYMBOL}">
+     <sequence first="{#, DECIMAL_CONSTANT, SYMBOL}">
+      <optional first="{#, DECIMAL_CONSTANT}">
+       <group first="{DECIMAL_CONSTANT}">
+        <action first="{DECIMAL_CONSTANT}">
+         <token first="{DECIMAL_CONSTANT}" name="DECIMAL_CONSTANT"/>
+        </action>
+       </group>
+      </optional>
+      <action first="{SYMBOL}">
+       <token first="{SYMBOL}" name="SYMBOL"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}" name="Operands">
+   <group first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+    <choice first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+     <sequence first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, COMMA, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+      <sequence first="{#, AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, SPACE, STRING_CONSTANT, SYMBOL, TILDE}">
+       <optional first="{#, SPACE}">
+        <token first="{SPACE}" name="SPACE"/>
+       </optional>
+       <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+        <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Expression"/>
+       </action>
+      </sequence>
+      <kleene first="{#, COMMA}">
+       <group first="{COMMA}">
+        <sequence first="{COMMA}">
+         <token first="{COMMA}" name="COMMA"/>
+         <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+          <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Expression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+     <sequence first="{#, SPACE}">
+      <optional first="{#, SPACE}">
+       <token first="{SPACE}" name="SPACE"/>
+      </optional>
+      <empty first="{#}"/>
+     </sequence>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" name="Expression">
+   <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+    <group first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+     <sequence first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+      <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+       <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Term"/>
+      </action>
+      <kleene first="{#, BAR, CARET, MINUS, PLUS}">
+       <group first="{BAR, CARET, MINUS, PLUS}">
+        <sequence first="{BAR, CARET, MINUS, PLUS}">
+         <nonterminal first="{BAR, CARET, MINUS, PLUS}" ruleName="WeakOperator"/>
+         <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+          <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Term"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{BAR, CARET, MINUS, PLUS}" name="WeakOperator">
+   <switch first="{BAR, CARET, MINUS, PLUS}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
+     </action>
+    </case>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
+     </action>
+    </case>
+    <case first="{BAR}">
+     <action first="{BAR}">
+      <token first="{BAR}" name="BAR"/>
+     </action>
+    </case>
+    <case first="{CARET}">
+     <action first="{CARET}">
+      <token first="{CARET}" name="CARET"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" name="Term">
+   <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+    <group first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+     <sequence first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+      <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+       <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="PrimaryExpression"/>
+      </action>
+      <kleene first="{#, AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}">
+       <group first="{AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}">
+        <sequence first="{AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}">
+         <nonterminal first="{AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}" ruleName="StrongOperator"/>
+         <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+          <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="PrimaryExpression"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}" name="StrongOperator">
+   <switch first="{AMP, AST, PERCENT, SHIFT_LEFT, SHIFT_RIGHT, SLASH, SLASHSLASH}">
+    <case first="{AST}">
+     <action first="{AST}">
+      <token first="{AST}" name="AST"/>
+     </action>
+    </case>
+    <case first="{SLASH}">
+     <action first="{SLASH}">
+      <token first="{SLASH}" name="SLASH"/>
+     </action>
+    </case>
+    <case first="{SLASHSLASH}">
+     <action first="{SLASHSLASH}">
+      <token first="{SLASHSLASH}" name="SLASHSLASH"/>
+     </action>
+    </case>
+    <case first="{PERCENT}">
+     <action first="{PERCENT}">
+      <token first="{PERCENT}" name="PERCENT"/>
+     </action>
+    </case>
+    <case first="{SHIFT_LEFT}">
+     <action first="{SHIFT_LEFT}">
+      <token first="{SHIFT_LEFT}" name="SHIFT_LEFT"/>
+     </action>
+    </case>
+    <case first="{SHIFT_RIGHT}">
+     <action first="{SHIFT_RIGHT}">
+      <token first="{SHIFT_RIGHT}" name="SHIFT_RIGHT"/>
+     </action>
+    </case>
+    <case first="{AMP}">
+     <action first="{AMP}">
+      <token first="{AMP}" name="AMP"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" name="PrimaryExpression">
+   <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+    <group first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+     <switch first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+      <case first="{LOCAL_SYMBOL}">
+       <action first="{LOCAL_SYMBOL}">
+        <nonterminal first="{LOCAL_SYMBOL}" ruleName="LocalSymbol"/>
+       </action>
+      </case>
+      <case first="{CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, HEX_CONSTANT, STRING_CONSTANT}">
+       <action first="{CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, HEX_CONSTANT, STRING_CONSTANT}">
+        <nonterminal first="{CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, HEX_CONSTANT, STRING_CONSTANT}" ruleName="Constant"/>
+       </action>
+      </case>
+      <case first="{SYMBOL}">
+       <action first="{SYMBOL}">
+        <nonterminal first="{SYMBOL}" ruleName="Symbol"/>
+       </action>
+      </case>
+      <case first="{AT}">
+       <action first="{AT}">
+        <nonterminal first="{AT}" ruleName="At"/>
+       </action>
+      </case>
+      <case first="{LPAREN}">
+       <sequence first="{LPAREN}">
+        <sequence first="{LPAREN}">
+         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+          <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="Expression"/>
+         </action>
+        </sequence>
+        <token first="{RPAREN}" name="RPAREN"/>
+       </sequence>
+      </case>
+      <case first="{AMP, DOLLAR, MINUS, PLUS, TILDE}">
+       <sequence first="{AMP, DOLLAR, MINUS, PLUS, TILDE}">
+        <action first="{AMP, DOLLAR, MINUS, PLUS, TILDE}">
+         <nonterminal first="{AMP, DOLLAR, MINUS, PLUS, TILDE}" ruleName="UnaryOperator"/>
+        </action>
+        <action first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}">
+         <nonterminal first="{AMP, AT, CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, DOLLAR, HEX_CONSTANT, LOCAL_SYMBOL, LPAREN, MINUS, PLUS, STRING_CONSTANT, SYMBOL, TILDE}" ruleName="PrimaryExpression"/>
+        </action>
+       </sequence>
+      </case>
+     </switch>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, DOLLAR, MINUS, PLUS, TILDE}" name="UnaryOperator">
+   <switch first="{AMP, DOLLAR, MINUS, PLUS, TILDE}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
+     </action>
+    </case>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
+     </action>
+    </case>
+    <case first="{TILDE}">
+     <action first="{TILDE}">
+      <token first="{TILDE}" name="TILDE"/>
+     </action>
+    </case>
+    <case first="{DOLLAR}">
+     <action first="{DOLLAR}">
+      <token first="{DOLLAR}" name="DOLLAR"/>
+     </action>
+    </case>
+    <case first="{AMP}">
+     <action first="{AMP}">
+      <token first="{AMP}" name="AMP"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{LOCAL_SYMBOL}" name="LocalSymbol">
+   <action first="{LOCAL_SYMBOL}">
+    <token first="{LOCAL_SYMBOL}" name="LOCAL_SYMBOL"/>
+   </action>
+  </rule>
+  <rule first="{CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, HEX_CONSTANT, STRING_CONSTANT}" name="Constant">
+   <switch first="{CHAR_CONSTANT, CLSID_CONSTANT, DECIMAL_CONSTANT, HEX_CONSTANT, STRING_CONSTANT}">
+    <case first="{DECIMAL_CONSTANT}">
+     <action first="{DECIMAL_CONSTANT}">
+      <token first="{DECIMAL_CONSTANT}" name="DECIMAL_CONSTANT"/>
+     </action>
+    </case>
+    <case first="{HEX_CONSTANT}">
+     <action first="{HEX_CONSTANT}">
+      <token first="{HEX_CONSTANT}" name="HEX_CONSTANT"/>
+     </action>
+    </case>
+    <case first="{CHAR_CONSTANT}">
+     <action first="{CHAR_CONSTANT}">
+      <token first="{CHAR_CONSTANT}" name="CHAR_CONSTANT"/>
+     </action>
+    </case>
+    <case first="{STRING_CONSTANT}">
+     <action first="{STRING_CONSTANT}">
+      <token first="{STRING_CONSTANT}" name="STRING_CONSTANT"/>
+     </action>
+    </case>
+    <case first="{CLSID_CONSTANT}">
+     <action first="{CLSID_CONSTANT}">
+      <token first="{CLSID_CONSTANT}" name="CLSID_CONSTANT"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{SYMBOL}" name="Symbol">
+   <action first="{SYMBOL}">
+    <token first="{SYMBOL}" name="SYMBOL"/>
+   </action>
+  </rule>
+  <rule first="{AT}" name="At">
+   <action first="{AT}">
+    <token first="{AT}" name="AT"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

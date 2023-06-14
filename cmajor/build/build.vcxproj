@@ -164,10 +164,14 @@
     <ClCompile Include="flags.cppm" />
     <ClCompile Include="install.cpp" />
     <ClCompile Include="install.cppm" />
+    <ClCompile Include="linking.cpp" />
+    <ClCompile Include="linking.cppm" />
     <ClCompile Include="main_unit.cpp" />
     <ClCompile Include="main_unit.cppm" />
     <ClCompile Include="parsing.cpp" />
     <ClCompile Include="parsing.cppm" />
+    <ClCompile Include="resources.cpp" />
+    <ClCompile Include="resources.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">
@@ -209,6 +213,9 @@
     <ProjectReference Include="..\binder\binder.vcxproj">
       <Project>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\eh\eh.vcxproj">
+      <Project>{1a33456a-764a-489e-a510-58f61b519d1f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
     </ProjectReference>
@@ -223,6 +230,18 @@
     </ProjectReference>
     <ProjectReference Include="..\symbols\symbols.vcxproj">
       <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system-x\backend\backend.vcxproj">
+      <Project>{b4430f33-0890-4ff5-a10b-e553a0cc5193}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system-x\intermediate\intermediate.vcxproj">
+      <Project>{b8bfd71d-f1bd-4278-950c-9db2901f0062}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system-x\machine\machine.vcxproj">
+      <Project>{5af98f03-2215-4a25-b653-733a91e17456}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system-x\object\object.vcxproj">
+      <Project>{74000ee5-8498-4d10-beef-ed5743e01300}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

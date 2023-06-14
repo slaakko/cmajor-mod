@@ -11,6 +11,7 @@ import cmajor.ast;
 import cmajor.build.flags;
 import cmajor.binder.attribute.binder;
 import cmajor.binder.bound.compile.unit;
+import cmajor.ir;
 
 export namespace cmajor::build {
 
@@ -20,6 +21,6 @@ std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> BindTypes(cmajor:
     cmajor::binder::AttributeBinder* attributeBinder, bool& stop);
 
 void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits, 
-    std::vector<std::string>& objectFilePaths, bool& stop);
+    std::vector<std::string>& objectFilePaths, cmajor::ir::EmittingContext* emittingContext, bool& stop);
 
 } // namespace cmajor::build

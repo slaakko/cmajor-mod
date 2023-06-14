@@ -1,0 +1,1815 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+module cmajor.systemx.backend.emitter;
+
+import cmajor.systemx.ir;
+
+namespace cmajor::systemx::backend {
+
+SystemXEmitter::SystemXEmitter(cmajor::ir::EmittingContext* emittingContext_) :
+    cmajor::ir::Emitter(), emittingContext(emittingContext_), emittingDelegate(nullptr), context(nullptr), compileUnit(nullptr), currentFunction(nullptr),
+    objectPointer(nullptr)
+{
+    SetStack(&stack);
+}
+
+void SystemXEmitter::SetEmittingDelegate(cmajor::ir::EmittingDelegate* emittingDelegate_)
+{
+    emittingDelegate = emittingDelegate_;
+}
+
+void* SystemXEmitter::GetIrTypeForBool()
+{
+    return context->GetBoolType();
+}
+
+void* SystemXEmitter::GetIrTypeForSByte()
+{
+    return context->GetSByteType();
+}
+
+void* SystemXEmitter::GetIrTypeForByte()
+{
+    return context->GetByteType();
+}
+
+void* SystemXEmitter::GetIrTypeForShort()
+{
+    return context->GetShortType();
+}
+
+void* SystemXEmitter::GetIrTypeForUShort()
+{
+    return context->GetUShortType();
+}
+
+void* SystemXEmitter::GetIrTypeForInt()
+{
+    return context->GetIntType();
+}
+
+void* SystemXEmitter::GetIrTypeForUInt()
+{
+    return context->GetUIntType();
+}
+
+void* SystemXEmitter::GetIrTypeForLong()
+{
+    return context->GetLongType();
+}
+
+void* SystemXEmitter::GetIrTypeForULong()
+{
+    return context->GetULongType();
+}
+
+void* SystemXEmitter::GetIrTypeForFloat()
+{
+    return context->GetFloatType();
+}
+
+void* SystemXEmitter::GetIrTypeForDouble()
+{
+    return context->GetDoubleType();
+}
+
+void* SystemXEmitter::GetIrTypeForChar()
+{
+    return context->GetByteType();
+}
+
+void* SystemXEmitter::GetIrTypeForWChar()
+{
+    return context->GetUShortType();
+}
+
+void* SystemXEmitter::GetIrTypeForUChar()
+{
+    return context->GetUIntType();
+}
+
+void* SystemXEmitter::GetIrTypeForVoid()
+{
+    return context->GetVoidType();
+}
+
+void* SystemXEmitter::GetIrTypeForFunction(void* retType, const std::vector<void*>& paramTypes)
+{
+    std::vector<cmajor::systemx::ir::Type*> parameterTypes;
+    for (void* paramType : paramTypes)
+    {
+        parameterTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(paramType));
+    }
+    return context->GetFunctionType(static_cast<cmajor::systemx::ir::Type*>(retType), parameterTypes);
+}
+
+void* SystemXEmitter::GetIrTypeForVariableParamFunction(void* retType)
+{
+    // todo
+    return nullptr;
+}
+
+void* SystemXEmitter::GetIrTypeByTypeId(const util::uuid& typeId)
+{
+    auto it = irTypeTypeIdMap.find(typeId);
+    if (it != irTypeTypeIdMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void SystemXEmitter::SetIrTypeByTypeId(const util::uuid& typeId, void* irType)
+{
+    irTypeTypeIdMap[typeId] = static_cast<cmajor::systemx::ir::Type*>(irType);
+}
+
+void* SystemXEmitter::GetIrTypeForArrayType(void* elementType, int64_t size)
+{
+    return context->GetArrayType(static_cast<cmajor::systemx::ir::Type*>(elementType), size);
+}
+
+void* SystemXEmitter::GetIrTypeForClassType(const std::vector<void*>& elementTypes)
+{
+    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    for (void* elementType : elementTypes)
+    {
+        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+    }
+    return context->GetStructureType(memberTypes);
+}
+
+void* SystemXEmitter::CreateFwdIrTypeForClassType()
+{
+    return context->CreateStructureType();
+}
+
+void SystemXEmitter::SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes)
+{
+    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    for (void* elementType : elementTypes)
+    {
+        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+    }
+    cmajor::systemx::ir::StructureType* structureType = static_cast<cmajor::systemx::ir::StructureType*>(forwardDeclaredType);
+    structureType->SetMemberTypes(memberTypes);
+}
+
+void* SystemXEmitter::GetIrTypeForDelegateType(void* retType, const std::vector<void*>& paramTypes)
+{
+    std::vector<cmajor::systemx::ir::Type*> parameterTypes;
+    for (void* paramType : paramTypes)
+    {
+        parameterTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(paramType));
+    }
+    return context->GetPtrType(context->GetFunctionType(static_cast<cmajor::systemx::ir::Type*>(retType), parameterTypes));
+}
+
+void* SystemXEmitter::GetIrTypeForVoidPtrType()
+{
+    return context->GetPtrType(context->GetVoidType());
+}
+
+void* SystemXEmitter::GetIrTypeForStructType(const std::vector<void*>& elementTypes)
+{
+    std::vector<cmajor::systemx::ir::Type*> memberTypes;
+    for (void* elementType : elementTypes)
+    {
+        memberTypes.push_back(static_cast<cmajor::systemx::ir::Type*>(elementType));
+    }
+    return context->GetStructureType(memberTypes);
+}
+
+void* SystemXEmitter::GetIrTypeForPtrType(void* baseIrType)
+{
+    return context->GetPtrType(static_cast<cmajor::systemx::ir::Type*>(baseIrType));
+}
+
+std::string SystemXEmitter::GetIrTypeName(void* irType)
+{
+    return std::string();
+}
+
+std::string SystemXEmitter::MakeVmtVariableName(const std::string& vmtObjectName)
+{
+    return std::string();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults)
+{
+    std::vector<cmajor::systemx::ir::ConstantValue*> arrayOfConstants;
+    for (void* constant : arrayOfDefaults)
+    {
+        arrayOfConstants.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(constant));
+    }
+    cmajor::systemx::ir::Type* arrayType = static_cast<cmajor::systemx::ir::Type*>(arrayIrType);
+    return context->GetArrayValue(arrayType, arrayOfConstants, std::string());
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForBool()
+{
+    return context->GetDefaultBoolValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForSByte()
+{
+    return context->GetDefaultSByteValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForByte()
+{
+    return context->GetDefaultByteValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForShort()
+{
+    return context->GetDefaultShortValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForUShort()
+{
+    return context->GetDefaultUShortValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForInt()
+{
+    return context->GetDefaultIntValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForUInt()
+{
+    return context->GetDefaultUIntValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForLong()
+{
+    return context->GetDefaultLongValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForULong()
+{
+    return context->GetDefaultULongValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForFloat()
+{
+    return context->GetDefaultFloatValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForDouble()
+{
+    return context->GetDefaultDoubleValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForChar()
+{
+    return context->GetDefaultByteValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForWChar()
+{
+    return context->GetDefaultUShortValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForUChar()
+{
+    return context->GetDefaultUIntValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForStruct(void* irType, const std::vector<void*>& defaultMembers)
+{
+    std::vector<cmajor::systemx::ir::ConstantValue*> arrayOfDefaults;
+    for (void* constant : defaultMembers)
+    {
+        arrayOfDefaults.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(constant));
+    }
+    return context->GetStructureValue(static_cast<cmajor::systemx::ir::StructureType*>(irType), arrayOfDefaults);
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForDelegateType(void* irType)
+{
+    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(irType));
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForVoidPtrType()
+{
+    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(context->GetPtrType(context->GetVoidType())));
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForDerivedType(void* irType)
+{
+    return static_cast<cmajor::systemx::ir::Type*>(irType)->DefaultValue();
+}
+
+void* SystemXEmitter::CreateDefaultIrValueForPtrType(void* irType)
+{
+    return context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(irType));
+}
+
+void* SystemXEmitter::CreateIrValueForBool(bool value)
+{
+    return context->GetBoolValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForSByte(int8_t value)
+{
+    return context->GetSByteValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForByte(uint8_t value)
+{
+    return context->GetByteValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForShort(int16_t value)
+{
+    return context->GetShortValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForUShort(uint16_t value)
+{
+    return context->GetUShortValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForInt(int32_t value)
+{
+    return context->GetIntValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForUInt(uint32_t value)
+{
+    return context->GetUIntValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForLong(int64_t value)
+{
+    return context->GetLongValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForULong(uint64_t value)
+{
+    return context->GetULongValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForFloat(float value)
+{
+    return context->GetFloatValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForDouble(double value)
+{
+    return context->GetDoubleValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForChar(uint8_t value)
+{
+    return context->GetByteValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForWChar(uint16_t value)
+{
+    return context->GetUShortValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForUChar(uint32_t value)
+{
+    return context->GetUIntValue(value);
+}
+
+void* SystemXEmitter::CreateIrValueForWString(void* wstringConstant)
+{
+    return static_cast<cmajor::systemx::ir::Value*>(wstringConstant);
+}
+
+void* SystemXEmitter::CreateIrValueForUString(void* ustringConstant)
+{
+    return static_cast<cmajor::systemx::ir::Value*>(ustringConstant);
+}
+
+void* SystemXEmitter::CreateIrValueForConstantArray(void* arrayIrType, const std::vector<void*>& elementConstants, const std::string& prefix)
+{
+    std::vector<cmajor::systemx::ir::ConstantValue*> elements;
+    for (void* elementConstant : elementConstants)
+    {
+        elements.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(elementConstant));
+    }
+    return context->GetArrayValue(static_cast<cmajor::systemx::ir::ArrayType*>(arrayIrType), elements, prefix);
+}
+
+void* SystemXEmitter::CreateIrValueForConstantStruct(void* structIrType, const std::vector<void*>& elementConstants)
+{
+    std::vector<cmajor::systemx::ir::ConstantValue*> memberConstants;
+    for (void* elementConstant : elementConstants)
+    {
+        memberConstants.push_back(static_cast<cmajor::systemx::ir::ConstantValue*>(elementConstant));
+    }
+    return context->GetStructureValue(static_cast<cmajor::systemx::ir::StructureType*>(structIrType), memberConstants);
+}
+
+void* SystemXEmitter::CreateIrValueForUuid(void* uuidConstant)
+{
+    cmajor::systemx::ir::Value* arg = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(uuidConstant), context->GetLongValue(0));
+    return context->CreateBitCast(arg, context->GetPtrType(context->GetVoidType()));
+}
+
+void* SystemXEmitter::GetConversionValue(void* type, void* from)
+{
+    return context->GetConversionValue(static_cast<cmajor::systemx::ir::Type*>(type), static_cast<cmajor::systemx::ir::ConstantValue*>(from));
+}
+
+void* SystemXEmitter::CreateGlobalStringPtr(const std::string& stringValue)
+{
+    return context->CreateGlobalStringPtr(stringValue);
+}
+
+void* SystemXEmitter::CreateGlobalWStringPtr(const std::u16string& stringValue)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateGlobalUStringPtr(const std::u32string& stringValue)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::GetGlobalStringPtr(int stringId)
+{
+    return emittingDelegate->GetGlobalStringPtr(stringId);
+}
+
+void* SystemXEmitter::GetGlobalWStringConstant(int stringId)
+{
+    return emittingDelegate->GetGlobalWStringConstant(stringId);
+}
+
+void* SystemXEmitter::GetGlobalUStringConstant(int stringId)
+{
+    return emittingDelegate->GetGlobalUStringConstant(stringId);
+}
+
+void* SystemXEmitter::GetGlobalUuidConstant(int uuidId)
+{
+    return emittingDelegate->GetGlobalUuidConstant(uuidId);
+}
+
+void* SystemXEmitter::CreateDITypeForBool()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForSByte()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForByte()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForShort()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForUShort()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForInt()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForUInt()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForLong()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForULong()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForFloat()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForDouble()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForChar()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForWChar()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForUChar()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForVoid()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t value)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
+    uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+{
+    return nullptr;
+}
+
+uint64_t SystemXEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
+{
+    return uint64_t();
+}
+
+void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSpan, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+    const std::string& mangledName, void* baseClassDIType)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
+{
+}
+
+void* SystemXEmitter::GetDITypeByTypeId(const util::uuid& typeId) const
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName)
+{
+}
+
+void* SystemXEmitter::GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType)
+{
+}
+
+void* SystemXEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateConstDIType(void* diType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateLValueRefDIType(void* diType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateRValueRefDIType(void* diType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreatePointerDIType(void* diType)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateUnspecifiedDIType(const std::string& name)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className)
+{
+}
+
+uint64_t SystemXEmitter::GetSizeInBits(void* irType)
+{
+    return 0;
+}
+
+uint64_t SystemXEmitter::GetAlignmentInBits(void* irType)
+{
+    return 0;
+}
+
+void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
+{
+}
+
+void* SystemXEmitter::GetArrayBeginAddress(void* arrayPtr)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(0));
+}
+
+void* SystemXEmitter::GetArrayEndAddress(void* arrayPtr, uint64_t size)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(size));
+}
+
+void* SystemXEmitter::CreateBasicBlock(const std::string& name)
+{
+    if (name == "cleanup")
+    {
+        return currentFunction->CreateCleanupBasicBlock();
+    }
+    else
+    {
+        return currentFunction->CreateBasicBlock();
+    }
+}
+
+void* SystemXEmitter::CreateIncludeBasicBlockInstruction(void* basicBlock)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::PushParentBlock()
+{
+}
+
+void SystemXEmitter::PopParentBlock()
+{
+}
+
+void SystemXEmitter::SetHandlerBlock(void* tryBlock, void* catchBlock)
+{
+}
+
+void SystemXEmitter::SetCleanupBlock(void* cleanupBlock)
+{
+}
+
+int SystemXEmitter::GetBasicBlockId(void* basicBlock)
+{
+    return static_cast<cmajor::systemx::ir::BasicBlock*>(basicBlock)->Id();
+}
+
+void SystemXEmitter::CreateBr(void* targetBasicBlock)
+{
+    context->CreateJump(static_cast<cmajor::systemx::ir::BasicBlock*>(targetBasicBlock));
+}
+
+void* SystemXEmitter::CurrentBasicBlock() const
+{
+    return context->GetCurrentBasicBlock();
+}
+
+void SystemXEmitter::SetCurrentBasicBlock(void* basicBlock)
+{
+    context->SetCurrentBasicBlock(static_cast<cmajor::systemx::ir::BasicBlock*>(basicBlock));
+}
+
+void SystemXEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasicBlock)
+{
+    context->CreateBranch(static_cast<cmajor::systemx::ir::Value*>(cond), static_cast<cmajor::systemx::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::systemx::ir::BasicBlock*>(falseBasicBlock));
+}
+
+void* SystemXEmitter::CreateArrayIndexAddress(void* arrayPtr, void* index)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), static_cast<cmajor::systemx::ir::Value*>(index));
+}
+
+void SystemXEmitter::CreateStore(void* value, void* ptr)
+{
+    context->CreateStore(static_cast<cmajor::systemx::ir::Value*>(value), static_cast<cmajor::systemx::ir::Value*>(ptr));
+}
+
+void* SystemXEmitter::CreateLoad(void* ptr)
+{
+    return context->CreateLoad(static_cast<cmajor::systemx::ir::Value*>(ptr));
+}
+
+void* SystemXEmitter::CreateAdd(void* left, void* right)
+{
+    return context->CreateAdd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFAdd(void* left, void* right)
+{
+    return context->CreateAdd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateSub(void* left, void* right)
+{
+    return context->CreateSub(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFSub(void* left, void* right)
+{
+    return context->CreateSub(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateMul(void* left, void* right)
+{
+    return context->CreateMul(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFMul(void* left, void* right)
+{
+    return context->CreateMul(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateUDiv(void* left, void* right)
+{
+    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateSDiv(void* left, void* right)
+{
+    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFDiv(void* left, void* right)
+{
+    return context->CreateDiv(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateURem(void* left, void* right)
+{
+    return context->CreateMod(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateSRem(void* left, void* right)
+{
+    return context->CreateMod(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateAnd(void* left, void* right)
+{
+    return context->CreateAnd(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateOr(void* left, void* right)
+{
+    return context->CreateOr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateXor(void* left, void* right)
+{
+    return context->CreateXor(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateShl(void* left, void* right)
+{
+    return context->CreateShl(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateAShr(void* left, void* right)
+{
+    return context->CreateShr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateLShr(void* left, void* right)
+{
+    return context->CreateShr(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateICmpEQ(void* left, void* right)
+{
+    return context->CreateEqual(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFCmpOEQ(void* left, void* right)
+{
+    return context->CreateEqual(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateICmpULT(void* left, void* right)
+{
+    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateICmpSLT(void* left, void* right)
+{
+    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateFCmpOLT(void* left, void* right)
+{
+    return context->CreateLess(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+void* SystemXEmitter::CreateSExt(void* operand, void* destinationType)
+{
+    return context->CreateSignExtend(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateZExt(void* operand, void* destinationType)
+{
+    return context->CreateZeroExtend(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateFPExt(void* operand, void* destinationType)
+{
+    return operand;
+}
+
+void* SystemXEmitter::CreateTrunc(void* operand, void* destinationType)
+{
+    return context->CreateTruncate(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateFPTrunc(void* operand, void* destinationType)
+{
+    return context->CreateTruncate(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateBitCast(void* operand, void* destinationType)
+{
+    return context->CreateBitCast(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateUIToFP(void* operand, void* destinationType)
+{
+    return context->CreateIntToFloat(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateSIToFP(void* operand, void* destinationType)
+{
+    return context->CreateIntToFloat(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateFPToUI(void* operand, void* destinationType)
+{
+    return context->CreateFloatToInt(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateFPToSI(void* operand, void* destinationType)
+{
+    return context->CreateFloatToInt(static_cast<cmajor::systemx::ir::Value*>(operand), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateIntToPtr(void* intValue, void* destinationType)
+{
+    return context->CreateIntToPtr(static_cast<cmajor::systemx::ir::Value*>(intValue), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreatePtrToInt(void* ptrValue, void* destinationType)
+{
+    return context->CreatePtrToInt(static_cast<cmajor::systemx::ir::Value*>(ptrValue), static_cast<cmajor::systemx::ir::Type*>(destinationType));
+}
+
+void* SystemXEmitter::CreateNot(void* value)
+{
+    return context->CreateNot(static_cast<cmajor::systemx::ir::Value*>(value));
+}
+
+void* SystemXEmitter::CreateNeg(void* value)
+{
+    return context->CreateNeg(static_cast<cmajor::systemx::ir::Value*>(value));
+}
+
+void* SystemXEmitter::CreateFNeg(void* value)
+{
+    cmajor::systemx::ir::Value* val = static_cast<cmajor::systemx::ir::Value*>(value);
+    if (val->GetType(*context)->Id() == cmajor::systemx::ir::doubleTypeId)
+    {
+        cmajor::systemx::ir::ConstantValue* minusOne = context->GetDoubleValue(-1.0);
+        return context->CreateMul(minusOne, val);
+    }
+    else if (val->GetType(*context)->Id() == cmajor::systemx::ir::floatTypeId)
+    {
+        cmajor::systemx::ir::ConstantValue* minusOne = context->GetFloatValue(-1.0f);
+        return context->CreateMul(minusOne, val);
+    }
+    else
+    {
+        throw std::runtime_error("invalid FNeg operand type");
+    }
+}
+
+void* SystemXEmitter::CreateNop()
+{
+    return context->CreateNop();
+}
+
+void* SystemXEmitter::CreateSave()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateBeginTry()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateEndTry(void* nextDest)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateBeginCatch()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateEndCatch(void* nextDest)
+{
+    return nullptr;
+}
+
+std::string SystemXEmitter::GetVmtObjectName(void* symbol) const
+{
+    return std::string();
+}
+
+void SystemXEmitter::SetVmtObjectName(void* symbol, const std::string& vmtObjectName)
+{
+}
+
+std::string SystemXEmitter::GetImtArrayObjectName(void* symbol) const
+{
+    return std::string();
+}
+
+void SystemXEmitter::SetImtArrayObjectName(void* symbol, const std::string& imtArrayObjectName)
+{
+}
+
+void* SystemXEmitter::GetVmtObjectType(void* symbol) const
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetVmtObjectType(void* symbol, void* vmtObjectType)
+{
+}
+
+void* SystemXEmitter::GetStaticObjectType(void* symbol) const
+{
+    auto it = staticTypeMap.find(symbol);
+    if (it != staticTypeMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void SystemXEmitter::SetStaticObjectType(void* symbol, void* type)
+{
+    staticTypeMap[symbol] = static_cast<cmajor::systemx::ir::StructureType*>(type);
+}
+
+std::string SystemXEmitter::GetStaticObjectName(void* symbol) const
+{
+    auto it = staticObjectNameMap.find(symbol);
+    if (it != staticObjectNameMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return std::string();
+    }
+}
+
+void SystemXEmitter::SetStaticObjectName(void* symbol, const std::string& staticObjectName)
+{
+    staticObjectNameMap[symbol] = staticObjectName;
+}
+
+void* SystemXEmitter::GetOrInsertGlobal(const std::string& name, void* type)
+{
+    return context->GetOrInsertGlobal(name, static_cast<cmajor::systemx::ir::Type*>(type));
+}
+
+void* SystemXEmitter::GetOrInsertAnyComdat(const std::string& name, void* global)
+{
+    static_cast<cmajor::systemx::ir::GlobalVariable*>(global)->SetLinkOnce();
+    return nullptr;
+}
+
+void* SystemXEmitter::GetOrInsertAnyFunctionComdat(const std::string& name, void* function)
+{
+    static_cast<cmajor::systemx::ir::Function*>(function)->SetLinkOnce();
+    return nullptr;
+}
+
+void* SystemXEmitter::GetOrInsertFunction(const std::string& name, void* type, bool nothrow)
+{
+    return compileUnit->GetOrInsertFunction(name, static_cast<cmajor::systemx::ir::FunctionType*>(type));
+}
+
+void SystemXEmitter::SetInitializer(void* global, void* initializer)
+{
+    cmajor::systemx::ir::GlobalVariable* globalVar = static_cast<cmajor::systemx::ir::GlobalVariable*>(global);
+    globalVar->SetInitializer(static_cast<cmajor::systemx::ir::ConstantValue*>(initializer));
+}
+
+void SystemXEmitter::SetPrivateLinkage(void* global)
+{
+}
+
+bool SystemXEmitter::IsVmtObjectCreated(void* symbol) const
+{
+    return vmtObjectCreatedSet.find(symbol) != vmtObjectCreatedSet.cend();
+}
+
+void SystemXEmitter::SetVmtObjectCreated(void* symbol)
+{
+    vmtObjectCreatedSet.insert(symbol);
+}
+
+bool SystemXEmitter::IsStaticObjectCreated(void* symbol) const
+{
+    return staticObjectCreatedSet.find(symbol) != staticObjectCreatedSet.cend();
+}
+
+void SystemXEmitter::SetStaticObjectCreated(void* symbol)
+{
+    staticObjectCreatedSet.insert(symbol);
+}
+
+void* SystemXEmitter::HandlerBlock()
+{
+    return emittingDelegate->HandlerBlock();
+}
+
+void* SystemXEmitter::CleanupBlock()
+{
+    return emittingDelegate->CleanupBlock();
+}
+
+bool SystemXEmitter::NewCleanupNeeded()
+{
+    return emittingDelegate->NewCleanupNeeded();
+}
+
+void SystemXEmitter::CreateCleanup()
+{
+    return emittingDelegate->CreateCleanup();
+}
+
+cmajor::ir::Pad* SystemXEmitter::CurrentPad()
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCleanupPadWithParent(void* parentPad, const std::vector<void*>& args)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCleanupPad(const std::vector<void*>& args)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCleanupRet(void* cleanupPad, void* unwindTarget)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCatchRet(void* catchPad, void* returnTarget)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCatchSwitch(void* unwindBlock)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCatchSwitchWithParent(void* parentPad, void* unwindBlock)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::AddHandlerToCatchSwitch(void* catchSwitch, void* target)
+{
+}
+
+void* SystemXEmitter::CreateCatchPad(void* parentPad, const std::vector<void*>& args)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateClassDIType(void* classPtr)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateCall(void* callee, const std::vector<void*>& args)
+{
+    for (void* arg : args)
+    {
+        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        context->CreateArg(argument);
+    }
+    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
+    return context->CreateCall(calleeValue);
+}
+
+void* SystemXEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+{
+    for (void* arg : args)
+    {
+        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        context->CreateArg(argument);
+    }
+    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
+    return context->CreateCall(calleeValue);
+}
+
+void* SystemXEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+{
+    void* prevBasicBlock = context->GetCurrentBasicBlock();
+    SetCurrentBasicBlock(basicBlock);
+    for (void* arg : args)
+    {
+        cmajor::systemx::ir::Value* argument = static_cast<cmajor::systemx::ir::Value*>(arg);
+        context->CreateArg(argument);
+    }
+    cmajor::systemx::ir::Value* calleeValue = static_cast<cmajor::systemx::ir::Value*>(callee);
+    cmajor::systemx::ir::Instruction* callInst = context->CreateCall(calleeValue);
+    SetCurrentBasicBlock(prevBasicBlock);
+    return callInst;
+}
+
+void* SystemXEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
+{
+    void* cleanupBlock = CleanupBlock();
+    if (unwindBlock == cleanupBlock)
+    {
+        void* nop1 = CreateNop();
+        void* beginCleanup = CreateMDStruct();
+        AddMDItem(beginCleanup, "nodeType", CreateMDLong(cmajor::systemx::ir::beginCleanupNodeType));
+        AddMDItem(beginCleanup, "cleanupBlockId", CreateMDBasicBlockRef(cleanupBlock));
+        if (emittingDelegate->InTryBlock())
+        {
+            AddMDItem(beginCleanup, "tryBlockId", CreateMDLong(emittingDelegate->CurrentTryBlockId()));
+        }
+        int beginCleanupId = GetMDStructId(beginCleanup);
+        void* beginCleanupMdRef = CreateMDStructRef(beginCleanupId);
+        SetMetadataRef(nop1, beginCleanupMdRef);
+    }
+    void* call = CreateCall(callee, args);
+    if (unwindBlock == cleanupBlock)
+    {
+        void* nop2 = CreateNop();
+        void* endCleanup = CreateMDStruct();
+        AddMDItem(endCleanup, "nodeType", CreateMDLong(cmajor::systemx::ir::endCleanupNodeType));
+        AddMDItem(endCleanup, "cleanupBlockId", CreateMDBasicBlockRef(cleanupBlock));
+        int endCleanupId = GetMDStructId(endCleanup);
+        void* endCleanupMdRef = CreateMDStructRef(endCleanupId);
+        SetMetadataRef(nop2, endCleanupMdRef);
+    }
+    return call;
+}
+
+void* SystemXEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+{
+    return CreateInvoke(callee, normalBlock, unwindBlock, args);
+}
+
+void* SystemXEmitter::DIBuilder()
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetCurrentDIBuilder(void* diBuilder_)
+{
+}
+
+void* SystemXEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
+}
+
+void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
+}
+
+void* SystemXEmitter::GetObjectFromInterface(void* interfaceTypePtr)
+{
+    cmajor::systemx::ir::Value* addr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
+    return context->CreateLoad(addr);
+}
+
+void* SystemXEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
+}
+
+void* SystemXEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
+{
+    return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
+}
+
+void* SystemXEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
+{
+    cmajor::systemx::ir::Value* interfacePtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
+    cmajor::systemx::ir::Value* interfacePtr = context->CreateLoad(interfacePtrAddr);
+    return context->CreateBitCast(interfacePtr, context->GetPtrType(context->GetVoidType()));
+}
+
+void* SystemXEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
+{
+    cmajor::systemx::ir::Value* methodPtrPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtPtr), context->GetLongValue(methodIndex));
+    cmajor::systemx::ir::Value* methodPtr = context->CreateLoad(methodPtrPtr);
+    cmajor::systemx::ir::Value* callee = context->CreateBitCast(methodPtr, context->GetPtrType(static_cast<cmajor::systemx::ir::Type*>(interfaceMethodType)));
+    return callee;
+}
+
+void* SystemXEmitter::GetFunctionIrType(void* functionSymbol) const
+{
+    auto it = functionIrTypeMap.find(functionSymbol);
+    if (it != functionIrTypeMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void SystemXEmitter::SetFunctionIrType(void* symbol, void* irType)
+{
+    functionIrTypeMap[symbol] = static_cast<cmajor::systemx::ir::FunctionType*>(irType);
+}
+
+void* SystemXEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
+{
+    cmajor::systemx::ir::Value* vmtPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(thisPtr), context->GetLongValue(vmtPtrIndex));
+    cmajor::systemx::ir::Value* vmtPtr = context->CreateLoad(vmtPtrPtr);
+    return context->CreateBitCast(vmtPtr, static_cast<cmajor::systemx::ir::Type*>(vmtPtrType));
+}
+
+void* SystemXEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
+{
+    cmajor::systemx::ir::Value* funPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(vmtIndex));
+    return context->CreateLoad(funPtrPtr);
+}
+
+void* SystemXEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
+{
+    cmajor::systemx::ir::Value* imtsArrayPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset));
+    cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateBitCast(imtsArrayPtrPtr, context->GetPtrType(context->GetPtrType(context->GetVoidType())));
+    return context->CreateLoad(imtsArrayPtr);
+}
+
+void* SystemXEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
+{
+    cmajor::systemx::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
+    return context->CreateLoad(imtArrayPtr);
+}
+
+void* SystemXEmitter::GetIrObject(void* symbol) const
+{
+    auto it = irObjectMap.find(symbol);
+    if (it != irObjectMap.cend())
+    {
+        return it->second;
+    }
+    else
+    {
+        throw std::runtime_error("emitter: IR object not found");
+    }
+}
+
+void SystemXEmitter::SetIrObject(void* symbol, void* irObject)
+{
+    irObjectMap[symbol] = static_cast<cmajor::systemx::ir::Value*>(irObject);
+}
+
+void* SystemXEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex)
+{
+    cmajor::systemx::ir::Value* clsPtr = static_cast<cmajor::systemx::ir::Value*>(classPtr);
+    return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
+}
+
+void* SystemXEmitter::SizeOf(void* ptrType)
+{
+    cmajor::systemx::ir::Value* nullPtr = context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(ptrType));
+    cmajor::systemx::ir::Value* one = context->CreatePtrOffset(nullPtr, context->GetLongValue(1));
+    cmajor::systemx::ir::Value* size = context->CreatePtrToInt(one, context->GetLongType());
+    return size;
+}
+
+void SystemXEmitter::SetLineNumber(int32_t lineNumber)
+{
+}
+
+void SystemXEmitter::SaveObjectPointer(void* objectPointer_)
+{
+    if (objectPointer == nullptr)
+    {
+        objectPointer = static_cast<cmajor::systemx::ir::Value*>(objectPointer_);
+    }
+}
+
+void SystemXEmitter::SetObjectPointer(void* objectPointer_)
+{
+    objectPointer = static_cast<cmajor::systemx::ir::Value*>(objectPointer_);
+}
+
+void* SystemXEmitter::GetObjectPointer()
+{
+    return objectPointer;
+}
+
+void* SystemXEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
+{
+    cmajor::systemx::ir::Value* classIdPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(0));
+    return classIdPtr;
+}
+
+void* SystemXEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
+{
+    cmajor::systemx::ir::Value* classNamePtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(classNameVmtIndexOffset));
+    cmajor::systemx::ir::Value* classNamePtr = context->CreateLoad(classNamePtrPtr);
+    cmajor::systemx::ir::Value* classNameCharPtr = context->CreateBitCast(classNamePtr, context->GetPtrType(context->GetPtrType(context->GetByteType())));
+    cmajor::systemx::ir::Value* className = context->CreateLoad(classNameCharPtr);
+    return className;
+}
+
+void* SystemXEmitter::ComputeAddress(void* ptr, void* index)
+{
+    return context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(ptr), static_cast<cmajor::systemx::ir::Value*>(index));
+}
+
+void* SystemXEmitter::CreatePtrDiff(void* left, void* right)
+{
+    return context->CreatePtrDiff(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
+}
+
+uint32_t SystemXEmitter::GetPrivateFlag()
+{
+    return uint32_t();
+}
+
+uint32_t SystemXEmitter::GetProtectedFlag()
+{
+    return uint32_t();
+}
+
+uint32_t SystemXEmitter::GetPublicFlag()
+{
+    return uint32_t();
+}
+
+uint32_t SystemXEmitter::GetNoFlags()
+{
+    return uint32_t();
+}
+
+void* SystemXEmitter::CreateModule(const std::string& moduleName)
+{
+    return new cmajor::systemx::ir::CompileUnit(moduleName);
+}
+
+void SystemXEmitter::DestroyModule(void* module)
+{
+    delete static_cast<cmajor::systemx::ir::CompileUnit*>(module);
+}
+
+void SystemXEmitter::SetModule(void* module_)
+{
+    compileUnit = static_cast<cmajor::systemx::ir::CompileUnit*>(module_);
+    context = compileUnit->GetContext();
+}
+
+void SystemXEmitter::SetTargetTriple(const std::string& targetTriple)
+{
+}
+
+void SystemXEmitter::SetDataLayout(void* dataLayout_)
+{
+}
+
+void SystemXEmitter::SetSourceFileName(const std::string& sourceFileName)
+{
+}
+
+void SystemXEmitter::SetDICompileUnit(void* diCompileUnit_)
+{
+}
+
+void SystemXEmitter::SetDIFile(void* diFile_)
+{
+}
+
+void SystemXEmitter::ResetCurrentDebugLocation()
+{
+}
+
+void SystemXEmitter::StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized)
+{
+}
+
+void SystemXEmitter::FinalizeDebugInfo()
+{
+}
+
+void SystemXEmitter::EndDebugInfo()
+{
+}
+
+void SystemXEmitter::EmitIrText(const std::string& filePath)
+{
+}
+
+void SystemXEmitter::Compile(const std::string& objectFilePath)
+{
+}
+
+void SystemXEmitter::VerifyModule()
+{
+}
+
+void* SystemXEmitter::CreateDebugInfoForNamespace(void* scope, const std::string& name)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::PushScope(void* scope)
+{
+}
+
+void SystemXEmitter::PopScope()
+{
+}
+
+void* SystemXEmitter::CurrentScope()
+{
+    return nullptr;
+}
+
+uint64_t SystemXEmitter::GetClassTypeSizeInBits(void* classIrType)
+{
+    return uint64_t();
+}
+
+uint64_t SystemXEmitter::GetClassTypeAlignmentInBits(void* classIrType)
+{
+    return uint64_t();
+}
+
+void SystemXEmitter::AddInlineFunctionAttribute(void* function)
+{
+}
+
+void SystemXEmitter::SetFunctionLinkage(void* function, bool setInline)
+{
+}
+
+void SystemXEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
+{
+    static_cast<cmajor::systemx::ir::Function*>(function)->SetLinkOnce();
+}
+
+void SystemXEmitter::SetFunctionCallConventionToStdCall(void* function)
+{
+}
+
+void SystemXEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId)
+{
+    currentFunction = static_cast<cmajor::systemx::ir::Function*>(function_);
+}
+
+void SystemXEmitter::SetFunctionName(const std::string& functionName)
+{
+}
+
+void SystemXEmitter::BeginScope()
+{
+}
+
+void SystemXEmitter::EndScope()
+{
+}
+
+int16_t SystemXEmitter::GetCurrentScopeId() const
+{
+    return 0;
+}
+
+void SystemXEmitter::SetCurrentScopeId(int16_t scopeId)
+{
+}
+
+int32_t SystemXEmitter::AddControlFlowGraphNode()
+{
+    return -1;
+}
+
+void SystemXEmitter::SetCurrentControlFlowGraphNodeId(int32_t controlFlowGraphNodeId)
+{
+}
+
+void SystemXEmitter::AddControlFlowGraphEdge(int32_t startNodeId, int32_t endNodeId)
+{
+}
+
+void SystemXEmitter::AddLocalVariable(const std::string& localVariableName, const util::uuid& typeId, void* irObject)
+{
+}
+
+void SystemXEmitter::BeginInstructionFlag(int16_t flag)
+{
+}
+
+void SystemXEmitter::EndInstructionFlag(int16_t flag)
+{
+}
+
+void SystemXEmitter::SetInPrologue(bool inPrologue_)
+{
+}
+
+void* SystemXEmitter::CreateSubroutineType(const std::vector<void*>& elementTypes)
+{
+    return nullptr;
+}
+
+unsigned SystemXEmitter::GetPureVirtualVirtuality()
+{
+    return unsigned();
+}
+
+unsigned SystemXEmitter::GetVirtualVirtuality()
+{
+    return unsigned();
+}
+
+unsigned SystemXEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit)
+{
+    return unsigned();
+}
+
+void* SystemXEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
+    unsigned flags)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned flags)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetDISubprogram(void* function, void* subprogram)
+{
+}
+
+void* SystemXEmitter::CreateAlloca(void* irType)
+{
+    return context->CreateLocal(static_cast<cmajor::systemx::ir::Type*>(irType));
+}
+
+void* SystemXEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::GetFunctionArgument(void* function, int argumentIndex)
+{
+    return static_cast<cmajor::systemx::ir::Function*>(function)->GetParam(argumentIndex);
+}
+
+void SystemXEmitter::SetDebugLoc(void* callInst)
+{
+}
+
+void* SystemXEmitter::CreateRet(void* value)
+{
+    return context->CreateRet(static_cast<cmajor::systemx::ir::Value*>(value));
+}
+
+void* SystemXEmitter::CreateRetVoid()
+{
+    return context->CreateRet(nullptr);
+}
+
+void SystemXEmitter::SetPersonalityFunction(void* function, void* personalityFunction)
+{
+}
+
+void SystemXEmitter::AddNoUnwindAttribute(void* function)
+{
+}
+
+void SystemXEmitter::AddUWTableAttribute(void* function)
+{
+}
+
+void* SystemXEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+{
+    // todo
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateSwitch(void* condition, void* defaultDest, unsigned numCases)
+{
+    return context->CreateSwitch(static_cast<cmajor::systemx::ir::Value*>(condition), static_cast<cmajor::systemx::ir::BasicBlock*>(defaultDest));
+}
+
+void SystemXEmitter::AddCase(void* switchInst, void* caseValue, void* caseDest)
+{
+    cmajor::systemx::ir::SwitchInstruction* inst = static_cast<cmajor::systemx::ir::SwitchInstruction*>(switchInst);
+    inst->AddCase(static_cast<cmajor::systemx::ir::Value*>(caseValue), static_cast<cmajor::systemx::ir::BasicBlock*>(caseDest));
+}
+
+void* SystemXEmitter::GenerateTrap(const std::vector<void*>& args)
+{
+    std::vector<cmajor::systemx::ir::Value*> arguments;
+    for (void* arg : args)
+    {
+        arguments.push_back(static_cast<cmajor::systemx::ir::Value*>(arg));
+    }
+    return context->CreateTrap(arguments);
+}
+
+void SystemXEmitter::SetCompileUnitId(const std::string& compileUnitId)
+{
+    context->SetCompileUnitId(compileUnitId);
+}
+
+void* SystemXEmitter::GetClsIdValue(const std::string& typeId)
+{
+    return context->GetClsIdValue(typeId);
+}
+
+void* SystemXEmitter::CreateMDBool(bool value)
+{
+    return context->CreateMDBool(value);
+}
+
+void* SystemXEmitter::CreateMDLong(int64_t value)
+{
+    return context->CreateMDLong(value);
+}
+
+void* SystemXEmitter::CreateMDString(const std::string& value)
+{
+    return context->CreateMDString(value);
+}
+
+void* SystemXEmitter::CreateMDStructRef(int id)
+{
+    return context->CreateMDStructRef(id);
+}
+
+int SystemXEmitter::GetMDStructId(void* mdStruct)
+{
+    return static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct)->Id();
+}
+
+void* SystemXEmitter::CreateMDStruct()
+{
+    return context->CreateMDStruct();
+}
+
+void* SystemXEmitter::CreateMDBasicBlockRef(void* bb)
+{
+    return context->CreateMDBasicBlockRef(bb);
+}
+
+void SystemXEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
+{
+    context->AddMDStructItem(static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct), fieldName, static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
+}
+
+void SystemXEmitter::SetFunctionMdId(void* function, int mdId)
+{
+    static_cast<cmajor::systemx::ir::Function*>(function)->SetMdId(mdId);
+}
+
+void* SystemXEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
+{
+    return context->GetMDStructRefForSourceFile(sourceFileName);
+}
+
+void SystemXEmitter::SetMetadataRef(void* inst, void* mdStructRef)
+{
+    context->SetMetadataRef(static_cast<cmajor::systemx::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
+}
+
+void SystemXEmitter::FinalizeFunction(void* function, bool hasCleanup)
+{
+    static_cast<cmajor::systemx::ir::Function*>(function)->Finalize();
+}
+
+int SystemXEmitter::Install(const std::string& str)
+{
+    return emittingDelegate->Install(str);
+}
+
+int SystemXEmitter::Install(const std::u16string& str)
+{
+    return emittingDelegate->Install(str);
+}
+
+int SystemXEmitter::Install(const std::u32string& str)
+{
+    return emittingDelegate->Install(str);
+}
+
+void* SystemXEmitter::CreateLandingPad(void* lpType)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::SetLandindPadAsCleanup(void* landingPad)
+{
+}
+
+void SystemXEmitter::MoveAllocaIntoBasicBlock(void* allocaInst, void* lastAlloca, void* basicBlock)
+{
+}
+
+void SystemXEmitter::AddClauseToLangdingPad(void* landingPad, void* exceptionTypeId)
+{
+}
+
+void* SystemXEmitter::CreateExtractValue(void* aggregate, const std::vector<unsigned int>& indeces)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateInsertValue(void* aggregate, void* value, const std::vector<unsigned int>& indeces)
+{
+    return nullptr;
+}
+
+void* SystemXEmitter::CreateUndefValue(void* type)
+{
+    return nullptr;
+}
+
+void SystemXEmitter::CreateResume(void* exception)
+{
+}
+
+void SystemXEmitter::DebugPrintDebugInfo(const std::string& filePath)
+{
+}
+
+void SystemXEmitter::BeginSubstituteLineNumber(int32_t lineNumber)
+{
+}
+
+void SystemXEmitter::EndSubstituteLineNumber()
+{
+}
+
+void SystemXEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
+{
+    context->SetCurrentLineNumber(lineNumber);
+}
+
+} // namespace cmajor::systemx::backend

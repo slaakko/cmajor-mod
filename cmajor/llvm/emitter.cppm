@@ -254,12 +254,8 @@ public:
     void EndDebugInfo() override;
     void* CreateDebugInfoForNamespace(void* scope, const std::string& name) override;
     void EmitIrText(const std::string& filePath) override;
-    void EmitIrFile(const std::string& filePath) override;
-    void Optimize(const std::string& bcFilePath, const std::string& optBCFilePath, const std::string& optimizationFlags) override;
-    void Disassemble(const std::string& bcFilePath, const std::string& llFilePath) override;
-    void Compile(const std::string& bcFilePath, const std::string& objectFilePath, int optimizationLevel) override;
+    void Compile(const std::string& objectFilePath) override;
     void VerifyModule() override;
-    void EmitObjectCodeFile(const std::string& objectFilePath) override;
     void ResetCurrentDebugLocation() override;
     void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     void ReplaceForwardDeclarations();

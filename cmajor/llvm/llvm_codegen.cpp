@@ -94,20 +94,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
         emitter->EmitIrText(boundCompileUnit.LLFilePath());
     }
     emitter->VerifyModule();
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
-    {
-        emitter->EmitIrFile(boundCompileUnit.BCFilePath());
-        emitter->Optimize(boundCompileUnit.BCFilePath(), boundCompileUnit.OptBCFilePath(), "-O" + std::to_string(cmajor::symbols::GetOptimizationLevel()));
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::emitOptLlvm))
-        {
-            emitter->Disassemble(boundCompileUnit.OptBCFilePath(), boundCompileUnit.OptLLFilePath());
-        }
-        emitter->Compile(boundCompileUnit.OptBCFilePath(), boundCompileUnit.ObjectFilePath(), cmajor::symbols::GetOptimizationLevel());
-    }
-    else
-    {
-        emitter->EmitObjectCodeFile(boundCompileUnit.ObjectFilePath());
-    }
+    emitter->Compile(boundCompileUnit.ObjectFilePath());
     if (debugInfo)
     {
         emitter->EndDebugInfo();
@@ -486,9 +473,9 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 throw std::runtime_error("internal error: class delegate type has no copy constructor");
             }
             std::vector<cmajor::symbols::GenObject*> copyCtorArgs;
-            cmajor::symbols::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
             copyCtorArgs.push_back(&paramValue);
-            cmajor::symbols::NativeValue argumentValue(arg);
+            cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
             if (debugInfo)
             {
@@ -512,10 +499,10 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
                 copyConstructor = compileUnit->GetCopyConstructorFor(interfaceType->TypeId());
             }
             std::vector<cmajor::symbols::GenObject*> copyCtorArgs;
-            cmajor::symbols::NativeValue paramValue(parameter->IrObject(*emitter));
+            cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
             paramValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
             copyCtorArgs.push_back(&paramValue);
-            cmajor::symbols::NativeValue argumentValue(arg);
+            cmajor::ir::NativeValue argumentValue(arg);
             argumentValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
             copyCtorArgs.push_back(&argumentValue);
             if (debugInfo)

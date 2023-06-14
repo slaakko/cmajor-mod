@@ -13,7 +13,6 @@ class EmittingContext
 {
 public:
     virtual ~EmittingContext();
-    virtual void* NativeContext() = 0;
     virtual int OptimizationLevel() const = 0;
     virtual const std::string& TargetTripleStr() const = 0;
     virtual void* Triple() const = 0;

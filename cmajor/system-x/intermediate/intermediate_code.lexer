@@ -1,0 +1,38 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.intermediate.code.lexer;
+
+import cmajor.systemx.intermediate.code.token;
+import cmajor.systemx.intermediate.code.keyword;
+import cmajor.systemx.intermediate.code.expr;
+
+lexer IntermediateCodeLexer
+{
+    rules
+    {
+        "{ws}" {}
+        "{clsid}"  { return CLSID; }
+        "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return kw; }
+        "{typeidentifier}" { return TYPEID; }
+        "{string}" { return STRING; }
+        "{number}" { return NUMBER; }
+        "{hexnum}" { return HEXNUM; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "," { return COMMA; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "\*" { return AST; }
+        ":" { return COLON; }
+        ";" { return SEMICOLON; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "=" { return ASSIGN; }
+        "@" { return AT; }
+        "$" { return DOLLAR; }
+        "!" { return EXCLAMATION; }
+    }
+}

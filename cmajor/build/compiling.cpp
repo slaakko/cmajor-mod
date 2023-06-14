@@ -303,17 +303,15 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
 }
 
 void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, bool& stop)
+    std::vector<std::string>& objectFilePaths, cmajor::ir::EmittingContext* emittingContext, bool& stop)
 {
-    cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
-    std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = backend->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))
     {
-        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext.get(), stop);
+        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext, stop);
     }
     else
     {
-        CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext.get(), stop);
+        CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext, stop);
     }
 }
 

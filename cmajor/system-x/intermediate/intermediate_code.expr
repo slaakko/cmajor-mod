@@ -1,0 +1,19 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions cmajor.systemx.intermediate.code.expr
+{
+    ws = "[ \t\n\r]+";
+    id = "({unicode_id_start}|_)({unicode_id_cont}|@|_)*";
+    digit = "[0-9]";
+    typeidentifier = "$T{digit}+";
+    hexdigit = "[0-9a-fA-F]";
+    clsid = "clsid\(([-]|{hexdigit})+\)";
+    string = "\"[^\"\r\n]*\"";
+    sign = "[+-]";
+    fraction = "{digit}*\.{digit}+|{digit}+\.";
+    number = "{sign}?({fraction}|{digit}+)([eE]{sign}?{digit}+)?";
+    hexnum = "{hexdigit}+";
+}

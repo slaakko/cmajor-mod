@@ -27,4 +27,4 @@ std::unique_ptr<cmajor::codegen::CodeGenerator> LLvmBackEnd::CreateCodeGenerator
     // TODO
 }
 
-} // namespace cmajor::mid
+} // namespace cmajor::backend

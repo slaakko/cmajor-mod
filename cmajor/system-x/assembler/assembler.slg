@@ -1,0 +1,4 @@
+project cmajor.systemx.assembler.lexer;
+tokens <assembler.token>;
+expressions <assembler.expr>;
+lexer <assembler.lexer>;

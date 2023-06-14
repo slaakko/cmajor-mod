@@ -1,0 +1,2 @@
+project cmajor.systemx.intermediate.code.parser;
+parser <intermediate_code.parser>;

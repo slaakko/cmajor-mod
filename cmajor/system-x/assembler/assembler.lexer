@@ -1,0 +1,45 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.assembler.lexer;
+
+import cmajor.systemx.assembler.token;
+import cmajor.systemx.assembler.expr;
+
+lexer AssemblyLexer
+{
+    rules
+    {
+        "{space}" { return SPACE; }
+        "{newline}" { return NEWLINE; }
+        "{decimal_constant}" { return DECIMAL_CONSTANT; }
+        "{hex_constant}" { return HEX_CONSTANT; }
+        "{char_constant}" { return CHAR_CONSTANT; }
+        "{string_constant}" { return STRING_CONSTANT; }
+        "{clsid_constant}" { return CLSID_CONSTANT; }
+        "{local_symbol}" { return LOCAL_SYMBOL; }
+        "{symbol}" { return SYMBOL; }
+        "{at}" { return AT; }
+        "{plus}" { return PLUS; }
+        "{minus}" { return MINUS; }
+        "{tilde}" { return TILDE; }
+        "{dollar}" { return DOLLAR; }
+        "{amp}" { return AMP; }
+        "{ast}" { return AST; }
+        "{slash_slash}" { return SLASHSLASH; }
+        "{slash}" { return SLASH; }
+        "{percent}" { return PERCENT; }
+        "{shift_left}" { return SHIFT_LEFT; }
+        "{shift_right}" { return SHIFT_RIGHT; }
+        "{bar}" { return BAR; }
+        "{caret}" { return CARET; }
+        "{dot}" { return DOT; }
+        "{lparen}" { return LPAREN; }
+        "{rparen}" { return RPAREN; }
+        "{semicolon}" { return SEMICOLON; }
+        "{comma}" { return COMMA; }
+        "." { return CHAR; }
+    }
+}

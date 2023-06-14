@@ -1,0 +1,4 @@
+project sudo;
+target=program;
+reference <../paths/paths.cmp>;
+source <sudo.cm>;

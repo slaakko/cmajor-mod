@@ -1,0 +1,403 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Os;
+
+namespace System.IO
+{
+    public enum FileType : int
+    {
+        regular = 1, directory = 2, fifo = 3
+    }
+
+    public enum Access : int
+    {
+        none = 0, read = 1 << 2, write = 1 << 1, execute = 1 << 0
+    }
+
+    public int MakeMode(Access ownerAccess, Access groupAccess, Access otherAccess)
+    {
+        return (int(ownerAccess & 7) << 6) | ((int(groupAccess) & 7) << 3) | (int(otherAccess) & 7);
+    }
+    
+    public const int rootFileSystemNumber = 0;
+
+    public class FileStatus
+    {
+        public int fileSystemNumber;
+        public int inodeNumber;
+        public FileType fileType;
+        public Access ownerAccess;
+        public Access groupAccess;
+        public Access otherAccess;
+        public bool setUID;
+        public bool setGID;
+        public int nlinks;
+        public int uid;
+        public int gid;
+        public long fileSize;
+        public DateTime ctime;
+        public DateTime mtime;
+        public DateTime atime;
+    }
+    
+    public void Stat(const char* path, FileStatus& status)
+    {
+        byte[statBufSize] statBuf;
+        int result = stat(path, &statBuf[0], statBufSize);
+        if (result == -1)
+        {
+            ThrowSystemError();
+        }
+        GetFileStatus(&statBuf[0], status);
+    }
+    
+    public void GetFileStatus(byte* statBuf, FileStatus& status)
+    {
+        MemoryReader reader(statBuf, statBufSize);
+        status.fileSystemNumber = reader.ReadInt();
+        status.inodeNumber = reader.ReadInt();
+        status.fileType = cast<FileType>(reader.ReadInt());
+        status.ownerAccess = cast<Access>(reader.ReadInt());
+        status.groupAccess = cast<Access>(reader.ReadInt());
+        status.otherAccess = cast<Access>(reader.ReadInt());
+        status.setUID = reader.ReadByte() == 1;
+        status.setGID = reader.ReadByte() == 1;
+        status.nlinks = reader.ReadInt();
+        status.uid = reader.ReadInt();
+        status.gid = reader.ReadInt();
+        status.fileSize = reader.ReadLong();
+        status.ctime = reader.ReadDateTime();
+        status.mtime = reader.ReadDateTime();
+        status.atime = reader.ReadDateTime();
+    }
+    
+    public void UTime(const char* path, const DateTime& atime, const DateTime& mtime)
+    {
+        byte[16] timeBuf;
+        MemoryWriter writer(&timeBuf[0], 16);
+        writer.Write(atime);
+        writer.Write(mtime);
+        UTime(path, &timeBuf[0], 16);
+    }
+    
+    public enum FileCopyOptions : int
+    {
+        none = 0, update = 1 << 0, verbose = 1 << 1, dontPreserveTimestamps = 1 << 2, dontPreserveMode = 1 << 3, removeCrs = 1 << 4, addCrs = 1 << 5, noBufferedCopy = 1 << 6
+    }
+
+    public static class File
+    {
+        public static bool Exists(const string& filePath)
+        {
+            return FileExists(filePath);
+        }
+        public static long Size(const string& filePath)
+        {
+            return GetFileSize(filePath);
+        }
+        public static DateTime AccessTime(const string& filePath)
+        {
+            return GetFileAccessTime(filePath);
+        }
+        public static DateTime ModificationTime(const string& filePath)
+        {
+            return GetFileModificationTime(filePath);
+        }
+        public static void GetTimes(const string& path, DateTime& accessTime, DateTime& modificationTime)
+        {
+            GetFileTimes(path, accessTime, modificationTime);
+        }
+        public static void SetTimes(const string& path, const DateTime& accessTime, const DateTime& modificationTime)
+        {
+            SetFileTimes(path, accessTime, modificationTime);
+        }
+        public static void Copy(const string& sourceFilePath, const string& destFilePath)
+        {
+            Copy(sourceFilePath, destFilePath, FileCopyOptions.none);
+        }
+        public static void Copy(const string& sourceFilePath, const string& destFilePath, FileCopyOptions options)
+        {
+            CopyFile(sourceFilePath, destFilePath, options);
+        }
+        public static void Remove(const string& filePath)
+        {
+            RemoveFile(filePath);
+        }
+        public static StreamWriter CreateText(const string& filePath)
+        {
+            return StreamWriter(SharedPtr<Stream>(new BufferedStream(SharedPtr<Stream>(
+                new FileStream(filePath, cast<OpenFlags>(OpenFlags.write | OpenFlags.create | OpenFlags.truncate | OpenFlags.text))))));
+        }
+        public static BinaryWriter CreateBinary(const string& filePath)
+        {
+            return CreateBinary(filePath, false);
+        }
+        public static BinaryWriter CreateBinary(const string& filePath, bool randomAccess)
+        {
+            OpenFlags flags = cast<OpenFlags>(OpenFlags.write | OpenFlags.create | OpenFlags.truncate);
+            if (randomAccess)
+            {
+                flags = cast<OpenFlags>(flags | OpenFlags.random_access);
+            }
+            return BinaryWriter(SharedPtr<Stream>(new BufferedStream(SharedPtr<Stream>(new FileStream(filePath, flags)))));
+        }
+        public static StreamWriter AppendText(const string& filePath)
+        {
+            return StreamWriter(SharedPtr<Stream>(new BufferedStream(SharedPtr<Stream>(
+                new FileStream(filePath, cast<OpenFlags>(OpenFlags.append | OpenFlags.text))))));
+        }
+        public static StreamReader OpenRead(const string& filePath)
+        {
+            return StreamReader(SharedPtr<Stream>(new BufferedStream(SharedPtr<Stream>(
+                new FileStream(filePath, cast<OpenFlags>(OpenFlags.read | OpenFlags.text))))));
+        }
+        public static BinaryReader OpenBinary(const string& filePath)
+        {
+            return OpenBinary(filePath, false);
+        }
+        public static BinaryReader OpenBinary(const string& filePath, bool randomAccess)
+        {
+            OpenFlags flags = OpenFlags.read;
+            if (randomAccess)
+            {
+                flags = cast<OpenFlags>(flags | OpenFlags.random_access);
+            }
+            return BinaryReader(SharedPtr<Stream>(new BufferedStream(SharedPtr<Stream>(new FileStream(filePath, flags)))));
+        }
+        public static string ReadAllText(const string& filePath)
+        {
+            StreamReader reader = OpenRead(filePath);
+            string content = reader.ReadToEnd();
+            if (content.Length() >= 3 && cast<byte>(content[0]) == 0xEFu && cast<byte>(content[1]) == 0xBBu && cast<byte>(content[2]) == 0xBFu)
+            {
+                return content.Substring(3);
+            }
+            else
+            {
+                return content;
+            }
+        }
+        public static List<string> ReadAllLines(const string& filePath)
+        {
+            List<string> lines;
+            bool start = true;
+            StreamReader reader = OpenRead(filePath);
+            string line = reader.ReadLine();
+            while (!reader.EndOfStream())
+            {
+                if (start)
+                {
+                    if (line.Length() >= 3 && cast<byte>(line[0]) == 0xEFu && cast<byte>(line[1]) == 0xBBu && cast<byte>(line[2]) == 0xBFu)
+                    {
+                        line = line.Substring(3);
+                    }
+                    start = false;
+                }
+                lines.Add(line);
+                line = reader.ReadLine();
+            }
+            if (!line.IsEmpty())
+            {
+                lines.Add(line);
+            }
+            return lines;
+        }
+    }
+    
+    public bool FileExists(const string& filePath)
+    {
+        byte[statBufSize] statBuf;
+        int result = stat(filePath.Chars(), &statBuf[0], statBufSize);
+        if (result == -1) 
+        {
+            SystemError systemError = GetSystemError();
+            if (systemError.errorCode == ENOTFOUND)
+            {
+                return false;
+            }
+            else
+            {
+                ThrowSystemError();
+            }
+        }
+        else
+        {
+            FileStatus status;
+            GetFileStatus(&statBuf[0], status);
+            if (status.fileType == FileType.regular)
+            {
+                return true;
+            }
+            else
+            {
+                throw FileSystemException("path '" + filePath + "' is not a regular file path");
+            }
+        }
+    }
+    
+    public long GetFileSize(const string& filePath)
+    {
+        if (filePath.IsEmpty())
+        {
+            throw InvalidPathException("file path is empty");
+        }
+        FileStatus status;
+        Stat(filePath.Chars(), status);
+        if (status.fileType == FileType.regular)
+        {
+            return status.fileSize;
+        }
+        else
+        {
+            throw InvalidPathException("path '" + filePath + "' is not a regular file path");
+        }
+    }
+    
+    public DateTime GetFileAccessTime(const string& filePath)
+    {
+        if (filePath.IsEmpty())
+        {
+            throw InvalidPathException("file path is empty");
+        }
+        FileStatus status;
+        Stat(filePath.Chars(), status);
+        return status.atime;
+    }
+    
+    public DateTime GetFileModificationTime(const string& filePath)
+    {
+        if (filePath.IsEmpty())
+        {
+            throw InvalidPathException("file path is empty");
+        }
+        FileStatus status;
+        Stat(filePath.Chars(), status);
+        return status.mtime;
+    }
+    
+    public void GetFileTimes(const string& path, DateTime& accessTime, DateTime& modificationTime)
+    {
+        if (path.IsEmpty())
+        {
+            throw InvalidPathException("file path is empty");
+        }
+        FileStatus status;
+        Stat(path.Chars(), status);
+        accessTime = status.atime;
+        modificationTime = status.mtime;
+    }
+    
+    public void SetFileTimes(const string& path, const DateTime& accessTime, const DateTime& modificationTime)
+    {
+        if (path.IsEmpty())
+        {
+            throw InvalidPathException("file path is empty");
+        }
+        UTime(path.Chars(), accessTime, modificationTime);
+    }
+    
+    public void CopyFile(const string& sourceFilePath, const string& destFilePath, FileCopyOptions options)
+    {
+        DateTime sourceAccessTime;
+        DateTime sourceModificationTime;
+        GetFileTimes(sourceFilePath, sourceAccessTime, sourceModificationTime);
+        bool destinationExists = File.Exists(destFilePath);
+        bool copy = false;
+        if ((options & FileCopyOptions.update) != FileCopyOptions.none)
+        {
+            if (!destinationExists)
+            {
+                copy = true;
+            }
+            else
+            {
+                DateTime destModificationTime = GetFileModificationTime(destFilePath);
+                if (sourceModificationTime > destModificationTime)
+                {
+                    copy = true;
+                }
+            }
+        }
+        else
+        {
+            copy = true;
+        }
+        if (copy)
+        {
+            bool addCrs = (options & FileCopyOptions.addCrs) != FileCopyOptions.none;
+            bool removeCrs = (options & FileCopyOptions.removeCrs) != FileCopyOptions.none;
+            if (addCrs && removeCrs)
+            {
+                throw SystemError(EPARAM, "cannot have both 'FileCopyOptions.addCrs' and 'FileCopyOptions.removeCrs' option");
+            }
+            long size = File.Size(sourceFilePath); 
+            bool bufferedCopy = (options & FileCopyOptions.noBufferedCopy) == FileCopyOptions.none && !addCrs && !removeCrs;
+            if (bufferedCopy)
+            {
+                BufferedCopy(sourceFilePath, destFilePath, size);
+            }
+            else
+            {
+                BinaryReader reader = File.OpenBinary(sourceFilePath);
+                BinaryWriter writer = File.CreateBinary(destFilePath);
+                for (long i = 0; i < size; ++i)
+                {
+                    byte x = reader.ReadByte();
+                    if (removeCrs && x == cast<byte>('\r'))
+                    {
+                        continue;
+                    }
+                    if (addCrs && x == cast<byte>('\n'))
+                    {
+                        writer.Write(cast<byte>('\r'));
+                    }
+                    writer.Write(x);
+                }
+            }
+        }
+        if (copy)
+        {
+            if ((options & FileCopyOptions.dontPreserveTimestamps) == FileCopyOptions.none)
+            {
+                File.SetTimes(destFilePath, sourceAccessTime, sourceModificationTime);
+            }
+            if ((options & FileCopyOptions.dontPreserveMode) == FileCopyOptions.none)
+            {
+				if (!destFilePath.StartsWith("/mnt"))
+				{
+					FileStatus status;
+					Stat(sourceFilePath.Chars(), status);
+					ChMod(destFilePath.Chars(), MakeMode(status.ownerAccess, status.groupAccess, status.otherAccess));
+				}
+            }
+            if ((options & FileCopyOptions.verbose) != FileCopyOptions.none)
+            {
+                // DEBUG PID: Console.WriteLine(ToString(GetPid()) + " : " + GetFullPath(sourceFilePath) + " -> " + GetFullPath(destFilePath));
+                Console.WriteLine(GetFullPath(sourceFilePath) + " -> " + GetFullPath(destFilePath));
+            }
+        }
+    }
+    
+    public void BufferedCopy(const string& sourceFilePath, const string& destFilePath, long size)
+    {
+        FileStream sourceFileStream(sourceFilePath, OpenFlags.read);
+        FileStream destFileStream(destFilePath, cast<OpenFlags>(OpenFlags.write | OpenFlags.create | OpenFlags.truncate));
+        byte[4096] buffer;
+        while (size > 0)
+        {
+            long bytesRead = sourceFileStream.Read(&buffer[0], 4096);
+            destFileStream.Write(&buffer[0], bytesRead);
+            size = size - bytesRead;
+        }
+    }
+    
+    public void RemoveFile(const string& filePath)
+    {
+        Unlink(filePath.Chars());
+    }
+}

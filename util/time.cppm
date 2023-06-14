@@ -6,6 +6,7 @@
 export module util.time;
 
 import std.core;
+import std.filesystem;
 
 export namespace util {
 
@@ -198,6 +199,8 @@ std::time_t Time();
 std::time_t MkTime(const DateTime& dt);
 
 DateTime ToDateTime(time_t time);
+
+DateTime ToDateTime(const std::filesystem::file_time_type& time);
 
 std::string TimeToString(std::time_t time);
 

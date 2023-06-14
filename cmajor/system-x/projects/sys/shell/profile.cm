@@ -1,0 +1,41 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.RegularExpressions;
+using System.Os;
+
+void MakeDefaultProfile(ShellEnvironment& environment)
+{
+	string profileFilePath = Path.Combine(environment.Home(), ".profile");
+	if (!File.Exists(profileFilePath))
+	{
+		StreamWriter writer = File.CreateText(profileFilePath);
+		writer.WriteLine("SX_SOURCE_ROOT=~/projects");
+		writer.WriteLine("SX_TARGET_ROOT=/mnt/sx/projects");
+		writer.WriteLine("PATH=$PATH:$SX_SOURCE_ROOT/bin");
+		writer.WriteLine("umask 022");
+	}
+	ChMod(profileFilePath.Chars(), cast<int>(ParseOctal("644")));
+}
+
+void RunProfile(ShellEnvironment& environment, Params& params, Context& context)
+{
+	try
+	{
+		string profileFilePath = Path.Combine(environment.Home(), ".profile");
+		if (File.Exists(profileFilePath))
+		{
+			Terminal.Out() << "running " << profileFilePath << "..." << endl();
+			RunFile(environment, params, context, profileFilePath);
+		}
+	}
+	catch (const Exception& ex)
+	{
+		Terminal.Out() << ex.Message() << endl();
+	}
+}

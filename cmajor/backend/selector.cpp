@@ -6,12 +6,13 @@
 module cmajor.backend.selector;
 
 import cmajor.backend.llvm;
-// import cmajor.backend.systemx;
+import cmajor.backend.systemx;
 // import cmajor.backend.cpp;
 
 namespace cmajor::backend {
 
 LLvmBackEnd llvmBackEnd;
+SystemXBackEnd systemxBackEnd;
 
 BackEnd* backend = &llvmBackEnd;
 
@@ -24,7 +25,8 @@ void SetCurrentBackEnd(BackEndKind backEndKind)
     switch (backEndKind)
     {
         case BackEndKind::llvmBackEnd: backend = &llvmBackEnd; break;
-        // todo other backends
+        case BackEndKind::systemxBackEnd: backend = &systemxBackEnd; break;
+        // todo other 
     }
 }
 

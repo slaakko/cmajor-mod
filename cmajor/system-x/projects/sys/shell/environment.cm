@@ -1,0 +1,207 @@
+// =================================
+// Copyright (c) 2022 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Os;
+using System.Security;
+
+string MakePutTabMsgQName() 
+{
+	string name = "tab.put.message.queue." + ToString(GetPid());
+	return name;
+}
+
+string MakeGetTabMsgQName() 
+{
+	string name = "tab.get.message.queue." + ToString(GetPid());
+	return name;
+}
+
+class ShellEnvironment
+{
+    public ShellEnvironment()
+    {
+    }
+    public Users& GetUsers() 
+    {
+        return users;
+    }
+    public void SetUsers(const Users& users_)
+    {
+        users = users_;
+        users.Finalize();
+    }
+    public const string& UserName() const
+    {
+        return userName;
+    }
+    public void SetUserName(const string& userName_)
+    {
+        userName = userName_;
+    }
+    public const string& HostName() const
+    {
+        return hostName;
+    }
+    public void SetHostName(const string& hostName_)
+    {
+        hostName = hostName_;
+    }
+    public int UID() const
+    {
+        return uid;
+    }
+    public void SetUID(int uid_)
+    {
+        uid = uid_;
+    }
+    public const string& Home() const
+    {
+        return home;
+    }
+    public void SetHome(const string& home_)
+    {
+        home = home_;
+    }
+    public const string& Shell() const
+    {
+        return shell;
+    }
+    public void SetShell(const string& shell_)
+    {
+        shell = shell_;
+    }
+    public const string& PWD() const
+    {
+        return pwd;
+    }
+    public void SetPWD(const string& pwd_)
+    {
+        pwd = pwd_;
+    }
+    public void SetDebug(bool debug_)
+    {
+        debug = debug_;
+    }
+    public bool Debug() const
+    {
+        return debug;
+    }
+	public nothrow void SetPutTabMsgQ(int putTabMsgQ_, const string& putTabMsgQName_)
+	{
+		putTabMsgQ = putTabMsgQ_;
+		putTabMsgQName = putTabMsgQName_;
+	}
+	public nothrow int PutTabMsgQ() const
+	{
+		return putTabMsgQ;
+	}
+	public nothrow const string& PutTabMsgQName() const
+	{
+		return putTabMsgQName;
+	}
+	public nothrow void SetGetTabMsgQ(int getTabMsgQ_, const string& getTabMsgQName_)
+	{
+		getTabMsgQ = getTabMsgQ_;
+		getTabMsgQName = getTabMsgQName_;
+	}
+	public nothrow int GetTabMsgQ() const
+	{
+		return getTabMsgQ;
+	}
+	public nothrow const string& GetTabMsgQName() const
+	{
+		return getTabMsgQName;
+	}
+    private Users users;
+    private string userName;
+    private string hostName;
+    private int uid;
+    private string home;
+    private string shell;
+    private string pwd;
+    private bool debug;
+	private int putTabMsgQ;
+	private string putTabMsgQName;
+	private int getTabMsgQ;
+	private string getTabMsgQName;
+}
+
+void SetPWD(ShellEnvironment& shellEnvironment)
+{
+    shellEnvironment.SetPWD(GetCurrentWorkingDirectory());
+    SetEnv("PWD", shellEnvironment.PWD());
+}
+
+void SetupShellEnvironment(ShellEnvironment& environment)
+{
+    environment.SetUsers(System.Security.GetUsers());
+    if (HasEnv("USER"))
+    {
+        environment.SetUserName(GetEnv("USER"));
+    }
+    else
+    {
+        environment.SetUserName(GetUserName());
+        SetEnv("USER", environment.UserName());
+    }
+    if (HasEnv("HOSTNAME"))
+    {
+        environment.SetHostName(GetEnv("HOSTNAME"));
+    }
+    else
+    {
+        environment.SetHostName(GetHostName());
+        SetEnv("HOSTNAME", environment.HostName());
+    }
+    int uid = -1;
+    string shell;
+    string home;
+    Users& users = environment.GetUsers();
+    User* user = users.GetUser(environment.UserName());
+    if (user == null)
+    {
+        InstallUser(environment.UserName(), uid, shell, home);
+    }
+    else
+    {
+        uid = user->UID();
+        shell = user->Shell();
+        home = user->Home();
+    }
+    if (HasEnv("UID"))
+    {
+        environment.SetUID(ParseInt(GetEnv("UID")));
+    }
+    else
+    {
+        environment.SetUID(uid);
+        SetEnv("UID", ToString(uid));
+    }
+    if (HasEnv("HOME"))
+    {
+        environment.SetHome(GetEnv("HOME"));
+    }
+    else
+    {
+        environment.SetHome(home);
+        SetEnv("HOME", home);
+    }
+    if (HasEnv("SHELL"))
+    {
+        environment.SetShell(GetEnv("SHELL"));
+    }
+    else
+    {
+        environment.SetShell(shell);
+        SetEnv("SHELL", shell);
+    }
+	string putTabMsgQName = MakePutTabMsgQName();
+	int putTabMsgQ = MsgQ(putTabMsgQName.Chars());
+	environment.SetPutTabMsgQ(putTabMsgQ, putTabMsgQName);
+	string getTabMsgQName = MakeGetTabMsgQName();
+	int getTabMsgQ = MsgQ(getTabMsgQName.Chars());
+	environment.SetGetTabMsgQ(getTabMsgQ, getTabMsgQName);
+}

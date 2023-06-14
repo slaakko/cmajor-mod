@@ -5,16 +5,18 @@
 
 module;
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/Support/raw_os_ostream.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/DIBuilder.h>
-#include <llvm/IR/Type.h>
+#include <llvm/IR/Module.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Object/COFF.h>
-#include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
+#include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/BitCode/BitcodeWriter.h>
 #include <llvm/Target/TargetMachine.h>
+#include <llvm/Config/llvm-config.h>
+#include <llvm/Support/SourceMgr.h>
 
 module cmajor.llvm.emitter;
 
@@ -89,7 +91,7 @@ struct LLvmEmitterImpl
 LLvmEmitterImpl::LLvmEmitterImpl(cmajor::ir::EmittingContext* emittingContext_) : 
     emittingContext(emittingContext_), 
     stack(),
-    context(static_cast<::llvm::LLVMContext*>(emittingContext->NativeContext())),
+    context(new ::llvm::LLVMContext()),
     builder(*context),
     module(nullptr),
     dataLayout(nullptr),
@@ -1704,29 +1706,6 @@ void LLvmEmitter::EmitIrText(const std::string& filePath)
     llOs.flush();
 }
 
-void LLvmEmitter::EmitIrFile(const std::string& filePath)
-{
-    std::ofstream bcFile(filePath, std::ios::binary);
-    ::llvm::raw_os_ostream bcOs(bcFile);
-    ::llvm::WriteBitcodeToFile(*impl->module, bcOs);
-    bcOs.flush();
-}
-
-void LLvmEmitter::Optimize(const std::string& bcFilePath, const std::string& optBCFilePath, const std::string& optimizationFlags)
-{
-    // todo
-}
-
-void LLvmEmitter::Disassemble(const std::string& bcFilePath, const std::string& llFilePath)
-{
-    // todo
-}
-
-void LLvmEmitter::Compile(const std::string& bcFilePath, const std::string& objectFilePath, int optimizationLevel)
-{
-    // todo
-}
-
 void LLvmEmitter::VerifyModule()
 {
     std::string errorMessageStore;
@@ -1737,7 +1716,9 @@ void LLvmEmitter::VerifyModule()
     }
 }
 
-void LLvmEmitter::EmitObjectCodeFile(const std::string& objectFilePath)
+#if (LLVM_VERSION_MAJOR <= 12)
+
+void LLvmEmitter::Compile(const std::string& objectFilePath)
 {
     ::llvm::legacy::PassManager passManager;
     std::error_code errorCode;
@@ -1761,6 +1742,15 @@ void LLvmEmitter::EmitObjectCodeFile(const std::string& objectFilePath)
         throw std::runtime_error("Emitter: could not emit object code file '" + objectFilePath + "': " + util::PlatformStringToUtf8(errorCode.message()));
     }
 }
+
+#else
+
+void LLvmEmitter::Compile(const std::string& objectFilePath)
+{
+
+}
+
+#endif
 
 void LLvmEmitter::ReplaceForwardDeclarations()
 {
@@ -2401,6 +2391,7 @@ void* LLvmEmitter::GetBoundCompileUnit() const
 
 void LLvmEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
+    // todo
 }
 
 std::string LLvmEmitter::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)

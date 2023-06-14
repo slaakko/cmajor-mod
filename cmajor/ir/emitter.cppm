@@ -307,12 +307,8 @@ public:
     virtual void FinalizeDebugInfo() = 0;
     virtual void EndDebugInfo() = 0;
     virtual void EmitIrText(const std::string& filePath) = 0;
-    virtual void EmitIrFile(const std::string& filePath) = 0;
-    virtual void Optimize(const std::string& bcFilePath, const std::string& opBCFilePath, const std::string& optimizationFlags) = 0;
-    virtual void Disassemble(const std::string& bcFilePath, const std::string& llFilePath) = 0;
-    virtual void Compile(const std::string& bcFilePath, const std::string& objectFilePath, int optimizationLevel) = 0;
+    virtual void Compile(const std::string& objectFilePath) = 0;
     virtual void VerifyModule() = 0;
-    virtual void EmitObjectCodeFile(const std::string& objectFilePath) = 0;
     virtual void* CreateDebugInfoForNamespace(void* scope, const std::string& name) = 0;
     virtual void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) = 0;
     virtual void PushScope(void* scope) = 0;
