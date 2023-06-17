@@ -120,6 +120,26 @@ std::u32string FileMap::GetFileLine(int32_t fileId, int line)
     return trimmedLine;
 }
 
+std::mutex tokenMapMutex;
+
+void FileMap::SetTokens(int32_t fileId, TokenVec&& tokens)
+{
+    std::lock_guard<std::mutex> lock(tokenMapMutex);
+    tokenMap[fileId] = std::move(tokens);
+}
+
+const TokenVec& FileMap::GetTokens(int32_t fileId) const
+{
+    std::lock_guard<std::mutex> lock(tokenMapMutex);
+    static TokenVec empty;
+    auto it = tokenMap.find(fileId);
+    if (it != tokenMap.cend())
+    {
+        return it->second;
+    }
+    return empty;
+}
+
 FileMap* globalFileMap = nullptr;
 
 FileMap* GetGlobalFileMap()

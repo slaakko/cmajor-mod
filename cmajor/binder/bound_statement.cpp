@@ -56,12 +56,13 @@ void BoundSequenceStatement::SetForLoopStatementNode()
     first->SetForLoopStatementNode();
 }
 
-BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSpan()
+BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSourcePos()
 {
 }
 
-BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSpan_, const util::uuid& moduleId_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSpan(endSpan_)
+BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSourcePos_, const util::uuid& moduleId_) :
+    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSourcePos(endSourcePos_)
 {
 }
 

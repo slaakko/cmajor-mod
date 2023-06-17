@@ -97,6 +97,9 @@ parser StatementParser
                 Statement(context):stmt{ compoundStatementNode->AddStatement(stmt); }
             )*
             RBRACE
+            {
+                compoundStatementNode->SetEndSourcePos(lexer.GetSourcePos(pos));
+            }
         )
         {
             return compoundStatementNode.release();

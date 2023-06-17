@@ -27,4 +27,5 @@ private:
     std::map<util::uuid, FunctionSymbol*> functionMap;
     util::uuid mainFunctionId;
 };
+
 } // namespace cmajor::symbols

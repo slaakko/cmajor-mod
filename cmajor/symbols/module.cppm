@@ -13,6 +13,7 @@ import cmajor.symbols.type.index;
 import cmajor.symbols.sources;
 import cmajor.ast.project;
 import soul.lexer.file.map;
+import soul.lexer.base;
 import util.code.formatter;
 import util.binary.stream.writer;
 import util.binary.stream.reader;
@@ -279,6 +280,7 @@ private:
     SourceFileCache sourceFileCache;
     // std::unique_ptr<Sources> sources;
     soul::lexer::FileMap fileMap;
+    soul::lexer::LexerBase<char32_t>* lexer;
     void CheckUpToDate();
 };
 

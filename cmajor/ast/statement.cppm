@@ -79,9 +79,12 @@ public:
     bool TracerInserted() const { return tracerInserted; }
     void SetTracerInserted() { tracerInserted = true; }
     int Level() const;
+    const soul::ast::SourcePos& EndSourcePos() const { return endSourcePos; }
+    void SetEndSourcePos(const soul::ast::SourcePos& endSourcePos_) { endSourcePos = endSourcePos_; }
 private:
     NodeList<StatementNode> statements;
     bool tracerInserted;
+    soul::ast::SourcePos endSourcePos;
 };
 
 class ReturnStatementNode : public StatementNode

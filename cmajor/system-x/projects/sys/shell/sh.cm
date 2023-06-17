@@ -95,6 +95,12 @@ string GetLine(ShellEnvironment& environment)
 
 void ProcessLine(const string& line, ShellEnvironment& environment, Params& params, Context& context, Map<string, string>& executableMap)
 {
+    if (DirectoriesChanged())
+    {
+        ClearDirectoriesChanged();
+        string path = GetEnv("PATH");
+        ReadPathDirectories(path, executableMap);
+    }
     if (line.IsEmpty()) return;
     ustring uline = ToUtf32(line);
     TokenFlags globalFlags = TokenFlags.none;

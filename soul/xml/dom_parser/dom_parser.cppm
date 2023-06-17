@@ -8,6 +8,7 @@ export module soul.xml.dom.parser;
 import std.core;
 import soul.xml.document;
 import soul.lexer.file.map;
+import util;
 
 export namespace soul::xml {
 
@@ -58,5 +59,8 @@ std::unique_ptr<soul::xml::Document> ParseXmlContent(const std::u32string& xmlCo
 std::unique_ptr<soul::xml::Document> ParseXmlContent(const std::u32string& xmlContent, const std::string& systemId, ParsingFlags parsingFlags);
 std::unique_ptr<soul::xml::Document> ParseXmlContent(std::u32string&& xmlContent, const std::string& systemId, soul::lexer::FileMap& fileMap);
 std::unique_ptr<soul::xml::Document> ParseXmlContent(std::u32string&& xmlContent, const std::string& systemId, soul::lexer::FileMap& fileMap, ParsingFlags parsingFlags);
+
+void SendDocument(util::TcpSocket& socket, soul::xml::Document& document);
+std::unique_ptr<soul::xml::Document> ReceiveDocument(util::TcpSocket& socket);
 
 } // namespace soul::xml

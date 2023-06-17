@@ -547,6 +547,7 @@ public:
     {
         return skip;
     }
+    std::vector<soul::lexer::Token<Char, LexerBase<Char>>> ReleaseTokens() { return std::move(tokens); }
 private:
     void NextToken()
     {

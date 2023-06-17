@@ -717,7 +717,8 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
     cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
     containerScope = declarationBlock->GetContainerScope();
-    std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(compoundStatementNode.GetSourcePos(), compoundStatementNode.ModuleId()));
+    std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(compoundStatementNode.GetSourcePos(), compoundStatementNode.EndSourcePos(), 
+        compoundStatementNode.ModuleId()));
     if (compoundLevel == 0)
     {
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::profile))
@@ -788,7 +789,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
     if (compoundLevel == 0 && currentDestructorSymbol && currentDestructorNode)
     {
         GenerateClassTermination(currentDestructorSymbol, currentDestructorNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this,
-            boundCompoundStatement->EndSpan(), boundCompoundStatement->ModuleId());
+            boundCompoundStatement->EndSourcePos(), boundCompoundStatement->ModuleId());
     }
     AddStatement(boundCompoundStatement.release());
     containerScope = prevContainerScope;

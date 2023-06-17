@@ -181,7 +181,9 @@
         </group>
        </kleene>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>

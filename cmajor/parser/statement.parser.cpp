@@ -1146,10 +1146,20 @@ soul::parser::Match StatementParser<LexerT>::CompoundStatement(LexerT& lexer, cm
                 soul::parser::Match* parentMatch9 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RBRACE)
+                    soul::parser::Match* parentMatch10 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            compoundStatementNode->SetEndSourcePos(lexer.GetSourcePos(pos));
+                        }
+                        *parentMatch10 = match;
                     }
                     *parentMatch9 = match;
                 }

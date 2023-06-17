@@ -833,7 +833,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& bou
                     {
                         newCleanupNeeded = true;
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
-                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), currentBlock->ModuleId(), classType->Destructor()));
+                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSourcePos(), currentBlock->ModuleId(), classType->Destructor()));
                         destructorCall->AddArgument(std::move(classPtrArgument));
                         Assert(currentBlock, "current block not set");
                         auto it = blockDestructionMap.find(currentBlock);

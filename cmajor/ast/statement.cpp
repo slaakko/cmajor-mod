@@ -117,7 +117,7 @@ void SyncStatementNode::Accept(Visitor& visitor)
 }
 
 CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), tracerInserted(false)
+    StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), tracerInserted(false), endSourcePos(sourcePos_)
 {
 }
 
@@ -130,6 +130,7 @@ Node* CompoundStatementNode::Clone(CloneContext& cloneContext) const
         StatementNode* statement = statements[i];
         clone->AddStatement(static_cast<StatementNode*>(statement->Clone(cloneContext)));
     }
+    clone->SetEndSourcePos(endSourcePos);
     return clone;
 }
 

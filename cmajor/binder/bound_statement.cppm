@@ -86,17 +86,17 @@ class BoundCompoundStatement : public BoundStatement
 {
 public:
     BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSpan_, const util::uuid& moduleId_);
+    BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSourcePos_, const util::uuid& moduleId_);
     BoundCompoundStatement(const BoundCompoundStatement&) = delete;
     BoundCompoundStatement& operator=(const BoundCompoundStatement&) = delete;
     void Accept(BoundNodeVisitor& visitor) override;
     void InsertStatementToFront(std::unique_ptr<BoundStatement>&& statement);
     void AddStatement(std::unique_ptr<BoundStatement>&& statement);
     const std::vector<std::unique_ptr<BoundStatement>>& Statements() const { return statements; }
-    const soul::ast::SourcePos& EndSpan() const { return endSpan; }
+    const soul::ast::SourcePos& EndSourcePos() const { return endSourcePos; }
 private:
     std::vector<std::unique_ptr<BoundStatement>> statements;
-    soul::ast::SourcePos endSpan;
+    soul::ast::SourcePos endSourcePos;
 };
 
 class BoundReturnStatement : public BoundStatement

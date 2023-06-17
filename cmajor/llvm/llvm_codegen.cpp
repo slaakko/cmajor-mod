@@ -83,7 +83,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     GenerateInitCompileUnitFunction(boundCompileUnit);
     if (boundCompileUnit.GetGlobalInitializationFunctionSymbol() != nullptr)
     {
-        GenerateGlobalInitFuncion(boundCompileUnit);
+        GenerateGlobalInitFunction(boundCompileUnit);
     }
     if (debugInfo)
     {
@@ -1617,7 +1617,7 @@ void LLvmCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundCom
     debugInfo = prevDebugInfo;
 }
 
-void LLvmCodeGenerator::GenerateGlobalInitFuncion(cmajor::binder::BoundCompileUnit& boundCompileUnit)
+void LLvmCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
     void* prevDIBuilder = emitter->DIBuilder();
     emitter->SetCurrentDIBuilder(nullptr);

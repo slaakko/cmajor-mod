@@ -38,5 +38,16 @@ xcopy /F /Y ..\..\soul-mod\soul\xml\xpath\*.spg xml\xpath\
 xcopy /F /Y ..\..\soul-mod\soul\xml\xpath\*.slg xml\xpath\
 xcopy /F /Y ..\..\soul-mod\soul\xml\xpath\*.bat xml\xpath\
 
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.cppm xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.cpp xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.parser xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.expr xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.keyword xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.lexer xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.token xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.spg xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.slg xml\serialization\
+xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.bat xml\serialization\
+
 xcopy /F /Y ..\..\soul-mod\soul\rex\*.cppm rex\
 xcopy /F /Y ..\..\soul-mod\soul\rex\*.cpp rex\

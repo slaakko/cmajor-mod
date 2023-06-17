@@ -1,0 +1,126 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module build.server.message;
+
+class StopBuildRequest
+{
+}
+
+class StopBuildReply
+{
+}
+
+class KeepAliveBuildRequest
+{
+}
+
+class KeepAliveBuildReply
+{
+}
+
+class BuildRequest
+{
+    string messageKind;
+    string backend;
+    string config;
+    string optimizationLevel;
+    string filePath;
+    string[] defines;
+    string numBuildThreads;
+    string toolChain;
+    bool verbose;
+    bool quiet;
+    bool clean;
+    bool strictNothrow;
+    bool emitIR;
+    bool emitOptIR;
+    bool linkWithDebugRuntime;
+    bool linkUsingMsLink;
+    bool rebuild;
+    bool buildAllDependencies;
+    bool forceDebugInfo;
+    bool forceNoDebugInfo;
+    bool disableModuleCache;
+    bool singleThreadedCompile;
+    bool disableCodeGen;
+    bool justMyCode;
+}
+
+class CompileError
+{
+    string message;
+    string project;
+    string file;
+    int line;
+    int scol;
+    int ecol;
+}
+
+class BuildReply
+{
+    bool requestValid;
+    string requestErrorMessage;
+    string logException;
+    string time;
+    bool success;
+    CompileError[] errors;
+}
+
+class LogBuildMessageRequest
+{
+    string message;
+}
+
+class LogBuildMessageReply
+{
+    bool ok;
+}
+
+class BuildProgressMessage
+{
+}
+
+class GenericBuildErrorReply
+{
+    string error;
+}
+
+class CacheModuleRequest
+{
+    string projectName;
+    string projectFilePath;
+    string backend;
+    string config;
+}
+
+class CacheModuleReply
+{
+    string error;
+}
+
+class DefinitionSourceLocation
+{
+    string file;
+    int line;
+    int scol;
+}
+
+class GetDefinitionRequest
+{
+    string projectName;
+    string projectFilePath;
+    string backend;
+    string config;
+    string identifier;
+    DefinitionSourceLocation identifierLocation;
+}
+
+class GetDefinitionReply
+{
+    DefinitionSourceLocation definitionLocation;
+    bool ok;
+    string error;
+}

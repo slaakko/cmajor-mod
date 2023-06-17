@@ -47,6 +47,7 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
             }
         }
     }
+    fileMap.SetTokens(fileIndex, lexer.ReleaseTokens());
     return compileUnit;
 }
 

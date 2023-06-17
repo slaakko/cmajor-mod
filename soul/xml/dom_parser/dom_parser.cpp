@@ -82,4 +82,21 @@ std::unique_ptr<soul::xml::Document> ParseXmlContent(std::u32string&& xmlContent
     return documentHandler.GetDocument();
 }
 
+void SendDocument(util::TcpSocket& socket, soul::xml::Document& document)
+{
+    std::stringstream sstream;
+    util::CodeFormatter formatter(sstream);
+    document.Write(formatter);
+    Write(socket, sstream.str());
+}
+
+std::unique_ptr<soul::xml::Document> ReceiveDocument(util::TcpSocket& socket)
+{
+    std::string str = ReadStr(socket);
+    if (str.empty()) return std::unique_ptr<Document>();
+    std::u32string content = util::ToUtf32(str);
+    std::unique_ptr<soul::xml::Document> doc = ParseXmlContent(content, "socket");
+    return doc;
+}
+
 } // namespace soul::xml

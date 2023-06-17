@@ -166,7 +166,7 @@ private:
     void GenJumpingBoolCode();
     void GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
     void GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
-    void GenerateGlobalInitFuncion(cmajor::binder::BoundCompileUnit& boundCompileUnit);
+    void GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
     void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
 };
 
