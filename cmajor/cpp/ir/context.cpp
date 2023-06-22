@@ -772,13 +772,13 @@ void Context::SetCleanupBlock(BasicBlock* cleanupBlock)
 void Context::AddLocalVariable(const std::string& name, const util::uuid& typeId, LocalInstruction* inst)
 {
     Scope* scope = currentFunction->GetScope(currentScopeId);
-    /// cmajor::debug::DIVariable* localVariable = new cmajor::debug::DIVariable(cmajor::debug::DIVariable::Kind::localVariable); TODO
-    // localVariable->SetInitLineNumber(currentSourceSpan.line); TODO
-    // localVariable->SetName(name); TODO
+    cmajor::debug::DIVariable* localVariable = new cmajor::debug::DIVariable(cmajor::debug::DIVariable::Kind::localVariable); 
+    localVariable->SetInitLineNumber(currentSourceSpan.line); 
+    localVariable->SetName(name); 
     inst->ObtainLocalName(*currentFunction);
-    //localVariable->SetIrName(inst->LocalName()); TODO
-    // localVariable->SetTypeId(typeId); TODO
-    // scope->AddLocalVariable(localVariable); TODO
+    localVariable->SetIrName(inst->LocalName()); 
+    localVariable->SetTypeId(typeId); 
+    scope->AddLocalVariable(localVariable); 
 }
 
 int32_t Context::AddControlFlowGraphNode()

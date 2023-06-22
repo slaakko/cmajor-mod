@@ -7,6 +7,7 @@ module cmajor.symbols.function.index;
 
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.modules;
+import cmajor.debug;
 import util;
 
 namespace cmajor::symbols {
@@ -31,15 +32,13 @@ void FunctionIndex::SetMainFunctionId(const util::uuid& functionId)
 
 void FunctionIndex::Write(util::BinaryStreamWriter& writer)
 {
-    /*  TODO
-        int32_t numFunctions = functionMap.size();
-        cmajor::debug::WriteNumberOfFunctionIndexFunctionRecords(writer, numFunctions);
-        for (const auto& p : functionMap)
-        {
-            FunctionSymbol* functionSymbol = p.second;
-            cmajor::debug::WriteFunctionIndexFunctionRecord(writer, p.first, util::ToUtf8(functionSymbol->FullName()), util::ToUtf8(functionSymbol->MangledName()));
-        }
-    */
+    int32_t numFunctions = functionMap.size();
+    cmajor::debug::WriteNumberOfFunctionIndexFunctionRecords(writer, numFunctions);
+    for (const auto& p : functionMap)
+    {
+        FunctionSymbol* functionSymbol = p.second;
+        cmajor::debug::WriteFunctionIndexFunctionRecord(writer, p.first, util::ToUtf8(functionSymbol->FullName()), util::ToUtf8(functionSymbol->MangledName()));
+    }
 }
 
 } // namespace cmajor::symbols

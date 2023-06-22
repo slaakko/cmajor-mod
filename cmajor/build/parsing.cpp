@@ -51,13 +51,13 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
     return compileUnit;
 }
 
-std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend, const std::string& toolChain)
+std::unique_ptr<cmajor::ast::Project> ParseProjectFile(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend)
 {
     std::string content = util::ReadFile(projectFilePath);
     std::u32string ucontent = util::ToUtf32(content);
     auto lexer = cmajor::container::file::lexer::MakeLexer(ucontent.c_str(), ucontent.c_str() + ucontent.length(), projectFilePath);
     using LexerType = decltype(lexer);
-    std::unique_ptr<cmajor::ast::Project> project = cmajor::projects::parser::ProjectParser<LexerType>::Parse(lexer, config, backend, toolChain);
+    std::unique_ptr<cmajor::ast::Project> project = cmajor::projects::parser::ProjectParser<LexerType>::Parse(lexer, config, backend);
     project->ResolveDeclarations();
     return project;
 }
@@ -176,19 +176,18 @@ void ParseSourceFiles(cmajor::ast::Project* project, soul::lexer::FileMap& fileM
     }
 }
 
-std::unique_ptr<cmajor::ast::Project> ParseProject(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend,
-    const std::string& toolChain, soul::lexer::FileMap& fileMap, Flags flags)
+std::unique_ptr<cmajor::ast::Project> ParseProject(const std::string& projectFilePath, const std::string& config, cmajor::ast::BackEnd backend, 
+    soul::lexer::FileMap& fileMap, Flags flags)
 {
     if ((flags & Flags::verbose) != Flags::none)
     {
         std::cout << ">> " << projectFilePath << "\n";
     }
-    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend, toolChain);
+    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend);
     return project;
 }
 
-std::unique_ptr<cmajor::ast::Solution> ParseSolution(const std::string& solutionFilePath, const std::string& config, cmajor::ast::BackEnd backend,
-    const std::string& toolChain, Flags flags)
+std::unique_ptr<cmajor::ast::Solution> ParseSolution(const std::string& solutionFilePath, const std::string& config, cmajor::ast::BackEnd backend, Flags flags)
 {
     if ((flags & Flags::verbose) != Flags::none)
     {
@@ -198,7 +197,7 @@ std::unique_ptr<cmajor::ast::Solution> ParseSolution(const std::string& solution
     for (const auto& projectFilePath : solution->ProjectFilePaths())
     {
         soul::lexer::FileMap fileMap;
-        std::unique_ptr<cmajor::ast::Project> project = ParseProject(projectFilePath, config, backend, toolChain, fileMap, flags);
+        std::unique_ptr<cmajor::ast::Project> project = ParseProject(projectFilePath, config, backend, fileMap, flags);
         solution->AddProject(std::move(project));
     }
     return solution;

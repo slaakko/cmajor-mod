@@ -222,7 +222,6 @@ Function* Context::CurrentFunction() const
 
 void Context::ValidateData()
 {
-    // todo
 }
 
 void Context::SetCurrentFunction(Function* function)

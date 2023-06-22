@@ -5,6 +5,7 @@
 
 export module cmajor.cpp.backend;
 
+export import cmajor.cpp.backend.emitting.context;
 export import cmajor.cpp.backend.emitter;
 export import cmajor.cpp.backend.codegen;
 export import cmajor.cpp.backend.interface;

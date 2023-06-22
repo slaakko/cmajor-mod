@@ -154,6 +154,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="backend.cppm" />
+    <ClCompile Include="cpp.cpp" />
+    <ClCompile Include="cpp.cppm" />
     <ClCompile Include="llvm.cpp" />
     <ClCompile Include="llvm.cppm" />
     <ClCompile Include="selector.cpp" />
@@ -164,6 +166,9 @@
   <ItemGroup>
     <ProjectReference Include="..\codegen\codegen.vcxproj">
       <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cpp\backend\backend.vcxproj">
+      <Project>{312ebbfb-8c83-48aa-95d9-a21503fd76dc}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>

@@ -289,12 +289,7 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         }
         else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
-/*          TODO
-            std::string platform = GetPlatform();
-            std::string toolChain = GetToolChain();
-            const Tool& compilerTool = GetCompilerTool(platform, toolChain);
-            objfp = (objectFileDirectory / fileName).replace_extension(compilerTool.outputFileExtension);
-*/
+            objfp = (objectFileDirectory / fileName).replace_extension(".o");
         }
 #else
         objfp = (objectFileDirectory / fileName).replace_extension(".o");

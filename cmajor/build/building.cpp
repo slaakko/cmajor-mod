@@ -46,8 +46,7 @@ std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFile
     {
         backend = cmajor::ast::BackEnd::cpp;
     }
-    std::string toolchain = "llvm";
-    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend, toolchain);
+    std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend);
     return project;
 }
 
@@ -151,7 +150,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
             if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
             {
-                upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd, cmajor::ast::GetToolChain()));
+                upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd));
             }
             if (upToDate)
             {
@@ -207,6 +206,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 std::vector<std::string> objectFilePaths;
                 Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, emittingContext, stop);
                 GenerateMainUnit(project, rootModule.get(), objectFilePaths);
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                {
+                    util::LogMessage(project->LogStreamId(), "Writing module file...");
+                }
                 cmajor::symbols::SymbolWriter writer(project->ModuleFilePath());
                 rootModule->Write(writer);
                 rootModule->ResetFlag(cmajor::symbols::ModuleFlags::compiling);
@@ -223,6 +226,38 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     Archive(project, objectFilePaths);
                 }
                 Link(project, rootModule.get());
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                {
+                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                    {
+                        util::LogMessage(project->LogStreamId(), "Writing project debug info file...");
+                    }
+                    std::string pdiFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".pdi");
+                    rootModule->WriteProjectDebugInfoFile(pdiFilePath);
+                    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                    {
+                        util::LogMessage(project->LogStreamId(), "==> " + pdiFilePath);
+                    }
+                    if (project->GetTarget() == cmajor::ast::Target::program || 
+                        project->GetTarget() == cmajor::ast::Target::winguiapp || 
+                        project->GetTarget() == cmajor::ast::Target::winapp)
+                    {
+                        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                        {
+                            util::LogMessage(project->LogStreamId(), "Writing debug information file...");
+                        }
+#ifdef _WIN32
+                        std::string cmdbFilePath = util::Path::ChangeExtension(project->ExecutableFilePath(), ".cmdb");
+#else
+                        std::string cmdbFilePath = project->ExecutableFilePath() + ".cmdb";
+#endif
+                        rootModule->WriteCmdbFile(cmdbFilePath);
+                        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                        {
+                            util::LogMessage(project->LogStreamId(), "==> " + cmdbFilePath);
+                        }
+                    }
+                }
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), std::to_string(rootModule->GetSymbolTable().NumSpecializations()) + " class template specializations, " +
@@ -258,13 +293,11 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        util::LogMessage(-1, "project: " + util::ToUtf8(project->Name()) + ": " + ex.Message());
-        throw;
+        throw std::runtime_error("project: " + util::ToUtf8(project->Name()) + ": " + ex.Message());
     }
     catch (const std::exception& ex)
     {
-        util::LogMessage(-1, "project: " + util::ToUtf8(project->Name()) + ": " + util::PlatformStringToUtf8(ex.what()));
-        throw;
+        throw std::runtime_error("project: " + util::ToUtf8(project->Name()) + ": " + util::PlatformStringToUtf8(ex.what()));
     }
 }
 

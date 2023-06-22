@@ -27,6 +27,7 @@ import cmajor.symbols.constant.symbol;
 import cmajor.symbols.enumerations;
 import cmajor.symbols.basic.type.symbol;
 import cmajor.symbols.basic.type.operation;
+import cmajor.symbols.string.functions;
 import util;
 
 namespace cmajor::symbols {
@@ -2008,7 +2009,7 @@ void InitCoreSymbolTable(SymbolTable& symbolTable)
         symbolTable.EndConcept();
         conceptSymbol->ComputeName();
     }
-    // symbolTable.AddTypeSymbolToGlobalScope(new StringFunctionContainerSymbol()); TODO
+    symbolTable.AddTypeSymbolToGlobalScope(new StringFunctionContainerSymbol()); 
 }
 
 /*
@@ -2018,7 +2019,7 @@ void CreateClassFile(const std::string& executableFilePath, SymbolTable& symbolT
     {
         LogMessage(symbolTable.GetModule()->LogStreamId(), "Generating class file...");
     }
-    boost::filesystem::path cfp = boost::filesystem::path(executableFilePath).replace_extension(".cls");
+    std::filesystem::path cfp = boost::filesystem::path(executableFilePath).replace_extension(".cls");
     std::string classFilePath = cfp.generic_string();
     const std::unordered_set<ClassTypeSymbol*>& polymorphicClasses = symbolTable.PolymorphicClasses();
     std::unordered_map<util::uuid, ClassTypeSymbol*, boost::hash<util::uuid>> classIdClassMap;

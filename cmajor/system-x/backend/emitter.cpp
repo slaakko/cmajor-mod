@@ -108,7 +108,6 @@ void* SystemXEmitter::GetIrTypeForFunction(void* retType, const std::vector<void
 
 void* SystemXEmitter::GetIrTypeForVariableParamFunction(void* retType)
 {
-    // todo
     return nullptr;
 }
 
@@ -1649,7 +1648,6 @@ void SystemXEmitter::AddUWTableAttribute(void* function)
 
 void* SystemXEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
 {
-    // todo
     return nullptr;
 }
 

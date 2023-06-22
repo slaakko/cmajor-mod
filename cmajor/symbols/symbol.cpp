@@ -32,6 +32,7 @@ import cmajor.symbols.templates;
 import cmajor.symbols.constant.symbol;
 import cmajor.symbols.alias.type;
 import cmajor.symbols.class_template_specializations;
+import cmajor.symbols.string.functions;
 import cmajor.ast.clone;
 import util.sha1;
 
@@ -1263,8 +1264,8 @@ SymbolFactory::SymbolFactory()
     Register(SymbolType::classToInterfaceConversion, new ConcreteSymbolCreator<ClassToInterfaceConversion>());
     Register(SymbolType::getObjectPtrFromInterfaceSymbol, new ConcreteSymbolCreator<GetObjectPtrFromInterface>());
     Register(SymbolType::globalVariableSymbol, new ConcreteSymbolCreator<GlobalVariableSymbol>());
-    // Register(SymbolType::stringFunctionContainerSymbol, new ConcreteSymbolCreator<StringFunctionContainerSymbol>()); TODO
-    // Register(SymbolType::stringLengthFunctionSymbol, new ConcreteSymbolCreator<StringLengthFunction>()); TODO
+    Register(SymbolType::stringFunctionContainerSymbol, new ConcreteSymbolCreator<StringFunctionContainerSymbol>());
+    Register(SymbolType::stringLengthFunctionSymbol, new ConcreteSymbolCreator<StringLengthFunction>()); 
     Register(SymbolType::axiomSymbol, new ConcreteSymbolCreator<AxiomSymbol>());
 #ifdef _WIN32
     Register(SymbolType::trap, new ConcreteSymbolCreator<TrapFunction>());

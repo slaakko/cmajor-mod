@@ -22,13 +22,9 @@ import cmajor.rt.environment;
 import cmajor.rt.unwind;
 import cmajor.rt.debug;
 
-GlobalInitFunctionType initCompileUnitsFunction = nullptr;
-
-void RtInit(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassIdArray, int64_t numberOfStaticClassIds, const uint64_t* staticClassIdArray,
-    GlobalInitFunctionType globalInitializationFunction)
+void RtInit(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassIdArray, int64_t numberOfStaticClassIds, const uint64_t* staticClassIdArray)
 {
     cmajor::rt::Init(numberOfPolymorphicClassIds, polymorphicClassIdArray, numberOfStaticClassIds, staticClassIdArray);
-    initCompileUnitsFunction = globalInitializationFunction;
 }
 
 bool DynamicInitVmtsAndCompare(void* vmt1, void* vmt2)
@@ -48,28 +44,6 @@ void RtExit(int32_t exitCode)
 
 std::recursive_mutex initMutex;
 
-void RtInitCompileUnits()
-{
-    std::lock_guard<std::recursive_mutex> initLock(initMutex);
-    if (initCompileUnitsFunction)
-    {
-        GlobalInitFunctionType init = initCompileUnitsFunction;
-        initCompileUnitsFunction = nullptr;
-        init();
-    }
-}
-
-void RtBeginUnwindInfoInit()
-{
-    initMutex.lock();
-    RtInitCompileUnits();
-}
-
-void RtEndUnwindInfoInit()
-{
-    initMutex.unlock();
-}
-
 namespace cmajor::rt {
 
 void Init(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassIdArray, int64_t numberOfStaticClassIds, const uint64_t* staticClassIdArray)
@@ -83,7 +57,6 @@ void Init(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassI
     InitEnvironment();
     InitStatics();
     InitClasses(numberOfPolymorphicClassIds, polymorphicClassIdArray, numberOfStaticClassIds, staticClassIdArray);
-    InitUnwind();
     //InitCmdbSession(); TODO
     // StartCmdbSession(); TODO
 }
@@ -91,7 +64,6 @@ void Init(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassI
 void Done()
 {
     // DoneCmdbSession(); TODO
-    DoneUnwind();
     DoneStatics();
     DoneEnvironment();
     DoneSocket();

@@ -1,0 +1,36 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.xml.serialization.lexer;
+
+import soul.xml.serialization.token;
+import soul.xml.serialization.keyword;
+import soul.xml.serialization.expr;
+
+lexer XmlSerLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{id}" { int64_t kw = lexer.GetKeywordToken(lexer.CurrentToken().match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "=" { return ASSIGN; }
+        ";" { return SEMICOLON; }
+        "::" { return COLON_COLON; }
+        ":" { return COLON; }
+        "," { return COMMA; }
+        "\*"{ return AST; }
+        "<%" { return START_CPP; }
+        "%>" { return END_CPP; }
+        "<"{ return LANGLE; }
+        ">"{ return RANGLE; }
+        "\."{ return DOT; }
+    }
+}

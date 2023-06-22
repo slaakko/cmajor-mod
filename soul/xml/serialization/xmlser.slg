@@ -1,0 +1,5 @@
+project soul.xml.serialization.slg;
+tokens <xmlser.token>;
+keywords <xmlser.keyword>;
+expressions <xmlser.expr>;
+lexer <xmlser.lexer>;

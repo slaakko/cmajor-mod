@@ -15,8 +15,8 @@ export namespace cmajor::projects::parser {
 template<typename LexerT>
 struct ProjectParser
 {
-    static std::unique_ptr<cmajor::ast::Project> Parse(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend, std::string toolChain);
-    static soul::parser::Match Project(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend, std::string toolChain);
+    static std::unique_ptr<cmajor::ast::Project> Parse(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend);
+    static soul::parser::Match Project(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend);
     static soul::parser::Match QualifiedId(LexerT& lexer);
     static soul::parser::Match Declaration(LexerT& lexer);
     static soul::parser::Match ReferenceDeclaration(LexerT& lexer);

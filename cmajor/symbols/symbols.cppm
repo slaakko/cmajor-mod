@@ -48,3 +48,4 @@ export import cmajor.symbols.alias.type;
 export import cmajor.symbols.value;
 export import cmajor.symbols.variable.symbol;
 export import cmajor.symbols.warning;
+export import cmajor.symbols.string.functions;

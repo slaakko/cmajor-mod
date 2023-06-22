@@ -1,0 +1,18 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import soul.xml.serialization.token;
+
+keywords soul.xml.serialization.keyword
+{
+    ("class", CLASS), ("enum", ENUM), ("base", BASE), ("bool", BOOL),
+    ("sbyte", SBYTE), ("byte", BYTE), ("short", SHORT), ("ushort", USHORT),
+    ("int", INT), ("uint", UINT), ("long", LONG), ("ulong", ULONG),
+    ("float", FLOAT), ("double", DOUBLE), ("char", CHAR), ("wchar", WCHAR),
+    ("uchar", UCHAR), ("uuid", UUID), ("string", STRING), ("wstring", WSTRING),
+    ("ustring", USTRING), ("date", DATE), ("datetime", DATETIME), 
+    ("timestamp", TIMESTAMP), ("time_point", TIME_POINT), ("duration", DURATION),
+    ("namespace", NAMESPACE), ("using", USING)
+}

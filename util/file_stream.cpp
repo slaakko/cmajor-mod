@@ -6,6 +6,7 @@
 module;
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 module util.file.stream;
 
@@ -78,9 +79,8 @@ FileStream::FileStream(const std::string& filePath_, OpenMode openMode) : filePa
     file = fopen(nativeFilePath.c_str(), mode.c_str());
     if (!file)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not open file '" + std::string(filePath) + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not open file '" + std::string(filePath) + "': " + PlatformStringToUtf8(s));
     }
     needToClose = true;
 }
@@ -104,9 +104,8 @@ int FileStream::ReadByte()
         }
         else
         {
-            char buf[4096];
-            strerror_s(buf, sizeof(buf), errno);
-            throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(buf));
+            std::string s = strerror(errno);
+            throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(s));
         }
     }
     SetPosition(Position() + 1);
@@ -118,9 +117,8 @@ int64_t FileStream::Read(uint8_t* buf, int64_t count)
     int64_t result = std::fread(buf, 1, count, file);
     if (std::ferror(file))
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + result);
     return result;
@@ -131,9 +129,8 @@ void FileStream::Write(uint8_t x)
     int result = std::fputc(x, file);
     if (result == EOF)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + 1);
 }
@@ -143,9 +140,8 @@ void FileStream::Write(uint8_t* buf, int64_t count)
     int64_t result = std::fwrite(buf, 1, count, file);
     if (result != count)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + result);
 }
@@ -155,9 +151,8 @@ void FileStream::Flush()
     int result = std::fflush(file);
     if (result != 0)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not flush file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not flush file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
 }
 
@@ -189,9 +184,8 @@ void FileStream::Seek(int64_t pos, Origin origin)
 #endif
     if (result != 0)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not seek file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not seek file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     switch (origin)
     {
@@ -218,9 +212,8 @@ int64_t FileStream::Tell()
     int64_t result = std::ftell(file);
     if (result == -1)
     {
-        char buf[4096];
-        strerror_s(buf, sizeof(buf), errno);
-        throw std::runtime_error("could not tell file '" + filePath + "': " + PlatformStringToUtf8(buf));
+        std::string s = strerror(errno);
+        throw std::runtime_error("could not tell file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     return result;
 }

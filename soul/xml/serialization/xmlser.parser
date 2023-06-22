@@ -1,0 +1,296 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.xml.serialization.parser;
+
+[interface]import soul.xml.serialization.ast;
+[implementation]import soul.xml.serialization.token;
+[implementation]import soul.xml.serialization.lexer;
+[implementation]import soul.xml.serialization.scanner;
+
+parser XmlSerParser
+{
+    lexer soul::xml::serialization::lexer::XmlSerLexer<char32_t>;
+	main;
+
+    SourceFile(var std::unique_ptr<soul::xml::serialization::ast::SourceFileNode> sourceFile) : soul::xml::serialization::ast::SourceFileNode*
+        ::= 
+        (
+            empty{ sourceFile.reset(new soul::xml::serialization::ast::SourceFileNode(lexer.GetSourcePos(pos))); }
+			ExportModule:module{ sourceFile->SetModule(module); }
+			(Import:import{ sourceFile->AddImport(import); })*
+			NamespaceContent(sourceFile->GlobalNs()):nsContent
+        )
+        {
+            return sourceFile.release();
+        }
+        ;
+
+	NamespaceContent(soul::xml::serialization::ast::NamespaceNode* ns)
+		::= 
+		(
+			Declaration:declaration{ ns->AddNode(declaration); } | Definition:definition{ ns->AddNode(definition); }
+		)*
+		;
+
+	Declaration : soul::xml::serialization::ast::Node*
+		::= ForwardClassDeclaration:forwardClassDeclaration{ return forwardClassDeclaration; }
+		|	UsingAliasDeclaration:usingAliasDeclaration{ return usingAliasDeclaration; }
+		;
+
+	ForwardClassDeclaration(var soul::ast::SourcePos sourcePos, var std::string classId) : soul::xml::serialization::ast::Node*
+		::= 
+		(
+			CLASS{ sourcePos = lexer.GetSourcePos(pos); } ID{ classId = util::ToUtf8(lexer.GetToken(pos).ToString()); } SEMICOLON
+		)
+		{
+			return new soul::xml::serialization::ast::ForwardClassDeclarationNode(sourcePos, classId);
+		}
+		;
+
+	UsingAliasDeclaration(var soul::ast::SourcePos sourcePos, var std::string id) : soul::xml::serialization::ast::Node*
+		::=
+		(
+			USING{ sourcePos = lexer.GetSourcePos(pos); } 
+			ID{ id = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+			ASSIGN
+			QualifiedCppId:qualifiedCppId
+			SEMICOLON
+		)
+		{
+			return new soul::xml::serialization::ast::UsingAliasNode(sourcePos, id, qualifiedCppId); 
+		}
+		;
+
+	Definition : soul::xml::serialization::ast::Node*
+		::= Class:cls{ return cls; }
+		|	Enum:enm{ return enm; }
+		|	Namespace:ns{ return ns; }
+		|	CppBlock(true):cppBlock{ return cppBlock; }
+		;
+
+	Class(var std::unique_ptr<soul::xml::serialization::ast::ClassNode> cls) : soul::xml::serialization::ast::Node*
+		::= 
+		(
+			CLASS 
+			ID{ cls.reset(new soul::xml::serialization::ast::ClassNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+			Inheritance(cls.get()):inheritance?
+			LBRACE 
+			ClassContent(cls.get()):classContent
+			RBRACE
+		)
+		{
+			return cls.release();
+		}
+		;
+
+	Inheritance(soul::xml::serialization::ast::ClassNode* cls) 
+		::= 
+		(
+			COLON
+			ID{ cls->SetBaseClass(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+		)
+		;
+
+	ClassContent(soul::xml::serialization::ast::ClassNode* cls)
+		::= 
+		(	MemberVariable:memberVariable{ cls->AddNode(memberVariable); }
+		|	CppBlock(false):cppBlock{ cls->AddNode(cppBlock); }
+		)*
+		;
+
+	MemberVariable(var soul::ast::SourcePos sourcePos, var std::string id) : soul::xml::serialization::ast::MemberVariableNode*
+		::= 
+		(
+			Type:type ID{ sourcePos = lexer.GetSourcePos(pos); id = util::ToUtf8(lexer.GetToken(pos).ToString()); } SEMICOLON
+		)
+		{
+			return new soul::xml::serialization::ast::MemberVariableNode(sourcePos, type, id);
+		}
+		;
+
+	Type(var std::unique_ptr<soul::xml::serialization::ast::TypeNode> type) : soul::xml::serialization::ast::TypeNode*
+		::= 
+		(
+			(	ScalarType:scalarType{ type.reset(scalarType); }
+			|	ClassType:classType{ type.reset(classType); }
+			)
+			(
+				AST{ type.reset(new soul::xml::serialization::ast::PointerTypeNode(lexer.GetSourcePos(pos), type.release())); }
+			)?
+			(	
+				(LBRACKET RBRACKET){ type.reset(new soul::xml::serialization::ast::ArrayTypeNode(lexer.GetSourcePos(pos), type.release())); }
+			)?
+		)
+		{
+			return type.release();
+		}
+		;
+
+	ScalarType : soul::xml::serialization::ast::TypeNode*
+		::= BOOL{ return new soul::xml::serialization::ast::BoolNode(lexer.GetSourcePos(pos)); }
+		|	SBYTE{ return new soul::xml::serialization::ast::SByteNode(lexer.GetSourcePos(pos)); }
+		|	BYTE{ return new soul::xml::serialization::ast::ByteNode(lexer.GetSourcePos(pos)); }
+		|	SHORT{ return new soul::xml::serialization::ast::ShortNode(lexer.GetSourcePos(pos)); }
+		|	USHORT{ return new soul::xml::serialization::ast::UShortNode(lexer.GetSourcePos(pos)); }
+		|	INT{ return new soul::xml::serialization::ast::IntNode(lexer.GetSourcePos(pos)); }
+		|	UINT{ return new soul::xml::serialization::ast::UIntNode(lexer.GetSourcePos(pos)); }
+		|	LONG{ return new soul::xml::serialization::ast::LongNode(lexer.GetSourcePos(pos)); }
+		|	ULONG{ return new soul::xml::serialization::ast::ULongNode(lexer.GetSourcePos(pos)); }
+		|	FLOAT{ return new soul::xml::serialization::ast::FloatNode(lexer.GetSourcePos(pos)); }
+		|	DOUBLE{ return new soul::xml::serialization::ast::DoubleNode(lexer.GetSourcePos(pos)); }
+		|	CHAR{ return new soul::xml::serialization::ast::CharNode(lexer.GetSourcePos(pos)); }
+		|	WCHAR{ return new soul::xml::serialization::ast::WCharNode(lexer.GetSourcePos(pos)); }
+		|	UCHAR{ return new soul::xml::serialization::ast::UCharNode(lexer.GetSourcePos(pos)); }
+		|	UUID{ return new soul::xml::serialization::ast::UuidNode(lexer.GetSourcePos(pos)); }
+		|	STRING{ return new soul::xml::serialization::ast::StringNode(lexer.GetSourcePos(pos)); }
+		|	WSTRING{ return new soul::xml::serialization::ast::WStringNode(lexer.GetSourcePos(pos)); }
+		|	USTRING{ return new soul::xml::serialization::ast::UStringNode(lexer.GetSourcePos(pos)); }
+		|	DATE{ return new soul::xml::serialization::ast::DateNode(lexer.GetSourcePos(pos)); }
+		|	DATETIME{ return new soul::xml::serialization::ast::DateTimeNode(lexer.GetSourcePos(pos)); }
+		|	TIME_POINT{ return new soul::xml::serialization::ast::TimePointNode(lexer.GetSourcePos(pos)); }
+		|	DURATION{ return new soul::xml::serialization::ast::DurationNode(lexer.GetSourcePos(pos)); }
+		;
+
+	ClassType : soul::xml::serialization::ast::TypeNode*
+		::= ID{ return new soul::xml::serialization::ast::ClassIdNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+		;
+
+	CppBlock(bool implementation, var soul::ast::SourcePos sourcePos, var std::string cppText) : soul::xml::serialization::ast::CppBlockNode*
+		::= 
+		(
+			START_CPP{ sourcePos = lexer.GetSourcePos(pos); cppText = soul::xml::serialization::scanner::ScanEndCpp(lexer); }
+		)
+		{
+			auto node = new soul::xml::serialization::ast::CppBlockNode(sourcePos, cppText);
+			if (implementation)
+			{
+				node->SetImplementation();
+			}
+			return node;
+		}
+		;
+
+	Enum(var std::unique_ptr<soul::xml::serialization::ast::EnumTypeNode> enm) : soul::xml::serialization::ast::TypeNode*
+		::= 
+		(
+			ENUM 
+			ID{ enm.reset(new soul::xml::serialization::ast::EnumTypeNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); } 
+			LBRACE
+			EnumContent(enm.get()):enumContent?
+			RBRACE
+		)
+		{
+			return enm.release();
+		}
+		;
+
+	EnumContent(soul::xml::serialization::ast::EnumTypeNode* enm)
+		::= 
+		(
+			EnumConstant:enumConstant{ enm->AddEnumConstant(enumConstant); } % COMMA
+		)
+		;
+
+	EnumConstant : soul::xml::serialization::ast::EnumConstantNode*
+		::= ID{ return new soul::xml::serialization::ast::EnumConstantNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+		;
+
+	Namespace(var std::unique_ptr<soul::xml::serialization::ast::NamespaceNode> ns) : soul::xml::serialization::ast::Node*
+		::= 
+		(
+			NAMESPACE 
+			QualifiedCppId:nsId{ ns.reset(new soul::xml::serialization::ast::NamespaceNode(lexer.GetSourcePos(pos), nsId)); }
+			LBRACE
+			NamespaceContent(ns.get()):namespaceContent
+			RBRACE
+		)
+		{
+			return ns.release();
+		}
+		;
+
+	QualifiedId(var std::string str) : std::string
+		::= 
+		(
+			ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+			(
+				DOT 
+				ID{ str.append(1, '.').append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			)*
+		)
+		{ 
+			return str; 
+		}
+		;
+
+	QualifiedCppId(var std::string str) : std::string
+		::= 
+		(
+			(COLON_COLON{ str.append("::"); })?
+			ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			(
+				COLON_COLON ID{ str.append("::").append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			)*
+		)
+		{
+			return str;
+		}
+		;
+
+	ExportModule(var std::unique_ptr<soul::xml::serialization::ast::ExportModule> exp) : soul::xml::serialization::ast::ExportModule*
+		::= 
+		(
+			ExportKeyword:exportKeyword ModuleKeyword:moduleKeyword QualifiedId:moduleName{ exp.reset(new soul::xml::serialization::ast::ExportModule(moduleName)); } SEMICOLON!
+		)
+		{
+			return exp.release();
+		}
+		;
+
+	Import(var std::unique_ptr<soul::xml::serialization::ast::Import> imp, var soul::xml::serialization::ast::ImportPrefix prefix) : soul::xml::serialization::ast::Import*
+		::= 
+		(
+			(ImportPrefix:importPrefix{ prefix = importPrefix; } | empty{ prefix = soul::xml::serialization::ast::ImportPrefix::interfacePrefix; })
+			ImportKeyword:importKeyword QualifiedId:moduleName{ imp.reset(new soul::xml::serialization::ast::Import(moduleName, prefix)); } SEMICOLON!
+		)
+		{
+			return imp.release();
+		}
+		;
+
+    ImportPrefix : soul::xml::serialization::ast::ImportPrefix
+        ::= ImplementationPrefix:implementationPrefix{ return implementationPrefix; }
+        |   InterfacePrefix:interfacePrefix{ return interfacePrefix; }
+        ;
+
+	ExportKeyword
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "export"; }
+		;
+
+	ModuleKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "module"; }
+		;
+
+	ImportKeyword
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "import"; }
+		;
+
+	ImplementationPrefix : soul::xml::serialization::ast::ImportPrefix
+		::= LBRACKET ImplementationKeyword:implementationKeyword RBRACKET{ return soul::xml::serialization::ast::ImportPrefix::implementationPrefix; }
+		;
+
+	InterfacePrefix : soul::xml::serialization::ast::ImportPrefix
+		::= LBRACKET InterfaceKeyword:interfaceKeyword RBRACKET{ return soul::xml::serialization::ast::ImportPrefix::interfacePrefix; }
+		;
+
+	ImplementationKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "implementation"; }
+		;
+
+	InterfaceKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "interface"; }
+		;
+}

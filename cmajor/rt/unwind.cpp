@@ -30,6 +30,36 @@ void RtPopUnwindInfo(void* prevUnwindInfo)
     unwindList = prevUnwindInfo;
 }
 
+GlobalInitFunctionType globalInitFunction = nullptr;
+
+void RtSetGlobalInitFunction(GlobalInitFunctionType globalInitFunction_)
+{
+    globalInitFunction = globalInitFunction_;
+}
+
+std::recursive_mutex initCompileUnitsMutex;
+
+void InitCompileUnits()
+{
+    std::lock_guard<std::recursive_mutex> initLock(initCompileUnitsMutex);
+    if (globalInitFunction)
+    {
+        globalInitFunction();
+        globalInitFunction = nullptr;
+    }
+}
+
+void RtBeginUnwindInfoInit()
+{
+    initCompileUnitsMutex.lock();
+    InitCompileUnits();
+}
+
+void RtEndUnwindInfoInit()
+{
+    initCompileUnitsMutex.unlock();
+}
+
 struct FunctionUnwindInfo
 {
     FunctionUnwindInfo(const char* functionName_, const char* sourceFilePath_) : functionName(functionName_), sourceFilePath(sourceFilePath_) {}
@@ -40,10 +70,7 @@ struct FunctionUnwindInfo
 class GlobalUnwindInfo
 {
 public:
-    static void Init();
-    static void Done();
-    static bool Initialized() { return instance != nullptr; }
-    static GlobalUnwindInfo& Instance() { return *instance; }
+    static GlobalUnwindInfo& Instance();
     void AddUnwindInfo(void* functionAddress, const char* functionName, const char* sourceFilePath);
     const char* GetCallStack(UnwindInfo* unwindInfoList);
     void DisposeCallStack(UnwindInfo* unwindInfoList);
@@ -55,17 +82,11 @@ private:
     std::unordered_map<void*, std::string*> callStackMap;
 };
 
-void GlobalUnwindInfo::Init()
+GlobalUnwindInfo& GlobalUnwindInfo::Instance()
 {
-    instance.reset(new GlobalUnwindInfo());
+    static GlobalUnwindInfo instance;
+    return instance;
 }
-
-void GlobalUnwindInfo::Done()
-{
-    instance.reset();
-}
-
-std::unique_ptr<GlobalUnwindInfo> GlobalUnwindInfo::instance;
 
 GlobalUnwindInfo::GlobalUnwindInfo()
 {
@@ -125,35 +146,15 @@ void GlobalUnwindInfo::DisposeCallStack(UnwindInfo* unwindInfoList)
 
 void RtAddCompileUnitFunction(void* functionAddress, const char* functionName, const char* sourceFilePath)
 {
-    if (GlobalUnwindInfo::Initialized())
-    {
-        GlobalUnwindInfo::Instance().AddUnwindInfo(functionAddress, functionName, sourceFilePath);
-    }
+    GlobalUnwindInfo::Instance().AddUnwindInfo(functionAddress, functionName, sourceFilePath);
 }
 
 const char* RtGetCallStack()
 {
-    if (GlobalUnwindInfo::Initialized())
-    {
-        return GlobalUnwindInfo::Instance().GetCallStack(static_cast<UnwindInfo*>(unwindList));
-    }
-    return "";
+    return GlobalUnwindInfo::Instance().GetCallStack(static_cast<UnwindInfo*>(unwindList));
 }
 
 void RtDisposeCallStack()
 {
-    if (GlobalUnwindInfo::Initialized())
-    {
-        GlobalUnwindInfo::Instance().DisposeCallStack(static_cast<UnwindInfo*>(unwindList));
-    }
-}
-
-void InitUnwind()
-{
-    GlobalUnwindInfo::Init();
-}
-
-void DoneUnwind()
-{
-    GlobalUnwindInfo::Done();
+    GlobalUnwindInfo::Instance().DisposeCallStack(static_cast<UnwindInfo*>(unwindList));
 }

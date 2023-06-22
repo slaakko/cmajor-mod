@@ -29,18 +29,17 @@ public:
 
 void SetModuleVersionTagVerifier(ModuleVersionTagVerifier* verifier);
 
-std::string GetToolChain();
-
 class Project;
 class Solution;
 class CompileUnitNode;
 
+std::string GetPlatform();
 std::string CmajorRootDir();
-std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const std::string& toolChain);
+std::string CmajorSystemLibDir(const std::string& config, BackEnd backend);
 std::string CmajorResourceDir();
 std::string CmajorLogFileDir();
-std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, const std::string& toolChain);
-std::string CmajorSystemWindowsModuleFilePath(const std::string& config, const std::string& toolChanin);
+std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend);
+std::string CmajorSystemWindowsModuleFilePath(const std::string& config);
 std::string MakeCmajorRootRelativeFilePath(const std::string& filePath);
 std::string ExpandCmajorRootRelativeFilePath(const std::string& filePath);
 std::vector<Project*> GetReferencedProjects(Project* project, Solution* solution);
@@ -139,7 +138,7 @@ private:
 class Project
 {
 public:
-    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, const std::string& toolChain_);
+    Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_);
     Project(const Project&) = delete;
     Project& operator=(const Project&) = delete;
     const std::u32string& Name() const { return name; }
@@ -205,7 +204,6 @@ public:
     std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() { return compileUnits; }
 private:
     BackEnd backend;
-    std::string toolChain;
     std::u32string name;
     std::string filePath;
     std::string config;

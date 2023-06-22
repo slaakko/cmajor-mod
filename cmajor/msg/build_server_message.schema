@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module build.server.message;
+export module cmajor.msg.build.server.message;
 
 class StopBuildRequest
 {

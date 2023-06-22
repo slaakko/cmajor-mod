@@ -4,9 +4,10 @@
 // =================================
 
 public delegate void GlobalInitFunctionType();
-public extern cdecl nothrow void RtInit(long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray,
-    GlobalInitFunctionType globalInitFunction);
+
+public extern cdecl nothrow void RtInit(long numberOfPolymorphicClassIds, const ulong* polymorphicClassIdArray, long numberOfStaticClassIds, const ulong* staticClassIdArray);
 public extern cdecl nothrow void RtDone();
+public extern cdecl nothrow void RtSetGlobalInitFunction(GlobalInitFunctionType globalInitFunction);
 public extern cdecl nothrow ulong RtDynamicInitVmt(void* vmt);
 public extern cdecl nothrow int RtArgc();
 public extern cdecl nothrow const char** RtArgv();

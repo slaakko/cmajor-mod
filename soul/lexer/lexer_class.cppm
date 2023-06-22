@@ -454,6 +454,10 @@ public:
     {
         return tokens;
     }
+    std::vector<soul::lexer::Token<Char, LexerBase<Char>>> ReleaseTokens()
+    {
+        return std::move(tokens);
+    }
     void SetCurrentMatchEnd(const Char* end) override
     {
         current->match.end = end;
@@ -547,7 +551,6 @@ public:
     {
         return skip;
     }
-    std::vector<soul::lexer::Token<Char, LexerBase<Char>>> ReleaseTokens() { return std::move(tokens); }
 private:
     void NextToken()
     {

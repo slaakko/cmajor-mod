@@ -23,8 +23,9 @@ std::unique_ptr<cmajor::codegen::CodeGenerator> LLvmBackEnd::CreateCodeGenerator
 {
 #ifdef _WIN32
     return std::unique_ptr<cmajor::codegen::CodeGenerator>(new cmajor::llvm::WindowsCodeGenerator(emitter));
-#endif
+#else
     // TODO
+#endif
 }
 
 } // namespace cmajor::backend

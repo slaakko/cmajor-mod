@@ -126,11 +126,11 @@ int main(int argc, const char** argv)
             }
             else if (file.ends_with(".cmp"))
             {
-                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(file, "debug", cmajor::ast::BackEnd::llvm, "llvm", fileMap, flags);
+                std::unique_ptr<cmajor::ast::Project> project = cmajor::build::ParseProject(file, "debug", cmajor::ast::BackEnd::llvm, fileMap, flags);
             }
             else if (file.ends_with(".cms"))
             {
-                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolution(file, "debug", cmajor::ast::BackEnd::llvm, "llvm", flags);
+                std::unique_ptr<cmajor::ast::Solution> solution = cmajor::build::ParseSolution(file, "debug", cmajor::ast::BackEnd::llvm, flags);
             }
             else
             {

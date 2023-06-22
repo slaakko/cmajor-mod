@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmdb.message;
+export module cmajor.msg.cmdb.message;
 
 class Location
 {

@@ -108,7 +108,6 @@ void* CppEmitter::GetIrTypeForFunction(void* retType, const std::vector<void*>& 
 
 void* CppEmitter::GetIrTypeForVariableParamFunction(void* retType)
 {
-    // todo
     return nullptr;
 }
 
@@ -467,217 +466,179 @@ void* CppEmitter::GetGlobalUuidConstant(int uuidId)
 
 void* CppEmitter::CreateDITypeForBool()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForSByte()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForByte()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForShort()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForUShort()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForInt()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForUInt()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForLong()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForULong()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForFloat()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForDouble()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForChar()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForWChar()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForUChar()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForVoid()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t value)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
     uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId)
 {
-    // todo
     return nullptr;
 }
 
 uint64_t CppEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 {
-    // todo
     return uint64_t();
 }
 
 void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSpan, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
     const std::string& mangledName, void* baseClassDIType)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
 {
-    // todo
 }
 
 void* CppEmitter::GetDITypeByTypeId(const util::uuid& typeId) const
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName)
 {
-    // todo
 }
 
 void* CppEmitter::GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType)
 {
-    // todo
 }
 
 void* CppEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateConstDIType(void* diType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateLValueRefDIType(void* diType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateRValueRefDIType(void* diType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreatePointerDIType(void* diType)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateUnspecifiedDIType(const std::string& name)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className)
 {
-    // todo
 }
 
 uint64_t CppEmitter::GetSizeInBits(void* irType)
 {
-    // todo
     return 0;
-    //return static_cast<cmajor::cpp::ir::Type*>(irType)->SizeInBits();
 }
 
 uint64_t CppEmitter::GetAlignmentInBits(void* irType)
 {
-    // todo
     return 0;
-    //return static_cast<cmajor::cpp::ir::Type*>(irType)->AlignmentInBits();
 }
 
 void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
 {
-    // todo
 }
 
 void* CppEmitter::GetArrayBeginAddress(void* arrayPtr)
@@ -1121,7 +1082,6 @@ void CppEmitter::SetInitializer(void* global, void* initializer)
 
 void CppEmitter::SetPrivateLinkage(void* global)
 {
-    // todo
 }
 
 bool CppEmitter::IsVmtObjectCreated(void* symbol) const
@@ -1166,60 +1126,50 @@ void CppEmitter::CreateCleanup()
 
 cmajor::ir::Pad* CppEmitter::CurrentPad()
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCleanupPadWithParent(void* parentPad, const std::vector<void*>& args)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCleanupPad(const std::vector<void*>& args)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCleanupRet(void* cleanupPad, void* unwindTarget)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCatchRet(void* catchPad, void* returnTarget)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCatchSwitch(void* unwindBlock)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateCatchSwitchWithParent(void* parentPad, void* unwindBlock)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::AddHandlerToCatchSwitch(void* catchSwitch, void* target)
 {
-    // todo
 }
 
 void* CppEmitter::CreateCatchPad(void* parentPad, const std::vector<void*>& args)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateClassDIType(void* classPtr)
 {
-    // todo
     return nullptr;
 }
 
@@ -1284,13 +1234,11 @@ void* CppEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwind
 
 void* CppEmitter::DIBuilder()
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::SetCurrentDIBuilder(void* diBuilder_)
 {
-    // todo
 }
 
 void* CppEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
@@ -1413,7 +1361,6 @@ void* CppEmitter::SizeOf(void* ptrType)
 
 void CppEmitter::SetLineNumber(int32_t lineNumber)
 {
-    // todo
 }
 
 void CppEmitter::SaveObjectPointer(void* objectPointer_)
@@ -1460,25 +1407,21 @@ void* CppEmitter::CreatePtrDiff(void* left, void* right)
 
 uint32_t CppEmitter::GetPrivateFlag()
 {
-    // todo
     return uint32_t();
 }
 
 uint32_t CppEmitter::GetProtectedFlag()
 {
-    // todo
     return uint32_t();
 }
 
 uint32_t CppEmitter::GetPublicFlag()
 {
-    // todo
     return uint32_t();
 }
 
 uint32_t CppEmitter::GetNoFlags()
 {
-    // todo
     return uint32_t();
 }
 
@@ -1500,112 +1443,91 @@ void CppEmitter::SetModule(void* module_)
 
 void CppEmitter::SetTargetTriple(const std::string& targetTriple)
 {
-    // todo
 }
 
 void CppEmitter::SetDataLayout(void* dataLayout_)
 {
-    // todo
 }
 
 void CppEmitter::SetSourceFileName(const std::string& sourceFileName)
 {
-    // todo
 }
 
 void CppEmitter::SetDICompileUnit(void* diCompileUnit_)
 {
-    // todo
 }
 
 void CppEmitter::SetDIFile(void* diFile_)
 {
-    // todo
 }
 
 void CppEmitter::ResetCurrentDebugLocation()
 {
-    // todo
 }
 
 void CppEmitter::StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized)
 {
-    // todo
 }
 
 void CppEmitter::FinalizeDebugInfo()
 {
-    // todo
 }
 
 void CppEmitter::EndDebugInfo()
 {
-    // todo
 }
 
 void CppEmitter::EmitIrText(const std::string& filePath)
 {
-    // todo
 }
 
 void CppEmitter::Compile(const std::string& objectFilePath)
 {
-    // todo
 }
 
 void CppEmitter::VerifyModule()
 {
-    // todo
 }
 
 void* CppEmitter::CreateDebugInfoForNamespace(void* scope, const std::string& name)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& span, const util::uuid& moduleId)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::PushScope(void* scope)
 {
-    // todo
 }
 
 void CppEmitter::PopScope()
 {
-    // todo
 }
 
 void* CppEmitter::CurrentScope()
 {
-    // todo
     return nullptr;
 }
 
 uint64_t CppEmitter::GetClassTypeSizeInBits(void* classIrType)
 {
-    // todo
     return uint64_t();
 }
 
 uint64_t CppEmitter::GetClassTypeAlignmentInBits(void* classIrType)
 {
-    // todo
     return uint64_t();
 }
 
 void CppEmitter::AddInlineFunctionAttribute(void* function)
 {
-    // todo
 }
 
 void CppEmitter::SetFunctionLinkage(void* function, bool setInline)
 {
-    // todo
 }
 
 void CppEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
@@ -1615,7 +1537,6 @@ void CppEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
 
 void CppEmitter::SetFunctionCallConventionToStdCall(void* function)
 {
-    // todo
 }
 
 void CppEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId)
@@ -1684,49 +1605,41 @@ void CppEmitter::EndInstructionFlag(int16_t flag)
 
 void CppEmitter::SetInPrologue(bool inPrologue_)
 {
-    // todo
 }
 
 void* CppEmitter::CreateSubroutineType(const std::vector<void*>& elementTypes)
 {
-    // todo
     return nullptr;
 }
 
 unsigned CppEmitter::GetPureVirtualVirtuality()
 {
-    // todo
     return unsigned();
 }
 
 unsigned CppEmitter::GetVirtualVirtuality()
 {
-    // todo
     return unsigned();
 }
 
 unsigned CppEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit)
 {
-    // todo
     return unsigned();
 }
 
 void* CppEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
     unsigned flags)
 {
-    // todo
     return nullptr;
 }
 
 void* CppEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned flags)
 {
-    // todo
     return nullptr;
 }
 
 void CppEmitter::SetDISubprogram(void* function, void* subprogram)
 {
-    // todo
 }
 
 void* CppEmitter::CreateAlloca(void* irType)
@@ -1736,7 +1649,6 @@ void* CppEmitter::CreateAlloca(void* irType)
 
 void* CppEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
 {
-    // todo
     return nullptr;
 }
 
@@ -1752,7 +1664,6 @@ void* CppEmitter::GetFunctionArgument(void* function, int argumentIndex)
 
 void CppEmitter::SetDebugLoc(void* callInst)
 {
-    // todo
 }
 
 void* CppEmitter::CreateRet(void* value)
@@ -1767,22 +1678,18 @@ void* CppEmitter::CreateRetVoid()
 
 void CppEmitter::SetPersonalityFunction(void* function, void* personalityFunction)
 {
-    // todo
 }
 
 void CppEmitter::AddNoUnwindAttribute(void* function)
 {
-    // todo
 }
 
 void CppEmitter::AddUWTableAttribute(void* function)
 {
-    // todo
 }
 
 void* CppEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
 {
-    // todo
     return nullptr;
 }
 

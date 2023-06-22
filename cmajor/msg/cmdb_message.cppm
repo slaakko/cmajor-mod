@@ -1,6 +1,6 @@
 // this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/msg/cmdb_message.schema' by xmlsergen version 4.1.0
 
-export module cmdb.message;
+export module cmajor.msg.cmdb.message;
 
 import std.core;
 import util.uuid;

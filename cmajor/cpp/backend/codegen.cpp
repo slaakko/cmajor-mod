@@ -42,62 +42,25 @@ CppCodeGenerator::CppCodeGenerator(cmajor::ir::Emitter* emitter_) :
     emitter->SetEmittingDelegate(this);
 }
 
-/*
 void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
 {
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::disableCodeGen)) return;
-    const Tool& compilerTool = GetCompilerTool(GetPlatform(), GetToolChain());
-    const Configuration& configuration = GetToolConfiguration(compilerTool, GetConfig());
-    std::string outputDirectory = GetFullPath(util::Path::Combine(util::Path::GetDirectoryName(intermediateCodeFile), configuration.outputDirectory));
-    boost::filesystem::create_directories(outputDirectory);
+    std::string outputDirectory = util::GetFullPath(util::Path::GetDirectoryName(intermediateCodeFile));
+    std::filesystem::create_directories(outputDirectory);
     std::string intermediateCompileCommand;
-    std::string errors;
-    intermediateCompileCommand.append(compilerTool.commandName);
-    for (const std::string& arg : configuration.args)
+    intermediateCompileCommand.append("g++");
+    intermediateCompileCommand.append(" -c ").append(util::QuotedPath(intermediateCodeFile));
+    intermediateCompileCommand.append(" -o ").append(util::QuotedPath(compileUnit->ObjectFilePath()));
+    intermediateCompileCommand.append(" -O").append(std::to_string(emitter->EmittingContext()->OptimizationLevel()));
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo))
     {
-        if (arg.find('$') != std::string::npos)
-        {
-            std::string modifiedArg = arg;
-            if (arg.find("$SOURCE_FILE$") != std::string::npos)
-            {
-                modifiedArg = soulng::util::Replace(arg, "$SOURCE_FILE$", QuotedPath(intermediateCodeFile));
-            }
-            else if (arg.find("$GENERATE_ASSEMBLY_FILE_OPTION$") != std::string::npos)
-            {
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm))
-                {
-                    modifiedArg = soulng::util::Replace(modifiedArg, "$GENERATE_ASSEMBLY_FILE_OPTION$", "");
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            else if (arg.find("$DEBUG_INFORMATION_FILE$") != std::string::npos)
-            {
-                modifiedArg = soulng::util::Replace(modifiedArg, "$DEBUG_INFORMATION_FILE$",
-                    QuotedPath(GetFullPath(util::Path::ChangeExtension(intermediateCodeFile, compilerTool.debugInformationFileExtension))));
-            }
-            else if (arg.find("$ASSEMBLY_FILE$") != std::string::npos)
-            {
-                modifiedArg = soulng::util::Replace(modifiedArg, "$ASSEMBLY_FILE$", QuotedPath(GetFullPath(util::Path::ChangeExtension(intermediateCodeFile, compilerTool.assemblyFileExtension))));
-            }
-            else if (arg.find("$OBJECT_FILE$") != std::string::npos)
-            {
-                modifiedArg = soulng::util::Replace(modifiedArg, "$OBJECT_FILE$", QuotedPath(compileUnit->ObjectFilePath()));
-            }
-            intermediateCompileCommand.append(" ").append(modifiedArg);
-        }
-        else
-        {
-            intermediateCompileCommand.append(" ").append(arg);
-        }
+        intermediateCompileCommand.append(" -g");
     }
+    std::string errors;
     try
     {
-        Process::Redirections redirections = Process::Redirections::processStdErr;
-        Process process(intermediateCompileCommand, redirections);
-        errors = process.ReadToEnd(Process::StdHandle::stdErr);
+        util::Process::Redirections redirections = util::Process::Redirections::processStdErr;
+        util::Process process(intermediateCompileCommand, redirections);
+        errors = process.ReadToEnd(util::Process::StdHandle::stdErr);
         process.WaitForExit();
         int exitCode = process.ExitCode();
         if (exitCode != 0)
@@ -110,7 +73,6 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
         throw std::runtime_error("compiling intermediate code '" + intermediateCodeFile + "' failed: " + ex.what() + ":\nerrors:\n" + errors);
     }
 }
-*/
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {

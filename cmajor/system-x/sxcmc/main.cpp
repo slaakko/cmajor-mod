@@ -64,9 +64,10 @@ void PrintHelp()
         "   generate debug info (on for debug mode)\n" <<
         "--pass=PASS (-p=PASS)\n" <<
         "   process intermediate code by running PASS\n" <<
+        "--time (-t)\n" <<
+        "   print duration of compilation\n" <<
         std::endl;
 }
-
 
 int main(int argc, const char** argv)
 {
@@ -137,6 +138,10 @@ int main(int argc, const char** argv)
                     else if (arg == "--disable-module-cache")
                     {
                         useModuleCache = false;
+                    }
+                    else if (arg == "--time")
+                    {
+                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);
                     }
                     else if (arg.find('=') != std::string::npos)
                     {
@@ -272,6 +277,11 @@ int main(int argc, const char** argv)
                             case 'd':
                             {
                                 useModuleCache = false;
+                                break;
+                            }
+                            case 't':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);
                                 break;
                             }
                             default:

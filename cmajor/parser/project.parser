@@ -19,14 +19,14 @@ parser ProjectParser
     lexer cmajor::container::file::lexer::CmajorContainerFileLexer<char32_t>;
     main;
 
-    Project(std::string config, cmajor::ast::BackEnd backend, std::string toolChain, var std::unique_ptr<cmajor::ast::Project> projectFile) : cmajor::ast::Project* 
+    Project(std::string config, cmajor::ast::BackEnd backend, var std::unique_ptr<cmajor::ast::Project> projectFile) : cmajor::ast::Project* 
         ::=
         (
             PROJECT
             QualifiedId:name
             SEMICOLON
             {
-                projectFile.reset(new cmajor::ast::Project(name, lexer.FileName(), config, backend, toolChain));
+                projectFile.reset(new cmajor::ast::Project(name, lexer.FileName(), config, backend));
             }
             (
                 Declaration:declaration{ projectFile->AddDeclaration(declaration); }

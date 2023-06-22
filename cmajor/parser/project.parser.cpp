@@ -24,7 +24,7 @@ using namespace util;
 namespace cmajor::projects::parser {
 
 template<typename LexerT>
-std::unique_ptr<cmajor::ast::Project> ProjectParser<LexerT>::Parse(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend, std::string toolChain)
+std::unique_ptr<cmajor::ast::Project> ProjectParser<LexerT>::Parse(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend)
 {
     std::unique_ptr<cmajor::ast::Project> value;
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -35,7 +35,7 @@ std::unique_ptr<cmajor::ast::Project> ProjectParser<LexerT>::Parse(LexerT& lexer
     }
     #endif
     ++lexer;
-    soul::parser::Match match = ProjectParser<LexerT>::Project(lexer, config, backend, toolChain);
+    soul::parser::Match match = ProjectParser<LexerT>::Project(lexer, config, backend);
     value.reset(static_cast<cmajor::ast::Project*>(match.value));
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     if (lexer.Log())
@@ -63,7 +63,7 @@ std::unique_ptr<cmajor::ast::Project> ProjectParser<LexerT>::Parse(LexerT& lexer
 }
 
 template<typename LexerT>
-soul::parser::Match ProjectParser<LexerT>::Project(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend, std::string toolChain)
+soul::parser::Match ProjectParser<LexerT>::Project(LexerT& lexer, std::string config, cmajor::ast::BackEnd backend)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     int64_t parser_debug_match_pos = 0;
@@ -132,7 +132,7 @@ soul::parser::Match ProjectParser<LexerT>::Project(LexerT& lexer, std::string co
                             }
                             if (match.hit)
                             {
-                                projectFile.reset(new cmajor::ast::Project(name->value, lexer.FileName(), config, backend, toolChain));
+                                projectFile.reset(new cmajor::ast::Project(name->value, lexer.FileName(), config, backend));
                             }
                             *parentMatch7 = match;
                         }

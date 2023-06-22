@@ -13,11 +13,6 @@ import util;
 
 namespace cmajor::ast {
 
-std::string GetToolChain()
-{
-    return "gcc";
-}
-
 std::string GetPlatform()
 {
 #ifdef _WIN32
@@ -87,7 +82,7 @@ std::string CmajorRootDir()
     return std::string(e);
 }
 
-std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const std::string& toolChain)
+std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
 {
     if (backend == BackEnd::llvm)
     {
@@ -112,7 +107,6 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend, const
         sld /= "system";
         sld /= "lib";
         sld /= "cpp";
-        sld /= toolChain;
         sld /= config;
         return util::GetFullPath(sld.generic_string());
     }
@@ -149,16 +143,16 @@ const std::string& OutDir()
     return outDir;
 }
 
-std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend, const std::string& toolChain)
+std::string CmajorSystemModuleFilePath(const std::string& config, BackEnd backend)
 {
-    std::filesystem::path smfp(CmajorSystemLibDir(config, backend, toolChain));
+    std::filesystem::path smfp(CmajorSystemLibDir(config, backend));
     smfp /= "System.cmm";
     return util::GetFullPath(smfp.generic_string());
 }
 
-std::string CmajorSystemWindowsModuleFilePath(const std::string& config, const std::string& toolChain)
+std::string CmajorSystemWindowsModuleFilePath(const std::string& config)
 {
-    std::filesystem::path smfp(CmajorSystemLibDir(config, BackEnd::llvm, toolChain));
+    std::filesystem::path smfp(CmajorSystemLibDir(config, BackEnd::llvm));
     smfp /= "System.Windows.cmm";
     return util::GetFullPath(smfp.generic_string());
 }
@@ -296,9 +290,9 @@ void TargetDeclaration::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("target=" + TargetStr(target) + ";");
 }
 
-Project::Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_, const std::string& toolChain_) :
+Project::Project(const std::u32string& name_, const std::string& filePath_, const std::string& config_, BackEnd backend_) :
     backend(backend_), name(name_), filePath(filePath_), config(config_), target(Target::program), sourceBasePath(filePath), outdirBasePath(filePath),
-    isSystemProject(false), logStreamId(0), built(false), toolChain(toolChain_)
+    isSystemProject(false), logStreamId(0), built(false)
 {
     std::string platform = GetPlatform();
     if (!outDir.empty())
@@ -312,7 +306,7 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         sourceBasePath.remove_filename();
         outdirBasePath = sourceBasePath;
     }
-    systemLibDir = CmajorSystemLibDir(config, backend, toolChain);
+    systemLibDir = CmajorSystemLibDir(config, backend);
     std::filesystem::path mfp(filePath);
     std::filesystem::path fn = mfp.filename();
     mfp.remove_filename();
@@ -324,7 +318,6 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     if (backend == BackEnd::cpp)
     {
         mfp /= "cpp";
-        mfp /= toolChain;
     }
     mfp /= config;
     mfp /= fn;
@@ -342,14 +335,7 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     }
     else if (backend == BackEnd::cpp)
     {
-        // const Tool& libraryManagerTool = GetLibraryManagerTool(platform, toolChain); TODO
-        // lfp.replace_extension(libraryManagerTool.outputFileExtension); TODO
-    }
-#else
-    if (backend == BackEnd::cpp)
-    {
-        const Tool& libraryManagerTool = GetLibraryManagerTool(platform, toolChain);
-        lfp.replace_extension(libraryManagerTool.outputFileExtension);
+        lfp.replace_extension(".a");
     }
     else
     {
@@ -367,7 +353,6 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     if (backend == BackEnd::cpp)
     {
         efp /= "cpp";
-        efp /= toolChain;
     }
     efp /= config;
     efp /= fn;
@@ -382,14 +367,12 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     }
     else if (backend == BackEnd::cpp)
     {
-        // const Tool& linkerTool = GetLinkerTool(platform, toolChain); TODO
-        // efp.replace_extension(linkerTool.outputFileExtension); TODO
+        efp.replace_extension(".exe");
     }
 #else
     if (backend == BackEnd::cpp)
     {
-        const Tool& linkerTool = GetLinkerTool(platform, toolChain);
-        efp.replace_extension(linkerTool.outputFileExtension);
+        efp.replace_extension();
     }
     else
     {
@@ -451,7 +434,6 @@ void Project::ResolveDeclarations()
                 if (backend == BackEnd::cpp)
                 {
                     rp /= "cpp";
-                    rp /= toolChain;
                 }
                 rp /= config;
                 rp /= fn;

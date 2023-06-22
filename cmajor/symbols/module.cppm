@@ -5,7 +5,7 @@
 
 export module cmajor.symbols.modules;
 
-import std.core;
+import cmajor.debug;
 import cmajor.symbols.resource.table;
 import cmajor.symbols.warning;
 import cmajor.symbols.function.index;
@@ -17,6 +17,7 @@ import soul.lexer.base;
 import util.code.formatter;
 import util.binary.stream.writer;
 import util.binary.stream.reader;
+import std.core;
 
 export namespace cmajor::symbols {
 
@@ -26,6 +27,7 @@ class SymbolTable;
 class Sources;
 
 bool IsSystemModule(const std::u32string& moduleName);
+cmajor::debug::ContainerClassTemplateKind GetContainerClassTemplateKind(const std::u32string& fullClassName);
 
 extern const char* cmajorModuleTag;
 
