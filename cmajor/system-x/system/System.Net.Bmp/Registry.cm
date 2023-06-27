@@ -1,0 +1,60 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Net.Bmp
+{
+    public delegate BinaryMessage* FactoryFunction(uint messageId);
+
+    public class MessageRegistry
+    {
+        static MessageRegistry() : instance(new MessageRegistry())
+        {
+        }
+        public static MessageRegistry& Instance()
+        {
+            return *instance;
+        }
+        private MessageRegistry()
+        {
+        }
+        public void Register(const string& className, FactoryFunction factoryFunc)
+        {
+            ulong hashCode = GetHashCode(className);
+            uint messageId = MakeMessageId(hashCode);
+            Map<uint, FactoryFunction>.ConstIterator it =  factoryMap.CFind(messageId);
+            if (it == factoryMap.CEnd())
+            {
+                factoryMap[messageId] = factoryFunc;
+            }
+            else
+            {
+                throw Exception("cmajor.binary.message.protocol: error: message id '" + ToString(messageId) + "' already in use, please change the message name");
+            }
+        }
+        public BinaryMessage* Create(uint messageId)
+        {
+            Map<uint, FactoryFunction>.ConstIterator it = factoryMap.CFind(messageId);
+            if (it != factoryMap.CEnd())
+            {
+                FactoryFunction factoryFunction = it->second;
+                return factoryFunction(messageId);
+            }
+            else
+            {
+                throw Exception("cmajor.binary.message.protocol: error: message id '" + ToString(messageId) + "' not registered");
+            }
+        }
+        private static UniquePtr<MessageRegistry> instance;
+        private Map<uint, FactoryFunction> factoryMap;
+    }
+
+    public void RegisterMessage<T>()
+    {
+        MessageRegistry.Instance().Register(T.ClassName(), T.Create);
+    }
+}

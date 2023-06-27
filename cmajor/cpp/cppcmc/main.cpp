@@ -53,6 +53,8 @@ void PrintHelp()
         "--gen-debug-info (-g)\n" <<
         "   generate debug info\n" <<
         "   ON for debug mode\n" <<
+        "--link-with-debug-runtime (-k)\n" <<
+        "   Link with debug rungime.\n" <<
         "--time (-t)\n" <<
         "   print duration of compilation\n" <<
         std::endl;
@@ -127,6 +129,10 @@ int main(int argc, const char** argv)
                     else if (arg == "--disable-module-cache")
                     {
                         useModuleCache = false;
+                    }
+                    else if (arg == "--link-with-debug-runtime")
+                    {
+                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                     }
                     else if (arg == "--time")
                     {
@@ -258,6 +264,11 @@ int main(int argc, const char** argv)
                             case 'd':
                             {
                                 useModuleCache = false;
+                                break;
+                            }
+                            case 'k':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                                 break;
                             }
                             case 't':

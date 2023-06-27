@@ -181,7 +181,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 {
                     flags = flags | Flags::singleThreadedParse;
                 }
-                ParseSourceFiles(project, rootModule->FileMap(), flags);
+                ParseSourceFiles(project, rootModule->FileMap(), flags, rootModule.get());
                 int n = rootModule->FileMap().NextFileId();
                 for (int fileId = 0; fileId < n; ++fileId)
                 {
@@ -293,7 +293,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        throw std::runtime_error("project: " + util::ToUtf8(project->Name()) + ": " + ex.Message());
+        throw std::runtime_error("project: " + util::ToUtf8(project->Name()) + ": " + ex.What());
     }
     catch (const std::exception& ex)
     {

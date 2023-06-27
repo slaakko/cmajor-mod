@@ -510,6 +510,9 @@ namespace System.Collections
         public RedBlackTreeNode(const ValueType& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(value_)
         {
         }
+        public RedBlackTreeNode(ValueType&& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(Rvalue(value_))
+        {
+        }
         public inline nothrow const ValueType& Value() const
         {
             return value;
@@ -895,6 +898,47 @@ namespace System.Collections
             }
             return MakePair(j, false);
         }
+        public Pair<Iterator, bool> Insert(ValueType&& value)
+            where ValueType is Movable
+        {
+            if (header.IsNull())
+            {
+                Init();
+            }
+            RedBlackTreeNode<ValueType>* x = Root();
+            RedBlackTreeNode<ValueType>* p = header.Get();
+            bool comp = true;
+            while (x != null)
+            {
+                p = x;
+                comp = Comp(KeyOf(value), KeyOf(x->Value()));
+                if (comp)
+                {
+                    x = cast<RedBlackTreeNode<ValueType>*>(x->Left());
+                }
+                else
+                {
+                    x = cast<RedBlackTreeNode<ValueType>*>(x->Right());
+                }
+            }
+            Iterator j = p;
+            if (comp)
+            {
+                if (j == Begin())
+                {
+                    return MakePair(Insert(x, p, Rvalue(value)), true);
+                }
+                else
+                {
+                    --j;
+                }
+            }
+            if (Comp(KeyOf(j.Node()->Value()), KeyOf(value)))
+            {
+                return MakePair(Insert(x, p, Rvalue(value)), true);
+            }
+            return MakePair(j, false);
+        }
         private Iterator Insert(RedBlackTreeNode<ValueType>* x, RedBlackTreeNode<ValueType>* p, const ValueType& value)
             where ValueType is Copyable
         {
@@ -904,6 +948,39 @@ namespace System.Collections
             }
             RedBlackTreeNode<ValueType>* n = new RedBlackTreeNode<ValueType>(value, p);
             if (p == header.Get() || x != null || Comp(KeyOf(value), KeyOf(p->Value())))
+            {
+                p->SetLeft(n);
+                if (p == header.Get())
+                {
+                    SetRoot(n);
+                    SetRightmost(n);
+                }
+                else if (p == Leftmost())
+                {
+                    SetLeftmost(n);
+                }
+            }
+            else
+            {
+                p->SetRight(n);
+                if (p == Rightmost())
+                {
+                    SetRightmost(n);
+                }
+            }
+            RedBlackTreeNodeBase.RebalanceAfterInsert(n, RootRef());
+            ++count;
+            return Iterator(n);
+        }
+        private Iterator Insert(RedBlackTreeNode<ValueType>* x, RedBlackTreeNode<ValueType>* p, ValueType&& value)
+            where ValueType is Movable
+        {
+            if (header.IsNull())
+            {
+                Init();
+            }
+            RedBlackTreeNode<ValueType>* n = new RedBlackTreeNode<ValueType>(Rvalue(value), p);
+            if (p == header.Get() || x != null || Comp(KeyOf(n->Value()), KeyOf(p->Value())))
             {
                 p->SetLeft(n);
                 if (p == header.Get())

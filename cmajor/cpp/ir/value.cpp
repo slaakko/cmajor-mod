@@ -225,7 +225,7 @@ CharValue::CharValue() : value('\0')
 {
 }
 
-CharValue::CharValue(char8_t value_) : value(value_)
+CharValue::CharValue(char value_) : value(value_)
 {
 }
 
@@ -236,7 +236,7 @@ Type* CharValue::GetType(Context& context)
 
 std::string CharValue::Name(Context& context)
 {
-    return util::CharStr((char)value);
+    return util::CharStr(value);
 }
 
 WCharValue::WCharValue() : value(u'\0')

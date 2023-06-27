@@ -187,9 +187,6 @@
     <ProjectReference Include="..\..\common\common.vcxproj">
       <Project>{75603a47-c9c4-4b9f-9689-e523093e3d03}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\debug\debug.vcxproj">
-      <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\eh\eh.vcxproj">
       <Project>{1a33456a-764a-489e-a510-58f61b519d1f}</Project>
     </ProjectReference>

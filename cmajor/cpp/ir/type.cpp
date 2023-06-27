@@ -15,7 +15,7 @@ namespace cmajor::cpp::ir {
 
 const char* primitiveTypeName[] =
 {
-    "", "void", "bool", "int8_t", "uint8_t", "int16_t", "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t", "float", "double", "char8_t", "char16_t", "char32_t"
+    "", "void", "bool", "int8_t", "uint8_t", "int16_t", "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t", "float", "double", "char", "char16_t", "char32_t"
 };
 
 std::string TypeName(int typeId, const std::string& compileUnitId)
@@ -365,9 +365,6 @@ TypeRepository::TypeRepository(Context& context_) :
 void TypeRepository::Write(util::CodeFormatter& formatter)
 {
     formatter.WriteLine("#include <stdint.h>");
-    formatter.WriteLine("#ifndef __cpp_char8_t");
-    formatter.WriteLine("using char8_t = unsigned char;");
-    formatter.WriteLine("#endif");
     formatter.WriteLine();
     formatter.WriteLine("extern \"C\" {");
     formatter.WriteLine();

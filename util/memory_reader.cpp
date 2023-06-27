@@ -20,6 +20,12 @@ uint8_t MemoryReader::ReadByte()
     return *pos++;
 }
 
+bool MemoryReader::ReadBool()
+{
+    uint8_t x = ReadByte();
+    return x != 0;
+}
+
 int8_t MemoryReader::ReadSByte()
 {
     return static_cast<int8_t>(ReadByte());
@@ -70,12 +76,48 @@ int64_t MemoryReader::ReadLong()
     return static_cast<int64_t>(ReadULong());
 }
 
-DateTime MemoryReader::ReadDateTime()
+float MemoryReader::ReadFloat()
+{
+    uint32_t x = ReadUInt();
+    return *reinterpret_cast<float*>(&x);
+}
+
+double MemoryReader::ReadDouble()
+{
+    uint64_t x = ReadULong();
+    return *reinterpret_cast<double*>(&x);
+}
+
+char MemoryReader::ReadChar()
+{
+    uint8_t x = ReadByte();
+    return static_cast<char>(x);
+}
+
+char16_t MemoryReader::ReadWChar()
+{
+    uint16_t x = ReadUShort();
+    return static_cast<char16_t>(x);
+}
+
+char32_t MemoryReader::ReadUChar()
+{
+    uint32_t x = ReadUInt();
+    return static_cast<char32_t>(x);
+}
+
+Date MemoryReader::ReadDate()
 {
     int16_t year = ReadShort();
     Month month = static_cast<Month>(ReadSByte());
     int8_t day = ReadSByte();
     Date date(year, month, day);
+    return date;
+}
+
+DateTime MemoryReader::ReadDateTime()
+{
+    Date date = ReadDate();
     int32_t secs = ReadInt();
     DateTime dt(date, secs);
     return dt;
@@ -89,6 +131,30 @@ std::string MemoryReader::ReadString()
     {
         result.append(1, static_cast<char>(b));
         b = ReadByte();
+    }
+    return result;
+}
+
+uuid MemoryReader::ReadUuid()
+{
+    uuid x;
+    for (auto& b : x)
+    {
+        b = ReadByte();
+    }
+    return x;
+}
+
+uint32_t MemoryReader::ReadULEB128UInt()
+{
+    uint32_t result = 0;
+    uint32_t shift = 0;
+    while (true)
+    {
+        uint8_t b = ReadByte();
+        result |= ((b & 0x7F) << shift);
+        if ((b & 0x80) == 0) break;
+        shift += 7;
     }
     return result;
 }

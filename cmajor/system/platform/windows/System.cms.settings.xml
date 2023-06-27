@@ -1,11 +1,18 @@
 <solutionSettings classId="-1" className="SolutionSettings" objectId="00000000-0000-0000-0000-000000000000">
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles/>
-    <currentOpenFile value=""/>
-    <currentCursorLine value="1"/>
+    <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/UniquePtr.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Component.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Container.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/ContainerControl.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Control.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Window.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/system/System.Windows/Window.cm"/>
+    <currentCursorLine value="113"/>
     <breakpoints/>
     <expandedProjects>
-        <item value="System.Base"/>
+        <item value="System.Windows"/>
     </expandedProjects>
 </solutionSettings>

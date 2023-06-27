@@ -1,0 +1,34 @@
+using System;
+using System.Collections;
+using System.IO;
+
+class Foo
+{
+	public Foo(const string& x_) : x(x_) {}
+	public string x;
+}
+
+TextWriter& operator<<(TextWriter& writer, const Foo& foo)
+{
+	return writer << foo.x;
+}
+
+int main()
+{
+	Map<int, string> m;
+	m[1] = "foo";
+	m[2] = "bar";
+	Console.Out() << "map(int, string): " << m << endl();
+	
+	Map<int, Foo> fooMap;
+	fooMap[1] = Foo("foo");
+	fooMap[2] = Foo("bar");
+	Console.Out() << "map(int, Foo): " << fooMap << endl();
+	
+	Map<int, UniquePtr<Foo>> uniquePtrFooMap;
+	uniquePtrFooMap[1] = UniquePtr<Foo>(new Foo("foo"));
+	uniquePtrFooMap[2] = UniquePtr<Foo>(new Foo("bar"));
+	Console.Out() << "map(int, UniquePtr<Foo>): " << uniquePtrFooMap << endl();
+	
+	return 0;
+}

@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-using System.IO;
 using System.Concepts;
+using System.IO;
 
 namespace System
 {
@@ -12,6 +12,11 @@ namespace System
     {
         public nothrow Pair() : first(), second() {}
         public Pair(const T& first_, const U& second_) : first(first_), second(second_) {}
+        public Pair(T&& first_, U&& second_) : first(Rvalue(first_)), second(Rvalue(second_)) {}
+        public Pair(const Pair& that) : first(that.first), second(that.second) {}
+        public Pair(Pair&& that) : first(Rvalue(that.first)), second(Rvalue(that.second)) {}
+        public void operator=(const Pair& p) { first = p.first; second = p.second; }
+        public void operator=(Pair&& p) { Swap(first, p.first); Swap(second, p.second); }
         public T first;
         public U second;
     }
@@ -31,6 +36,11 @@ namespace System
     public Pair<T, U> MakePair<T, U>(const T& first, const U& second) where T is Semiregular and U is Semiregular
     {
         return Pair<T, U>(first, second);
+    }
+
+    public Pair<T, U> MakePair<T, U>(T&& first, U&& second) where T is Semiregular and U is Semiregular
+    {
+        return Pair<T, U>(Rvalue(first), Rvalue(second));
     }
 
     public class SelectFirst<T, U> : UnaryFun<Pair<T, U>, T> where T is Semiregular and U is Semiregular

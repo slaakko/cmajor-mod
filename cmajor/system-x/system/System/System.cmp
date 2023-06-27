@@ -1,4 +1,5 @@
 project System;
 target=library;
+reference <../System.Net.Bmp/System.Net.Bmp.cmp>;
 reference <../System.RegularExpressions/System.RegularExpressions.cmp>;
 reference <../System.Screen/System.Screen.cmp>;

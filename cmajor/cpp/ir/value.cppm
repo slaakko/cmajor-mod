@@ -170,11 +170,11 @@ class CharValue : public ConstantValue
 {
 public:
     CharValue();
-    CharValue(char8_t value_);
+    CharValue(char value_);
     Type* GetType(Context& context) override;
     std::string Name(Context& context) override;
 private:
-    char8_t value;
+    char value;
 };
 
 class WCharValue : public ConstantValue

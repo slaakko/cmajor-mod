@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -26,6 +26,10 @@ namespace System
                 bytesWritten = Write(socket, buffer, count);
                 count = count - bytesWritten;
             }
+        }
+        public int ReceiveSome(byte* buffer, long count)
+        {
+            return cast<int>(Read(socket, buffer, count));
         }
         public void Receive(byte* buffer, long count)
         {

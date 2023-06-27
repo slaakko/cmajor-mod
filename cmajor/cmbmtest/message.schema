@@ -1,0 +1,40 @@
+export module bm_test_message;
+
+namespace BmTest
+{
+	class SimpleMessage
+	{
+		int x;
+	}
+	
+	class AllFieldsMessage
+	{
+		bool f0;
+		sbyte f1;
+		byte f2;
+		short f3;
+		ushort f4;
+		int f5;
+		uint f6;
+		long f7;
+		ulong f8;
+		float f9;
+		double f10;
+		char f11;
+		wchar f12;
+		uchar f13;
+		string f14;
+		number f15;
+		uuid f16;
+		date f17;
+		datetime f18;
+	}
+
+	class StopServerRequest
+	{
+	}
+
+	class StopServerReply
+	{
+	}
+}

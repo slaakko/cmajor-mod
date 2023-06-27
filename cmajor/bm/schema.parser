@@ -1,0 +1,263 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.binary.message.schema.parser;
+
+[interface]import cmajor.binary.message.schema.ast;
+[implementation]import cmajor.binary.message.schema.token;
+[implementation]import cmajor.binary.message.schema.lexer;
+
+parser BinaryMessageSchemaParser
+{
+    lexer cmajor::binary::message::schema::lexer::BinaryMessageSchemaLexer<char32_t>;
+	main;
+
+    SourceFile(var std::unique_ptr<cmajor::binary::message::schema::ast::SourceFileNode> sourceFile) : cmajor::binary::message::schema::ast::SourceFileNode*
+        ::= 
+        (
+            empty{ sourceFile.reset(new cmajor::binary::message::schema::ast::SourceFileNode(lexer.GetSourcePos(pos))); }
+			ExportModule:module{ sourceFile->SetModule(module); }
+			(Import:import{ sourceFile->AddImport(import); })*
+			NamespaceContent(sourceFile->GlobalNs()):nsContent
+        )
+        {
+            return sourceFile.release();
+        }
+        ;
+
+	NamespaceContent(cmajor::binary::message::schema::ast::NamespaceNode* ns)
+		::= 
+		(
+			Declaration:declaration{ ns->AddNode(declaration); } | Definition:definition{ ns->AddNode(definition); }
+		)*
+		;
+
+	Declaration : cmajor::binary::message::schema::ast::Node*
+		::= ForwardClassDeclaration:forwardClassDeclaration{ return forwardClassDeclaration; }
+		|	UsingAliasDeclaration:usingAliasDeclaration{ return usingAliasDeclaration; }
+		;
+
+	ForwardClassDeclaration(var soul::ast::SourcePos sourcePos, var std::string classId) : cmajor::binary::message::schema::ast::Node*
+		::= 
+		(
+			CLASS{ sourcePos = lexer.GetSourcePos(pos); } ID{ classId = util::ToUtf8(lexer.GetToken(pos).ToString()); } SEMICOLON
+		)
+		{
+			return new cmajor::binary::message::schema::ast::ForwardClassDeclarationNode(sourcePos, classId);
+		}
+		;
+
+	UsingAliasDeclaration(var soul::ast::SourcePos sourcePos, var std::string id) : cmajor::binary::message::schema::ast::Node*
+		::=
+		(
+			USING{ sourcePos = lexer.GetSourcePos(pos); } 
+			ID{ id = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+			ASSIGN
+			QualifiedCppId:qualifiedCppId
+			SEMICOLON
+		)
+		{
+			return new cmajor::binary::message::schema::ast::UsingAliasNode(sourcePos, id, qualifiedCppId); 
+		}
+		;
+
+	Definition : cmajor::binary::message::schema::ast::Node*
+		::= Class:cls{ return cls; }
+		|	Enum:enm{ return enm; }
+		|	Namespace:ns{ return ns; }
+		;
+
+	Class(var std::unique_ptr<cmajor::binary::message::schema::ast::ClassNode> cls) : cmajor::binary::message::schema::ast::Node*
+		::= 
+		(
+			CLASS 
+			ID{ cls.reset(new cmajor::binary::message::schema::ast::ClassNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); }
+			LBRACE 
+			ClassContent(cls.get()):classContent
+			RBRACE
+		)
+		{
+			return cls.release();
+		}
+		;
+
+	ClassContent(cmajor::binary::message::schema::ast::ClassNode* cls)
+		::= 
+		(	MemberVariable:memberVariable{ cls->AddNode(memberVariable); }
+		)*
+		;
+
+	MemberVariable(var soul::ast::SourcePos sourcePos, var std::string id) : cmajor::binary::message::schema::ast::MemberVariableNode*
+		::= 
+		(
+			Type:type ID{ sourcePos = lexer.GetSourcePos(pos); id = util::ToUtf8(lexer.GetToken(pos).ToString()); } SEMICOLON
+		)
+		{
+			return new cmajor::binary::message::schema::ast::MemberVariableNode(sourcePos, type, id);
+		}
+		;
+
+	Type(var std::unique_ptr<cmajor::binary::message::schema::ast::TypeNode> type) : cmajor::binary::message::schema::ast::TypeNode*
+		::= 
+		(
+			(	ScalarType:scalarType{ type.reset(scalarType); }
+			|	ClassType:classType{ type.reset(classType); }
+			)
+			(	
+				(LBRACKET RBRACKET){ type.reset(new cmajor::binary::message::schema::ast::ArrayTypeNode(lexer.GetSourcePos(pos), type.release())); }
+			)?
+		)
+		{
+			return type.release();
+		}
+		;
+
+	ScalarType : cmajor::binary::message::schema::ast::TypeNode*
+		::= BOOL{ return new cmajor::binary::message::schema::ast::BoolNode(lexer.GetSourcePos(pos)); }
+		|	SBYTE{ return new cmajor::binary::message::schema::ast::SByteNode(lexer.GetSourcePos(pos)); }
+		|	BYTE{ return new cmajor::binary::message::schema::ast::ByteNode(lexer.GetSourcePos(pos)); }
+		|	SHORT{ return new cmajor::binary::message::schema::ast::ShortNode(lexer.GetSourcePos(pos)); }
+		|	USHORT{ return new cmajor::binary::message::schema::ast::UShortNode(lexer.GetSourcePos(pos)); }
+		|	INT{ return new cmajor::binary::message::schema::ast::IntNode(lexer.GetSourcePos(pos)); }
+		|	UINT{ return new cmajor::binary::message::schema::ast::UIntNode(lexer.GetSourcePos(pos)); }
+		|	LONG{ return new cmajor::binary::message::schema::ast::LongNode(lexer.GetSourcePos(pos)); }
+		|	ULONG{ return new cmajor::binary::message::schema::ast::ULongNode(lexer.GetSourcePos(pos)); }
+		|	FLOAT{ return new cmajor::binary::message::schema::ast::FloatNode(lexer.GetSourcePos(pos)); }
+		|	DOUBLE{ return new cmajor::binary::message::schema::ast::DoubleNode(lexer.GetSourcePos(pos)); }
+		|	CHAR{ return new cmajor::binary::message::schema::ast::CharNode(lexer.GetSourcePos(pos)); }
+		|	WCHAR{ return new cmajor::binary::message::schema::ast::WCharNode(lexer.GetSourcePos(pos)); }
+		|	UCHAR{ return new cmajor::binary::message::schema::ast::UCharNode(lexer.GetSourcePos(pos)); }
+		|	STRING{ return new cmajor::binary::message::schema::ast::StringNode(lexer.GetSourcePos(pos)); }
+		|	NUMBER{ return new cmajor::binary::message::schema::ast::NumberNode(lexer.GetSourcePos(pos)); }
+		|	UUID{ return new cmajor::binary::message::schema::ast::UuidNode(lexer.GetSourcePos(pos)); }
+		|	DATE{ return new cmajor::binary::message::schema::ast::DateNode(lexer.GetSourcePos(pos)); }
+		|	DATETIME{ return new cmajor::binary::message::schema::ast::DateTimeNode(lexer.GetSourcePos(pos)); }
+		;
+
+	ClassType : cmajor::binary::message::schema::ast::TypeNode*
+		::= ID{ return new cmajor::binary::message::schema::ast::ClassIdNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+		;
+
+	Enum(var std::unique_ptr<cmajor::binary::message::schema::ast::EnumTypeNode> enm) : cmajor::binary::message::schema::ast::TypeNode*
+		::= 
+		(
+			ENUM 
+			ID{ enm.reset(new cmajor::binary::message::schema::ast::EnumTypeNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString()))); } 
+			LBRACE
+			EnumContent(enm.get()):enumContent?
+			RBRACE
+		)
+		{
+			return enm.release();
+		}
+		;
+
+	EnumContent(cmajor::binary::message::schema::ast::EnumTypeNode* enm)
+		::= 
+		(
+			EnumConstant:enumConstant{ enm->AddEnumConstant(enumConstant); } % COMMA
+		)
+		;
+
+	EnumConstant : cmajor::binary::message::schema::ast::EnumConstantNode*
+		::= ID{ return new cmajor::binary::message::schema::ast::EnumConstantNode(lexer.GetSourcePos(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+		;
+
+	Namespace(var std::unique_ptr<cmajor::binary::message::schema::ast::NamespaceNode> ns) : cmajor::binary::message::schema::ast::Node*
+		::= 
+		(
+			NAMESPACE 
+			QualifiedCppId:nsId{ ns.reset(new cmajor::binary::message::schema::ast::NamespaceNode(lexer.GetSourcePos(pos), nsId)); }
+			LBRACE
+			NamespaceContent(ns.get()):namespaceContent
+			RBRACE
+		)
+		{
+			return ns.release();
+		}
+		;
+
+	QualifiedId(var std::string str) : std::string
+		::= 
+		(
+			ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); } 
+			(
+				DOT 
+				ID{ str.append(1, '.').append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			)*
+		)
+		{ 
+			return str; 
+		}
+		;
+
+	QualifiedCppId(var std::string str) : std::string
+		::= 
+		(
+			(COLON_COLON{ str.append("::"); })?
+			ID{ str.append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			(
+				COLON_COLON ID{ str.append("::").append(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+			)*
+		)
+		{
+			return str;
+		}
+		;
+
+	ExportModule(var std::unique_ptr<cmajor::binary::message::schema::ast::ExportModule> exp) : cmajor::binary::message::schema::ast::ExportModule*
+		::= 
+		(
+			ExportKeyword:exportKeyword ModuleKeyword:moduleKeyword QualifiedId:moduleName{ exp.reset(new cmajor::binary::message::schema::ast::ExportModule(moduleName)); } SEMICOLON!
+		)
+		{
+			return exp.release();
+		}
+		;
+
+	Import(var std::unique_ptr<cmajor::binary::message::schema::ast::Import> imp, var cmajor::binary::message::schema::ast::ImportPrefix prefix) : cmajor::binary::message::schema::ast::Import*
+		::= 
+		(
+			(ImportPrefix:importPrefix{ prefix = importPrefix; } | empty{ prefix = cmajor::binary::message::schema::ast::ImportPrefix::interfacePrefix; })
+			ImportKeyword:importKeyword QualifiedId:moduleName{ imp.reset(new cmajor::binary::message::schema::ast::Import(moduleName, prefix)); } SEMICOLON!
+		)
+		{
+			return imp.release();
+		}
+		;
+
+    ImportPrefix : cmajor::binary::message::schema::ast::ImportPrefix
+        ::= ImplementationPrefix:implementationPrefix{ return implementationPrefix; }
+        |   InterfacePrefix:interfacePrefix{ return interfacePrefix; }
+        ;
+
+	ExportKeyword
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "export"; }
+		;
+
+	ModuleKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "module"; }
+		;
+
+	ImportKeyword
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "import"; }
+		;
+
+	ImplementationPrefix : cmajor::binary::message::schema::ast::ImportPrefix
+		::= LBRACKET ImplementationKeyword:implementationKeyword RBRACKET{ return cmajor::binary::message::schema::ast::ImportPrefix::implementationPrefix; }
+		;
+
+	InterfacePrefix : cmajor::binary::message::schema::ast::ImportPrefix
+		::= LBRACKET InterfaceKeyword:interfaceKeyword RBRACKET{ return cmajor::binary::message::schema::ast::ImportPrefix::interfacePrefix; }
+		;
+
+	ImplementationKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "implementation"; }
+		;
+
+	InterfaceKeyword 
+		::= ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "interface"; }
+		;
+}

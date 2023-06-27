@@ -10,6 +10,10 @@ namespace System
         public nothrow MemoryReader(byte* ptr_, long count_) : ptr(ptr_), pos(ptr), count(count_)
         {
         }
+        public bool ReadBool()
+        {
+            return cast<bool>(ReadByte());
+        }
         public byte ReadByte()
         {
             if (pos - ptr >= count)
@@ -61,12 +65,39 @@ namespace System
         {
             return cast<long>(ReadULong());
         }
-        public DateTime ReadDateTime()
+        public float ReadFloat()
+        {
+            uint x = ReadUInt();
+            return *cast<float*>(cast<void*>(&x));
+        }
+        public double ReadDouble()
+        {
+            ulong x = ReadULong();
+            return *cast<double*>(cast<void*>(&x));
+        }
+        public char ReadChar()
+        {
+            return cast<char>(ReadByte());
+        }
+        public wchar ReadWChar()
+        {
+            return cast<wchar>(ReadUShort());
+        }
+        public uchar ReadUChar()
+        {
+            return cast<uchar>(ReadUInt());
+        }
+        public Date ReadDate()
         {
             short year = ReadShort();
             Month month = cast<Month>(ReadSByte());
             sbyte day = ReadSByte();
             Date date(year, month, day);
+            return date;
+        }
+        public DateTime ReadDateTime()
+        {
+            Date date = ReadDate();
             int secs = ReadInt();
             DateTime dt(date, secs);
             return dt;
@@ -79,6 +110,28 @@ namespace System
             {
                 result.Append(cast<char>(b));
                 b = ReadByte();
+            }
+            return result;
+        }
+        public Uuid ReadUuid()
+        {
+            Uuid x;
+            for (byte& b : x)
+            {
+                b = ReadByte();
+            }
+            return x;
+        }
+        public uint ReadULEB128UInt()
+        {
+            uint result = 0u;
+            uint shift = 0u;
+            while (true)
+            {
+                byte b = ReadByte();
+                result = result | ((b & 0x7Fu) << shift);
+                if ((b & 0x80u) == 0u) break;
+                shift = shift + 7u;
             }
             return result;
         }

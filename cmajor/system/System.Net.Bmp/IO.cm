@@ -1,0 +1,330 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Net.Bmp
+{
+    public concept ScalarType<T>
+    {
+        where
+            T is bool or
+            T is sbyte or
+            T is byte or
+            T is short or
+            T is ushort or
+            T is int or
+            T is uint or
+            T is long or
+            T is ulong or
+            T is float or
+            T is double or
+            T is char or
+            T is wchar or
+            T is uchar or
+            T is System.Uuid or
+            T is System.Date or
+            T is System.DateTime;
+    }
+
+    public concept EnumType<T>
+    {
+        where System.Meta.IsEnumeratedType<T>();
+    }
+
+    public concept MessageType<T>
+    {
+        where Derived<T, System.Net.Bmp.BinaryMessage>;
+    }
+
+    public public inline nothrow uint Length(bool b)
+    {
+        return 1u;
+    }
+    public inline nothrow uint Length(sbyte x)
+    {
+        return 1u;
+    }
+    public inline nothrow uint Length(byte x)
+    {
+        return 1u;
+    }
+    public inline nothrow uint Length(short x)
+    {
+        return 2u;
+    }
+    public inline nothrow uint Length(ushort x)
+    {
+        return 2u;
+    }
+    public inline nothrow uint Length(int x)
+    {
+        return 4u;
+    }
+    public inline nothrow uint Length(uint x)
+    {
+        return 4u;
+    }
+    public inline nothrow uint Length(long x)
+    {
+        return 8u;
+    }
+    public inline nothrow uint Length(ulong x)
+    {
+        return 8u;
+    }
+    public inline nothrow uint Length(float x)
+    {
+        return 4u;
+    }
+    public inline nothrow uint Length(double x)
+    {
+        return 8u;
+    }
+    public inline nothrow uint Length(char x)
+    {
+        return 1u;
+    }
+    public inline nothrow uint Length(wchar x)
+    {
+        return 2u;
+    }
+    public inline nothrow uint Length(uchar x)
+    {
+        return 4u;
+    }
+    public inline nothrow uint Length(const Date& x)
+    {
+        return 4u;
+    }
+    public inline nothrow uint Length(const DateTime& x)
+    {
+        return 8u;
+    }
+    public inline nothrow uint Length(const string& x)
+    {
+        return cast<uint>(x.Length() + 1);
+    }
+    public inline nothrow uint Length(const Uuid& x)
+    {
+        return 16u;
+    }
+    public inline nothrow uint Length(const Number& x)
+    {
+        return x.Length();
+    }
+    public inline nothrow uint Length<T>(T x) where T is EnumType
+    {
+        return Length(cast<int>(x));
+    }
+    public inline nothrow uint Length<T>(const T& x) where T is MessageType
+    {
+        return x.Length();
+    }
+    public nothrow uint Length<T>(const List<T>& x) where T is ScalarType
+    {
+        return 4u + cast<uint>(x.Count() * Length(T()));
+    }
+    public nothrow uint Length<T>(const List<T>& x)
+    {
+        uint length = 4u;
+        for (const T& value : x)
+        {
+            length = length + Length(value);
+        }
+        return length;
+    }
+
+    public void Write(MemoryWriter& writer, bool b)
+    {
+        writer.Write(b);
+    }
+    public void Write(MemoryWriter& writer, sbyte x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, byte x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, short x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, ushort x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, int x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, uint x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, long x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, ulong x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, float x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, double x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, char x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, wchar x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, uchar x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, const Date& x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, const DateTime& x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, const string& x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, const Uuid& x)
+    {
+        writer.Write(x);
+    }
+    public void Write(MemoryWriter& writer, const Number& x)
+    {
+        x.Write(writer);
+    }
+    public void Write<T>(MemoryWriter& writer, T x) where T is EnumType
+    {
+        writer.Write(cast<int>(x));
+    }
+    public void Write<T>(MemoryWriter& writer, T x) where T is MessageType
+    {
+        x.Write(writer);
+    }
+    public void Write<T>(MemoryWriter& writer, const List<T>& x)
+    {
+        writer.Write(cast<uint>(x.Count()));
+        for (const T& m : x)
+        {
+            Write(writer, m);
+        }
+    }
+
+    public void Read(MemoryReader& reader, bool& x)
+    {
+        x = reader.ReadBool();
+    }
+    public void Read(MemoryReader& reader, sbyte& x)
+    {
+        x = reader.ReadSByte();
+    }
+    public void Read(MemoryReader& reader, byte& x)
+    {
+        x = reader.ReadByte();
+    }
+    public void Read(MemoryReader& reader, short& x)
+    {
+        x = reader.ReadShort();
+    }
+    public void Read(MemoryReader& reader, ushort& x)
+    {
+        x = reader.ReadUShort();
+    }
+    public void Read(MemoryReader& reader, int& x)
+    {
+        x = reader.ReadInt();
+    }
+    public void Read(MemoryReader& reader, uint& x)
+    {
+        x = reader.ReadUInt();
+    }
+    public void Read(MemoryReader& reader, long& x)
+    {
+        x = reader.ReadLong();
+    }
+    public void Read(MemoryReader& reader, ulong& x)
+    {
+        x = reader.ReadULong();
+    }
+    public void Read(MemoryReader& reader, float& x)
+    {
+        x = reader.ReadFloat();
+    }
+    public void Read(MemoryReader& reader, double& x)
+    {
+        x = reader.ReadDouble();
+    }
+    public void Read(MemoryReader& reader, char& x)
+    {
+        x = reader.ReadChar();
+    }
+    public void Read(MemoryReader& reader, wchar& x)
+    {
+        x = reader.ReadWChar();
+    }
+    public void Read(MemoryReader& reader, uchar& x)
+    {
+        x = reader.ReadUChar();
+    }
+    public void Read(MemoryReader& reader, Date& x)
+    {
+        x = reader.ReadDate();
+    }
+    public void Read(MemoryReader& reader, DateTime& x)
+    {
+        x = reader.ReadDateTime();
+    }
+    public void Read(MemoryReader& reader, string& x)
+    {
+        x = reader.ReadString();
+    }
+    public void Read(MemoryReader& reader, Uuid& x)
+    {
+        x = reader.ReadUuid();
+    }
+    public void Read(MemoryReader& reader, Number& x)
+    {
+        x.Read(reader);
+    }
+    public void Read<T>(MemoryReader& reader, T& x) where T is EnumType
+    {
+        x = cast<T>(reader.ReadInt());
+    }
+    public void Read<T>(MemoryReader& reader, T& x) where T is MessageType
+    {
+        x.Read(reader);
+    }
+    public void Read<T>(MemoryReader& reader, List<T>& x)
+    {
+        x.Clear();
+        uint n = 0u;
+        Read(reader, n);
+        for (uint i = 0u; i < n; ++i)
+        {
+            T m;
+            Read(reader, m);
+            x.Add(m);
+        }
+    }
+}

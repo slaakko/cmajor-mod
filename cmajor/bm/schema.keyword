@@ -1,0 +1,16 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import cmajor.binary.message.schema.token;
+
+keywords cmajor.binary.message.schema.keyword
+{
+    ("class", CLASS), ("enum", ENUM), ("bool", BOOL),
+    ("sbyte", SBYTE), ("byte", BYTE), ("short", SHORT), ("ushort", USHORT),
+    ("int", INT), ("uint", UINT), ("long", LONG), ("ulong", ULONG),
+    ("float", FLOAT), ("double", DOUBLE), ("char", CHAR), ("wchar", WCHAR),
+    ("uchar", UCHAR), ("uuid", UUID), ("string", STRING), ("number", NUMBER),
+    ("date", DATE), ("datetime", DATETIME), ("namespace", NAMESPACE), ("using", USING)
+}

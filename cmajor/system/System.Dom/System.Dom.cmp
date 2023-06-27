@@ -6,6 +6,6 @@ source <Document.cm>;
 source <DocumentFragment.cm>;
 source <DomApi.cm>;
 source <Element.cm>;
-source <Exception.cm>;
+source <DomException.cm>;
 source <Node.cm>;
 source <Parser.cm>;

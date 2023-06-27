@@ -1,0 +1,5 @@
+project cmajor.binary.message.schema;
+tokens <schema.token>;
+keywords <schema.keyword>;
+expressions <schema.expr>;
+lexer <schema.lexer>;

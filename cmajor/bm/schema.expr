@@ -1,0 +1,15 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions cmajor.binary.message.schema.expr
+{
+    ws = "[\n\r\t ]";
+    newline = "\r\n|\n|\r";
+    line_comment = "//[^\n\r]*{newline}";
+    block_comment = "/\*([^*]|\*[^/])*\*/";
+    comment = "{line_comment}|{block_comment}";
+    separators = "({ws}|{comment})+";
+    id = "{unicode_id_start}{unicode_id_cont}*";
+}

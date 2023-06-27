@@ -484,16 +484,23 @@ int WinShowMessageBox(const char* text, const char* caption)
 
 int WinShowMessageBoxWithType(const char* text, const char* caption, void* ownerWindowHandle, uint32_t type)
 {
-    std::u16string str = util::ToUtf16(text);
-    LPCWSTR captionStr = nullptr;
-    std::u16string cap;
-    if (caption != nullptr)
+    if (text && caption)
     {
-        cap = util::ToUtf16(caption);
-        captionStr = (LPCWSTR)cap.c_str();
+        std::u16string str = util::ToUtf16(text);
+        LPCWSTR captionStr = nullptr;
+        std::u16string cap;
+        if (caption != nullptr)
+        {
+            cap = util::ToUtf16(caption);
+            captionStr = (LPCWSTR)cap.c_str();
+        }
+        const char16_t* s = str.c_str();
+        return MessageBoxW((HWND)ownerWindowHandle, reinterpret_cast<LPCWSTR>(s), captionStr, type);
     }
-    const char16_t* s = str.c_str();
-    return MessageBoxW((HWND)ownerWindowHandle, reinterpret_cast<LPCWSTR>(s), captionStr, type);
+    else
+    {
+        return MessageBoxW((HWND)ownerWindowHandle, reinterpret_cast<LPCWSTR>(L"unknown error occurred"), L"error", type);
+    }
 }
 
 bool WinMessageBeep(uint32_t messageBeepType)

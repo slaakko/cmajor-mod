@@ -1,0 +1,7 @@
+project System.Net.Bmp;
+target=library;
+reference <../System.Net.Sockets/System.Net.Sockets.cmp>;
+source <IO.cm>;
+source <Number.cm>;
+source <Protocol.cm>;
+source <Registry.cm>;

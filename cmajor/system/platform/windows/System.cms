@@ -7,6 +7,7 @@ project <../../System.IO.Compression/System.IO.Compression.cmp>;
 project <../../System.Init/System.Init.cmp>;
 project <../../System.Json/System.Json.cmp>;
 project <../../System.Lex/System.Lex.cmp>;
+project <../../System.Net.Bmp/System.Net.Bmp.cmp>;
 project <../../System.Net.Http/System.Net.Http.cmp>;
 project <../../System.Net.Sockets/System.Net.Sockets.cmp>;
 project <../../System.Numerics.Multiprecision/System.Numerics.Multiprecision.cmp>;

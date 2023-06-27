@@ -188,6 +188,16 @@ namespace System.Net.Sockets
             }
             return result;
         }
+        public void SendAll(byte* buffer, int count)
+        {
+            byte* p = buffer;
+            while (count > 0)
+            {
+                int bytesSent = Send(p, count);
+                p = p + bytesSent;
+                count = count - bytesSent;
+            }
+        }
         public int Receive(byte* buffer, int count)
         {
             int errorStringHandle = -1;

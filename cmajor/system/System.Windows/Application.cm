@@ -54,7 +54,6 @@ namespace System.Windows
     {
         static Application() : logView(null), activeWindow(null), runningModal(false)
         {
-            RtSetThreadId('M');
             MessageProcessorFunction messageProcessorFunction = ProcessMessage;
             ModelessWindowKeyPreviewFunction keyPreviewFunction = ModelessWindowKeyPreview;
             void* messageProcessorFunctionAddress = cast<void*>(messageProcessorFunction);
@@ -64,12 +63,6 @@ namespace System.Windows
         }
         public static void Init()
         {
-/*		
-            if (!RtIsUserAssertionFailureFunctionSet())
-            {
-                RtSetUserAssertionFailureFunction(WindowsAssertionFailureFunction);
-            }
-*/			
         }
         public static int Run(Window& mainWindow)
         {
@@ -130,7 +123,6 @@ namespace System.Windows
                     writer << GetCurrentTimestamp().ToString() << endl();
                     writer << ">" << MessageNameMap.Instance().GetMessageName(msg) << endl();
                 }
-                RtWindowsMessage(cast<int>(msg));
                 Message message(windowHandle, msg, wparam, lparam, result);
                 bool handled = window->ProcessMessageInternal(message);
                 if (message.originalWndProc != null)

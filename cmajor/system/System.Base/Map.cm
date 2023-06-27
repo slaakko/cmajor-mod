@@ -83,15 +83,28 @@ namespace System.Collections
         }
         public inline MappedType& operator[](const KeyType& key)
         {
-            ValueType valueType(key, MappedType());
-            Pair<Iterator, bool> ib = Insert(valueType);
+            KeyType keyType(key);
+            ValueType valueType(Rvalue(keyType), Rvalue(MappedType()));
+            Pair<Iterator, bool> ib = Insert(Rvalue(valueType));
+            Iterator i = ib.first;
+            return i->second;
+        }
+        public inline MappedType& operator[](KeyType&& key)
+        {
+            ValueType valueType(Rvalue(key), Rvalue(MappedType()));
+            Pair<Iterator, bool> ib = Insert(Rvalue(valueType));
             Iterator i = ib.first;
             return i->second;
         }
         public inline Pair<Iterator, bool> Insert(const ValueType& value)
-            where ValueType is Copyable
+            where ValueType is Copyable and MappedType is Copyable
         {
             return tree.Insert(value);
+        }
+        public inline Pair<Iterator, bool> Insert(ValueType&& value)
+            where ValueType is Movable and MappedType is Movable
+        {
+            return tree.Insert(Rvalue(value));
         }
         public inline nothrow bool Remove(const KeyType& key)
         {

@@ -158,6 +158,7 @@
     <ClCompile Include="imp.cpp" />
     <ClCompile Include="imp.cppm" />
     <ClCompile Include="scanner.cppm" />
+    <ClCompile Include="serialization.cppm" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="version.cppm" />
     <ClCompile Include="xmlser.lexer.cpp" />

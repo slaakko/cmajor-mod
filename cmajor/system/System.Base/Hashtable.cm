@@ -115,6 +115,9 @@ namespace System.Collections
         public Bucket(const ValueType& value_, Bucket<ValueType>* next_) : value(value_), next(next_)
         {
         }
+        public Bucket(ValueType&& value_, Bucket<ValueType>* next_) : value(Rvalue(value_)), next(next_)
+        {
+        }
         public inline nothrow const ValueType& Value() const
         {
             return value;
@@ -320,6 +323,34 @@ namespace System.Collections
                 bucket = bucket->Next();
             }
             bucket = new Bucket<ValueType>(value, buckets[index]);
+            buckets[index] = bucket;
+            ++count;
+            SetLoadFactor();
+            CheckForRehash();
+            return MakePair(Iterator(this, bucket), true);
+        }
+        public Pair<Iterator, bool> Insert(ValueType&& value)
+        {
+            if (buckets.Count() == 0)
+            {
+                buckets.Resize(GetNextHashtablePrime(0));
+            }
+            const KeyType& key = KeyOf(value);
+            long index = Hash(key);
+            if (index == -1)
+            {
+                ThrowPreconditionViolationException();
+            }
+            Bucket<ValueType>* bucket = buckets[index];
+            while (bucket != null)
+            {
+                if (KeysEqual(KeyOf(bucket->Value()), key))
+                {
+                    return MakePair(Iterator(this, bucket), false);
+                }
+                bucket = bucket->Next();
+            }
+            bucket = new Bucket<ValueType>(Rvalue(value), buckets[index]);
             buckets[index] = bucket;
             ++count;
             SetLoadFactor();

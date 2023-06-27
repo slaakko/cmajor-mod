@@ -161,7 +161,7 @@
     <ClCompile Include="formatter.cppm" />
     <ClCompile Include="instruction.cpp" />
     <ClCompile Include="instruction.cppm" />
-    <ClCompile Include="interface.cppm" />
+    <ClCompile Include="module.cppm" />
     <ClCompile Include="interrupt.cpp" />
     <ClCompile Include="interrupt.cppm" />
     <ClCompile Include="machine.cpp" />

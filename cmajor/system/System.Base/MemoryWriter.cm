@@ -10,6 +10,10 @@ namespace System
         public nothrow MemoryWriter(byte* ptr_, long count_) : ptr(ptr_), pos(ptr), count(count_)
         {
         }
+        public void Write(bool x)
+        {
+            Write(cast<byte>(x));
+        }
         public void Write(byte x)
         {
             if (pos - ptr >= count)
@@ -71,12 +75,38 @@ namespace System
         {
             Write(cast<ulong>(x));
         }
+        public void Write(float x)
+        {
+            uint* u = cast<uint*>(cast<void*>(&x));
+            Write(*u);
+        }
+        public void Write(double x)
+        {
+            ulong* u = cast<ulong*>(cast<void*>(&x));
+            Write(*u);
+        }
+        public void Write(char x)
+        {
+            Write(cast<byte>(x));
+        }
+        public void Write(wchar x)
+        {
+            Write(cast<ushort>(x));
+        }
+        public void Write(uchar x)
+        {
+            Write(cast<uint>(x));
+        }
+        public void Write(const Date& date)
+        {
+            Write(date.Year());
+            Write(cast<sbyte>(date.GetMonth()));
+            Write(date.Day());
+        }
         public void Write(const DateTime& dt)
         {
-            Date d = dt.GetDate();
-            Write(d.Year());
-            Write(cast<sbyte>(d.GetMonth()));
-            Write(d.Day());
+            Date date = dt.GetDate();
+            Write(date);
             Write(dt.Seconds());
         }
         public void Write(const string& s)
@@ -86,6 +116,26 @@ namespace System
                 Write(cast<byte>(c));
             }
             Write(cast<byte>(0u));
+        }
+        public void Write(const Uuid& x)
+        {
+            for (byte b : x)
+            {
+                Write(b);
+            }
+        }
+        public void WriteULEB128UInt(uint x)
+        {
+            do
+            {
+                byte b = cast<byte>(x & 0x7Fu);
+                x = x >> 7u;
+                if (x != 0u)
+                {
+                    b = b | 0x80u;
+                }
+                Write(b);
+            } while (x != 0u);
         }
         private byte* ptr;
         private byte* pos;

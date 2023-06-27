@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -72,13 +72,18 @@ namespace System.Collections
         }
         public inline MappedType& operator[](const KeyType& key)
         {
-            Pair<Iterator, bool> ib = Insert(ValueType(key, MappedType()));
+            KeyType keyType(key);
+            Pair<Iterator, bool> ib = Insert(ValueType(Rvalue(keyType), Rvalue(MappedType())));
             Iterator i = ib.first;
             return i->second;
         }
         public inline Pair<Iterator, bool> Insert(const ValueType& value)
         {
             return table.Insert(value);
+        }
+        public inline Pair<Iterator, bool> Insert(ValueType&& value)
+        {
+            return table.Insert(Rvalue(value));
         }
         public inline nothrow void Remove(const KeyType& key)
         {

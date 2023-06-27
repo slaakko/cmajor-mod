@@ -82,7 +82,6 @@ public:
     const char* GetCallStack(UnwindInfo* unwindInfoList);
     void DisposeCallStack(UnwindInfo* unwindInfoList);
 private:
-    static std::unique_ptr<GlobalUnwindInfo> instance;
     GlobalUnwindInfo();
     std::unordered_map<void*, FunctionUnwindInfo*> unwindInfoMap;
     std::vector<std::unique_ptr<FunctionUnwindInfo>> unwindInfoVec;
@@ -153,7 +152,10 @@ void GlobalUnwindInfo::DisposeCallStack(UnwindInfo* unwindInfoList)
 
 void RtAddCompileUnitFunction(void* functionAddress, const char* functionName, const char* sourceFilePath)
 {
-    GlobalUnwindInfo::Instance().AddUnwindInfo(functionAddress, functionName, sourceFilePath);
+    if (functionName && sourceFilePath)
+    {
+        GlobalUnwindInfo::Instance().AddUnwindInfo(functionAddress, functionName, sourceFilePath);
+    }
 }
 
 const char* RtGetCallStack()

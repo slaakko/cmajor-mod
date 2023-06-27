@@ -1,3 +1,8 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 private int* classMap = null;
 
 public static class RexClassMap

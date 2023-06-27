@@ -262,7 +262,7 @@
     <ProjectReference Include="..\ast\ast.vcxproj">
       <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\debug\debug.vcxproj">
+    <ProjectReference Include="..\cpp\debug\debug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">

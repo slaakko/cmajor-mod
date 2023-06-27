@@ -85,7 +85,7 @@ void GlobalVariable::Write(Context& context, util::CodeFormatter& formatter)
                 Type* baseType = ptrType->BaseType();
                 if (baseType->Id() == charTypeId)
                 {
-                    formatter.Write("(char8_t*)");
+                    formatter.Write("(char*)");
                 }
                 else if (baseType->Id() == wcharTypeId)
                 {

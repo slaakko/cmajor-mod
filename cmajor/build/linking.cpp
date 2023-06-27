@@ -90,6 +90,7 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
                 case cmajor::ast::Target::winguiapp:
                 {
                     linkCommand.append(" --entry=WinMain");
+                    linkCommand.append(" -mwindows");
                     break;
                 }
             }

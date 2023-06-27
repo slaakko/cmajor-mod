@@ -160,6 +160,7 @@
     <ClCompile Include="code_completion_message.cppm" />
     <ClCompile Include="message_map.cpp" />
     <ClCompile Include="message_map.cppm" />
+    <ClCompile Include="msg.cppm" />
     <ClCompile Include="register.cpp" />
     <ClCompile Include="register.cppm" />
   </ItemGroup>

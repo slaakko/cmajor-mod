@@ -20,6 +20,11 @@ void MemoryWriter::Write(uint8_t x)
     *pos++ = x;
 }
 
+void MemoryWriter::Write(bool x)
+{
+    Write(x ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
+}
+
 void MemoryWriter::Write(int8_t x)
 {
     Write(static_cast<uint8_t>(x));
@@ -80,12 +85,44 @@ void MemoryWriter::Write(int64_t x)
     Write(static_cast<uint64_t>(x));
 }
 
+void MemoryWriter::Write(float x)
+{
+    uint32_t* u = reinterpret_cast<uint32_t*>(&x);
+    Write(*u);
+}
+
+void MemoryWriter::Write(double x)
+{
+    uint64_t* u = reinterpret_cast<uint64_t*>(&x);
+    Write(*u);
+}
+
+void MemoryWriter::Write(char x)
+{
+    Write(static_cast<uint8_t>(x));
+}
+
+void MemoryWriter::Write(char16_t x)
+{
+    Write(static_cast<uint16_t>(x));
+}
+
+void MemoryWriter::Write(char32_t x)
+{
+    Write(static_cast<uint32_t>(x));
+}
+
+void MemoryWriter::Write(Date x)
+{
+    Write(x.Year());
+    Write(static_cast<int8_t>(x.GetMonth()));
+    Write(x.Day());
+}
+
 void MemoryWriter::Write(const DateTime& dt)
 {
     Date date = dt.GetDate();
-    Write(date.Year());
-    Write(static_cast<int8_t>(date.GetMonth()));
-    Write(date.Day());
+    Write(date);
     Write(dt.Seconds());
 }
 
@@ -96,6 +133,28 @@ void MemoryWriter::Write(const std::string& str)
         Write(static_cast<uint8_t>(c));
     }
     Write(static_cast<uint8_t>(0u));
+}
+
+void MemoryWriter::Write(const uuid& x)
+{
+    for (auto b : x)
+    {
+        Write(static_cast<uint8_t>(b));
+    }
+}
+
+void MemoryWriter::WriteULEB128UInt(uint32_t x)
+{
+    do
+    {
+        uint8_t b = x & 0x7F;
+        x >>= 7;
+        if (x != 0)
+        {
+            b |= 0x80;
+        }
+        Write(b);
+    } while (x != 0);
 }
 
 } // namespace util

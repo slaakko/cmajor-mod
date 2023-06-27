@@ -1,0 +1,103 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Net.Sockets;
+
+namespace System.Net.Bmp
+{
+    public abstract class BinaryMessage
+    {
+        public BinaryMessage(uint id_) : id(id_)
+        {
+        }
+        public virtual ~BinaryMessage()
+        {
+        }
+        public abstract uint Length() const;
+        public abstract void Write(MemoryWriter& writer);
+        public abstract void Read(MemoryReader& reader);
+        public uint Id() const { return id; }
+        private uint id;
+    }
+
+    public nothrow uint MakeMessageId(ulong hashCode)
+    {
+        uint messageId = cast<uint>(1u + (hashCode % cast<ulong>(0xFFFFFFFFu)));
+        return messageId;
+    }
+
+    public BinaryMessage* ReadMessage(TcpSocket& socket)
+    {
+        int messageLength = 0;
+        byte[4] buffer;
+        int offset = 0;
+        int bytesToReceive = cast<int>(sizeof(messageLength));
+        int bytesReceived = socket.Receive(&buffer[offset], bytesToReceive);
+        if (bytesReceived == 0)
+        {
+            return null;
+        }
+        bytesToReceive = bytesToReceive - bytesReceived;
+        offset = offset + bytesReceived;
+        while (bytesToReceive > 0)
+        {
+            bytesReceived = socket.Receive(&buffer[offset], bytesToReceive);
+            if (bytesReceived == 0)
+            {
+                return null;
+            }
+            bytesToReceive = bytesToReceive - bytesReceived;
+            offset = offset + bytesReceived;
+        }
+        MemoryReader lengthReader(&buffer[0], sizeof(messageLength));
+        messageLength = cast<int>(lengthReader.ReadUInt());
+        UniquePtr<byte> mem(cast<byte*>(MemAlloc(messageLength + 4)));
+        offset = 0;
+        bytesToReceive = messageLength + 4;
+        bytesReceived = socket.Receive(mem.Get() + offset, bytesToReceive);
+        if (bytesReceived == 0)
+        {
+            return null;
+        }
+        bytesToReceive = bytesToReceive - bytesReceived;
+        offset = offset + bytesReceived;
+        while (bytesToReceive > 0)
+        {
+            bytesReceived = socket.Receive(mem.Get() + offset, bytesToReceive);
+            if (bytesReceived == 0)
+            {
+                return null;
+            }
+            bytesToReceive = bytesToReceive - bytesReceived;
+            offset = offset + bytesReceived;
+        }
+        MemoryReader messageReader(mem.Get(), messageLength + 4);
+        uint messageId = messageReader.ReadUInt();
+        BinaryMessage* message = MessageRegistry.Instance().Create(messageId);
+        message->Read(messageReader);
+        return message;
+    }
+    public void WriteMessage(TcpSocket& socket, BinaryMessage* message)
+    {
+        uint messageLength = message->Length();
+        byte[4] lengthBuffer;
+        MemoryWriter lengthWriter(&lengthBuffer[0], 4);
+        lengthWriter.Write(messageLength);
+        socket.SendAll(&lengthBuffer[0], 4);
+        uint messageId = message->Id();
+        byte[4] messageIdBuffer;
+        MemoryWriter idWriter(&messageIdBuffer[0], 4);
+        idWriter.Write(messageId);
+        socket.SendAll(&messageIdBuffer[0], 4);
+        if (messageLength > 0)
+        {
+            UniquePtr<byte> mem(cast<byte*>(MemAlloc(messageLength)));
+            MemoryWriter messageWriter(mem.Get(), cast<int>(messageLength));
+            message->Write(messageWriter);
+            socket.SendAll(mem.Get(), cast<int>(messageLength));
+        }
+    }
+}

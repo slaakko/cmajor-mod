@@ -3,6 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
+using System.IO;
+
 namespace System
 {
     public class Uuid
@@ -138,5 +140,10 @@ namespace System
             }
         }
         return uuid;
+    }
+	
+	public TextWriter& operator<<(TextWriter& writer, const Uuid& uuid)
+    {
+        return writer << ToString(uuid);
     }
 }
