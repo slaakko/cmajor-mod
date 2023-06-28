@@ -147,17 +147,87 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ansi.cppm" />
+    <ClCompile Include="application.cppm" />
     <ClCompile Include="base.cpp" />
+    <ClCompile Include="binary_resource_ptr.cppm" />
+    <ClCompile Include="boardered_control.cppm" />
+    <ClCompile Include="buffer.cppm" />
+    <ClCompile Include="button.cppm" />
+    <ClCompile Include="checkbox.cppm" />
+    <ClCompile Include="clipboard.cppm" />
+    <ClCompile Include="color.cppm" />
+    <ClCompile Include="combobox.cppm" />
+    <ClCompile Include="component.cppm" />
+    <ClCompile Include="console.cppm" />
+    <ClCompile Include="container.cppm" />
+    <ClCompile Include="container_control.cppm" />
+    <ClCompile Include="control.cppm" />
+    <ClCompile Include="cursor.cppm" />
+    <ClCompile Include="dialog.cppm" />
+    <ClCompile Include="edit_command.cppm" />
+    <ClCompile Include="edit_command_list.cppm" />
+    <ClCompile Include="environment.cppm" />
+    <ClCompile Include="event.cppm" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="graphics.cppm" />
+    <ClCompile Include="groupbox.cppm" />
+    <ClCompile Include="icon.cppm" />
+    <ClCompile Include="icon_list_view.cppm" />
+    <ClCompile Include="image_list.cppm" />
+    <ClCompile Include="init_done.cppm" />
+    <ClCompile Include="installation.cppm" />
     <ClCompile Include="keys.cpp" />
     <ClCompile Include="keys.cppm" />
     <ClCompile Include="base.cppm" />
+    <ClCompile Include="label.cppm" />
+    <ClCompile Include="listbox.cppm" />
+    <ClCompile Include="logview.cppm" />
+    <ClCompile Include="manual_reset_event.cppm" />
+    <ClCompile Include="menu.cppm" />
+    <ClCompile Include="message_box.cppm" />
+    <ClCompile Include="metrics.cppm" />
+    <ClCompile Include="padded_control.cppm" />
+    <ClCompile Include="panel.cppm" />
+    <ClCompile Include="progress_bar.cppm" />
+    <ClCompile Include="radio_button.cppm" />
+    <ClCompile Include="registry.cppm" />
+    <ClCompile Include="resource_manager.cppm" />
+    <ClCompile Include="scrollable_control.cppm" />
+    <ClCompile Include="scroll_bar.cppm" />
+    <ClCompile Include="shell.cppm" />
+    <ClCompile Include="source_code_view.cppm" />
+    <ClCompile Include="split_container.cppm" />
+    <ClCompile Include="status_bar.cppm" />
+    <ClCompile Include="tab_control.cppm" />
+    <ClCompile Include="text_box.cppm" />
+    <ClCompile Include="text_view.cppm" />
+    <ClCompile Include="theme.cppm" />
+    <ClCompile Include="tool_bar.cppm" />
+    <ClCompile Include="tool_tip.cppm" />
+    <ClCompile Include="tree_view.cppm" />
+    <ClCompile Include="window.cppm" />
+    <ClCompile Include="window_frame.cppm" />
     <ClCompile Include="window_manager.cpp" />
     <ClCompile Include="window_manager.cppm" />
     <ClCompile Include="wing.cppm" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\cmajor\ast\ast.vcxproj">
+      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cmajor\lexer\lexer.vcxproj">
+      <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soul\xml\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
