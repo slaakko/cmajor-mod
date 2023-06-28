@@ -38,7 +38,7 @@ uint32_t SimpleMessage::Length() const
     return length;
 }
 
-void SimpleMessage::Write(util::MemoryWriter& writer) 
+void SimpleMessage::Write(util::MemoryWriter& writer) const
 {
     cmajor::bmp::Write(writer, x);
 }
@@ -98,7 +98,7 @@ uint32_t AllFieldsMessage::Length() const
     return length;
 }
 
-void AllFieldsMessage::Write(util::MemoryWriter& writer) 
+void AllFieldsMessage::Write(util::MemoryWriter& writer) const
 {
     cmajor::bmp::Write(writer, f0);
     cmajor::bmp::Write(writer, f1);
@@ -175,7 +175,7 @@ uint32_t StopServerRequest::Length() const
     return length;
 }
 
-void StopServerRequest::Write(util::MemoryWriter& writer) 
+void StopServerRequest::Write(util::MemoryWriter& writer) const
 {
 }
 
@@ -214,7 +214,7 @@ uint32_t StopServerReply::Length() const
     return length;
 }
 
-void StopServerReply::Write(util::MemoryWriter& writer) 
+void StopServerReply::Write(util::MemoryWriter& writer) const
 {
 }
 

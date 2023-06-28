@@ -1,21 +1,21 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cmbmtest/message.schema' by cmajor binary protocol message generator version 5.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bmsg/sxbs.schema' by cmajor binary protocol message generator version 5.0.0
 
-export module bm_test_message;
+export module cmajor.systemx.build.server.message;
 
 import std.core;
 import util;
 import cmajor.binary.message.protocol;
 import cmajor.binary.message.number;
 
-export namespace BmTest {
+export namespace sxbs {
 
-const uint32_t bmpSimpleMessageId = 1894254629;
+const uint32_t bmpBuildRequestId = 3665341171;
 
-class SimpleMessage : public cmajor::bmp::BinaryMessage
+class BuildRequest : public cmajor::bmp::BinaryMessage
 {
 public:
-    SimpleMessage();
-    SimpleMessage(uint32_t id_);
+    BuildRequest();
+    BuildRequest(uint32_t id_);
     static std::string ClassName();
     static void Register();
     static cmajor::bmp::BinaryMessage* Create(uint32_t messageId);
@@ -23,16 +23,16 @@ public:
     void Write(util::MemoryWriter& writer) const override;
     void Read(util::MemoryReader& reader) override;
 public:
-    int32_t x;
+    std::string projectOrSolutionFilePath;
 };
 
-const uint32_t bmpAllFieldsMessageId = 2707244940;
+const uint32_t bmpBuildReplyId = 1168368853;
 
-class AllFieldsMessage : public cmajor::bmp::BinaryMessage
+class BuildReply : public cmajor::bmp::BinaryMessage
 {
 public:
-    AllFieldsMessage();
-    AllFieldsMessage(uint32_t id_);
+    BuildReply();
+    BuildReply(uint32_t id_);
     static std::string ClassName();
     static void Register();
     static cmajor::bmp::BinaryMessage* Create(uint32_t messageId);
@@ -40,34 +40,17 @@ public:
     void Write(util::MemoryWriter& writer) const override;
     void Read(util::MemoryReader& reader) override;
 public:
-    bool f0;
-    int8_t f1;
-    uint8_t f2;
-    int16_t f3;
-    uint16_t f4;
-    int32_t f5;
-    uint32_t f6;
-    int64_t f7;
-    uint64_t f8;
-    float f9;
-    double f10;
-    char f11;
-    char16_t f12;
-    char32_t f13;
-    std::string f14;
-    cmajor::bmp::Number f15;
-    util::uuid f16;
-    util::Date f17;
-    util::DateTime f18;
+    bool buildSucceeded;
+    std::string resultMessage;
 };
 
-const uint32_t bmpStopServerRequestId = 1995547868;
+const uint32_t bmpLogLineRequestId = 3432820639;
 
-class StopServerRequest : public cmajor::bmp::BinaryMessage
+class LogLineRequest : public cmajor::bmp::BinaryMessage
 {
 public:
-    StopServerRequest();
-    StopServerRequest(uint32_t id_);
+    LogLineRequest();
+    LogLineRequest(uint32_t id_);
     static std::string ClassName();
     static void Register();
     static cmajor::bmp::BinaryMessage* Create(uint32_t messageId);
@@ -75,15 +58,16 @@ public:
     void Write(util::MemoryWriter& writer) const override;
     void Read(util::MemoryReader& reader) override;
 public:
+    std::string logLine;
 };
 
-const uint32_t bmpStopServerReplyId = 3361414145;
+const uint32_t bmpLogLineReplyId = 1664150504;
 
-class StopServerReply : public cmajor::bmp::BinaryMessage
+class LogLineReply : public cmajor::bmp::BinaryMessage
 {
 public:
-    StopServerReply();
-    StopServerReply(uint32_t id_);
+    LogLineReply();
+    LogLineReply(uint32_t id_);
     static std::string ClassName();
     static void Register();
     static cmajor::bmp::BinaryMessage* Create(uint32_t messageId);
@@ -94,4 +78,4 @@ public:
 };
 
 
-} // namespace BmTest
+} // namespace sxbs

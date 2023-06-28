@@ -22,7 +22,7 @@ public:
     BinaryMessage(uint32_t id_);
     virtual ~BinaryMessage();
     virtual uint32_t Length() const = 0;
-    virtual void Write(util::MemoryWriter& writer) = 0;
+    virtual void Write(util::MemoryWriter& writer) const = 0;
     virtual void Read(util::MemoryReader& reader) = 0;
     uint32_t Id() const { return id; }
 private:

@@ -176,6 +176,7 @@ bool ParseReferenceDeclaration(container_file_lexer& lexer, Project* project)
         ++lexer;
         if (*lexer == FILEPATH)
         {
+            string filePath = lexer.filePath;
             ++lexer;
             if (*lexer == SEMICOLON)
             {

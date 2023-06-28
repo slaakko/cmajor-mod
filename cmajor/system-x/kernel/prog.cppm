@@ -11,9 +11,7 @@ export namespace cmajor::systemx::kernel {
 
 class Process;
 
-const int sxbsPortNumber = 55001;
-
-int32_t Start(Process* process, int64_t progAddr);
+int32_t Start(Process* process, int64_t progAddr, int64_t argsAddr);
 void Stop(int32_t prog);
 void InitProg();
 void DoneProg();

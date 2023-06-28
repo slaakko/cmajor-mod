@@ -247,7 +247,7 @@ void WriteLengthFunctionDeclaration(util::CodeFormatter& formatter, cmajor::bina
 
 void WriteWriteFunctionDeclaration(util::CodeFormatter& formatter, cmajor::binary::message::schema::ast::ClassNode& node)
 {
-    formatter.WriteLine("void Write(util::MemoryWriter& writer) override;");
+    formatter.WriteLine("void Write(util::MemoryWriter& writer) const override;");
 }
 
 void WriteReadFunctionDeclaration(util::CodeFormatter& formatter, cmajor::binary::message::schema::ast::ClassNode& node)
@@ -513,7 +513,7 @@ void WriteLengthFunctionImplementation(util::CodeFormatter& formatter, cmajor::b
 
 void WriteWriteFunctionImplementation(util::CodeFormatter& formatter, cmajor::binary::message::schema::ast::ClassNode& node)
 {
-    formatter.WriteLine("void " + node.Id() + "::Write(util::MemoryWriter& writer) ");
+    formatter.WriteLine("void " + node.Id() + "::Write(util::MemoryWriter& writer) const");
     formatter.WriteLine("{");
     formatter.IncIndent();
     for (const auto& n : node.Nodes())

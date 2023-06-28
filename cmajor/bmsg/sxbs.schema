@@ -1,0 +1,29 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.systemx.build.server.message;
+
+namespace sxbs
+{
+    class BuildRequest
+    {
+        string projectOrSolutionFilePath;
+    }
+
+    class BuildReply
+    {
+        bool buildSucceeded;
+        string resultMessage;
+    }
+
+    class LogLineRequest
+    {
+        string logLine;
+    }
+
+    class LogLineReply
+    {
+    }
+}

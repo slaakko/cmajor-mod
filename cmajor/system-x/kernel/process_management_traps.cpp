@@ -459,7 +459,8 @@ uint64_t TrapStartHandler::HandleTrap(cmajor::systemx::machine::Processor& proce
     try
     {
         int64_t progAddr = processor.Regs().Get(cmajor::systemx::machine::regAX);
-        return Start(process, progAddr);
+        int64_t argsAddr = processor.Regs().Get(cmajor::systemx::machine::regBX);
+        return Start(process, progAddr, argsAddr);
     }
     catch (const SystemError& error)
     {

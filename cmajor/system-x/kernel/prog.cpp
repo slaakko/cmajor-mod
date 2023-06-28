@@ -16,19 +16,16 @@ namespace cmajor::systemx::kernel {
 class Prog
 {
 public:
-    Prog(util::Process* process_, const std::string& name_, int portNumber_);
+    Prog(util::Process* process_, const std::string& name_);
     virtual ~Prog();
-    virtual bool Stop(std::string& error) = 0;
     util::Process* GetProcess() const { return process.get(); }
-    int PortNumber() const { return portNumber; }
     const std::string& Name() const { return name; }
 private:
     std::unique_ptr<util::Process> process;
-    int portNumber;
     std::string name;
 };
 
-Prog::Prog(util::Process* process_, const std::string& name_, int portNumber_) : process(process_), name(name_), portNumber(portNumber_)
+Prog::Prog(util::Process* process_, const std::string& name_) : process(process_), name(name_)
 {
 }
 
@@ -48,53 +45,10 @@ class SxbsProg : public Prog
 {
 public:
     SxbsProg(util::Process* process);
-    bool Stop(std::string& error) override;
 };
 
-SxbsProg::SxbsProg(util::Process* process) : Prog(process, "sxbs", sxbsPortNumber)
+SxbsProg::SxbsProg(util::Process* process) : Prog(process, "sxbs")
 {
-}
-
-bool SxbsProg::Stop(std::string& error)
-{
-    util::TcpSocket socket;
-    try
-    {
-        socket = util::TcpSocket("127.0.0.1", std::to_string(PortNumber()));
-    }
-    catch (const std::exception& ex)
-    {
-        error = ex.what();
-        return false;
-    }
-    catch (...)
-    {
-        error = "unknown error";
-    }
-    try
-    {
-        util::Write(socket, "stop server request");
-        std::string replyStr = util::ReadStr(socket);
-        if (replyStr == "stop server reply")
-        {
-            socket.Close();
-            return true;
-        }
-    }
-    catch (const std::exception& ex)
-    {
-        error = ex.what();
-        return false;
-    }
-    catch (...)
-    {
-        error = "unknown error";
-    }
-    if (error.empty())
-    {
-        error = "unknown error";
-    }
-    return false;
 }
 
 class ProgTable
@@ -133,12 +87,6 @@ void ProgTable::RemoveProg(int32_t progId)
 {
     if (progId >= 0 && progId < progs.size())
     {
-        std::string errorMsg;
-        if (!progs[progId]->Stop(errorMsg))
-        {
-            progs[progId].reset();
-            throw SystemError(EHOST, "prog id " + std::to_string(progId) + " (" + progs[progId]->Name() + ") failed to stop : " + errorMsg, __FUNCTION__);
-        }
         progs[progId].reset();
     }
     else
@@ -147,7 +95,7 @@ void ProgTable::RemoveProg(int32_t progId)
     }
 }
 
-int32_t Start(Process* process, int64_t progAddr)
+int32_t Start(Process* process, int64_t progAddr, int64_t argsAddr)
 {
     if (progAddr == 0)
     {
@@ -155,9 +103,19 @@ int32_t Start(Process* process, int64_t progAddr)
     }
     cmajor::systemx::machine::Memory& mem = process->GetProcessor()->GetMachine()->Mem();
     std::string progName = ReadString(process, progAddr, mem);
+    std::string args;
+    if (argsAddr)
+    {
+        args = ReadString(process, argsAddr, mem);
+    } 
     if (progName == "sx.bs")
     {
-        Prog* prog = new SxbsProg(new util::Process("sxbs",
+        std::string commandLine = "sxbs";
+        if (!args.empty())
+        {
+            commandLine.append(1, ' ').append(args);
+        }
+        Prog* prog = new SxbsProg(new util::Process(commandLine,
             util::Process::Redirections::processStdIn |
             util::Process::Redirections::processStdOut |
             util::Process::Redirections::processStdErr));
