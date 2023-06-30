@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,11 +8,6 @@ module;
 #include <gdiplus.h>
 
 export module wing.window;
-/*
-#include <wing/Application.hpp>
-#include <wing/ContainerControl.hpp>
-#include <wing/WindowFrame.hpp>
-*/
 
 import wing.application;
 import wing.base;
@@ -207,4 +202,5 @@ private:
     KeyPreviewMethod keyPreviewMethod;
     KeyPreviewMethod dialogKeyPreviewMethod;
 };
+
 } // wing

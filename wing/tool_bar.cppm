@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.tool.bar;
-//#include <wing/ToolTip.hpp>
-//#include <wing/Container.hpp>
+
 import wing.base;
 import wing.container;
 import wing.control;
@@ -368,4 +367,5 @@ public:
     void ComputeSize() override;
     void Draw(Graphics& graphics, const Point& origin) override;
 };
-} // cmajor::wing
+
+} // wing

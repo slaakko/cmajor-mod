@@ -2019,7 +2019,7 @@ void CreateClassFile(const std::string& executableFilePath, SymbolTable& symbolT
     {
         LogMessage(symbolTable.GetModule()->LogStreamId(), "Generating class file...");
     }
-    std::filesystem::path cfp = boost::filesystem::path(executableFilePath).replace_extension(".cls");
+    std::filesystem::path cfp = std::filesystem::path(executableFilePath).replace_extension(".cls");
     std::string classFilePath = cfp.generic_string();
     const std::unordered_set<ClassTypeSymbol*>& polymorphicClasses = symbolTable.PolymorphicClasses();
     std::unordered_map<util::uuid, ClassTypeSymbol*, boost::hash<util::uuid>> classIdClassMap;

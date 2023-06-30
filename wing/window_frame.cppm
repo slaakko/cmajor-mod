@@ -1,7 +1,8 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 export module wing.window.frame;
 
 import wing.graphics;
@@ -89,4 +90,5 @@ private:
     std::vector<WindowCorner> corners;
     std::vector<WindowBorder> borders;
 };
+
 } // wing

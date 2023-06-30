@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.progress.bar;
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
+
 import wing.control;
 import wing.container;
 import wing.graphics;
@@ -99,4 +98,5 @@ private:
     Color sunkenBorderInnerRightBottomColor;
     ProgressBarBrushesAndPens brushesAndPens;
 };
+
 } // wing

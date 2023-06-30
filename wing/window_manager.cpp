@@ -12,6 +12,7 @@ module wing.window.manager;
 
 import util;
 import wing.base;
+import wing.control;
 
 namespace wing {
 
@@ -64,12 +65,12 @@ uint16_t WindowManager::Register(const std::string& windowClassName, uint32_t wi
 
 void WindowManager::AddWindow(Control* window)
 {
-    // windowMap[window->Handle()] = window; todo
+    windowMap[window->Handle()] = window; 
 }
 
 void WindowManager::RemoveWindow(Control* window)
 {
-    // windowMap.erase(window->Handle()); todo
+    windowMap.erase(window->Handle()); 
 }
 
 Control* WindowManager::GetWindow(HWND handle) const

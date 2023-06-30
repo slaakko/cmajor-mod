@@ -1,15 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.event;
-/*
-#include <wing/WingApi.hpp>
-#include <functional>
-#include <map>
-#include <vector>
-*/
+
 import std.core;
 
 export namespace wing {
@@ -103,4 +98,5 @@ private:
     std::map<int, int> handlerIdMap;
     int nextHandlerId;
 };
+
 } // wing

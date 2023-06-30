@@ -2,12 +2,12 @@ module;
 #include <Windows.h>
 
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.registry;
-//#include <wing/Wing.hpp>
+
 import std.core;
 
 export namespace wing {
@@ -41,4 +41,5 @@ public:
 private:
     HKEY key;
 };
+
 } // wing

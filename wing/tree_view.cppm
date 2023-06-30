@@ -1,12 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.tree.view;
-//#include <wing/ToolTip.hpp>
-//#include <wing/Container.hpp>
-//#include <wing/ImageList.hpp>
+
 import wing.base;
 import wing.container;
 import wing.control;
@@ -345,4 +343,5 @@ private:
     int imageIndex;
     int expandedImageIndex;
 };
+
 } // wing

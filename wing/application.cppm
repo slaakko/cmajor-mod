@@ -1,17 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module;
 #include <Windows.h>
 
 export module wing.application;
-/*
-#include <wing/Keys.hpp>
-#include <wing/Wing.hpp>
-#include <wing/ResourceManager.hpp>
-#include <wing/WindowManager.hpp>
-*/
+
 import wing.keys;
 import wing.resource.manager;
 import wing.window.manager;
@@ -73,4 +69,5 @@ private:
 
 void ApplicationInit();
 void ApplicationDone();
+
 } // wing

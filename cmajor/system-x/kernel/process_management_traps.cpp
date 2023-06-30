@@ -459,8 +459,8 @@ uint64_t TrapStartHandler::HandleTrap(cmajor::systemx::machine::Processor& proce
     try
     {
         int64_t progAddr = processor.Regs().Get(cmajor::systemx::machine::regAX);
-        int64_t argsAddr = processor.Regs().Get(cmajor::systemx::machine::regBX);
-        return Start(process, progAddr, argsAddr);
+        int32_t port = static_cast<int32_t>(processor.Regs().Get(cmajor::systemx::machine::regBX));
+        return Start(process, progAddr, port);
     }
     catch (const SystemError& error)
     {
@@ -492,6 +492,28 @@ uint64_t TrapStopHandler::HandleTrap(cmajor::systemx::machine::Processor& proces
     }
 }
 
+class TrapGetPortHandler : public TrapHandler
+{
+public:
+    uint64_t HandleTrap(cmajor::systemx::machine::Processor& processor) override;
+    std::string TrapName() const { return "trap_get_port"; }
+};
+
+uint64_t TrapGetPortHandler::HandleTrap(cmajor::systemx::machine::Processor& processor)
+{
+    Process* process = static_cast<Process*>(processor.CurrentProcess());
+    try
+    {
+        int32_t prog = static_cast<int32_t>(processor.Regs().Get(cmajor::systemx::machine::regAX));
+        return static_cast<uint64_t>(GetPort(prog));
+    }
+    catch (const SystemError& error)
+    {
+        process->SetError(error);
+        return static_cast<uint64_t>(-1);
+    }
+}
+
 void InitProcessManagementTraps()
 {
     SetTrapHandler(trap_fork, new TrapForkHandler());
@@ -513,6 +535,7 @@ void InitProcessManagementTraps()
     SetTrapHandler(trap_waitpid, new TrapWaitPidHandler());
     SetTrapHandler(trap_start, new TrapStartHandler());
     SetTrapHandler(trap_stop, new TrapStopHandler());
+    SetTrapHandler(trap_get_port, new TrapGetPortHandler());
 }
 
 void DoneProcessManagementTraps()

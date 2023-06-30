@@ -1,10 +1,14 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-//#include <wing/Button.hpp>
+export module wing.checkbox;
+
 import wing.button;
+import wing.event;
+import wing.graphics;
+import wing.control;
 
 export namespace wing {
 
@@ -72,4 +76,5 @@ private:
     CheckBoxFlags flags;
     CheckedChangedEvent checkedChanged;
 };
+
 } // wing

@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.combobox;
-//#include <wing/ListBox.hpp>
+
 import wing.control;
 import wing.listbox;
 import wing.color;
@@ -51,4 +51,5 @@ protected:
 private:
     SelectedIndexChangedEvent selectedIndexChanged;
 };
+
 } // wing

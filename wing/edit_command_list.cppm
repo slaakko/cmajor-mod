@@ -1,14 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.edit.command.list;
-/*
-#include <wing/WingApi.hpp>
-#include <memory>
-#include <vector>
-*/
+
 import std.core;
 
 export namespace wing {
@@ -66,4 +62,5 @@ private:
     std::vector<std::unique_ptr<EditCommand>> commands;
     std::unique_ptr<GroupCommand> groupCommand;
 };
+
 } // wing

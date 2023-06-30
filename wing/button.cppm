@@ -1,10 +1,11 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.button;
-//#include <wing/Window.hpp>
+
+import wing.control;
 import wing.window;
 
 export namespace wing {
@@ -37,4 +38,5 @@ private:
     void SetDefaultButtonStyle();
     void ResetDefaultButtonStyle();
 };
+
 } // wing

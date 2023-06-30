@@ -1,17 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module;
 #include <Windows.h>
 
 export module wing.dialog;
-/*
-#include <wing/WingApi.hpp>
-#include <string>
-#include <vector>
-#include <Windows.h>
-*/
+
 import std.core;
 
 export namespace wing {
@@ -21,4 +17,5 @@ export namespace wing {
 bool OpenFileName(HWND windowHandle, const std::vector<std::pair<std::string, std::string>>& descriptionFilterPairs, const std::string& initialDirectory,
     const std::string& defaultFilePath, const std::string& defaultExtension,
     uint32_t flags, std::string& firstPath, std::string& currentDirectory, std::vector<std::string>& fileNames);
+
 } // wing

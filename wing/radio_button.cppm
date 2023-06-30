@@ -1,11 +1,15 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.radio.button;
-//#include <wing/Button.hpp>
+
+import wing.base;
+import wing.event;
 import wing.button;
+import wing.control;
+import wing.graphics;
 import std.core;
 
 export namespace wing {
@@ -73,4 +77,5 @@ private:
     RadioButtonFlags flags;
     CheckedChangedEvent checkedChanged;
 };
+
 } // wing

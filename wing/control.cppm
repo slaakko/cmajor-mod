@@ -1,22 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module;
 #include <Windows.h>
 
 export module wing.control;
-/*
-#include <wing/Component.hpp>
-#include <wing/Cursor.hpp>
-#include <wing/Event.hpp>
-#include <wing/Graphics.hpp>
-#include <wing/Keys.hpp>
-#include <wing/Wing.hpp>
-#include <memory>
-#include <string>
-#include <vector>
-*/
+
 import wing.component;
 import wing.cursor;
 import wing.event;
@@ -675,4 +666,5 @@ private:
 };
 
 HWND LParamHandle(Message& msg);
+
 } // wing

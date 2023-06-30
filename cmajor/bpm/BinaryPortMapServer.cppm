@@ -12,6 +12,7 @@ export const int leaseRenewalTimeSecs = 60;
 
 export namespace bpm {
 
+std::string BinaryPortMapConfigFilePath();
 void RunPortMapServer();
 
 } // namespace bpm

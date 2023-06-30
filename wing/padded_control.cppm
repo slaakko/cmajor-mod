@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.padded.control;
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
+
 import wing.base;
 import wing.control;
 import wing.container;
@@ -66,4 +65,5 @@ private:
     Container container;
     Padding padding;
 };
+
 } // wing

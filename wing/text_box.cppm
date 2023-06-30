@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.text.box;
-//#include <wing/Control.hpp>
+
 import wing.control;
 import wing.color;
 import wing.graphics;
@@ -69,4 +69,5 @@ protected:
 private:
     TextBoxFlags flags;
 };
+
 } // wing

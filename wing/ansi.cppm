@@ -1,22 +1,15 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.ansi;
-/*
-#include <wing/WingApi.hpp>
-#include <wing/Color.hpp>
-#include <soulng/util/Unicode.hpp>
-#include <functional>
-*/
+
 import wing.color;
 import util.unicode;
 import std.core;
 
 export namespace wing {
-
-//using namespace soulng::unicode;
 
 using ColorOutputFn = std::function<void(ConsoleColor, ConsoleColor, int, char32_t)>;
 
@@ -58,4 +51,5 @@ private:
     util::Utf8ToUtf32Engine unicodeEngine;
     ColorCharOutputMethod outputMethod;
 };
+
 } // wing

@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.color;
-//#include <wing/Graphics.hpp>
-//#include <stdint.h>
+
 import wing.graphics;
 import std.core;
 
@@ -18,4 +17,5 @@ enum class ConsoleColor : uint8_t
 };
 
 Color GetColor(ConsoleColor consoleColor);
+
 } // wing

@@ -1,12 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.text.view;
-//#include <wing/Control.hpp>
-//#include <wing/EditCommandList.hpp>
-//#include <soulng/lexer/soul::ast::SourcePos.hpp>
+
 import wing.control;
 import wing.edit.command.list;
 import wing.event;
@@ -419,4 +417,5 @@ std::vector<std::u32string> SplitTextIntoLines(const std::u32string& text);
 int MinIndent(const std::u32string& s);
 std::u32string Unindent(const std::u32string& s, int indent);
 std::vector<int> CalculateLineStartIndeces(const std::u32string& text);
+
 } // wing

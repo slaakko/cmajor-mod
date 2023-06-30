@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.status.bar;
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
+
 import wing.base;
 import wing.control;
 import wing.container;
@@ -270,4 +269,5 @@ public:
     StatusBarSpringItem();
     bool IsStatusBarSpringItem() const override { return true; }
 };
+
 } // wing

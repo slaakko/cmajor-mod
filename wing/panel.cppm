@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.panel;
 
-//#include <wing/ContainerControl.hpp>
 import wing.container.control;
 
 export namespace wing {
@@ -17,4 +16,5 @@ public:
 protected:
     void OnPaint(PaintEventArgs& args) override;
 };
+
 } // wing

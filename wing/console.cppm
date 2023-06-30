@@ -1,12 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.console;
-//#include <wing/Ansi.hpp>
-//#include <wing/TextView.hpp>
+
+import wing.base;
 import wing.ansi;
+import wing.control;
 import wing.text.view;
 import wing.event;
 import wing.color;
@@ -99,4 +100,5 @@ private:
     int startInputCol;
     ConsoleInputReadyEvent consoleInputReady;
 };
+
 } // wing

@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.scroll.bar;
-//#include <wing/Control.hpp>
+
 import wing.control;
 import wing.graphics;
 import std.core;
@@ -38,4 +38,5 @@ class ScrollBar : public Control
 public:
     ScrollBar(ScrollBarCreateParams& createParams);
 };
+
 } // wing

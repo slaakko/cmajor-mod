@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.buffer;
-//#include <wing/Graphics.hpp>
+
 import wing.graphics;
 
 export namespace wing {
@@ -22,4 +22,5 @@ private:
     Bitmap bitmap;
     Graphics bmgraphics;
 };
+
 } // wing

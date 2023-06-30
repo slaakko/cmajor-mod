@@ -1,12 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.icon.list.view;
 
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
 import wing.base;
 import wing.control;
 import wing.container;
@@ -190,4 +188,5 @@ private:
     Size textSize;
     Size iconSize;
 };
+
 } // wing

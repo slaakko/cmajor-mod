@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,11 +8,9 @@ module;
 
 export module wing.init.done;
 
-//#include <wing/WingApi.hpp>
-//#include <Windows.h>
-
 export namespace wing {
 
 void Init(HINSTANCE instance);
 void Done();
+
 } // wing

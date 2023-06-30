@@ -23,9 +23,7 @@ const uint64_t exitCompletionKey = -1;
 class IOManager
 {
 public:
-    static void Init();
-    static void Done();
-    static IOManager& Instance() { return *instance; }
+    static IOManager& Instance();
     void Start();
     void Stop();
     void SetMachine(cmajor::systemx::machine::Machine* machine_) { machine = machine_; }
@@ -39,6 +37,7 @@ public:
     void Exit();
 private:
     IOManager();
+    bool started;
     void RemoveIfExists(HostFile* hostFile);
     void OpenHostFile(HostFile* hostFile);
     uint64_t GetFileOffset(Block* block);
@@ -55,6 +54,12 @@ private:
     void* completionPortHandle;
 };
 
+IOManager& IOManager::Instance()
+{
+    static IOManager instance;
+    return instance;
+}
+
 void RunRequestHandlerThread()
 {
     IOManager::Instance().RunRequestHandler();
@@ -67,17 +72,7 @@ void RunCompletionHandlerThread()
 
 std::unique_ptr<IOManager> IOManager::instance;
 
-void IOManager::Init()
-{
-    instance.reset(new IOManager());
-}
-
-void IOManager::Done()
-{
-    instance.reset();
-}
-
-IOManager::IOManager() : nextRequestId(0), exiting(false), machine(nullptr), completionPortHandle(nullptr)
+IOManager::IOManager() : nextRequestId(0), exiting(false), machine(nullptr), completionPortHandle(nullptr), started(false)
 {
 }
 
@@ -87,6 +82,7 @@ void IOManager::Start()
     exiting = false;
     completionHandlerThread = std::thread(RunCompletionHandlerThread);
     requestHandlerThread = std::thread(RunRequestHandlerThread);
+    started = true;
 }
 
 void IOManager::Stop()
@@ -94,6 +90,7 @@ void IOManager::Stop()
     Exit();
     requestQueue.clear();
     requestMap.clear();
+    started = false;
 }
 
 void IOManager::RunRequestHandler()
@@ -266,11 +263,18 @@ uint64_t IOManager::GetFileOffset(Block* block)
 
 void IOManager::Exit()
 {
+    if (!started) return;
     exiting = true;
     requestQueueNotEmptyOrExitingVar.notify_one();
-    requestHandlerThread.join();
-    OsPostQueuedCompletionStatus(completionPortHandle, 0, exitCompletionKey);
-    completionHandlerThread.join();
+    if (requestHandlerThread.joinable())
+    {
+        requestHandlerThread.join();
+    }
+    if (completionPortHandle)
+    {
+        OsPostQueuedCompletionStatus(completionPortHandle, 0, exitCompletionKey);
+        completionHandlerThread.join();
+    }
 }
 
 int32_t IOManager::Read(int32_t hostFileId, Block* block)
@@ -370,16 +374,6 @@ IORequest* GetRequest(int32_t requestId)
 void DeleteRequest(int32_t requestId)
 {
     IOManager::Instance().DeleteRequest(requestId);
-}
-
-void InitIOManager()
-{
-    IOManager::Init();
-}
-
-void DoneIOManager()
-{
-    IOManager::Done();
 }
 
 void StartIOManager()

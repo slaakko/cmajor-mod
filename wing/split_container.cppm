@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.split.container;
-//#include <wing/ContainerControl.hpp>
+
 import wing.container.control;
 import wing.control;
 import wing.color;
@@ -180,4 +180,5 @@ private:
     int splitterDistance;
     SplitterDistanceChangedEvent splitterDistanceChanged;
 };
+
 } // wing

@@ -1,13 +1,11 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.message.box;
 
 import std.core;
-
-//#undef MessageBox
 
 export namespace wing {
 
@@ -31,4 +29,5 @@ class MessageBox
 public:
     static MessageBoxResult Show(const std::string& message, const std::string& caption, Control* owner, int messageBoxType);
 };
+
 } // wing

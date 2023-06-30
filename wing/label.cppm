@@ -1,10 +1,9 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.label;
-//#include <wing/Control.hpp>
 
 import wing.control;
 import wing.graphics;
@@ -62,4 +61,5 @@ private:
     void DoAutoSize();
     LabelFlags flags;
 };
+
 } // wing

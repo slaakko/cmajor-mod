@@ -44,4 +44,29 @@ struct Token
     int line;
 };
 
+template<typename Char, typename LexerBaseT>
+struct TokenLine
+{
+    TokenLine() : startState(0), endState(0) {}
+    int TokenIndex(int columnNumber) const
+    {
+        int col = 1;
+        int index = 0;
+        for (const Token<Char, LexerBaseT>& token : tokens)
+        {
+            int len = token.match.end - token.match.begin;
+            if (columnNumber >= col && columnNumber < col + len)
+            {
+                return index;
+            }
+            col += len;
+            ++index;
+        }
+        return -1;
+    }
+    std::vector<Token<Char, LexerBaseT>> tokens;
+    int startState;
+    int endState;
+};
+
 } // namespace soul::lexer

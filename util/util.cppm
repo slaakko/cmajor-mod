@@ -42,3 +42,4 @@ export import util.process;
 export import util.multiprecision;
 export import util.fiber;
 export import util.init.done;
+export import util.rand;

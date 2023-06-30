@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -35,4 +35,5 @@ private:
     std::unordered_map<std::string, Resource*> resourceMap;
     std::vector<std::unique_ptr<Resource>> resources;
 };
+
 } // wing

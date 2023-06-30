@@ -1,13 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.edit.command;
-/*
-#include <wing/EditCommandList.hpp>
-#include <wing/TextView.hpp>
-*/
+
 import wing.edit.command.list;
 import wing.text.view;
 import std.core;
@@ -130,4 +127,5 @@ private:
     SelectionData selectionData;
     bool wholeLine;
 };
+
 } // wing

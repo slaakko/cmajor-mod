@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.scrollable.control;
-//#include <wing/ScrollBar.hpp>
-//#include <wing/Container.hpp>
+
 import wing.container;
 import wing.control;
 import wing.graphics;
@@ -84,4 +83,5 @@ private:
     bool verticalScrollBarShown;
     bool horizontalScrollBarShown;
 };
+
 } // wing

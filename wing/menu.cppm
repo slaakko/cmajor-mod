@@ -1,13 +1,9 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.menu;
-
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
-//#include <wing/Keys.hpp>
 
 import wing.control;
 import wing.container;
@@ -370,4 +366,5 @@ public:
 private:
     void Click();
 };
+
 } // wing

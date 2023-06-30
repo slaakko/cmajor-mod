@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.container;
-//#include <wing/WingApi.hpp>
-//#include <memory>
+
 import std.core;
 
 export namespace wing {
@@ -30,4 +29,5 @@ private:
     Component* firstChild;
     Component* lastChild;
 };
+
 } // wing

@@ -1,12 +1,14 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.groupbox;
 
-//#include <wing/Button.hpp>
+import wing.graphics;
+import wing.control;
 import wing.button;
+import wing.container;
 import std.core;
 
 export namespace wing {
@@ -51,4 +53,5 @@ private:
     Container children;
     RadioButton* checkedRadioButton;
 };
+
 } // wing

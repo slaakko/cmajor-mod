@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.metrics;
-//#include <wing/Graphics.hpp>
-//#include <sngxml/dom/Element.hpp>
+
 import wing.graphics;
 import soul.xml.element;
 import std.core;
@@ -126,4 +125,5 @@ private:
 };
 
 void LoadMetrics();
+
 } // wing

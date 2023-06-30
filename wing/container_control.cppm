@@ -1,11 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.container.control;
-//#include <wing/Control.hpp>
-//#include <wing/Container.hpp>
+
 import wing.control;
 import wing.container;
 
@@ -42,4 +41,5 @@ private:
     Container children;
     Size oldSize;
 };
+
 } // wing

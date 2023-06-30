@@ -1,11 +1,9 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.component;
-//#include <wing/WingApi.hpp>
-//#include <stdint.h>
 
 import std.core;
 
@@ -74,4 +72,5 @@ private:
     Component* nextSibling;
     Component* prevSibling;
 };
+
 } // wing

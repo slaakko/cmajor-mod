@@ -1,14 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.image.list;
-/*
-#include <wing/Graphics.hpp>
-#include <map>
-#include <vector>
-*/
+
 import wing.graphics;
 import std.core;
 
@@ -30,4 +26,5 @@ private:
     std::map<std::string, int> imageIndexMap;
     std::vector<std::unique_ptr<Bitmap>> images;
 };
+
 } // wing

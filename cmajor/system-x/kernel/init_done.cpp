@@ -49,7 +49,6 @@ void Init(bool initTerminal)
     InitEventManager();
     InitBlockManager();
     InitINodeManager();
-    InitIOManager();
     InitHostFileManager();
     InitClock();
     InitPipe();
@@ -72,7 +71,6 @@ void Done()
     DoneTerminal();
     DonePipe();
     DoneClock();
-    DoneIOManager();
     DoneHostFileManager();
     DoneINodeManager();
     DoneBlockManager();

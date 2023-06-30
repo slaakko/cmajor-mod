@@ -8,6 +8,9 @@ module bpm.client;
 import bpm.server;
 import cmajor.binary.message.protocol;
 import cmajor.binary.portmap.message;
+import soul.xml.dom;
+import soul.xml.dom.parser;
+import soul.xml.xpath;
 import util;
 
 namespace bpm {
@@ -115,6 +118,251 @@ void StartPortMapClient(int portMapServicePort, const std::vector<int>& portNumb
 void StopPortMapClient()
 {
     PortMapClient::Instance().Stop();
+}
+
+int GetPortMapServicePortNumberFromConfig()
+{
+    std::string portMapConfigFilePath;
+    try
+    {
+        portMapConfigFilePath = BinaryPortMapConfigFilePath();
+        std::unique_ptr<soul::xml::Document> portMapConfigDoc = soul::xml::ParseXmlFile(portMapConfigFilePath);
+        std::unique_ptr<soul::xml::xpath::NodeSet> nodeSet = soul::xml::xpath::EvaluateToNodeSet("/bpm", portMapConfigDoc.get());
+        if (nodeSet->Count() == 1)
+        {
+            soul::xml::Node* node = nodeSet->GetNode(0);
+            if (node->IsElementNode())
+            {
+                soul::xml::Element* bpmElement = static_cast<soul::xml::Element*>(node);
+                std::string portMapServicePortAttribute = bpmElement->GetAttribute("portMapServicePort");
+                if (!portMapServicePortAttribute.empty())
+                {
+                    return std::stoi(portMapServicePortAttribute);
+                }
+            }
+            else
+            {
+                throw std::runtime_error("element node expected");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("single element node expected");
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        throw ("error: could not get port map service port number from '" + portMapConfigFilePath + "': " + std::string(ex.what()));
+    }
+    return -1;
+}
+
+Logger::~Logger()
+{
+}
+
+void Logger::LogMessage(const std::string& message)
+{
+    util::LogMessage(-1, message);
+}
+
+bool StartPortMapServer(Logger* logger)
+{
+    try
+    {
+        util::Process* portmapServerProcess = new util::Process("cmbpms", 
+            util::Process::Redirections::processStdIn | util::Process::Redirections::processStdOut | util::Process::Redirections::processStdErr);
+        std::string portmapServerStatus = util::Trim(portmapServerProcess->ReadLine(util::Process::StdHandle::stdOut));
+        if (portmapServerStatus == "binary-port-map-server-ready")
+        {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            return true;
+        }
+        else
+        {
+            std::string errorMessage = util::Trim(portmapServerProcess->ReadLine(util::Process::StdHandle::stdOut));
+            if (logger)
+            {
+                logger->LogMessage("error: port map server status is: " + portmapServerStatus + ": " + errorMessage);
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (logger)
+        {
+            logger->LogMessage("error: could not start port map server : " + std::string(ex.what()));
+        }
+    }
+    return false;
+}
+
+bool StopPortMapServer(Logger* logger)
+{
+    try
+    {
+        int portMapServerPort = GetPortMapServicePortNumberFromConfig();
+        if (portMapServerPort == -1)
+        {
+            throw std::runtime_error("could not get port map server port number from configuration file '" + BinaryPortMapConfigFilePath() + "'");
+        }
+        util::TcpSocket portMapServerConnection("localhost", std::to_string(portMapServerPort));
+        if (logger)
+        {
+            logger->LogMessage("connection to port map server port " + std::to_string(portMapServerPort) + " established");
+            logger->LogMessage("sending stop request...");
+        }
+        bpm::StopPortMapServerRequest request;
+        cmajor::bmp::WriteMessage(portMapServerConnection, &request);
+        std::unique_ptr<cmajor::bmp::BinaryMessage> replyMessage(cmajor::bmp::ReadMessage(portMapServerConnection));
+        if (replyMessage)
+        {
+            if (replyMessage->Id() == bpm::bmpStopPortMapServerReplyId)
+            {
+                if (logger)
+                {
+                    logger->LogMessage("stop reply received");
+                }
+                return true;
+            }
+            else
+            {
+                throw std::runtime_error("'bpm::StopPortMapServerReply' expected, message id=" + std::to_string(replyMessage->Id()));
+            }
+        }
+        else
+        {
+            throw std::runtime_error("'bpm::StopPortMapServerReply' expected");
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (logger)
+        {
+            logger->LogMessage("error: could not stop port map server: " + std::string(ex.what()));
+        }
+    }
+    return false;
+}
+
+int GetPortMapServicePortNumber(Logger* logger, bool& portMapServerStarted)
+{
+    portMapServerStarted = false;
+    int portmapServicePortNumber = GetPortMapServicePortNumberFromConfig();
+    if (portmapServicePortNumber == -1)
+    {
+        portMapServerStarted = StartPortMapServer(logger);
+        portmapServicePortNumber = GetPortMapServicePortNumberFromConfig();
+    }
+    return portmapServicePortNumber;
+}
+
+int GetFreePortNumber(Logger* logger, const std::string& processName)
+{
+    try
+    {
+        bool portMapServerStarted = false;
+        int portmapServicePortNumber = GetPortMapServicePortNumber(logger, portMapServerStarted);
+        if (portmapServicePortNumber != -1)
+        {
+            for (int connectionAttempt = 1; connectionAttempt <= 2; ++connectionAttempt)
+            {
+                try
+                {
+                    int pid = util::GetPid();
+                    util::TcpSocket portMapServerConnection("localhost", std::to_string(portmapServicePortNumber));
+                    bpm::GetFreePortNumberRequest request;
+                    request.processName = processName;
+                    request.pid = pid;
+                    cmajor::bmp::WriteMessage(portMapServerConnection, &request);
+                    std::unique_ptr<cmajor::bmp::BinaryMessage> replyMessage(cmajor::bmp::ReadMessage(portMapServerConnection));
+                    if (replyMessage)
+                    {
+                        if (replyMessage->Id() == bpm::bmpGetFreePortNumberReplyId)
+                        {
+                            bpm::GetFreePortNumberReply* reply = static_cast<bpm::GetFreePortNumberReply*>(replyMessage.get());
+                            return reply->portNumber;
+                        }
+                        else
+                        {
+                            throw std::runtime_error("'bpm::GetFreePortNumberReply' expected, reply messageId=" + std::to_string(replyMessage->Id()));
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("'bpm::GetFreePortNumberReply' expected");
+                    }
+                }
+                catch (const std::exception& ex)
+                {
+                    if (connectionAttempt > 1)
+                    {
+                        throw ex;
+                    }
+                }
+                if (connectionAttempt == 1 && !portMapServerStarted)
+                {
+                    portMapServerStarted = StartPortMapServer(logger);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (logger)
+        {
+            logger->LogMessage("error: could not get free port number from port map server: " + std::string(ex.what()));
+        }
+    }
+    return -1;
+}
+
+bool IsPortMapServerRunning(Logger* logger)
+{
+    bool logError = true;
+    try
+    {
+        int portMapServerPort = GetPortMapServicePortNumberFromConfig();
+        if (portMapServerPort == -1)
+        {
+            throw std::runtime_error("could not get binary port map server port number from configuration file '" + BinaryPortMapConfigFilePath() + "'");
+        }
+        logError = false;
+        util::TcpSocket connection("localhost", std::to_string(portMapServerPort));
+        logError = true;
+        bpm::HelloBinaryPortMapServerRequest request;
+        cmajor::bmp::WriteMessage(connection, &request);
+        std::unique_ptr<cmajor::bmp::BinaryMessage> replyMessage(cmajor::bmp::ReadMessage(connection));
+        if (!replyMessage)
+        {
+            throw std::runtime_error("'bpm::HelloBinaryPortMapServerReply' expected, please stop cmbpms process from the Task Manager and use 'Server | Start' command to run updated version");
+        }
+        if (replyMessage->Id() ==  bpm::bmpHelloBinaryPortMapServerReplyId)
+        {
+            bpm::HelloBinaryPortMapServerReply* reply = static_cast<bpm::HelloBinaryPortMapServerReply*>(replyMessage.get());
+            if (logger)
+            {
+                logger->LogMessage("binary port map server (cmbpms) version " + reply->version + " running");
+            }
+            return true;
+        }
+        else
+        {
+            throw std::runtime_error("'bpm::HelloBinaryPortMapServerReply' expected, please stop cmbpms process from the Task Manager and use 'Server | Start' command to run updated version");
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (logError)
+        {
+            logger->LogMessage("error: " + std::string(ex.what()));
+        }
+    }
+    return false;
 }
 
 } // namespace bpm

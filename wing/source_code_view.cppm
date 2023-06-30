@@ -1,21 +1,21 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.source.code.view;
-//#include <wing/TextView.hpp>
-//#include <soulng/lexer/Token.hpp>
-//#include <soulng/util/TextUtils.hpp>
+
+import soul.lexer;
 import wing.text.view;
-import soul.lexer.token;
+import wing.graphics;
+import wing.control;
 import util.text.util;
 import std.core;
 
 export namespace wing {
 
-using Token = soul::lexer::Token;
-using TokenLine = soul::lexer::TokenLine;
+using Token = soul::lexer::Token<char32_t, soul::lexer::LexerBase<char32_t>>;
+using TokenLine = soul::lexer::TokenLine<char32_t, soul::lexer::LexerBase<char32_t>>;
 
 struct SourceSpan
 {
@@ -108,7 +108,7 @@ protected:
     void OnLineDeleted(LineEventArgs& args) override;
     void OnLineInserted(LineEventArgs& args) override;
     int LineNumberFieldLength() const override { return numLineNumberDigits + 1; }
-    void SetLineNumberFieldLength(int lineCount) override { numLineNumberDigits = soulng::util::Log10(lineCount + 1); }
+    void SetLineNumberFieldLength(int lineCount) override { numLineNumberDigits = util::Log10(lineCount + 1); }
     TokenStyle GetTokenStyle(SourceCodeTokenKind tokenKind) const;
     Font* GetOrInsertFont(const std::string& fontFamilyName, float fontSize, FontStyle fontStyle);
     SourceCodeTextStyle& GetOrInsertTextStyle(SourceCodeTokenKind tokenKind);
@@ -124,4 +124,5 @@ private:
     std::map<SourceCodeFont, Font*> fontMap;
     std::vector<std::unique_ptr<Font>> fonts;
 };
+
 } // wing

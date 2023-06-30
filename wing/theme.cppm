@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.theme;
-//#include <wing/Graphics.hpp>
+
 import wing.graphics;
 import std.core;
 
@@ -48,4 +48,5 @@ std::string GetBitmapName(const std::string& itemName);
 std::string GetCursorName(const std::string& itemName);
 void ThemeInit();
 void ThemeDone();
-} // namespace wing
+
+} // wing

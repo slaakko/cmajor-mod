@@ -1,13 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
-export module wing.boardered.control;
-/*
-#include <wing/Control.hpp>
-#include <wing/Container.hpp>
-*/
+export module wing.bordered.control;
+
 import wing.control;
 import wing.container;
 import wing.color;
@@ -116,4 +113,5 @@ private:
     Color threeDInnerLeftTopEdgeColor;
     Color threeDInnerRightBottomEdgeColor;
 };
+
 } // wing

@@ -47,8 +47,6 @@ int32_t Read(int32_t hostFileId, Block* block);
 int32_t Write(int32_t hostFileId, Block* block);
 IORequest* GetRequest(int32_t requestId);
 void DeleteRequest(int32_t requestId);
-void InitIOManager();
-void DoneIOManager();
 void StartIOManager();
 void StopIOManager();
 void SetIOManagerMachine(cmajor::systemx::machine::Machine* machine);

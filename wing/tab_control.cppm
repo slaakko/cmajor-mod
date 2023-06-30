@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.tab.control;
-//#include <wing/Panel.hpp>
+
 import wing.base;
 import wing.color;
 import wing.container;
@@ -250,4 +250,5 @@ private:
     std::string key;
     Tab tab;
 };
+
 } // wing

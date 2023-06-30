@@ -1,10 +1,10 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module wing.environment;
-//#include <wing/Registry.hpp>
+
 import wing.registry;
 import std.core;
 
@@ -25,4 +25,5 @@ void AppendPathDirectory(const std::string& directory);
 void RemovePathDirectory(const std::string& directory);
 
 void BroadcastEnvironmentChangedMessage();
+
 } // wing

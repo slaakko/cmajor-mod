@@ -1,13 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module;
 #include <Windows.h>
 
 export module wing.clipboard;
-//#include <wing/Wing.hpp>
-//import wing.wing;
+
 import std.core;
 
 export namespace wing {
@@ -68,4 +68,5 @@ public:
 private:
     HWND handle;
 };
+
 } // wing

@@ -1,13 +1,13 @@
 // =================================
-// Copyright (c) 2022 Seppo Laakko
+// Copyright (c) 2023 Seppo Laakko
 // Distributed under the MIT license
 // =================================
+
 module;
 #include <Windows.h>
 
 export module wing.cursor;
-//#include <wing/ResourceManager.hpp>
-//#include <Windows.h>
+
 import wing.resource.manager;
 import std.core;
 
@@ -53,4 +53,5 @@ private:
 Cursor LoadStandardCursor(StandardCursorId standardCursorId);
 Cursor LoadCursorByName(const std::string& cursorName);
 void SetCursor(const Cursor& cursor);
+
 } // wing
