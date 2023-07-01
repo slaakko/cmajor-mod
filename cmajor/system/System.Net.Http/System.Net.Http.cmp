@@ -3,6 +3,7 @@ target=library;
 reference <../System.Net.Sockets/System.Net.Sockets.cmp>;
 reference <../System.IO.Compression/System.IO.Compression.cmp>;
 reference <../System.Lex/System.Lex.cmp>;
+reference <../System.Net.Bmp/System.Net.Bmp.cmp>;
 reference <../System.Parsing/System.Parsing.cmp>;
 source <ChunkedBodyReader.cm>;
 source <Http.cm>;
