@@ -165,8 +165,8 @@ public:
     virtual uint64_t GetSizeInBits(void* irType) = 0;
     virtual uint64_t GetAlignmentInBits(void* irType) = 0;
     virtual void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) = 0;
-    virtual void* GetArrayBeginAddress(void* arrayPtr) = 0;
-    virtual void* GetArrayEndAddress(void* arrayPtr, uint64_t size) = 0;
+    virtual void* GetArrayBeginAddress(void* arrayPtr, void* elementType) = 0;
+    virtual void* GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size) = 0;
     virtual void* CreateBasicBlock(const std::string& name) = 0;
     virtual void* CreateIncludeBasicBlockInstruction(void* basicBlock) = 0;
     virtual void PushParentBlock() = 0;
@@ -178,7 +178,7 @@ public:
     virtual void* CurrentBasicBlock() const = 0;
     virtual void SetCurrentBasicBlock(void* basicBlock) = 0;
     virtual void CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasicBlock) = 0;
-    virtual void* CreateArrayIndexAddress(void* arrayPtr, void* index) = 0;
+    virtual void* CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index) = 0;
     virtual void CreateStore(void* value, void* ptr) = 0;
     virtual void* CreateLoad(void* ptr) = 0;
     virtual void* CreateAdd(void* left, void* right) = 0;
@@ -259,14 +259,15 @@ public:
     virtual void* CreateCatchPad(void* parentPad, const std::vector<void*>& args) = 0;
     virtual void* CreateClassDIType(void* classPtr) = 0;
     virtual void* CreateCall(void* callee, const std::vector<void*>& args) = 0;
-    virtual void* CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) = 0;
-    virtual void* CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) = 0;
-    virtual void* CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) = 0;
-    virtual void* CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) = 0;
+    virtual void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, 
+        const soul::ast::SourcePos& sourcePos) = 0;
     virtual void* DIBuilder() = 0;
     virtual void SetCurrentDIBuilder(void* diBuilder_) = 0;
     virtual void* GetObjectFromClassDelegate(void* classDelegatePtr) = 0;
-    virtual void* GetDelegateFromClassDelegate(void* classDelegatePtr) = 0;
+    virtual void* GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType) = 0;
     virtual void* GetObjectFromInterface(void* interfaceTypePtr) = 0;
     virtual void* GetObjectPtrFromInterface(void* interfaceTypePtr) = 0;
     virtual void* GetImtPtrPtrFromInterface(void* interfaceTypePtr) = 0;
@@ -280,7 +281,7 @@ public:
     virtual void* GetImt(void* imtArray, int32_t interfaceIndex) = 0;
     virtual void* GetIrObject(void* symbol) const = 0;
     virtual void SetIrObject(void* symbol, void* irObject) = 0;
-    virtual void* GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex) = 0;
+    virtual void* GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType) = 0;
     virtual void* SizeOf(void* ptrType) = 0;
     virtual void SetLineNumber(int32_t lineNumber) = 0;
     virtual void SaveObjectPointer(void* objectPointer_) = 0;
@@ -289,7 +290,7 @@ public:
     virtual void* GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset) = 0;
     virtual void* GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset) = 0;
     virtual void* ComputeAddress(void* ptr, void* index) = 0;
-    virtual void* CreatePtrDiff(void* left, void* right) = 0;
+    virtual void* CreatePtrDiff(void* elementType, void* left, void* right) = 0;
     virtual uint32_t GetPrivateFlag() = 0;
     virtual uint32_t GetProtectedFlag() = 0;
     virtual uint32_t GetPublicFlag() = 0;

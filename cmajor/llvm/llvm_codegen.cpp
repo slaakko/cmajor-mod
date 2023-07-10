@@ -93,12 +93,12 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     {
         emitter->EmitIrText(boundCompileUnit.LLFilePath());
     }
-    emitter->VerifyModule();
-    emitter->Compile(boundCompileUnit.ObjectFilePath());
     if (debugInfo)
     {
         emitter->EndDebugInfo();
     }
+    emitter->VerifyModule();
+    emitter->Compile(boundCompileUnit.ObjectFilePath());
 }
 
 void LLvmCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)
@@ -1012,7 +1012,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptySta
     }
     else
     {
-        void* callInst = emitter->CreateCallInst(doNothingFun, args, bundles, boundEmptyStatement.GetSourcePos());
+        void* callInst = emitter->CreateCallInst(doNothingFunType, doNothingFun, args, bundles, boundEmptyStatement.GetSourcePos());
     }
 }
 
@@ -1030,7 +1030,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex);
+    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex, emitter->GetIrTypeForVoidPtrType());
     void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }

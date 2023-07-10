@@ -295,7 +295,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         {
             std::vector<void*> bundles;
             bundles.push_back(CurrentPad()->value);
-            handleThisEx = Emitter()->CreateCallInst(handleException, handleExceptionArgs, bundles, boundCatchStatement->GetSourcePos());
+            handleThisEx = Emitter()->CreateCallInst(handleExceptionFunctionType, handleException, handleExceptionArgs, bundles, boundCatchStatement->GetSourcePos());
         }
         void* nextHandlerTarget = nullptr;
         if (i < n - 1)
@@ -324,7 +324,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
     rethrowArgs.push_back(Emitter()->CreateDefaultIrValueForVoidPtrType());
     std::vector<void*> bundles;
     bundles.push_back(CurrentPad()->value);
-    Emitter()->CreateCallInstToBasicBlock(cxxThrowFunction, rethrowArgs, bundles, resumeTarget, soul::ast::SourcePos());
+    Emitter()->CreateCallInstToBasicBlock(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles, resumeTarget, soul::ast::SourcePos());
     Emitter()->CreateBr(nextTarget);
     SetCurrentPad(parentPad);
     Emitter()->SetCurrentBasicBlock(nextTarget);
@@ -354,7 +354,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
     rethrowArgs.push_back(Emitter()->CreateDefaultIrValueForVoidPtrType());
     std::vector<void*> bundles;
     bundles.push_back(CurrentPad()->value);
-    void* callInst = Emitter()->CreateCallInst(cxxThrowFunction, rethrowArgs, bundles, boundRethrowStatement.GetSourcePos());
+    void* callInst = Emitter()->CreateCallInst(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles, boundRethrowStatement.GetSourcePos());
 }
 
 void* WindowsCodeGenerator::GetPersonalityFunction() const

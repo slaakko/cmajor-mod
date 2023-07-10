@@ -955,7 +955,8 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateCallInst(callee, args, bundles, sourcePos));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos));
             }
         }
         else
@@ -978,11 +979,13 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateInvoke(callee, nextBlock, unwindBlock, args));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1000,7 +1003,8 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             else
             {
-                emitter.CreateCallInst(callee, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
             }
         }
         else
@@ -1023,11 +1027,13 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             }
             if (currentPad == nullptr)
             {
-                emitter.CreateInvoke(callee, nextBlock, unwindBlock, args);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1098,7 +1104,8 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateCallInst(callee, args, bundles, sourcePos));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos));
             }
         }
         else
@@ -1121,11 +1128,13 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateInvoke(callee, nextBlock, unwindBlock, args));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1143,7 +1152,8 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             else
             {
-                emitter.CreateCallInst(callee, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
             }
         }
         else
@@ -1166,11 +1176,13 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             }
             if (currentPad == nullptr)
             {
-                emitter.CreateInvoke(callee, nextBlock, unwindBlock, args);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {

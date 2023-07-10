@@ -191,7 +191,8 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateCallInst(callee, args, bundles, sourcePos));
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos));
             }
         }
         else
@@ -214,11 +215,13 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateInvoke(callee, nextBlock, unwindBlock, args));
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                emitter.Stack().Push(emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos));
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -236,7 +239,8 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             else
             {
-                emitter.CreateCallInst(callee, args, bundles, sourcePos);
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
             }
         }
         else
@@ -255,11 +259,13 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             }
             if (currentPad == nullptr)
             {
-                emitter.CreateInvoke(callee, nextBlock, unwindBlock, args);
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
             emitter.SetCurrentBasicBlock(nextBlock);
         }

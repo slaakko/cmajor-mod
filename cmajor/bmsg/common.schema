@@ -1,0 +1,15 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.common.message;
+
+namespace common
+{
+    class SourceLoc
+    {
+        string path;
+        int line;
+    }
+}

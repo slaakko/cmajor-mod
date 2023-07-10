@@ -894,8 +894,21 @@ std::string Module::GetFilePath(int32_t fileIndex) const
     {
         return std::string();
     }
-    // return fileTable.GetFilePath(fileIndex);
-    return fileMap.GetFilePath(fileIndex);
+    std::string filePath = fileMap.GetFilePath(fileIndex);
+    if (filePath.empty())
+    {
+        return fileTable.GetFilePath(fileIndex);
+    }
+    return filePath;
+}
+
+std::string Module::GetErrorLines(const soul::ast::SourcePos& sourcePos) 
+{
+    if (sourcePos.file == -1 || sourcePos.line == 0)
+    {
+        return std::string();
+    }
+    return util::ToUtf8(fileMap.GetFileLine(sourcePos.file, sourcePos.line)) + "\n" + std::string(sourcePos.col - 1, ' ') + std::string(1, '^');
 }
 
 void Module::Write(SymbolWriter& writer)

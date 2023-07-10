@@ -960,7 +960,7 @@ void Window::OnWindowStateChanged()
     windowStateChanged.Fire();
 }
 
-void Window::OnWindowClosing(CancelArgs& args)
+void Window::OnWindowClosing(wing::CancelArgs& args)
 {
     windowClosing.Fire(args);
 }

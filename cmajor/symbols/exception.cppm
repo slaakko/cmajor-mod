@@ -5,6 +5,7 @@
 
 export module cmajor.symbols.exception;
 
+import cmajor.build.server.message;
 import std.core;
 import soul.ast.source.pos;
 import soul.xml.dom;
@@ -37,11 +38,13 @@ public:
     const soul::ast::SourcePos& Defined() const { return defined; }
     const util::uuid& DefinedModuleId() const { return definedModuleId; }
     const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& References() const { return references; }
-    std::unique_ptr<util::JsonValue> ToJson() const;
-    void AddToDiagnosticsElement(soul::xml::Element* diagnosticsElement) const;
+    void SetProject(const std::string& projectName_);
+    const std::string& ProjectName() const { return projectName; }
+    std::vector<bs::CompileError> ToErrors() const;
 private:
     std::string what;
     std::string message;
+    std::string projectName;
     soul::ast::SourcePos defined;
     util::uuid definedModuleId;
     std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;

@@ -16,7 +16,7 @@ struct SourcePos
     SourcePos(int file_, int line_, int col_) : pos(-1), file(file_), line(line_), col(col_) {}
     SourcePos(int64_t pos_, int line_, int col_) : pos(pos_), file(-1), line(line_), col(col_) {}
     SourcePos(int64_t pos_, int file_, int line_, int col_) : pos(pos_), file(file_), line(line_), col(col_) {}
-    bool IsValid() const { return file != -1 && line != 0; }
+    bool IsValid() const { return line != 0; }
     int64_t pos;
     int file;
     int line;

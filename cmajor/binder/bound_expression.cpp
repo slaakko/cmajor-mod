@@ -216,7 +216,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
         classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* ptr = emitter.Stack().Pop();
-    void* memberVariablePtr = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex());
+    void* memberVariablePtr = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex(), memberVariableSymbol->GetType()->IrType(emitter));
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Push(memberVariablePtr);
@@ -267,7 +267,7 @@ void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
             classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
         }
         void* ptr = emitter.Stack().Pop();
-        void* memberVariablePtr = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex());
+        void* memberVariablePtr = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex(), memberVariableSymbol->GetType()->IrType(emitter));
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
             void* ptr = emitter.CreateLoad(memberVariablePtr);

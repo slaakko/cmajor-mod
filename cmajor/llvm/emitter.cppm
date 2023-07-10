@@ -126,8 +126,8 @@ public:
     uint64_t GetSizeInBits(void* irType) override;
     uint64_t GetAlignmentInBits(void* irType) override;
     void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) override;
-    void* GetArrayBeginAddress(void* arrayPtr) override;
-    void* GetArrayEndAddress(void* arrayPtr, uint64_t size) override;
+    void* GetArrayBeginAddress(void* arrayPtr, void* elementType) override;
+    void* GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size) override;
     void* CreateBasicBlock(const std::string& name) override;
     void* CreateIncludeBasicBlockInstruction(void* basicBlock) override;
     void PushParentBlock() override;
@@ -137,7 +137,7 @@ public:
     int GetBasicBlockId(void* basicBlock) override;
     void CreateBr(void* targetBasicBlock) override;
     void CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasicBlock) override;
-    void* CreateArrayIndexAddress(void* arrayPtr, void* index) override;
+    void* CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index) override;
     void CreateStore(void* value, void* ptr) override;
     void* CreateLoad(void* ptr) override;
     void* CreateAdd(void* left, void* right) override;
@@ -193,12 +193,13 @@ public:
     void* CreateGlobalWStringPtr(const std::u16string& name) override;
     void* CreateGlobalUStringPtr(const std::u32string& name) override;
     void* CreateCall(void* callee, const std::vector<void*>& args) override;
-    void* CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) override;
-    void* CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) override;
-    void* CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
-    void* CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
+    void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, 
+        const soul::ast::SourcePos& sourcePos) override;
     void* GetObjectFromClassDelegate(void* classDelegatePtr) override;
-    void* GetDelegateFromClassDelegate(void* classDelegatePtr) override;
+    void* GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType) override;
     void* GetObjectFromInterface(void* interfaceTypePtr) override;
     void* GetObjectPtrFromInterface(void* interfaceTypePtr) override;
     void* GetImtPtrPtrFromInterface(void* interfaceTypePtr) override;
@@ -208,12 +209,12 @@ public:
     void* GetMethodPtr(void* vmtPtr, int32_t vmtIndex) override;
     void* GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset) override;
     void* GetImt(void* imtArray, int32_t interfaceIndex) override;
-    void* GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex) override;
+    void* GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType) override;
     void* SizeOf(void* ptrType) override;
     void* GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset) override;
     void* GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset) override;
     void* ComputeAddress(void* ptr, void* index) override;
-    void* CreatePtrDiff(void* left, void* right) override;
+    void* CreatePtrDiff(void* elementType, void* left, void* right) override;
     uint32_t GetPrivateFlag() override;
     uint32_t GetProtectedFlag() override;
     uint32_t GetPublicFlag() override;

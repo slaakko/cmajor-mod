@@ -1331,7 +1331,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVm
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex);
+    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex, emitter->GetIrTypeForVoidPtrType());
     void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }

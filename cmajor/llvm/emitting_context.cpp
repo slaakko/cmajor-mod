@@ -9,9 +9,8 @@ module;
 #include <llvm/PassRegistry.h>
 #include <llvm/InitializePasses.h>
 #include <llvm/Support/CommandLine.h>
-#include <llvm/Support/TargetRegistry.h>
 #include <llvm/IR/Module.h>
-#include <llvm/ADT/Triple.h>
+#include "llvm/MC/TargetRegistry.h"
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/CodeGen.h>
@@ -43,18 +42,18 @@ LLvmEmittingContextImpl::LLvmEmittingContextImpl(int optimizationLevel) : passRe
 
     initializeLoopStrengthReducePass(*passRegistry);
     initializeLowerIntrinsicsPass(*passRegistry);
-    initializeEntryExitInstrumenterPass(*passRegistry);
-    initializePostInlineEntryExitInstrumenterPass(*passRegistry);
+    //initializeEntryExitInstrumenterPass(*passRegistry);
+    //initializePostInlineEntryExitInstrumenterPass(*passRegistry);
     initializeUnreachableBlockElimLegacyPassPass(*passRegistry);
     initializeConstantHoistingLegacyPassPass(*passRegistry);
     initializeScalarOpts(*passRegistry);
     initializeVectorization(*passRegistry);
     initializeScalarizeMaskedMemIntrinLegacyPassPass(*passRegistry);
     initializeExpandReductionsPass(*passRegistry);
-    initializeHardwareLoopsPass(*passRegistry);
+    //initializeHardwareLoopsPass(*passRegistry);
     initializeTransformUtils(*passRegistry);
 
-    ::llvm::cl::AddExtraVersionPrinter(::llvm::TargetRegistry::printRegisteredTargetsForVersion);
+    //::llvm::cl::AddExtraVersionPrinter(::llvm::TargetRegistry::printRegisteredTargetsForVersion);
 
 #ifdef _WIN32
     targetTriple = "x86_64-pc-windows-msvc";

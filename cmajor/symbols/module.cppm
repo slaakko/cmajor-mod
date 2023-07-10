@@ -57,7 +57,8 @@ const uint8_t moduleFormat_15 = uint8_t('F');
 const uint8_t moduleFormat_16 = uint8_t('G');
 const uint8_t moduleFormat_17 = uint8_t('H');
 const uint8_t moduleFormat_18 = uint8_t('I');
-const uint8_t currentModuleFormat = moduleFormat_18;
+const uint8_t moduleFormat_19 = uint8_t('J');
+const uint8_t currentModuleFormat = moduleFormat_19;
 
 enum class ModuleFlags : uint8_t
 {
@@ -229,6 +230,7 @@ public:
     std::string GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext);
     std::string GetParamHelpList(const std::string& sourceFilePath, int symbolIndex);
     soul::lexer::FileMap& FileMap() { return fileMap; }
+    std::string GetErrorLines(const soul::ast::SourcePos& sourcePos);
 private:
     uint8_t format;
     ModuleFlags flags;

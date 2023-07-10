@@ -17,6 +17,7 @@ module;
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Config/llvm-config.h>
 #include <llvm/Support/SourceMgr.h>
+#include <llvm/Passes/PassBuilder.h>
 
 module cmajor.llvm.emitter;
 
@@ -447,7 +448,12 @@ void* LLvmEmitter::CreateIrValueForWString(void* wstringConstant)
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(wstringConstant), indeces);
+#else
+    ::llvm::Value* value = static_cast<::llvm::Value*>(wstringConstant);
+    return impl->builder.CreateGEP(value->getType(), value, indeces);
+#endif 
 }
 
 void* LLvmEmitter::CreateIrValueForUString(void* ustringConstant)
@@ -455,7 +461,12 @@ void* LLvmEmitter::CreateIrValueForUString(void* ustringConstant)
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(ustringConstant), indeces);
+#else
+    ::llvm::Value* value = static_cast<::llvm::Value*>(ustringConstant);
+    return impl->builder.CreateGEP(value->getType(), value, indeces);
+#endif 
 }
 
 void* LLvmEmitter::CreateIrValueForConstantArray(void* arrayIrType, const std::vector<void*>& elements, const std::string& prefix)
@@ -483,7 +494,13 @@ void* LLvmEmitter::CreateIrValueForUuid(void* uuidConstant)
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateBitCast(impl->builder.CreateGEP(static_cast<::llvm::Value*>(uuidConstant), indeces), impl->builder.getInt8PtrTy());
+#else
+    ::llvm::Value* value = static_cast<::llvm::Value*>(uuidConstant);
+    ::llvm::Value* gep = impl->builder.CreateGEP(value->getType(), value, indeces);
+    return impl->builder.CreateBitCast(gep, impl->builder.getInt8PtrTy());
+#endif
 }
 
 void LLvmEmitter::CreateBr(void* targetBasicBlock)
@@ -496,12 +513,16 @@ void LLvmEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasi
     impl->builder.CreateCondBr(static_cast<::llvm::Value*>(cond), static_cast<::llvm::BasicBlock*>(trueBasicBlock), static_cast<::llvm::BasicBlock*>(falseBasicBlock));
 }
 
-void* LLvmEmitter::CreateArrayIndexAddress(void* arrayPtr, void* index)
+void* LLvmEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
     elementIndeces.push_back(static_cast<::llvm::Value*>(index));
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#else
+    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#endif
 }
 
 void LLvmEmitter::CreateStore(void* value, void* ptr)
@@ -511,7 +532,8 @@ void LLvmEmitter::CreateStore(void* value, void* ptr)
 
 void* LLvmEmitter::CreateLoad(void* ptr)
 {
-    return impl->builder.CreateLoad(static_cast<::llvm::Value*>(ptr));
+    ::llvm::Type* type = static_cast<::llvm::Value*>(ptr)->getType();
+    return impl->builder.CreateLoad(type, static_cast<::llvm::Value*>(ptr));
 }
 
 void* LLvmEmitter::CreateAdd(void* left, void* right)
@@ -1103,21 +1125,29 @@ void LLvmEmitter::ResetCurrentDebugLocation()
     impl->builder.SetCurrentDebugLocation(impl->currentDebugLocation);
 }
 
-void* LLvmEmitter::GetArrayBeginAddress(void* arrayPtr)
+void* LLvmEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
     elementIndeces.push_back(impl->builder.getInt64(0));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#else
+    ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#endif 
     return beginPtr;
 }
 
-void* LLvmEmitter::GetArrayEndAddress(void* arrayPtr, uint64_t size)
+void* LLvmEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
     elementIndeces.push_back(impl->builder.getInt64(size));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#else
+    ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+#endif 
     return endPtr;
 }
 
@@ -1257,7 +1287,7 @@ void* LLvmEmitter::CreateCall(void* callee, const std::vector<void*>& args)
 #endif
 }
 
-void* LLvmEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos)
+void* LLvmEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos)
 {
     std::vector<::llvm::Value*> arguments;
     for (void* arg : args)
@@ -1272,9 +1302,14 @@ void* LLvmEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, 
         bundleDefs.push_back(::llvm::OperandBundleDef("funclet", inputs));
     }
 #if (LLVM_VERSION_MAJOR >= 11)
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::CallInst* callInst = ::llvm::CallInst::Create(::llvm::cast<::llvm::FunctionType>(
         ::llvm::cast<::llvm::PointerType>(static_cast<::llvm::Value*>(callee)->getType())->getElementType()),
         static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(CurrentBasicBlock()));
+#else
+    ::llvm::CallInst* callInst = ::llvm::CallInst::Create(static_cast<::llvm::FunctionType*>(functionType),
+        static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(CurrentBasicBlock()));
+#endif
 #else
     ::llvm::CallInst* callInst = ::llvm::CallInst::Create(static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(CurrentBasicBlock()));
 #endif
@@ -1285,7 +1320,7 @@ void* LLvmEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, 
     return callInst;
 }
 
-void* LLvmEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos)
+void* LLvmEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos)
 {
     std::vector<::llvm::Value*> arguments;
     for (void* arg : args)
@@ -1300,9 +1335,14 @@ void* LLvmEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<vo
         bundleDefs.push_back(::llvm::OperandBundleDef("funclet", inputs));
     }
 #if (LLVM_VERSION_MAJOR >= 11)
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::CallInst* callInst = ::llvm::CallInst::Create(::llvm::cast<::llvm::FunctionType>(
         ::llvm::cast<::llvm::PointerType>(static_cast<::llvm::Value*>(callee)->getType())->getElementType()),
         static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(basicBlock));
+#else
+    ::llvm::CallInst* callInst = ::llvm::CallInst::Create(static_cast<::llvm::FunctionType*>(functionType),
+        static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(basicBlock));
+#endif
 #else
     ::llvm::CallInst* callInst = ::llvm::CallInst::Create(static_cast<::llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(basicBlock));
 #endif
@@ -1313,7 +1353,7 @@ void* LLvmEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<vo
     return callInst;
 }
 
-void* LLvmEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
+void* LLvmEmitter::CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
 {
     std::vector<::llvm::Value*> arguments;
     for (void* arg : args)
@@ -1321,15 +1361,21 @@ void* LLvmEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBlo
         arguments.push_back(static_cast<::llvm::Value*>(arg));
     }
 #if (LLVM_VERSION_MAJOR >= 11)
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateInvoke(::llvm::cast<::llvm::FunctionType>(
         ::llvm::cast<::llvm::PointerType>(static_cast<::llvm::Value*>(callee)->getType())->getElementType()),
         static_cast<::llvm::Value*>(callee), static_cast<::llvm::BasicBlock*>(normalBlock), static_cast<::llvm::BasicBlock*>(unwindBlock), arguments);
+#else
+    return impl->builder.CreateInvoke(static_cast<::llvm::FunctionType*>(functionType), static_cast<::llvm::Value*>(callee),
+        static_cast<::llvm::BasicBlock*>(normalBlock), static_cast<::llvm::BasicBlock*>(unwindBlock), arguments);
+
+#endif
 #else
     return impl->builder.CreateInvoke(static_cast<::llvm::Value*>(callee), static_cast<::llvm::BasicBlock*>(normalBlock), static_cast<::llvm::BasicBlock*>(unwindBlock), arguments);
 #endif
 }
 
-void* LLvmEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
+void* LLvmEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
     const soul::ast::SourcePos& sourcePos)
 {
     std::vector<::llvm::Value*> arguments;
@@ -1345,10 +1391,16 @@ void* LLvmEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwin
         bundleDefs.push_back(::llvm::OperandBundleDef("funclet", inputs));
     }
 #if (LLVM_VERSION_MAJOR >= 11)
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::InvokeInst* invokeInst = ::llvm::InvokeInst::Create(::llvm::cast<::llvm::FunctionType>(
         ::llvm::cast<::llvm::PointerType>(static_cast<::llvm::Value*>(callee)->getType())->getElementType()),
         static_cast<::llvm::Value*>(callee), static_cast<::llvm::BasicBlock*>(normalBlock), static_cast<::llvm::BasicBlock* > (unwindBlock),
         arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(CurrentBasicBlock()));
+#else
+    ::llvm::InvokeInst* invokeInst = ::llvm::InvokeInst::Create(static_cast<::llvm::FunctionType*>(functionType),
+        static_cast<::llvm::Value*>(callee), static_cast<::llvm::BasicBlock*>(normalBlock), static_cast<::llvm::BasicBlock*> (unwindBlock),
+        arguments, bundleDefs, "", static_cast<::llvm::BasicBlock*>(CurrentBasicBlock()));
+#endif
 #else
     ::llvm::InvokeInst* invokeInst = ::llvm::InvokeInst::Create(static_cast<::llvm::Value*>(callee), static_cast<::llvm::BasicBlock*>(normalBlock), 
         static_cast<::llvm::BasicBlock*>(unwindBlock),
@@ -1366,16 +1418,24 @@ void* LLvmEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
     objectIndeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* objectPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classDelegatePtr), objectIndeces);
+#else
+    ::llvm::Value* objectPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(classDelegatePtr), objectIndeces);
+#endif
     return objectPtr;
 }
 
-void* LLvmEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr)
+void* LLvmEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
 {
     ArgVector delegateIndeces;
     delegateIndeces.push_back(impl->builder.getInt32(0));
     delegateIndeces.push_back(impl->builder.getInt32(1));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* delegatePtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classDelegatePtr), delegateIndeces);
+#else
+    ::llvm::Value* delegatePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(delegateType), static_cast<::llvm::Value*>(classDelegatePtr), delegateIndeces);
+#endif
     return delegatePtr;
 }
 
@@ -1384,8 +1444,13 @@ void* LLvmEmitter::GetObjectFromInterface(void* interfaceTypePtr)
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
     objectIndeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
     ::llvm::Value* objectPtr = impl->builder.CreateLoad(objectPtrPtr);
+#else
+    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
+    ::llvm::Value* objectPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), objectPtrPtr);
+#endif
     return objectPtr;
 }
 
@@ -1394,7 +1459,11 @@ void* LLvmEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
     objectIndeces.push_back(impl->builder.getInt32(0));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
+#else
+    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
+#endif
     return objectPtrPtr;
 }
 
@@ -1403,7 +1472,11 @@ void* LLvmEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
     ArgVector interfaceIndeces;
     interfaceIndeces.push_back(impl->builder.getInt32(0));
     interfaceIndeces.push_back(impl->builder.getInt32(1));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
+#else
+    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
+#endif
     return interfacePtrPtr;
 }
 
@@ -1412,8 +1485,13 @@ void* LLvmEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
     ArgVector interfaceIndeces;
     interfaceIndeces.push_back(impl->builder.getInt32(0));
     interfaceIndeces.push_back(impl->builder.getInt32(1));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
     ::llvm::Value* interfacePtr = impl->builder.CreateLoad(interfacePtrPtr);
+#else
+    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
+    ::llvm::Value* interfacePtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), interfacePtrPtr);
+#endif
     ::llvm::Value* imtPtr = impl->builder.CreateBitCast(interfacePtr, ::llvm::PointerType::get(impl->builder.getInt8PtrTy(), 0));
     return imtPtr;
 }
@@ -1422,8 +1500,13 @@ void* LLvmEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* i
 {
     ArgVector methodIndeces;
     methodIndeces.push_back(impl->builder.getInt32(methodIndex));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* methodPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(imtPtr), methodIndeces);
     ::llvm::Value* methodPtr = impl->builder.CreateLoad(methodPtrPtr);
+#else
+    ::llvm::Value* methodPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(imtPtr), methodIndeces);
+    ::llvm::Value* methodPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), methodPtrPtr);
+#endif
     ::llvm::Value* callee = impl->builder.CreateBitCast(methodPtr, ::llvm::PointerType::get(static_cast<::llvm::Type*>(interfaceMethodType), 0));
     return callee;
 }
@@ -1433,8 +1516,14 @@ void* LLvmEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrTyp
     ArgVector vmtPtrIndeces;
     vmtPtrIndeces.push_back(impl->builder.getInt32(0));
     vmtPtrIndeces.push_back(impl->builder.getInt32(vmtPtrIndex));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* vmtPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(thisPtr), vmtPtrIndeces);
-    void* vmtPtr = impl->builder.CreateBitCast(impl->builder.CreateLoad(vmtPtrPtr), static_cast<::llvm::Type*>(vmtPtrType));
+    ::llvm::Value* loadedVmtPtr = impl->builder.CreateLoad(vmtPtrPtr);
+#else
+    ::llvm::Value* vmtPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(thisPtr), vmtPtrIndeces);
+    ::llvm::Value* loadedVmtPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), vmtPtrPtr);
+#endif
+    void* vmtPtr = impl->builder.CreateBitCast(loadedVmtPtr, static_cast<::llvm::Type*>(vmtPtrType));
     return vmtPtr;
 }
 
@@ -1443,8 +1532,13 @@ void* LLvmEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
     ArgVector funPtrIndeces;
     funPtrIndeces.push_back(impl->builder.getInt32(0));
     funPtrIndeces.push_back(impl->builder.getInt32(vmtIndex));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* funPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtPtr), funPtrIndeces);
     void* funAsVoidPtr = impl->builder.CreateLoad(funPtrPtr);
+#else
+    ::llvm::Value* funPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(vmtPtr), funPtrIndeces);
+    void* funAsVoidPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), funPtrPtr);
+#endif
     return funAsVoidPtr;
 }
 
@@ -1453,9 +1547,17 @@ void* LLvmEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
     ArgVector imtsArrayIndeces;
     imtsArrayIndeces.push_back(impl->builder.getInt32(0));
     imtsArrayIndeces.push_back(impl->builder.getInt32(imtsVmtIndexOffset));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imtsArrayPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
+#else
+    ::llvm::Value* imtsArrayPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
+#endif
     ::llvm::Value* imtsArrayPtr = impl->builder.CreateBitCast(imtsArrayPtrPtr, ::llvm::PointerType::get(::llvm::PointerType::get(impl->builder.getInt8PtrTy(), 0), 0));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imtArray = impl->builder.CreateLoad(imtsArrayPtr);
+#else
+    ::llvm::Value* imtArray = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), imtsArrayPtr);
+#endif
     return imtArray;
 }
 
@@ -1463,24 +1565,40 @@ void* LLvmEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
 {
     ArgVector imtArrayIndeces;
     imtArrayIndeces.push_back(impl->builder.getInt32(interfaceIndex));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imtArrayPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(imtArray), imtArrayIndeces);
+#else
+    ::llvm::Value* imtArrayPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(imtArray), imtArrayIndeces);
+#endif
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imt = impl->builder.CreateLoad(imtArrayPtr);
+#else
+    ::llvm::Value* imt = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), imtArrayPtr);
+#endif
     return imt;
 }
 
-void* LLvmEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex)
+void* LLvmEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType)
 {
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(memberVariableLayoutIndex));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* memberVariablePtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classPtr), indeces);
+#else
+    ::llvm::Value* memberVariablePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(memberVariableType), static_cast<::llvm::Value*>(classPtr), indeces);
+#endif
     return memberVariablePtr;
 }
 
 void* LLvmEmitter::SizeOf(void* ptrType)
 {
     void* nullPtr = CreateDefaultIrValueForPtrType(static_cast<::llvm::Type*>(ptrType));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* gep = impl->builder.CreateGEP(static_cast<::llvm::Value*>(nullPtr), impl->builder.getInt64(1));
+#else
+    ::llvm::Value* gep = impl->builder.CreateGEP(impl->builder.getInt64Ty(), static_cast<::llvm::Value*>(nullPtr), impl->builder.getInt64(1));
+#endif
     ::llvm::Value* size = impl->builder.CreatePtrToInt(gep, impl->builder.getInt64Ty());
     return size;
 }
@@ -1490,7 +1608,11 @@ void* LLvmEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(classIdVmtIndexOffset));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* classIdPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtPtr), indeces);
+#else
+    ::llvm::Value* classIdPtr = impl->builder.CreateGEP(impl->builder.getInt64Ty(), static_cast<::llvm::Value*>(vmtPtr), indeces);
+#endif
     return classIdPtr;
 }
 
@@ -1499,19 +1621,34 @@ void* LLvmEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
     indeces.push_back(impl->builder.getInt32(classNameVmtIndexOffset));
+#if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* classNamePtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtPtr), indeces);
     ::llvm::Value* className = impl->builder.CreateLoad(classNamePtr);
+#else 
+    ::llvm::Type* charPtrPtrType = static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForPtrType(GetIrTypeForChar())));
+    ::llvm::Value* classNamePtr = impl->builder.CreateGEP(charPtrPtrType, static_cast<::llvm::Value*>(vmtPtr), indeces);
+    ::llvm::Type* charPtrType = static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForChar()));
+    ::llvm::Value* className = impl->builder.CreateLoad(charPtrType, classNamePtr);
+#endif
     return className;
 }
 
 void* LLvmEmitter::ComputeAddress(void* ptr, void* index)
 {
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(ptr), static_cast<::llvm::Value*>(index));
+#else
+    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(ptr), static_cast<::llvm::Value*>(index));
+#endif
 }
 
-void* LLvmEmitter::CreatePtrDiff(void* left, void* right)
+void* LLvmEmitter::CreatePtrDiff(void* elementType, void* left, void* right)
 {
+#if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreatePtrDiff(static_cast<::llvm::Value*>(left), static_cast<::llvm::Value*>(right));
+#else
+    return impl->builder.CreatePtrDiff(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(left), static_cast<::llvm::Value*>(right));
+#endif
 }
 
 uint32_t LLvmEmitter::GetPrivateFlag()
@@ -1745,9 +1882,60 @@ void LLvmEmitter::Compile(const std::string& objectFilePath)
 
 #else
 
+// TODO
+
 void LLvmEmitter::Compile(const std::string& objectFilePath)
 {
+    ::llvm::TargetMachine* targetMachine = static_cast<::llvm::TargetMachine*>(EmittingContext()->TargetMachine());
+    /*
+    ::llvm::ModuleAnalysisManager moduleAnalysisManager;
+    ::llvm::LoopAnalysisManager loopAnalysisManager;
+    ::llvm::FunctionAnalysisManager functionAnalysisManager;
+    ::llvm::CGSCCAnalysisManager codeGenAnalysisManager;
+    ::llvm::PassBuilder passBuilder(targetMachine);
+    passBuilder.registerModuleAnalyses(moduleAnalysisManager);
+    passBuilder.registerCGSCCAnalyses(codeGenAnalysisManager);
+    passBuilder.registerFunctionAnalyses(functionAnalysisManager);
+    passBuilder.registerLoopAnalyses(loopAnalysisManager);
+    passBuilder.crossRegisterProxies(loopAnalysisManager, functionAnalysisManager, codeGenAnalysisManager, moduleAnalysisManager);
+    ::llvm::OptimizationLevel optLevel;
+    switch (EmittingContext()->OptimizationLevel())
+    {
+        case 0:
+        {
+            optLevel = ::llvm::OptimizationLevel::O0;
+            break;
+        }
+        case 1:
+        {
+            optLevel = ::llvm::OptimizationLevel::O1;
+            break;
+        }
+        case 2:
+        {
+            optLevel = ::llvm::OptimizationLevel::O2;
+            break;
+        }
+        case 3:
+        {
+            optLevel = ::llvm::OptimizationLevel::O3;
+            break;
+        }
+    }
+    ::llvm::ModulePassManager modulePassManager = passBuilder.buildPerModuleDefaultPipeline(optLevel);
+    modulePassManager.run(*impl->module, moduleAnalysisManager);
+*/
 
+    std::error_code errorCode;
+    ::llvm::raw_fd_ostream objectFile(objectFilePath, errorCode);
+    ::llvm::legacy::PassManager codeGenPassManager;
+    bool failed = targetMachine->addPassesToEmitFile(codeGenPassManager, objectFile, nullptr, ::llvm::CGFT_ObjectFile);
+    if (failed)
+    {
+        throw std::runtime_error("LLVM emitter: cannot emit object code file '" + objectFilePath + "': addPassesToEmitFile failed: " +
+            util::PlatformStringToUtf8(errorCode.message()));
+    }
+    codeGenPassManager.run(*impl->module);
 }
 
 #endif
@@ -2025,8 +2213,7 @@ void* LLvmEmitter::CreateDIParameterVariable(const std::string& name, int index,
     ::llvm::DILocalVariable* paramVar = impl->diBuilder->createParameterVariable(static_cast<::llvm::DIScope*>(CurrentScope()), name, index, static_cast<::llvm::DIFile*>(
         GetDebugInfoForFile(sourcePos, moduleId)),
         sourcePos.line, static_cast<::llvm::DIType*>(irType));
-    ::llvm::SmallVector<int64_t, 13> expr; // todo
-    impl->diBuilder->insertDeclare(static_cast<::llvm::Value*>(allocaInst), paramVar, impl->diBuilder->createExpression(expr), GetDebugLocation(impl, sourcePos), 
+    impl->diBuilder->insertDeclare(static_cast<::llvm::Value*>(allocaInst), paramVar, impl->diBuilder->createExpression(), GetDebugLocation(impl, sourcePos),
         impl->builder.GetInsertBlock());
     return paramVar;
 }
@@ -2036,8 +2223,7 @@ void* LLvmEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast
     ::llvm::DILocalVariable* localVar = impl->diBuilder->createAutoVariable(static_cast<::llvm::DIScope*>(CurrentScope()), name, 
         static_cast<::llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)),
         sourcePos.line, static_cast<::llvm::DIType*>(irType));
-    ::llvm::SmallVector<int64_t, 13> expr; // todo
-    impl->diBuilder->insertDeclare(static_cast<::llvm::Value*>(allocaInst), localVar, impl->diBuilder->createExpression(expr), GetDebugLocation(impl, sourcePos), 
+    impl->diBuilder->insertDeclare(static_cast<::llvm::Value*>(allocaInst), localVar, impl->diBuilder->createExpression(), GetDebugLocation(impl, sourcePos), 
         impl->builder.GetInsertBlock());
     return localVar;
 }
@@ -2313,7 +2499,11 @@ void LLvmEmitter::MoveAllocaIntoBasicBlock(void* allocaInst, void* lastAlloca, v
         if (block->empty())
         {
             static_cast<::llvm::AllocaInst*>(allocaInst)->removeFromParent();
+#if (LLVM_VERSION_MAJOR < 16)
             block->getInstList().push_back(static_cast<::llvm::AllocaInst*>(allocaInst));
+#else
+            static_cast<::llvm::AllocaInst*>(allocaInst)->insertInto(block, block->end());
+#endif
         }
         else
         {

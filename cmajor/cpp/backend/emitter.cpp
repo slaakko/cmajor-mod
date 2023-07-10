@@ -641,12 +641,12 @@ void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
 {
 }
 
-void* CppEmitter::GetArrayBeginAddress(void* arrayPtr)
+void* CppEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), context->GetLongValue(0));
 }
 
-void* CppEmitter::GetArrayEndAddress(void* arrayPtr, uint64_t size)
+void* CppEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), context->GetLongValue(size));
 }
@@ -713,7 +713,7 @@ void CppEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasic
     context->CreateBranch(static_cast<cmajor::cpp::ir::Value*>(cond), static_cast<cmajor::cpp::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::cpp::ir::BasicBlock*>(falseBasicBlock));
 }
 
-void* CppEmitter::CreateArrayIndexAddress(void* arrayPtr, void* index)
+void* CppEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), static_cast<cmajor::cpp::ir::Value*>(index));
 }
@@ -1185,7 +1185,7 @@ void* CppEmitter::CreateCall(void* callee, const std::vector<void*>& args)
     return context->CreateCall(calleeValue, argInsts);
 }
 
-void* CppEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     for (void* arg : args)
@@ -1197,7 +1197,7 @@ void* CppEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, c
     return context->CreateCall(calleeValue, argInsts);
 }
 
-void* CppEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+void* CppEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     void* prevBasicBlock = context->GetCurrentBasicBlock();
@@ -1213,7 +1213,7 @@ void* CppEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<voi
     return callInst;
 }
 
-void* CppEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
+void* CppEmitter::CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     for (void* arg : args)
@@ -1227,9 +1227,10 @@ void* CppEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBloc
     return context->CreateInvoke(calleeValue, argInsts, normalBlockNext, unwindBlockNext);
 }
 
-void* CppEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* CppEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, 
+    const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
 {
-    return CreateInvoke(callee, normalBlock, unwindBlock, args);
+    return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }
 
 void* CppEmitter::DIBuilder()
@@ -1246,7 +1247,7 @@ void* CppEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
 }
 
-void* CppEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr)
+void* CppEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
 }
@@ -1345,7 +1346,7 @@ void CppEmitter::SetIrObject(void* symbol, void* irObject)
     irObjectMap[symbol] = static_cast<cmajor::cpp::ir::Value*>(irObject);
 }
 
-void* CppEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex)
+void* CppEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* membnerVariableType)
 {
     cmajor::cpp::ir::Value* clsPtr = static_cast<cmajor::cpp::ir::Value*>(classPtr);
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
@@ -1400,7 +1401,7 @@ void* CppEmitter::ComputeAddress(void* ptr, void* index)
     return context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(ptr), static_cast<cmajor::cpp::ir::Value*>(index));
 }
 
-void* CppEmitter::CreatePtrDiff(void* left, void* right)
+void* CppEmitter::CreatePtrDiff(void* elementType, void* left, void* right)
 {
     return context->CreatePtrDiff(static_cast<cmajor::cpp::ir::Value*>(left), static_cast<cmajor::cpp::ir::Value*>(right));
 }

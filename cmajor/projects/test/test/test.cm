@@ -1,0 +1,8 @@
+using System;
+
+int main()
+{
+    Console.WriteLine("foo");
+    return 0;
+}
+

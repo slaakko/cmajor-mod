@@ -45,14 +45,14 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
     std::string expandedMessage = title + ": " + errorMessage;
     if (sourcePos.IsValid())
     {
-        Module* module_ = GetModuleById(moduleId);
-        if (module_)
+        Module* module = GetModuleById(moduleId);
+        if (module)
         {
-            std::string fileName = module_->GetFilePath(sourcePos.file);
+            std::string fileName = module->GetFilePath(sourcePos.file);
             if (!fileName.empty())
             {
                 expandedMessage.append(" (file '" + fileName + "', line " + std::to_string(sourcePos.line) + ")");
-                // expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(sourcePos))); TODO
+                expandedMessage.append(":\n").append(util::ToUtf8(module->GetErrorLines(sourcePos))); 
             }
         }
     }
@@ -60,41 +60,43 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
     {
         if (!referenceSourcePos.first.IsValid()) continue;
         if (referenceSourcePos.first == sourcePos && referenceSourcePos.second == moduleId) continue;
-        Module* module_ = GetModuleById(referenceSourcePos.second);
-        if (module_)
+        Module* module = GetModuleById(referenceSourcePos.second);
+        if (module)
         {
-            std::string fileName = module_->GetFilePath(referenceSourcePos.first.file);
+            std::string fileName = module->GetFilePath(referenceSourcePos.first.file);
             if (!fileName.empty())
             {
                 expandedMessage.append("\nsee reference to file '" + fileName + "', line " + std::to_string(referenceSourcePos.first.line));
-                // expandedMessage.append(":\n").append(util::ToUtf8(module_->GetErrorLines(referenceSourcePos.first))); TODO
+                expandedMessage.append(":\n").append(util::ToUtf8(module->GetErrorLines(referenceSourcePos.first)));
             }
         }
     }
     return expandedMessage;
 }
 
-std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module_, const soul::ast::SourcePos& sourcePos)
+/*
+std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module, const soul::ast::SourcePos& sourcePos)
 {
     if (!sourcePos.IsValid()) return std::unique_ptr<util::JsonObject>();
-    if (!module_)
+    if (!module)
     {
         throw std::runtime_error("module not set");
     }
-    const std::string& fileName = module_->GetFilePath(sourcePos.file);
+    const std::string& fileName = module->GetFilePath(sourcePos.file);
     if (fileName.empty()) return std::unique_ptr<util::JsonObject>();
     std::unique_ptr<util::JsonObject> json(new util::JsonObject());
     json->AddField(U"file", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(fileName))));
     json->AddField(U"line", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(sourcePos.line)))));
-    // std::u32string text = module_->GetErrorLines(sourcePos); TODO
+    std::u32string text = module->GetErrorLines(sourcePos); 
     int32_t startCol = 0;
     int32_t endCol = 0;
-    // module_->GetColumns(sourcePos, startCol, endCol); TODO
     json->AddField(U"startCol", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(startCol)))));
     json->AddField(U"endCol", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(endCol)))));
-    // json->AddField(U"text", std::unique_ptr<util::JsonValue>(new util::JsonString(text))); TODO
+    json->AddField(U"text", std::unique_ptr<util::JsonValue>(new util::JsonString(text))); 
     return json;
 }
+*/
+
 /*
 std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const soul::ast::SourcePos& sourcePos)
 {
@@ -133,6 +135,7 @@ std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const
     return sourcePosElement;
 }
 */
+
 Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
     what(Expand(message_, defined_, definedModuleId_)), message(message_), defined(defined_), definedModuleId(definedModuleId_)
 {
@@ -152,6 +155,44 @@ Exception::Exception(const std::string& message_, const soul::ast::SourcePos& de
 Exception::~Exception()
 {
 }
+
+void Exception::SetProject(const std::string& projectName_)
+{
+    projectName = projectName_;
+    what = "project: " + projectName + " " + what;
+}
+
+std::vector<bs::CompileError> Exception::ToErrors() const
+{
+    std::vector<bs::CompileError> errors;
+    Module* module = GetModuleById(definedModuleId);
+    if (module)
+    {
+        bs::CompileError mainError;
+        mainError.message = message;
+        mainError.project = projectName;
+        mainError.file = module->GetFilePath(defined.file);
+        mainError.line = defined.line;
+        mainError.scol = defined.col;
+        errors.push_back(mainError);
+        for (const auto& ref : references)
+        {
+            Module* module = GetModuleById(ref.second);
+            if (module)
+            {
+                const soul::ast::SourcePos& sourcePos = ref.first;
+                bs::CompileError refError;
+                refError.message = "See reference to: ";
+                refError.file = module->GetFilePath(sourcePos.file);
+                refError.line = sourcePos.line;
+                refError.scol = sourcePos.col;
+                errors.push_back(refError);
+            }
+        }
+    }
+    return errors;
+}
+
 /*
 std::unique_ptr<util::JsonValue> Exception::ToJson() const
 {
@@ -229,8 +270,9 @@ void Exception::AddToDiagnosticsElement(soul::xml::Element* diagnosticsElement) 
     }
 }
 */
-ModuleImmutableException::ModuleImmutableException(Module* module_, Module* immutableModule, const soul::ast::SourcePos& defined_, const soul::ast::SourcePos& referenced_) :
-    Exception("attempt to add a symbol to an immutable module' " + util::ToUtf8(immutableModule->Name()) + "'", defined_, module_->Id(), referenced_, immutableModule->Id())
+
+ModuleImmutableException::ModuleImmutableException(Module* module, Module* immutableModule, const soul::ast::SourcePos& defined_, const soul::ast::SourcePos& referenced_) :
+    Exception("attempt to add a symbol to an immutable module' " + util::ToUtf8(immutableModule->Name()) + "'", defined_, module->Id(), referenced_, immutableModule->Id())
 {
 }
 

@@ -71,8 +71,6 @@ inline TextViewFlags operator~(TextViewFlags flags)
     return TextViewFlags(~int(flags));
 }
 
-//using soulng::lexer::SourcePos;
-
 enum class SelectionFixed : int
 {
     none, start, end

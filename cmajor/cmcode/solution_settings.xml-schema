@@ -1,0 +1,25 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmcode.solution.settings;
+
+class SolutionBreakpoint
+{
+    string file;
+    int line;
+    string condition;
+    bool disabled;
+}
+
+class SolutionSettings
+{
+    bool callStackOpen;
+    bool localsViewOpen;
+    string[] openFiles;
+    string currentOpenFile;
+    int currentCursorLine;
+    SolutionBreakpoint[] breakpoints;
+    string[] expandedProjects;
+}

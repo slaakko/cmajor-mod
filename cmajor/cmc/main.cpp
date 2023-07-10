@@ -24,10 +24,18 @@ void PrintHelp()
     std::cout << "  Print help and exit." << "\n";
     std::cout << "--verbose | -v" << "\n";
     std::cout << "  Be verbose." << "\n";
+    std::cout << "--quiet | -q\n" << "\n";
+    std::cout << "  print no messages\n";
     std::cout << "--single-threaded | -s" << "\n";
     std::cout << "  Single-threaded compile." << "\n";
     std::cout << "--rebuild | -r" << "\n";
     std::cout << "  Rebuild." << "\n";
+    std::cout << "--clean | -e" << "\n";
+    std::cout << "  Clean." << "\n";
+    std::cout << "--disable-module-cache | -m\n";
+    std::cout << "  Do not cache recently built modules.\n";
+    std::cout << "--link-with-debug-runtime | -d\n";
+    std::cout << "  Link with debug runtime." << "\n";
     std::cout << "--config=CONFIG | -c=CONFIG" << "\n";
     std::cout << "  Compile using CONFIG configuration. CONFIG=('debug'|'release'), default is 'debug'" << "\n";
     std::cout << "--opt-level=LEVEL| -O=LEVEL" << "\n";
@@ -43,6 +51,9 @@ int main(int argc, const char** argv)
     try
     {
         std::vector<std::string> files;
+        bool noDebugInfo = false;
+        bool useModuleCache = true;
+        cmajor::symbols::SetCompilerVersion(Version());
         for (int i = 1; i < argc; ++i)
         {
             std::string arg = argv[i];
@@ -57,6 +68,14 @@ int main(int argc, const char** argv)
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
                 }
+                else if (arg == "--quiet")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::quiet);
+                }
+                else if (arg == "--disable-module-cache")
+                {
+                    useModuleCache = false;
+                }
                 else if (arg == "--single-threaded")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
@@ -64,6 +83,10 @@ int main(int argc, const char** argv)
                 else if (arg == "--rebuild")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
+                }
+                else if (arg == "--clean")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::clean);
                 }
                 else if (arg == "--emit-llvm")
                 {
@@ -165,6 +188,10 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
                                 break;
                             }
+                            case 'q':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::quiet);
+                            }
                             case 's':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
@@ -175,6 +202,11 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild);
                                 break;
                             }
+                            case 'e':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::clean);
+                                break;
+                            }
                             case 'l':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
@@ -183,6 +215,11 @@ int main(int argc, const char** argv)
                             case 'd':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                                break;
+                            }
+                            case 'm':
+                            {
+                                useModuleCache = false;
                                 break;
                             }
                             default:
@@ -198,11 +235,16 @@ int main(int argc, const char** argv)
                 files.push_back(util::GetFullPath(arg));
             }
         }
-        cmajor::symbols::SetUseModuleCache(true);
+        cmajor::symbols::SetUseModuleCache(useModuleCache);
         cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::llvmBackEnd);
         cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
         std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = backend->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
         std::set<std::string> builtProjects;
+        cmajor::symbols::SetUseModuleCache(useModuleCache);
+        if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
+        {
+            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
+        }
         for (const auto& file : files)
         {
             if (file.ends_with(".cmp"))

@@ -20,4 +20,8 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
 
 void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, cmajor::ir::EmittingContext* emittingContext);
 
+void StopBuild();
+
+void ResetStopBuild();
+
 } // namespace cmajor::build

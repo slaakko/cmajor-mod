@@ -49,7 +49,7 @@ class MenuBar;
 class ContextMenu;
 
 using WindowStateChangedEvent = Event;
-using WindowClosingEvent = EventWithArgs<CancelArgs>;
+using WindowClosingEvent = EventWithArgs<wing::CancelArgs>;
 using WindowClosedEvent = Event;
 
 inline int64_t DefaultWindowClassWindowBackgroundColor()
@@ -153,7 +153,7 @@ protected:
     void OnLostFocus() override;
     void OnLocationChanged() override;
     virtual void OnWindowStateChanged();
-    virtual void OnWindowClosing(CancelArgs& args);
+    virtual void OnWindowClosing(wing::CancelArgs& args);
     virtual void OnWindowClosed(bool& processed);
     virtual void OnNCPaint(NCPaintEventArgs& args);
     virtual void PaintWindowRect(Graphics& graphics);

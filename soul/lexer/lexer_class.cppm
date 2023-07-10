@@ -107,6 +107,7 @@ public:
     using LexerType = Lexer<Machine, Char>;
     using CharType = Char;
     using TokenType = soul::lexer::Token<Char, LexerBase<Char>>;
+    using TokenLineType = soul::lexer::TokenLine<Char, LexerBase<Char>>;
     using VariableClassType = Machine::Variables;
     using PPHook = void (*)(LexerType& lexer, TokenType& token);
 
@@ -131,7 +132,8 @@ public:
         vars(),
         state(this),
         ppHook(nullptr),
-        skip(false)
+        skip(false),
+        commentTokenId(-1)
     {
         ComputeLineStarts();
     }
@@ -551,6 +553,101 @@ public:
     {
         return skip;
     }
+    void SetCommentTokenId(int64_t commentTokenId_)
+    {
+        commentTokenId = commentTokenId_;
+    }
+    void SetBlockCommentStates(const std::set<int>& blockCommentStates_)
+    {
+        blockCommentStates = blockCommentStates_;
+    }
+    const std::set<int>& BlockCommentStates() const
+    {
+        return blockCommentStates;
+    }
+    TokenLineType TokenizeLine(const std::basic_string<Char>& line, int lineNumber, int startState)
+    {
+        TokenLineType tokenLine;
+        pos = line.c_str();
+        end = line.c_str() + line.length();
+        tokenLine.startState = startState;
+        lexeme.begin = pos;
+        lexeme.end = end;
+        token.match = lexeme;
+        token.id = soul::lexer::INVALID_TOKEN;
+        token.line = lineNumber;
+        int state = startState;
+        int prevState = 0;
+        int prevPrevState = 0;
+        bool cont = false;
+        while (pos != end)
+        {
+            Char c = *pos;
+            if (state == 0)
+            {
+                lexeme.begin = pos;
+                token.id = soul::lexer::INVALID_TOKEN;
+                token.line = lineNumber;
+            }
+            lexeme.end = pos + 1;
+            prevPrevState = prevState;
+            prevState = state;
+            state = Machine::NextState(state, c, *static_cast<LexerBase<Char>*>(this));
+            if (state == -1)
+            {
+                if (prevState == 0)
+                {
+                    break;
+                }
+                state = 0;
+                pos = token.match.end;
+                tokenLine.tokens.push_back(token);
+                if (pos + 1 < end && *pos == '\"' && *(pos + 1) == '\\' && prevPrevState == 13 && prevState == 71)
+                {
+                    TokenType tok(nullptr);
+                    tok.match.begin = pos;
+                    tok.match.end = pos + 2;
+                    tokenLine.tokens.push_back(tok);
+                    pos += 2;
+                }
+                lexeme.begin = lexeme.end;
+            }
+            else
+            {
+                ++pos;
+            }
+        }
+        if (state != 0 && state != -1)
+        {
+            state = Machine::NextState(state, '\r', *static_cast<LexerBase<Char>*>(this));
+        }
+        if (state != 0 && state != -1)
+        {
+            state = Machine::NextState(state, '\n', *static_cast<LexerBase<Char>*>(this));
+        }
+        if (state != 0 && state != -1)
+        {
+            if (blockCommentStates.find(state) != blockCommentStates.cend())
+            {
+                token.id = commentTokenId;
+                token.match.end = end;
+                tokenLine.tokens.push_back(token);
+                tokenLine.endState = state;
+                return tokenLine;
+            }
+        }
+        if (lexeme.begin != lexeme.end)
+        {
+            token.match = lexeme;
+            tokenLine.tokens.push_back(token);
+        }
+        if (state == -1)
+        {
+            state = 0;
+        }
+        tokenLine.endState = state;
+        return tokenLine;
+    }
 private:
     void NextToken()
     {
@@ -693,6 +790,8 @@ private:
     std::stack<LexerState<Char, LexerBase<Char>>> stateStack;
     PPHook ppHook;
     bool skip;
+    int64_t commentTokenId;
+    std::set<int> blockCommentStates;
 };
 
 inline std::string GetEndTokenInfo()

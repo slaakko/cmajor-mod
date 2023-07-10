@@ -1,0 +1,20 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmcode.project.settings;
+
+class ProjectBreakpoint
+{
+    string file;
+    int line;
+    string condition;
+    bool disabled;
+}
+
+class ProjectSettings
+{
+    string programArguments;
+    ProjectBreakpoint[] breakpoints;
+}

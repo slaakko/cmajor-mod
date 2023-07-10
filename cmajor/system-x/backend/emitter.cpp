@@ -634,12 +634,12 @@ void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
 {
 }
 
-void* SystemXEmitter::GetArrayBeginAddress(void* arrayPtr)
+void* SystemXEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(0));
 }
 
-void* SystemXEmitter::GetArrayEndAddress(void* arrayPtr, uint64_t size)
+void* SystemXEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(size));
 }
@@ -702,7 +702,7 @@ void SystemXEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseB
     context->CreateBranch(static_cast<cmajor::systemx::ir::Value*>(cond), static_cast<cmajor::systemx::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::systemx::ir::BasicBlock*>(falseBasicBlock));
 }
 
-void* SystemXEmitter::CreateArrayIndexAddress(void* arrayPtr, void* index)
+void* SystemXEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), static_cast<cmajor::systemx::ir::Value*>(index));
 }
@@ -1141,7 +1141,7 @@ void* SystemXEmitter::CreateCall(void* callee, const std::vector<void*>& args)
     return context->CreateCall(calleeValue);
 }
 
-void* SystemXEmitter::CreateCallInst(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
 {
     for (void* arg : args)
     {
@@ -1152,7 +1152,7 @@ void* SystemXEmitter::CreateCallInst(void* callee, const std::vector<void*>& arg
     return context->CreateCall(calleeValue);
 }
 
-void* SystemXEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
 {
     void* prevBasicBlock = context->GetCurrentBasicBlock();
     SetCurrentBasicBlock(basicBlock);
@@ -1167,7 +1167,7 @@ void* SystemXEmitter::CreateCallInstToBasicBlock(void* callee, const std::vector
     return callInst;
 }
 
-void* SystemXEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
+void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args)
 {
     void* cleanupBlock = CleanupBlock();
     if (unwindBlock == cleanupBlock)
@@ -1198,9 +1198,9 @@ void* SystemXEmitter::CreateInvoke(void* callee, void* normalBlock, void* unwind
     return call;
 }
 
-void* SystemXEmitter::CreateInvokeInst(void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
 {
-    return CreateInvoke(callee, normalBlock, unwindBlock, args);
+    return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }
 
 void* SystemXEmitter::DIBuilder()
@@ -1217,7 +1217,7 @@ void* SystemXEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
 }
 
-void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr)
+void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
 }
@@ -1315,7 +1315,7 @@ void SystemXEmitter::SetIrObject(void* symbol, void* irObject)
     irObjectMap[symbol] = static_cast<cmajor::systemx::ir::Value*>(irObject);
 }
 
-void* SystemXEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex)
+void* SystemXEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType)
 {
     cmajor::systemx::ir::Value* clsPtr = static_cast<cmajor::systemx::ir::Value*>(classPtr);
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
@@ -1371,7 +1371,7 @@ void* SystemXEmitter::ComputeAddress(void* ptr, void* index)
     return context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(ptr), static_cast<cmajor::systemx::ir::Value*>(index));
 }
 
-void* SystemXEmitter::CreatePtrDiff(void* left, void* right)
+void* SystemXEmitter::CreatePtrDiff(void* elementType, void* left, void* right)
 {
     return context->CreatePtrDiff(static_cast<cmajor::systemx::ir::Value*>(left), static_cast<cmajor::systemx::ir::Value*>(right));
 }

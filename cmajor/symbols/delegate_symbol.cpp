@@ -281,7 +281,8 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             }
             else
             {
-                void* callInst = emitter.CreateCallInst(callee, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                void* callInst = emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
                 emitter.Stack().Push(callInst);
             }
         }
@@ -305,11 +306,13 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             }
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateInvoke(callee, nextBlock, unwindBlock, args));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args));
             }
             else
             {
-                void* invokeInst = emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                void* invokeInst = emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
                 emitter.Stack().Push(invokeInst);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
@@ -328,7 +331,8 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             }
             else
             {
-                emitter.CreateCallInst(callee, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
             }
         }
         else
@@ -351,11 +355,13 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             }
             if (currentPad == nullptr)
             {
-                emitter.CreateInvoke(callee, nextBlock, unwindBlock, args);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvoke(functionType, callee, nextBlock, unwindBlock, args);
             }
             else
             {
-                emitter.CreateInvokeInst(callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* functionType = IrType(emitter);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -928,7 +934,8 @@ void ClassDelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     Assert(!genObjects.empty(), "gen objects is empty");
     genObjects[0]->Load(emitter, flags);
     void* classDelegatePtr = emitter.Stack().Pop();
-    void* delegatePtr = emitter.GetDelegateFromClassDelegate(classDelegatePtr);
+    void* dlgType = delegateType->IrType(emitter);
+    void* delegatePtr = emitter.GetDelegateFromClassDelegate(classDelegatePtr, dlgType);
     void* callee = emitter.CreateLoad(delegatePtr);
     cmajor::ir::NativeValue calleeValue(callee);
     void* objectPtr = emitter.GetObjectFromClassDelegate(classDelegatePtr);
@@ -1019,7 +1026,8 @@ void ClassDelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emit
     void* objectPtr = emitter.GetObjectFromClassDelegate(ptr);
     emitter.CreateStore(objectValue, objectPtr);
     void* delegateValue = classDelegateType->DelegateType()->CreateDefaultIrValue(emitter);
-    void* delegatePtr = emitter.GetDelegateFromClassDelegate(ptr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* delegatePtr = emitter.GetDelegateFromClassDelegate(ptr, dlgType);
     emitter.CreateStore(delegateValue, delegatePtr);
 }
 
@@ -1033,12 +1041,13 @@ void ClassDelegateTypeDefaultConstructor::Check()
 }
 
 ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
 {
 }
 
-ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(ClassDelegateTypeSymbol* classDelegateType) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"@constructor")
+ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(ClassDelegateTypeSymbol* classDelegateType_) :
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"@constructor"), 
+    classDelegateType(classDelegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
@@ -1049,6 +1058,33 @@ ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(ClassDelegate
     thatParam->SetType(classDelegateType->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddLvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
     AddMember(thatParam);
     ComputeName();
+}
+
+void ClassDelegateTypeCopyConstructor::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeCopyConstructor::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
 }
 
 void ClassDelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
@@ -1066,19 +1102,21 @@ void ClassDelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter
     void* thisPtr = emitter.Stack().Pop();
     void* thisObjectPtr = emitter.GetObjectFromClassDelegate(thisPtr);
     emitter.CreateStore(objectValue, thisObjectPtr);
-    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr, dlgType);
     void* delegateValue = emitter.CreateLoad(thatDelegatePtr);
-    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr);
+    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr, dlgType);
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
 ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveConstructor, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::classDelegateTypeMoveConstructor, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
 {
 }
 
-ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(ClassDelegateTypeSymbol* classDelegateType) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"@constructor")
+ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(ClassDelegateTypeSymbol* classDelegateType_) :
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"@constructor"),
+    classDelegateType(classDelegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
@@ -1089,6 +1127,33 @@ ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(ClassDelegate
     thatParam->SetType(classDelegateType->AddRvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
     AddMember(thatParam);
     ComputeName();
+}
+
+void ClassDelegateTypeMoveConstructor::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeMoveConstructor::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
 }
 
 void ClassDelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
@@ -1106,19 +1171,21 @@ void ClassDelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter
     void* thisPtr = emitter.Stack().Pop();
     void* thisObjectPtr = emitter.GetObjectFromClassDelegate(thisPtr);
     emitter.CreateStore(objectValue, thisObjectPtr);
-    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr, dlgType);
     void* delegateValue = emitter.CreateLoad(thatDelegatePtr);
-    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr);
+    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr, dlgType);
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
 ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
 {
 }
 
-ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(ClassDelegateTypeSymbol* classDelegateType, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"operator=")
+ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* voidType) :
+    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator="), 
+    classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
@@ -1132,6 +1199,33 @@ ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(ClassDelegateTy
     ComputeName();
 }
 
+void ClassDelegateTypeCopyAssignment::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeCopyAssignment::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
+}
+
 void ClassDelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1142,19 +1236,21 @@ void ClassDelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter,
     void* thisPtr = emitter.Stack().Pop();
     void* thisObjectPtr = emitter.GetObjectFromClassDelegate(thisPtr);
     emitter.CreateStore(objectValue, thisObjectPtr);
-    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr, dlgType);
     void* delegateValue = emitter.CreateLoad(thatDelegatePtr);
-    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr);
+    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr, dlgType);
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
 ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
 {
 }
 
-ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(ClassDelegateTypeSymbol* classDelegateType, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"operator=")
+ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* voidType) :
+    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator="),
+    classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
@@ -1168,6 +1264,33 @@ ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(ClassDelegateTy
     ComputeName();
 }
 
+void ClassDelegateTypeMoveAssignment::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeMoveAssignment::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
+}
+
 void ClassDelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1178,19 +1301,21 @@ void ClassDelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter,
     void* thisPtr = emitter.Stack().Pop();
     void* thisObjectPtr = emitter.GetObjectFromClassDelegate(thisPtr);
     emitter.CreateStore(objectValue, thisObjectPtr);
-    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* thatDelegatePtr = emitter.GetDelegateFromClassDelegate(thatPtr, dlgType);
     void* delegateValue = emitter.CreateLoad(thatDelegatePtr);
-    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr);
+    void* thisDelegatePtr = emitter.GetDelegateFromClassDelegate(thisPtr, dlgType);
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
 ClassDelegateTypeEquality::ClassDelegateTypeEquality(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeEquality, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::classDelegateTypeEquality, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
 {
 }
 
-ClassDelegateTypeEquality::ClassDelegateTypeEquality(ClassDelegateTypeSymbol* classDelegateType, TypeSymbol* boolType) :
-    FunctionSymbol(SymbolType::classDelegateTypeEquality, classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"operator==")
+ClassDelegateTypeEquality::ClassDelegateTypeEquality(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* boolType) :
+    FunctionSymbol(SymbolType::classDelegateTypeEquality, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator=="),
+    classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator==");
     SetAccess(SymbolAccess::public_);
@@ -1204,6 +1329,33 @@ ClassDelegateTypeEquality::ClassDelegateTypeEquality(ClassDelegateTypeSymbol* cl
     ComputeName();
 }
 
+void ClassDelegateTypeEquality::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(classDelegateType->TypeId());
+}
+
+void ClassDelegateTypeEquality::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void ClassDelegateTypeEquality::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        Assert(typeSymbol->GetSymbolType() == SymbolType::classDelegateTypeSymbol, "class delegate type symbol expected");
+        classDelegateType = static_cast<ClassDelegateTypeSymbol*>(typeSymbol);
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
+}
+
 void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -1215,9 +1367,10 @@ void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::
     void* rightObjectPtr = emitter.GetObjectFromClassDelegate(rightPtr);
     void* rightObjectValue = emitter.CreateLoad(rightObjectPtr);
     void* objectsEqual = emitter.CreateICmpEQ(leftObjectValue, rightObjectValue);
-    void* leftDelegatePtr = emitter.GetDelegateFromClassDelegate(leftPtr);
+    void* dlgType = classDelegateType->DelegateType()->IrType(emitter);
+    void* leftDelegatePtr = emitter.GetDelegateFromClassDelegate(leftPtr, dlgType);
     void* leftDelegateValue = emitter.CreateLoad(leftDelegatePtr);
-    void* rightDelegatePtr = emitter.GetDelegateFromClassDelegate(rightPtr);
+    void* rightDelegatePtr = emitter.GetDelegateFromClassDelegate(rightPtr, dlgType);
     void* rightDelegateValue = emitter.CreateLoad(rightDelegatePtr);
     void* delegatesEqual = emitter.CreateICmpEQ(leftDelegateValue, rightDelegateValue);
     void* equal = emitter.CreateAnd(objectsEqual, delegatesEqual);
@@ -1259,7 +1412,8 @@ void MemberFunctionToClassDelegateConversion::GenerateCall(cmajor::ir::Emitter& 
     void* ptr = emitter.Stack().Pop();
     void* objectPtr = emitter.GetObjectFromClassDelegate(ptr);
     emitter.CreateStore(objectValueAsVoidPtr, objectPtr);
-    void* delegatePtr = emitter.GetDelegateFromClassDelegate(ptr);
+    void* dlgType = targetType->DelegateType()->IrType(emitter);
+    void* delegatePtr = emitter.GetDelegateFromClassDelegate(ptr, dlgType);
     void* delegateValue = emitter.CreateBitCast(memFunPtrValue, targetType->DelegateType()->IrType(emitter));
     emitter.CreateStore(delegateValue, delegatePtr);
     emitter.Stack().Push(ptr);

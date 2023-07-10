@@ -738,9 +738,13 @@ public:
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMinusPointer"; }
+private:
+    cmajor::symbols::TypeSymbol* pointerType;
 };
 
-PointerMinusPointer::PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator-")
+PointerMinusPointer::PointerMinusPointer(cmajor::symbols::TypeSymbol* pointerType_, 
+    cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : 
+    cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator-"), pointerType(pointerType_)
 {
     SetGroupName(U"operator-");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -761,7 +765,7 @@ void PointerMinusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreatePtrDiff(left, right));
+    emitter.Stack().Push(emitter.CreatePtrDiff(pointerType->RemovePointer(sourcePos, moduleId)->IrType(emitter), left, right));
 }
 
 class PointerMinusPointerOperation : public Operation

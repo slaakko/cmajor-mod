@@ -17,6 +17,7 @@ import cmajor.build.main.unit;
 import cmajor.binder;
 import cmajor.ast;
 import cmajor.llvm;
+import soul.lexer;
 import std.filesystem;
 import util;
 
@@ -291,9 +292,14 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
         }
     }
-    catch (const cmajor::symbols::Exception& ex)
+    catch (const soul::lexer::ParsingException& ex)
     {
-        throw std::runtime_error("project: " + util::ToUtf8(project->Name()) + ": " + ex.What());
+        throw;
+    }
+    catch (cmajor::symbols::Exception& ex)
+    {
+        ex.SetProject(util::ToUtf8(project->Name()));
+        throw ex;
     }
     catch (const std::exception& ex)
     {
@@ -301,12 +307,56 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
     }
 }
 
+cmajor::ast::Solution* currentSolution = nullptr;
+
+void CleanProject(cmajor::ast::Project* project)
+{
+    std::string config = cmajor::symbols::GetConfig();
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+    {
+        util::LogMessage(project->LogStreamId(), "Cleaning project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + config + " configuration...");
+    }
+    std::filesystem::path mfp = project->ModuleFilePath();
+    cmajor::symbols::RemoveModuleFromCache(project->ModuleFilePath());
+    mfp.remove_filename();
+    std::filesystem::remove_all(mfp);
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
+    {
+        std::filesystem::path efp = project->ExecutableFilePath();
+        efp.remove_filename();
+        std::filesystem::remove_all(efp);
+    }
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+    {
+        util::LogMessage(project->LogStreamId(), "Project '" + util::ToUtf8(project->Name()) + "' cleaned successfully.");
+    }
+}
+
 void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, cmajor::ir::EmittingContext* emittingContext, 
     std::set<std::string>& builtProjects)
 {
     std::unique_ptr<cmajor::ast::Project> project = ReadProject(projectFilePath);
-    stopBuild = false;
-    BuildProject(project.get(), rootModule, emittingContext, stopBuild, true, builtProjects);
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
+    {
+        if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::msbuild))
+        {
+            for (const std::string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
+            {
+                std::unique_ptr<cmajor::ast::Project> referencedProject = ReadProject(referencedProjectFilePath);
+                project->AddDependsOnId(referencedProject->Id());
+                if (currentSolution == nullptr && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll))
+                {
+                    BuildProject(referencedProjectFilePath, rootModule, emittingContext, builtProjects);
+                }
+            }
+        }
+        CleanProject(project.get());
+    }
+    else
+    {
+        stopBuild = false;
+        BuildProject(project.get(), rootModule, emittingContext, stopBuild, true, builtProjects);
+    }
 }
 
 struct BuildData
@@ -355,12 +405,32 @@ void BuildThreadFunction(BuildData* buildData)
     }
 }
 
+struct CurrentSolutionGuard
+{
+    CurrentSolutionGuard(cmajor::ast::Solution* currentSolution_)
+    {
+        currentSolution = currentSolution_;
+    }
+    ~CurrentSolutionGuard()
+    {
+        currentSolution = nullptr;
+    }
+};
+
 void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, cmajor::ir::EmittingContext* emittingContext)
 {
     std::set<std::string> builtProjects;
     std::string config = cmajor::symbols::GetConfig();
-    util::LogMessage(-1, "Building solution '" + solutionFilePath + " using " + config + " configuration.");
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
+    {
+        util::LogMessage(-1, "Cleaning solution '" + solutionFilePath + " using " + config + " configuration.");
+    }
+    else
+    {
+        util::LogMessage(-1, "Building solution '" + solutionFilePath + " using " + config + " configuration.");
+    }
     std::unique_ptr<cmajor::ast::Solution> solution = ParseSolutionFile(solutionFilePath);
+    CurrentSolutionGuard currentSolutionGuard(solution.get());
     int np = solution->ProjectFilePaths().size();
     for (int i = 0; i < np; ++i)
     {
@@ -387,7 +457,14 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             }
             continue;
         }
-        projectsToBuild.push_back(project);
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
+        {
+            CleanProject(project);
+        }
+        else
+        {
+            projectsToBuild.push_back(project);
+        }
     }
     if (!projectsToBuild.empty())
     {

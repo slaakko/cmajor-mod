@@ -200,7 +200,6 @@ void ResetGlobalFlags()
     optimizationLevel = -1;
     numBuildThreads = -1;
     commandLineDefines.clear();
-    compilerVersion.clear();
     inUnitTest = false;
     unitTestAssertionNumber = 0;
     assertionLineNumberVector = nullptr;
