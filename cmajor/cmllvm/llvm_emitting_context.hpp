@@ -3,20 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.llvm.emitting.context;
+#ifndef CMLLVM_LLVM_EMITTING_CONTEXT
+#define CMLLVM_LLVM_EMITTING_CONTEXT
+#include <cmllvm/emitting_context.hpp>
 
-import std.core;
-import cmajor.ir;
+namespace cmllvm {
 
-export namespace cmajor::llvm {
+struct LLVMEmittingContextImpl;
 
-struct LLvmEmittingContextImpl;
-
-class LLvmEmittingContext : public cmajor::ir::EmittingContext
+class LLVMEmittingContext: public EmittingContext
 {
 public:
-    LLvmEmittingContext(int optimizationLevel_);
-    ~LLvmEmittingContext();
+    LLVMEmittingContext(int optimizationLevel_);
+    ~LLVMEmittingContext();
     int OptimizationLevel() const override { return optimizationLevel; }
     const std::string& TargetTripleStr() const override;
     void* Triple() const override;
@@ -24,7 +23,9 @@ public:
     void* DataLayout() const override;
 private:
     int optimizationLevel;
-    LLvmEmittingContextImpl* impl;
+    LLVMEmittingContextImpl* impl;
 };
 
-} // cmajor::llvm
+} // namespace cmllvm
+
+#endif // CMLLVM_LLVM_EMITTING_CONTEXT

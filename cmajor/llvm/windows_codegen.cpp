@@ -10,7 +10,7 @@ module cmajor.llvm.codegen.windows;
 
 namespace cmajor::llvm {
 
-WindowsCodeGenerator::WindowsCodeGenerator(cmajor::ir::Emitter* emitter_) : LLvmCodeGenerator(emitter_)
+WindowsCodeGenerator::WindowsCodeGenerator(cmajor::ir::Emitter* emitter_) : LLVMCodeGenerator(emitter_)
 {
 }
 

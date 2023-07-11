@@ -22,10 +22,10 @@ struct Cleanup
     std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>> destructors;
 };
 
-class LLvmCodeGenerator : public cmajor::codegen::CodeGenerator, public cmajor::ir::EmittingDelegate
+class LLVMCodeGenerator : public cmajor::codegen::CodeGenerator, public cmajor::ir::EmittingDelegate
 {
 public:
-    LLvmCodeGenerator(cmajor::ir::Emitter* emitter_);
+    LLVMCodeGenerator(cmajor::ir::Emitter* emitter_);
     cmajor::ir::Emitter* Emitter() const { return emitter; }
     void Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit) override;
     void Visit(cmajor::binder::BoundNamespace& boundNamespace) override;

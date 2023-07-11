@@ -27,7 +27,7 @@ struct NativeModule
     void* module;
 };
 
-LLvmCodeGenerator::LLvmCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTable(nullptr), symbolsModule(nullptr), emitter(emitter_), module(nullptr), debugInfo(false),
+LLVMCodeGenerator::LLVMCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTable(nullptr), symbolsModule(nullptr), emitter(emitter_), module(nullptr), debugInfo(false),
     compileUnit(nullptr), currentClass(nullptr), currentFunction(nullptr), classStack(), utf8stringMap(), utf16stringMap(), utf32stringMap(), uuidMap(),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), entryBasicBlock(nullptr),
     newCleanupNeeded(false), currentPad(nullptr), prevLineNumber(0), destructorCallGenerated(false), lastInstructionWasRet(false), basicBlockOpen(false),
@@ -38,7 +38,7 @@ LLvmCodeGenerator::LLvmCodeGenerator(cmajor::ir::Emitter* emitter_) : symbolTabl
     emitter->SetEmittingDelegate(this);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
     symbolTable = &boundCompileUnit.GetSymbolTable();
     symbolsModule = &boundCompileUnit.GetModule();
@@ -101,7 +101,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     emitter->Compile(boundCompileUnit.ObjectFilePath());
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)
 {
     int numComponents = 0;
     if (debugInfo)
@@ -143,7 +143,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
 {
     classStack.push(currentClass);
     currentClass = &boundClass;
@@ -220,7 +220,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
     emitter->SetCurrentDIBuilder(prevDIBuilder);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnumTypeDefinition)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnumTypeDefinition)
 {
     if (debugInfo)
     {
@@ -260,7 +260,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
 {
     if (!boundFunction.Body()) return;
     currentFunction = &boundFunction;
@@ -584,7 +584,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     emitter->SetCurrentDIBuilder(prevDIBuilder);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSequenceStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSequenceStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -600,7 +600,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSeque
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
 {
     if (debugInfo)
     {
@@ -636,7 +636,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -673,7 +673,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement
     basicBlockOpen = true;
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -710,7 +710,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileSta
     falseBlock = prevFalseBlock;
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -749,7 +749,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement
     falseBlock = prevFalseBlock;
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -793,7 +793,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStateme
     falseBlock = prevFalseBlock;
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -860,7 +860,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchS
     breakTarget = prevBreakTarget;
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -890,7 +890,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseState
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaultStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaultStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -910,7 +910,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaul
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundConstructionStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundConstructionStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -955,7 +955,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssignmentStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssignmentStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -964,7 +964,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAss
     boundAssignmentStatement.AssignmentCall()->Accept(*this);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpressionStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpressionStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -977,7 +977,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExp
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boundInitializationStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boundInitializationStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -990,7 +990,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boun
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1016,7 +1016,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptySta
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVmtPtrStatement)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVmtPtrStatement)
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1035,7 +1035,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
     emitter->CreateStore(vmtPtr, ptr);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStatement) 
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStatement) 
 {
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1044,138 +1044,138 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowSta
     boundThrowStatement.ThrowCallExpr()->Accept(*this);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundParameter& boundParameter)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundParameter& boundParameter)
 {
     boundParameter.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundLocalVariable& boundLocalVariable)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundLocalVariable& boundLocalVariable)
 {
     boundLocalVariable.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundMemberVariable& boundMemberVariable)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundMemberVariable& boundMemberVariable)
 {
     boundMemberVariable.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConstant& boundConstant)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstant& boundConstant)
 {
     boundConstant.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundEnumConstant& boundEnumConstant)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumConstant& boundEnumConstant)
 {
     boundEnumConstant.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundLiteral& boundLiteral)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundLiteral& boundLiteral)
 {
     boundLiteral.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundTemporary& boundTemporary)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundTemporary& boundTemporary)
 {
     boundTemporary.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundSizeOfExpression& boundSizeOfExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundSizeOfExpression& boundSizeOfExpression)
 {
     boundSizeOfExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundAddressOfExpression& boundAddressOfExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundAddressOfExpression& boundAddressOfExpression)
 {
     boundAddressOfExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundDereferenceExpression& boundDereferenceExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundDereferenceExpression& boundDereferenceExpression)
 {
     boundDereferenceExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundReferenceToPointerExpression& boundReferenceToPointerExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundReferenceToPointerExpression& boundReferenceToPointerExpression)
 {
     boundReferenceToPointerExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunctionCall& boundFunctionCall)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunctionCall& boundFunctionCall)
 {
     boundFunctionCall.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundDelegateCall& boundDelegateCall)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundDelegateCall& boundDelegateCall)
 {
     boundDelegateCall.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundClassDelegateCall& boundClassDelegateCall)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundClassDelegateCall& boundClassDelegateCall)
 {
     boundClassDelegateCall.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConversion& boundConversion)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConversion& boundConversion)
 {
     boundConversion.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConstructExpression& boundConstructExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructExpression& boundConstructExpression)
 {
     boundConstructExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConstructAndReturnTemporaryExpression& boundConstructAndReturnTemporaryExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructAndReturnTemporaryExpression& boundConstructAndReturnTemporaryExpression)
 {
     boundConstructAndReturnTemporaryExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundClassOrClassDelegateConversionResult& boundClassOrClassDelegateConversionResult)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundClassOrClassDelegateConversionResult& boundClassOrClassDelegateConversionResult)
 {
     boundClassOrClassDelegateConversionResult.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundIsExpression& boundIsExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundIsExpression& boundIsExpression)
 {
     boundIsExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
     GenJumpingBoolCode();
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundAsExpression& boundAsExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundAsExpression& boundAsExpression)
 {
     boundAsExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundTypeNameExpression& boundTypeNameExpression)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundTypeNameExpression& boundTypeNameExpression)
 {
     boundTypeNameExpression.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundBitCast& boundBitCast)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundBitCast& boundBitCast)
 {
     boundBitCast.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunctionPtr& boundFunctionPtr)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunctionPtr& boundFunctionPtr)
 {
     boundFunctionPtr.Load(*emitter, cmajor::symbols::OperationFlags::none);
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundDisjunction& boundDisjunction)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundDisjunction& boundDisjunction)
 {
     if (genJumpingBoolCode)
     {
@@ -1192,7 +1192,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundDisjunction& boundDisjunction
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction)
 {
     if (genJumpingBoolCode)
     {
@@ -1209,13 +1209,13 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundConjunction& boundConjunction
     }
 }
 
-void LLvmCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
+void LLVMCodeGenerator::Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable)
 {
     cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
     globalVariableSymbol->CreateIrObject(*emitter);
 }
 
-void* LLvmCodeGenerator::GetGlobalStringPtr(int stringId)
+void* LLVMCodeGenerator::GetGlobalStringPtr(int stringId)
 {
     auto it = utf8stringMap.find(stringId);
     if (it != utf8stringMap.cend())
@@ -1230,7 +1230,7 @@ void* LLvmCodeGenerator::GetGlobalStringPtr(int stringId)
     }
 }
 
-void* LLvmCodeGenerator::GetGlobalWStringConstant(int stringId)
+void* LLVMCodeGenerator::GetGlobalWStringConstant(int stringId)
 {
     auto it = utf16stringMap.find(stringId);
     if (it != utf16stringMap.cend())
@@ -1259,7 +1259,7 @@ void* LLvmCodeGenerator::GetGlobalWStringConstant(int stringId)
     }
 }
 
-void* LLvmCodeGenerator::GetGlobalUStringConstant(int stringId)
+void* LLVMCodeGenerator::GetGlobalUStringConstant(int stringId)
 {
     auto it = utf32stringMap.find(stringId);
     if (it != utf32stringMap.cend())
@@ -1288,7 +1288,7 @@ void* LLvmCodeGenerator::GetGlobalUStringConstant(int stringId)
     }
 }
 
-void* LLvmCodeGenerator::GetGlobalUuidConstant(int uuidId)
+void* LLVMCodeGenerator::GetGlobalUuidConstant(int uuidId)
 {
     auto it = uuidMap.find(uuidId);
     if (it != uuidMap.cend())
@@ -1316,7 +1316,7 @@ void* LLvmCodeGenerator::GetGlobalUuidConstant(int uuidId)
     }
 }
 
-void LLvmCodeGenerator::SetLineNumber(int32_t lineNumber)
+void LLVMCodeGenerator::SetLineNumber(int32_t lineNumber)
 {
     if (currentFunction->GetFunctionSymbol()->DontThrow()) return;
     if (prevLineNumber == lineNumber) return;
@@ -1333,67 +1333,67 @@ void LLvmCodeGenerator::SetLineNumber(int32_t lineNumber)
     }
 }
 
-void* LLvmCodeGenerator::HandlerBlock()
+void* LLVMCodeGenerator::HandlerBlock()
 { 
     return handlerBlock;
 }
 
-void* LLvmCodeGenerator::CleanupBlock()
+void* LLVMCodeGenerator::CleanupBlock()
 { 
     return cleanupBlock;
 }
 
-bool LLvmCodeGenerator::NewCleanupNeeded()
+bool LLVMCodeGenerator::NewCleanupNeeded()
 { 
     return newCleanupNeeded;
 }
 
-bool LLvmCodeGenerator::InTryBlock() const
+bool LLVMCodeGenerator::InTryBlock() const
 { 
     return false; 
 }
 
-int LLvmCodeGenerator::CurrentTryBlockId() const
+int LLVMCodeGenerator::CurrentTryBlockId() const
 { 
     return 0; 
 
 }
-void LLvmCodeGenerator::CreateCleanup()
+void LLVMCodeGenerator::CreateCleanup()
 { 
 }
 
-std::string LLvmCodeGenerator::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::string LLVMCodeGenerator::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 { 
     return cmajor::symbols::GetSourceFilePath(sourcePos.file, moduleId);
 }
 
-cmajor::ir::Pad* LLvmCodeGenerator::CurrentPad()
+cmajor::ir::Pad* LLVMCodeGenerator::CurrentPad()
 {
     return currentPad;
 }
 
-void* LLvmCodeGenerator::CreateClassDIType(void* classPtr)
+void* LLVMCodeGenerator::CreateClassDIType(void* classPtr)
 {
     cmajor::symbols::ClassTypeSymbol* cls = static_cast<cmajor::symbols::ClassTypeSymbol*>(classPtr);
     return cls->CreateDIType(*emitter);
 }
 
-int LLvmCodeGenerator::Install(const std::string& str)
+int LLVMCodeGenerator::Install(const std::string& str)
 {
     return compileUnit->Install(str);
 }
 
-int LLvmCodeGenerator::Install(const std::u16string& str)
+int LLVMCodeGenerator::Install(const std::u16string& str)
 {
     return compileUnit->Install(str);
 }
 
-int LLvmCodeGenerator::Install(const std::u32string& str)
+int LLVMCodeGenerator::Install(const std::u32string& str)
 {
     return compileUnit->Install(str);
 }
 
-void LLvmCodeGenerator::GenJumpingBoolCode()
+void LLVMCodeGenerator::GenJumpingBoolCode()
 {
     if (!genJumpingBoolCode) return;
     Assert(trueBlock, "true block not set");
@@ -1409,7 +1409,7 @@ void LLvmCodeGenerator::GenJumpingBoolCode()
     emitter->CreateCondBr(cond, trueBlock, falseBlock);
 }
 
-void LLvmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targetBlock)
+void LLVMCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targetBlock)
 {
     bool createBasicBlock = false;
     cmajor::binder::BoundStatement* lastStatement = nullptr;
@@ -1464,7 +1464,7 @@ void LLvmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targe
     }
 }
 
-void LLvmCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStatement)
+void LLVMCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStatement)
 {
     if (labeledStatement->Label().empty()) return;
     auto it = labeledStatementMap.find(labeledStatement);
@@ -1480,7 +1480,7 @@ void LLvmCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStateme
     }
 }
 
-void LLvmCodeGenerator::GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
+void LLVMCodeGenerator::GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
     void* prevDIBuilder = emitter->DIBuilder();
     emitter->SetCurrentDIBuilder(nullptr);
@@ -1557,7 +1557,7 @@ void LLvmCodeGenerator::GenerateInitUnwindInfoFunction(cmajor::binder::BoundComp
     emitter->SetCurrentDIBuilder(prevDIBuilder);
 }
 
-void LLvmCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
+void LLVMCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
     void* prevDIBuilder = emitter->DIBuilder();
     emitter->SetCurrentDIBuilder(nullptr);
@@ -1617,7 +1617,7 @@ void LLvmCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundCom
     debugInfo = prevDebugInfo;
 }
 
-void LLvmCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
+void LLVMCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
     void* prevDIBuilder = emitter->DIBuilder();
     emitter->SetCurrentDIBuilder(nullptr);
@@ -1665,7 +1665,7 @@ void LLvmCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileU
     debugInfo = prevDebugInfo;
 }
 
-void LLvmCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
+void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
     const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
     if (enterCode.empty()) return;
@@ -1683,7 +1683,7 @@ void LLvmCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction&
     }
 }
 
-void LLvmCodeGenerator::GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction)
+void LLVMCodeGenerator::GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
     const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& exitCode = boundFunction.ExitCode();
     if (exitCode.empty()) return;

@@ -10,7 +10,7 @@ import cmajor.llvm.codegen;
 
 export namespace cmajor::llvm {
 
-class WindowsCodeGenerator : public LLvmCodeGenerator
+class WindowsCodeGenerator : public LLVMCodeGenerator
 {
 public:
     WindowsCodeGenerator(cmajor::ir::Emitter* emitter_);

@@ -6,6 +6,7 @@
 #include <util_inc/text_util.hpp>
 #include <memory>
 #include <Windows.h>
+#include <sstream>
 
 namespace util_inc {
 
@@ -374,6 +375,93 @@ std::string PlatformStringToUtf8(const std::string& platformString)
         return platformString; // conversion failed, maybe it's UTF-8 already
     }
     return ToUtf8(wbuf.get());
+}
+
+inline char HexNibble(uint8_t n)
+{
+    static const char* h = "0123456789ABCDEF";
+    return h[n];
+}
+
+std::string ToHexString(uint8_t x)
+{
+    std::string s;
+    s.append(1, HexNibble(x >> 4)).append(1, HexNibble(x & 0x0F));
+    return s;
+}
+
+std::string ToHexString(uint16_t x)
+{
+    std::string s;
+    s.append(ToHexString(uint8_t((x >> 8) & 0xFF)));
+    s.append(ToHexString(uint8_t((x & 0xFF))));
+    return s;
+}
+
+std::string ToHexString(uint32_t x)
+{
+    std::string s;
+    s.append(ToHexString(uint8_t((x >> 24) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 16) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 8) & 0xFF)));
+    s.append(ToHexString(uint8_t((x & 0xFF))));
+    return s;
+}
+
+std::string ToHexString(uint64_t x)
+{
+    std::string s;
+    s.append(ToHexString(uint8_t((x >> 56) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 48) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 40) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 32) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 24) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 16) & 0xFF)));
+    s.append(ToHexString(uint8_t((x >> 8) & 0xFF)));
+    s.append(ToHexString(uint8_t((x & 0xFF))));
+    return s;
+}
+
+std::string ToUpperNarrow(const std::string& s)
+{
+    std::string result;
+    int n = int(s.size());
+    result.reserve(n);
+    for (int i = 0; i < n; ++i)
+    {
+        result.append(1, std::toupper(s[i]));
+    }
+    return result;
+}
+
+std::string ToLowerNarrow(const std::string& s)
+{
+    std::string result;
+    int n = int(s.size());
+    result.reserve(n);
+    for (int i = 0; i < n; ++i)
+    {
+        result.append(1, std::tolower(s[i]));
+    }
+    return result;
+}
+
+uint8_t ParseHexByte(const std::string& hexByteStr)
+{
+    std::string hex;
+    if (hexByteStr.starts_with("0x") || hexByteStr.starts_with("0X"))
+    {
+        hex = hexByteStr;
+    }
+    else
+    {
+        hex = "0x" + hexByteStr;
+    }
+    std::stringstream s;
+    s.str(hex);
+    uint64_t value = 0;
+    s >> std::hex >> value;
+    return static_cast<uint8_t>(value);
 }
 
 } // namespace util_inc

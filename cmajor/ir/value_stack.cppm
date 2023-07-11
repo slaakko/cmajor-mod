@@ -16,5 +16,6 @@ public:
     virtual void Swap() = 0;
     virtual void Rotate() = 0;
 };
+
 } // namespace cmajor::ir
 
