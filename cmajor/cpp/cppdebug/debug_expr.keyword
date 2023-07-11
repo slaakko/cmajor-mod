@@ -1,0 +1,11 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+keywords cmajor.debug.expr.keyword
+{
+    ("cast", CAST),
+    ("typeid", TYPEID),
+    ("base", BASE)
+}

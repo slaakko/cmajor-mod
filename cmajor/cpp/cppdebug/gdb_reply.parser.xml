@@ -1,0 +1,352 @@
+<parserFile>
+ <grammar name="GdbReplyParser">
+  <rule first="{AMP, AST, AT, CARET, EQ, LPAREN, TILDE}" name="GdbReplyRecord">
+   <choice first="{AMP, AST, AT, CARET, EQ, LPAREN, TILDE}">
+    <choice first="{AST, CARET, EQ, LPAREN}">
+     <choice first="{CARET, LPAREN}">
+      <action first="{LPAREN}">
+       <nonterminal first="{LPAREN}" ruleName="GdbPrompt"/>
+      </action>
+      <action first="{CARET}">
+       <nonterminal first="{CARET}" ruleName="GdbResultRecord"/>
+      </action>
+     </choice>
+     <action first="{AST, EQ}">
+      <nonterminal first="{AST, EQ}" ruleName="GdbAsyncRecord"/>
+     </action>
+    </choice>
+    <action first="{AMP, AT, TILDE}">
+     <nonterminal first="{AMP, AT, TILDE}" ruleName="GdbStreamRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{CARET}" name="GdbResultRecord">
+   <choice first="{CARET}">
+    <choice first="{CARET}">
+     <choice first="{CARET}">
+      <choice first="{CARET}">
+       <action first="{CARET}">
+        <nonterminal first="{CARET}" ruleName="GdbDoneRecord"/>
+       </action>
+       <action first="{CARET}">
+        <nonterminal first="{CARET}" ruleName="GdbRunningRecord"/>
+       </action>
+      </choice>
+      <action first="{CARET}">
+       <nonterminal first="{CARET}" ruleName="GdbConnectedRecord"/>
+      </action>
+     </choice>
+     <action first="{CARET}">
+      <nonterminal first="{CARET}" ruleName="GdbErrorRecord"/>
+     </action>
+    </choice>
+    <action first="{CARET}">
+     <nonterminal first="{CARET}" ruleName="GdbExitRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{CARET}" name="GdbDoneRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <token first="{DONE}" name="DONE"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CARET}" name="GdbRunningRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <token first="{RUNNING}" name="RUNNING"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CARET}" name="GdbConnectedRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <token first="{CONNECTED}" name="CONNECTED"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CARET}" name="GdbErrorRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <token first="{ERROR}" name="ERROR"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CARET}" name="GdbExitRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <token first="{EXIT}" name="EXIT"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AST, EQ}" name="GdbAsyncRecord">
+   <choice first="{AST, EQ}">
+    <action first="{AST}">
+     <nonterminal first="{AST}" ruleName="GdbExecAsyncRecord"/>
+    </action>
+    <action first="{EQ}">
+     <nonterminal first="{EQ}" ruleName="GdbNotifyAsyncRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{AST}" name="GdbExecAsyncRecord">
+   <choice first="{AST}">
+    <action first="{AST}">
+     <nonterminal first="{AST}" ruleName="GdbExecRunningRecord"/>
+    </action>
+    <action first="{AST}">
+     <nonterminal first="{AST}" ruleName="GdbExecStoppedRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{AST}" name="GdbExecRunningRecord">
+   <action first="{AST}">
+    <group first="{AST}">
+     <sequence first="{AST}">
+      <sequence first="{AST}">
+       <token first="{AST}" name="AST"/>
+       <token first="{RUNNING}" name="RUNNING"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AST}" name="GdbExecStoppedRecord">
+   <action first="{AST}">
+    <group first="{AST}">
+     <sequence first="{AST}">
+      <sequence first="{AST}">
+       <token first="{AST}" name="AST"/>
+       <token first="{STOPPED}" name="STOPPED"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{EQ}" name="GdbNotifyAsyncRecord">
+   <action first="{EQ}">
+    <group first="{EQ}">
+     <sequence first="{EQ}">
+      <sequence first="{EQ}">
+       <token first="{EQ}" name="EQ"/>
+       <action first="{IDENTIFIER}">
+        <token first="{IDENTIFIER}" name="IDENTIFIER"/>
+       </action>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="GdbResults"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AT, TILDE}" name="GdbStreamRecord">
+   <choice first="{AMP, AT, TILDE}">
+    <choice first="{AT, TILDE}">
+     <sequence first="{TILDE}">
+      <token first="{TILDE}" name="TILDE"/>
+      <action first="{STRING}">
+       <token first="{STRING}" name="STRING"/>
+      </action>
+     </sequence>
+     <sequence first="{AT}">
+      <token first="{AT}" name="AT"/>
+      <action first="{STRING}">
+       <token first="{STRING}" name="STRING"/>
+      </action>
+     </sequence>
+    </choice>
+    <sequence first="{AMP}">
+     <token first="{AMP}" name="AMP"/>
+     <action first="{STRING}">
+      <token first="{STRING}" name="STRING"/>
+     </action>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{LPAREN}" name="GdbPrompt">
+   <sequence first="{LPAREN}">
+    <sequence first="{LPAREN}">
+     <token first="{LPAREN}" name="LPAREN"/>
+     <token first="{GDB}" name="GDB"/>
+    </sequence>
+    <action first="{RPAREN}">
+     <token first="{RPAREN}" name="RPAREN"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{#, COMMA}" name="GdbResults">
+   <sequence first="{#, COMMA}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, COMMA}">
+     <group first="{#, COMMA}">
+      <kleene first="{#, COMMA}">
+       <group first="{COMMA}">
+        <sequence first="{COMMA}">
+         <token first="{COMMA}" name="COMMA"/>
+         <action first="{IDENTIFIER}">
+          <nonterminal first="{IDENTIFIER}" ruleName="GdbResult"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{IDENTIFIER}" name="GdbResult">
+   <action first="{IDENTIFIER}">
+    <group first="{IDENTIFIER}">
+     <sequence first="{IDENTIFIER}">
+      <sequence first="{IDENTIFIER}">
+       <nonterminal first="{IDENTIFIER}" ruleName="GdbVariable"/>
+       <token first="{EQ}" name="EQ"/>
+      </sequence>
+      <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="GdbValue"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{IDENTIFIER}" name="GdbVariable">
+   <action first="{IDENTIFIER}">
+    <token first="{IDENTIFIER}" name="IDENTIFIER"/>
+   </action>
+  </rule>
+  <rule first="{LBRACE, LBRACKET, STRING}" name="GdbValue">
+   <choice first="{LBRACE, LBRACKET, STRING}">
+    <choice first="{LBRACE, STRING}">
+     <action first="{STRING}">
+      <nonterminal first="{STRING}" ruleName="GdbStringValue"/>
+     </action>
+     <action first="{LBRACE}">
+      <nonterminal first="{LBRACE}" ruleName="GdbTupleValue"/>
+     </action>
+    </choice>
+    <action first="{LBRACKET}">
+     <nonterminal first="{LBRACKET}" ruleName="GdbListValue"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{STRING}" name="GdbStringValue">
+   <action first="{STRING}">
+    <token first="{STRING}" name="STRING"/>
+   </action>
+  </rule>
+  <rule first="{LBRACE}" name="GdbTupleValue">
+   <sequence first="{LBRACE}">
+    <sequence first="{LBRACE}">
+     <action first="{LBRACE}">
+      <token first="{LBRACE}" name="LBRACE"/>
+     </action>
+     <optional first="{#, IDENTIFIER}">
+      <group first="{IDENTIFIER}">
+       <list first="{IDENTIFIER}">
+        <sequence first="{IDENTIFIER}">
+         <action first="{IDENTIFIER}">
+          <nonterminal first="{IDENTIFIER}" ruleName="GdbResult"/>
+         </action>
+         <kleene first="{#, COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <action first="{IDENTIFIER}">
+            <nonterminal first="{IDENTIFIER}" ruleName="GdbResult"/>
+           </action>
+          </sequence>
+         </kleene>
+        </sequence>
+       </list>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{RBRACE}">
+     <token first="{RBRACE}" name="RBRACE"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LBRACKET}" name="GdbListValue">
+   <sequence first="{LBRACKET}">
+    <sequence first="{LBRACKET}">
+     <action first="{LBRACKET}">
+      <token first="{LBRACKET}" name="LBRACKET"/>
+     </action>
+     <optional first="{#, IDENTIFIER, LBRACE, LBRACKET, STRING}">
+      <group first="{IDENTIFIER, LBRACE, LBRACKET, STRING}">
+       <choice first="{IDENTIFIER, LBRACE, LBRACKET, STRING}">
+        <group first="{IDENTIFIER}">
+         <list first="{IDENTIFIER}">
+          <sequence first="{IDENTIFIER}">
+           <action first="{IDENTIFIER}">
+            <nonterminal first="{IDENTIFIER}" ruleName="GdbResult"/>
+           </action>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <action first="{IDENTIFIER}">
+              <nonterminal first="{IDENTIFIER}" ruleName="GdbResult"/>
+             </action>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
+        </group>
+        <group first="{LBRACE, LBRACKET, STRING}">
+         <list first="{LBRACE, LBRACKET, STRING}">
+          <sequence first="{LBRACE, LBRACKET, STRING}">
+           <action first="{LBRACE, LBRACKET, STRING}">
+            <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="GdbValue"/>
+           </action>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <action first="{LBRACE, LBRACKET, STRING}">
+              <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="GdbValue"/>
+             </action>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
+        </group>
+       </choice>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{RBRACKET}">
+     <token first="{RBRACKET}" name="RBRACKET"/>
+    </action>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

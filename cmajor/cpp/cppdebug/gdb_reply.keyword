@@ -1,0 +1,9 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+keywords cmajor.debug.gdb.reply.keyword
+{
+    ("gdb", GDB), ("done", DONE), ("running", RUNNING), ("connected", CONNECTED), ("error", ERROR), ("exit", EXIT), ("stopped", STOPPED)
+}

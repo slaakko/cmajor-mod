@@ -951,7 +951,8 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         {
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateCall(callee, args));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
@@ -999,7 +1000,8 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         {
             if (currentPad == nullptr)
             {
-                emitter.CreateCall(callee, args);
+                void* functionType = IrType(emitter);
+                emitter.CreateCall(functionType, callee, args);
             }
             else
             {
@@ -1067,8 +1069,9 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             {
                 thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(GetSourcePos(), SourceModuleId())->IrType(emitter));
             }
-            void* vmtPtr = emitter.GetVmtPtr(thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
-            void* methodPtr = emitter.GetMethodPtr(vmtPtr, VmtIndex() + GetFunctionVmtIndexOffset());
+            void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
+            void* vmtType = vmtPtrHolderClass->VmtArrayType(emitter);
+            void* methodPtr = emitter.GetMethodPtr(vmtType, vmtPtr, VmtIndex() + GetFunctionVmtIndexOffset());
             callee = emitter.CreateBitCast(methodPtr, emitter.GetIrTypeForPtrType(IrType(emitter)));
         }
     }
@@ -1100,7 +1103,8 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         {
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateCall(callee, args));
+                void* functionType = IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
@@ -1148,7 +1152,8 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
         {
             if (currentPad == nullptr)
             {
-                emitter.CreateCall(callee, args);
+                void* functionType = IrType(emitter);
+                emitter.CreateCall(functionType, callee, args);
             }
             else
             {

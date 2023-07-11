@@ -388,12 +388,12 @@ void* CppEmitter::CreateIrValueForUChar(uint32_t value)
     return context->GetUCharValue(value);
 }
 
-void* CppEmitter::CreateIrValueForWString(void* wstringConstant)
+void* CppEmitter::CreateIrValueForWString(void* type, void* wstringConstant)
 {
     return static_cast<cmajor::cpp::ir::Value*>(wstringConstant);
 }
 
-void* CppEmitter::CreateIrValueForUString(void* ustringConstant)
+void* CppEmitter::CreateIrValueForUString(void* type, void* ustringConstant)
 {
     return static_cast<cmajor::cpp::ir::Value*>(ustringConstant);
 }
@@ -418,7 +418,7 @@ void* CppEmitter::CreateIrValueForConstantStruct(void* structIrType, const std::
     return context->GetStructureValue(static_cast<cmajor::cpp::ir::StructureType*>(structIrType), memberConstants);
 }
 
-void* CppEmitter::CreateIrValueForUuid(void* uuidConstant)
+void* CppEmitter::CreateIrValueForUuid(void* type, void* uuidConstant)
 {
     cmajor::cpp::ir::Value* arg = context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(uuidConstant), context->GetLongValue(0));
     return context->CreateBitCast(arg, context->GetPtrType(context->GetVoidType()));
@@ -641,7 +641,7 @@ void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
 {
 }
 
-void* CppEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
+void* CppEmitter::GetArrayBeginAddress(void* arrayType, void* arrayPtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), context->GetLongValue(0));
 }
@@ -713,7 +713,7 @@ void CppEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasic
     context->CreateBranch(static_cast<cmajor::cpp::ir::Value*>(cond), static_cast<cmajor::cpp::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::cpp::ir::BasicBlock*>(falseBasicBlock));
 }
 
-void* CppEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
+void* CppEmitter::CreateArrayIndexAddress(void* arrayType, void* arrayPtr, void* elementType, void* index)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), static_cast<cmajor::cpp::ir::Value*>(index));
 }
@@ -723,7 +723,7 @@ void CppEmitter::CreateStore(void* value, void* ptr)
     context->CreateStore(static_cast<cmajor::cpp::ir::Value*>(value), static_cast<cmajor::cpp::ir::Value*>(ptr));
 }
 
-void* CppEmitter::CreateLoad(void* ptr)
+void* CppEmitter::CreateLoad(void* type, void* ptr)
 {
     return context->CreateLoad(static_cast<cmajor::cpp::ir::Value*>(ptr));
 }
@@ -1173,7 +1173,7 @@ void* CppEmitter::CreateClassDIType(void* classPtr)
     return nullptr;
 }
 
-void* CppEmitter::CreateCall(void* callee, const std::vector<void*>& args)
+void* CppEmitter::CreateCall(void* functionType, void* callee, const std::vector<void*>& args)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     for (void* arg : args)
@@ -1242,40 +1242,40 @@ void CppEmitter::SetCurrentDIBuilder(void* diBuilder_)
 {
 }
 
-void* CppEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
+void* CppEmitter::GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
 }
 
-void* CppEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
+void* CppEmitter::GetDelegateFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
 }
 
-void* CppEmitter::GetObjectFromInterface(void* interfaceTypePtr)
+void* CppEmitter::GetObjectFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     cmajor::cpp::ir::Value* addr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
     return context->CreateLoad(addr);
 }
 
-void* CppEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
+void* CppEmitter::GetObjectPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
 }
 
-void* CppEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
+void* CppEmitter::GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
 }
 
-void* CppEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
+void* CppEmitter::GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     cmajor::cpp::ir::Value* interfacePtrPtr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
     cmajor::cpp::ir::Value* interfacePtr = context->CreateLoad(interfacePtrPtr);
     return context->CreateBitCast(interfacePtr, context->GetPtrType(context->GetPtrType(context->GetVoidType())));
 }
 
-void* CppEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
+void* CppEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
 {
     cmajor::cpp::ir::Value* methodPtrPtr = context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(imtPtr), context->GetLongValue(methodIndex));
     cmajor::cpp::ir::Value* methodPtr = context->CreateLoad(methodPtrPtr);
@@ -1301,20 +1301,20 @@ void CppEmitter::SetFunctionIrType(void* symbol, void* irType)
     functionIrTypeMap[symbol] = static_cast<cmajor::cpp::ir::FunctionType*>(irType);
 }
 
-void* CppEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
+void* CppEmitter::GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
 {
     cmajor::cpp::ir::Value* vmtPtrPtr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(thisPtr), context->GetLongValue(vmtPtrIndex));
     cmajor::cpp::ir::Value* vmtPtr = context->CreateLoad(vmtPtrPtr);
     return context->CreateBitCast(vmtPtr, static_cast<cmajor::cpp::ir::Type*>(vmtPtrType));
 }
 
-void* CppEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
+void* CppEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
 {
     cmajor::cpp::ir::Value* funPtrPtr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtPtr), context->GetLongValue(vmtIndex));
     return context->CreateLoad(funPtrPtr);
 }
 
-void* CppEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
+void* CppEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     cmajor::cpp::ir::Value* imtsArrayPtrPtr = context->CreateBitCast(context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset)),
         context->GetPtrType(context->GetPtrType(context->GetPtrType(context->GetVoidType()))));
@@ -1322,7 +1322,7 @@ void* CppEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
     return imtsArrayPtr;
 }
 
-void* CppEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
+void* CppEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex)
 {
     cmajor::cpp::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
     return context->CreateLoad(imtArrayPtr);
@@ -1346,7 +1346,7 @@ void CppEmitter::SetIrObject(void* symbol, void* irObject)
     irObjectMap[symbol] = static_cast<cmajor::cpp::ir::Value*>(irObject);
 }
 
-void* CppEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* membnerVariableType)
+void* CppEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex)
 {
     cmajor::cpp::ir::Value* clsPtr = static_cast<cmajor::cpp::ir::Value*>(classPtr);
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));

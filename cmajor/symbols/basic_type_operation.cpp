@@ -230,7 +230,7 @@ std::unique_ptr<Value> BasicTypeCopyCtor::ConstructValue(const std::vector<std::
     return std::unique_ptr<Value>(argumentValues[0]->Clone());
 }
 
-BasicTypeMoveCtor::BasicTypeMoveCtor(TypeSymbol* type) : FunctionSymbol(SymbolType::basicTypeMoveCtor, soul::ast::SourcePos(), util::nil_uuid(), U"@constructor")
+BasicTypeMoveCtor::BasicTypeMoveCtor(TypeSymbol* type_) : FunctionSymbol(SymbolType::basicTypeMoveCtor, soul::ast::SourcePos(), util::nil_uuid(), U"@constructor"), type(type_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
@@ -249,8 +249,34 @@ BasicTypeMoveCtor::BasicTypeMoveCtor(TypeSymbol* type) : FunctionSymbol(SymbolTy
 }
 
 BasicTypeMoveCtor::BasicTypeMoveCtor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::basicTypeMoveCtor, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::basicTypeMoveCtor, sourcePos_, sourceModuleId_, name_), type(nullptr)
 {
+}
+
+void BasicTypeMoveCtor::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(type->TypeId());
+}
+
+void BasicTypeMoveCtor::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void BasicTypeMoveCtor::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        type = typeSymbol;
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
 }
 
 void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
@@ -258,7 +284,7 @@ void BasicTypeMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
 }
 
@@ -299,7 +325,8 @@ void BasicTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
-BasicTypeMoveAssignment::BasicTypeMoveAssignment(TypeSymbol* type, TypeSymbol* voidType) : FunctionSymbol(SymbolType::basicTypeMoveAssignment, soul::ast::SourcePos(), util::nil_uuid(), U"operator=")
+BasicTypeMoveAssignment::BasicTypeMoveAssignment(TypeSymbol* type_, TypeSymbol* voidType) : 
+    FunctionSymbol(SymbolType::basicTypeMoveAssignment, soul::ast::SourcePos(), util::nil_uuid(), U"operator="), type(type_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
@@ -319,8 +346,34 @@ BasicTypeMoveAssignment::BasicTypeMoveAssignment(TypeSymbol* type, TypeSymbol* v
 }
 
 BasicTypeMoveAssignment::BasicTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::basicTypeMoveAssignment, sourcePos_, sourceModuleId_, name_)
+    FunctionSymbol(SymbolType::basicTypeMoveAssignment, sourcePos_, sourceModuleId_, name_), type(nullptr)
 {
+}
+
+void BasicTypeMoveAssignment::Write(SymbolWriter& writer)
+{
+    FunctionSymbol::Write(writer);
+    writer.GetBinaryStreamWriter().Write(type->TypeId());
+}
+
+void BasicTypeMoveAssignment::Read(SymbolReader& reader)
+{
+    FunctionSymbol::Read(reader);
+    util::uuid typeId;
+    reader.GetBinaryStreamReader().ReadUuid(typeId);
+    reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, typeId, 1);
+}
+
+void BasicTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
+{
+    if (index == 1)
+    {
+        type = typeSymbol;
+    }
+    else
+    {
+        FunctionSymbol::EmplaceType(typeSymbol, index);
+    }
 }
 
 void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
@@ -328,7 +381,7 @@ void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     Assert(genObjects.size() == 2, "move assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type, rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 

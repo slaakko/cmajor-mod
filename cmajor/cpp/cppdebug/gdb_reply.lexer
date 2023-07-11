@@ -1,0 +1,34 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.debug.gdb.reply.lexer;
+
+import cmajor.debug.gdb.reply.token;
+import cmajor.debug.gdb.reply.keyword;
+import cmajor.debug.gdb.reply.expr;
+
+lexer GdbReplyLexer
+{
+    rules
+    {
+        "{ws}" { }
+        "{newline}" { }
+        "{identifier}"{ auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return IDENTIFIER; else return kw; }
+        "{string}"{ return STRING; }
+        "\("{ return LPAREN; }
+        "\)"{ return RPAREN; }
+        "="{ return EQ; }
+        ","{ return COMMA; }
+        "~"{ return TILDE; }
+        "@"{ return AT; }
+        "&"{ return AMP; }
+        "\*"{ return AST; }
+        "\^"{ return CARET; }
+        "\{"{ return LBRACE; }
+        "\}"{ return RBRACE; }
+        "\["{ return LBRACKET; }
+        "\]"{ return RBRACKET; }
+    }
+}

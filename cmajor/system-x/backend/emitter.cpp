@@ -381,12 +381,12 @@ void* SystemXEmitter::CreateIrValueForUChar(uint32_t value)
     return context->GetUIntValue(value);
 }
 
-void* SystemXEmitter::CreateIrValueForWString(void* wstringConstant)
+void* SystemXEmitter::CreateIrValueForWString(void* type, void* wstringConstant)
 {
     return static_cast<cmajor::systemx::ir::Value*>(wstringConstant);
 }
 
-void* SystemXEmitter::CreateIrValueForUString(void* ustringConstant)
+void* SystemXEmitter::CreateIrValueForUString(void* type, void* ustringConstant)
 {
     return static_cast<cmajor::systemx::ir::Value*>(ustringConstant);
 }
@@ -411,7 +411,7 @@ void* SystemXEmitter::CreateIrValueForConstantStruct(void* structIrType, const s
     return context->GetStructureValue(static_cast<cmajor::systemx::ir::StructureType*>(structIrType), memberConstants);
 }
 
-void* SystemXEmitter::CreateIrValueForUuid(void* uuidConstant)
+void* SystemXEmitter::CreateIrValueForUuid(void* type, void* uuidConstant)
 {
     cmajor::systemx::ir::Value* arg = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(uuidConstant), context->GetLongValue(0));
     return context->CreateBitCast(arg, context->GetPtrType(context->GetVoidType()));
@@ -634,12 +634,12 @@ void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
 {
 }
 
-void* SystemXEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
+void* SystemXEmitter::GetArrayBeginAddress(void* arrayType, void* arrayPtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(0));
 }
 
-void* SystemXEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
+void* SystemXEmitter::GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), context->GetLongValue(size));
 }
@@ -702,7 +702,7 @@ void SystemXEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseB
     context->CreateBranch(static_cast<cmajor::systemx::ir::Value*>(cond), static_cast<cmajor::systemx::ir::BasicBlock*>(trueBasicBlock), static_cast<cmajor::systemx::ir::BasicBlock*>(falseBasicBlock));
 }
 
-void* SystemXEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
+void* SystemXEmitter::CreateArrayIndexAddress(void* arrayType, void* arrayPtr, void* elementType, void* index)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(arrayPtr), static_cast<cmajor::systemx::ir::Value*>(index));
 }
@@ -712,7 +712,7 @@ void SystemXEmitter::CreateStore(void* value, void* ptr)
     context->CreateStore(static_cast<cmajor::systemx::ir::Value*>(value), static_cast<cmajor::systemx::ir::Value*>(ptr));
 }
 
-void* SystemXEmitter::CreateLoad(void* ptr)
+void* SystemXEmitter::CreateLoad(void* type, void* ptr)
 {
     return context->CreateLoad(static_cast<cmajor::systemx::ir::Value*>(ptr));
 }
@@ -1130,7 +1130,7 @@ void* SystemXEmitter::CreateClassDIType(void* classPtr)
     return nullptr;
 }
 
-void* SystemXEmitter::CreateCall(void* callee, const std::vector<void*>& args)
+void* SystemXEmitter::CreateCall(void* functionType, void* callee, const std::vector<void*>& args)
 {
     for (void* arg : args)
     {
@@ -1184,7 +1184,7 @@ void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* norma
         void* beginCleanupMdRef = CreateMDStructRef(beginCleanupId);
         SetMetadataRef(nop1, beginCleanupMdRef);
     }
-    void* call = CreateCall(callee, args);
+    void* call = CreateCall(functionType, callee, args);
     if (unwindBlock == cleanupBlock)
     {
         void* nop2 = CreateNop();
@@ -1212,40 +1212,40 @@ void SystemXEmitter::SetCurrentDIBuilder(void* diBuilder_)
 {
 }
 
-void* SystemXEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
+void* SystemXEmitter::GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(0));
 }
 
-void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
+void* SystemXEmitter::GetDelegateFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(classDelegatePtr), context->GetLongValue(1));
 }
 
-void* SystemXEmitter::GetObjectFromInterface(void* interfaceTypePtr)
+void* SystemXEmitter::GetObjectFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     cmajor::systemx::ir::Value* addr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
     return context->CreateLoad(addr);
 }
 
-void* SystemXEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
+void* SystemXEmitter::GetObjectPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(0));
 }
 
-void* SystemXEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
+void* SystemXEmitter::GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     return context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
 }
 
-void* SystemXEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
+void* SystemXEmitter::GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     cmajor::systemx::ir::Value* interfacePtrAddr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(interfaceTypePtr), context->GetLongValue(1));
     cmajor::systemx::ir::Value* interfacePtr = context->CreateLoad(interfacePtrAddr);
     return context->CreateBitCast(interfacePtr, context->GetPtrType(context->GetVoidType()));
 }
 
-void* SystemXEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
+void* SystemXEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
 {
     cmajor::systemx::ir::Value* methodPtrPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtPtr), context->GetLongValue(methodIndex));
     cmajor::systemx::ir::Value* methodPtr = context->CreateLoad(methodPtrPtr);
@@ -1271,27 +1271,27 @@ void SystemXEmitter::SetFunctionIrType(void* symbol, void* irType)
     functionIrTypeMap[symbol] = static_cast<cmajor::systemx::ir::FunctionType*>(irType);
 }
 
-void* SystemXEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
+void* SystemXEmitter::GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
 {
     cmajor::systemx::ir::Value* vmtPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(thisPtr), context->GetLongValue(vmtPtrIndex));
     cmajor::systemx::ir::Value* vmtPtr = context->CreateLoad(vmtPtrPtr);
     return context->CreateBitCast(vmtPtr, static_cast<cmajor::systemx::ir::Type*>(vmtPtrType));
 }
 
-void* SystemXEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
+void* SystemXEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
 {
     cmajor::systemx::ir::Value* funPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(vmtIndex));
     return context->CreateLoad(funPtrPtr);
 }
 
-void* SystemXEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
+void* SystemXEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     cmajor::systemx::ir::Value* imtsArrayPtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtObjectPtr), context->GetLongValue(imtsVmtIndexOffset));
     cmajor::systemx::ir::Value* imtsArrayPtr = context->CreateBitCast(imtsArrayPtrPtr, context->GetPtrType(context->GetPtrType(context->GetVoidType())));
     return context->CreateLoad(imtsArrayPtr);
 }
 
-void* SystemXEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
+void* SystemXEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex)
 {
     cmajor::systemx::ir::Value* imtArrayPtr = context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(imtArray), context->GetLongValue(interfaceIndex));
     return context->CreateLoad(imtArrayPtr);
@@ -1315,7 +1315,7 @@ void SystemXEmitter::SetIrObject(void* symbol, void* irObject)
     irObjectMap[symbol] = static_cast<cmajor::systemx::ir::Value*>(irObject);
 }
 
-void* SystemXEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType)
+void* SystemXEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex)
 {
     cmajor::systemx::ir::Value* clsPtr = static_cast<cmajor::systemx::ir::Value*>(classPtr);
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));

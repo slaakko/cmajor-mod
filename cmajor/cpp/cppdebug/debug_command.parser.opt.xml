@@ -1,0 +1,412 @@
+<parserFile>
+ <grammar name="DebugCommandParser">
+  <rule first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, LIST, NEXT, NL, PRINT, SET, SHOW, STEP, UNTIL}" name="DebuggerCommand">
+   <switch first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, LIST, NEXT, NL, PRINT, SET, SHOW, STEP, UNTIL}">
+    <case first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, LIST, NEXT, PRINT, SET, SHOW, STEP, UNTIL}">
+     <choice first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, LIST, NEXT, PRINT, SET, SHOW, STEP, UNTIL}">
+      <switch first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, LIST, NEXT, PRINT, SET, SHOW, STEP, UNTIL}">
+       <case first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, NEXT, SHOW, STEP, UNTIL}">
+        <choice first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, NEXT, SHOW, STEP, UNTIL}">
+         <switch first="{BREAK, CONTINUE, DELETE, DEPTH, EXIT, FINISH, FRAMES, HELP, NEXT, SHOW, STEP, UNTIL}">
+          <case first="{EXIT}">
+           <action first="{EXIT}">
+            <nonterminal first="{EXIT}" ruleName="DebuggerExitCommand"/>
+           </action>
+          </case>
+          <case first="{HELP}">
+           <action first="{HELP}">
+            <nonterminal first="{HELP}" ruleName="DebuggerHelpCommand"/>
+           </action>
+          </case>
+          <case first="{NEXT}">
+           <action first="{NEXT}">
+            <nonterminal first="{NEXT}" ruleName="DebuggerNextCommand"/>
+           </action>
+          </case>
+          <case first="{STEP}">
+           <action first="{STEP}">
+            <nonterminal first="{STEP}" ruleName="DebuggerStepCommand"/>
+           </action>
+          </case>
+          <case first="{CONTINUE}">
+           <action first="{CONTINUE}">
+            <nonterminal first="{CONTINUE}" ruleName="DebuggerContinueCommand"/>
+           </action>
+          </case>
+          <case first="{FINISH}">
+           <action first="{FINISH}">
+            <nonterminal first="{FINISH}" ruleName="DebuggerFinishCommand"/>
+           </action>
+          </case>
+          <case first="{UNTIL}">
+           <action first="{UNTIL}">
+            <nonterminal first="{UNTIL}" ruleName="DebuggerUntilCommand"/>
+           </action>
+          </case>
+          <case first="{BREAK}">
+           <action first="{BREAK}">
+            <nonterminal first="{BREAK}" ruleName="DebuggerBreakCommand"/>
+           </action>
+          </case>
+          <case first="{DELETE}">
+           <action first="{DELETE}">
+            <nonterminal first="{DELETE}" ruleName="DebuggerDeleteCommand"/>
+           </action>
+          </case>
+          <case first="{DEPTH}">
+           <action first="{DEPTH}">
+            <nonterminal first="{DEPTH}" ruleName="DebuggerDepthCommand"/>
+           </action>
+          </case>
+          <case first="{FRAMES}">
+           <action first="{FRAMES}">
+            <nonterminal first="{FRAMES}" ruleName="DebuggerFramesCommand"/>
+           </action>
+          </case>
+          <case first="{SHOW}">
+           <action first="{SHOW}">
+            <nonterminal first="{SHOW}" ruleName="DebuggerShowBreakpointCommand"/>
+           </action>
+          </case>
+         </switch>
+         <action first="{SHOW}">
+          <nonterminal first="{SHOW}" ruleName="DebuggerShowBreakpointsCommand"/>
+         </action>
+        </choice>
+       </case>
+       <case first="{LIST}">
+        <action first="{LIST}">
+         <nonterminal first="{LIST}" ruleName="DebuggerListCommand"/>
+        </action>
+       </case>
+       <case first="{PRINT}">
+        <action first="{PRINT}">
+         <nonterminal first="{PRINT}" ruleName="DebuggerPrintCommand"/>
+        </action>
+       </case>
+       <case first="{SET}">
+        <action first="{SET}">
+         <nonterminal first="{SET}" ruleName="DebuggerSetConditionCommand"/>
+        </action>
+       </case>
+      </switch>
+      <action first="{SET}">
+       <nonterminal first="{SET}" ruleName="DebuggerSetBreakOnThrowCommand"/>
+      </action>
+     </choice>
+    </case>
+    <case first="{NL}">
+     <action first="{NL}">
+      <nonterminal first="{NL}" ruleName="DebuggerRepeatLatestCommand"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{EXIT}" name="DebuggerExitCommand">
+   <sequence first="{EXIT}">
+    <token first="{EXIT}" name="EXIT"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{HELP}" name="DebuggerHelpCommand">
+   <sequence first="{HELP}">
+    <token first="{HELP}" name="HELP"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{NEXT}" name="DebuggerNextCommand">
+   <sequence first="{NEXT}">
+    <token first="{NEXT}" name="NEXT"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{STEP}" name="DebuggerStepCommand">
+   <sequence first="{STEP}">
+    <token first="{STEP}" name="STEP"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{CONTINUE}" name="DebuggerContinueCommand">
+   <sequence first="{CONTINUE}">
+    <token first="{CONTINUE}" name="CONTINUE"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{FINISH}" name="DebuggerFinishCommand">
+   <sequence first="{FINISH}">
+    <token first="{FINISH}" name="FINISH"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{UNTIL}" name="DebuggerUntilCommand">
+   <sequence first="{UNTIL}">
+    <sequence first="{UNTIL}">
+     <token first="{UNTIL}" name="UNTIL"/>
+     <nonterminal first="{INTEGER, PATH}" ruleName="SourceLocation"/>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{BREAK}" name="DebuggerBreakCommand">
+   <sequence first="{BREAK}">
+    <sequence first="{BREAK}">
+     <token first="{BREAK}" name="BREAK"/>
+     <nonterminal first="{INTEGER, PATH}" ruleName="SourceLocation"/>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{DELETE}" name="DebuggerDeleteCommand">
+   <sequence first="{DELETE}">
+    <sequence first="{DELETE}">
+     <token first="{DELETE}" name="DELETE"/>
+     <action first="{INTEGER}">
+      <token first="{INTEGER}" name="INTEGER"/>
+     </action>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{DEPTH}" name="DebuggerDepthCommand">
+   <sequence first="{DEPTH}">
+    <token first="{DEPTH}" name="DEPTH"/>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{FRAMES}" name="DebuggerFramesCommand">
+   <action first="{FRAMES}">
+    <group first="{FRAMES}">
+     <sequence first="{FRAMES}">
+      <sequence first="{FRAMES}">
+       <action first="{FRAMES}">
+        <token first="{FRAMES}" name="FRAMES"/>
+       </action>
+       <optional first="{#, INTEGER}">
+        <group first="{INTEGER}">
+         <sequence first="{INTEGER}">
+          <action first="{INTEGER}">
+           <token first="{INTEGER}" name="INTEGER"/>
+          </action>
+          <action first="{INTEGER}">
+           <token first="{INTEGER}" name="INTEGER"/>
+          </action>
+         </sequence>
+        </group>
+       </optional>
+      </sequence>
+      <token first="{NL}" name="NL"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SHOW}" name="DebuggerShowBreakpointCommand">
+   <sequence first="{SHOW}">
+    <sequence first="{SHOW}">
+     <sequence first="{SHOW}">
+      <token first="{SHOW}" name="SHOW"/>
+      <token first="{BREAKPOINT}" name="BREAKPOINT"/>
+     </sequence>
+     <action first="{INTEGER}">
+      <token first="{INTEGER}" name="INTEGER"/>
+     </action>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{SHOW}" name="DebuggerShowBreakpointsCommand">
+   <sequence first="{SHOW}">
+    <sequence first="{SHOW}">
+     <token first="{SHOW}" name="SHOW"/>
+     <token first="{BREAKPOINTS}" name="BREAKPOINTS"/>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LIST}" name="DebuggerListCommand">
+   <sequence first="{LIST}">
+    <sequence first="{LIST}">
+     <token first="{LIST}" name="LIST"/>
+     <group first="{#, AST, INTEGER, PATH}">
+      <choice first="{#, AST, INTEGER, PATH}">
+       <switch first="{AST, INTEGER, PATH}">
+        <case first="{INTEGER, PATH}">
+         <action first="{INTEGER, PATH}">
+          <nonterminal first="{INTEGER, PATH}" ruleName="SourceLocation"/>
+         </action>
+        </case>
+        <case first="{AST}">
+         <action first="{AST}">
+          <token first="{AST}" name="AST"/>
+         </action>
+        </case>
+       </switch>
+       <empty first="{#}"/>
+      </choice>
+     </group>
+    </sequence>
+    <action first="{NL}">
+     <token first="{NL}" name="NL"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{PRINT}" name="DebuggerPrintCommand">
+   <action first="{PRINT}">
+    <group first="{PRINT}">
+     <sequence first="{PRINT}">
+      <sequence first="{PRINT}">
+       <action first="{PRINT}">
+        <token first="{PRINT}" name="PRINT"/>
+       </action>
+       <positive first="{*}">
+        <group first="{*}">
+         <action first="{*}">
+          <group first="{*}">
+           <difference first="{*}">
+            <any first="{*}"/>
+            <token first="{}" name="NL"/>
+           </difference>
+          </group>
+         </action>
+        </group>
+       </positive>
+      </sequence>
+      <token first="{NL}" name="NL"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SET}" name="DebuggerSetConditionCommand">
+   <action first="{SET}">
+    <group first="{SET}">
+     <sequence first="{SET}">
+      <sequence first="{SET}">
+       <sequence first="{SET}">
+        <sequence first="{SET}">
+         <token first="{SET}" name="SET"/>
+         <token first="{CONDITION}" name="CONDITION"/>
+        </sequence>
+        <action first="{INTEGER}">
+         <token first="{INTEGER}" name="INTEGER"/>
+        </action>
+       </sequence>
+       <positive first="{*}">
+        <group first="{*}">
+         <action first="{*}">
+          <group first="{*}">
+           <difference first="{*}">
+            <any first="{*}"/>
+            <token first="{}" name="NL"/>
+           </difference>
+          </group>
+         </action>
+        </group>
+       </positive>
+      </sequence>
+      <token first="{NL}" name="NL"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{SET}" name="DebuggerSetBreakOnThrowCommand">
+   <action first="{SET}">
+    <group first="{SET}">
+     <sequence first="{SET}">
+      <sequence first="{SET}">
+       <sequence first="{SET}">
+        <sequence first="{SET}">
+         <token first="{SET}" name="SET"/>
+         <token first="{BREAKONTHROW}" name="BREAKONTHROW"/>
+        </sequence>
+        <token first="{EQ}" name="EQ"/>
+       </sequence>
+       <group first="{FALSE, TRUE}">
+        <switch first="{FALSE, TRUE}">
+         <case first="{TRUE}">
+          <action first="{TRUE}">
+           <token first="{TRUE}" name="TRUE"/>
+          </action>
+         </case>
+         <case first="{FALSE}">
+          <action first="{FALSE}">
+           <token first="{FALSE}" name="FALSE"/>
+          </action>
+         </case>
+        </switch>
+       </group>
+      </sequence>
+      <token first="{NL}" name="NL"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{NL}" name="DebuggerRepeatLatestCommand">
+   <action first="{NL}">
+    <token first="{NL}" name="NL"/>
+   </action>
+  </rule>
+  <rule first="{INTEGER, PATH}" name="SourceLocation">
+   <action first="{INTEGER, PATH}">
+    <group first="{INTEGER, PATH}">
+     <switch first="{INTEGER, PATH}">
+      <case first="{PATH}">
+       <group first="{PATH}">
+        <sequence first="{PATH}">
+         <action first="{PATH}">
+          <token first="{PATH}" name="PATH"/>
+         </action>
+         <group first="{#, COLON}">
+          <choice first="{#, COLON}">
+           <sequence first="{COLON}">
+            <token first="{COLON}" name="COLON"/>
+            <action first="{INTEGER}">
+             <nonterminal first="{INTEGER}" ruleName="Line"/>
+            </action>
+           </sequence>
+           <action first="{#}">
+            <empty first="{#}"/>
+           </action>
+          </choice>
+         </group>
+        </sequence>
+       </group>
+      </case>
+      <case first="{INTEGER}">
+       <action first="{INTEGER}">
+        <nonterminal first="{INTEGER}" ruleName="Line"/>
+       </action>
+      </case>
+     </switch>
+    </group>
+   </action>
+  </rule>
+  <rule first="{INTEGER}" name="Line">
+   <action first="{INTEGER}">
+    <token first="{INTEGER}" name="INTEGER"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

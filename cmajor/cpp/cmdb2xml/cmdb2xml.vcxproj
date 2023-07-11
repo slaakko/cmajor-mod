@@ -157,7 +157,7 @@
     <ProjectReference Include="..\..\..\soul\xml\dom\dom.vcxproj">
       <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\debug\debug.vcxproj">
+    <ProjectReference Include="..\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
   </ItemGroup>

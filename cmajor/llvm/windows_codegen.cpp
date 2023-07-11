@@ -289,7 +289,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         void* handleThisEx = nullptr;
         if (CurrentPad() == nullptr)
         {
-            handleThisEx = Emitter()->CreateCall(handleException, handleExceptionArgs);
+            handleThisEx = Emitter()->CreateCall(handleExceptionFunctionType, handleException, handleExceptionArgs);
         }
         else
         {

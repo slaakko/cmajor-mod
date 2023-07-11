@@ -171,7 +171,7 @@
     <ProjectReference Include="..\..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\debug\debug.vcxproj">
+    <ProjectReference Include="..\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
   </ItemGroup>

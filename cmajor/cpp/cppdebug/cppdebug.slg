@@ -1,0 +1,13 @@
+project debug.lexers;
+tokens <debug_expr.token>;
+tokens <debug_command.token>;
+tokens <gdb_reply.token>;
+keywords <debug_expr.keyword>;
+keywords <debug_command.keyword>;
+keywords <gdb_reply.keyword>;
+expressions <debug_expr.expr>;
+expressions <debug_command.expr>;
+expressions  <gdb_reply.expr>;
+lexer <debug_expr.lexer>;
+lexer <debug_command.lexer>;
+lexer <gdb_reply.lexer>;

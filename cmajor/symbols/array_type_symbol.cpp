@@ -239,8 +239,8 @@ void ArrayBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
-    void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* beginPtr = emitter.GetArrayBeginAddress(arrayPtr, elemType);
+    void* type = arrayType->IrType(emitter);
+    void* beginPtr = emitter.GetArrayBeginAddress(type, arrayPtr);
     emitter.Stack().Push(beginPtr);
 }
 
@@ -369,8 +369,8 @@ void ArrayCBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
-    void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* beginPtr = emitter.GetArrayBeginAddress(arrayPtr, elemType);
+    void* type = arrayType->IrType(emitter);
+    void* beginPtr = emitter.GetArrayBeginAddress(type, arrayPtr);
     emitter.Stack().Push(beginPtr);
 }
 
@@ -493,7 +493,8 @@ void ArrayTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
     void* index2 = emitter.Stack().Pop();
     void* elementType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elementType, index2);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elementType, index2);
     cmajor::ir::NativeValue elementPtrValue(elementPtr);
     std::vector<cmajor::ir::GenObject*> elementGenObjects;
     elementGenObjects.push_back(&elementPtrValue);
@@ -572,16 +573,17 @@ void ArrayTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::v
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
     void* index2 = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elemType, index2);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, index2);
     cmajor::ir::NativeValue elementPtrValue(elementPtr);
     std::vector<cmajor::ir::GenObject*> elementGenObjects;
     elementGenObjects.push_back(&elementPtrValue);
-    void* sourceElementPtr = emitter.CreateArrayIndexAddress(sourcePtr, elemType, index2);
+    void* sourceElementPtr = emitter.CreateArrayIndexAddress(type, sourcePtr, elemType, index2);
     void* sourceElementValue = sourceElementPtr;
     TypeSymbol* elementType = arrayType->ElementType();
     if (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->GetSymbolType() == SymbolType::delegateTypeSymbol)
     {
-        sourceElementValue = emitter.CreateLoad(sourceElementPtr);
+        sourceElementValue = emitter.CreateLoad(elementType->IrType(emitter), sourceElementPtr); // TODO
     }
     cmajor::ir::NativeValue sourceValue(sourceElementValue);
     elementGenObjects.push_back(&sourceValue);
@@ -660,11 +662,12 @@ void ArrayTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::v
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
     void* index2 = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elemType, index2);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, index2);
     cmajor::ir::NativeValue elementPtrValue(elementPtr);
     std::vector<cmajor::ir::GenObject*> elementGenObjects;
     elementGenObjects.push_back(&elementPtrValue);
-    void* sourceElementPtr = emitter.CreateArrayIndexAddress(sourcePtr, elemType, index2);
+    void* sourceElementPtr = emitter.CreateArrayIndexAddress(type, sourcePtr, elemType, index2);
     cmajor::ir::NativeValue sourcePtrValue(sourceElementPtr);
     elementGenObjects.push_back(&sourcePtrValue);
     for (const std::unique_ptr<cmajor::ir::GenObject>& temp : temporariesForElementTypeMoveConstructor)
@@ -744,16 +747,17 @@ void ArrayTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
     void* index2 = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elemType, index2);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, index2);
     cmajor::ir::NativeValue elementPtrValue(elementPtr);
     std::vector<cmajor::ir::GenObject*> elementGenObjects;
     elementGenObjects.push_back(&elementPtrValue);
-    void* sourceElementPtr = emitter.CreateArrayIndexAddress(sourcePtr, elemType, index2);
+    void* sourceElementPtr = emitter.CreateArrayIndexAddress(type, sourcePtr, elemType, index2);
     void* sourceElementValue = sourceElementPtr;
     TypeSymbol* elementType = arrayType->ElementType();
     if (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->GetSymbolType() == SymbolType::delegateTypeSymbol)
     {
-        sourceElementValue = emitter.CreateLoad(sourceElementPtr);
+        sourceElementValue = emitter.CreateLoad(elementType->IrType(emitter), sourceElementPtr); // TODO
     }
     cmajor::ir::NativeValue sourceValue(sourceElementValue);
     elementGenObjects.push_back(&sourceValue);
@@ -829,17 +833,18 @@ void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     emitter.SetCurrentBasicBlock(init);
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* ptrPtr = emitter.Stack().Pop();
-    void* ptr = emitter.CreateLoad(ptrPtr);
+    void* ptr = emitter.CreateLoad(arrayType->AddPointer(sourcePos, moduleId)->IrType(emitter), ptrPtr); // TODO
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* sourcePtr = emitter.Stack().Pop();
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
     void* index2 = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elemType, index2);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, index2);
     cmajor::ir::NativeValue elementPtrValue(elementPtr);
     std::vector<cmajor::ir::GenObject*> elementGenObjects;
     elementGenObjects.push_back(&elementPtrValue);
-    void* sourceElementPtr = emitter.CreateArrayIndexAddress(sourcePtr, elemType, index2);
+    void* sourceElementPtr = emitter.CreateArrayIndexAddress(type, sourcePtr, elemType, index2);
     TypeSymbol* elementType = arrayType->ElementType();
     cmajor::ir::NativeValue sourcePtrValue(sourceElementPtr);
     elementGenObjects.push_back(&sourcePtrValue);
@@ -897,11 +902,12 @@ void ArrayTypeElementAccess::GenerateCall(cmajor::ir::Emitter& emitter, std::vec
     emitter.SetCurrentDebugLocation(sourcePos);
     void* indexValue = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* elementPtr = emitter.CreateArrayIndexAddress(ptr, elemType, indexValue);
+    void* type = arrayType->IrType(emitter);
+    void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, indexValue);
     TypeSymbol* elementType = arrayType->ElementType();
     if ((flags & cmajor::ir::OperationFlags::addr) == cmajor::ir::OperationFlags::none && (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->GetSymbolType() == SymbolType::delegateTypeSymbol))
     {
-        void* elementValue = emitter.CreateLoad(elementPtr);
+        void* elementValue = emitter.CreateLoad(elemType, elementPtr); // TODO
         emitter.Stack().Push(elementValue);
     }
     else

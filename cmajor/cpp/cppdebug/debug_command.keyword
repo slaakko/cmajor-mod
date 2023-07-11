@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+keywords cmajor.debug.command.keyword
+{
+    ("exit", EXIT), ("e", EXIT), ("quit", EXIT), ("q", EXIT),
+    ("help", HELP), ("h", HELP),
+    ("next", NEXT), ("n", NEXT),
+    ("step", STEP), ("s", STEP),
+    ("continue", CONTINUE), ("c", CONTINUE),
+    ("finish", FINISH), ("f", FINISH),
+    ("until", UNTIL), ("u", UNTIL),
+    ("break", BREAK), ("b", BREAK),
+    ("delete", DELETE), ("d", DELETE),
+    ("print", PRINT), ("p", PRINT),
+    ("depth", DEPTH), 
+    ("frames", FRAMES), 
+    ("list", LIST), ("l", LIST),
+    ("show", SHOW),
+    ("breakpoint", BREAKPOINT),
+    ("breakpoints", BREAKPOINTS),
+    ("cast", CAST),
+    ("typeid", TYPEID),
+    ("base", BASE),
+    ("set", SET),
+    ("breakOnThrow", BREAKONTHROW),
+    ("condition", CONDITION),
+    ("true", TRUE),
+    ("false", FALSE)
+}

@@ -298,7 +298,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             std::vector<void*> args;
             args.push_back(parameter->IrObject(*emitter));
             args.push_back(arg);
-            emitter->CreateCall(callee, args);
+            emitter->CreateCall(copyCtorType, callee, args);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
         {
@@ -1331,7 +1331,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVm
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex, emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
     void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
@@ -1414,7 +1414,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
         void* catchTypeIdValue = uuidValue.IrValue(*emitter);
         handleExceptionArgs.push_back(catchTypeIdValue);
         void* handleException = emitter->GetOrInsertFunction("RtHandleException", handleExceptionFunctionType, true);
-        void* handleThisEx = emitter->CreateCall(handleException, handleExceptionArgs);
+        void* handleThisEx = emitter->CreateCall(handleExceptionFunctionType, handleException, handleExceptionArgs);
         void* nextHandlerTarget = nullptr;
         if (i < n - 1)
         {

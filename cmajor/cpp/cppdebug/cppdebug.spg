@@ -1,0 +1,4 @@
+project debug.parsers;
+parser <debug_expr.parser>;
+parser <debug_command.parser>;
+parser <gdb_reply.parser>;

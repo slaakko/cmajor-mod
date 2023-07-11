@@ -3708,7 +3708,7 @@ void* WStringValue::IrValue(cmajor::ir::Emitter& emitter)
         stringId = emitter.Install(str);
     }
     void* wstringConstant = emitter.GetGlobalWStringConstant(stringId);
-    return emitter.CreateIrValueForWString(wstringConstant);
+    return emitter.CreateIrValueForWString(emitter.GetIrTypeForPtrType(emitter.GetIrTypeForWChar()), wstringConstant);
 }
 
 void WStringValue::Write(util::BinaryStreamWriter& writer)
@@ -3757,7 +3757,7 @@ void* UStringValue::IrValue(cmajor::ir::Emitter& emitter)
         stringId = emitter.Install(str);
     }
     void* ustringConstant = emitter.GetGlobalUStringConstant(stringId);
-    return emitter.CreateIrValueForUString(ustringConstant);
+    return emitter.CreateIrValueForUString(emitter.GetIrTypeForPtrType(emitter.GetIrTypeForUChar()), ustringConstant);
 }
 
 void UStringValue::Write(util::BinaryStreamWriter& writer)
@@ -4176,7 +4176,8 @@ UuidValue::UuidValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& m
 void* UuidValue::IrValue(cmajor::ir::Emitter& emitter)
 {
     void* uuidConstant = emitter.GetGlobalUuidConstant(uuidId);
-    return emitter.CreateIrValueForUuid(uuidConstant);
+    void* type = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForByte(), 16);
+    return emitter.CreateIrValueForUuid(type, uuidConstant);
 }
 
 void UuidValue::Write(util::BinaryStreamWriter& writer)

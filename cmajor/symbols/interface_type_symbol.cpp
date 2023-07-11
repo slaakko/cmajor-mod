@@ -149,9 +149,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectFromInterface(interfaceTypePtr);
-    void* imtPtr = emitter.GetImtPtrFromInterface(interfaceTypePtr);
-    void* callee = emitter.GetInterfaceMethod(imtPtr, interfaceMemberFunction->ImtIndex(), interfaceMemberFunction->IrType(emitter));
+    void* objectPtr = emitter.GetObjectFromInterface(IrType(emitter), interfaceTypePtr);
+    void* imtPtr = emitter.GetImtPtrFromInterface(IrType(emitter), interfaceTypePtr);
+    void* callee = emitter.GetInterfaceMethod(IrType(emitter), imtPtr, interfaceMemberFunction->ImtIndex(), interfaceMemberFunction->IrType(emitter));
     int na = genObjects.size();
     for (int i = 1; i < na; ++i)
     {
@@ -187,7 +187,8 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         {
             if (currentPad == nullptr)
             {
-                emitter.Stack().Push(emitter.CreateCall(callee, args));
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.Stack().Push(emitter.CreateCall(functionType, callee, args));
             }
             else
             {
@@ -235,7 +236,8 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         {
             if (currentPad == nullptr)
             {
-                emitter.CreateCall(callee, args);
+                void* functionType = interfaceMemberFunction->IrType(emitter);
+                emitter.CreateCall(functionType, callee, args);
             }
             else
             {
@@ -340,10 +342,10 @@ void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter,
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceTypePtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), interfacePtrPtr);
 }
 
@@ -408,14 +410,14 @@ void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(thatPtr);
-    void* thatObject = emitter.CreateLoad(thatObjectPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(thatPtr);
-    void* thatInterfacePtr = emitter.CreateLoad(thatInterfacePtrPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
@@ -480,14 +482,14 @@ void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(thatPtr);
-    void* thatObject = emitter.CreateLoad(thatObjectPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(thatPtr);
-    void* thatInterfacePtr = emitter.CreateLoad(thatInterfacePtrPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
@@ -554,14 +556,14 @@ void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(thatPtr);
-    void* thatObject = emitter.CreateLoad(thatObjectPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(thatPtr);
-    void* thatInterfacePtr = emitter.CreateLoad(thatInterfacePtrPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
@@ -628,14 +630,14 @@ void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     void* interfaceTypePtr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
-    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(thatPtr);
-    void* thatObject = emitter.CreateLoad(thatObjectPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatObjectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatObject = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatObjectPtr); // TODO
     emitter.CreateStore(thatObject, objectPtr);
 
-    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceTypePtr);
-    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(thatPtr);
-    void* thatInterfacePtr = emitter.CreateLoad(thatInterfacePtrPtr);
+    void* interfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* thatInterfacePtrPtr = emitter.GetImtPtrPtrFromInterface(interfaceType->IrType(emitter), thatPtr);
+    void* thatInterfacePtr = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), thatInterfacePtrPtr); // TODO
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
@@ -704,12 +706,13 @@ void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std:
     void* classPtrAsVoidPtr = emitter.CreateBitCast(classPtr, emitter.GetIrTypeForVoidPtrType());
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* temporaryInterfaceObjectVar = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(temporaryInterfaceObjectVar);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);
     emitter.CreateStore(classPtrAsVoidPtr, objectPtr);
     void* vmtObjectPtr = sourceClassType->VmtObject(emitter, false);
-    void* imtArray = emitter.GetImtArray(vmtObjectPtr, GetImtsVmtIndexOffset());
-    void* imt = emitter.GetImt(imtArray, interfaceIndex);
-    void* imtPtr = emitter.GetImtPtrPtrFromInterface(temporaryInterfaceObjectVar);
+    void* imtArray = emitter.GetImtArray(sourceClassType->IrType(emitter), vmtObjectPtr, GetImtsVmtIndexOffset());
+    void* imtArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), sourceClassType->ImplementedInterfaces().size());
+    void* imt = emitter.GetImt(imtArrayType, imtArray, interfaceIndex);
+    void* imtPtr = emitter.GetImtPtrPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);
     emitter.CreateStore(imt, imtPtr);
     emitter.Stack().Push(temporaryInterfaceObjectVar);
 }
@@ -785,8 +788,8 @@ void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::
         genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     }
     void* interfaceTypePtr = emitter.Stack().Pop();
-    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceTypePtr);
-    void* object = emitter.CreateLoad(objectPtr);
+    void* objectPtr = emitter.GetObjectPtrFromInterface(interfaceType->IrType(emitter), interfaceTypePtr);
+    void* object = emitter.CreateLoad(emitter.GetIrTypeForVoidPtrType(), objectPtr); // TODO
     emitter.Stack().Push(object);
 }
 

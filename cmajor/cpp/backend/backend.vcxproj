@@ -168,14 +168,14 @@
     <ProjectReference Include="..\..\codegen\codegen.vcxproj">
       <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\debug\debug.vcxproj">
-      <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\symbols\symbols.vcxproj">
       <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cppdebug\cppdebug.vcxproj">
+      <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6259e4b9-ef7d-486a-9ad0-1c44c30bde84}</Project>

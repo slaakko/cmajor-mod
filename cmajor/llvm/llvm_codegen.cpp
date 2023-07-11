@@ -455,13 +455,13 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 emitter->SetInPrologue(false);
                 emitter->SetCurrentDebugLocation(boundFunction.Body()->GetSourcePos());
-                emitter->CreateCall(callee, args);
+                emitter->CreateCall(copyCtorType, callee, args);
                 emitter->SetInPrologue(true);
                 emitter->SetCurrentDebugLocation(soul::ast::SourcePos());
             }
             else
             {
-                emitter->CreateCall(callee, args);
+                emitter->CreateCall(copyCtorType, callee, args);
             }
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
@@ -1008,7 +1008,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptySta
     }
     if (currentPad == nullptr)
     {
-        emitter->CreateCall(doNothingFun, args);
+        emitter->CreateCall(doNothingFunType, doNothingFun, args);
     }
     else
     {
@@ -1030,7 +1030,7 @@ void LLvmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex, emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
     void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }

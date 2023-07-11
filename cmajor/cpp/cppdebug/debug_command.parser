@@ -1,0 +1,185 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.debug.command.parser;
+
+[interface]import cmajor.debug.debugger;
+[implementation]import soul.lexer;
+[implementation]import cmajor.debug.token.value.parser;
+[implementation]import cmajor.debug.command.token;
+[implementation]import cmajor.debug.debug.info;
+[implementation]import cmajor.debug.command.lexer;
+
+parser DebugCommandParser
+{
+    lexer cmajor::debug::command::lexer::DebugCommandLexer<char32_t>;
+    main;
+
+    DebuggerCommand(std::string* currentSourceFilePath) : cmajor::debug::DebuggerCommand*
+        ::= DebuggerExitCommand:exitCommand{ return exitCommand; }
+        |   DebuggerHelpCommand:helpCommand{ return helpCommand; }
+        |   DebuggerNextCommand:nextCommand{ return nextCommand; }
+        |   DebuggerStepCommand:stepCommand{ return stepCommand; }
+        |   DebuggerContinueCommand:continueCommand{ return continueCommand; }
+        |   DebuggerFinishCommand:finishCommand{ return finishCommand; }
+        |   DebuggerUntilCommand(currentSourceFilePath):untilCommand{ return untilCommand; }
+        |   DebuggerBreakCommand(currentSourceFilePath):breakCommand{ return breakCommand; }
+        |   DebuggerDeleteCommand:deleteCommand{ return deleteCommand; }
+        |   DebuggerDepthCommand:depthCommand{ return depthCommand; }
+        |   DebuggerFramesCommand:framesCommand{ return framesCommand; }
+        |   DebuggerShowBreakpointCommand:showBreakpointCommand{ return showBreakpointCommand; }
+        |   DebuggerShowBreakpointsCommand:showBreakpointsCommand{ return showBreakpointsCommand; }
+        |   DebuggerListCommand(currentSourceFilePath):listCommand{ return listCommand; }
+        |   DebuggerPrintCommand:printCommand{ return printCommand; }
+        |   DebuggerSetConditionCommand:setConditionCommand{ return setConditionCommand; }
+        |   DebuggerSetBreakOnThrowCommand:setBreakOnThrowCommand{ return setBreakOnThrowCommand; } 
+        |   DebuggerRepeatLatestCommand:latestCommand{ return latestCommand; }
+        ;
+
+    DebuggerExitCommand : cmajor::debug::DebuggerCommand*
+        ::= EXIT NL{ return new cmajor::debug::DebuggerExitCommand(); }
+        ;
+
+    DebuggerHelpCommand : cmajor::debug::DebuggerCommand*
+        ::= HELP NL{ return new cmajor::debug::DebuggerHelpCommand(); }
+        ;
+
+    DebuggerNextCommand : cmajor::debug::DebuggerCommand*
+        ::= NEXT NL{ return new cmajor::debug::DebuggerNextCommand(); }
+        ;
+
+    DebuggerStepCommand : cmajor::debug::DebuggerCommand*
+        ::= STEP NL{ return new cmajor::debug::DebuggerStepCommand(); }
+        ;
+
+    DebuggerContinueCommand : cmajor::debug::DebuggerCommand*
+        ::= CONTINUE NL{ return new cmajor::debug::DebuggerContinueCommand(); }
+        ;
+
+    DebuggerFinishCommand : cmajor::debug::DebuggerCommand*
+        ::= FINISH NL{ return new cmajor::debug::DebuggerFinishCommand(); }
+        ;
+
+    DebuggerUntilCommand(std::string* currentSourceFilePath): cmajor::debug::DebuggerCommand*
+        ::= UNTIL SourceLocation(currentSourceFilePath):location NL{ return new cmajor::debug::DebuggerUntilCommand(location); }
+        ;
+
+    DebuggerBreakCommand(std::string* currentSourceFilePath) : cmajor::debug::DebuggerCommand*
+        ::= BREAK SourceLocation(currentSourceFilePath):location NL{ return new cmajor::debug::DebuggerBreakCommand(location); }
+        ;
+
+    DebuggerDeleteCommand(var int breakpointNumber) : cmajor::debug::DebuggerCommand*
+        ::= DELETE INTEGER{ std::string bn = util::ToUtf8(lexer.GetToken(pos).ToString()); breakpointNumber = cmajor::debug::ParseInt(bn); }
+            NL{ return new cmajor::debug::DebuggerDeleteCommand(breakpointNumber); }
+        ;
+
+    DebuggerDepthCommand : cmajor::debug::DebuggerCommand*
+        ::= DEPTH NL{ return new cmajor::debug::DebuggerDepthCommand(); }
+        ;
+
+    DebuggerFramesCommand(var int low, var int high) : cmajor::debug::DebuggerCommand*
+        ::=
+        (   FRAMES{ low = -1; high = -1; }
+            (
+                INTEGER{ std::string lowStr = util::ToUtf8(lexer.GetToken(pos).ToString()); low = cmajor::debug::ParseInt(lowStr); }
+                INTEGER{ std::string highStr = util::ToUtf8(lexer.GetToken(pos).ToString()); high = cmajor::debug::ParseInt(highStr); }
+            )?
+            NL
+        )
+        {
+            return new cmajor::debug::DebuggerFramesCommand(low, high);
+        }
+        ;
+
+    DebuggerShowBreakpointCommand(var int breakpointId) : cmajor::debug::DebuggerCommand*
+        ::= SHOW BREAKPOINT INTEGER{ std::string idStr = util::ToUtf8(lexer.GetToken(pos).ToString()); breakpointId = cmajor::debug::ParseInt(idStr); } NL
+        {
+            return new cmajor::debug::DebuggerShowBreakpointCommand(breakpointId);
+        }
+        ;
+
+    DebuggerShowBreakpointsCommand : cmajor::debug::DebuggerCommand*
+        ::= SHOW BREAKPOINTS NL{ return new cmajor::debug::DebuggerShowBreakpointsCommand(); }
+        ;
+
+    DebuggerListCommand(std::string* currentSourceFilePath, var cmajor::debug::SourceLocation location) : cmajor::debug::DebuggerCommand*
+        ::= LIST (SourceLocation(currentSourceFilePath):loc{ location = loc; } | AST{ location = cmajor::debug::SourceLocation("*", 0); } | empty) NL
+        {
+            return new cmajor::debug::DebuggerListCommand(location);
+        }
+        ;
+
+    DebuggerPrintCommand(var bool first, var std::string expression) : cmajor::debug::DebuggerCommand*
+        ::=
+        (   PRINT{ first = true; }
+            (
+                (any - NL)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        expression.append(1, ' ');
+                    }
+                    expression.append(util::ToUtf8(lexer.GetToken(pos).ToString()));
+                }
+            )+
+            NL
+        )
+        {
+            return new cmajor::debug::DebuggerPrintCommand(expression);
+        }
+        ;
+
+    DebuggerSetConditionCommand(var int breakpointNumber, var std::string expression) : cmajor::debug::DebuggerCommand*
+        ::=
+        (
+            SET CONDITION INTEGER{ std::string numberStr = util::ToUtf8(lexer.GetToken(pos).ToString()); breakpointNumber = cmajor::debug::ParseInt(numberStr); }
+            (
+                (any - NL)
+                {
+                    expression.append(util::ToUtf8(lexer.GetToken(pos).ToString()));
+                }
+            )+
+            NL
+        )
+        {
+            return new cmajor::debug::DebuggerSetConditionCommand(breakpointNumber, expression);
+        }
+        ;
+
+    DebuggerSetBreakOnThrowCommand(var bool breakOnThrow) : cmajor::debug::DebuggerCommand*
+        ::=
+        (
+            SET BREAKONTHROW EQ (TRUE{ breakOnThrow = true; } | FALSE{ breakOnThrow = false; }) NL
+        )
+        {
+            return new cmajor::debug::DebuggerSetBreakOnThrowCommand(breakOnThrow);
+        }
+        ;
+
+    DebuggerRepeatLatestCommand : cmajor::debug::DebuggerCommand*
+        ::= NL{ return new cmajor::debug::DebuggerRepeatLatestCommand(); }
+        ;
+
+    SourceLocation(std::string* currentSourceFilePath, var std::string path, var int line) : cmajor::debug::SourceLocation
+        ::=
+        (
+            (   PATH{ path = util::ToUtf8(lexer.GetToken(pos).ToString()); }
+                (COLON Line:ln{ line = ln; } | empty{ line = 1; })
+            )
+        |   Line:lineNo{ path = *currentSourceFilePath; line = lineNo; }
+        )
+        {
+            return cmajor::debug::SourceLocation(path, line);
+        }
+        ;
+
+    Line : int
+        ::= INTEGER{ std::string lineStr = util::ToUtf8(lexer.GetToken(pos).ToString()); return cmajor::debug::ParseInt(lineStr); }
+        ;
+}

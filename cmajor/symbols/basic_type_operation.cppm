@@ -700,15 +700,20 @@ public:
 class BasicTypeMoveCtor : public FunctionSymbol
 {
 public:
-    BasicTypeMoveCtor(TypeSymbol* type);
+    BasicTypeMoveCtor(TypeSymbol* type_);
     BasicTypeMoveCtor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
+    void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     std::unique_ptr<Value> ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsCompileTimePrimitiveFunction() const override { return true; }
     const char* ClassName() const override { return "BasicTypeMoveCtor"; }
     std::u32string Info() const override { return std::u32string(); }
+private:
+    TypeSymbol* type;
 };
 
 class BasicTypeCopyAssignment : public FunctionSymbol
@@ -727,13 +732,18 @@ public:
 class BasicTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    BasicTypeMoveAssignment(TypeSymbol* type, TypeSymbol* voidType);
+    BasicTypeMoveAssignment(TypeSymbol* type_, TypeSymbol* voidType);
     BasicTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
+    void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "BasicTypeMoveAssignment"; }
     std::u32string Info() const override { return std::u32string(); }
+private:
+    TypeSymbol* type;
 };
 
 class BasicTypeReturn : public FunctionSymbol

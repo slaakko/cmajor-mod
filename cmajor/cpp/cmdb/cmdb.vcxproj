@@ -171,14 +171,13 @@
     <ProjectReference Include="..\..\pm\pm.vcxproj">
       <Project>{cc905b61-bf46-435d-82a6-a3590df97e16}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\debug\debug.vcxproj">
+    <ProjectReference Include="..\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\debug\cmajor.debug.command.lexer.classmap.rc" />
-    <ResourceCompile Include="..\debug\cmajor.debug.expr.lexer.classmap.rc" />
-    <ResourceCompile Include="..\debug\cmajor.debug.gdb.reply.lexer.classmap.rc" />
+    <ResourceCompile Include="..\cppdebug\cmajor.debug.command.lexer.classmap.rc" />
+    <ResourceCompile Include="..\cppdebug\cmajor.debug.gdb.reply.lexer.classmap.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

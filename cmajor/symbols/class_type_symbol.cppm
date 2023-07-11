@@ -214,6 +214,7 @@ public:
     void* CreateDIType(cmajor::ir::Emitter& emitter) override;
     void* CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter);
     void* VmtObject(cmajor::ir::Emitter& emitter, bool create);
+    void* VmtArrayType(cmajor::ir::Emitter& emitter);
     void* VmtPtrType(cmajor::ir::Emitter& emitter);
     std::string VmtObjectName(cmajor::ir::Emitter& emitter);
     std::string VmtObjectNameStr();

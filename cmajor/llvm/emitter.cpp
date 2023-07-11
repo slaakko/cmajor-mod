@@ -443,7 +443,7 @@ void* LLvmEmitter::CreateIrValueForUChar(uint32_t value)
     return impl->builder.getInt32(value);
 }
 
-void* LLvmEmitter::CreateIrValueForWString(void* wstringConstant) 
+void* LLvmEmitter::CreateIrValueForWString(void* type, void* wstringConstant) 
 {
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
@@ -452,11 +452,11 @@ void* LLvmEmitter::CreateIrValueForWString(void* wstringConstant)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(wstringConstant), indeces);
 #else
     ::llvm::Value* value = static_cast<::llvm::Value*>(wstringConstant);
-    return impl->builder.CreateGEP(value->getType(), value, indeces);
+    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(type), value, indeces);
 #endif 
 }
 
-void* LLvmEmitter::CreateIrValueForUString(void* ustringConstant)
+void* LLvmEmitter::CreateIrValueForUString(void* type, void* ustringConstant)
 {
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
@@ -465,7 +465,7 @@ void* LLvmEmitter::CreateIrValueForUString(void* ustringConstant)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(ustringConstant), indeces);
 #else
     ::llvm::Value* value = static_cast<::llvm::Value*>(ustringConstant);
-    return impl->builder.CreateGEP(value->getType(), value, indeces);
+    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(type), value, indeces);
 #endif 
 }
 
@@ -489,7 +489,7 @@ void* LLvmEmitter::CreateIrValueForConstantStruct(void* structIrType, const std:
     return ::llvm::ConstantStruct::get(::llvm::cast<::llvm::StructType>(static_cast<::llvm::Type*>(structIrType)), memberConstants);
 }
 
-void* LLvmEmitter::CreateIrValueForUuid(void* uuidConstant)
+void* LLvmEmitter::CreateIrValueForUuid(void* type, void* uuidConstant)
 {
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
@@ -498,8 +498,8 @@ void* LLvmEmitter::CreateIrValueForUuid(void* uuidConstant)
     return impl->builder.CreateBitCast(impl->builder.CreateGEP(static_cast<::llvm::Value*>(uuidConstant), indeces), impl->builder.getInt8PtrTy());
 #else
     ::llvm::Value* value = static_cast<::llvm::Value*>(uuidConstant);
-    ::llvm::Value* gep = impl->builder.CreateGEP(value->getType(), value, indeces);
-    return impl->builder.CreateBitCast(gep, impl->builder.getInt8PtrTy());
+    ::llvm::Value* gep = impl->builder.CreateGEP(static_cast<::llvm::Type*>(type), value, indeces);
+    return impl->builder.CreateBitCast(gep, impl->builder.getInt8PtrTy()); // TODO
 #endif
 }
 
@@ -513,7 +513,7 @@ void LLvmEmitter::CreateCondBr(void* cond, void* trueBasicBlock, void* falseBasi
     impl->builder.CreateCondBr(static_cast<::llvm::Value*>(cond), static_cast<::llvm::BasicBlock*>(trueBasicBlock), static_cast<::llvm::BasicBlock*>(falseBasicBlock));
 }
 
-void* LLvmEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, void* index)
+void* LLvmEmitter::CreateArrayIndexAddress(void* arrayType, void* arrayPtr, void* elementType, void* index)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
@@ -521,7 +521,7 @@ void* LLvmEmitter::CreateArrayIndexAddress(void* arrayPtr, void* elementType, vo
 #if (LLVM_VERSION_MAJOR < 16)
     return impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #else
-    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+    return impl->builder.CreateGEP(static_cast<::llvm::Type*>(arrayType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #endif
 }
 
@@ -530,10 +530,10 @@ void LLvmEmitter::CreateStore(void* value, void* ptr)
     impl->builder.CreateStore(static_cast<::llvm::Value*>(value), static_cast<::llvm::Value*>(ptr));
 }
 
-void* LLvmEmitter::CreateLoad(void* ptr)
+void* LLvmEmitter::CreateLoad(void* type, void* ptr)
 {
-    ::llvm::Type* type = static_cast<::llvm::Value*>(ptr)->getType();
-    return impl->builder.CreateLoad(type, static_cast<::llvm::Value*>(ptr));
+    ::llvm::Type* t = static_cast<::llvm::Type*>(type);
+    return impl->builder.CreateLoad(t, static_cast<::llvm::Value*>(ptr));
 }
 
 void* LLvmEmitter::CreateAdd(void* left, void* right)
@@ -1125,7 +1125,7 @@ void LLvmEmitter::ResetCurrentDebugLocation()
     impl->builder.SetCurrentDebugLocation(impl->currentDebugLocation);
 }
 
-void* LLvmEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
+void* LLvmEmitter::GetArrayBeginAddress(void* arrayType, void* arrayPtr)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
@@ -1133,12 +1133,12 @@ void* LLvmEmitter::GetArrayBeginAddress(void* arrayPtr, void* elementType)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #else
-    ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+    ::llvm::Value* beginPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(arrayType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #endif 
     return beginPtr;
 }
 
-void* LLvmEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
+void* LLvmEmitter::GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size)
 {
     ArgVector elementIndeces;
     elementIndeces.push_back(impl->builder.getInt64(0));
@@ -1146,7 +1146,7 @@ void* LLvmEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #else
-    ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(elementType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
+    ::llvm::Value* endPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(arrayType), static_cast<::llvm::Value*>(arrayPtr), elementIndeces);
 #endif 
     return endPtr;
 }
@@ -1272,7 +1272,7 @@ void* LLvmEmitter::CreateGlobalUStringPtr(const std::u32string& name)
     return nullptr;
 }
 
-void* LLvmEmitter::CreateCall(void* callee, const std::vector<void*>& args)
+void* LLvmEmitter::CreateCall(void* functionType, void* callee, const std::vector<void*>& args)
 {
     std::vector<::llvm::Value*> arguments;
     for (void* arg : args)
@@ -1280,8 +1280,7 @@ void* LLvmEmitter::CreateCall(void* callee, const std::vector<void*>& args)
         arguments.push_back(static_cast<::llvm::Value*>(arg));
     }
 #if (LLVM_VERSION_MAJOR >= 11)
-    return impl->builder.CreateCall(::llvm::cast<::llvm::FunctionType>(static_cast<::llvm::Value*>(callee)->getType()->getPointerElementType()), 
-        static_cast<::llvm::Value*>(callee), arguments);
+    return impl->builder.CreateCall(static_cast<::llvm::FunctionType*>(functionType), static_cast<::llvm::Value*>(callee), arguments);
 #else
     return impl->builder.CreateCall(static_cast<::llvm::Value*>(callee), arguments);
 #endif
@@ -1413,7 +1412,7 @@ void* LLvmEmitter::CreateInvokeInst(void* functionType, void* callee, void* norm
     return invokeInst;
 }
 
-void* LLvmEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
+void* LLvmEmitter::GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
@@ -1421,12 +1420,12 @@ void* LLvmEmitter::GetObjectFromClassDelegate(void* classDelegatePtr)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* objectPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classDelegatePtr), objectIndeces);
 #else
-    ::llvm::Value* objectPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(classDelegatePtr), objectIndeces);
+    ::llvm::Value* objectPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(classDelegateType), static_cast<::llvm::Value*>(classDelegatePtr), objectIndeces);
 #endif
     return objectPtr;
 }
 
-void* LLvmEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* delegateType)
+void* LLvmEmitter::GetDelegateFromClassDelegate(void* classDelegateType, void* classDelegatePtr)
 {
     ArgVector delegateIndeces;
     delegateIndeces.push_back(impl->builder.getInt32(0));
@@ -1434,12 +1433,12 @@ void* LLvmEmitter::GetDelegateFromClassDelegate(void* classDelegatePtr, void* de
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* delegatePtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classDelegatePtr), delegateIndeces);
 #else
-    ::llvm::Value* delegatePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(delegateType), static_cast<::llvm::Value*>(classDelegatePtr), delegateIndeces);
+    ::llvm::Value* delegatePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(classDelegateType), static_cast<::llvm::Value*>(classDelegatePtr), delegateIndeces);
 #endif
     return delegatePtr;
 }
 
-void* LLvmEmitter::GetObjectFromInterface(void* interfaceTypePtr)
+void* LLvmEmitter::GetObjectFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
@@ -1448,13 +1447,13 @@ void* LLvmEmitter::GetObjectFromInterface(void* interfaceTypePtr)
     ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
     ::llvm::Value* objectPtr = impl->builder.CreateLoad(objectPtrPtr);
 #else
-    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
+    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(interfaceType), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
     ::llvm::Value* objectPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), objectPtrPtr);
 #endif
     return objectPtr;
 }
 
-void* LLvmEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
+void* LLvmEmitter::GetObjectPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     ArgVector objectIndeces;
     objectIndeces.push_back(impl->builder.getInt32(0));
@@ -1462,12 +1461,12 @@ void* LLvmEmitter::GetObjectPtrFromInterface(void* interfaceTypePtr)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
 #else
-    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
+    ::llvm::Value* objectPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(interfaceType), static_cast<::llvm::Value*>(interfaceTypePtr), objectIndeces);
 #endif
     return objectPtrPtr;
 }
 
-void* LLvmEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
+void* LLvmEmitter::GetImtPtrPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     ArgVector interfaceIndeces;
     interfaceIndeces.push_back(impl->builder.getInt32(0));
@@ -1475,12 +1474,12 @@ void* LLvmEmitter::GetImtPtrPtrFromInterface(void* interfaceTypePtr)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
 #else
-    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
+    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(interfaceType), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
 #endif
     return interfacePtrPtr;
 }
 
-void* LLvmEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
+void* LLvmEmitter::GetImtPtrFromInterface(void* interfaceType, void* interfaceTypePtr)
 {
     ArgVector interfaceIndeces;
     interfaceIndeces.push_back(impl->builder.getInt32(0));
@@ -1489,14 +1488,14 @@ void* LLvmEmitter::GetImtPtrFromInterface(void* interfaceTypePtr)
     ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
     ::llvm::Value* interfacePtr = impl->builder.CreateLoad(interfacePtrPtr);
 #else
-    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
+    ::llvm::Value* interfacePtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(interfaceType), static_cast<::llvm::Value*>(interfaceTypePtr), interfaceIndeces);
     ::llvm::Value* interfacePtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), interfacePtrPtr);
 #endif
     ::llvm::Value* imtPtr = impl->builder.CreateBitCast(interfacePtr, ::llvm::PointerType::get(impl->builder.getInt8PtrTy(), 0));
     return imtPtr;
 }
 
-void* LLvmEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
+void* LLvmEmitter::GetInterfaceMethod(void* interfaceType, void* imtPtr, int32_t methodIndex, void* interfaceMethodType)
 {
     ArgVector methodIndeces;
     methodIndeces.push_back(impl->builder.getInt32(methodIndex));
@@ -1504,14 +1503,14 @@ void* LLvmEmitter::GetInterfaceMethod(void* imtPtr, int32_t methodIndex, void* i
     ::llvm::Value* methodPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(imtPtr), methodIndeces);
     ::llvm::Value* methodPtr = impl->builder.CreateLoad(methodPtrPtr);
 #else
-    ::llvm::Value* methodPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(imtPtr), methodIndeces);
+    ::llvm::Value* methodPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(interfaceType), static_cast<::llvm::Value*>(imtPtr), methodIndeces);
     ::llvm::Value* methodPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), methodPtrPtr);
 #endif
     ::llvm::Value* callee = impl->builder.CreateBitCast(methodPtr, ::llvm::PointerType::get(static_cast<::llvm::Type*>(interfaceMethodType), 0));
     return callee;
 }
 
-void* LLvmEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
+void* LLvmEmitter::GetVmtPtr(void* classType, void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrType)
 {
     ArgVector vmtPtrIndeces;
     vmtPtrIndeces.push_back(impl->builder.getInt32(0));
@@ -1520,14 +1519,14 @@ void* LLvmEmitter::GetVmtPtr(void* thisPtr, int32_t vmtPtrIndex, void* vmtPtrTyp
     ::llvm::Value* vmtPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(thisPtr), vmtPtrIndeces);
     ::llvm::Value* loadedVmtPtr = impl->builder.CreateLoad(vmtPtrPtr);
 #else
-    ::llvm::Value* vmtPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(thisPtr), vmtPtrIndeces);
+    ::llvm::Value* vmtPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(classType), static_cast<::llvm::Value*>(thisPtr), vmtPtrIndeces);
     ::llvm::Value* loadedVmtPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), vmtPtrPtr);
 #endif
     void* vmtPtr = impl->builder.CreateBitCast(loadedVmtPtr, static_cast<::llvm::Type*>(vmtPtrType));
     return vmtPtr;
 }
 
-void* LLvmEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
+void* LLvmEmitter::GetMethodPtr(void* vmtType, void* vmtPtr, int32_t vmtIndex)
 {
     ArgVector funPtrIndeces;
     funPtrIndeces.push_back(impl->builder.getInt32(0));
@@ -1536,13 +1535,13 @@ void* LLvmEmitter::GetMethodPtr(void* vmtPtr, int32_t vmtIndex)
     ::llvm::Value* funPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtPtr), funPtrIndeces);
     void* funAsVoidPtr = impl->builder.CreateLoad(funPtrPtr);
 #else
-    ::llvm::Value* funPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(vmtPtr), funPtrIndeces);
+    ::llvm::Value* funPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(vmtType), static_cast<::llvm::Value*>(vmtPtr), funPtrIndeces);
     void* funAsVoidPtr = impl->builder.CreateLoad(static_cast<::llvm::Type*>(GetIrTypeForVoidPtrType()), funPtrPtr);
 #endif
     return funAsVoidPtr;
 }
 
-void* LLvmEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
+void* LLvmEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 {
     ArgVector imtsArrayIndeces;
     imtsArrayIndeces.push_back(impl->builder.getInt32(0));
@@ -1550,7 +1549,7 @@ void* LLvmEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imtsArrayPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
 #else
-    ::llvm::Value* imtsArrayPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
+    ::llvm::Value* imtsArrayPtrPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(vmtType), static_cast<::llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
 #endif
     ::llvm::Value* imtsArrayPtr = impl->builder.CreateBitCast(imtsArrayPtrPtr, ::llvm::PointerType::get(::llvm::PointerType::get(impl->builder.getInt8PtrTy(), 0), 0));
 #if (LLVM_VERSION_MAJOR < 16)
@@ -1561,14 +1560,14 @@ void* LLvmEmitter::GetImtArray(void* vmtObjectPtr, int32_t imtsVmtIndexOffset)
     return imtArray;
 }
 
-void* LLvmEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
+void* LLvmEmitter::GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex)
 {
     ArgVector imtArrayIndeces;
     imtArrayIndeces.push_back(impl->builder.getInt32(interfaceIndex));
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imtArrayPtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(imtArray), imtArrayIndeces);
 #else
-    ::llvm::Value* imtArrayPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForVoidPtrType())), static_cast<::llvm::Value*>(imtArray), imtArrayIndeces);
+    ::llvm::Value* imtArrayPtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(imtArrayType), static_cast<::llvm::Value*>(imtArray), imtArrayIndeces);
 #endif
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* imt = impl->builder.CreateLoad(imtArrayPtr);
@@ -1578,7 +1577,7 @@ void* LLvmEmitter::GetImt(void* imtArray, int32_t interfaceIndex)
     return imt;
 }
 
-void* LLvmEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLayoutIndex, void* memberVariableType)
+void* LLvmEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex)
 {
     ArgVector indeces;
     indeces.push_back(impl->builder.getInt32(0));
@@ -1586,7 +1585,7 @@ void* LLvmEmitter::GetMemberVariablePtr(void* classPtr, int32_t memberVariableLa
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* memberVariablePtr = impl->builder.CreateGEP(static_cast<::llvm::Value*>(classPtr), indeces);
 #else
-    ::llvm::Value* memberVariablePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(memberVariableType), static_cast<::llvm::Value*>(classPtr), indeces);
+    ::llvm::Value* memberVariablePtr = impl->builder.CreateGEP(static_cast<::llvm::Type*>(classType), static_cast<::llvm::Value*>(classPtr), indeces);
 #endif
     return memberVariablePtr;
 }
@@ -1597,7 +1596,7 @@ void* LLvmEmitter::SizeOf(void* ptrType)
 #if (LLVM_VERSION_MAJOR < 16)
     ::llvm::Value* gep = impl->builder.CreateGEP(static_cast<::llvm::Value*>(nullPtr), impl->builder.getInt64(1));
 #else
-    ::llvm::Value* gep = impl->builder.CreateGEP(impl->builder.getInt64Ty(), static_cast<::llvm::Value*>(nullPtr), impl->builder.getInt64(1));
+    ::llvm::Value* gep = impl->builder.CreateGEP(static_cast<::llvm::Value*>(nullPtr)->getType(), static_cast<::llvm::Value*>(nullPtr), impl->builder.getInt64(1));
 #endif
     ::llvm::Value* size = impl->builder.CreatePtrToInt(gep, impl->builder.getInt64Ty());
     return size;
@@ -1942,7 +1941,39 @@ void LLvmEmitter::Compile(const std::string& objectFilePath)
 
 void LLvmEmitter::ReplaceForwardDeclarations()
 {
-    // todo
+    std::unordered_map<::llvm::DIType*, util::uuid> currentFwdDeclarationMap;
+    std::swap(currentFwdDeclarationMap, impl->fwdDeclarationMap);
+    while (!currentFwdDeclarationMap.empty())
+    {
+        for (const auto& p : currentFwdDeclarationMap)
+        {
+            ::llvm::DIType* fwdDeclaration = p.first;
+            const util::uuid& typeId = p.second;
+            void* diType = GetDITypeByTypeId(typeId);
+            if (!diType)
+            {
+                auto it = impl->classPtrMap.find(typeId);
+                if (it != impl->classPtrMap.cend())
+                {
+                    void* classPtr = it->second;
+                    //std::string className = classNameMap[classPtr];
+                    //std::cout << "> create di type for class" << className << std::endl;
+                    diType = CreateClassDIType(classPtr);
+                    //std::cout << "< create di type for class" << className << std::endl;
+                }
+                else
+                {
+                    throw std::runtime_error("Emitter::ReplaceForwardDeclarations(): class ptr not mapped");
+                }
+            }
+            //std::string typeName = diTypeNameMap[static_cast<llvm::DIType*>(diType)];
+            //std::cout << "> replacing " << typeName << std::endl;
+            fwdDeclaration->replaceAllUsesWith(static_cast<::llvm::DIType*>(diType));
+            //std::cout << "< replacing " << typeName << std::endl;
+        }
+        currentFwdDeclarationMap.clear();
+        std::swap(currentFwdDeclarationMap, impl->fwdDeclarationMap);
+    }
 }
 
 void* LLvmEmitter::GetIrObject(void* symbol) const

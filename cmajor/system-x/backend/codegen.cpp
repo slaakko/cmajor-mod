@@ -228,7 +228,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             std::vector<void*> args;
             args.push_back(parameter->IrObject(*emitter));
             args.push_back(arg);
-            emitter->CreateCall(callee, args);
+            emitter->CreateCall(copyCtorType, callee, args);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
         {
@@ -927,7 +927,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundS
     Assert(vmtPtrIndex != -1, "invalid vmt ptr index");
     classPtr->Accept(*this);
     void* classPtrValue = emitter->Stack().Pop();
-    void* ptr = emitter->GetMemberVariablePtr(classPtrValue, vmtPtrIndex, emitter->GetIrTypeForVoidPtrType());
+    void* ptr = emitter->GetMemberVariablePtr(classType->IrType(*emitter), classPtrValue, vmtPtrIndex);
     void* vmtPtr = emitter->CreateBitCast(boundSetVmtPtrStatement.ClassType()->VmtObject(*emitter, false), emitter->GetIrTypeForVoidPtrType());
     emitter->CreateStore(vmtPtr, ptr);
 }
@@ -1036,7 +1036,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
     SetTarget(&boundRethrowStatement);
     void* resumeFunctionType = emitter->GetIrTypeForFunction(emitter->GetIrTypeForVoid(), std::vector<void*>());
     void* callee = emitter->GetOrInsertFunction("resume", resumeFunctionType, false);
-    emitter->CreateCall(callee, std::vector<void*>());
+    emitter->CreateCall(resumeFunctionType, callee, std::vector<void*>());
     if (currentFunction->GetFunctionSymbol()->ReturnType() && currentFunction->GetFunctionSymbol()->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol &&
         !currentFunction->GetFunctionSymbol()->ReturnsClassInterfaceOrClassDelegateByValue())
     {
@@ -1506,7 +1506,7 @@ void SystemXCodeGenerator::GenerateCodeForCleanups()
         }
         void* resumeFunctionType = emitter->GetIrTypeForFunction(emitter->GetIrTypeForVoid(), std::vector<void*>());
         void* callee = emitter->GetOrInsertFunction("resume", resumeFunctionType, false);
-        emitter->CreateCall(callee, std::vector<void*>());
+        emitter->CreateCall(resumeFunctionType, callee, std::vector<void*>());
         if (currentFunction->GetFunctionSymbol()->ReturnType() && currentFunction->GetFunctionSymbol()->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol &&
             !currentFunction->GetFunctionSymbol()->ReturnsClassInterfaceOrClassDelegateByValue())
         {

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{28905a8e-c8e3-4048-aecf-57041ceb853a}</ProjectGuid>
+    <RootNamespace>cppdebug</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>cmajor.debugd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>cmajor.debug</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableModules>true</EnableModules>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="bound_debug_expr.cpp" />
+    <ClCompile Include="bound_debug_expr.cppm" />
+    <ClCompile Include="bound_debug_node_visitor.cpp" />
+    <ClCompile Include="bound_debug_node_visitor.cppm" />
+    <ClCompile Include="client_channel.cpp" />
+    <ClCompile Include="client_channel.cppm" />
+    <ClCompile Include="cmdb_session.cpp" />
+    <ClCompile Include="cmdb_session.cppm" />
+    <ClCompile Include="console.cpp" />
+    <ClCompile Include="console.cppm" />
+    <ClCompile Include="console_debugger.cpp" />
+    <ClCompile Include="console_debugger.cppm" />
+    <ClCompile Include="container.cpp" />
+    <ClCompile Include="container_subscript_translator.cpp" />
+    <ClCompile Include="container_subscript_translator.cppm" />
+    <ClCompile Include="container.cppm" />
+    <ClCompile Include="cppdebug.cppm" />
+    <ClCompile Include="debugger.cpp" />
+    <ClCompile Include="debugger.cppm" />
+    <ClCompile Include="debugger_client.cpp" />
+    <ClCompile Include="debugger_client.cppm" />
+    <ClCompile Include="debugger_output_writer.cpp" />
+    <ClCompile Include="debugger_output_writer.cppm" />
+    <ClCompile Include="debug_expr.cpp" />
+    <ClCompile Include="debug_expr_binder.cpp" />
+    <ClCompile Include="debug_expr_evaluator.cpp" />
+    <ClCompile Include="debug_expr_visitor.cpp" />
+    <ClCompile Include="debug_info_to_xml.cpp" />
+    <ClCompile Include="kill_channel.cpp" />
+    <ClCompile Include="server_debugger.cpp" />
+    <ClCompile Include="server_debugger.cppm" />
+    <ClCompile Include="debug_command.lexer.cpp" />
+    <ClCompile Include="debug_command.lexer.cppm" />
+    <ClCompile Include="debug_command.parser.cpp" />
+    <ClCompile Include="debug_command.parser.cppm" />
+    <ClCompile Include="debug_command.token.cppm" />
+    <ClCompile Include="debug_expr.cppm" />
+    <ClCompile Include="debug_expr.lexer.cpp" />
+    <ClCompile Include="debug_expr.lexer.cppm" />
+    <ClCompile Include="debug_expr.parser.cpp" />
+    <ClCompile Include="debug_expr.parser.cppm" />
+    <ClCompile Include="debug_expr.token.cppm" />
+    <ClCompile Include="debug_expr_binder.cppm" />
+    <ClCompile Include="debug_expr_evaluator.cppm" />
+    <ClCompile Include="debug_expr_visitor.cppm" />
+    <ClCompile Include="debug_info.cpp" />
+    <ClCompile Include="debug_info.cppm" />
+    <ClCompile Include="debug_info_to_xml.cppm" />
+    <ClCompile Include="debug_rules.cpp" />
+    <ClCompile Include="debug_rules.cppm" />
+    <ClCompile Include="di_enum_constant.cpp" />
+    <ClCompile Include="di_enum_constant.cppm" />
+    <ClCompile Include="di_type.cpp" />
+    <ClCompile Include="di_type.cppm" />
+    <ClCompile Include="di_variable.cpp" />
+    <ClCompile Include="di_variable.cppm" />
+    <ClCompile Include="evaluation_guard.cpp" />
+    <ClCompile Include="evaluation_guard.cppm" />
+    <ClCompile Include="gdb.cpp" />
+    <ClCompile Include="gdb.cppm" />
+    <ClCompile Include="gdb_reply.lexer.cpp" />
+    <ClCompile Include="gdb_reply.lexer.cppm" />
+    <ClCompile Include="gdb_reply.parser.cpp" />
+    <ClCompile Include="gdb_reply.parser.cppm" />
+    <ClCompile Include="gdb_reply.token.cppm" />
+    <ClCompile Include="io.cpp" />
+    <ClCompile Include="io.cppm" />
+    <ClCompile Include="kill_channel.cppm" />
+    <ClCompile Include="token_value_parser.cppm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom_parser\dom_parser.vcxproj">
+      <Project>{a04570d9-27be-464f-b3a5-6c6b1943d493}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\xpath\xpath.vcxproj">
+      <Project>{99d0a844-4ee3-4c0a-9eeb-45eb9fedca05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ast\ast.vcxproj">
+      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\msg\msg.vcxproj">
+      <Project>{c38f8022-d886-4e11-90ff-7d8cd198812d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cppdebug.slg" />
+    <None Include="cppdebug.spg" />
+    <None Include="debug_command.expr" />
+    <None Include="debug_command.keyword" />
+    <None Include="debug_command.lexer" />
+    <None Include="debug_command.parser" />
+    <None Include="debug_command.token" />
+    <None Include="debug_expr.expr" />
+    <None Include="debug_expr.keyword" />
+    <None Include="debug_expr.lexer" />
+    <None Include="debug_expr.parser" />
+    <None Include="debug_expr.token" />
+    <None Include="gdb_reply.expr" />
+    <None Include="gdb_reply.keyword" />
+    <None Include="gdb_reply.lexer" />
+    <None Include="gdb_reply.parser" />
+    <None Include="gdb_reply.token" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

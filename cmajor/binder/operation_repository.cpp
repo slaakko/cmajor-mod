@@ -205,7 +205,7 @@ void PointerMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cma
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type->RemovePointer(sourcePos, moduleId)->IrType(emitter), rvalueRefValue)); // TODO
     if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Dup();
@@ -365,7 +365,7 @@ void PointerMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vect
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type->RemovePointer(sourcePos, moduleId)->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1206,7 +1206,7 @@ void LvalueReferenceMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, s
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type->PlainType(sourcePos, moduleId)->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -1423,7 +1423,7 @@ void RvalueReferenceCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, s
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(rvalueRefValue));
+    emitter.Stack().Push(emitter.CreateLoad(type->PlainType(sourcePos, moduleId)->IrType(emitter), rvalueRefValue));  // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 

@@ -1503,9 +1503,15 @@ ClassTypeSymbol* ClassTypeSymbol::VmtPtrHolderClass()
     }
 }
 
-void* ClassTypeSymbol::VmtPtrType(cmajor::ir::Emitter& emitter)
+void* ClassTypeSymbol::VmtArrayType(cmajor::ir::Emitter& emitter)
 {
     void* vmtArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), vmt.size() + GetFunctionVmtIndexOffset());
+    return vmtArrayType;
+}
+
+void* ClassTypeSymbol::VmtPtrType(cmajor::ir::Emitter& emitter)
+{
+    void* vmtArrayType = VmtArrayType(emitter);
     void* vmtPtrType = emitter.GetIrTypeForPtrType(vmtArrayType);
     return vmtPtrType;
 }

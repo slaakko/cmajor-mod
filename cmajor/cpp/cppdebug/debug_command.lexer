@@ -1,0 +1,49 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.debug.command.lexer;
+
+import cmajor.debug.command.token;
+import cmajor.debug.command.keyword;
+import cmajor.debug.command.expr;
+
+lexer DebugCommandLexer
+{
+    rules
+    {
+        "{ws}" { }
+        "{newline}"{ return NL; }
+        "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return kw; }
+        "{path}"{ return PATH; }
+        "{integer}"{ return INTEGER; }
+        "{string}"{ return STRING; }
+        "\|\|"{ return DISJUNCTION; }
+        "\&\&"{ return CONJUNCTION; }
+        "\|"{ return BITOR; }
+        "\^"{ return BITXOR; }
+        ":"{ return COLON; }
+        "\*"{ return AST; }
+        "/"{ return SLASH; }
+        "%"{ return PERCENT; }
+        "\&"{ return AMP; }
+        "=="{ return EQUAL; }
+        "!="{ return NOTEQUAL; }
+        "<="{ return LESSEQUAL; }
+        ">="{ return GREATEREQUAL; }
+        "<<"{ return SHIFTLEFT; }
+        ">>"{ return SHIFTRIGHT; }
+        "\("{ return LPAREN; }
+        "\)"{ return RPAREN; }
+        "<"{ return LANGLE; }
+        ">"{ return RANGLE; }
+        "\["{ return LBRACKET; }
+        "\]"{ return RBRACKET; }
+        "\."{ return DOT; }
+        ","{ return COMMA; }
+        "\+"{ return PLUS; }
+        "\-"{ return MINUS; }
+        "="{ return EQ; }
+    }
+}

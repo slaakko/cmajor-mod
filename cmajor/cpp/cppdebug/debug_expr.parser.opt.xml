@@ -1,0 +1,461 @@
+<parserFile>
+ <grammar name="DebugExprParser">
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="DebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DisjunctiveDebugExpr"/>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="DisjunctiveDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="ConjunctiveDebugExpr"/>
+      </action>
+      <kleene first="{#, DISJUNCTION}">
+       <group first="{DISJUNCTION}">
+        <sequence first="{DISJUNCTION}">
+         <token first="{DISJUNCTION}" name="DISJUNCTION"/>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="ConjunctiveDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="ConjunctiveDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitOrDebugExpr"/>
+      </action>
+      <kleene first="{#, CONJUNCTION}">
+       <group first="{CONJUNCTION}">
+        <sequence first="{CONJUNCTION}">
+         <token first="{CONJUNCTION}" name="CONJUNCTION"/>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitOrDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="BitOrDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitXorDebugExpr"/>
+      </action>
+      <kleene first="{#, BITOR}">
+       <group first="{BITOR}">
+        <sequence first="{BITOR}">
+         <token first="{BITOR}" name="BITOR"/>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitXorDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="BitXorDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitAndDebugExpr"/>
+      </action>
+      <kleene first="{#, BITXOR}">
+       <group first="{BITXOR}">
+        <sequence first="{BITXOR}">
+         <token first="{BITXOR}" name="BITXOR"/>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="BitAndDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="BitAndDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="EqualityDebugExpr"/>
+      </action>
+      <kleene first="{#, AMP}">
+       <group first="{AMP}">
+        <sequence first="{AMP}">
+         <token first="{AMP}" name="AMP"/>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="EqualityDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="EqualityDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="RelationalDebugExpr"/>
+      </action>
+      <kleene first="{#, EQUAL, NOTEQUAL}">
+       <group first="{EQUAL, NOTEQUAL}">
+        <sequence first="{EQUAL, NOTEQUAL}">
+         <group first="{EQUAL, NOTEQUAL}">
+          <switch first="{EQUAL, NOTEQUAL}">
+           <case first="{EQUAL}">
+            <action first="{EQUAL}">
+             <token first="{EQUAL}" name="EQUAL"/>
+            </action>
+           </case>
+           <case first="{NOTEQUAL}">
+            <action first="{NOTEQUAL}">
+             <token first="{NOTEQUAL}" name="NOTEQUAL"/>
+            </action>
+           </case>
+          </switch>
+         </group>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="RelationalDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="RelationalDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="ShiftDebugExpr"/>
+      </action>
+      <kleene first="{#, GREATEREQUAL, LANGLE, LESSEQUAL, RANGLE}">
+       <group first="{GREATEREQUAL, LANGLE, LESSEQUAL, RANGLE}">
+        <sequence first="{GREATEREQUAL, LANGLE, LESSEQUAL, RANGLE}">
+         <group first="{GREATEREQUAL, LANGLE, LESSEQUAL, RANGLE}">
+          <switch first="{GREATEREQUAL, LANGLE, LESSEQUAL, RANGLE}">
+           <case first="{LESSEQUAL}">
+            <action first="{LESSEQUAL}">
+             <token first="{LESSEQUAL}" name="LESSEQUAL"/>
+            </action>
+           </case>
+           <case first="{GREATEREQUAL}">
+            <action first="{GREATEREQUAL}">
+             <token first="{GREATEREQUAL}" name="GREATEREQUAL"/>
+            </action>
+           </case>
+           <case first="{LANGLE}">
+            <action first="{LANGLE}">
+             <token first="{LANGLE}" name="LANGLE"/>
+            </action>
+           </case>
+           <case first="{RANGLE}">
+            <action first="{RANGLE}">
+             <token first="{RANGLE}" name="RANGLE"/>
+            </action>
+           </case>
+          </switch>
+         </group>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="ShiftDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="ShiftDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="AdditiveDebugExpr"/>
+      </action>
+      <kleene first="{#, SHIFTLEFT, SHIFTRIGHT}">
+       <group first="{SHIFTLEFT, SHIFTRIGHT}">
+        <sequence first="{SHIFTLEFT, SHIFTRIGHT}">
+         <group first="{SHIFTLEFT, SHIFTRIGHT}">
+          <switch first="{SHIFTLEFT, SHIFTRIGHT}">
+           <case first="{SHIFTLEFT}">
+            <action first="{SHIFTLEFT}">
+             <token first="{SHIFTLEFT}" name="SHIFTLEFT"/>
+            </action>
+           </case>
+           <case first="{SHIFTRIGHT}">
+            <action first="{SHIFTRIGHT}">
+             <token first="{SHIFTRIGHT}" name="SHIFTRIGHT"/>
+            </action>
+           </case>
+          </switch>
+         </group>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="AdditiveDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="AdditiveDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="MultiplicativeDebugExpr"/>
+      </action>
+      <kleene first="{#, MINUS, PLUS}">
+       <group first="{MINUS, PLUS}">
+        <sequence first="{MINUS, PLUS}">
+         <group first="{MINUS, PLUS}">
+          <switch first="{MINUS, PLUS}">
+           <case first="{PLUS}">
+            <action first="{PLUS}">
+             <token first="{PLUS}" name="PLUS"/>
+            </action>
+           </case>
+           <case first="{MINUS}">
+            <action first="{MINUS}">
+             <token first="{MINUS}" name="MINUS"/>
+            </action>
+           </case>
+          </switch>
+         </group>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="MultiplicativeDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="MultiplicativeDebugExpr">
+   <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PrefixDebugExpr"/>
+      </action>
+      <kleene first="{#, AST, PERCENT, SLASH}">
+       <group first="{AST, PERCENT, SLASH}">
+        <sequence first="{AST, PERCENT, SLASH}">
+         <group first="{AST, PERCENT, SLASH}">
+          <switch first="{AST, PERCENT, SLASH}">
+           <case first="{AST}">
+            <action first="{AST}">
+             <token first="{AST}" name="AST"/>
+            </action>
+           </case>
+           <case first="{SLASH}">
+            <action first="{SLASH}">
+             <token first="{SLASH}" name="SLASH"/>
+            </action>
+           </case>
+           <case first="{PERCENT}">
+            <action first="{PERCENT}">
+             <token first="{PERCENT}" name="PERCENT"/>
+            </action>
+           </case>
+          </switch>
+         </group>
+         <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+          <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PrefixDebugExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" name="PrefixDebugExpr">
+   <switch first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <case first="{AST}">
+     <sequence first="{AST}">
+      <token first="{AST}" name="AST"/>
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PrefixDebugExpr"/>
+      </action>
+     </sequence>
+    </case>
+    <case first="{AMP}">
+     <sequence first="{AMP}">
+      <token first="{AMP}" name="AMP"/>
+      <action first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PrefixDebugExpr"/>
+      </action>
+     </sequence>
+    </case>
+    <case first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <action first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <nonterminal first="{CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PostfixDebugExpr"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{CAST, ID, INTEGER, LPAREN, TYPEID}" name="PostfixDebugExpr">
+   <action first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <group first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+     <sequence first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+      <action first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+       <nonterminal first="{CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="PrimaryDebugExpr"/>
+      </action>
+      <kleene first="{#, DOT, LBRACKET}">
+       <group first="{DOT, LBRACKET}">
+        <choice first="{DOT, LBRACKET}">
+         <switch first="{DOT, LBRACKET}">
+          <case first="{DOT}">
+           <choice first="{DOT}">
+            <sequence first="{DOT}">
+             <token first="{DOT}" name="DOT"/>
+             <action first="{ID}">
+              <token first="{ID}" name="ID"/>
+             </action>
+            </sequence>
+            <sequence first="{DOT}">
+             <token first="{DOT}" name="DOT"/>
+             <action first="{BASE}">
+              <token first="{BASE}" name="BASE"/>
+             </action>
+            </sequence>
+           </choice>
+          </case>
+          <case first="{LBRACKET}">
+           <sequence first="{LBRACKET}">
+            <sequence first="{LBRACKET}">
+             <sequence first="{LBRACKET}">
+              <sequence first="{LBRACKET}">
+               <token first="{LBRACKET}" name="LBRACKET"/>
+               <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DebugExpr"/>
+              </sequence>
+              <token first="{COMMA}" name="COMMA"/>
+             </sequence>
+             <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DebugExpr"/>
+            </sequence>
+            <action first="{RBRACKET}">
+             <token first="{RBRACKET}" name="RBRACKET"/>
+            </action>
+           </sequence>
+          </case>
+         </switch>
+         <sequence first="{LBRACKET}">
+          <sequence first="{LBRACKET}">
+           <token first="{LBRACKET}" name="LBRACKET"/>
+           <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DebugExpr"/>
+          </sequence>
+          <action first="{RBRACKET}">
+           <token first="{RBRACKET}" name="RBRACKET"/>
+          </action>
+         </sequence>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CAST, ID, INTEGER, LPAREN, TYPEID}" name="PrimaryDebugExpr">
+   <switch first="{CAST, ID, INTEGER, LPAREN, TYPEID}">
+    <case first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </case>
+    <case first="{INTEGER}">
+     <action first="{INTEGER}">
+      <token first="{INTEGER}" name="INTEGER"/>
+     </action>
+    </case>
+    <case first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <token first="{LPAREN}" name="LPAREN"/>
+       <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DebugExpr"/>
+      </sequence>
+      <action first="{RPAREN}">
+       <token first="{RPAREN}" name="RPAREN"/>
+      </action>
+     </sequence>
+    </case>
+    <case first="{TYPEID}">
+     <action first="{TYPEID}">
+      <nonterminal first="{TYPEID}" ruleName="TypeIdExpr"/>
+     </action>
+    </case>
+    <case first="{CAST}">
+     <action first="{CAST}">
+      <nonterminal first="{CAST}" ruleName="CastDebugExpr"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{CAST}" name="CastDebugExpr">
+   <sequence first="{CAST}">
+    <sequence first="{CAST}">
+     <sequence first="{CAST}">
+      <sequence first="{CAST}">
+       <sequence first="{CAST}">
+        <sequence first="{CAST}">
+         <token first="{CAST}" name="CAST"/>
+         <token first="{LANGLE}" name="LANGLE"/>
+        </sequence>
+        <nonterminal first="{TYPEID}" ruleName="TypeIdExpr"/>
+       </sequence>
+       <token first="{RANGLE}" name="RANGLE"/>
+      </sequence>
+      <token first="{LPAREN}" name="LPAREN"/>
+     </sequence>
+     <nonterminal first="{AMP, AST, CAST, ID, INTEGER, LPAREN, TYPEID}" ruleName="DebugExpr"/>
+    </sequence>
+    <action first="{RPAREN}">
+     <token first="{RPAREN}" name="RPAREN"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{TYPEID}" name="TypeIdExpr">
+   <action first="{TYPEID}">
+    <group first="{TYPEID}">
+     <sequence first="{TYPEID}">
+      <sequence first="{TYPEID}">
+       <sequence first="{TYPEID}">
+        <token first="{TYPEID}" name="TYPEID"/>
+        <token first="{LPAREN}" name="LPAREN"/>
+       </sequence>
+       <action first="{STRING}">
+        <token first="{STRING}" name="STRING"/>
+       </action>
+      </sequence>
+      <token first="{RPAREN}" name="RPAREN"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>
