@@ -1062,6 +1062,23 @@ bool FlushFile(void* fileHandle, int32_t& errorStringHandle)
 
 }  // namespace cmajor::rt
 
+void RtPrint(const char* str)
+{
+    std::string s(str);
+    if (cmajor::rt::FileTable::Instance().GetFlag(cmajor::rt::FileTableFlags::stdOutInUtf16Mode))
+    {
+        std::u16string utf16Chars = util::ToUtf16(s);
+        if (!utf16Chars.empty())
+        {
+            std::fwrite(utf16Chars.c_str(), sizeof(char16_t), utf16Chars.length(), stdout);
+        }
+    }
+    else
+    {
+        std::fwrite(s.c_str(), sizeof(char), s.length(), stdout);
+    }
+}
+
 void* RtOpen(const char* filePath, cmajor::rt::OpenMode openMode, int32_t& errorStringHandle)
 {
     return cmajor::rt::OpenFile(filePath, openMode, errorStringHandle);

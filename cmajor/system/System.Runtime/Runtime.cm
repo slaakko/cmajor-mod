@@ -30,6 +30,7 @@ public extern cdecl nothrow const char* RtGetError(int errorId);
 public extern cdecl nothrow void RtDisposeError(int errorId);
 public extern cdecl nothrow const char* RtGetStackTrace();
 public extern cdecl nothrow void RtDisposeStackTrace();
+public extern cdecl nothrow void RtPrint(const char* str);
 public extern cdecl nothrow void* RtOpen(const char* filePath, byte openMode, int& errorStringHandle);
 public extern cdecl nothrow void* RtOpenStdFile(int handle, int& errorStringHandle);
 public extern cdecl nothrow bool RtClose(void* fileHandle, int& errorStringHandle);

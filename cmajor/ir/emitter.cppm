@@ -24,8 +24,8 @@ class EmittingDelegate
 {
 public:
     virtual void* GetGlobalStringPtr(int stringId) = 0;
-    virtual void* GetGlobalWStringConstant(int stringId) = 0;
-    virtual void* GetGlobalUStringConstant(int stringId) = 0;
+    virtual void* GetGlobalWStringConstant(int stringId, void*& arrayType) = 0;
+    virtual void* GetGlobalUStringConstant(int stringId, void*& arrayType) = 0;
     virtual void* GetGlobalUuidConstant(int uuidId) = 0;
     virtual void SetLineNumber(int32_t lineNumber) {}
     virtual void* HandlerBlock() { return nullptr; }
@@ -124,8 +124,8 @@ public:
     virtual void* CreateGlobalWStringPtr(const std::u16string& name) = 0;
     virtual void* CreateGlobalUStringPtr(const std::u32string& name) = 0;
     virtual void* GetGlobalStringPtr(int stringId) = 0;
-    virtual void* GetGlobalWStringConstant(int stringId) = 0;
-    virtual void* GetGlobalUStringConstant(int stringId) = 0;
+    virtual void* GetGlobalWStringConstant(int stringId, void*& arrayType) = 0;
+    virtual void* GetGlobalUStringConstant(int stringId, void*& arrayType) = 0;
     virtual void* GetGlobalUuidConstant(int uuidId) = 0;
     virtual void* CreateDITypeForBool() = 0;
     virtual void* CreateDITypeForSByte() = 0;
@@ -287,9 +287,9 @@ public:
     virtual void SaveObjectPointer(void* objectPointer_) = 0;
     virtual void SetObjectPointer(void* objectPointer_) = 0;
     virtual void* GetObjectPointer() = 0;
-    virtual void* GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset) = 0;
-    virtual void* GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset) = 0;
-    virtual void* ComputeAddress(void* ptr, void* index) = 0;
+    virtual void* GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset) = 0;
+    virtual void* GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset) = 0;
+    virtual void* ComputeAddress(void* type, void* ptr, void* index) = 0;
     virtual void* CreatePtrDiff(void* elementType, void* left, void* right) = 0;
     virtual uint32_t GetPrivateFlag() = 0;
     virtual uint32_t GetProtectedFlag() = 0;

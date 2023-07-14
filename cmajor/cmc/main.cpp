@@ -24,7 +24,7 @@ void PrintHelp()
     std::cout << "  Print help and exit." << "\n";
     std::cout << "--verbose | -v" << "\n";
     std::cout << "  Be verbose." << "\n";
-    std::cout << "--quiet | -q\n" << "\n";
+    std::cout << "--quiet | -q" << "\n";
     std::cout << "  print no messages\n";
     std::cout << "--single-threaded | -s" << "\n";
     std::cout << "  Single-threaded compile." << "\n";
@@ -42,6 +42,7 @@ void PrintHelp()
     std::cout << "  Set optimization level to LEVEL (0-3). Defaults: LEVEL=0 for 'debug' configuration and LEVEL=2 for 'release' configuration." << "\n";
     std::cout << "--emit-llvm | -l" << "\n";
     std::cout << "  Emit intermediate LLVM code to FILE.ll files\n" << "\n";
+    std::cout << "--no-debug-info | -i" << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -95,6 +96,10 @@ int main(int argc, const char** argv)
                 else if (arg == "--link-with-debug-runtime")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                }
+                else if (arg == "--no-debug-info")
+                {
+                    noDebugInfo = true;
                 }
                 else if (arg.find('=') != std::string::npos)
                 {
@@ -222,6 +227,11 @@ int main(int argc, const char** argv)
                                 useModuleCache = false;
                                 break;
                             }
+                            case 'i':
+                            {
+                                noDebugInfo = true;
+                                break;
+                            }
                             default:
                             {
                                 throw std::runtime_error("unknown option '-" + std::string(1, o) + "'");
@@ -238,7 +248,6 @@ int main(int argc, const char** argv)
         cmajor::symbols::SetUseModuleCache(useModuleCache);
         cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::llvmBackEnd);
         cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
-        std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = backend->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
         std::set<std::string> builtProjects;
         cmajor::symbols::SetUseModuleCache(useModuleCache);
         if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
@@ -249,11 +258,11 @@ int main(int argc, const char** argv)
         {
             if (file.ends_with(".cmp"))
             {
-                cmajor::build::BuildProject(file, rootModule, emittingContext.get(), builtProjects);
+                cmajor::build::BuildProject(file, rootModule, builtProjects);
             }
             else if (file.ends_with(".cms"))
             {
-                cmajor::build::BuildSolution(file, rootModules, emittingContext.get());
+                cmajor::build::BuildSolution(file, rootModules);
             }
             else
             {

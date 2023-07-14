@@ -1523,7 +1523,7 @@ void* LLVMEmitter::SizeOf(void* ptrType)
     return size;
 }
 
-void* LLVMEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
+void* LLVMEmitter::GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset)
 {
     ArgVector indeces;
     indeces.push_back(builder.getInt32(0));
@@ -1531,12 +1531,12 @@ void* LLVMEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
 #if (LLVM_VERSION_MAJOR < 16)
     llvm::Value* classIdPtr = builder.CreateGEP(static_cast<llvm::Value*>(vmtPtr), indeces);
 #else
-    llvm::Value* classIdPtr = builder.CreateGEP(builder.getInt64Ty(), static_cast<llvm::Value*>(vmtPtr), indeces);
+    llvm::Value* classIdPtr = builder.CreateGEP(static_cast<llvm::Type*>(vmtArrayType), static_cast<llvm::Value*>(vmtPtr), indeces);
 #endif
     return classIdPtr;
 }
 
-void* LLVMEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
+void* LLVMEmitter::GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset)
 {
     ArgVector indeces;
     indeces.push_back(builder.getInt32(0));
@@ -1546,19 +1546,19 @@ void* LLVMEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
     llvm::Value* className = builder.CreateLoad(classNamePtr);
 #else 
     llvm::Type* charPtrPtrType = static_cast<llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForPtrType(GetIrTypeForChar())));
-    llvm::Value* classNamePtr = builder.CreateGEP(charPtrPtrType, static_cast<llvm::Value*>(vmtPtr), indeces);
+    llvm::Value* classNamePtr = builder.CreateGEP(static_cast<llvm::Type*>(vmtArrayType), static_cast<llvm::Value*>(vmtPtr), indeces);
     llvm::Type* charPtrType = static_cast<llvm::Type*>(GetIrTypeForPtrType(GetIrTypeForChar()));
     llvm::Value* className = builder.CreateLoad(charPtrType, classNamePtr);
 #endif
     return className;
 }
 
-void* LLVMEmitter::ComputeAddress(void* ptr, void* index)
+void* LLVMEmitter::ComputeAddress(void* type, void* ptr, void* index)
 {
 #if (LLVM_VERSION_MAJOR < 16)
     return builder.CreateGEP(static_cast<llvm::Value*>(ptr), static_cast<llvm::Value*>(index));
 #else
-    return builder.CreateGEP(static_cast<llvm::Type*>(GetIrTypeForVoidPtrType()), static_cast<llvm::Value*>(ptr), static_cast<llvm::Value*>(index));
+    return builder.CreateGEP(static_cast<llvm::Type*>(type), static_cast<llvm::Value*>(ptr), static_cast<llvm::Value*>(index));
 #endif
 }
 
@@ -2326,14 +2326,14 @@ void* LLVMEmitter::GetGlobalStringPtr(int stringId)
     return emittingDelegate->GetGlobalStringPtr(stringId);
 }
 
-void* LLVMEmitter::GetGlobalWStringConstant(int stringId)
+void* LLVMEmitter::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalWStringConstant(stringId);
+    return emittingDelegate->GetGlobalWStringConstant(stringId, arrayType);
 }
 
-void* LLVMEmitter::GetGlobalUStringConstant(int stringId)
+void* LLVMEmitter::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalUStringConstant(stringId);
+    return emittingDelegate->GetGlobalUStringConstant(stringId, arrayType);
 }
 
 void* LLVMEmitter::GetGlobalUuidConstant(int uuidId)

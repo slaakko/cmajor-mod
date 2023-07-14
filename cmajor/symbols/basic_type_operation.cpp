@@ -381,7 +381,7 @@ void BasicTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     Assert(genObjects.size() == 2, "move assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type, rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 

@@ -1328,7 +1328,7 @@ void* SystemXCodeGenerator::GetGlobalStringPtr(int stringId)
     }
 }
 
-void* SystemXCodeGenerator::GetGlobalWStringConstant(int stringId)
+void* SystemXCodeGenerator::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf16stringMap.find(stringId);
     if (it != utf16stringMap.cend())
@@ -1357,7 +1357,7 @@ void* SystemXCodeGenerator::GetGlobalWStringConstant(int stringId)
     }
 }
 
-void* SystemXCodeGenerator::GetGlobalUStringConstant(int stringId)
+void* SystemXCodeGenerator::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf32stringMap.find(stringId);
     if (it != utf32stringMap.cend())

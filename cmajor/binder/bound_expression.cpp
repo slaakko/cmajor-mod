@@ -66,7 +66,7 @@ void BoundParameter::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFla
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             value = emitter.CreateLoad(type->IrType(emitter), value);
         }
         emitter.Stack().Push(value);
@@ -93,7 +93,7 @@ void BoundParameter::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFl
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 1; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
         }
         emitter.CreateStore(value, ptr);
@@ -134,7 +134,7 @@ void BoundLocalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             value = emitter.CreateLoad(type->IrType(emitter), value);
         }
         emitter.Stack().Push(value);
@@ -161,7 +161,7 @@ void BoundLocalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 1; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
         }
         emitter.CreateStore(value, ptr);
@@ -204,6 +204,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
     emitter.SetCurrentDebugLocation(GetSourcePos());
     Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); 
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(memberVariableSymbol->Parent());
+    void* ptrType = nullptr;
     if (memberVariableSymbol->IsStatic())
     {
         if (staticInitNeeded)
@@ -215,6 +216,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
             }
         }
         emitter.Stack().Push(classType->StaticObject(emitter, false));
+        ptrType = classType->StaticObjectType(emitter);
     }
     else
     {
@@ -223,9 +225,10 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
             throw cmajor::symbols::Exception("class pointer of the member variable not set", GetSourcePos(), ModuleId());
         }
         classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
+        ptrType = classType->IrType(emitter);
     }
     void* ptr = emitter.Stack().Pop();
-    void* memberVariablePtr = emitter.GetMemberVariablePtr(classType->IrType(emitter), ptr, memberVariableSymbol->LayoutIndex());
+    void* memberVariablePtr = emitter.GetMemberVariablePtr(ptrType, ptr, memberVariableSymbol->LayoutIndex());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Push(memberVariablePtr);
@@ -236,7 +239,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             value = emitter.CreateLoad(type->IrType(emitter), value);
         }
         emitter.Stack().Push(value);
@@ -255,6 +258,7 @@ void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
     emitter.SetCurrentDebugLocation(GetSourcePos());
     Assert(memberVariableSymbol->LayoutIndex() != -1, "layout index of the member variable not set"); 
     void* value = emitter.Stack().Pop();
+    void* ptrType = nullptr;
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
         throw cmajor::symbols::Exception("cannot store to the address of a member variable", GetSourcePos(), ModuleId());
@@ -272,20 +276,22 @@ void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
                 }
             }
             emitter.Stack().Push(classType->StaticObject(emitter, false));
+            ptrType = classType->StaticObjectType(emitter);
         }
         else
         {
             classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
+            ptrType = classType->IrType(emitter);
         }
         void* ptr = emitter.Stack().Pop();
-        void* memberVariablePtr = emitter.GetMemberVariablePtr(classType->IrType(emitter), ptr, memberVariableSymbol->LayoutIndex());
+        void* memberVariablePtr = emitter.GetMemberVariablePtr(ptrType, ptr, memberVariableSymbol->LayoutIndex());
         if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
             void* ptr = emitter.CreateLoad(type->IrType(emitter), memberVariablePtr);
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
             }
             emitter.CreateStore(value, ptr);
@@ -461,7 +467,7 @@ void BoundGlobalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
         uint8_t n = GetDerefCount(flags);
         for (uint8_t i = 0; i < n; ++i)
         {
-            type = type->RemovePointer(GetSourcePos(), ModuleId());
+            type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
             value = emitter.CreateLoad(type->IrType(emitter), value);
         }
         emitter.Stack().Push(value);
@@ -491,7 +497,7 @@ void BoundGlobalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 loadedPtr = emitter.CreateLoad(type->IrType(emitter), loadedPtr);
             }
             emitter.CreateStore(value, loadedPtr);
@@ -913,7 +919,7 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 value = emitter.CreateLoad(type->IrType(emitter), value);
             }
             emitter.Stack().Push(value);
@@ -966,7 +972,7 @@ void BoundFunctionCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
                 uint8_t n = GetDerefCount(flags);
                 for (uint8_t i = 1; i < n; ++i)
                 {
-                    type = type->RemovePointer(GetSourcePos(), ModuleId());
+                    type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                     ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
                 }
                 emitter.CreateStore(value, ptr);
@@ -1038,7 +1044,7 @@ void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 value = emitter.CreateLoad(type->IrType(emitter), value);
             }
             emitter.Stack().Push(value);
@@ -1083,7 +1089,7 @@ void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
             }
             emitter.CreateStore(value, ptr);
@@ -1175,7 +1181,7 @@ void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Oper
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 0; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 value = emitter.CreateLoad(type->IrType(emitter), value);
             }
             emitter.Stack().Push(value);
@@ -1220,7 +1226,7 @@ void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
             uint8_t n = GetDerefCount(flags);
             for (uint8_t i = 1; i < n; ++i)
             {
-                type = type->RemovePointer(GetSourcePos(), ModuleId());
+                type = type->RemovePtrOrRef(GetSourcePos(), ModuleId());
                 ptr = emitter.CreateLoad(type->IrType(emitter), ptr);
             }
             emitter.CreateStore(value, ptr);
@@ -1533,9 +1539,9 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
         }
         void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
-        void* leftClassIdPtr = emitter.GetClassIdPtr(vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
-        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* retType = emitter.GetIrTypeForBool();
         std::vector<void*> paramTypes;
         paramTypes.push_back(emitter.GetIrTypeForVoidPtrType());
@@ -1563,10 +1569,10 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
         }
         void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
-        void* leftClassIdPtr = emitter.GetClassIdPtr(vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* leftClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), leftClassIdPtr), emitter.GetIrTypeForULong());
         void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
-        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), rightClassIdPtr), emitter.GetIrTypeForULong());
         void* remainder = emitter.CreateURem(leftClassId, rightClassId);
         void* remainderIsZero = emitter.CreateICmpEQ(remainder, emitter.CreateDefaultIrValueForULong());
@@ -1630,9 +1636,9 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
         }
         void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
-        void* leftClassIdPtr = emitter.GetClassIdPtr(vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
-        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
 
         void* retType = emitter.GetIrTypeForBool();
         std::vector<void*> paramTypes;
@@ -1676,10 +1682,10 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
             thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
         }
         void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
-        void* leftClassIdPtr = emitter.GetClassIdPtr(vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* leftClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), leftClassIdPtr), emitter.GetIrTypeForULong());
         void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
-        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
+        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetClassIdVmtIndexOffset());
         void* rightClassId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), rightClassIdPtr), emitter.GetIrTypeForULong());
         void* remainder = emitter.CreateURem(leftClassId, rightClassId);
         void* remainderIsZero = emitter.CreateICmpEQ(remainder, emitter.CreateDefaultIrValueForULong());
@@ -1748,7 +1754,7 @@ void BoundTypeNameExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
         thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
     }
     void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
-    void* className = emitter.GetClassName(vmtPtr, cmajor::symbols::GetClassNameVmtIndexOffset());
+    void* className = emitter.GetClassName(vmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassNameVmtIndexOffset());
     emitter.Stack().Push(className);
     DestroyTemporaries(emitter);
 }
@@ -1800,7 +1806,7 @@ void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
         thisPtr = emitter.CreateBitCast(thisPtr, vmtPtrHolderClass->AddPointer(GetSourcePos(), ModuleId())->IrType(emitter));
     }
     void* vmtPtr = emitter.GetVmtPtr(vmtPtrHolderClass->IrType(emitter), thisPtr, vmtPtrHolderClass->VmtPtrIndex(), classType->VmtPtrType(emitter));
-    void* classIdPtr = emitter.GetClassIdPtr(vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
+    void* classIdPtr = emitter.GetClassIdPtr(vmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetClassIdVmtIndexOffset());
     void* classId = emitter.CreatePtrToInt(emitter.CreateLoad(emitter.GetIrTypeForULong(), classIdPtr), emitter.GetIrTypeForULong());
     emitter.Stack().Push(classId);
     DestroyTemporaries(emitter);

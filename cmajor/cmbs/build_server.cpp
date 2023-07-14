@@ -325,14 +325,13 @@ void BuildServer::HandleBuildRequest(bs::BuildRequest* request, util::LogFileWri
         std::set<std::string> builtProjects;
         try
         {
-            std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
             if (request->filePath.ends_with(".cms"))
             {
-                cmajor::build::BuildSolution(util::GetFullPath(request->filePath), rootModules, emittingContext.get());
+                cmajor::build::BuildSolution(util::GetFullPath(request->filePath), rootModules);
             }
             else if (request->filePath.ends_with(".cmp"))
             {
-                cmajor::build::BuildProject(util::GetFullPath(request->filePath), rootModule, emittingContext.get(), builtProjects);
+                cmajor::build::BuildProject(util::GetFullPath(request->filePath), rootModule, builtProjects);
             }
             else
             {

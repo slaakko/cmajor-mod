@@ -205,7 +205,7 @@ void PointerMoveCtor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cma
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->RemovePointer(sourcePos, moduleId)->IrType(emitter), rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
     if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
     {
         emitter.Stack().Dup();
@@ -365,7 +365,7 @@ void PointerMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vect
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* rvalueRefValue = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.CreateLoad(type->RemovePointer(sourcePos, moduleId)->IrType(emitter), rvalueRefValue)); // TODO
+    emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -490,33 +490,38 @@ class PointerPlusOffset : public cmajor::symbols::FunctionSymbol
 public:
     PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerPlusOffset"; }
+private:
+    cmajor::symbols::TypeSymbol* pointerType;
 };
 
-PointerPlusOffset::PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator+")
+PointerPlusOffset::PointerPlusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos,
+    const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator+"), pointerType(pointerType_)
 {
     SetGroupName(U"operator+");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     cmajor::symbols::ParameterSymbol* leftParam = new cmajor::symbols::ParameterSymbol(sourcePos, moduleId, U"left");
-    leftParam->SetType(pointerType_);
+    leftParam->SetType(pointerType);
     AddMember(leftParam);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(sourcePos, moduleId, U"right");
     rightParam->SetType(longType_);
     AddMember(rightParam);
-    SetReturnType(pointerType_);
+    SetReturnType(pointerType);
     ComputeName();
 }
 
-void PointerPlusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void PointerPlusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     Assert(genObjects.size() == 2, "operator+ needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.ComputeAddress(left, right));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(sourcePos, moduleId)->IrType(emitter), left, right));
 }
 
 class PointerPlusOffsetOperation : public Operation
@@ -574,9 +579,12 @@ public:
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "OffsetPlusPointer"; }
+private:
+    cmajor::symbols::TypeSymbol* pointerType;
 };
 
-OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator+")
+OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cmajor::symbols::TypeSymbol* pointerType_, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator+"), pointerType(pointerType_)
 {
     SetGroupName(U"operator+");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -584,20 +592,21 @@ OffsetPlusPointer::OffsetPlusPointer(cmajor::symbols::TypeSymbol* longType_, cma
     leftParam->SetType(longType_);
     AddMember(leftParam);
     cmajor::symbols::ParameterSymbol* rightParam = new cmajor::symbols::ParameterSymbol(sourcePos, moduleId, U"right");
-    rightParam->SetType(pointerType_);
+    rightParam->SetType(pointerType);
     AddMember(rightParam);
-    SetReturnType(pointerType_);
+    SetReturnType(pointerType);
     ComputeName();
 }
 
-void OffsetPlusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void OffsetPlusPointer::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     Assert(genObjects.size() == 2, "operator+ needs two objects"); 
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* left = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
-    emitter.Stack().Push(emitter.ComputeAddress(right, left));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(sourcePos, moduleId)->IrType(emitter), right, left));
 }
 
 class OffsetPlusPointerOperation : public Operation
@@ -653,12 +662,16 @@ class PointerMinusOffset : public cmajor::symbols::FunctionSymbol
 public:
     PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "PointerMinusOffset"; }
+private:
+    cmajor::symbols::TypeSymbol* pointerType;
 };
 
-PointerMinusOffset::PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator-")
+PointerMinusOffset::PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_, cmajor::symbols::TypeSymbol* longType_, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) : cmajor::symbols::FunctionSymbol(sourcePos, moduleId, U"operator-"), pointerType(pointerType_)
 {
     SetGroupName(U"operator-");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -672,7 +685,8 @@ PointerMinusOffset::PointerMinusOffset(cmajor::symbols::TypeSymbol* pointerType_
     ComputeName();
 }
 
-void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
+    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     Assert(genObjects.size() == 2, "operator- needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -680,7 +694,7 @@ void PointerMinusOffset::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* right = emitter.Stack().Pop();
     void* offset = emitter.CreateNeg(right);
-    emitter.Stack().Push(emitter.ComputeAddress(left, offset));
+    emitter.Stack().Push(emitter.ComputeAddress(pointerType->RemovePointer(sourcePos, moduleId)->IrType(emitter), left, offset));
 }
 
 class PointerMinusOffsetOperation : public Operation

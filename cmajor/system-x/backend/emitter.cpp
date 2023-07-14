@@ -442,14 +442,14 @@ void* SystemXEmitter::GetGlobalStringPtr(int stringId)
     return emittingDelegate->GetGlobalStringPtr(stringId);
 }
 
-void* SystemXEmitter::GetGlobalWStringConstant(int stringId)
+void* SystemXEmitter::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalWStringConstant(stringId);
+    return emittingDelegate->GetGlobalWStringConstant(stringId, arrayType);
 }
 
-void* SystemXEmitter::GetGlobalUStringConstant(int stringId)
+void* SystemXEmitter::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalUStringConstant(stringId);
+    return emittingDelegate->GetGlobalUStringConstant(stringId, arrayType);
 }
 
 void* SystemXEmitter::GetGlobalUuidConstant(int uuidId)
@@ -1351,13 +1351,13 @@ void* SystemXEmitter::GetObjectPointer()
     return objectPointer;
 }
 
-void* SystemXEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
+void* SystemXEmitter::GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset)
 {
     cmajor::systemx::ir::Value* classIdPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(0));
     return classIdPtr;
 }
 
-void* SystemXEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
+void* SystemXEmitter::GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset)
 {
     cmajor::systemx::ir::Value* classNamePtrPtr = context->CreateElemAddr(static_cast<cmajor::systemx::ir::Value*>(vmtPtr), context->GetLongValue(classNameVmtIndexOffset));
     cmajor::systemx::ir::Value* classNamePtr = context->CreateLoad(classNamePtrPtr);
@@ -1366,7 +1366,7 @@ void* SystemXEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset
     return className;
 }
 
-void* SystemXEmitter::ComputeAddress(void* ptr, void* index)
+void* SystemXEmitter::ComputeAddress(void* type, void* ptr, void* index)
 {
     return context->CreatePtrOffset(static_cast<cmajor::systemx::ir::Value*>(ptr), static_cast<cmajor::systemx::ir::Value*>(index));
 }

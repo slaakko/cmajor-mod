@@ -67,7 +67,6 @@ int main(int argc, const char** argv)
     std::set<std::string> builtProjects;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
-    std::unique_ptr<cmajor::ir::EmittingContext> emittingContext;
     try
     {
         std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -303,7 +302,6 @@ int main(int argc, const char** argv)
             {
                 std::cout << "Cmajor with with C++ backend compiler version " << version << std::endl;
             }
-            emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
             cmajor::symbols::SetUseModuleCache(useModuleCache);
             if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
             {
@@ -324,7 +322,7 @@ int main(int argc, const char** argv)
                     }
                     else
                     {
-                        cmajor::build::BuildSolution(util::GetFullPath(fp.generic_string()), rootModules, emittingContext.get());
+                        cmajor::build::BuildSolution(util::GetFullPath(fp.generic_string()), rootModules);
                     }
                 }
                 else if (fp.extension() == ".cmp")
@@ -339,7 +337,7 @@ int main(int argc, const char** argv)
                     }
                     else
                     {
-                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, emittingContext.get(), builtProjects);
+                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
                     }
                 }
             }

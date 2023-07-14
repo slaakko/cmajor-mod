@@ -93,8 +93,8 @@ public:
     void* CreateGlobalWStringPtr(const std::u16string& name) override;
     void* CreateGlobalUStringPtr(const std::u32string& name) override;
     void* GetGlobalStringPtr(int stringId) override;
-    void* GetGlobalWStringConstant(int stringId) override;
-    void* GetGlobalUStringConstant(int stringId) override;
+    void* GetGlobalWStringConstant(int stringId, void*& arrayType) override;
+    void* GetGlobalUStringConstant(int stringId, void*& arrayType) override;
     void* GetGlobalUuidConstant(int uuidId) override;
     void* CreateDITypeForBool() override;
     void* CreateDITypeForSByte() override;
@@ -256,9 +256,9 @@ public:
     void SaveObjectPointer(void* objectPointer_) override;
     void SetObjectPointer(void* objectPointer_) override;
     void* GetObjectPointer() override;
-    void* GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset) override;
-    void* GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset) override;
-    void* ComputeAddress(void* ptr, void* index) override;
+    void* GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset) override;
+    void* GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset) override;
+    void* ComputeAddress(void* type, void* ptr, void* index) override;
     void* CreatePtrDiff(void* elementType, void* left, void* right) override;
     uint32_t GetPrivateFlag() override;
     uint32_t GetProtectedFlag() override;

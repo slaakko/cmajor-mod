@@ -479,6 +479,22 @@ TypeSymbol* DerivedTypeSymbol::RemovePointer(const soul::ast::SourcePos& sourceP
     return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemovePointerDerivation(derivationRec), sourcePos, moduleId);
 }
 
+TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+{
+    if (IsReferenceType())
+    {
+        return RemoveReference(sourcePos, moduleId);
+    }
+    else if (IsPointerType())
+    {
+        return RemovePointer(sourcePos, moduleId);
+    }
+    else
+    {
+        return this;
+    }
+}
+
 TypeSymbol* DerivedTypeSymbol::RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
 {
     return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveConstDerivation(derivationRec), sourcePos, moduleId);

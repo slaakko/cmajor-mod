@@ -46,6 +46,7 @@ public:
     virtual TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
     virtual TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
     virtual TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
+    virtual TypeSymbol* RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
     virtual TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
     virtual TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);

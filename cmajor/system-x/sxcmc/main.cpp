@@ -332,7 +332,7 @@ int main(int argc, const char** argv)
                     }
                     else
                     {
-                        cmajor::build::BuildSolution(util::GetFullPath(fp.generic_string()), rootModules, emittingContext.get());
+                        cmajor::build::BuildSolution(util::GetFullPath(fp.generic_string()), rootModules);
                     }
                 }
                 else if (fp.extension() == ".cmp")
@@ -347,7 +347,7 @@ int main(int argc, const char** argv)
                     }
                     else
                     {
-                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, emittingContext.get(), builtProjects);
+                        cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
                     }
                 }
             }

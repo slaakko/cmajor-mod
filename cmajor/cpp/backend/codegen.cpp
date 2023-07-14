@@ -1780,7 +1780,7 @@ void* CppCodeGenerator::GetGlobalStringPtr(int stringId)
     }
 }
 
-void* CppCodeGenerator::GetGlobalWStringConstant(int stringId)
+void* CppCodeGenerator::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf16stringMap.find(stringId);
     if (it != utf16stringMap.cend())
@@ -1796,7 +1796,7 @@ void* CppCodeGenerator::GetGlobalWStringConstant(int stringId)
     }
 }
 
-void* CppCodeGenerator::GetGlobalUStringConstant(int stringId)
+void* CppCodeGenerator::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf32stringMap.find(stringId);
     if (it != utf32stringMap.cend())

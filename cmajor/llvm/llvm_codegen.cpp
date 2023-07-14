@@ -278,6 +278,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     pads.clear();
     labeledStatementMap.clear();
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
+    if (functionSymbol->MangledName().find(U"main") != std::u32string::npos)
+    {
+        int x = 0;
+    }
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
     void* functionType = functionSymbol->IrType(*emitter);
@@ -1230,12 +1234,13 @@ void* LLVMCodeGenerator::GetGlobalStringPtr(int stringId)
     }
 }
 
-void* LLVMCodeGenerator::GetGlobalWStringConstant(int stringId)
+void* LLVMCodeGenerator::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf16stringMap.find(stringId);
     if (it != utf16stringMap.cend())
     {
-        return it->second;
+        arrayType = it->second.second;
+        return it->second.first;
     }
     else
     {
@@ -1247,24 +1252,26 @@ void* LLVMCodeGenerator::GetGlobalWStringConstant(int stringId)
             wcharConstants.push_back(emitter->CreateIrValueForUShort(static_cast<uint16_t>(c)));
         }
         wcharConstants.push_back(emitter->CreateIrValueForUShort(static_cast<uint16_t>(0)));
-        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUShort(), length + 1);
+        arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUShort(), length + 1);
         void* stringObject = emitter->GetOrInsertGlobal("wstring" + std::to_string(stringId), arrayType);
         void* stringGlobal = stringObject;
         emitter->SetPrivateLinkage(stringGlobal);
         void* constant = emitter->CreateIrValueForConstantArray(arrayType, wcharConstants, std::string());
         emitter->SetInitializer(stringGlobal, constant);
         void* stringValue = stringGlobal;
-        utf16stringMap[stringId] = stringValue;
+        void* arrType = arrayType;
+        utf16stringMap[stringId] = std::make_pair(stringValue, arrType);
         return stringValue;
     }
 }
 
-void* LLVMCodeGenerator::GetGlobalUStringConstant(int stringId)
+void* LLVMCodeGenerator::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
     auto it = utf32stringMap.find(stringId);
     if (it != utf32stringMap.cend())
     {
-        return it->second;
+        arrayType = it->second.second;
+        return it->second.first;
     }
     else
     {
@@ -1276,14 +1283,15 @@ void* LLVMCodeGenerator::GetGlobalUStringConstant(int stringId)
             ucharConstants.push_back(emitter->CreateIrValueForUInt(static_cast<uint32_t>(c)));
         }
         ucharConstants.push_back(emitter->CreateIrValueForUInt(static_cast<uint32_t>(0)));
-        void* arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUInt(), length + 1);
+        arrayType = emitter->GetIrTypeForArrayType(emitter->GetIrTypeForUInt(), length + 1);
         void* stringObject = emitter->GetOrInsertGlobal("ustring" + std::to_string(stringId), arrayType);
         void* stringGlobal = stringObject;
         emitter->SetPrivateLinkage(stringGlobal);
         void* constant = emitter->CreateIrValueForConstantArray(arrayType, ucharConstants, std::string());
         emitter->SetInitializer(stringGlobal, constant);
         void* stringValue = stringGlobal;
-        utf32stringMap[stringId] = stringValue;
+        void* arrType = arrayType;
+        utf32stringMap[stringId] = std::make_pair(stringValue, arrType);
         return stringValue;
     }
 }

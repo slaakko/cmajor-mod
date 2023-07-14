@@ -449,14 +449,14 @@ void* CppEmitter::GetGlobalStringPtr(int stringId)
     return emittingDelegate->GetGlobalStringPtr(stringId);
 }
 
-void* CppEmitter::GetGlobalWStringConstant(int stringId)
+void* CppEmitter::GetGlobalWStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalWStringConstant(stringId);
+    return emittingDelegate->GetGlobalWStringConstant(stringId, arrayType);
 }
 
-void* CppEmitter::GetGlobalUStringConstant(int stringId)
+void* CppEmitter::GetGlobalUStringConstant(int stringId, void*& arrayType)
 {
-    return emittingDelegate->GetGlobalUStringConstant(stringId);
+    return emittingDelegate->GetGlobalUStringConstant(stringId, arrayType);
 }
 
 void* CppEmitter::GetGlobalUuidConstant(int uuidId)
@@ -646,7 +646,7 @@ void* CppEmitter::GetArrayBeginAddress(void* arrayType, void* arrayPtr)
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), context->GetLongValue(0));
 }
 
-void* CppEmitter::GetArrayEndAddress(void* arrayPtr, void* elementType, uint64_t size)
+void* CppEmitter::GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size)
 {
     return context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(arrayPtr), context->GetLongValue(size));
 }
@@ -1382,13 +1382,13 @@ void* CppEmitter::GetObjectPointer()
     return objectPointer;
 }
 
-void* CppEmitter::GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset)
+void* CppEmitter::GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset)
 {
     cmajor::cpp::ir::Value* classIdPtr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtPtr), context->GetLongValue(0));
     return classIdPtr;
 }
 
-void* CppEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
+void* CppEmitter::GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset)
 {
     cmajor::cpp::ir::Value* classNamePtrPtr = context->CreateElemAddr(static_cast<cmajor::cpp::ir::Value*>(vmtPtr), context->GetLongValue(classNameVmtIndexOffset));
     cmajor::cpp::ir::Value* classNamePtr = context->CreateLoad(classNamePtrPtr);
@@ -1396,7 +1396,7 @@ void* CppEmitter::GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset)
     return className;
 }
 
-void* CppEmitter::ComputeAddress(void* ptr, void* index)
+void* CppEmitter::ComputeAddress(void* type, void* ptr, void* index)
 {
     return context->CreatePtrOffset(static_cast<cmajor::cpp::ir::Value*>(ptr), static_cast<cmajor::cpp::ir::Value*>(index));
 }

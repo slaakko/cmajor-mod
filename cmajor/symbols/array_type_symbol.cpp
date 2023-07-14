@@ -303,9 +303,9 @@ void ArrayEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cm
     Assert(genObjects.size() == 1, "array end needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
+    void* arrayIrType = arrayType->IrType(emitter);
     void* arrayPtr = emitter.Stack().Pop();
-    void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* endPtr = emitter.GetArrayEndAddress(arrayPtr, elemType, arrayType->Size());
+    void* endPtr = emitter.GetArrayEndAddress(arrayIrType, arrayPtr, arrayType->Size());
     emitter.Stack().Push(endPtr);
 }
 
@@ -433,9 +433,9 @@ void ArrayCEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<c
     Assert(genObjects.size() == 1, "array cend needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     emitter.SetCurrentDebugLocation(sourcePos);
+    void* arrayIrType = arrayType->IrType(emitter);
     void* arrayPtr = emitter.Stack().Pop();
-    void* elemType = arrayType->ElementType()->IrType(emitter);
-    void* endPtr = emitter.GetArrayEndAddress(arrayPtr, elemType, arrayType->Size());
+    void* endPtr = emitter.GetArrayEndAddress(arrayIrType, arrayPtr, arrayType->Size());
     emitter.Stack().Push(endPtr);
 }
 

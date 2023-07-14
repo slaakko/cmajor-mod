@@ -75,8 +75,8 @@ public:
     void Visit(cmajor::binder::BoundConjunction& boundConjunction) override;
     void Visit(cmajor::binder::BoundGlobalVariable& boundGlobalVariable) override;
     void* GetGlobalStringPtr(int stringId) override;
-    void* GetGlobalWStringConstant(int stringId) override;
-    void* GetGlobalUStringConstant(int stringId) override;
+    void* GetGlobalWStringConstant(int stringId, void*& arrayType) override;
+    void* GetGlobalUStringConstant(int stringId, void*& arrayType) override;
     void* GetGlobalUuidConstant(int uuidId) override;
     void SetLineNumber(int32_t lineNumber) override;
     void* HandlerBlock() override;
@@ -130,8 +130,8 @@ private:
     cmajor::binder::BoundFunction* currentFunction;
     std::stack<cmajor::binder::BoundClass*> classStack;
     std::unordered_map<int, void*> utf8stringMap;
-    std::unordered_map<int, void*> utf16stringMap;
-    std::unordered_map<int, void*> utf32stringMap;
+    std::unordered_map<int, std::pair<void*, void*>> utf16stringMap;
+    std::unordered_map<int, std::pair<void*, void*>> utf32stringMap;
     std::unordered_map<int, void*> uuidMap;
     void* trueBlock;
     void* falseBlock;

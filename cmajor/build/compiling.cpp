@@ -66,7 +66,7 @@ void GenerateCode(cmajor::binder::BoundCompileUnit& boundCompileUnit, cmajor::ir
 }
 
 void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, cmajor::ir::EmittingContext* emittingContext, bool& stop)
+    std::vector<std::string>& objectFilePaths, bool& stop)
 {
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
     {
@@ -89,7 +89,8 @@ void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Modul
         {
             cmajor::build::AnalyzeControlFlow(*boundCompileUnit);
         }
-        GenerateCode(*boundCompileUnit, emittingContext);
+        std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
+        GenerateCode(*boundCompileUnit, emittingContext.get());
         objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
     }
     module->StopBuild();
@@ -150,10 +151,9 @@ void CompileQueue::NotifyAll()
 struct CompileData
 {
     CompileData(std::mutex* mtx_, cmajor::symbols::Module* module_, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits_,
-        std::vector<std::string>& objectFilePaths_, bool& stop_, bool& ready_, int numThreads_, CompileQueue& input_, CompileQueue& output_, 
-        cmajor::ir::EmittingContext* emittingContext_) :
+        std::vector<std::string>& objectFilePaths_, bool& stop_, bool& ready_, int numThreads_, CompileQueue& input_, CompileQueue& output_) :
         mtx(mtx_), module(module_), boundCompileUnits(boundCompileUnits_), objectFilePaths(objectFilePaths_), stop(stop_), ready(ready_), numThreads(numThreads_),
-        input(input_), output(output_), emittingContext(emittingContext_)
+        input(input_), output(output_)
     {
         exceptions.resize(numThreads);
         sourceFileFilePaths.resize(boundCompileUnits.size());
@@ -173,7 +173,6 @@ struct CompileData
     CompileQueue& input;
     CompileQueue& output;
     std::vector<std::exception_ptr> exceptions;
-    cmajor::ir::EmittingContext* emittingContext;
 };
 
 void CompileThreadFunction(CompileData* data, int threadId)
@@ -187,7 +186,8 @@ void CompileThreadFunction(CompileData* data, int threadId)
             if (compileUnitIndex >= 0 && compileUnitIndex < data->boundCompileUnits.size())
             {
                 cmajor::binder::BoundCompileUnit* boundCompileUnit = data->boundCompileUnits[compileUnitIndex].get();
-                GenerateCode(*boundCompileUnit, data->emittingContext);
+                std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
+                GenerateCode(*boundCompileUnit, emittingContext.get()); 
                 {
                     std::lock_guard<std::mutex> lock(*data->mtx);
                     data->objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
@@ -214,7 +214,7 @@ void CompileThreadFunction(CompileData* data, int threadId)
 std::mutex mtx;
 
 void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, cmajor::ir::EmittingContext* emittingContext, bool& stop)
+    std::vector<std::string>& objectFilePaths, bool& stop)
 {
     int numThreads = std::min(static_cast<int>(std::thread::hardware_concurrency()), static_cast<int>(boundCompileUnits.size()));
     if (numThreads <= 0)
@@ -229,7 +229,7 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
     bool ready = false;
     CompileQueue input(&mtx, "input", stop, ready, module->LogStreamId());
     CompileQueue output(&mtx, "output", stop, ready, module->LogStreamId());
-    CompileData compileData(&mtx, module, boundCompileUnits, objectFilePaths, stop, ready, numThreads, input, output, emittingContext);
+    CompileData compileData(&mtx, module, boundCompileUnits, objectFilePaths, stop, ready, numThreads, input, output);
     std::vector<std::thread> threads;
     for (int i = 0; i < numThreads; ++i)
     {
@@ -303,15 +303,15 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
 }
 
 void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, cmajor::ir::EmittingContext* emittingContext, bool& stop)
+    std::vector<std::string>& objectFilePaths, bool& stop)
 {
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))
     {
-        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext, stop);
+        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, stop);
     }
     else
     {
-        CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, emittingContext, stop);
+        CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, stop);
     }
 }
 

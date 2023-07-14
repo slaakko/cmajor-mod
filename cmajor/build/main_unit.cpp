@@ -54,7 +54,6 @@ void GenerateMainUnitLLvm(cmajor::symbols::Module* rootModule, std::vector<std::
     invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
         new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@staticClassArray"), 
         new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    invokeRtInit->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"GlobalInitCompileUnits"));
     rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
 

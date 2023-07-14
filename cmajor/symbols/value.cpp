@@ -3707,8 +3707,9 @@ void* WStringValue::IrValue(cmajor::ir::Emitter& emitter)
     {
         stringId = emitter.Install(str);
     }
-    void* wstringConstant = emitter.GetGlobalWStringConstant(stringId);
-    return emitter.CreateIrValueForWString(emitter.GetIrTypeForPtrType(emitter.GetIrTypeForWChar()), wstringConstant);
+    void* arrayType = nullptr;
+    void* wstringConstant = emitter.GetGlobalWStringConstant(stringId, arrayType);
+    return emitter.CreateIrValueForWString(arrayType, wstringConstant);
 }
 
 void WStringValue::Write(util::BinaryStreamWriter& writer)
@@ -3756,8 +3757,9 @@ void* UStringValue::IrValue(cmajor::ir::Emitter& emitter)
     {
         stringId = emitter.Install(str);
     }
-    void* ustringConstant = emitter.GetGlobalUStringConstant(stringId);
-    return emitter.CreateIrValueForUString(emitter.GetIrTypeForPtrType(emitter.GetIrTypeForUChar()), ustringConstant);
+    void* arrayType = nullptr;
+    void* ustringConstant = emitter.GetGlobalUStringConstant(stringId, arrayType);
+    return emitter.CreateIrValueForUString(arrayType, ustringConstant);
 }
 
 void UStringValue::Write(util::BinaryStreamWriter& writer)

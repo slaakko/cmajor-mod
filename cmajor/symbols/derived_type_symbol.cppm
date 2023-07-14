@@ -70,6 +70,7 @@ public:
     TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;

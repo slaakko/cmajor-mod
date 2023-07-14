@@ -94,8 +94,7 @@ void Preprocess(cmajor::ast::Project* project)
     }
 }
 
-void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, cmajor::ir::EmittingContext* emittingContext, 
-    bool& stop, bool resetRootModule, std::set<std::string>& builtProjects)
+void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols::Module>& rootModule, bool& stop, bool resetRootModule, std::set<std::string>& builtProjects)
 {
     try
     {
@@ -122,7 +121,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         std::unique_ptr<cmajor::symbols::Module> module;
                         try
                         {
-                            BuildProject(referencedProject.get(), module, emittingContext, stop, resetRootModule, builtProjects);
+                            BuildProject(referencedProject.get(), module, stop, resetRootModule, builtProjects);
                         }
                         catch (...)
                         {
@@ -205,7 +204,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 rootModule->SetPreparing(prevPreparing);
                 std::vector<std::string> objectFilePaths;
-                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, emittingContext, stop);
+                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, stop);
                 GenerateMainUnit(project, rootModule.get(), objectFilePaths);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
@@ -332,8 +331,7 @@ void CleanProject(cmajor::ast::Project* project)
     }
 }
 
-void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, cmajor::ir::EmittingContext* emittingContext, 
-    std::set<std::string>& builtProjects)
+void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::symbols::Module>& rootModule, std::set<std::string>& builtProjects)
 {
     std::unique_ptr<cmajor::ast::Project> project = ReadProject(projectFilePath);
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
@@ -346,7 +344,7 @@ void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::sy
                 project->AddDependsOnId(referencedProject->Id());
                 if (currentSolution == nullptr && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::buildAll))
                 {
-                    BuildProject(referencedProjectFilePath, rootModule, emittingContext, builtProjects);
+                    BuildProject(referencedProjectFilePath, rootModule, builtProjects);
                 }
             }
         }
@@ -355,22 +353,20 @@ void BuildProject(const std::string& projectFilePath, std::unique_ptr<cmajor::sy
     else
     {
         stopBuild = false;
-        BuildProject(project.get(), rootModule, emittingContext, stopBuild, true, builtProjects);
+        BuildProject(project.get(), rootModule, stopBuild, true, builtProjects);
     }
 }
 
 struct BuildData
 {
-    BuildData(cmajor::ir::EmittingContext* emittingContext_, bool& stop_, 
-        util::SynchronizedQueue<cmajor::ast::Project*>& buildQueue_, util::SynchronizedQueue<cmajor::ast::Project*>& readyQueue_,
+    BuildData(bool& stop_, util::SynchronizedQueue<cmajor::ast::Project*>& buildQueue_, util::SynchronizedQueue<cmajor::ast::Project*>& readyQueue_,
         std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules_, bool& isSystemSolution_, std::set<std::string>& builtProjects_) :
-        emittingContext(emittingContext_), stop(stop_), buildQueue(buildQueue_), readyQueue(readyQueue_), rootModules(rootModules_), 
+        stop(stop_), buildQueue(buildQueue_), readyQueue(readyQueue_), rootModules(rootModules_), 
         isSystemSolution(isSystemSolution_), builtProjects(builtProjects_)
     {
     }
     std::mutex mtx;
     bool& stop;
-    cmajor::ir::EmittingContext* emittingContext;
     util::SynchronizedQueue<cmajor::ast::Project*>& buildQueue;
     util::SynchronizedQueue<cmajor::ast::Project*>& readyQueue;
     std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules;
@@ -386,7 +382,7 @@ void BuildThreadFunction(BuildData* buildData)
         cmajor::ast::Project* toBuild = buildData->buildQueue.Get();
         while (toBuild && !buildData->stop)
         {
-            BuildProject(toBuild, buildData->rootModules[toBuild->Index()], buildData->emittingContext, buildData->stop, true, buildData->builtProjects);
+            BuildProject(toBuild, buildData->rootModules[toBuild->Index()], buildData->stop, true, buildData->builtProjects);
             if (toBuild->IsSystemProject())
             {
                 buildData->isSystemSolution = true;
@@ -417,7 +413,7 @@ struct CurrentSolutionGuard
     }
 };
 
-void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, cmajor::ir::EmittingContext* emittingContext)
+void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules)
 {
     std::set<std::string> builtProjects;
     std::string config = cmajor::symbols::GetConfig();
@@ -485,7 +481,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             {
                 cmajor::ast::Project* project = projectsToBuild[i];
                 stopBuild = false;
-                BuildProject(project, rootModules[i], emittingContext, stopBuild, true, builtProjects);
+                BuildProject(project, rootModules[i], stopBuild, true, builtProjects);
             }
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
             {
@@ -501,7 +497,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
             stopBuild = false;
             util::SynchronizedQueue<cmajor::ast::Project*> buildQueue;
             util::SynchronizedQueue<cmajor::ast::Project*> readyQueue;
-            BuildData buildData(emittingContext, stopBuild, buildQueue, readyQueue, rootModules, isSystemSolution, builtProjects);
+            BuildData buildData(stopBuild, buildQueue, readyQueue, rootModules, isSystemSolution, builtProjects);
             std::vector<std::thread> threads;
             for (int i = 0; i < numThreads; ++i)
             {

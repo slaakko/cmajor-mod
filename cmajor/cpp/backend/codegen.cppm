@@ -93,8 +93,8 @@ public:
     void SetTarget(cmajor::binder::BoundStatement* labeledStatement);
     void ExitBlocks(cmajor::binder::BoundCompoundStatement* targetBlock);
     void* GetGlobalStringPtr(int stringId) override;
-    void* GetGlobalWStringConstant(int stringId) override;
-    void* GetGlobalUStringConstant(int stringId) override;
+    void* GetGlobalWStringConstant(int stringId, void*& arrayType) override;
+    void* GetGlobalUStringConstant(int stringId, void*& arrayType) override;
     void* GetGlobalUuidConstant(int uuidId) override;
     void* HandlerBlock() override;
     void* CleanupBlock() override;

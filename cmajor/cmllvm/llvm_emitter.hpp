@@ -270,9 +270,9 @@ public:
     void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) override;
     void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) override;
     void* SizeOf(void* ptrType) override;
-    void* GetClassIdPtr(void* vmtPtr, int32_t classIdVmtIndexOffset) override;
-    void* GetClassName(void* vmtPtr, int32_t classNameVmtIndexOffset) override;
-    void* ComputeAddress(void* ptr, void* index) override;
+    void* GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset) override;
+    void* GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset) override;
+    void* ComputeAddress(void* type, void* ptr, void* index) override;
     void* CreatePtrDiff(void* elementType, void* left, void* right) override;
     uint32_t GetPrivateFlag() override;
     uint32_t GetProtectedFlag() override;
@@ -382,8 +382,8 @@ public:
     Pad* CurrentPad() override;
     void* CreateClassDIType(void* classPtr) override;
     void* GetGlobalStringPtr(int stringId) override;
-    void* GetGlobalWStringConstant(int stringId) override;
-    void* GetGlobalUStringConstant(int stringId) override;
+    void* GetGlobalWStringConstant(int stringId, void*& arrayType) override;
+    void* GetGlobalUStringConstant(int stringId, void*& arrayType) override;
     void* GetGlobalUuidConstant(int uuidId) override;
     void* GenerateTrap(const std::vector<void*>& args) override;
     void SetCompileUnitId(const std::string& compileUnitId_) override;
