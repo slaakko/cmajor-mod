@@ -324,7 +324,14 @@ void* LLVMEmitter::CreateIrValueForUShort(uint16_t value)
 
 void* LLVMEmitter::CreateIrValueForInt(int32_t value)
 {
-    return builder.getInt32(static_cast<uint32_t>(value));
+    if (substituteLineNumber)
+    {
+        return builder.getInt32(static_cast<uint32_t>(currentLineNumber));
+    }
+    else
+    {
+        return builder.getInt32(static_cast<uint32_t>(value));
+    }
 }
 
 void* LLVMEmitter::CreateIrValueForUInt(uint32_t value)
@@ -1810,12 +1817,10 @@ void LLVMEmitter::Compile(const std::string& objectFilePath)
 
 #else
 
-// TODO
-
 void LLVMEmitter::Compile(const std::string& objectFilePath)
 {
     llvm::TargetMachine* targetMachine = static_cast<llvm::TargetMachine*>(EmittingContext()->TargetMachine());
-    /*
+/*
     llvm::ModuleAnalysisManager moduleAnalysisManager;
     llvm::LoopAnalysisManager loopAnalysisManager;
     llvm::FunctionAnalysisManager functionAnalysisManager;
