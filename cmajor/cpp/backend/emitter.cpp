@@ -1352,7 +1352,7 @@ void* CppEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int32_t 
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
 }
 
-void* CppEmitter::SizeOf(void* ptrType)
+void* CppEmitter::SizeOf(void* elementType, void* ptrType)
 {
     cmajor::cpp::ir::Value* nullPtr = context->GetNullValue(static_cast<cmajor::cpp::ir::PtrType*>(ptrType));
     cmajor::cpp::ir::Value* one = context->CreatePtrOffset(nullPtr, context->GetLongValue(1));

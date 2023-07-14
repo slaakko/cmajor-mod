@@ -3,15 +3,16 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMLLVM_LLVM_EMITTING_CONTEXT
-#define CMLLVM_LLVM_EMITTING_CONTEXT
-#include <cmllvm/emitting_context.hpp>
+export module cmajor.llvm.emitting.context;
 
-namespace cmllvm {
+import cmajor.ir.emitting.context;
+import std.core;
+
+export namespace cmllvm {
 
 struct LLVMEmittingContextImpl;
 
-class LLVMEmittingContext: public EmittingContext
+class LLVMEmittingContext : public cmajor::ir::EmittingContext
 {
 public:
     LLVMEmittingContext(int optimizationLevel_);
@@ -27,5 +28,3 @@ private:
 };
 
 } // namespace cmllvm
-
-#endif // CMLLVM_LLVM_EMITTING_CONTEXT

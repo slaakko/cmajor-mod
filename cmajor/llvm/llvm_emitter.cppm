@@ -3,62 +3,20 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CM_LLVM_EMITTER_INCLUDED 
-#define CM_LLVM_EMITTER_INCLUDED 
-#include <cmllvm/emitter.hpp>
-#include <util_inc/assert.hpp>
-#include <util_inc/path.hpp>
-#include <util_inc/text_util.hpp>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/Support/raw_os_ostream.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/DIBuilder.h>
+module;
 #include <llvm/IR/Module.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Bitcode/BitcodeWriter.h>
-#include <llvm/IRReader/IRReader.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Target/TargetMachine.h>
-#include <llvm/Config/llvm-config.h>
-#include <llvm/Support/SourceMgr.h>
-#include <llvm/Passes/PassBuilder.h>
-#include <unordered_set>
-#include <fstream>
+#include <llvm/IR/DIBuilder.h>
+#include <llvm/IR/IRBuilder.h>
 
-namespace cmllvm {
+export module cmajor.llvm.emitter;
 
-class CMLLVM_API LLVMValueStack : public ValueStack
-{
-public:
-    void Push(void* val) override
-    {
-        llvm::Value* value = static_cast<llvm::Value*>(val);
-        s.push_back(value);
-    }
-    void* Pop() override
-    {
-        Assert(!s.empty(), "value stack is empty");
-        llvm::Value* top = s.back();
-        s.pop_back();
-        return top;
-    }
-    void Dup() override
-    {
-        s.push_back(s.back());
-    }
-    void Swap() override
-    {
-        std::swap(s.back(), s[s.size() - 2]);
-    }
-    void Rotate() override
-    {
-        std::swap(s[s.size() - 3], s[s.size() - 2]);
-        std::swap(s.back(), s[s.size() - 2]);
-    }
-private:
-    std::vector<llvm::Value*> s;
-};
+import cmajor.ir.emitter;
+import cmajor.llvm.value.stack;
+import soul.ast.source.pos;
+import util;
+import std.core;
+
+export namespace cmllvm {
 
 using ArgVector = llvm::SmallVector<llvm::Value*, 4>;
 
@@ -66,18 +24,18 @@ const unsigned cmajorLanguageTag = llvm::dwarf::DW_LANG_C_plus_plus_11; // close
 
 struct UuidIntPairHash
 {
-    size_t operator()(const std::pair<util_inc::uuid, int32_t>& p) const
+    size_t operator()(const std::pair<util::uuid, int32_t>& p) const
     {
-        return std::hash<int32_t>()(p.second) ^ util_inc::HashValue(p.first);
+        return std::hash<int32_t>()(p.second) ^ util::HashValue(p.first);
     }
 };
 
-class CMLLVM_API LLVMEmitter : public Emitter
+class LLVMEmitter : public cmajor::ir::Emitter
 {
 public:
-    LLVMEmitter(cmllvm::EmittingContext* emittingContext_);
-    cmllvm::EmittingContext* EmittingContext() const override;
-    void SetEmittingDelegate(EmittingDelegate* emittingDelegate_) override;
+    LLVMEmitter(cmajor::ir::EmittingContext* emittingContext_);
+    cmajor::ir::EmittingContext* EmittingContext() const override;
+    void SetEmittingDelegate(cmajor::ir::EmittingDelegate* emittingDelegate_) override;
     void* GetIrTypeForBool() override;
     void* GetIrTypeForSByte() override;
     void* GetIrTypeForByte() override;
@@ -142,8 +100,8 @@ public:
     void* GetConversionValue(void* type, void* from) override;
     void* CreateFwdIrTypeForClassType() override;
     void SetFwdIrTypeBody(void* forwardDeclaredType, const std::vector<void*>& elementTypes) override;
-    void* GetIrTypeByTypeId(const util_inc::uuid& typeId) override;
-    void SetIrTypeByTypeId(const util_inc::uuid& typeId, void* irType) override;
+    void* GetIrTypeByTypeId(const util::uuid& typeId) override;
+    void SetIrTypeByTypeId(const util::uuid& typeId, void* irType) override;
     void* GetIrTypeForPtrType(void* baseIrType) override;
     std::string GetIrTypeName(void* irType) override;
     std::string MakeVmtVariableName(const std::string& vmtObjectName) override;
@@ -163,25 +121,25 @@ public:
     void* CreateDITypeForUChar() override;
     void* CreateDITypeForVoid() override;
     void* CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements) override;
-    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId) override;
+    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util_inc::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
         const std::string& mangledName, void* baseClassDIType) override;
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
-    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId, const std::vector<void*>& enumConstantElements,
+    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
-    void MapFwdDeclaration(void* fwdDeclaration, const util_inc::uuid& typeId) override;
-    void* GetDITypeByTypeId(const util_inc::uuid& typeId) const override;
-    void SetDITypeByTypeId(const util_inc::uuid& typeId, void* diType, const std::string& typeName) override;
-    void* GetDIMemberType(const std::pair<util_inc::uuid, int32_t>& memberVariableId) override;
-    void SetDIMemberType(const std::pair<util_inc::uuid, int32_t>& memberVariableId, void* diType) override;
-    void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
+    void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) override;
+    void* GetDITypeByTypeId(const util::uuid& typeId) const override;
+    void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) override;
+    void* GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId) override;
+    void SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType) override;
+    void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
     void* CreateConstDIType(void* diType) override;
     void* CreateLValueRefDIType(void* diType) override;
     void* CreateRValueRefDIType(void* diType) override;
     void* CreatePointerDIType(void* diType) override;
     void* CreateUnspecifiedDIType(const std::string& name) override;
-    void MapClassPtr(const util_inc::uuid& typeId, void* classPtr, const std::string& className) override;
+    void MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className) override;
     uint64_t GetSizeInBits(void* irType) override;
     uint64_t GetAlignmentInBits(void* irType) override;
     void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) override;
@@ -269,7 +227,7 @@ public:
     void* GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVmtIndexOffset) override;
     void* GetImt(void* imtArrayType, void* imtArray, int32_t interfaceIndex) override;
     void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) override;
-    void* SizeOf(void* ptrType) override;
+    void* SizeOf(void* elementType, void* ptrType) override;
     void* GetClassIdPtr(void* vmtArrayType, void* vmtPtr, int32_t classIdVmtIndexOffset) override;
     void* GetClassName(void* vmtArrayType, void* vmtPtr, int32_t classNameVmtIndexOffset) override;
     void* ComputeAddress(void* type, void* ptr, void* index) override;
@@ -291,7 +249,7 @@ public:
     void SaveObjectPointer(void* objectPointer_) override;
     void SetObjectPointer(void* objectPointer_) override;
     void* GetObjectPointer() override;
-    void SetFunction(void* function_, int32_t fileIndex, const util_inc::uuid& sourceModuleId, const util_inc::uuid& functionId) override;
+    void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) override;
     void SetFunctionName(const std::string& functionName) override;
     void BeginScope() override;
     void EndScope() override;
@@ -300,7 +258,7 @@ public:
     int32_t AddControlFlowGraphNode() override;
     void SetCurrentControlFlowGraphNodeId(int32_t controlFlowGraphNodeId) override;
     void AddControlFlowGraphEdge(int32_t startNodeId, int32_t endNodeId) override;
-    void AddLocalVariable(const std::string& localVariableName, const util_inc::uuid& typeId, void* irObject) override;
+    void AddLocalVariable(const std::string& localVariableName, const util::uuid& typeId, void* irObject) override;
     void BeginInstructionFlag(int16_t flag) override;
     void EndInstructionFlag(int16_t flag) override;
     void* CurrentBasicBlock() const override;
@@ -317,7 +275,7 @@ public:
     void Compile(const std::string& objectFilePath) override;
     void VerifyModule() override;
     void ResetCurrentDebugLocation() override;
-    void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId) override;
+    void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     void ReplaceForwardDeclarations();
     void* GetIrObject(void* symbol) const override;
     void SetIrObject(void* symbol, void* irObject) override;
@@ -347,14 +305,14 @@ public:
     unsigned GetPureVirtualVirtuality() override;
     unsigned GetVirtualVirtuality() override;
     unsigned GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit) override;
-    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId,
+    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
         void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags) override;
-    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId,
+    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
         void* subroutineType, unsigned flags) override;
     void SetDISubprogram(void* function, void* subprogram) override;
     void* CreateAlloca(void* irType) override;
-    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId, void* irType, void* allocaInst) override;
-    void* CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId, void* irType, void* allocaInst) override;
+    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
+    void* CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
     void* GetFunctionArgument(void* function, int argumentIndex) override;
     void SetDebugLoc(void* callInst) override;
     void* CreateRet(void* value) override;
@@ -362,7 +320,7 @@ public:
     void SetPersonalityFunction(void* function, void* personalityFunction) override;
     void AddNoUnwindAttribute(void* function) override;
     void AddUWTableAttribute(void* function) override;
-    void* CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId) override;
+    void* CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
     void* CreateSwitch(void* condition, void* defaultDest, unsigned numCases) override;
     void AddCase(void* switchInst, void* caseValue, void* caseDest) override;
     void* CreateCleanupPadWithParent(void* parentPad, const std::vector<void*>& args) override;
@@ -378,8 +336,8 @@ public:
     void* CleanupBlock() override;
     bool NewCleanupNeeded() override;
     void CreateCleanup() override;
-    std::string GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util_inc::uuid& moduleId);
-    Pad* CurrentPad() override;
+    std::string GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::ir::Pad* CurrentPad() override;
     void* CreateClassDIType(void* classPtr) override;
     void* GetGlobalStringPtr(int stringId) override;
     void* GetGlobalWStringConstant(int stringId, void*& arrayType) override;
@@ -418,9 +376,9 @@ public:
     void SetBoundCompileUnit(void* boundCompileUnit_) override;
     void* GetBoundCompileUnit() const override;
 private:
-    EmittingDelegate* emittingDelegate;
-    cmllvm::EmittingContext* emittingContext;
-    LLVMValueStack stack;
+    cmajor::ir::EmittingDelegate* emittingDelegate;
+    cmajor::ir::EmittingContext* emittingContext;
+    cmajor::llvm::ValueStack stack;
     llvm::LLVMContext context;
     llvm::IRBuilder<> builder;
     llvm::Module* module;
@@ -429,12 +387,12 @@ private:
     llvm::DIFile* diFile;
     std::unique_ptr<llvm::DIBuilder> diBuilder;
     llvm::DIBuilder* currentDIBuilder;
-    std::unordered_map<util_inc::uuid, llvm::Type*, util_inc::UuidHash> irTypeTypeIdMap;
-    std::unordered_map<llvm::DIType*, util_inc::uuid> fwdDeclarationMap;
-    std::unordered_map<util_inc::uuid, llvm::DIType*, util_inc::UuidHash> diTypeTypeIdMap;
+    std::unordered_map<util::uuid, llvm::Type*, util::UuidHash> irTypeTypeIdMap;
+    std::unordered_map<llvm::DIType*, util::uuid> fwdDeclarationMap;
+    std::unordered_map<util::uuid, llvm::DIType*, util::UuidHash> diTypeTypeIdMap;
     std::unordered_map<llvm::DIType*, std::string> diTypeNameMap;
-    std::unordered_map<std::pair<util_inc::uuid, int32_t>, llvm::DIDerivedType*, UuidIntPairHash> diMemberTypeMap;
-    std::unordered_map<util_inc::uuid, void*, util_inc::UuidHash> classPtrMap;
+    std::unordered_map<std::pair<util::uuid, int32_t>, llvm::DIDerivedType*, UuidIntPairHash> diMemberTypeMap;
+    std::unordered_map<util::uuid, void*, util::UuidHash> classPtrMap;
     std::unordered_map<void*, std::string> classNameMap;
     llvm::Function* function;
     llvm::BasicBlock* currentBasicBlock;
@@ -460,5 +418,3 @@ private:
 
 
 } // namespace cmllvm
-
-#endif // CM_LLVM_EMITTER_INCLUDED 

@@ -1321,7 +1321,7 @@ void* SystemXEmitter::GetMemberVariablePtr(void* classType, void* classPtr, int3
     return context->CreateElemAddr(clsPtr, context->GetLongValue(memberVariableLayoutIndex));
 }
 
-void* SystemXEmitter::SizeOf(void* ptrType)
+void* SystemXEmitter::SizeOf(void* elementType, void* ptrType)
 {
     cmajor::systemx::ir::Value* nullPtr = context->GetNullValue(static_cast<cmajor::systemx::ir::PtrType*>(ptrType));
     cmajor::systemx::ir::Value* one = context->CreatePtrOffset(nullPtr, context->GetLongValue(1));

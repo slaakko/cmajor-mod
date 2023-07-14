@@ -251,7 +251,7 @@ public:
     void* GetIrObject(void* symbol) const override;
     void SetIrObject(void* symbol, void* irObject) override;
     void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) override;
-    void* SizeOf(void* ptrType) override;
+    void* SizeOf(void* elementType, void* ptrType) override;
     void SetLineNumber(int32_t lineNumber) override;
     void SaveObjectPointer(void* objectPointer_) override;
     void SetObjectPointer(void* objectPointer_) override;

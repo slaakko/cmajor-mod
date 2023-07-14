@@ -610,7 +610,7 @@ void BoundSizeOfExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
     }
     else
     {
-        emitter.Stack().Push(emitter.SizeOf(pointerType->IrType(emitter)));
+        emitter.Stack().Push(emitter.SizeOf(pointerType->RemovePointer(GetSourcePos(), ModuleId())->IrType(emitter), pointerType->IrType(emitter)));
     }
     DestroyTemporaries(emitter);
 }

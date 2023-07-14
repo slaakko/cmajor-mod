@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-#include <cmllvm/llvm_emitting_context.hpp>
+module;
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/PassRegistry.h>
@@ -14,6 +14,8 @@
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/CodeGen.h>
+
+module cmajor.llvm.emitting.context;
 
 namespace cmllvm {
 

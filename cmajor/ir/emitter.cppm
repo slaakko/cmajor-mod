@@ -282,7 +282,7 @@ public:
     virtual void* GetIrObject(void* symbol) const = 0;
     virtual void SetIrObject(void* symbol, void* irObject) = 0;
     virtual void* GetMemberVariablePtr(void* classType, void* classPtr, int32_t memberVariableLayoutIndex) = 0;
-    virtual void* SizeOf(void* ptrType) = 0;
+    virtual void* SizeOf(void* elementType, void* ptrType) = 0;
     virtual void SetLineNumber(int32_t lineNumber) = 0;
     virtual void SaveObjectPointer(void* objectPointer_) = 0;
     virtual void SetObjectPointer(void* objectPointer_) = 0;
