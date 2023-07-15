@@ -1820,11 +1820,11 @@ void LLVMEmitter::Compile(const std::string& objectFilePath)
 void LLVMEmitter::Compile(const std::string& objectFilePath)
 {
     llvm::TargetMachine* targetMachine = static_cast<llvm::TargetMachine*>(EmittingContext()->TargetMachine());
-/*
-    llvm::ModuleAnalysisManager moduleAnalysisManager;
+
     llvm::LoopAnalysisManager loopAnalysisManager;
     llvm::FunctionAnalysisManager functionAnalysisManager;
     llvm::CGSCCAnalysisManager codeGenAnalysisManager;
+    llvm::ModuleAnalysisManager moduleAnalysisManager;
     llvm::PassBuilder passBuilder(targetMachine);
     passBuilder.registerModuleAnalyses(moduleAnalysisManager);
     passBuilder.registerCGSCCAnalyses(codeGenAnalysisManager);
@@ -1856,8 +1856,8 @@ void LLVMEmitter::Compile(const std::string& objectFilePath)
         }
     }
     llvm::ModulePassManager modulePassManager = passBuilder.buildPerModuleDefaultPipeline(optLevel);
+
     modulePassManager.run(*module, moduleAnalysisManager);
-*/
 
     std::error_code errorCode;
     llvm::raw_fd_ostream objectFile(objectFilePath, errorCode);

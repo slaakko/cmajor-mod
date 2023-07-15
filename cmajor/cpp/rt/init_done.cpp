@@ -51,13 +51,13 @@ void Init(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassI
     InitEnvironment();
     InitStatics();
     InitClasses(numberOfPolymorphicClassIds, polymorphicClassIdArray, numberOfStaticClassIds, staticClassIdArray);
-    //InitCmdbSession(); TODO
-    // StartCmdbSession(); TODO
+    //InitCmdbSession(); 
+    //StartCmdbSession(); 
 }
 
 void Done()
 {
-    // DoneCmdbSession(); TODO
+    //DoneCmdbSession(); 
     DoneStatics();
     DoneEnvironment();
     DoneSocket();

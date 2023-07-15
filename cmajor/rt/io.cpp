@@ -116,12 +116,10 @@ bool StdInputFile::WriteByte(uint8_t x, int32_t& errorStringHandle)
 int64_t StdInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorStringHandle)
 {
     FlushStdOutAndStdErr();
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         return cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
     }
-*/
     errorStringHandle = -1;
     int64_t result = std::fread(buffer, 1, count, stdin);
     if (ferror(stdin))
@@ -135,7 +133,6 @@ int64_t StdInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorStringH
 int32_t StdInputFile::ReadByte()
 {
     FlushStdOutAndStdErr();
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         uint8_t buffer = '\0';
@@ -148,7 +145,6 @@ int32_t StdInputFile::ReadByte()
             return -1;
         }
     }
-*/
     int32_t result = std::fgetc(stdin);
     if (result == EOF)
     {
@@ -223,13 +219,11 @@ bool StdOutputFile::Close(int32_t& errorStringHandle)
 
 int64_t StdOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& errorStringHandle)
 {
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         cmajor::rt::WriteBytesToCmdbSession(handle, buffer, count);
         return count;
     }
-*/
     errorStringHandle = -1;
     int64_t result = std::fwrite(buffer, 1, count, file);
     if (result != count)
@@ -242,14 +236,12 @@ int64_t StdOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& erro
 
 bool StdOutputFile::WriteByte(uint8_t x, int32_t& errorStringHandle)
 {
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         uint8_t buffer = x;
         cmajor::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
         return 1;
     }
-*/
     errorStringHandle = -1;
     int result = std::fputc(x, file);
     if (result == EOF)
@@ -364,12 +356,10 @@ bool StdUnicodeInputFile::WriteByte(uint8_t x, int32_t& errorStringHandle)
 int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorStringHandle)
 {
     FlushStdOutAndStdErr();
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         return cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
     }
-*/
     AllocateBuffer();
     int64_t result = 0;
     if (stdInBuf.empty())
@@ -408,7 +398,6 @@ int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& error
 int32_t StdUnicodeInputFile::ReadByte()
 {
     FlushStdOutAndStdErr();
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         uint8_t buffer = '\0';
@@ -421,7 +410,6 @@ int32_t StdUnicodeInputFile::ReadByte()
             return -1;
         }
     }
-*/
     if (stdInBuf.empty())
     {
         uint8_t buffer = '\0';
@@ -513,13 +501,11 @@ bool StdUnicodeOutputFile::Close(int32_t& errorStringHandle)
 
 int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& errorStringHandle)
 {
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         cmajor::rt::WriteBytesToCmdbSession(handle, buffer, count);
         return count;
     }
-*/
     errorStringHandle = -1;
     std::u32string utf32Chars;
     const uint8_t* e = buffer + count;
@@ -547,14 +533,12 @@ int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_
 
 bool StdUnicodeOutputFile::WriteByte(uint8_t x, int32_t& errorStringHandle)
 {
-/*  TODO
     if (cmajor::rt::IsCmdbSessionOpen())
     {
         uint8_t buffer = x;
         cmajor::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
         return 1;
     }
-*/
     return Write(&x, 1, errorStringHandle) == 1;
 }
 
