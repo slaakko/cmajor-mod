@@ -4,8 +4,13 @@
 // =================================
 
 module;
-#ifdef HAS_LLD
-// todo
+#include <llvm/Config/llvm-config.h>
+#if LLVM_VERSION_MAJOR >= 16
+#define HAS_LLD_LIBRARY 1
+#endif
+#if HAS_LLD_LIBRARY
+#include <lld/Common/Driver.h>
+#include <llvm/Support/raw_os_ostream.h>
 #endif
 
 module cmajor.llvm.link.windows;
@@ -13,9 +18,84 @@ module cmajor.llvm.link.windows;
 import util;
 import std.filesystem;
 
-namespace cmajor::llvm {
+namespace cmajor::llvmlink {
 
-void LinkWindowsLLDLink(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
+#if HAS_LLD_LIBRARY
+
+void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
+{
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+    {
+        util::LogMessage(rootModule->LogStreamId(), "Linking...");
+    }
+    rootModule->SetCurrentToolName(U"lld-link");
+    std::filesystem::path bdp = project->ExecutableFilePath();
+    bdp.remove_filename();
+    std::filesystem::create_directories(bdp);
+    std::vector<std::string> argStrings;
+    argStrings.push_back("/machine:x64");
+    argStrings.push_back("/entry:main");
+    argStrings.push_back("/debug");
+    argStrings.push_back("/out:" + util::QuotedPath(project->ExecutableFilePath()));
+    argStrings.push_back("/stack:16777216");
+    std::string rtLibName = "cmajor.rt.lib";
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
+    {
+        rtLibName = "cmajor.rtd.lib";
+    }
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), rtLibName))));
+    int n = rootModule->LibraryFilePaths().size();
+    for (int i = 0; i < n; ++i)
+    {
+        argStrings.push_back(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
+    }
+    if (!rootModule->ResourceFilePath().empty())
+    {
+        argStrings.push_back(util::QuotedPath(rootModule->ResourceFilePath()));
+    }
+    std::vector<const char*> args;
+    for (const auto& str : argStrings)
+    {
+        args.push_back(str.c_str());
+    }
+    std::error_code outErrorCode;
+    std::string stdOutFilePath = util::Path::ChangeExtension(rootModule->LibraryFilePath(), ".out");
+    llvm::raw_fd_ostream  stdOut(stdOutFilePath, outErrorCode);
+    if (outErrorCode)
+    {
+        throw std::runtime_error("error linking: could not create output file: " + util::PlatformStringToUtf8(outErrorCode.message()));
+    }
+    std::error_code errErrorCode;
+    std::string stdErrFilePath = util::Path::ChangeExtension(rootModule->LibraryFilePath(), ".err");
+    llvm::raw_fd_ostream  stdErr(stdErrFilePath, errErrorCode);
+    if (errErrorCode)
+    {
+        throw std::runtime_error("error linking: could not create output file: " + util::PlatformStringToUtf8(errErrorCode.message()));
+    }
+    if (lld::coff::link(args, stdOut, stdErr, true, false))
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            stdOut.close();
+            std::string output = util::ReadFile(stdOutFilePath);
+            if (!output.empty())
+            {
+                util::LogMessage(rootModule->LogStreamId(), output);
+            }
+            util::LogMessage(rootModule->LogStreamId(), "==> " + project->ExecutableFilePath());
+        }
+    }
+    else
+    {
+        stdErr.close();
+        std::string errors = util::ReadFile(stdErrFilePath);
+        throw std::runtime_error("error linking: " + errors);
+    }
+}
+
+#endif
+
+void LinkWindowsLLDLinkProcess(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
     {
@@ -95,11 +175,11 @@ void LinkWindowsLLDLink(cmajor::ast::Project* project, cmajor::symbols::Module* 
 
 void LinkWindows(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
-#ifdef HAS_LLD
-    // todo
+#ifdef HAS_LLD_LIBRARY
+    LinkWindowsLLDLinkLibrary(project, rootModule);
 #else
-    LinkWindowsLLDLink(project, rootModule);
+    LinkWindowsLLDLinkProcess(project, rootModule);
 #endif
 }
 
-} // cmajor::llvm
+} // cmajor::llvmlink

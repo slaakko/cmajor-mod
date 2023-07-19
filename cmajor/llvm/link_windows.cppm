@@ -9,8 +9,8 @@ import std.core;
 import cmajor.ast;
 import cmajor.symbols;
 
-export namespace cmajor::llvm {
+export namespace cmajor::llvmlink {
 
 void LinkWindows(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule);
 
-} // cmajor::llvm
+} // cmajor::llvmlink

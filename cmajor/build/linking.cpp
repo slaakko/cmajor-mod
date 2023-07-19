@@ -141,7 +141,7 @@ void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
     {
         case cmajor::symbols::BackEnd::llvm:
         {
-            cmajor::llvm::Link(project, rootModule);
+            cmajor::llvmlink::Link(project, rootModule);
             break;
         }
         case cmajor::symbols::BackEnd::systemx:

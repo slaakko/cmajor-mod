@@ -8,6 +8,7 @@
 	<LLVM_BUILD_INCLUDE_DIR>D:\llvm-project\build\include</LLVM_BUILD_INCLUDE_DIR>
     <LLVM_RELEASE_LIB_DIR>D:\llvm-project\build\Release\lib</LLVM_RELEASE_LIB_DIR>
     <LLVM_DEBUG_LIB_DIR>D:\llvm-project\build\Debug\lib</LLVM_DEBUG_LIB_DIR>
+	<LLD_SRC_INCLUDE_DIR>D:\llvm-project\lld\include</LLD_SRC_INCLUDE_DIR>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -29,6 +30,9 @@
     </BuildMacro>
     <BuildMacro Include="LLVM_DEBUG_LIB_DIR">
       <Value>$(LLVM_DEBUG_LIB_DIR)</Value>
+    </BuildMacro>
+    <BuildMacro Include="LLD_SRC_INCLUDE_DIR">
+      <Value>$(LLD_SRC_INCLUDE_DIR)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

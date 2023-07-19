@@ -7,7 +7,7 @@ module cmajor.llvm.link;
 
 import cmajor.llvm.link.windows;
 
-namespace cmajor::llvm {
+namespace cmajor::llvmlink {
 
 void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
@@ -25,4 +25,4 @@ void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
     }
 }
 
-} // cmajor::llvm
+} // cmajor::llvmlink
