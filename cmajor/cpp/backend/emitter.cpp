@@ -1478,10 +1478,6 @@ void CppEmitter::EndDebugInfo()
 {
 }
 
-void CppEmitter::EmitIrText(const std::string& filePath)
-{
-}
-
 void CppEmitter::Compile(const std::string& objectFilePath)
 {
 }

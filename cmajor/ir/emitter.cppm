@@ -307,7 +307,6 @@ public:
     virtual void StartDebugInfo(const std::string& sourceFilePath, const std::string& compilerVersion, bool optimized) = 0;
     virtual void FinalizeDebugInfo() = 0;
     virtual void EndDebugInfo() = 0;
-    virtual void EmitIrText(const std::string& filePath) = 0;
     virtual void Compile(const std::string& objectFilePath) = 0;
     virtual void VerifyModule() = 0;
     virtual void* CreateDebugInfoForNamespace(void* scope, const std::string& name) = 0;

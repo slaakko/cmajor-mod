@@ -1,0 +1,14 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import soul.xml.xpath.token;
+
+keywords soul.xml.xpath.keyword
+{
+    ("or", OR), ("and", AND), ("div", DIV), ("mod", MOD), ("ancestor", ANCESTOR), ("ancestor-or-self", ANCESTOR_OR_SELF), ("attribute", ATTRIBUTE), ("child", CHILD),
+    ("descendant", DESCENDANT), ("descendant-or-self", DESCENDANT_OR_SELF), ("following", FOLLOWING), ("following-sibling", FOLLOWING_SIBLING), ("namespace", NAMESPACE),
+    ("parent", PARENT), ("preceding", PRECEDING), ("preceding-sibling", PRECEDING_SIBLING), ("self", SELF), ("processing-instruction", PROCESSING_INSTRUCTION),
+    ("comment", COMMENT), ("text", TEXT), ("node", NODE)
+}

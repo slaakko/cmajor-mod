@@ -178,6 +178,9 @@
       <Project>{1ad67257-5fbe-45a6-a3bf-161bf9778089}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="xml_document.parser" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

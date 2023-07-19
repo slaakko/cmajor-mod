@@ -25,9 +25,9 @@ void PrintHelp()
     std::cout << "--verbose | -v" << "\n";
     std::cout << "  Be verbose." << "\n";
     std::cout << "--quiet | -q" << "\n";
-    std::cout << "  print no messages\n";
+    std::cout << "  Print no messages.\n";
     std::cout << "--single-threaded | -s" << "\n";
-    std::cout << "  Single-threaded compile." << "\n";
+    std::cout << "  Single-threaded compilation." << "\n";
     std::cout << "--rebuild | -r" << "\n";
     std::cout << "  Rebuild." << "\n";
     std::cout << "--clean | -e" << "\n";
@@ -41,8 +41,11 @@ void PrintHelp()
     std::cout << "--opt-level=LEVEL| -O=LEVEL" << "\n";
     std::cout << "  Set optimization level to LEVEL (0-3). Defaults: LEVEL=0 for 'debug' configuration and LEVEL=2 for 'release' configuration." << "\n";
     std::cout << "--emit-llvm | -l" << "\n";
-    std::cout << "  Emit intermediate LLVM code to FILE.ll files\n" << "\n";
+    std::cout << "  Emit intermediate LLVM code to FILE.ll files" << "\n";
+    std::cout << "--gen-debug-info | -g" << "\n";
+    std::cout << "  Generate debug info (automatically enabled for 'debug' configuration)." << "\n";
     std::cout << "--no-debug-info | -i" << "\n";
+    std::cout << "  Do not generate debug info." << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -52,6 +55,7 @@ int main(int argc, const char** argv)
     try
     {
         std::vector<std::string> files;
+        bool genDebugInfo = false;
         bool noDebugInfo = false;
         bool useModuleCache = true;
         cmajor::symbols::SetCompilerVersion(Version());
@@ -96,6 +100,10 @@ int main(int argc, const char** argv)
                 else if (arg == "--link-with-debug-runtime")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                }
+                else if (arg == "--gen-debug-info")
+                {
+                    genDebugInfo = true;
                 }
                 else if (arg == "--no-debug-info")
                 {
@@ -227,6 +235,11 @@ int main(int argc, const char** argv)
                                 useModuleCache = false;
                                 break;
                             }
+                            case 'g':
+                            {
+                                genDebugInfo = true;
+                                break;
+                            }
                             case 'i':
                             {
                                 noDebugInfo = true;
@@ -250,7 +263,7 @@ int main(int argc, const char** argv)
         cmajor::backend::BackEnd* backend = cmajor::backend::GetCurrentBackEnd();
         std::set<std::string> builtProjects;
         cmajor::symbols::SetUseModuleCache(useModuleCache);
-        if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
+        if ((!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo) || genDebugInfo)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
         }

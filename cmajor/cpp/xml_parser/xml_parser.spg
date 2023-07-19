@@ -1,0 +1,2 @@
+project cmajor.cpp.xml.parser;
+parser <xml_document.parser>;

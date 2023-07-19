@@ -16,8 +16,11 @@ module;
 #include <llvm/Config/llvm-config.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/IRPrinter/IRPrintingPasses.h>
 
 module cmajor.llvm.emitter;
+
+import cmajor.symbols;
 
 namespace cmllvm {
 
@@ -1180,7 +1183,9 @@ void LLVMEmitter::SetPrivateLinkage(void* global)
 void* LLVMEmitter::GetOrInsertFunction(const std::string& name, void* type, bool nothrow)
 {
 #if (LLVM_VERSION_MAJOR >= 9)
-    return module->getOrInsertFunction(name, static_cast<llvm::FunctionType*>(type)).getCallee();
+    auto callee = module->getOrInsertFunction(name, static_cast<llvm::FunctionType*>(type)).getCallee();
+    auto fun = llvm::dyn_cast<llvm::Function>(callee);
+    return fun;
 #else
     return module->getOrInsertFunction(name, static_cast<llvm::FunctionType*>(type));
 #endif
@@ -1750,6 +1755,7 @@ void LLVMEmitter::StartDebugInfo(const std::string& sourceFilePath, const std::s
     llvm::DICompileUnit* diCompileUnit = diBuilder->createCompileUnit(cmajorLanguageTag, sourceFile, "Cmajor compiler version " + compilerVersion, optimized, "", 0);
     SetDICompileUnit(diCompileUnit);
     PushScope(sourceFile);
+    llvm::DIModule* mod = diBuilder->createModule(static_cast<llvm::DIScope*>(CurrentScope()), module->getName(), "", "", "");
 }
 
 void LLVMEmitter::FinalizeDebugInfo()
@@ -1768,14 +1774,6 @@ void* LLVMEmitter::CreateDebugInfoForNamespace(void* scope, const std::string& n
 {
     llvm::DINamespace* ns = diBuilder->createNameSpace(static_cast<llvm::DIScope*>(CurrentScope()), name, false);
     return ns;
-}
-
-void LLVMEmitter::EmitIrText(const std::string& filePath)
-{
-    std::ofstream llFile(filePath);
-    llvm::raw_os_ostream llOs(llFile);
-    module->print(llOs, nullptr);
-    llOs.flush();
 }
 
 void LLVMEmitter::VerifyModule()
@@ -1856,6 +1854,14 @@ void LLVMEmitter::Compile(const std::string& objectFilePath)
         }
     }
     llvm::ModulePassManager modulePassManager = passBuilder.buildPerModuleDefaultPipeline(optLevel);
+
+    std::unique_ptr<llvm::raw_fd_ostream> irFile;
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm))
+    {
+        std::error_code llErrorCode;
+        irFile.reset(new llvm::raw_fd_ostream(util::Path::ChangeExtension(objectFilePath, ".ll"), llErrorCode));
+        modulePassManager.addPass(llvm::PrintModulePass(*irFile, "", false, false));
+    }
 
     modulePassManager.run(*module, moduleAnalysisManager);
 
@@ -2083,7 +2089,7 @@ uint64_t LLVMEmitter::GetClassTypeAlignmentInBits(void* classIrType)
 void LLVMEmitter::AddInlineFunctionAttribute(void* function)
 {
     llvm::Function* fun = static_cast<llvm::Function*>(function);
-    fun->addFnAttr(llvm::Attribute::InlineHint);
+    fun->addFnAttr(llvm::Attribute::InlineHint); 
 }
 
 void LLVMEmitter::SetFunctionLinkage(void* function, bool setInline)
@@ -2221,12 +2227,14 @@ void LLVMEmitter::SetPersonalityFunction(void* function, void* personalityFuncti
 
 void LLVMEmitter::AddNoUnwindAttribute(void* function)
 {
-    static_cast<llvm::Function*>(function)->addFnAttr(llvm::Attribute::NoUnwind);
+    llvm::Function* fun = static_cast<llvm::Function*>(function);
+    fun->addFnAttr(llvm::Attribute::NoUnwind); 
 }
 
 void LLVMEmitter::AddUWTableAttribute(void* function)
 {
-    static_cast<llvm::Function*>(function)->addFnAttr(llvm::Attribute::UWTable);
+    llvm::Function* fun = static_cast<llvm::Function*>(function);
+    //fun->addFnAttr(llvm::Attribute::UWTable);   TODO UWTABLE ATTRIBUTE IS NOT WORKING!!!
 }
 
 void* LLVMEmitter::CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)

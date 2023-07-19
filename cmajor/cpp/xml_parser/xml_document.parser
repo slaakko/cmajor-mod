@@ -1,0 +1,572 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.xml.document.parser;
+
+import soul.xml.processor;
+import soul.lexer.trivial;
+
+parser XmlParser
+{
+    lexer soul::lexer::trivial::TrivialLexer<char32_t>;
+    main;
+
+    Document(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            empty{ processor->StartDocument(&lexer, lexer.GetSourcePos(pos)); }
+            Prolog(processor):prolog
+            Element(processor):element
+            Misc(processor):misc*
+        )
+        {
+            processor->EndDocument();
+        }
+        ;
+
+    Prolog(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            XmlDecl(processor):xmlDecl?
+            Misc(processor):misc1*
+            (
+                DocTypeDecl(processor):docTypeDecl 
+                Misc(processor):misc2*
+            )?
+        )
+        ;
+
+    XmlDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (   "<?xml"
+            VersionInfo(processor):versionInfo
+            EncodingDecl(processor):encodingDecl?
+            StandaloneDecl(processor):standaloneDecl?
+            S:s?
+            "?>"
+        )
+        ;
+
+    VersionInfo(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            S:s "version" Eq:eq VersionNumber(processor):versionNumber
+        )
+        ;
+
+    S   ::= "[\x20\x9\xD\xA]"+
+        ;
+
+    Eq  ::= S:s? '=' S:s?
+        ;
+
+    VersionNumber(soul::xml::processor::XmlProcessor* processor)
+        ::= VersionNumDQ(processor):versionNumDQ
+        |   VersionNumSQ(processor):versionNumSQ
+        ;
+
+    VersionNumDQ(soul::xml::processor::XmlProcessor* processor)
+        ::= '"' VersionNum(processor):versionNum '"'
+        ;
+
+    VersionNumSQ(soul::xml::processor::XmlProcessor* processor)
+        ::= '\'' VersionNum(processor):versionNum '\''
+        ;
+
+    VersionNum(soul::xml::processor::XmlProcessor* processor, var std::u32string xmlVersion)
+        ::= 
+        (
+            '1'{ xmlVersion.append(1, '1'); }
+            '.'{ xmlVersion.append(1, '.'); }
+            ("[0-9]"{ xmlVersion.append(1, lexer.GetToken(pos).Chr()); })+
+        )
+        {
+            processor->XmlVersion(util::ToUtf8(xmlVersion));
+        }
+        ;
+
+    EncodingDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            S:s "encoding" Eq:eq EncodingName(processor):encodingName
+        )
+        ;
+
+    EncodingName(soul::xml::processor::XmlProcessor* processor)
+        ::= EncNameDQ(processor):encNameDQ
+        |   EncNameSQ(processor):encNameSQ
+        ;
+
+    EncNameDQ(soul::xml::processor::XmlProcessor* processor)
+        ::= '"' EncName(processor):encName '"'
+        ;
+
+    EncNameSQ(soul::xml::processor::XmlProcessor* processor)
+        ::= '\'' EncName(processor):encName '\''
+        ;
+
+    EncName(soul::xml::processor::XmlProcessor* processor, var std::u32string xmlEncoding)
+        ::= 
+        (
+            "[A-Za-z]"{ xmlEncoding.append(1, lexer.GetToken(pos).Chr()); }
+            ("[A-Za-z0-9._-]"{ xmlEncoding.append(1, lexer.GetToken(pos).Chr()); })*
+        )
+        {
+            processor->XmlEncoding(util::ToUtf8(xmlEncoding));
+        }
+        ;
+
+    StandaloneDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            S:s "standalone" Eq:eq YesNo:yn{ processor->Standalone(yn); }
+        )
+        ;
+
+    YesNo : bool
+        ::= "\"yes\""{ return true; }
+        |   "\'yes\'"{ return true; }
+        |   "\"no\""{ return false; }
+        |   "\'no\'"{ return false; }
+        ;
+
+    Misc(soul::xml::processor::XmlProcessor* processor)
+        ::= Comment(processor):comment
+        |   PI(processor):pi
+        |   S:s
+        ;
+
+    Comment(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos, var std::u32string comment)
+        ::= 
+        (
+            "<!--"{ sourcePos = lexer.GetSourcePos(pos); }
+            ((Char:chr - "-->"){ comment.append(1, chr); })*
+            "-->"
+        )
+        {
+            processor->Comment(sourcePos, util::ToUtf8(comment));
+        }
+        ;
+
+    Char : char32_t
+        ::= "[\x9\xA\xD\x20-\xD7FF\xE000-\xFFFD\x10000-\x10FFFF]"{ return lexer.GetToken(pos).Chr(); }
+        ;
+
+    PI(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos, var std::u32string data)
+        ::= 
+        (
+            "<?"{ sourcePos = lexer.GetSourcePos(pos); }
+            PITarget:target 
+            (   S:s
+                ((Char:chr - "?>"){ data.append(1, chr); })*
+            )?
+            "?>"
+        )
+        {
+            processor->PI(sourcePos, target, util::ToUtf8(data));
+        }
+        ;
+
+    PITarget : std::string
+        ::= 
+        (
+            Name:name - Xml:xml
+        )
+        {
+            return name;
+        }
+        ;
+
+    Name(var std::u32string name) : std::string
+        ::= 
+        (
+            NameStartChar:nameStartChar{ name.append(1, nameStartChar); }
+            (NameChar:nameChar{ name.append(1, nameChar); })*
+        )
+        {
+            return util::ToUtf8(name);
+        }
+        ;
+
+    NameStartChar : char32_t
+        ::= 
+        (
+            "[:A-Z_a-z\xC0-\xD6\xD8-\xF6\xF8-\x2FF\x370-\x37D\x37F-\x1FFF\x200C-\x200D\x2070-\x218F\x2C00-\x2FEF\x3001-\xD7FF\xF900-\xFDCF\xFDF0-\xFFFD\x10000-\xEFFFF]"
+        )
+        {
+            return lexer.GetToken(pos).Chr();
+        }
+        ;
+
+    NameChar : char32_t
+        ::= 
+        (   NameStartChar:nameStartChar{ return nameStartChar; }
+        |   "[-.0-9\xB7\x300-\x36F\x203F-\x2040]"{ return lexer.GetToken(pos).Chr(); }
+        )
+        ;
+
+    Xml ::= "[xX]" "[mM]" "[lL]"
+        ;
+
+    Element(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos, var std::string tagName) 
+        ::= 
+        (   
+            '<'
+            Name:name{ sourcePos = lexer.GetSourcePos(pos); tagName = name; processor->BeginStartTag(sourcePos, tagName); }
+            (S:s Attribute(processor):attribute)*
+            S:s?
+            (   "/>"{ processor->EndStartTag(); processor->EndTag(sourcePos, tagName); }
+            |   '>'{ processor->EndStartTag(); } Content(processor):content ETag(processor):etag
+            )
+        )
+        ;
+
+    Attribute(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos)
+        ::= 
+        (
+            Name:attName{ sourcePos = lexer.GetSourcePos(pos); } 
+            Eq:eq 
+            AttValue(processor):attValue
+        )
+        { 
+            processor->AddAttribute(sourcePos, attName, attValue); 
+        }
+        ;
+
+    AttValue(soul::xml::processor::XmlProcessor* processor) : std::string
+        ::= AttValueDQ(processor):attValueDQ{ return attValueDQ; }
+        |   AttValueSQ(processor):attValueSQ{ return attValueSQ; }
+        ;
+
+    AttValueDQ(soul::xml::processor::XmlProcessor* processor) : std::string
+        ::= 
+        (
+            '"'{ processor->BeginAttributeValue(); }
+            (   "[^<&\"]"{ processor->AddAttValueChar(lexer.GetToken(pos).Chr()); }
+            |   Reference(processor):reference
+            )* 
+            '"'
+        )
+        {
+            std::string attValue = processor->AttValue();
+            processor->EndAttributeValue();
+            return attValue;
+        }
+        ;
+
+    AttValueSQ(soul::xml::processor::XmlProcessor* processor) : std::string
+        ::=
+        (
+            '\''{ processor->BeginAttributeValue(); }
+            (   "[^<&']"{ processor->AddAttValueChar(lexer.GetToken(pos).Chr()); }
+            |   Reference(processor):reference
+            )* 
+            '\''
+        )
+        {
+            std::string attValue = processor->AttValue();
+            processor->EndAttributeValue();
+            return attValue;
+        }
+        ;
+
+    Reference(soul::xml::processor::XmlProcessor* processor)
+        ::= CharRef(processor):charRef
+        |   EntityRef(processor):entityRef
+        ;
+
+    CharRef(soul::xml::processor::XmlProcessor* processor, var int32_t codePoint)
+        ::= 
+        (   "&#" DecCodePoint:decCodePoint ';'{ codePoint = decCodePoint; }
+        |   "&#x" HexCodePoint:hexCodePoint ';'{ codePoint = hexCodePoint; }
+        )
+        {
+            processor->CharRef(lexer.GetSourcePos(pos), static_cast<char32_t>(codePoint));
+        }
+        ;
+
+    DecCodePoint(var int32_t val) : int32_t
+        ::= 
+        (
+            (
+                "[0-9]"{ val = 10 * val + (lexer.GetToken(pos).Chr() - '0'); }
+            )+
+        )
+        {
+            return val;
+        }
+        ;
+
+    HexCodePoint(var int32_t val) : int32_t
+        ::=
+        (
+            (
+                "[0-9a-fA-F]"
+                { 
+                    char32_t chr = lexer.GetToken(pos).Chr(); 
+                    if (chr >= '0' && chr <= '9')
+                    {
+                        val = 16 * val + (chr - '0');
+                    }
+                    else if (chr >= 'a' && chr <= 'f')
+                    {
+                        val = 16 * val + 10 + (chr - 'a');
+                    }
+                    else if (chr >= 'A' && chr <= 'F')
+                    {
+                        val = 16 * val + 10 + (chr - 'A');
+                    }
+                }
+            )+
+        )
+        {
+            return val;
+        }
+        ;
+
+    EntityRef (soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            '&' Name:name ';'
+        )
+        {
+            processor->EntityRef(lexer.GetSourcePos(pos), name);
+        }
+        ;
+
+    Content(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            CharData(processor):cd1?
+            (
+                (   Element(processor):element 
+                |   Reference(processor):reference
+                |   CDSect(processor):cdsect
+                |   PI(processor):pi
+                |   Comment(processor):comment
+                )
+                CharData(processor):cd2?
+            )*
+        )
+        ;
+
+    CharData(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos, var std::u32string text)
+        ::= 
+        (
+            empty{ sourcePos = lexer.GetSourcePos(pos); }
+            ((CharDataChar:charDataChar - "]]>"){ text.append(1, charDataChar); })+
+        )
+        {
+            processor->Text(sourcePos, util::ToUtf8(text));
+        }
+        ;
+
+    CharDataChar : char32_t
+        ::= "[^<&]"{ return lexer.GetToken(pos).Chr(); }
+        ;
+
+    CDSect(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos, var std::u32string cdata)
+        ::= 
+        (
+            "<![CDATA["{ sourcePos = lexer.GetSourcePos(pos); }
+            (
+                (Char:chr - "]]>"){ cdata.append(1, chr); }
+            )* 
+            "]]>"
+        )
+        {
+            processor->CDataSection(sourcePos, util::ToUtf8(cdata));
+        }
+        ;
+
+    ETag(soul::xml::processor::XmlProcessor* processor, var soul::ast::SourcePos sourcePos)
+        ::= 
+        (
+            "</" Name:name{ sourcePos = lexer.GetSourcePos(pos); } S:s? '>'
+        )
+        {
+            processor->EndTag(sourcePos, name);
+        }
+        ;
+
+    DocTypeDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (
+            "<!DOCTYPE"
+            S:s1 
+            Name:rootElementName
+            (S:s2 ExternalID:extID)?
+            S:s3?
+            ('[' IntSubset(processor):intSubset ']' S:s4?)? 
+            '>'
+        )
+        ;
+
+    ExternalID
+        ::= ("SYSTEM" S:s1 SystemLiteral:s2)
+        |   ("PUBLIC" S:s3 PubidLiteral:p2 S:s4 SystemLiteral:s5)
+        ;
+
+    SystemLiteral
+        ::= '"' "[^\"]"* '"'
+        |   '\'' "[^']"* '\''
+        ;
+
+    PubidLiteral
+        ::= '"' PubidChar:p1* '"' 
+        |   '\'' (PubidChar:p2 - '\'')* '\''
+        ;
+
+    PubidChar
+        ::= "[\x20\xD\xA]" | "[a-zA-Z0-9]" | "[-'()+,./:=?;!*#@$_%]"
+        ;
+
+    IntSubset(soul::xml::processor::XmlProcessor* processor)
+        ::= 
+        (   MarkupDecl(processor):mdecl 
+        |   DeclSep(processor):declsep
+        )*
+        ;
+
+    MarkupDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= ElementDecl(processor):elementDecl
+        |   AttlistDecl(processor):attlistDecl
+        |   EntityDecl(processor):entityDecl
+        |   NotationDecl(processor):notationDecl
+        |   PI(processor):pi 
+        |   Comment(processor):comment
+        ;
+
+    ElementDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ELEMENT" S:s1 Name:elementName S:s2 ContentSpec:contentSpec S:s3? '>'
+        ;
+
+    ContentSpec
+        ::= "EMPTY" | "ANY" | Mixed:mixed | Children:children
+        ;
+
+    Mixed
+        ::= '(' S:s1? "#PCDATA" (S:s2? '|' S:s3? Name:name)* S:s4? ")*"
+        |   '(' S:s5? "#PCDATA" S:s6? ')'
+        ;
+
+    Choice
+        ::= '(' S:s1? CP:cp1 (S:s2? '|' S:s3? CP:cp2)+ S:s4? ')'
+        ;
+
+    CP
+        ::= (Name:name | Choice:choice | Seq:seq) ('?' | '*' | '+')?
+        ;
+
+    Seq
+        ::= '(' S:s1? CP:cp1 (S:s2? ',' S:s3? CP:cp2)* S:s4? ')'
+        ;
+
+    Children
+        ::= (Choice:choice | Seq:seq) ('?' | '*' | '+')?
+        ;
+
+    AttlistDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ATTLIST" S:s1 Name:name AttDef(processor):attdef* S:s2? '>'
+        ;
+
+    AttDef(soul::xml::processor::XmlProcessor* processor)
+        ::= S:s Name:name S:s2 AttType:attType S:s3 DefaultDecl(processor):defaultDecl
+        ;
+
+    AttType
+        ::= StringType:stringType | TokenizedType:tokenizedType | EnumeratedType:enumeratedType
+        ;
+
+    StringType
+        ::= "CDATA"
+        ;
+
+    TokenizedType
+        ::= "ID"
+        |   "IDREF"
+        |   "IDREFS"
+        |   "ENTITY"
+        |   "ENTITIES"
+        |   "NMTOKEN"
+        |   "NMTOKENS"
+        ;
+
+    EnumeratedType
+        ::= NotationType:notationType 
+        |   Enumeration:enumeration
+        ;
+
+    NotationType
+        ::= "NOTATION" S:s1 '(' S:s2? Name:f (S:s3? '|' S:s4? Name:n)* S:s5? ')'
+        ;
+
+    Enumeration
+        ::= '(' S:s1? Nmtoken:nmtoken (S:s2? '|' S:s3? Nmtoken:nmtoken2)* S:s4? ')'
+        ;
+
+    Nmtoken
+        ::= NameChar:nameChar+
+        ;
+
+    DefaultDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "#REQUIRED" | "#IMPLIED" | (("#FIXED" S:s)? AttValue(processor):attValue)
+        ;
+
+    EntityDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= GEDecl(processor):gedecl | PEDecl(processor):pedecl
+        ;
+
+    GEDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ENTITY" S:s0 Name:entityName S:s1 EntityDef(processor):entityDef S:s2? '>'
+        ;
+
+    EntityDef(soul::xml::processor::XmlProcessor* processor)
+        ::= EntityValue(processor):entityValue | (ExternalID:extID NDataDecl:notation?)
+        ;
+
+    EntityValue(soul::xml::processor::XmlProcessor* processor)
+        ::= '"'
+            (   "[^%&\"]"
+            |   PEReference(processor):pr1
+            |   Reference(processor):ref1
+            )* 
+            '"'
+        |   '\''
+            (   "[^%&']"
+            |   PEReference(processor):pr2
+            |   Reference(processor):ref2
+            )* 
+            '\''
+        ;
+
+    PEReference(soul::xml::processor::XmlProcessor* processor)
+        ::= '%' Name:name ';'
+        ;
+
+    PEDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!ENTITY" S:s0 '%' S:s1 Name:peName S:s2 PEDef(processor):peValue S:s3? '>'
+        ;
+
+    PEDef(soul::xml::processor::XmlProcessor* processor)
+        ::= EntityValue(processor):entityValue | ExternalID:extID
+        ;
+
+    NDataDecl
+        ::= S:s1 "NDATA" S:s2 Name:name
+        ;
+
+    NotationDecl(soul::xml::processor::XmlProcessor* processor)
+        ::= "<!NOTATION" S:s Name:name S:s2 (ExternalID:extID | PublicID:pubID) S:s3? '>'
+        ;
+
+    DeclSep(soul::xml::processor::XmlProcessor* processor)
+        ::= PEReference(processor):peref | S:s
+        ;
+
+    PublicID
+        ::= "PUBLIC" S:s PubidLiteral:pl
+        ;
+}

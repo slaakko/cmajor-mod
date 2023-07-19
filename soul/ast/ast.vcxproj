@@ -163,6 +163,7 @@
     <ClCompile Include="re.cppm" />
     <ClCompile Include="slg.cpp" />
     <ClCompile Include="slg.cppm" />
+    <ClCompile Include="source_pos.cpp" />
     <ClCompile Include="source_pos.cppm" />
     <ClCompile Include="spg.cpp" />
     <ClCompile Include="spg.cppm" />

@@ -1,0 +1,17 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions soul.xml.xpath.expr
+{
+    ws = "[\n\r\t ]";
+    separators = "{ws}+";
+    dq_string = "\"[^\"]*\"";
+    sq_string = "'[^']*'";
+    digits = "[0-9]+";
+    number = "{digits}(\.{digits}?)?|\.{digits}";
+    name_start_char = "[A-Z_a-z\xC0-\xD6\xD8-\xF6\xF8-\x2FF\x370-\x37D\x37F-\x1FFF\x200C-\x200D\x2070-\x218F\x2C00-\x2FEF\x3001-\xD7FF\xF900-\xFDCF\xFDF0-\xFFFD\x10000-\xEFFFF]";
+    name_char = "{name_start_char}|[-\.0-9\xB7\x300-\x36F\x203F-\x2040]";
+    name = "{name_start_char}{name_char}*";
+}

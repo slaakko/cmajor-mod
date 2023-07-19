@@ -159,6 +159,7 @@
     <ClCompile Include="compression.cpp" />
     <ClCompile Include="condition_variable.cpp" />
     <ClCompile Include="cpp_command_line.cpp" />
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="environment.cpp" />
     <ClCompile Include="error.cpp" />

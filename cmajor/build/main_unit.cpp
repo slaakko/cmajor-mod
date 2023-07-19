@@ -436,7 +436,8 @@ void GenerateMainUnitCppWindowsGUI(cmajor::symbols::Module* rootModule, std::vec
     mainCompileUnit.GlobalNs()->AddMember(MakePolymorphicClassArray(rootModule->GetSymbolTable().PolymorphicClasses(), U"__polymorphicClassArray"));
     mainCompileUnit.GlobalNs()->AddMember(MakeStaticClassArray(rootModule->GetSymbolTable().ClassesHavingStaticConstructor(), U"__staticClassArray"));
     std::string platform = cmajor::ast::GetPlatform();
-    cmajor::ast::FunctionNode* mainFunction = new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), cmajor::ast::Specifiers::public_,
+    cmajor::ast::FunctionNode* mainFunction = new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), 
+        cmajor::ast::Specifiers::public_ | cmajor::ast::Specifiers::winapi,
         new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"WinMain", nullptr);
     mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
         new cmajor::ast::VoidNode(soul::ast::SourcePos(), util::nil_uuid())),

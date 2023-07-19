@@ -1,0 +1,5 @@
+project cmajor.cpp.xpath.lexer;
+tokens <xpath.token>;
+keywords <xpath.keyword>;
+expressions <xpath.expr>;
+lexer <xpath.lexer>;

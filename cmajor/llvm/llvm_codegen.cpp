@@ -48,11 +48,11 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
         symbolsModule->AddCompileUnitId(compileUnitId);
     }
     emitter->SetCompileUnitId(compileUnitId);
-    NativeModule nativeModule(emitter, boundCompileUnit.GetCompileUnitNode()->FilePath());
+    NativeModule nativeModule(emitter, util::Path::GetFileName(boundCompileUnit.GetCompileUnitNode()->FilePath()));
     module = nativeModule.module;
     emitter->SetTargetTriple(emitter->EmittingContext()->TargetTripleStr());
     emitter->SetDataLayout(emitter->EmittingContext()->DataLayout());
-    emitter->SetSourceFileName(boundCompileUnit.GetCompileUnitNode()->FilePath());
+    emitter->SetSourceFileName(util::Path::GetFileName(boundCompileUnit.GetCompileUnitNode()->FilePath()));
     emitter->ResetCurrentDebugLocation();
     debugInfo = false;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo) && boundCompileUnit.GetCompileUnitNode() && 
@@ -88,10 +88,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     if (debugInfo)
     {
         emitter->FinalizeDebugInfo();
-    }
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm))
-    {
-        emitter->EmitIrText(boundCompileUnit.LLFilePath());
     }
     if (debugInfo)
     {
@@ -278,10 +274,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     pads.clear();
     labeledStatementMap.clear();
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
-    if (functionSymbol->MangledName().find(U"main") != std::u32string::npos)
-    {
-        int x = 0;
-    }
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
     void* functionType = functionSymbol->IrType(*emitter);
@@ -380,7 +372,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         else
         {
             unsigned flags = cmajor::symbols::AccessFlag(*emitter, functionSymbol->Access());
-            subprogram = emitter->CreateDIFunction(util::ToUtf8(functionSymbol->Name()), util::ToUtf8(functionSymbol->MangledName()), functionSymbol->GetSourcePos(), 
+            subprogram = emitter->CreateDIFunction(util::ToUtf8(functionSymbol->GroupName()), util::ToUtf8(functionSymbol->MangledName()), functionSymbol->GetSourcePos(), 
                 functionSymbol->SourceModuleId(), subroutineType, flags);
         }
         emitter->SetDISubprogram(function, subprogram);
@@ -577,7 +569,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     }
     else
     {
-        emitter->AddUWTableAttribute(function);
+        // emitter->AddUWTableAttribute(function); TODO
     }
     GenerateCodeForCleanups();
     if (debugInfo)
@@ -586,6 +578,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     }
     debugInfo = prevDebugInfo;
     emitter->SetCurrentDIBuilder(prevDIBuilder);
+    if (functionSymbol->Name() == U"main()")
+    {
+        int x = 0;
+    }
 }
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSequenceStatement)

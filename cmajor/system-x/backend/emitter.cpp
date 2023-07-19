@@ -1448,10 +1448,6 @@ void SystemXEmitter::EndDebugInfo()
 {
 }
 
-void SystemXEmitter::EmitIrText(const std::string& filePath)
-{
-}
-
 void SystemXEmitter::Compile(const std::string& objectFilePath)
 {
 }

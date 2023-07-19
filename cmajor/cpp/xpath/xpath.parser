@@ -1,0 +1,525 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module soul.xml.xpath.parser;
+
+[interface]import soul.xml.xpath.expr;
+[implementation]import soul.xml.xpath.lexer;
+[implementation]import soul.xml.xpath.token;
+[implementation]import soul.xml.xpath.token.parser;
+
+parser XPathParser
+{
+    lexer soul::xml::xpath::lexer::XPathLexer<char32_t>;
+    main;
+
+    Expr : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            OrExpr:orExpr
+        )
+        { 
+            return orExpr; 
+        }
+        ;
+
+    OrExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            AndExpr:left{ expr.reset(left); }
+            (
+                OrKeyword:or_ AndExpr:right{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::or_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AndExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::=
+        (
+            EqualityExpr:left{ expr.reset(left); }
+            (
+                AndKeyword:and_ EqualityExpr:right{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::and_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    EqualityExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::=
+        (
+            RelationalExpr:left{ expr.reset(left); }
+            (
+                EqualityOp:op RelationalExpr:right!{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    RelationalExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            AdditiveExpr:left{ expr.reset(left); }
+            (
+                RelationalOp:op AdditiveExpr:right!{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AdditiveExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            MultiplicativeExpr:left{ expr.reset(left); } 
+            (
+                AdditiveOp:op MultiplicativeExpr:right!{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    MultiplicativeExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            UnaryExpr:left{ expr.reset(left); }
+            (
+                MultiplicativeOp:op UnaryExpr:right!{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(op, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    UnaryExpr : soul::xml::xpath::expr::Expr*
+        ::= MINUS UnaryExpr:subject{ return new soul::xml::xpath::expr::UnaryExpr(soul::xml::xpath::expr::Operator::minus, subject); }
+        |   UnionExpr:unionExpr{ return unionExpr; }
+        ;
+
+    UnionExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            PathExpr:left{ expr.reset(left); }
+            (
+                UNION PathExpr:right{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::union_, expr.release(), right)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    PathExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            (
+                LocationPath:locationPath - FunctionCall:functionCall
+            )
+            { 
+                return locationPath; 
+            }
+        )
+        |   
+        (   
+            FilterExpr:filterExpr{ expr.reset(filterExpr); }
+            (
+                (
+                    (
+                        CombinePathOp:op
+                        RelativeLocationPath:right
+                    )
+                    {
+                        switch (op)
+                        {
+                            case soul::xml::xpath::expr::Operator::slash:
+                            {
+                                return new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::slash, expr.release(), right);
+                            }
+                            case soul::xml::xpath::expr::Operator::slashSlash:
+                            {
+                                return soul::xml::xpath::expr::MakeSlashSlashExpr(expr.release(), right);
+                            }
+                        }
+                    }
+                )?
+            )
+            {
+                return expr.release();
+            }
+        )
+        ;
+
+    LocationPath : soul::xml::xpath::expr::Expr*
+        ::= AbsoluteLocationPath:absoluteLocationPath{ return absoluteLocationPath; }
+        |   RelativeLocationPath:relativeLocationPath{ return relativeLocationPath; }
+        ;
+
+    AbsoluteLocationPath(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (   AbbreviatedAbsoluteLocationPath:abbreviatedAbsoluteLocationPath{ expr.reset(abbreviatedAbsoluteLocationPath); }
+        |   SLASH{ expr.reset(new soul::xml::xpath::expr::Root()); } 
+            (
+                RelativeLocationPath:right{ expr.reset(new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::slash, expr.release(), right)); }
+            )?
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AbbreviatedAbsoluteLocationPath : soul::xml::xpath::expr::Expr*
+        ::= SLASH_SLASH RelativeLocationPath:right{ return soul::xml::xpath::expr::MakeSlashSlashExpr(new soul::xml::xpath::expr::Root(), right); }
+        ;
+
+    RelativeLocationPath(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            Step:left{ expr.reset(left); }
+            (
+                (
+                    CombinePathOp:op
+                    Step:right
+                )
+                {
+                    switch (op)
+                    {
+                        case soul::xml::xpath::expr::Operator::slash:
+                        {
+                            expr.reset(new soul::xml::xpath::expr::BinaryExpr(soul::xml::xpath::expr::Operator::slash, expr.release(), right));
+                            break;
+                        }
+                        case soul::xml::xpath::expr::Operator::slashSlash:
+                        {
+                            expr.reset(soul::xml::xpath::expr::MakeSlashSlashExpr(expr.release(), right));
+                            break;
+                        }
+                    }
+                }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    Step(var std::unique_ptr<soul::xml::xpath::expr::LocationStepExpr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            AxisSpecifier:axis NodeTest:nodeTest{ expr.reset(new soul::xml::xpath::expr::LocationStepExpr(axis, nodeTest)); }
+            (
+                Predicate:predicate{ expr->AddPredicate(predicate); }
+            )*
+        |   AbbreviatedStep:abbreviatedStep{ expr.reset(abbreviatedStep); }
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    AxisSpecifier : soul::xml::Axis
+        ::= AxisName:axis COLON_COLON{ return axis;}
+        |   AbbreviatedAxisSpecifier:abbreviatedAxisSpecifier{ return abbreviatedAxisSpecifier; }
+        ;
+
+    AxisName : soul::xml::Axis
+        ::= NAME
+        {
+            switch (lexer.GetKeywordToken(lexer.GetToken(pos).match))
+            {
+                case ANCESTOR:
+                {
+                    return soul::xml::Axis::ancestor;
+                }
+                case ANCESTOR_OR_SELF:
+                {
+                    return soul::xml::Axis::ancestorOrSelf;
+                }
+                case ATTRIBUTE:
+                {
+                    return soul::xml::Axis::attribute;
+                }
+                case CHILD:
+                {
+                    return soul::xml::Axis::child;
+                }
+                case DESCENDANT:
+                {
+                    return soul::xml::Axis::descendant;
+                }
+                case DESCENDANT_OR_SELF:
+                {
+                    return soul::xml::Axis::descendantOrSelf;
+                }
+                case FOLLOWING:
+                {
+                    return soul::xml::Axis::following;
+                }
+                case FOLLOWING_SIBLING:
+                {
+                    return soul::xml::Axis::followingSibling;
+                }
+                case NAMESPACE:
+                {
+                    return soul::xml::Axis::ns;
+                }
+                case PARENT:
+                {
+                    return soul::xml::Axis::parent;
+                }
+                case PRECEDING:
+                {
+                    return soul::xml::Axis::preceding;
+                }
+                case PRECEDING_SIBLING:
+                {
+                    return soul::xml::Axis::precedingSibling;
+                }
+                case SELF:
+                {
+                    return soul::xml::Axis::self;
+                }
+                default:
+                {
+                    pass = false;
+                    break;
+                }
+            }
+        }
+        ;
+
+    AbbreviatedAxisSpecifier : soul::xml::Axis
+        ::= AT{ return soul::xml::Axis::attribute; }
+        |   empty{ return soul::xml::Axis::child; }
+        ;
+
+    NodeTest : soul::xml::xpath::expr::NodeTest*
+        ::= 
+        (   
+            (
+                ProcessingInstructionKeyword:pikw LPAREN Literal:pi RPAREN
+            )
+            { 
+                return new soul::xml::xpath::expr::PILiteralNodeTest(pi); 
+            }
+        |   
+            (
+                NodeType:nodeType LPAREN RPAREN
+            )
+            { 
+                return nodeType; 
+            }
+        |   
+            (
+                NameTest:nameTest
+            )
+            {  
+                return nameTest; 
+            }
+        )
+        ;
+
+    Literal : soul::xml::xpath::expr::Literal*
+        ::= DQ_STRING{ return new soul::xml::xpath::expr::Literal(soul::xml::xpath::token::parser::ParseDQString(lexer.FileName(), lexer.GetToken(pos))); }
+        |   SQ_STRING{ return new soul::xml::xpath::expr::Literal(soul::xml::xpath::token::parser::ParseSQString(lexer.FileName(), lexer.GetToken(pos))); }
+        ;
+
+    NodeType : soul::xml::xpath::expr::NodeTest*
+        ::= NAME
+        {
+            switch (lexer.GetKeywordToken(lexer.GetToken(pos).match))
+            {
+                case COMMENT: 
+                {
+                    return new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::commentNodeTest);
+                }
+                case TEXT:
+                {
+                    return new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::textNodeTest);
+                }
+                case PROCESSING_INSTRUCTION:
+                {
+                    return new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::piNodeTest);
+                }
+                case NODE:
+                {
+                    return new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::anyNodeTest);
+                }
+                default:
+                {
+                    pass = false;
+                    break;
+                }
+            }
+        }
+        ;
+
+    NameTest : soul::xml::xpath::expr::NodeTest*
+        ::= STAR{ return new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::principalNodeTest); }
+        |   NCName:ncname COLON STAR{ return new soul::xml::xpath::expr::PrefixNodeTest(ncname); }
+        |   QName:qname{ return new soul::xml::xpath::expr::NameNodeTest(qname); }
+        ;
+
+    NCName : std::string
+        ::= NAME{ return util::ToUtf8(lexer.GetToken(pos).ToString()); }
+        ;
+
+    QName : std::string
+        ::= PrefixedName:prefixedName{ return prefixedName; }
+        |   UnprefixedName:unprefixedName{ return unprefixedName; }
+        ;
+
+    PrefixedName : std::string
+        ::= 
+        (
+            Prefix:prefix COLON LocalPart:localPart
+        )
+        {
+            return prefix + ":" + localPart;
+        }
+        ;
+
+    Prefix : std::string
+        ::= NCName:ncname{ return ncname; }
+        ;
+
+    UnprefixedName : std::string
+        ::= LocalPart:localPart{ return localPart; }
+        ;
+
+    LocalPart : std::string
+        ::= NCName:ncname{ return ncname; }
+        ;
+
+    Predicate : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            LBRACKET 
+            Expr:expr 
+            RBRACKET
+        )
+        { 
+            return expr; 
+        }
+        ;
+
+    AbbreviatedStep : soul::xml::xpath::expr::LocationStepExpr*
+        ::= DOT_DOT
+        { 
+            return new soul::xml::xpath::expr::LocationStepExpr(soul::xml::Axis::parent, new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::anyNodeTest)); 
+        }
+        |   DOT
+        { 
+            return new soul::xml::xpath::expr::LocationStepExpr(soul::xml::Axis::self, new soul::xml::xpath::expr::NodeTest(soul::xml::xpath::expr::NodeTestKind::anyNodeTest)); 
+        }
+        ;
+
+    FunctionCall(var std::unique_ptr<soul::xml::xpath::expr::FunctionCall> functionCall) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            FunctionName:functionName
+            LPAREN{ functionCall.reset(new soul::xml::xpath::expr::FunctionCall(functionName)); }
+            (Argument:arg{ functionCall->AddArgument(arg); } % COMMA)?
+            RPAREN
+        )
+        {
+            return functionCall.release();
+        }
+        ;
+
+    FunctionName : std::string
+        ::= (QName:qname - NodeType:nodeType){ return qname; }
+        ;
+
+    Argument : soul::xml::xpath::expr::Expr*
+        ::= Expr:expr{ return expr; }
+        ;
+
+    FilterExpr(var std::unique_ptr<soul::xml::xpath::expr::Expr> expr) : soul::xml::xpath::expr::Expr*
+        ::= 
+        (
+            PrimaryExpr:primaryExpr{ expr.reset(primaryExpr); } 
+            (
+                Predicate:predicate{ expr.reset(new soul::xml::xpath::expr::FilterExpr(expr.release(), predicate)); }
+            )*
+        )
+        {
+            return expr.release();
+        }
+        ;
+
+    PrimaryExpr : soul::xml::xpath::expr::Expr*
+        ::= FunctionCall:functionCall{ return functionCall; }
+        |   VariableReference:variableReference{ return variableReference; }
+        |   (LPAREN Expr:expr RPAREN){ return new soul::xml::xpath::expr::UnaryExpr(soul::xml::xpath::expr::Operator::parens, expr); }
+        |   Literal:literal{ return literal; }
+        |   Number:number{ return number; }
+        ;
+
+    VariableReference : soul::xml::xpath::expr::Expr*
+        ::= (DOLLAR QName:qname){ return new soul::xml::xpath::expr::VariableReference(qname); }
+        ;
+
+    Number : soul::xml::xpath::expr::Expr*
+        ::= NUMBER{ return new soul::xml::xpath::expr::NumberExpr(lexer.GetToken(pos).ToDouble()); }
+        ;
+
+    EqualityOp : soul::xml::xpath::expr::Operator
+        ::= EQ{ return soul::xml::xpath::expr::Operator::equal; }
+        |   NEQ{ return soul::xml::xpath::expr::Operator::notEqual; }
+        ;
+
+    RelationalOp : soul::xml::xpath::expr::Operator
+        ::= LESS{ return soul::xml::xpath::expr::Operator::less; }
+        |   GREATER{ return soul::xml::xpath::expr::Operator::greater; }
+        |   LEQ{ return soul::xml::xpath::expr::Operator::lessOrEqual; }
+        |   GEQ{ return soul::xml::xpath::expr::Operator::greaterOrEqual; }
+        ;
+
+    AdditiveOp : soul::xml::xpath::expr::Operator
+        ::= PLUS{ return soul::xml::xpath::expr::Operator::plus; }
+        |   MINUS{ return soul::xml::xpath::expr::Operator::minus; }
+        ;
+
+    MultiplicativeOp : soul::xml::xpath::expr::Operator
+        ::= STAR{ return soul::xml::xpath::expr::Operator::mul; }
+        |   DivKeyword:div{ return soul::xml::xpath::expr::Operator::div; }
+        |   ModKeyword:mod{ return soul::xml::xpath::expr::Operator::mod; }
+        ;
+
+    CombinePathOp : soul::xml::xpath::expr::Operator
+        ::= SLASH{ return soul::xml::xpath::expr::Operator::slash; }
+        |   SLASH_SLASH{ return soul::xml::xpath::expr::Operator::slashSlash; }
+        ;
+
+    OrKeyword 
+        ::= NAME{ pass = lexer.GetKeywordToken(lexer.GetToken(pos).match) == OR; }
+        ;
+
+    AndKeyword
+        ::= NAME{ pass = lexer.GetKeywordToken(lexer.GetToken(pos).match) == AND; }
+        ;
+
+    DivKeyword
+        ::= NAME{ pass = lexer.GetKeywordToken(lexer.GetToken(pos).match) == DIV; }
+        ;
+
+    ModKeyword
+        ::= NAME{ pass = lexer.GetKeywordToken(lexer.GetToken(pos).match) == MOD; }
+        ;
+
+    ProcessingInstructionKeyword
+        ::= NAME{ pass = lexer.GetKeywordToken(lexer.GetToken(pos).match) == PROCESSING_INSTRUCTION; }
+        ;
+}

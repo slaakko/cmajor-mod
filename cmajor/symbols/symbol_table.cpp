@@ -455,6 +455,10 @@ void SymbolTable::BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t
     {
         functionSymbol->SetConstExpr();
     }
+    if ((functionNode.GetSpecifiers() & cmajor::ast::Specifiers::winapi) != cmajor::ast::Specifiers::none)
+    {
+        functionSymbol->SetFlag(FunctionSymbolFlags::winapi);
+    }
     functionSymbol->SetHasSource();
     functionSymbol->SetCompileUnit(currentCompileUnit);
     functionSymbol->SetModule(module);

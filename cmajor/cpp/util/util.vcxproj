@@ -117,7 +117,7 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4267;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4267;4996;4244</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
@@ -137,7 +137,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4267;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4267;4996;4244</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
@@ -151,33 +151,53 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ansi.hpp" />
     <ClInclude Include="assert.hpp" />
+    <ClInclude Include="binary_resource_ptr.hpp" />
     <ClInclude Include="binary_stream_reader.hpp" />
     <ClInclude Include="binary_stream_writer.hpp" />
     <ClInclude Include="buffered_stream.hpp" />
+    <ClInclude Include="code_formatter.hpp" />
+    <ClInclude Include="compression.hpp" />
+    <ClInclude Include="deflate_stream.hpp" />
+    <ClInclude Include="error.hpp" />
     <ClInclude Include="fiber.hpp" />
     <ClInclude Include="file_stream.hpp" />
     <ClInclude Include="init_done.hpp" />
+    <ClInclude Include="memory_reader.hpp" />
     <ClInclude Include="memory_stream.hpp" />
+    <ClInclude Include="memory_writer.hpp" />
     <ClInclude Include="multiprecision.hpp" />
     <ClInclude Include="path.hpp" />
     <ClInclude Include="process.hpp" />
     <ClInclude Include="rand.hpp" />
+    <ClInclude Include="sha1.hpp" />
+    <ClInclude Include="socket.hpp" />
     <ClInclude Include="stream.hpp" />
     <ClInclude Include="system.hpp" />
     <ClInclude Include="text_util.hpp" />
+    <ClInclude Include="time.hpp" />
     <ClInclude Include="unicode.hpp" />
+    <ClInclude Include="util.hpp" />
     <ClInclude Include="uuid.hpp" />
     <ClInclude Include="zlib_interface.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ansi.cpp" />
+    <ClCompile Include="binary_resource_ptr.cpp" />
     <ClCompile Include="binary_stream_reader.cpp" />
     <ClCompile Include="binary_stream_writer.cpp" />
     <ClCompile Include="buffered_stream.cpp" />
+    <ClCompile Include="code_formatter.cpp" />
+    <ClCompile Include="compression.cpp" />
+    <ClCompile Include="deflate_stream.cpp" />
+    <ClCompile Include="error.cpp" />
     <ClCompile Include="fiber.cpp" />
     <ClCompile Include="file_stream.cpp" />
     <ClCompile Include="init_done.cpp" />
+    <ClCompile Include="memory_reader.cpp" />
     <ClCompile Include="memory_stream.cpp" />
+    <ClCompile Include="memory_writer.cpp" />
     <ClCompile Include="multiprecision.cpp" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="process.cpp">
@@ -185,12 +205,16 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_LIB;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="rand.cpp" />
+    <ClCompile Include="sha1.cpp" />
+    <ClCompile Include="socket.cpp" />
     <ClCompile Include="stream.cpp" />
     <ClCompile Include="system.cpp" />
     <ClCompile Include="text_util.cpp" />
+    <ClCompile Include="time.cpp" />
     <ClCompile Include="unicode.cpp" />
     <ClCompile Include="unicode_conversion.cpp" />
     <ClCompile Include="unicode_engine.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="uuid.cpp" />
     <ClCompile Include="zlib_interface.c" />
   </ItemGroup>

@@ -48,6 +48,10 @@ void LinkWindowsLLDLink(cmajor::ast::Project* project, cmajor::symbols::Module* 
     }
     std::string errors;
     std::string linkCommandLine = "lld-link";
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo))
+    {
+        linkCommandLine.append(" -debug");
+    }
     for (const std::string& arg : args)
     {
         linkCommandLine.append(1, ' ').append(arg);

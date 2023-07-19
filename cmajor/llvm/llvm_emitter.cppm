@@ -271,7 +271,6 @@ public:
     void FinalizeDebugInfo() override;
     void EndDebugInfo() override;
     void* CreateDebugInfoForNamespace(void* scope, const std::string& name) override;
-    void EmitIrText(const std::string& filePath) override;
     void Compile(const std::string& objectFilePath) override;
     void VerifyModule() override;
     void ResetCurrentDebugLocation() override;
