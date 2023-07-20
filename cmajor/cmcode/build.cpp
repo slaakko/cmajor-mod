@@ -23,7 +23,6 @@ void StartBuild(const std::string& backend, const std::string& config, const std
     buildRequest.filePath = filePath;
     buildRequest.singleThreadedCompile = buildSettings.singleThreadedCompile;
     buildRequest.emitIR = buildSettings.generateIntermediateCodeFiles;
-    buildRequest.emitOptIR = buildSettings.generateOptimizedIntermediateCodeFiles;
     buildRequest.verbose = true;
     if ((requestKind & BuildRequestKind::clean) != BuildRequestKind::none)
     {

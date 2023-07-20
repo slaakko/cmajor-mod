@@ -168,7 +168,7 @@ BuildRequest::BuildRequest()
 }
 
 BuildRequest::BuildRequest(uint32_t id_)
-     : cmajor::bmp::BinaryMessage(id_), backend(), config(), optimizationLevel(), filePath(), defines(), verbose(), quiet(), clean(), rebuild(), emitIR(), emitOptIR(), linkWithDebugRuntime(), disableModuleCache(), singleThreadedCompile(), buildAllDependencies()
+     : cmajor::bmp::BinaryMessage(id_), backend(), config(), optimizationLevel(), filePath(), defines(), verbose(), quiet(), clean(), rebuild(), emitIR(), linkWithDebugRuntime(), disableModuleCache(), singleThreadedCompile(), buildAllDependencies()
 {
 }
 
@@ -200,7 +200,6 @@ uint32_t BuildRequest::Length() const
     length += cmajor::bmp::Length(clean);
     length += cmajor::bmp::Length(rebuild);
     length += cmajor::bmp::Length(emitIR);
-    length += cmajor::bmp::Length(emitOptIR);
     length += cmajor::bmp::Length(linkWithDebugRuntime);
     length += cmajor::bmp::Length(disableModuleCache);
     length += cmajor::bmp::Length(singleThreadedCompile);
@@ -220,7 +219,6 @@ void BuildRequest::Write(util::MemoryWriter& writer) const
     cmajor::bmp::Write(writer, clean);
     cmajor::bmp::Write(writer, rebuild);
     cmajor::bmp::Write(writer, emitIR);
-    cmajor::bmp::Write(writer, emitOptIR);
     cmajor::bmp::Write(writer, linkWithDebugRuntime);
     cmajor::bmp::Write(writer, disableModuleCache);
     cmajor::bmp::Write(writer, singleThreadedCompile);
@@ -239,7 +237,6 @@ void BuildRequest::Read(util::MemoryReader& reader)
     cmajor::bmp::Read(reader, clean);
     cmajor::bmp::Read(reader, rebuild);
     cmajor::bmp::Read(reader, emitIR);
-    cmajor::bmp::Read(reader, emitOptIR);
     cmajor::bmp::Read(reader, linkWithDebugRuntime);
     cmajor::bmp::Read(reader, disableModuleCache);
     cmajor::bmp::Read(reader, singleThreadedCompile);

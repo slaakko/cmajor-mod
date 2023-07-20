@@ -43,10 +43,8 @@ public:
     virtual soul::xml::Element* ToXml(const std::string& fieldName) const;
     virtual void FromXml(soul::xml::Element* element);
 public:
-    int32_t numberOfProjectBuildThreads;
     bool singleThreadedCompile;
     bool generateIntermediateCodeFiles;
-    bool generateOptimizedIntermediateCodeFiles;
 };
 
 export class Options

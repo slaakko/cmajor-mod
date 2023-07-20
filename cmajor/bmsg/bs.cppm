@@ -100,7 +100,6 @@ public:
     bool clean;
     bool rebuild;
     bool emitIR;
-    bool emitOptIR;
     bool linkWithDebugRuntime;
     bool disableModuleCache;
     bool singleThreadedCompile;

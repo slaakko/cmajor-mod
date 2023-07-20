@@ -3,16 +3,13 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.logger;
+export module cmajor.logger.service;
 
-import bpm.client;
+import std.core;
 
 export namespace cmajor::service {
 
-class ServiceLogger : public bpm::Logger
-{
-public:
-    void LogMessage(const std::string& message) override;
-};
+void StartLoggerService();
+void StopLoggerService();
 
 } // namespace cmajor::service

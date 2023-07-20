@@ -26,8 +26,8 @@ bool ServerLogging()
 
 bool DebugWait()
 {
-    return false;
-    //return true;
+    //return false;
+    return true;
 }
 
 bool ServerVerbose()

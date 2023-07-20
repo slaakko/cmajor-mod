@@ -8,9 +8,9 @@ module cmajor.service.init.done;
 import cmajor.service.message;
 import cmajor.service.request;
 import cmajor.service.request.dispatcher;
-import cmajor.service.build.service;
-import cmajor.service.debug.service;
-
+import cmajor.logger.service;
+//import cmajor.service.build.service;
+//import cmajor.service.debug.service;
 // #include <cmajor/cmsvc/RunService.hpp>
 // #include <cmajor/cmsvc/CodeCompletionService.hpp>
 
@@ -18,7 +18,8 @@ namespace cmajor::service {
 
 void Init()
 {
-    InitDebugService();
+    StartLoggerService();
+    //InitDebugService();
     //InitRunService();
     //InitCodeCompletionService();
     //cmajor::debug::CmdbSessionInit();
@@ -29,7 +30,8 @@ void Done()
     //cmajor::debug::CmdbSessionDone();
     //DoneCodeCompletionService();
     //DoneRunService();
-    DoneDebugService();
+    //DoneDebugService();
+    StopLoggerService();
 }
 
 } // namespace cmajor::service

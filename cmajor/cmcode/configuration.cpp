@@ -85,7 +85,7 @@ void RecentSolution::FromXml(soul::xml::Element* element)
 }
 
 BuildSettings::BuildSettings()
-     : numberOfProjectBuildThreads(), singleThreadedCompile(), generateIntermediateCodeFiles(), generateOptimizedIntermediateCodeFiles()
+     : singleThreadedCompile(), generateIntermediateCodeFiles()
 {
 }
 
@@ -149,19 +149,15 @@ void BuildSettings::ReadFromXmlString(const std::string& xmlString)
 soul::xml::Element* BuildSettings::ToXml(const std::string& fieldName) const
 {
     soul::xml::Element* element = soul::xml::MakeElement(fieldName);
-    element->AppendChild(soul::xml::serialization::ToXml(numberOfProjectBuildThreads, "numberOfProjectBuildThreads"));
     element->AppendChild(soul::xml::serialization::ToXml(singleThreadedCompile, "singleThreadedCompile"));
     element->AppendChild(soul::xml::serialization::ToXml(generateIntermediateCodeFiles, "generateIntermediateCodeFiles"));
-    element->AppendChild(soul::xml::serialization::ToXml(generateOptimizedIntermediateCodeFiles, "generateOptimizedIntermediateCodeFiles"));
     return element;
 }
 
 void BuildSettings::FromXml(soul::xml::Element* element)
 {
-    soul::xml::serialization::FromXml(element, "numberOfProjectBuildThreads", numberOfProjectBuildThreads);
     soul::xml::serialization::FromXml(element, "singleThreadedCompile", singleThreadedCompile);
     soul::xml::serialization::FromXml(element, "generateIntermediateCodeFiles", generateIntermediateCodeFiles);
-    soul::xml::serialization::FromXml(element, "generateOptimizedIntermediateCodeFiles", generateOptimizedIntermediateCodeFiles);
 }
 
 Options::Options()

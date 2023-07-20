@@ -164,6 +164,8 @@
     <ClCompile Include="init_done.cppm" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logger.cppm" />
+    <ClCompile Include="logger_service.cpp" />
+    <ClCompile Include="logger_service.cppm" />
     <ClCompile Include="message.cpp" />
     <ClCompile Include="message.cppm" />
     <ClCompile Include="port_map_service.cpp" />

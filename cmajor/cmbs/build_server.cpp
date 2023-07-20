@@ -266,10 +266,6 @@ void BuildServer::HandleBuildRequest(bs::BuildRequest* request, util::LogFileWri
         { 
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
         }
-        if (request->emitOptIR)
-        {
-            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitOptLlvm);
-        }
         if (request->linkWithDebugRuntime)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
@@ -469,7 +465,10 @@ void BuildServer::RunLogger()
         bool endOfLog = false;
         bool timeout = false;
         std::string message = util::FetchLogMessage(endOfLog, progressIntervalMs, timeout);
-        if (endOfLog) return;
+        if (endOfLog)
+        {
+            return;
+        }
         if (timeout)
         {
             bs::BuildProgressMessage buildProgressMessage;

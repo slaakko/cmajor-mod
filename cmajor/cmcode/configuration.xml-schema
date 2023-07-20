@@ -15,7 +15,6 @@ class BuildSettings
 {
     bool singleThreadedCompile;
     bool generateIntermediateCodeFiles;
-    bool generateOptimizedIntermediateCodeFiles;
 }
 
 class Options
