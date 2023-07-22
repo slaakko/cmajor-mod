@@ -161,6 +161,7 @@
     <ClCompile Include="cpp_command_line.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="directory.cpp" />
+    <ClCompile Include="dll_main.cpp" />
     <ClCompile Include="environment.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="fiber.cpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="io.cpp" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="memory.cpp" />
+    <ClCompile Include="module.cpp" />
     <ClCompile Include="multiprecision.cpp" />
     <ClCompile Include="mutex.cpp" />
     <ClCompile Include="process.cpp" />
@@ -197,6 +199,7 @@
     <ClInclude Include="io.hpp" />
     <ClInclude Include="math.hpp" />
     <ClInclude Include="memory.hpp" />
+    <ClInclude Include="module.hpp" />
     <ClInclude Include="multiprecision.hpp" />
     <ClInclude Include="mutex.hpp" />
     <ClInclude Include="process.hpp" />

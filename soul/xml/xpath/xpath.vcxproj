@@ -173,7 +173,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="lexer.slg" />
-    <None Include="parser.spg" />
     <None Include="xpath.expr" />
     <None Include="xpath.keyword" />
     <None Include="xpath.lexer" />

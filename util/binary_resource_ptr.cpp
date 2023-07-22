@@ -13,11 +13,24 @@ import util.error;
 
 namespace util {
 
-BinaryResourcePtr::BinaryResourcePtr(const std::string& moduleName, const std::string& resourceName_) : resourceName(resourceName_), size(0)
+BinaryResourcePtr::BinaryResourcePtr(const std::string& moduleName, const std::string& resourceName_) : BinaryResourcePtr(moduleName, resourceName_, util::ResourceFlags::none)
+{
+}
+
+BinaryResourcePtr::BinaryResourcePtr(const std::string& moduleName, const std::string& resourceName_, util::ResourceFlags flags) : 
+    resourceName(resourceName_), size(0)
 {
     std::u16string moduleNameStr = ToUtf16(moduleName);
     std::u16string resourceNameStr = ToUtf16(resourceName);
-    HMODULE moduleHandle = GetModuleHandleW((LPCWSTR)moduleNameStr.c_str());
+    HMODULE moduleHandle = nullptr;
+    if ((flags & ResourceFlags::loadLibraryAsDataFile) != ResourceFlags::none)
+    {
+        moduleHandle = LoadLibraryExW((LPCWSTR)moduleNameStr.c_str(), 0, LOAD_LIBRARY_AS_DATAFILE);
+    }
+    else
+    {
+        moduleHandle = GetModuleHandleW((LPCWSTR)moduleNameStr.c_str());
+    }
     if (!moduleHandle)
     {
         WindowsException windowsException(GetLastError());

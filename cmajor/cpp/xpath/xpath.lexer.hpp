@@ -7,6 +7,7 @@
 
 #include <../lexer/lexer.hpp>
 #include <../ast/slg.hpp>
+#include <util/binary_resource_ptr.hpp>
 #include <mutex>
 #include <xpath.token.hpp>
 
@@ -25,7 +26,7 @@ template<typename Char>
 soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
 
 template<typename Char>
-soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, const Char* start, const Char* end, const std::string& fileName);
+soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
 
 soul::ast::slg::TokenCollection* GetTokens();
 
@@ -1430,9 +1431,9 @@ soul::lexer::ClassMap<Char>* GetClassMap()
 }
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName)
+soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
-    static soul::lexer::ClassMap<Char>* classmap = soul::lexer::MakeClassMap<Char>(moduleFileName, "soul.xml.xpath.lexer.classmap");
+    static soul::lexer::ClassMap<Char>* classmap = soul::lexer::MakeClassMap<Char>(moduleFileName, "soul.xml.xpath.lexer.classmap", resourceFlags);
     return classmap;
 }
 
@@ -1463,11 +1464,11 @@ soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const Char* start, const Ch
 }
 
 template<typename Char>
-soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, const Char* start, const Char* end, const std::string& fileName)
+soul::lexer::Lexer<XPathLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<XPathLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(moduleFileName));
+    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
     lexer.SetTokenCollection(GetTokens());
     lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;

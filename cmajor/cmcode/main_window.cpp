@@ -19,6 +19,7 @@ import cmcode.startup.dialog;
 import cmcode.action;
 import cmcode.build;
 import cmcode.debug;
+import cmcode.run;
 import cmcode.options.dialog;
 import cmcode.add_new_project.dialog;
 import cmcode.add_new_source_file.dialog;
@@ -120,7 +121,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     releaseToolButton(nullptr),
     buildSolutionToolButton(nullptr),
     buildActiveProjectToolButton(nullptr),
-    stopBuildServerToolButton(nullptr),
+    stopBuildToolButton(nullptr),
     startDebuggingToolButton(nullptr),
     stopDebuggingToolButton(nullptr),
     showNextStatementToolButton(nullptr),
@@ -637,10 +638,10 @@ MainWindow::~MainWindow()
     }
     else if (state == MainWindowState::running)
     {
-        // StopRunService(); todo
+        cmajor::service::StopRunService();
     }
     //StopCodeCompletion(false);
-    cmajor::service::StopBuildService(false);
+    cmajor::service::StopBuildService();
     cmajor::service::StopRequestDispatcher();
 }
 
@@ -977,12 +978,12 @@ void MainWindow::AddToolButtons()
     buildActiveProjectToolButton->Disable();
     toolBar->AddToolButton(buildActiveProjectToolButtonPtr.release());
 
-    std::unique_ptr<wing::ToolButton> stopBuildServerToolButtonPtr(new wing::ToolButton(wing::ToolButtonCreateParams().ToolBitMapName(wing::GetBitmapName("cancel.build")).SetPadding(wing::Padding(8, 8, 8, 8)).
-        SetToolTip("Stop Build Server")));
-    stopBuildServerToolButton = stopBuildServerToolButtonPtr.get();
-    stopBuildServerToolButton->Click().AddHandler(this, &MainWindow::StopBuildServerClick);
-    stopBuildServerToolButton->Disable();
-    toolBar->AddToolButton(stopBuildServerToolButtonPtr.release());
+    std::unique_ptr<wing::ToolButton> stopBuildToolButtonPtr(new wing::ToolButton(wing::ToolButtonCreateParams().ToolBitMapName(wing::GetBitmapName("cancel.build")).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Stop Build")));
+    stopBuildToolButton = stopBuildToolButtonPtr.get();
+    stopBuildToolButton->Click().AddHandler(this, &MainWindow::StopBuildClick);
+    stopBuildToolButton->Disable();
+    toolBar->AddToolButton(stopBuildToolButtonPtr.release());
 
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
@@ -1194,7 +1195,7 @@ void MainWindow::StartRunning()
     ClearOutput();
     GetConsole()->Clear();
     const std::string& programArguments = projectData->ProgramArguments();
-    //RunProgram(backend, config, activeProject, programArguments); todo
+    RunProgram(backend, config, activeProject, programArguments); 
 }
 
 void MainWindow::StopRunning()
@@ -1318,13 +1319,18 @@ void MainWindow::HandleServiceMessage()
             WriteOutput(message->Text());
             break;
         }
-        case cmajor::service::ServiceMessageKind::buildReply:
+        case cmajor::service::ServiceMessageKind::buildResult:
         {
-            cmajor::service::BuildReplyServiceMessage* message = static_cast<cmajor::service::BuildReplyServiceMessage*>(serviceMessage.get());
-            HandleBuildReply(message->GetBuildReply());
+            cmajor::service::BuildResultMessage* message = static_cast<cmajor::service::BuildResultMessage*>(serviceMessage.get());
+            HandleBuildResult(message->Result());
             break;
         }
-        case cmajor::service::ServiceMessageKind::buildError:
+        case cmajor::service::ServiceMessageKind::buildStoppedMessage:
+        {
+            HandleBuildStopped();
+            break;
+        }
+/*      case cmajor::service::ServiceMessageKind::buildError:
         {
             cmajor::service::BuildErrorServiceMessage* message = static_cast<cmajor::service::BuildErrorServiceMessage*>(serviceMessage.get());
             HandleBuildError(message->Error());
@@ -1347,6 +1353,7 @@ void MainWindow::HandleServiceMessage()
             HandleStopBuild();
             break;
         }
+*/
         case cmajor::service::ServiceMessageKind::startDebugReply:
         {
             cmajor::service::StartReplyServiceMessage* message = static_cast<cmajor::service::StartReplyServiceMessage*>(serviceMessage.get());
@@ -1705,52 +1712,36 @@ void MainWindow::AddEditor(const std::string& filePath)
     }
 }
 
-void MainWindow::HandleBuildReply(bs::BuildReply& buildReply)
+void MainWindow::HandleBuildResult(const cmajor::command::BuildResult& buildResult)
 {
     StopBuilding();
-    if (buildReply.requestValid)
+    if (buildResult.success)
     {
-        if (buildReply.success)
+        if (debugRequest)
         {
-            cmajor::service::PutOutputServiceMessage("request successful, time=" + buildReply.time);
-            if (debugRequest)
-            {
-                StartDebugging();
-                PutRequest(debugRequest.release());
-            }
-        }
-        else
-        {
-            debugRequest.reset();
-            cmajor::service::PutOutputServiceMessage("request unsuccessful");
-            if (!buildReply.errors.empty())
-            {
-                cmajor::view::ErrorView* view = GetErrorView();
-                view->Clear();
-                view->SetErrors(std::move(buildReply.errors));
-            }
+            StartDebugging();
+            cmajor::service::PutRequest(debugRequest.release());
         }
     }
     else
     {
         debugRequest.reset();
-        cmajor::service::PutOutputServiceMessage("invalid request: " + buildReply.requestErrorMessage);
+        cmajor::service::PutOutputServiceMessage("build unsuccessful");
+        if (!buildResult.errors.empty())
+        {
+            cmajor::view::ErrorView* view = GetErrorView();
+            view->Clear();
+            view->SetErrors(std::move(buildResult.errors));
+        }
     }
     SetFocusToEditor();
 }
 
-void MainWindow::HandleBuildError(const std::string& buildError)
-{
-    debugRequest.reset();
-    StopBuilding();
-    cmajor::service::PutOutputServiceMessage("build unsuccessful");
-    SetFocusToEditor();
-}
-
-void MainWindow::HandleStopBuild()
+void MainWindow::HandleBuildStopped()
 {
     StopBuilding();
     SetFocusToEditor();
+    cmajor::service::PutOutputServiceMessage("build stopped");
 }
 
 void MainWindow::HandleStartDebugReply(const db::StartDebugReply& startDebugReply)
@@ -2117,7 +2108,7 @@ void MainWindow::ConsoleInputReady()
         }
         else if (state == MainWindowState::running)
         {
-            // cmajor::service::PutRequest(new cmajor::service::SetProgramEofRequest());TODO
+            cmajor::service::PutRequest(new cmajor::service::SetProgramEofRequest());
         }
     }
     else
@@ -2128,7 +2119,7 @@ void MainWindow::ConsoleInputReady()
         }
         else if (state == MainWindowState::running)
         {
-            //PutRequest(new PutProgramInputLineRequest(util::ToUtf8(console->InputLine()))); TODO
+            cmajor::service::PutRequest(new cmajor::service::PutProgramInputLineRequest(util::ToUtf8(console->InputLine())));
         }
     }
 }
@@ -2141,7 +2132,7 @@ void MainWindow::HandleDebugServiceStopped()
 
 void MainWindow::HandleProcessTerminated()
 {
-    //cmajor::service::PutRequest(new cmajor::service::StopRunServiceRequest()); TODO
+    cmajor::service::PutRequest(new cmajor::service::StopRunServiceRequest()); 
 }
 
 void MainWindow::HandleRunServiceStopped()
@@ -2413,7 +2404,7 @@ void MainWindow::SetState(MainWindowState state_)
     releaseToolButton->Disable();
     buildSolutionToolButton->Disable();
     buildActiveProjectToolButton->Disable();
-    stopBuildServerToolButton->Disable();
+    stopBuildToolButton->Disable();
     startDebuggingToolButton->Disable();
     stopDebuggingToolButton->Disable();
     showNextStatementToolButton->Disable();
@@ -2470,7 +2461,7 @@ void MainWindow::SetState(MainWindowState state_)
         newProjectMenuItem->Enable();
         openProjectMenuItem->Enable();
 
-        bool buildServiceRunning = cmajor::service::BuildServiceRunning();
+        bool buildInProgress = cmajor::service::BuildInProgress();
 
         if (solutionOpen)
         {
@@ -2506,16 +2497,16 @@ void MainWindow::SetState(MainWindowState state_)
                 stepIntoMenuItem->Enable();
                 stepIntoToolButton->Enable();
             }
-            if (buildServiceRunning)
+            if (buildInProgress)
             {
-                stopBuildServerToolButton->Enable();
+                stopBuildToolButton->Enable();
             }
         }
         break;
     }
     case MainWindowState::building:
     {
-        stopBuildServerToolButton->Enable();
+        stopBuildToolButton->Enable();
         break;
     }
     case MainWindowState::debugging:
@@ -4540,16 +4531,14 @@ void MainWindow::StartWithoutDebuggingClick()
 
 void MainWindow::TerminateProcessClick()
 {
-/*  TODO
     try
     {
-        PutRequest(new TerminateProcessRequest());
+        cmajor::service::PutRequest(new cmajor::service::TerminateProcessRequest());
     }
     catch (const std::exception& ex)
     {
         wing::ShowErrorMessageBox(Handle(), ex.what());
     }
-*/ 
 }
 
 void MainWindow::StopDebuggingClick()
@@ -4845,9 +4834,9 @@ void MainWindow::ReleaseButtonClick()
     LoadEditModuleForCurrentFile();
 }
 
-void MainWindow::StopBuildServerClick()
+void MainWindow::StopBuildClick()
 {
-    cmajor::service::PutRequest(new cmajor::service::StopBuildRequest());
+    StopBuild();
 }
 
 void MainWindow::ToggleCodeCompletionClick()
@@ -5508,7 +5497,7 @@ void MainWindow::ViewError(cmajor::view::ViewErrorArgs& args)
 {
     try
     {
-        bs::CompileError* error = args.error;
+        cmajor::command::CompileError* error = args.error;
         if (error)
         {
             wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(error->file);

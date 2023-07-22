@@ -22,6 +22,7 @@ private:
     wing::Button* cancelButton;
     wing::CheckBox* singleThreadedCompileCheckBox;
     wing::CheckBox* generateIntermediateCodeFilesCheckBox;
+    wing::CheckBox* linkWithDebugRuntimeCheckBox;
 };
 
 } // namespace cmcode

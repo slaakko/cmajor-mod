@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/lexer/cmajor.container.file.token' using soul lexer generator version 4.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/lexer/cmajor.container.file.token' using soul lexer generator version 5.0.0
 
 export module cmajor.container.file.token;
 

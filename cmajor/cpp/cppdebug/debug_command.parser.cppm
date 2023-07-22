@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cpp/debug/debug_command.parser' using soul parser generator spg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cpp/cppdebug/debug_command.parser' using soul parser generator spg version 5.0.0
 
 export module cmajor.debug.command.parser;
 

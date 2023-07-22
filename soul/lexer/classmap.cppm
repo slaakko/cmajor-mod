@@ -55,9 +55,9 @@ ClassMap<Char>* MakeClassMap(const std::string& classMapName)
 }
 
 template<typename Char>
-ClassMap<Char>* MakeClassMap(const std::string& moduleFileName, const std::string& classMapName)
+ClassMap<Char>* MakeClassMap(const std::string& moduleFileName, const std::string& classMapName, util::ResourceFlags resourceFlags)
 {
-    util::BinaryResourcePtr resource(moduleFileName, classMapName);
+    util::BinaryResourcePtr resource(moduleFileName, classMapName, resourceFlags);
     util::MemoryStream memoryStream(resource.Data(), resource.Size());
     util::BinaryStreamReader rawReader(memoryStream);
     int32_t size = rawReader.ReadInt();

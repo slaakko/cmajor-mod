@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/soul-mod/soul/rex/rex.lexer' using soul lexer generator slg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/soul/rex/rex.lexer' using soul lexer generator slg version 5.0.0
 
 module soul.rex.lexer;
 

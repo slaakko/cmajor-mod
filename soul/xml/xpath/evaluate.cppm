@@ -9,9 +9,12 @@ import std.core;
 import soul.xml.xpath.object;
 import soul.xml.xpath.expr;
 import soul.xml.node;
+import util;
 
 export namespace soul::xml::xpath {
 
+void SetModuleHandle(void* moduleHandle_);
+void SetResourceFlags(util::ResourceFlags resourceFlags_);
 std::unique_ptr<soul::xml::xpath::expr::Expr> ParseXPathExpr(const std::string& xpathExpr);
 std::unique_ptr<soul::xml::xpath::Object> Evaluate(soul::xml::xpath::expr::Expr* expr, soul::xml::Node* node);
 std::unique_ptr<soul::xml::xpath::Object> Evaluate(const std::string& xpathExpr, soul::xml::Node* node);

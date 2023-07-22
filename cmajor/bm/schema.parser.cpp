@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bm/schema.parser' using soul parser generator spg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bm/schema.parser' using soul parser generator spg version 5.0.0
 
 module cmajor.binary.message.schema.parser;
 

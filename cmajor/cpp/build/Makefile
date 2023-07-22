@@ -7,6 +7,7 @@ all:
 	$(MAKE) -C shared/debug
 	$(MAKE) -C static/release
 	$(MAKE) -C shared/release
+	$(MAKE) -C resource
 	
 clean:
 	$(RM) /Q bin\*.*

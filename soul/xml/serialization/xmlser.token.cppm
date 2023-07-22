@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/soul-mod/soul/xml/serialization/xmlser.token' using soul lexer generator version 4.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/soul/xml/serialization/xmlser.token' using soul lexer generator version 5.0.0
 
 export module soul.xml.serialization.token;
 

@@ -367,7 +367,7 @@ void BuildServer::HandleBuildRequest(bs::BuildRequest* request, util::LogFileWri
         catch (const cmajor::symbols::Exception& ex)
         {
             buildReply.success = false;
-            buildReply.errors = ex.ToErrors();
+            //buildReply.errors = ex.ToErrors();
             util::LogMessage(-1, ex.What());
             if (logging)
             {

@@ -9,28 +9,31 @@ import cmajor.service.message;
 import cmajor.service.request;
 import cmajor.service.request.dispatcher;
 import cmajor.logger.service;
-//import cmajor.service.build.service;
-//import cmajor.service.debug.service;
-// #include <cmajor/cmsvc/RunService.hpp>
+import cmajor.build.service;
+import cmajor.debug.service;
+import cmajor.run.service;
+import cmajor.symbols;
+import util;
 // #include <cmajor/cmsvc/CodeCompletionService.hpp>
 
 namespace cmajor::service {
 
 void Init()
 {
+    cmajor::symbols::SetCompilerVersion(util::CmajorVersionStr());
     StartLoggerService();
-    //InitDebugService();
-    //InitRunService();
+    StartBuildService();
+    InitDebugService();
+    InitRunService();
     //InitCodeCompletionService();
-    //cmajor::debug::CmdbSessionInit();
 }
 
 void Done()
 {
-    //cmajor::debug::CmdbSessionDone();
     //DoneCodeCompletionService();
-    //DoneRunService();
-    //DoneDebugService();
+    DoneRunService();
+    DoneDebugService();
+    StopBuildService();
     StopLoggerService();
 }
 

@@ -3,9 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.service.debug.service;
+module cmajor.debug.service;
 
-import cmajor.service.port.map.service;
+import cmajor.port.map.service;
 import util;
 
 namespace cmajor::service {

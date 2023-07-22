@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.debug.service.request;
+export module cmajor.debug.service.request;
 
 import cmajor.service.request;
 import cmajor.service.breakpoint;
-import cmajor.service.debug.service;
+import cmajor.debug.service;
 import cmajor.common.message;
 import std.core;
 

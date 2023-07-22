@@ -8,49 +8,49 @@ module cmcode.build;
 import cmcode.config;
 import cmcode.configuration;
 import cmajor.service;
+import cmajor.command;
 
 namespace cmcode {
 
 void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, BuildRequestKind requestKind)
 {
-    cmajor::service::BuildServiceStartParams serviceStartParams = cmajor::service::BuildServiceStartParams().
-        ProcessName("cmcode").DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait());
-    bs::BuildRequest buildRequest;
+    std::unique_ptr<cmajor::command::BuildCommand> buildCommand(new cmajor::command::BuildCommand());
     const BuildSettings& buildSettings = GetBuildSettings();
-    buildRequest.backend = backend;
-    buildRequest.config = config;
-    buildRequest.optimizationLevel = "default";
-    buildRequest.filePath = filePath;
-    buildRequest.singleThreadedCompile = buildSettings.singleThreadedCompile;
-    buildRequest.emitIR = buildSettings.generateIntermediateCodeFiles;
-    buildRequest.verbose = true;
+    buildCommand->backend = backend;
+    buildCommand->config = config;
+    buildCommand->optimizationLevel = "default";
+    buildCommand->filePath = filePath;
+    buildCommand->singleThreadedCompile = buildSettings.singleThreadedCompile;
+    buildCommand->emitIR = buildSettings.generateIntermediateCodeFiles;
+    buildCommand->linkWithDebugRuntime = buildSettings.linkWithDebugRuntime;
+    buildCommand->verbose = true;
     if ((requestKind & BuildRequestKind::clean) != BuildRequestKind::none)
     {
-        buildRequest.clean = true;
+        buildCommand->clean = true;
     }
     if ((requestKind & BuildRequestKind::rebuild) != BuildRequestKind::none)
     {
-        buildRequest.rebuild = true;
+        buildCommand->rebuild = true;
     }
     if ((requestKind & BuildRequestKind::buildDependencies) != BuildRequestKind::none)
     {
-        buildRequest.buildAllDependencies = true;
+        buildCommand->buildAllDependencies = true;
     }
-    std::unique_ptr<cmajor::service::StartBuildRequest> startBuildRequest(new cmajor::service::StartBuildRequest(serviceStartParams, buildRequest));
+    std::unique_ptr<cmajor::service::StartBuildServiceRequest> startBuildRequest(new cmajor::service::StartBuildServiceRequest(buildCommand.release()));
     cmajor::service::PutRequest(startBuildRequest.release());
 }
 
 void StopBuild()
 {
-    std::unique_ptr<cmajor::service::StopBuildRequest> stopBuildRequest(new cmajor::service::StopBuildRequest());
+    std::unique_ptr<cmajor::service::StopBuildServiceRequest> stopBuildRequest(new cmajor::service::StopBuildServiceRequest());
     PutRequest(stopBuildRequest.release());
 }
 
 void StartGetDefinitionRequest(const bs::GetDefinitionRequest& getDefinitionRequest)
 {
-    cmajor::service::BuildServiceStartParams serviceStartParams = cmajor::service::BuildServiceStartParams().
-        ProcessName("cmcode").DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait());
-    PutRequest(new cmajor::service::GotoDefinitionRequest(serviceStartParams, getDefinitionRequest));
+    //cmajor::service::BuildServiceStartParams serviceStartParams = cmajor::service::BuildServiceStartParams().
+        //ProcessName("cmcode").DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait());
+    //PutRequest(new cmajor::service::GotoDefinitionRequest(serviceStartParams, getDefinitionRequest));
 }
 
 } // namespace cmcode

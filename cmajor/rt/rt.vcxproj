@@ -249,6 +249,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\soul\rex\soul.rex.lexer.classmap.rc" />
+    <ResourceCompile Include="..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

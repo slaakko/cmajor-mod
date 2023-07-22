@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.service.debug.service.request;
+module cmajor.debug.service.request;
 
 namespace cmajor::service {
 

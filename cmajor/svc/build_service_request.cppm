@@ -3,43 +3,29 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.build.service.request;
+export module cmajor.build.service.request;
 
 import cmajor.service.request;
-import cmajor.service.build.service;
-import cmajor.build.server.message;
-import std.core;
+import cmajor.command;
 
 export namespace cmajor::service {
 
-class StartBuildRequest : public Request
+class StartBuildServiceRequest : public Request
 {
 public:
-    StartBuildRequest(const BuildServiceStartParams& serviceStartParams_, const bs::BuildRequest& buildRequest_);
-    std::string Name() const override { return "startBuildRequest"; }
+    StartBuildServiceRequest(cmajor::command::BuildCommand* buildCommand_);
     void Execute() override;
+    std::string Name() const override { return "startBuildServiceRequest"; }
 private:
-    BuildServiceStartParams serviceStartParams;
-    bs::BuildRequest buildRequest;
+    std::unique_ptr<cmajor::command::BuildCommand> buildCommand;
 };
 
-class StopBuildRequest : public Request
+class StopBuildServiceRequest : public Request
 {
 public:
-    StopBuildRequest();
-    std::string Name() const override { return "stopBuildRequest"; }
+    StopBuildServiceRequest();
     void Execute() override;
-};
-
-class GotoDefinitionRequest : public Request
-{
-public:
-    GotoDefinitionRequest(const BuildServiceStartParams& serviceStartParams_, const bs::GetDefinitionRequest& getDefinitionRequest_);
-    std::string Name() const override { return "gotoDefinitionRequest"; }
-    void Execute() override;
-private:
-    BuildServiceStartParams serviceStartParams;
-    bs::GetDefinitionRequest getDefinitionRequest;
+    std::string Name() const override { return "stopBuildServiceRequest"; }
 };
 
 } // namespace cmajor::service

@@ -150,10 +150,10 @@
   <ItemGroup>
     <ClCompile Include="breakpoint.cpp" />
     <ClCompile Include="breakpoint.cppm" />
-    <ClCompile Include="build_service_request.cpp" />
-    <ClCompile Include="build_service_request.cppm" />
     <ClCompile Include="build_service.cpp" />
     <ClCompile Include="build_service.cppm" />
+    <ClCompile Include="build_service_request.cpp" />
+    <ClCompile Include="build_service_request.cppm" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="config.cppm" />
     <ClCompile Include="debug_service.cpp" />
@@ -174,14 +174,24 @@
     <ClCompile Include="request.cppm" />
     <ClCompile Include="request_dispatcher.cpp" />
     <ClCompile Include="request_dispatcher.cppm" />
+    <ClCompile Include="run_service.cpp" />
+    <ClCompile Include="run_service.cppm" />
+    <ClCompile Include="run_service_request.cpp" />
+    <ClCompile Include="run_service_request.cppm" />
     <ClCompile Include="service.cppm" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\wing\wing.vcxproj">
       <Project>{8816feee-17b7-4a20-963a-66bfa236b867}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\backend\backend.vcxproj">
+      <Project>{f9426554-e003-4b1d-9431-04a894271dca}</Project>
     </ProjectReference>
     <ProjectReference Include="..\bmsg\bmsg.vcxproj">
       <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
@@ -191,6 +201,18 @@
     </ProjectReference>
     <ProjectReference Include="..\bpm\bpm.vcxproj">
       <Project>{e1e0c658-66d5-4056-a0aa-afebd16e5655}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\build\build.vcxproj">
+      <Project>{846f8ef1-64d7-4e89-96ee-edd591438dbf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\command\command.vcxproj">
+      <Project>{86f27ef1-b28b-4900-a2be-ef1ded44a369}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
+      <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

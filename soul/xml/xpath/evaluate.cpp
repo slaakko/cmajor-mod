@@ -5,7 +5,6 @@
 
 module soul.xml.xpath.evaluate;
 
-import util;
 import soul.xml.xpath.lexer;
 import soul.xml.xpath.expr;
 import soul.xml.xpath.parser;
@@ -16,15 +15,42 @@ import soul.xml.dom.parser;
 
 namespace soul::xml::xpath {
 
+void* moduleHandle = nullptr;
+util::ResourceFlags resourceFlags = util::ResourceFlags::none;
+
+void SetModuleHandle(void* moduleHandle_)
+{
+    moduleHandle = moduleHandle_;
+}
+
+void SetResourceFlags(util::ResourceFlags resourceFlags_)
+{
+    resourceFlags = resourceFlags_;
+}
+
 std::unique_ptr<soul::xml::xpath::expr::Expr> ParseXPathExpr(const std::string& xpathExpr)
 {
-    std::u32string u32expr = util::ToUtf32(xpathExpr);
-    auto lexer = soul::xml::xpath::lexer::MakeLexer(u32expr.c_str(), u32expr.c_str() + u32expr.length(), "xpath expression");
-    lexer.SetRuleNameMapPtr(soul::xml::xpath::parser::rules::GetRuleNameMapPtr());
-    using LexerType = decltype(lexer);
-    std::unique_ptr<soul::xml::xpath::expr::Expr> expr = soul::xml::xpath::parser::XPathParser<LexerType>::Parse(lexer);
-    expr->SetStr(xpathExpr);
-    return expr;
+    if (moduleHandle)
+    {
+        std::string moduleFilePath = util::GetPathToModule(moduleHandle);
+        std::u32string u32expr = util::ToUtf32(xpathExpr);
+        auto lexer = soul::xml::xpath::lexer::MakeLexer(moduleFilePath, resourceFlags, u32expr.c_str(), u32expr.c_str() + u32expr.length(), "xpath expression");
+        lexer.SetRuleNameMapPtr(soul::xml::xpath::parser::rules::GetRuleNameMapPtr());
+        using LexerType = decltype(lexer);
+        std::unique_ptr<soul::xml::xpath::expr::Expr> expr = soul::xml::xpath::parser::XPathParser<LexerType>::Parse(lexer);
+        expr->SetStr(xpathExpr);
+        return expr;
+    }
+    else
+    {
+        std::u32string u32expr = util::ToUtf32(xpathExpr);
+        auto lexer = soul::xml::xpath::lexer::MakeLexer(u32expr.c_str(), u32expr.c_str() + u32expr.length(), "xpath expression");
+        lexer.SetRuleNameMapPtr(soul::xml::xpath::parser::rules::GetRuleNameMapPtr());
+        using LexerType = decltype(lexer);
+        std::unique_ptr<soul::xml::xpath::expr::Expr> expr = soul::xml::xpath::parser::XPathParser<LexerType>::Parse(lexer);
+        expr->SetStr(xpathExpr);
+        return expr;
+    }
 }
 
 std::unique_ptr<soul::xml::xpath::Object> Evaluate(soul::xml::xpath::expr::Expr* expr, soul::xml::Node* node)

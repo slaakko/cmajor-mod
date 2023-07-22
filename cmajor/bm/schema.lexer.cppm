@@ -1,10 +1,11 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bm/schema.lexer' using soul lexer generator slg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bm/schema.lexer' using soul lexer generator slg version 5.0.0
 
 export module cmajor.binary.message.schema.lexer;
 
 import std.core;
 import soul.lexer;
 import soul.ast.slg;
+import util;
 import cmajor.binary.message.schema.token;
 
 using namespace soul;
@@ -22,7 +23,7 @@ template<typename Char>
 soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const Char* start, const Char* end, const std::string& fileName);
 
 template<typename Char>
-soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, const Char* start, const Char* end, const std::string& fileName);
+soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName);
 
 soul::ast::slg::TokenCollection* GetTokens();
 
@@ -2176,9 +2177,9 @@ soul::lexer::ClassMap<Char>* GetClassMap()
 }
 
 template<typename Char>
-soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName)
+soul::lexer::ClassMap<Char>* GetClassMap(const std::string& moduleFileName, util::ResourceFlags resourceFlags)
 {
-    static soul::lexer::ClassMap<Char>* classmap = soul::lexer::MakeClassMap<Char>(moduleFileName, "cmajor.binary.message.schema.lexer.classmap");
+    static soul::lexer::ClassMap<Char>* classmap = soul::lexer::MakeClassMap<Char>(moduleFileName, "cmajor.binary.message.schema.lexer.classmap", resourceFlags);
     return classmap;
 }
 
@@ -2209,11 +2210,11 @@ soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const Char* s
 }
 
 template<typename Char>
-soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, const Char* start, const Char* end, const std::string& fileName)
+soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char> MakeLexer(const std::string& moduleFileName, util::ResourceFlags resourceFlags, const Char* start, const Char* end, const std::string& fileName)
 {
     std::lock_guard<std::mutex> lock(MakeLexerMtx());
     auto lexer = soul::lexer::Lexer<BinaryMessageSchemaLexer<Char>, Char>(start, end, fileName);
-    lexer.SetClassMap(GetClassMap<Char>(moduleFileName));
+    lexer.SetClassMap(GetClassMap<Char>(moduleFileName, resourceFlags));
     lexer.SetTokenCollection(GetTokens());
     lexer.SetKeywordMap(GetKeywords<Char>());
     return lexer;

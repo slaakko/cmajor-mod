@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.parser' using soul parser generator spg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/intermediate/intermediate_code.parser' using soul parser generator spg version 5.0.0
 
 export module cmajor.systemx.intermediate.code.parser;
 

@@ -46,14 +46,14 @@ void PrintHelp()
         "   clean given solutions and projects\n" <<
         "--define SYMBOL (-D SYMBOL)\n" <<
         "   define a conditional compilation symbol SYMBOL.\n" <<
-        "--disable-module-cache (-d)\n" <<
+        "--disable-module-cache (-m)\n" <<
         "   do not cache recently built modules\n" <<
         "--single-threaded (-s)\n" <<
         "   compile using a single thread\n" <<
         "--gen-debug-info (-g)\n" <<
         "   generate debug info\n" <<
-        "   ON for debug mode\n" <<
-        "--link-with-debug-runtime (-k)\n" <<
+        "   enabled for debug mode\n" <<
+        "--link-with-debug-runtime (-d)\n" <<
         "   Link with debug rungime.\n" <<
         "--time (-t)\n" <<
         "   print duration of compilation\n" <<
@@ -85,6 +85,7 @@ int main(int argc, const char** argv)
         {
             cmajor::symbols::SetCompilerVersion(version);
             bool prevWasDefine = false;
+            bool genDebugInfo = false;
             bool noDebugInfo = false;
             bool useModuleCache = true;
             for (int i = 1; i < argc; ++i)
@@ -119,7 +120,7 @@ int main(int argc, const char** argv)
                     }
                     else if (arg == "--gen-debug-info")
                     {
-                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
+                        genDebugInfo = true;
                     }
                     else if (arg == "--single-threaded")
                     {
@@ -252,7 +253,7 @@ int main(int argc, const char** argv)
                             }
                             case 'g':
                             {
-                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
+                                genDebugInfo = true;
                                 break;
                             }
                             case 's':
@@ -262,12 +263,12 @@ int main(int argc, const char** argv)
                             }
                             case 'd':
                             {
-                                useModuleCache = false;
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                                 break;
                             }
-                            case 'k':
+                            case 'm':
                             {
-                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
+                                useModuleCache = false;
                                 break;
                             }
                             case 't':
@@ -303,7 +304,7 @@ int main(int argc, const char** argv)
                 std::cout << "Cmajor with with C++ backend compiler version " << version << std::endl;
             }
             cmajor::symbols::SetUseModuleCache(useModuleCache);
-            if (!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo)
+            if ((!GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && !noDebugInfo) || genDebugInfo)
             {
                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
             }

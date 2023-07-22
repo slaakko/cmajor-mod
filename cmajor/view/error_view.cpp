@@ -118,11 +118,11 @@ void ErrorView::Clear()
     child->Invalidate();
 }
 
-void ErrorView::SetErrors(const std::vector<bs::CompileError>&& errors_)
+void ErrorView::SetErrors(const std::vector<cmajor::command::CompileError>&& errors_)
 {
     errors = errors_;
     Clear();
-    for (bs::CompileError& error : errors)
+    for (cmajor::command::CompileError& error : errors)
     {
         std::vector<std::u32string> lines = GetErrorLines(util::ToUtf32(error.message));
         std::string firstLine;
@@ -161,11 +161,11 @@ void ErrorView::SetErrors(const std::vector<bs::CompileError>&& errors_)
 
 void ErrorView::TreeViewNodeDoubleClick(wing::TreeViewNodeClickEventArgs& args)
 {
-    bs::CompileError* error = static_cast<bs::CompileError*>(args.node->Data());
+    cmajor::command::CompileError* error = static_cast<cmajor::command::CompileError*>(args.node->Data());
     OnViewError(error);
 }
 
-void ErrorView::OnViewError(bs::CompileError* error)
+void ErrorView::OnViewError(cmajor::command::CompileError* error)
 {
     if (!error || error->file.empty()) return;
     ViewErrorArgs args(error);

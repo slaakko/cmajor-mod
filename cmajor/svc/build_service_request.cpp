@@ -3,46 +3,28 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.service.build.service.request;
+module cmajor.build.service.request;
+
+import cmajor.build.service;
 
 namespace cmajor::service {
 
-StartBuildRequest::StartBuildRequest(const BuildServiceStartParams& serviceStartParams_, const bs::BuildRequest& buildRequest_) : 
-    serviceStartParams(serviceStartParams_), buildRequest(buildRequest_)
+StartBuildServiceRequest::StartBuildServiceRequest(cmajor::command::BuildCommand* buildCommand_) : buildCommand(buildCommand_)
 {
 }
 
-void StartBuildRequest::Execute()
+void StartBuildServiceRequest::Execute()
 {
-    if (!BuildServiceRunning())
-    {
-        StartBuildService(serviceStartParams);
-    }
-    EnqueueBuildServiceRequest(new RunBuildRequest(buildRequest));
+    ExecuteBuildCommand(buildCommand.release());
 }
 
-StopBuildRequest::StopBuildRequest()
+StopBuildServiceRequest::StopBuildServiceRequest()
 {
 }
 
-void StopBuildRequest::Execute()
+void StopBuildServiceRequest::Execute()
 {
-    StopBuildService(true);
-    PutServiceMessage(new StopBuildServiceMessage());
-}
-
-GotoDefinitionRequest::GotoDefinitionRequest(const BuildServiceStartParams& serviceStartParams_, const bs::GetDefinitionRequest& getDefinitionRequest_) :
-    serviceStartParams(serviceStartParams_), getDefinitionRequest(getDefinitionRequest_)
-{
-}
-
-void GotoDefinitionRequest::Execute()
-{
-    if (!BuildServiceRunning())
-    {
-        StartBuildService(serviceStartParams);
-    }
-    EnqueueBuildServiceRequest(new RunGetDefinitionRequest(getDefinitionRequest));
+    CancelBuild();
 }
 
 } // namespace cmajor::service

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.debug.service;
+export module cmajor.debug.service;
 
 import cmajor.service.message;
 import cmajor.service.breakpoint;

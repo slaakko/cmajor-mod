@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/assembler/assembler.token' using soul lexer generator version 4.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/system-x/assembler/assembler.token' using soul lexer generator version 5.0.0
 
 export module cmajor.systemx.assembler.token;
 

@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.port.map.service;
+export module cmajor.port.map.service;
 
 import cmajor.binary.portmap.message;
 import std.core;

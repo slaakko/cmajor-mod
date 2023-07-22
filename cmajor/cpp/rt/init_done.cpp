@@ -13,6 +13,9 @@
 #include <rt/environment.hpp>
 #include <rt/statics.hpp>
 #include <rt/unwind.hpp>
+#include <rt/debug.hpp>
+#include <rt/module.hpp>
+#include <xpath/evaluate.hpp>
 #include <util/init_done.hpp>
 #include <mutex>
 
@@ -42,30 +45,48 @@ namespace cmajor::rt {
 
 void Init(int64_t numberOfPolymorphicClassIds, const uint64_t* polymorphicClassIdArray, int64_t numberOfStaticClassIds, const uint64_t* staticClassIdArray)
 {
-    util::Init();
-    InitIo();
-    InitDirectory();
-    InitMemory();
-    InitThread();
-    InitSocket();
-    InitEnvironment();
-    InitStatics();
-    InitClasses(numberOfPolymorphicClassIds, polymorphicClassIdArray, numberOfStaticClassIds, staticClassIdArray);
-    //InitCmdbSession(); 
-    //StartCmdbSession(); 
+    try
+    {
+        util::Init();
+        InitIo();
+        InitDirectory();
+        InitMemory();
+        InitThread();
+        InitSocket();
+        InitEnvironment();
+        InitStatics();
+        InitClasses(numberOfPolymorphicClassIds, polymorphicClassIdArray, numberOfStaticClassIds, staticClassIdArray);
+        InitCmdbSession();
+        soul::xml::xpath::SetModuleFileName("soul.xml.xpath.lexer.classmap.dll");
+        soul::xml::xpath::SetResourceFlags(util::ResourceFlags::loadLibraryAsDataFile);
+        StartCmdbSession();
+    }
+    catch (const std::exception& ex)
+    {
+        RtPrint("RtInit failed");
+        RtPrint(ex.what());
+        RtPrint("\n");
+    }
 }
 
 void Done()
 {
-    //DoneCmdbSession(); 
-    DoneStatics();
-    DoneEnvironment();
-    DoneSocket();
-    DoneThread();
-    DoneMemory();
-    DoneDirectory();
-    DoneIo();
-    util::Done();
+    try
+    {
+        DoneCmdbSession();
+        DoneStatics();
+        DoneEnvironment();
+        DoneSocket();
+        DoneThread();
+        DoneMemory();
+        DoneDirectory();
+        DoneIo();
+        util::Done();
+    }
+    catch (const std::exception& ex)
+    {
+        std::cerr << ex.what() << std::endl;
+    }
 }
 
 } // namespace cmajor::rt

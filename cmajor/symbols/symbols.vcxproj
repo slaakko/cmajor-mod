@@ -262,8 +262,8 @@
     <ProjectReference Include="..\ast\ast.vcxproj">
       <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\bmsg\bmsg.vcxproj">
-      <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
+    <ProjectReference Include="..\command\command.vcxproj">
+      <Project>{86f27ef1-b28b-4900-a2be-ef1ded44a369}</Project>
     </ProjectReference>
     <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>

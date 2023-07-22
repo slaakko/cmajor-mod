@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.service.port.map.service;
+module cmajor.port.map.service;
 
 import cmajor.service.logger;
 import cmajor.service.message;

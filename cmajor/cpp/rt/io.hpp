@@ -40,6 +40,7 @@ inline OpenMode operator|(OpenMode left, OpenMode right)
 
 } // namespace cmajor::rt
 
+extern "C" RT_API void RtPrint(const char* str);
 extern "C" RT_API void* RtOpen(const char* filePath, cmajor::rt::OpenMode openMode, int32_t & errorStringHandle);
 extern "C" RT_API void* RtOpenStdFile(int handle, int32_t& errorStringHandle);
 extern "C" RT_API bool RtClose(void* fileHandle, int32_t & errorStringHandle);

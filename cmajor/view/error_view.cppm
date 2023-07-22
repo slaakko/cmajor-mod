@@ -5,15 +5,15 @@
 
 export module cmajor.view.error.view;
 
-import cmajor.build.server.message;
+import cmajor.command;
 import wing;
 
 export namespace cmajor::view {
 
 struct ViewErrorArgs
 {
-    ViewErrorArgs(bs::CompileError* error_) : error(error_) {}
-    bs::CompileError* error;
+    ViewErrorArgs(cmajor::command::CompileError* error_) : error(error_) {}
+    cmajor::command::CompileError* error;
 };
 
 using ViewErrorEvent = wing::EventWithArgs<ViewErrorArgs>;
@@ -41,10 +41,10 @@ class ErrorView : public wing::Control
 public:
     ErrorView(ErrorViewCreateParams& createParams);
     void Clear();
-    void SetErrors(const std::vector<bs::CompileError>&& errors_);
+    void SetErrors(const std::vector<cmajor::command::CompileError>&& errors_);
     ViewErrorEvent& ViewError() { return viewError; }
 protected:
-    virtual void OnViewError(bs::CompileError* error);
+    virtual void OnViewError(cmajor::command::CompileError* error);
     void OnLocationChanged() override;
     void OnSizeChanged() override;
     void OnPaint(wing::PaintEventArgs& args) override;
@@ -54,7 +54,7 @@ private:
     wing::Container container;
     wing::TreeView* treeView;
     wing::Control* child;
-    std::vector<bs::CompileError> errors;
+    std::vector<cmajor::command::CompileError> errors;
     ViewErrorEvent viewError;
 };
 

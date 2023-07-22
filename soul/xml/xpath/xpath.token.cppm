@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/soul-mod/soul/xml/xpath/xpath.token' using soul lexer generator version 4.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/soul/xml/xpath/xpath.token' using soul lexer generator version 5.0.0
 
 export module soul.xml.xpath.token;
 
