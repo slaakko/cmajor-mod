@@ -248,6 +248,9 @@
     <ProjectReference Include="..\bmsg\bmsg.vcxproj">
       <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\debugger\debugger.vcxproj">
+      <Project>{18f216d5-8885-4f16-a0ad-af16c208eeae}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
     </ProjectReference>
@@ -268,6 +271,8 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
+    <ResourceCompile Include="..\cpp\cppdebug\cmajor.debug.gdb.reply.lexer.classmap.rc" />
+    <ResourceCompile Include="..\debugger\cmajor.debugger.reply.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.container.file.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.lexer.classmap.rc" />
   </ItemGroup>

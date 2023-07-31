@@ -1,0 +1,19 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions cmajor.debugger.reply.expr
+{
+    ws = "[\t ]+";
+    newline = "\r\n|\n|\r";
+    name = "[a-zA-Z_][a-zA-Z0-9_-]*";
+    decdigits = "[0-9]+";
+    hexdigit = "[0-9a-fA-F]";
+    hexdigits = "{hexdigit}+";
+    hex4 = "{hexdigit}{hexdigit}{hexdigit}{hexdigit}";
+    hex8 = "{hex4}{hex4}";
+    octaldigits = "[0-7]+";
+    escape = "\\((x|X){hexdigits}|(d|D){decdigits}|{octaldigits}|u{hex4}|U{hex8}|[abfnrtv\"'\\])";
+    string = "\"([^\\\r\n\"]|{escape})*\"";
+}

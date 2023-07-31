@@ -13,10 +13,13 @@ export namespace cmajor::debug {
 
 const uint8_t debugInfoFormat_1 = uint8_t('1');
 const uint8_t debugInfoFormat_2 = uint8_t('2');
-const uint8_t currentDebugInfoFormat = debugInfoFormat_2;
+const uint8_t debugInfoFormat_3 = uint8_t('3');
+const uint8_t currentDebugInfoFormat = debugInfoFormat_3;
 
 void WriteCmdbFileTag(util::BinaryStreamWriter& writer);
 void ReadCmdbFileTag(util::BinaryStreamReader& reader, const std::string& filePath);
+void WriteCmajorRootPrefix(util::BinaryStreamWriter& writer, const std::string& cmajorRootPrefix);
+void ReadCmajorRootPrefix(util::BinaryStreamReader& reader, std::string& cmajorRootPrefix);
 void WriteMainProjectName(util::BinaryStreamWriter& writer, const std::string& mainProjectName);
 void ReadMainProjectName(util::BinaryStreamReader& reader, std::string& mainProjectName);
 void WriteNumberOfProjects(util::BinaryStreamWriter& writer, int32_t numProjects);

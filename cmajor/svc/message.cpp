@@ -73,6 +73,14 @@ OutputServiceMessage::OutputServiceMessage(const std::string& text_) : ServiceMe
 {
 }
 
+ClearDebugLogMessage::ClearDebugLogMessage() : ServiceMessage(ServiceMessageKind::clearDebugLog)
+{
+}
+
+DebugLogMessage::DebugLogMessage(const std::string& text_) : ServiceMessage(ServiceMessageKind::debugLogMessage), text(text_)
+{
+}
+
 void SetServiceMessageHandlerView(wing::Window* view)
 {
     serviceMessageHandlerView = view;

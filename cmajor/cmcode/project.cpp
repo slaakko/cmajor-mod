@@ -27,8 +27,8 @@ void ProjectData::Load(const std::string& projectSettingsFilePath)
         programArguments = projectSettings.programArguments;
         for (const ProjectBreakpoint& breakpoint : projectSettings.breakpoints)
         {
-            cmajor::service::BreakpointList& breakpointList = breakpointCollection.GetBreakpointList(breakpoint.file);
-            breakpointList.AddBreakpoint(new cmajor::service::Breakpoint(breakpoint.line, breakpoint.condition, breakpoint.disabled));
+            cmajor::debugger::BreakpointList& breakpointList = breakpointCollection.GetBreakpointList(breakpoint.file);
+            breakpointList.AddBreakpoint(new cmajor::debugger::Breakpoint(breakpoint.line, breakpoint.condition, breakpoint.disabled));
         }
         breakpointCollection.ResetChanged();
     }
@@ -42,8 +42,8 @@ void ProjectData::Save(const std::string& projectSettingsFilePath)
     projectSettings.programArguments = programArguments;
     for (auto& bm : breakpointCollection.BreakpointListMap())
     {
-        cmajor::service::BreakpointList& breakpointList = bm.second;
-        for (cmajor::service::Breakpoint* breakpoint : breakpointList.Breakpoints())
+        cmajor::debugger::BreakpointList& breakpointList = bm.second;
+        for (cmajor::debugger::Breakpoint* breakpoint : breakpointList.Breakpoints())
         {
             ProjectBreakpoint projectBreakpoint;
             projectBreakpoint.file = breakpointList.FilePath();

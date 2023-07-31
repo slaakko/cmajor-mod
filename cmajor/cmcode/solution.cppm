@@ -7,6 +7,7 @@ export module cmcode.solution;
 
 import cmcode.project;
 import cmajor.ast;
+import cmajor.debuggers;
 import wing;
 import std.core;
 
@@ -61,10 +62,10 @@ public:
     void AddExpandedProject(const std::string& expandedProject);
     void RemoveExpandedProject(const std::string& project);
     const std::set<std::string>& ExpandedProjects() const { return expandedProjects; }
-    cmajor::service::BreakpointCollection& GetSolutionBreakpointCollection() { return solutionBreakpointCollection; }
+    cmajor::debugger::BreakpointCollection& GetSolutionBreakpointCollection() { return solutionBreakpointCollection; }
     void AddTreeViewNodeData(SolutionTreeViewNodeData* data);
     const std::vector<std::unique_ptr<ProjectData>>& Projects() const { return projectDataVec; }
-    std::vector<cmajor::service::Breakpoint*> GetBreakpoints();
+    std::vector<cmajor::debugger::Breakpoint*> GetBreakpoints();
     wing::TreeViewNode* GetProjectNodeByName(const std::string& projectName) const;
     void RemoveProjectNode(const std::string& projectName);
 private:
@@ -78,7 +79,7 @@ private:
     std::unordered_map<cmajor::ast::Project*, ProjectData*> projectDataMap;
     std::map<std::string, wing::TreeViewNode*> projectNodeMap;
     bool changed;
-    cmajor::service::BreakpointCollection solutionBreakpointCollection;
+    cmajor::debugger::BreakpointCollection solutionBreakpointCollection;
     bool callStackOpen;
     bool localsViewOpen;
     std::set<std::string> openFiles;

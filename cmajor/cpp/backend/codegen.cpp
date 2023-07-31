@@ -48,13 +48,13 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
     std::filesystem::create_directories(outputDirectory);
     std::string intermediateCompileCommand;
     intermediateCompileCommand.append("g++");
-    intermediateCompileCommand.append(" -c ").append(util::QuotedPath(intermediateCodeFile));
-    intermediateCompileCommand.append(" -o ").append(util::QuotedPath(compileUnit->ObjectFilePath()));
-    intermediateCompileCommand.append(" -O").append(std::to_string(emitter->EmittingContext()->OptimizationLevel()));
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo))
     {
         intermediateCompileCommand.append(" -g");
     }
+    intermediateCompileCommand.append(" -c ").append(util::QuotedPath(intermediateCodeFile));
+    intermediateCompileCommand.append(" -o ").append(util::QuotedPath(compileUnit->ObjectFilePath()));
+    intermediateCompileCommand.append(" -O").append(std::to_string(emitter->EmittingContext()->OptimizationLevel()));
     std::string errors;
     try
     {

@@ -24,10 +24,10 @@ public:
 
 void InitRunService();
 void DoneRunService();
-void StartProgram(const std::string& executableName, const std::string& programArguments, const std::string& processName);
+void StartProgram(const std::string& executableFilePath, const std::string& programArguments, const std::string& processName);
 void TerminateProcess();
 void StopRunService();
-void SetProgramTargetInputEof();
-void PutProgramTargetInputLine(const std::string& targetInputLine);
+void SetRunServiceProgramTargetInputEof();
+void PutRunServiceProgramTargetInputLine(const std::string& targetInputLine);
 
 } // namespace cmajor::service

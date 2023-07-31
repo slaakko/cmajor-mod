@@ -141,6 +141,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     consoleTabPage(nullptr),
     console(nullptr),
     debugTabPage(nullptr),
+    debugLog(nullptr),
     statusBar(nullptr),
     searchResultsTabPage(nullptr),
     searchResultsView(nullptr),
@@ -1145,7 +1146,7 @@ void MainWindow::StartDebugging()
     ResetDebugLocations();
     if (state == MainWindowState::debugging) return;
     expressionEvaluateRequests.clear();
-    savedLocation = db::Location();
+    savedLocation = cmajor::debugger::Location();
     SetEditorsReadOnly();
     startDebugging = true;
     signalReceived = false;
@@ -1162,14 +1163,15 @@ void MainWindow::StartDebugging()
         throw std::runtime_error("active project has no data");
     }
     const std::string& programArguments = projectData->ProgramArguments();
-    std::vector<cmajor::service::Breakpoint*> breakpoints = solutionData->GetBreakpoints();
-    StartDebugService(pid, backend, config, activeProject, programArguments, breakpoints); 
+    std::vector<cmajor::debugger::Breakpoint*> breakpoints = solutionData->GetBreakpoints();
+    StartDebugService(backend, config, activeProject, programArguments, breakpoints); 
 }
 
 void MainWindow::StopDebugging()
 {
     ResetDebugLocations();
-    savedLocation = db::Location();
+    ResetBreakpoints();
+    savedLocation = cmajor::debugger::Location();
     startDebuggingMenuItem->SetText("Start Debugging");
     startDebuggingToolButton->SetToolTip("Start Debugging (F5)");
     SetState(MainWindowState::idle);
@@ -1356,115 +1358,97 @@ void MainWindow::HandleServiceMessage()
 */
         case cmajor::service::ServiceMessageKind::startDebugReply:
         {
-            cmajor::service::StartReplyServiceMessage* message = static_cast<cmajor::service::StartReplyServiceMessage*>(serviceMessage.get());
-            HandleStartDebugReply(message->GetStartDebugReply());
+            cmajor::service::StartDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::StartDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleStartDebugReply(message->Reply());
             break;
         }
         case cmajor::service::ServiceMessageKind::startError:
         {
-            cmajor::service::StartErrorServiceMessage* message = static_cast<cmajor::service::StartErrorServiceMessage*>(serviceMessage.get());
-            HandleStartDebugError(message->Error());
+            cmajor::service::StartDebugServiceErrorServiceMessage* message = static_cast<cmajor::service::StartDebugServiceErrorServiceMessage*>(serviceMessage.get());
+            HandleStartDebugError(message->ErrorMessage()); 
             break;
         }
-        case cmajor::service::ServiceMessageKind::continueReply:
+        case cmajor::service::ServiceMessageKind::execReply:
         {
-            cmajor::service::ContinueReplyServiceMessage* message = static_cast<cmajor::service::ContinueReplyServiceMessage*>(serviceMessage.get());
-            HandleContinueReply(message->GetContinueReply());
+            cmajor::service::ExecDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::ExecDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleExecReply(message->Reply());
             break;
         }
-        case cmajor::service::ServiceMessageKind::nextReply:
+        case cmajor::service::ServiceMessageKind::debugError:
         {
-            cmajor::service::NextReplyServiceMessage* message = static_cast<cmajor::service::NextReplyServiceMessage*>(serviceMessage.get());
-            HandleNextReply(message->GetNextReply());
-            break;
-        }
-        case cmajor::service::ServiceMessageKind::stepReply:
-        {
-            cmajor::service::StepReplyServiceMessage* message = static_cast<cmajor::service::StepReplyServiceMessage*>(serviceMessage.get());
-            HandleStepReply(message->GetStepReply());
-            break;
-        }
-        case cmajor::service::ServiceMessageKind::finishReply:
-        {
-            cmajor::service::FinishReplyServiceMessage* message = static_cast<cmajor::service::FinishReplyServiceMessage*>(serviceMessage.get());
-            HandleFinishReply(message->GetFinishReply());
-            break;
-        }
-        case cmajor::service::ServiceMessageKind::untilReply:
-        {
-            cmajor::service::UntilReplyServiceMessage* message = static_cast<cmajor::service::UntilReplyServiceMessage*>(serviceMessage.get());
-            HandleUntilReply(message->GetUntilReply());
+            cmajor::service::DebugErrorServiceMessage* message = static_cast<cmajor::service::DebugErrorServiceMessage*>(serviceMessage.get());
+            HandleDebugError(message->ErrorMessage());
             break;
         }
         case cmajor::service::ServiceMessageKind::breakReply:
         {
-            cmajor::service::BreakReplyServiceMessage* message = static_cast<cmajor::service::BreakReplyServiceMessage*>(serviceMessage.get());
-            HandleBreakReply(message->GetBreakReply());
+            //cmajor::service::BreakReplyServiceMessage* message = static_cast<cmajor::service::BreakReplyServiceMessage*>(serviceMessage.get());
+            //HandleBreakReply(message->GetBreakReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::deleteReply:
         {
-            cmajor::service::DeleteReplyServiceMessage* message = static_cast<cmajor::service::DeleteReplyServiceMessage*>(serviceMessage.get());
-            HandleDeleteReply(message->GetDeleteReply());
+            //cmajor::service::DeleteReplyServiceMessage* message = static_cast<cmajor::service::DeleteReplyServiceMessage*>(serviceMessage.get());
+            //HandleDeleteReply(message->GetDeleteReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::depthReply:
         {
-            cmajor::service::DepthReplyServiceMessage* message = static_cast<cmajor::service::DepthReplyServiceMessage*>(serviceMessage.get());
-            HandleDepthReply(message->GetDepthReply());
+            //cmajor::service::DepthReplyServiceMessage* message = static_cast<cmajor::service::DepthReplyServiceMessage*>(serviceMessage.get());
+            //HandleDepthReply(message->GetDepthReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::framesReply:
         {
-            cmajor::service::FramesReplyServiceMessage* message = static_cast<cmajor::service::FramesReplyServiceMessage*>(serviceMessage.get());
-            HandleFramesReply(message->GetFramesReply());
+            //cmajor::service::FramesReplyServiceMessage* message = static_cast<cmajor::service::FramesReplyServiceMessage*>(serviceMessage.get());
+            // HandleFramesReply(message->GetFramesReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::evaluateReply:
         {
-            cmajor::service::EvaluateReplyServiceMessage* message = static_cast<cmajor::service::EvaluateReplyServiceMessage*>(serviceMessage.get());
-            HandleEvaluateReply(message->GetEvaluateReply(), message->RequestId());
+            //cmajor::service::EvaluateReplyServiceMessage* message = static_cast<cmajor::service::EvaluateReplyServiceMessage*>(serviceMessage.get());
+            // HandleEvaluateReply(message->GetEvaluateReply(), message->RequestId()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::countReply:
         {
-            cmajor::service::CountReplyServiceMessage* message = static_cast<cmajor::service::CountReplyServiceMessage*>(serviceMessage.get());
-            HandleCountReply(message->GetCountReply());
+            //cmajor::service::CountReplyServiceMessage* message = static_cast<cmajor::service::CountReplyServiceMessage*>(serviceMessage.get());
+            //HandleCountReply(message->GetCountReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::evaluateChildReply:
         {
-            cmajor::service::EvaluateChildReplyServiceMessage* message = static_cast<cmajor::service::EvaluateChildReplyServiceMessage*>(serviceMessage.get());
-            HandleEvaluateChildReply(message->GetEvaluateChildReply());
+            //cmajor::service::EvaluateChildReplyServiceMessage* message = static_cast<cmajor::service::EvaluateChildReplyServiceMessage*>(serviceMessage.get());
+            //HandleEvaluateChildReply(message->GetEvaluateChildReply()); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::targetRunning:
         {
-            cmajor::service::TargetRunningServiceMessage* message = static_cast<cmajor::service::TargetRunningServiceMessage*>(serviceMessage.get());
-            HandleTargetRunning();
+            //cmajor::service::TargetRunningServiceMessage* message = static_cast<cmajor::service::TargetRunningServiceMessage*>(serviceMessage.get());
+            //HandleTargetRunning(); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::targetInput:
         {
-            cmajor::service::TargetInputServiceMessage* message = static_cast<cmajor::service::TargetInputServiceMessage*>(serviceMessage.get());
-            HandleTargetInput();
+            //cmajor::service::TargetInputServiceMessage* message = static_cast<cmajor::service::TargetInputServiceMessage*>(serviceMessage.get());
+            //HandleTargetInput(); TODO
             break;
         }
         case cmajor::service::ServiceMessageKind::targetOutput:
         {
             cmajor::service::TargetOutputServiceMessage* message = static_cast<cmajor::service::TargetOutputServiceMessage*>(serviceMessage.get());
-            HandleTargetOutputRequest(message->GetTargetOutputRequest());
+            HandleTargetOutputRequest(message->GetOutputRequest());
             break;
         }
         case cmajor::service::ServiceMessageKind::debugServiceStopped:
         {
             cmajor::service::DebugServiceStoppedServiceMessage* message = static_cast<cmajor::service::DebugServiceStoppedServiceMessage*>(serviceMessage.get());
-            HandleDebugServiceStopped();
+            HandleDebugServiceStopped(); 
             break;
         }
         case cmajor::service::ServiceMessageKind::processTerminated:
         {
-            HandleProcessTerminated();
+            HandleProcessTerminated(); 
             break;
         }
         case cmajor::service::ServiceMessageKind::runServiceStopped:
@@ -1534,6 +1518,17 @@ void MainWindow::HandleServiceMessage()
             break;
         }
 */
+        case cmajor::service::ServiceMessageKind::clearDebugLog:
+        {
+            GetDebugLog()->Clear();
+            break;
+        }
+        case cmajor::service::ServiceMessageKind::debugLogMessage:
+        {
+            cmajor::service::DebugLogMessage* message = static_cast<cmajor::service::DebugLogMessage*>(serviceMessage.get());
+            GetDebugLog()->WriteLine(message->Text());
+            break;
+        }
         }
     }
 }
@@ -1744,26 +1739,17 @@ void MainWindow::HandleBuildStopped()
     cmajor::service::PutOutputServiceMessage("build stopped");
 }
 
-void MainWindow::HandleStartDebugReply(const db::StartDebugReply& startDebugReply)
+void MainWindow::HandleStartDebugReply(cmajor::debugger::Reply* reply)
 {
     UpdateCurrentDebugStrip();
     startDebugging = false;
-    if (startDebugReply.success)
+    startDebuggingMenuItem->SetText("Continue");
+    startDebuggingToolButton->SetToolTip("Continue (F5)");
+    cmajor::service::PutOutputServiceMessage("debugging started");
+    if (localsView)
     {
-        HandleTargetState(startDebugReply.state); 
-        HandleLocation(startDebugReply.location, true, false); 
-        startDebuggingMenuItem->SetText("Continue");
-        startDebuggingToolButton->SetToolTip("Continue (F5)");
-        cmajor::service::PutOutputServiceMessage("debugging started");
-        if (localsView)
-        {
-            ClearLocals();
-            UpdateLocals();
-        }
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("start debugging request failed: " + startDebugReply.error);
+        ClearLocals();
+        UpdateLocals();
     }
 }
 
@@ -1771,81 +1757,51 @@ void MainWindow::HandleStartDebugError(const std::string& error)
 {
     UpdateCurrentDebugStrip();
     startDebugging = false;
-    cmajor::service::PutRequest(new cmajor::service::StopDebugServiceRequest()); 
+    cmajor::service::PutOutputServiceMessage("failed to start debugging: " + error);
+    cmajor::service::PutRequest(new cmajor::service::StopDebugServiceRequest());
 }
 
-void MainWindow::HandleContinueReply(const db::ContinueReply& continueReply)
+void MainWindow::HandleExecReply(cmajor::debugger::Reply* reply)
 {
-    if (continueReply.success)
+    cmajor::debugger::StopReason stopReason = reply->GetStopReason();
+    if (stopReason != cmajor::debugger::StopReason::unknown)
     {
-        HandleTargetState(continueReply.state);
-        HandleLocation(continueReply.location, true, false);
-        UpdateLocals();
+        cmajor::service::PutOutputServiceMessage(cmajor::debugger::StopReasonStr(stopReason));
+        switch (stopReason)
+        {
+            case cmajor::debugger::StopReason::exitedNormally:
+            case cmajor::debugger::StopReason::exited:
+            case cmajor::debugger::StopReason::exitedSignaled:
+            {
+                programRunning = false;
+                SetState(MainWindowState::debugging);
+                cmajor::service::PutRequest(new cmajor::service::StopDebugServiceRequest());
+                break;
+            }
+            default:
+            {
+                SetState(MainWindowState::debugging);
+                UpdateCallStack();
+                break;
+            }
+        }
+        cmajor::debugger::Location loc = reply->GetLocation(); 
+        if (loc.IsValid())
+        {
+            HandleLocation(loc, true, false);
+        }
     }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("continue request failed: " + continueReply.error);
-    }
+    UpdateLocals();
 }
 
-void MainWindow::HandleNextReply(const db::NextReply& nextReply)
+void MainWindow::HandleDebugError(const std::string& error)
 {
-    if (nextReply.success)
-    {
-        HandleTargetState(nextReply.state);
-        HandleLocation(nextReply.location, true, false);
-        UpdateLocals();
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("next request failed: " + nextReply.error);
-    }
-}
-
-void MainWindow::HandleStepReply(const db::StepReply& stepReply)
-{
-    if (stepReply.success)
-    {
-        HandleTargetState(stepReply.state);
-        HandleLocation(stepReply.location, true, false);
-        UpdateLocals();
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("step request failed: " + stepReply.error);
-    }
-}
-
-void MainWindow::HandleFinishReply(const db::FinishReply& finishReply)
-{
-    if (finishReply.success)
-    {
-        HandleTargetState(finishReply.state);
-        HandleLocation(finishReply.location, true, false);
-        UpdateLocals();
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("finish request failed: " + finishReply.error);
-    }
-}
-
-void MainWindow::HandleUntilReply(const db::UntilReply& untilReply)
-{
-    if (untilReply.success)
-    {
-        HandleTargetState(untilReply.state);
-        HandleLocation(untilReply.location, true, false);
-        UpdateLocals();
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("until request failed: " + untilReply.error);
-    }
+    cmajor::service::PutOutputServiceMessage("command failed: " + error);
 }
 
 void MainWindow::HandleBreakReply(const db::BreakReply& breakReply)
 {
+    /*  TODO
     UpdateCurrentDebugStrip();
     if (breakReply.breakpointInfo.success)
     {
@@ -1855,10 +1811,12 @@ void MainWindow::HandleBreakReply(const db::BreakReply& breakReply)
     {
         cmajor::service::PutOutputServiceMessage("break request failed: " + breakReply.breakpointInfo.error);
     }
+    */
 }
 
 void MainWindow::HandleDeleteReply(const db::DeleteReply& deleteReply)
 {
+    /*  TODO
     UpdateCurrentDebugStrip();
     if (deleteReply.success)
     {
@@ -1868,10 +1826,12 @@ void MainWindow::HandleDeleteReply(const db::DeleteReply& deleteReply)
     {
         cmajor::service::PutOutputServiceMessage("delete request failed: " + deleteReply.error);
     }
+    */
 }
 
 void MainWindow::HandleDepthReply(const db::DepthReply& depthReply)
 {
+    /*  TODO
     if (depthReply.success)
     {
         callStackDepth = depthReply.depth;
@@ -1881,10 +1841,12 @@ void MainWindow::HandleDepthReply(const db::DepthReply& depthReply)
     {
         cmajor::service::PutOutputServiceMessage("depth request failed: " + depthReply.error);
     }
+    */
 }
 
 void MainWindow::HandleFramesReply(const db::FramesReply& framesReply)
 {
+    /*  TODO
     if (framesReply.success)
     {
         GetCallStackView()->SetFrameRange(framesReply.frames);
@@ -1897,10 +1859,12 @@ void MainWindow::HandleFramesReply(const db::FramesReply& framesReply)
     {
         GetOutputLogView()->Select();
     }
+    */
 }
 
 void MainWindow::HandleEvaluateReply(const db::EvaluateReply& evaluateReply, int requestId)
 {
+    /*  TODO
     if (evaluateReply.success)
     {
         if (requestId >= 0 && requestId < expressionEvaluateRequests.size())
@@ -1928,10 +1892,12 @@ void MainWindow::HandleEvaluateReply(const db::EvaluateReply& evaluateReply, int
     {
         cmajor::service::PutOutputServiceMessage("evaluate request failed: " + evaluateReply.error);
     }
+    */
 }
 
 void MainWindow::HandleCountReply(const db::CountReply& countReply)
 {
+    /*  TODO
     if (countReply.success)
     {
         cmajor::view::LocalsView* view = GetLocalsView();
@@ -1945,10 +1911,12 @@ void MainWindow::HandleCountReply(const db::CountReply& countReply)
     {
         cmajor::service::PutOutputServiceMessage("count request failed: " + countReply.error);
     }
+    */
 }
 
 void MainWindow::HandleEvaluateChildReply(const db::EvaluateChildReply& evaluateChildReply)
 {
+    /*  TODO
     if (evaluateChildReply.success)
     {
         cmajor::view::LocalsView* view = GetLocalsView();
@@ -1962,9 +1930,10 @@ void MainWindow::HandleEvaluateChildReply(const db::EvaluateChildReply& evaluate
     {
         cmajor::service::PutOutputServiceMessage("evaluate child request failed: " + evaluateChildReply.error);
     }
+    */
 }
 
-void MainWindow::HandleLocation(const db::Location& location, bool saveLocation, bool setSelection)
+void MainWindow::HandleLocation(const cmajor::debugger::Location& location, bool saveLocation, bool setSelection)
 {
     try
     {
@@ -1984,7 +1953,7 @@ void MainWindow::HandleLocation(const db::Location& location, bool saveLocation,
         if (location.file.empty()) return;
         cmajor::view::Editor* editor = nullptr;
         const std::string& filePath = location.file;
-        wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(filePath);
+        wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(filePath); 
         if (tabPage)
         {
             tabPage->Select();
@@ -2008,8 +1977,8 @@ void MainWindow::HandleLocation(const db::Location& location, bool saveLocation,
             cmajor::view::DebugStrip* debugStrip = cmajorEditor->GetDebugStrip();
             wing::SourceSpan debugLocation;
             debugLocation.line = location.line;
-            debugLocation.scol = location.scol;
-            debugLocation.ecol = location.ecol;
+            debugLocation.scol = location.scol; 
+            debugLocation.ecol = location.ecol; 
             if (!setSelection)
             {
                 debugStrip->SetDebugLocation(debugLocation);
@@ -2023,11 +1992,11 @@ void MainWindow::HandleLocation(const db::Location& location, bool saveLocation,
             if (setSelection)
             {
                 ResetSelections();
-                soul::ast::SourcePos start(location.line, location.scol);
-                soul::ast::SourcePos end(location.line, location.ecol);
+                soul::ast::SourcePos start(location.line, location.scol); 
+                soul::ast::SourcePos end(location.line, location.ecol); 
                 wing::Selection selection;
-                selection.start = start;
-                selection.end = end;
+                selection.start = start; 
+                selection.end = end; 
                 textView->SetSelection(selection);
             }
         }
@@ -2038,25 +2007,25 @@ void MainWindow::HandleLocation(const db::Location& location, bool saveLocation,
     }
 }
 
-void MainWindow::HandleTargetState(db::TargetState state)
+void MainWindow::HandleTargetState(const cmajor::debugger::TargetState& state)
 {
     programRunning = false;
     SetState(MainWindowState::debugging);
     if (state.stopReason == "exited-normally")
     {
         cmajor::service::PutRequest(new cmajor::service::StopDebugServiceRequest());
-        cmajor::service::PutOutputServiceMessage("program exited normally");
+        cmajor::service::PutOutputServiceMessage("process exited normally");
     }
     else if (state.stopReason == "exited")
     {
-        std::string message = "program exited";
+        std::string message = "process exited";
         message.append(", exit code=" + state.exitCode);
         cmajor::service::PutRequest(new cmajor::service::StopDebugServiceRequest());
         cmajor::service::PutOutputServiceMessage(message);
     }
     else if (state.stopReason == "signal-received")
     {
-        std::string message = "program received signal";
+        std::string message = "process received signal";
         message.append(", signal=" + state.signalName + ", meaning=" + state.signalMeaning);
         signalReceived = true;
         cmajor::service::PutOutputServiceMessage(message);
@@ -2092,9 +2061,9 @@ void MainWindow::HandleTargetInput()
     GetConsole()->StartReadLine();
 }
 
-void MainWindow::HandleTargetOutputRequest(const db::TargetOutputRequest& targetOutputRequest)
+void MainWindow::HandleTargetOutputRequest(const cmajor::debugger::OutputRequest& outputRequest)
 {
-    GetConsole()->Write(targetOutputRequest.handle, targetOutputRequest.output);
+    GetConsole()->Write(outputRequest.handle, outputRequest.output);
 }
 
 void MainWindow::ConsoleInputReady()
@@ -2104,22 +2073,22 @@ void MainWindow::ConsoleInputReady()
     {
         if (state == MainWindowState::debugging)
         {
-            cmajor::service::PutRequest(new cmajor::service::SetTargetInputEofRequest());
+            cmajor::service::PutRequest(new cmajor::service::SetDebugServiceProgramEofRequest());
         }
         else if (state == MainWindowState::running)
         {
-            cmajor::service::PutRequest(new cmajor::service::SetProgramEofRequest());
+            cmajor::service::PutRequest(new cmajor::service::SetRunServiceProgramEofRequest());
         }
     }
     else
     {
         if (state == MainWindowState::debugging)
         {
-            cmajor::service::PutRequest(new cmajor::service::PutTargetInputLineRequest(util::ToUtf8(console->InputLine())));
+            cmajor::service::PutRequest(new cmajor::service::PutDebugServiceProgramInputLineRequest(util::ToUtf8(console->InputLine()))); 
         }
         else if (state == MainWindowState::running)
         {
-            cmajor::service::PutRequest(new cmajor::service::PutProgramInputLineRequest(util::ToUtf8(console->InputLine())));
+            cmajor::service::PutRequest(new cmajor::service::PutRunServiceProgramInputLineRequest(util::ToUtf8(console->InputLine())));
         }
     }
 }
@@ -2488,7 +2457,7 @@ void MainWindow::SetState(MainWindowState state_)
             buildSolutionToolButton->Enable();
             buildActiveProjectToolButton->Enable();
             toggleBreakpointMenuItem->Enable();
-            if (backend == "cpp" && config == "debug")
+            if (config == "debug")
             {
                 startDebuggingMenuItem->Enable();
                 startDebuggingToolButton->Enable();
@@ -2673,6 +2642,17 @@ void MainWindow::ResetDebugLocations()
         }
         child = child->NextSibling();
     }
+}
+
+void MainWindow::ResetBreakpoints()
+{
+    std::vector<cmajor::debugger::Breakpoint*> breakpoints = solutionData->GetBreakpoints(); 
+    for (auto breakpoint : breakpoints)
+    {
+        breakpoint->disabled = false;
+        breakpoint->location.line = 0;
+    }
+    UpdateCurrentDebugStrip();
 }
 
 void MainWindow::SetEditorsReadWrite()
@@ -2972,7 +2952,7 @@ void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string
 
 void MainWindow::GotoCursor(const common::SourceLoc& sourceLocation)
 {
-    cmajor::service::PutRequest(new cmajor::service::UntilDebugServiceRequest(sourceLocation));
+    //cmajor::service::PutRequest(new cmajor::service::UntilDebugServiceRequest(sourceLocation));
 }
 
 void MainWindow::GotoLocation(const bs::DefinitionSourceLocation& location)
@@ -3066,10 +3046,11 @@ void MainWindow::ChangeBreakpoints(wing::CancelArgs& args)
     try
     {
         std::string requestName;
-        if (cmajor::service::DebugRequestInProgress(requestName))
+        /* TODO if (cmajor::service::DebugRequestInProgress(requestName))
         {
             throw std::runtime_error("cannot change breakpoints while debug request is running (request=" + requestName + ")");
         }
+        */ 
     }
     catch (const std::exception& ex)
     {
@@ -3083,10 +3064,10 @@ void MainWindow::BreakpointAdded(cmajor::view::AddBreakpointEventArgs& args)
     {
         if (state != MainWindowState::debugging)
         {
-            args.breakpoint->info.success = true;
+            //args.breakpoint->info.success = true; // TODO
             return;
         }
-        cmajor::service::PutRequest(new cmajor::service::BreakDebugServiceRequest(args.breakpoint));
+        //cmajor::service::PutRequest(new cmajor::service::BreakDebugServiceRequest(args.breakpoint)); TODO
     }
     catch (const std::exception& ex)
     {
@@ -3102,7 +3083,7 @@ void MainWindow::BreakpointRemoved(cmajor::view::RemoveBreakpointEventArgs& args
         {
             return;
         }
-        cmajor::service::PutRequest(new cmajor::service::DeleteDebugServiceRequest(args.breakpointId));
+        //cmajor::service::PutRequest(new cmajor::service::DeleteDebugServiceRequest(args.breakpointId)); TODO
     }
     catch (const std::exception& ex)
     {
@@ -4500,11 +4481,11 @@ void MainWindow::StartDebuggingClick()
         if (state == MainWindowState::debugging)
         {
             StartDebugging();
-            cmajor::service::PutRequest(new cmajor::service::ContinueDebugServiceRequest());
+            cmajor::service::PutRequest(new cmajor::service::ContinueDebugServiceRequest()); 
         }
         else
         {
-            debugRequest.reset(new cmajor::service::ContinueDebugServiceRequest());
+            debugRequest.reset(new cmajor::service::RunDebugServiceRequest()); 
             if (!BuildActiveProject())
             {
                 debugRequest.reset();
@@ -4569,11 +4550,11 @@ void MainWindow::StepOverClick()
         if (state == MainWindowState::debugging)
         {
             StartDebugging();
-            cmajor::service::PutRequest(new cmajor::service::NextDebugServiceRequest());
+            cmajor::service::PutRequest(new cmajor::service::NextDebugServiceRequest()); 
         }
         else
         {
-            debugRequest.reset(new cmajor::service::NextDebugServiceRequest());
+            debugRequest.reset(new cmajor::service::NextDebugServiceRequest()); 
             if (!BuildActiveProject())
             {
                 debugRequest.reset();
@@ -4596,11 +4577,11 @@ void MainWindow::StepIntoClick()
         if (state == MainWindowState::debugging)
         {
             StartDebugging();
-            cmajor::service::PutRequest(new cmajor::service::StepDebugServiceRequest());
+            cmajor::service::PutRequest(new cmajor::service::StepDebugServiceRequest()); 
         }
         else
         {
-            debugRequest.reset(new cmajor::service::StepDebugServiceRequest());
+            debugRequest.reset(new cmajor::service::StepDebugServiceRequest()); 
             if (!BuildActiveProject())
             {
                 debugRequest.reset();
@@ -4621,7 +4602,7 @@ void MainWindow::StepOutClick()
         ClearLocals();
         ResetSelections();
         StartDebugging();
-        cmajor::service::PutRequest(new cmajor::service::FinishDebugServiceRequest());
+        cmajor::service::PutRequest(new cmajor::service::FinishDebugServiceRequest()); 
     }
     catch (const std::exception& ex)
     {
@@ -5139,7 +5120,7 @@ cmajor::view::Editor* MainWindow::GetEditorByTabPage(wing::TabPage* tabPage) con
 cmajor::view::CmajorEditor* MainWindow::AddCmajorEditor(const std::string& fileName, const std::string& key, const std::string& filePath, cmajor::ast::Project* project)
 {
     std::unique_ptr<wing::TabPage> tabPage(new wing::TabPage(fileName, key));
-    cmajor::service::BreakpointList* breakpointList = nullptr;
+    cmajor::debugger::BreakpointList* breakpointList = nullptr;
     if (project)
     {
         ProjectData* projectData = solutionData->GetProjectDataByProject(project);
@@ -5399,10 +5380,6 @@ void MainWindow::CodeTabPageRemoved(wing::ControlEventArgs& args)
             }
         }
         tabPageEditorMap.erase(removedTabPage);
-        if (removedTabPage == debugTabPage)
-        {
-            debugTabPage = nullptr;
-        }
     }
     if (codeTabControl->TabPages().IsEmpty())
     {
@@ -5447,6 +5424,11 @@ void MainWindow::OutputTabControlTabPageRemoved(wing::ControlEventArgs& args)
     {
         consoleTabPage = nullptr;
         console = nullptr;
+    }
+    else if (args.control == debugTabPage)
+    {
+        debugTabPage = nullptr;
+        debugLog = nullptr;
     }
 }
 
@@ -5609,7 +5591,7 @@ void MainWindow::UpdateCallStack()
     if (!callStackView) return;
     if (callStackDepth == -1)
     {
-        cmajor::service::PutRequest(new cmajor::service::DepthDebugServiceRequest());
+        //cmajor::service::PutRequest(new cmajor::service::DepthDebugServiceRequest()); TODO
     }
     else if (callStackDepth >= 0)
     {
@@ -5617,7 +5599,7 @@ void MainWindow::UpdateCallStack()
         std::pair<int, int> frameRange = callStackView->GetFrameRange();
         if (frameRange.first != -1 && frameRange.second != -1)
         {
-            cmajor::service::PutRequest(new cmajor::service::FramesDebugServiceRequest(frameRange.first, frameRange.second));
+            //cmajor::service::PutRequest(new cmajor::service::FramesDebugServiceRequest(frameRange.first, frameRange.second)); TODO
         }
     }
 }
@@ -5626,7 +5608,7 @@ void MainWindow::CallStackFrameSelected(cmajor::view::FrameSelectedEventArgs& ar
 {
     try
     {
-        HandleLocation(*args.frame, false, true); 
+        //HandleLocation(*args.frame, false, true);  TODO
     }
     catch (const std::exception& ex)
     {
@@ -5667,7 +5649,7 @@ void MainWindow::UpdateLocals()
         if (!localsView->LocalCountRequested())
         {
             localsView->SetLocalCountRequested();
-            cmajor::service::PutRequest(new cmajor::service::CountDebugServiceRequest("@locals"));
+            //cmajor::service::PutRequest(new cmajor::service::CountDebugServiceRequest("@locals")); TODO
         }
     }
     else
@@ -5678,7 +5660,7 @@ void MainWindow::UpdateLocals()
             if (!childExtent.IsEmpty())
             {
                 localsView->SetChildExtentRequested();
-                cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count));
+                //cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); TODO
             }
         }
         else
@@ -5691,7 +5673,7 @@ void MainWindow::UpdateLocals()
                 if (!childExtent.IsEmpty())
                 {
                     localsView->SetChildExtentRequested();
-                    cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count));
+                    //cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); TODO
                 }
             }
         }
@@ -5754,6 +5736,21 @@ wing::Console* MainWindow::GetConsole()
     return console;
 }
 
+wing::LogView* MainWindow::GetDebugLog()
+{
+    if (!debugLog)
+    {
+        debugLog = new wing::LogView(wing::TextViewCreateParams().BackgroundColor(wing::GetColor("log.view.background")).TextColor(wing::GetColor("log.view.text")));
+        debugLog->SetFlag(wing::ControlFlags::scrollSubject);
+        debugLog->SetDoubleBuffered();
+        wing::ScrollableControl* scrollableLog = new wing::ScrollableControl(wing::ScrollableControlCreateParams(debugLog).SetDock(wing::Dock::fill));
+        debugTabPage = new wing::TabPage("Debug", "debug");
+        debugTabPage->AddChild(scrollableLog);
+        outputTabControl->AddTabPage(debugTabPage);
+    }
+    return debugLog;
+}
+
 void MainWindow::UpdateCurrentDebugStrip()
 {
     cmajor::view::Editor* editor = CurrentEditor();
@@ -5799,7 +5796,7 @@ void MainWindow::ExpressionHover(cmajor::view::ExpressionHoverEventArgs& args)
     int requestId = expressionEvaluateRequests.size();
     ExpressionEvaluateRequest request(args.expression, args.screenLoc);
     expressionEvaluateRequests.push_back(request);
-    cmajor::service::PutRequest(new cmajor::service::EvaluateDebugServiceRequest(args.expression, requestId));
+    //cmajor::service::PutRequest(new cmajor::service::EvaluateDebugServiceRequest(args.expression, requestId)); TODO
 }
 
 /*  TODO

@@ -400,6 +400,8 @@ private:
     void AddInstructionLocations(const SourceFileKey& sourceFileKey, const std::string& sourceFilePath);
 };
 
+std::string GetCurrentCmajorRootPrefix();
+
 class DebugInfo
 {
 public:
@@ -408,6 +410,8 @@ public:
     DebugInfo(DebugInfo&&) = delete;
     DebugInfo& operator=(const DebugInfo&) = delete;
     DebugInfo& operator=(DebugInfo&&) = delete;
+    void SetCmajorRootPrefix(const std::string& cmajorRootPrefix_);
+    const std::string& CmajorRootPrefix() const { return cmajorRootPrefix; }
     void SetMainProject(Project* mainProject_);
     Project* GetMainProject() const;
     void AddProject(Project* project);
@@ -434,6 +438,7 @@ public:
     void ProcessSourceFileKeyLocationsMap();
 private:
     std::string filePath;
+    std::string cmajorRootPrefix;
     std::vector<std::unique_ptr<Project>> projects;
     std::unordered_map<std::string, Project*> projectPathMap;
     std::unordered_map<std::string, Project*> projectNameMap;

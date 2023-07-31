@@ -45,6 +45,16 @@ void ReadCmdbFileTag(util::BinaryStreamReader& reader, const std::string& filePa
     }
 }
 
+void WriteCmajorRootPrefix(util::BinaryStreamWriter& writer, const std::string& cmajorRootPrefix)
+{
+    writer.Write(cmajorRootPrefix);
+}
+
+void ReadCmajorRootPrefix(util::BinaryStreamReader& reader, std::string& cmajorRootPrefix)
+{
+    cmajorRootPrefix = reader.ReadUtf8String();
+}
+
 void WriteMainProjectName(util::BinaryStreamWriter& writer, const std::string& mainProjectName)
 {
     writer.Write(mainProjectName);

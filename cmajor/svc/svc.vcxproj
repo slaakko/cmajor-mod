@@ -148,8 +148,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="breakpoint.cpp" />
-    <ClCompile Include="breakpoint.cppm" />
     <ClCompile Include="build_service.cpp" />
     <ClCompile Include="build_service.cppm" />
     <ClCompile Include="build_service_request.cpp" />
@@ -158,8 +156,6 @@
     <ClCompile Include="config.cppm" />
     <ClCompile Include="debug_service.cpp" />
     <ClCompile Include="debug_service.cppm" />
-    <ClCompile Include="debug_service_request.cpp" />
-    <ClCompile Include="debug_service_request.cppm" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.cppm" />
     <ClCompile Include="logger.cpp" />
@@ -210,6 +206,9 @@
     </ProjectReference>
     <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\debugger\debugger.vcxproj">
+      <Project>{18f216d5-8885-4f16-a0ad-af16c208eeae}</Project>
     </ProjectReference>
     <ProjectReference Include="..\symbols\symbols.vcxproj">
       <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>

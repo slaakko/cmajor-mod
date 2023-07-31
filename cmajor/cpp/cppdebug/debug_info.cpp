@@ -992,8 +992,19 @@ void SourceFileMap::AddInstructionLocations(const SourceFileKey& sourceFileKey, 
     }
 }
 
+std::string GetCurrentCmajorRootPrefix()
+{
+    std::string currentCmajorRootPrefix = util::GetFullPath(util::CmajorRoot());
+    return currentCmajorRootPrefix;
+}
+
 DebugInfo::DebugInfo(const std::string& filePath_) : filePath(filePath_), mainProject(nullptr), sourceFileCache(this), sourceFileMap(this), sourceFileWindowSize(5)
 {
+}
+
+void DebugInfo::SetCmajorRootPrefix(const std::string& cmajorRootPrefix_)
+{
+    cmajorRootPrefix = cmajorRootPrefix_;
 }
 
 void DebugInfo::SetMainProject(Project* mainProject_)
@@ -1173,6 +1184,9 @@ std::unique_ptr<DebugInfo> ReadDebugInfo(const std::string& cmdbFilePath)
     util::BufferedStream bufferedStream(fileStream);
     util::BinaryStreamReader reader(bufferedStream);
     ReadCmdbFileTag(reader, cmdbFilePath);
+    std::string cmajorRootPrefix;
+    ReadCmajorRootPrefix(reader, cmajorRootPrefix);
+    debugInfo->SetCmajorRootPrefix(cmajorRootPrefix);
     std::string mainProjectName;
     ReadMainProjectName(reader, mainProjectName);
     int32_t numProjects;

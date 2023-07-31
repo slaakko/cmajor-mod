@@ -301,24 +301,24 @@ void SolutionData::AddTreeViewNodeData(SolutionTreeViewNodeData* data)
     treeViewData.push_back(std::unique_ptr<SolutionTreeViewNodeData>(data));
 }
 
-std::vector<cmajor::service::Breakpoint*> SolutionData::GetBreakpoints()
+std::vector<cmajor::debugger::Breakpoint*> SolutionData::GetBreakpoints()
 {
-    std::vector<cmajor::service::Breakpoint*> breakpoints;
+    std::vector<cmajor::debugger::Breakpoint*> breakpoints;
     for (auto& bm : solutionBreakpointCollection.BreakpointListMap())
     {
-        cmajor::service::BreakpointList& list = bm.second;
-        for (cmajor::service::Breakpoint* breakpoint : list.Breakpoints())
+        cmajor::debugger::BreakpointList& list = bm.second;
+        for (cmajor::debugger::Breakpoint* breakpoint : list.Breakpoints())
         {
             breakpoints.push_back(breakpoint);
         }
     }
     for (auto& project : projectDataVec)
     {
-        cmajor::service::BreakpointCollection& breakpointCollection = project->GetBreakpointCollection();
+        cmajor::debugger::BreakpointCollection& breakpointCollection = project->GetBreakpointCollection();
         for (auto& bm : breakpointCollection.BreakpointListMap())
         {
-            cmajor::service::BreakpointList& list = bm.second;
-            for (cmajor::service::Breakpoint* breakpoint : list.Breakpoints())
+            cmajor::debugger::BreakpointList& list = bm.second;
+            for (cmajor::debugger::Breakpoint* breakpoint : list.Breakpoints())
             {
                 breakpoints.push_back(breakpoint);
             }
@@ -376,8 +376,8 @@ void SolutionData::Load(const std::string& solutionSettingsFilePath)
         }
         for (const SolutionBreakpoint& breakpoint : solutionSettings.breakpoints)
         {
-            cmajor::service::BreakpointList& breakpointList = solutionBreakpointCollection.GetBreakpointList(breakpoint.file);
-            breakpointList.AddBreakpoint(new cmajor::service::Breakpoint(breakpoint.line, breakpoint.condition, breakpoint.disabled));
+            cmajor::debugger::BreakpointList& breakpointList = solutionBreakpointCollection.GetBreakpointList(breakpoint.file);
+            breakpointList.AddBreakpoint(new cmajor::debugger::Breakpoint(breakpoint.line, breakpoint.condition, breakpoint.disabled));
         }
         solutionBreakpointCollection.ResetChanged();
     }
@@ -401,8 +401,8 @@ void SolutionData::Save(const std::string& solutionSettingsFilePath)
     }
     for (auto& bm : solutionBreakpointCollection.BreakpointListMap())
     {
-        cmajor::service::BreakpointList& breakpointList = bm.second;
-        for (cmajor::service::Breakpoint* breakpoint : breakpointList.Breakpoints())
+        cmajor::debugger::BreakpointList& breakpointList = bm.second;
+        for (cmajor::debugger::Breakpoint* breakpoint : breakpointList.Breakpoints())
         {
             SolutionBreakpoint solutionBreakpoint;
             solutionBreakpoint.file = breakpointList.FilePath();

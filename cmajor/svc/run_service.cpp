@@ -7,6 +7,7 @@ module cmajor.run.service;
 
 import cmajor.debug.service;
 import cmajor.debug;
+import cmajor.debuggers;
 import cmajor.debug.message;
 import cmajor.port.map.service;
 import util;
@@ -50,7 +51,7 @@ public:
     static void Init();
     static void Done();
     static RunService& Instance() { return *instance; }
-    void Start(const std::string& executableName, const std::string& programArguments, const std::string& processName);
+    void Start(const std::string& executableFilePath, const std::string& programArguments, const std::string& processName);
     void Run();
     void TerminateProcess();
     void Stop();
@@ -97,17 +98,17 @@ void DoRun(RunService* service)
     service->Run();
 }
 
-void RunService::Start(const std::string& executableName, const std::string& programArguments, const std::string& processName)
+void RunService::Start(const std::string& executableFilePath, const std::string& programArguments, const std::string& processName)
 {
     exiting = false;
     inputEof = false;
-    cmdbSessionFilePath = util::Path::ChangeExtension(executableName, ".cmdbs");
+    cmdbSessionFilePath = util::Path::ChangeExtension(executableFilePath, ".cmdbs");
     sessionPort = GetFreePortNumber(processName);
     if (sessionPort == -1)
     {
         sessionPort = 55005;
     }
-    startCommand = executableName;
+    startCommand = executableFilePath;
     startCommand.append(1, ' ').append(programArguments);
     runThreadStarted = false;
     runThread = std::thread(DoRun, this);
@@ -119,7 +120,7 @@ void RunService::Run()
     try
     {
         cmajor::debug::SetCmdbSessionPort(sessionPort);
-        StartCmdbSession(cmdbSessionFilePath, &outputWriter, this, true);
+        cmajor::debug::StartCmdbSession(cmdbSessionFilePath, &outputWriter, this, true);
         cmajor::debug::RemoveCmdbSessionFileGuard removeFileGuard(cmdbSessionFilePath);
         process.reset(new util::Process(startCommand, util::Process::Redirections::none));
         process->WaitForExit();
@@ -230,16 +231,16 @@ std::string RunService::GetTargetInputBytes()
 
 void RunService::WriteTargetOuput(int handle, const std::string& s)
 {
-    db::TargetOutputRequest outputRequest;
+    cmajor::debugger::OutputRequest outputRequest;
     outputRequest.handle = handle;
     outputRequest.output = s;
     TargetOutputServiceMessage outputMessage(outputRequest);
     PutServiceMessage(new TargetOutputServiceMessage(outputMessage));
 }
 
-void StartProgram(const std::string& executableName, const std::string& programArguments, const std::string& processName)
+void StartProgram(const std::string& executableFilePath, const std::string& programArguments, const std::string& processName)
 {
-    RunService::Instance().Start(executableName, programArguments, processName);
+    RunService::Instance().Start(executableFilePath, programArguments, processName);
 }
 
 void TerminateProcess()
@@ -260,12 +261,12 @@ RunServiceStoppedServiceMessage::RunServiceStoppedServiceMessage() : ServiceMess
 {
 }
 
-void SetProgramTargetInputEof()
+void SetRunServiceProgramTargetInputEof()
 {
     RunService::Instance().SetInputEof();
 }
 
-void PutProgramTargetInputLine(const std::string& targetInputLine)
+void PutRunServiceProgramTargetInputLine(const std::string& targetInputLine)
 {
     RunService::Instance().PutInputLine(targetInputLine);
 }

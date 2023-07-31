@@ -1,0 +1,3 @@
+project cmajor.debugger.spg;
+parser <reply_parser.parser>;
+

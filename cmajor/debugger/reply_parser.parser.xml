@@ -1,0 +1,307 @@
+<parserFile>
+ <grammar name="ReplyParser">
+  <rule first="{#, AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}" name="Reply">
+   <action first="{#, AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+    <group first="{#, AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+     <sequence first="{#, AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+      <action first="{#}">
+       <empty first="{#}"/>
+      </action>
+      <kleene first="{#, AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+       <group first="{AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+        <action first="{AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+         <nonterminal first="{AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}" ruleName="Record"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}" name="Record">
+   <choice first="{AMP, AST, AT, CARET, EQ, LPAREN, PLUS, TILDE}">
+    <choice first="{AMP, AT, CARET, LPAREN, TILDE}">
+     <choice first="{CARET, LPAREN}">
+      <action first="{LPAREN}">
+       <nonterminal first="{LPAREN}" ruleName="Prompt"/>
+      </action>
+      <action first="{CARET}">
+       <nonterminal first="{CARET}" ruleName="ResultRecord"/>
+      </action>
+     </choice>
+     <action first="{AMP, AT, TILDE}">
+      <nonterminal first="{AMP, AT, TILDE}" ruleName="StreamRecord"/>
+     </action>
+    </choice>
+    <action first="{AST, EQ, PLUS}">
+     <nonterminal first="{AST, EQ, PLUS}" ruleName="AsyncRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{LPAREN}" name="Prompt">
+   <action first="{LPAREN}">
+    <group first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <token first="{LPAREN}" name="LPAREN"/>
+       <token first="{GDB}" name="GDB"/>
+      </sequence>
+      <token first="{RPAREN}" name="RPAREN"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{CARET}" name="ResultRecord">
+   <action first="{CARET}">
+    <group first="{CARET}">
+     <sequence first="{CARET}">
+      <sequence first="{CARET}">
+       <token first="{CARET}" name="CARET"/>
+       <group first="{CONNECTED, DONE, ERROR, EXIT, RUNNING}">
+        <choice first="{CONNECTED, DONE, ERROR, EXIT, RUNNING}">
+         <choice first="{CONNECTED, DONE, ERROR, RUNNING}">
+          <choice first="{CONNECTED, DONE, RUNNING}">
+           <choice first="{DONE, RUNNING}">
+            <action first="{DONE}">
+             <token first="{DONE}" name="DONE"/>
+            </action>
+            <action first="{RUNNING}">
+             <token first="{RUNNING}" name="RUNNING"/>
+            </action>
+           </choice>
+           <action first="{CONNECTED}">
+            <token first="{CONNECTED}" name="CONNECTED"/>
+           </action>
+          </choice>
+          <action first="{ERROR}">
+           <token first="{ERROR}" name="ERROR"/>
+          </action>
+         </choice>
+         <action first="{EXIT}">
+          <token first="{EXIT}" name="EXIT"/>
+         </action>
+        </choice>
+       </group>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="Results"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AMP, AT, TILDE}" name="StreamRecord">
+   <choice first="{AMP, AT, TILDE}">
+    <choice first="{AT, TILDE}">
+     <sequence first="{TILDE}">
+      <token first="{TILDE}" name="TILDE"/>
+      <action first="{STRING}">
+       <nonterminal first="{STRING}" ruleName="Output"/>
+      </action>
+     </sequence>
+     <sequence first="{AT}">
+      <token first="{AT}" name="AT"/>
+      <action first="{STRING}">
+       <nonterminal first="{STRING}" ruleName="Output"/>
+      </action>
+     </sequence>
+    </choice>
+    <sequence first="{AMP}">
+     <token first="{AMP}" name="AMP"/>
+     <action first="{STRING}">
+      <nonterminal first="{STRING}" ruleName="Output"/>
+     </action>
+    </sequence>
+   </choice>
+  </rule>
+  <rule first="{AST, EQ, PLUS}" name="AsyncRecord">
+   <choice first="{AST, EQ, PLUS}">
+    <choice first="{AST, PLUS}">
+     <action first="{AST}">
+      <nonterminal first="{AST}" ruleName="ExecRecord"/>
+     </action>
+     <action first="{PLUS}">
+      <nonterminal first="{PLUS}" ruleName="StatusRecord"/>
+     </action>
+    </choice>
+    <action first="{EQ}">
+     <nonterminal first="{EQ}" ruleName="NotifyRecord"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{AST}" name="ExecRecord">
+   <action first="{AST}">
+    <group first="{AST}">
+     <sequence first="{AST}">
+      <sequence first="{AST}">
+       <token first="{AST}" name="AST"/>
+       <nonterminal first="{NAME, RUNNING, STOPPED}" ruleName="Class"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="Results"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{PLUS}" name="StatusRecord">
+   <action first="{PLUS}">
+    <group first="{PLUS}">
+     <sequence first="{PLUS}">
+      <sequence first="{PLUS}">
+       <token first="{PLUS}" name="PLUS"/>
+       <nonterminal first="{NAME, RUNNING, STOPPED}" ruleName="Class"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="Results"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{EQ}" name="NotifyRecord">
+   <action first="{EQ}">
+    <group first="{EQ}">
+     <sequence first="{EQ}">
+      <sequence first="{EQ}">
+       <token first="{EQ}" name="EQ"/>
+       <nonterminal first="{NAME, RUNNING, STOPPED}" ruleName="Class"/>
+      </sequence>
+      <nonterminal first="{#, COMMA}" ruleName="Results"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{NAME, RUNNING, STOPPED}" name="Class">
+   <choice first="{NAME, RUNNING, STOPPED}">
+    <choice first="{RUNNING, STOPPED}">
+     <action first="{RUNNING}">
+      <token first="{RUNNING}" name="RUNNING"/>
+     </action>
+     <action first="{STOPPED}">
+      <token first="{STOPPED}" name="STOPPED"/>
+     </action>
+    </choice>
+    <action first="{NAME}">
+     <token first="{NAME}" name="NAME"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{#, COMMA}" name="Results">
+   <sequence first="{#, COMMA}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, COMMA}">
+     <group first="{#, COMMA}">
+      <kleene first="{#, COMMA}">
+       <group first="{COMMA}">
+        <sequence first="{COMMA}">
+         <token first="{COMMA}" name="COMMA"/>
+         <action first="{NAME}">
+          <nonterminal first="{NAME}" ruleName="Item"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{NAME}" name="Item">
+   <sequence first="{NAME}">
+    <sequence first="{NAME}">
+     <action first="{NAME}">
+      <token first="{NAME}" name="NAME"/>
+     </action>
+     <token first="{EQ}" name="EQ"/>
+    </sequence>
+    <action first="{LBRACE, LBRACKET, STRING}">
+     <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LBRACE, LBRACKET, STRING}" name="Value">
+   <choice first="{LBRACE, LBRACKET, STRING}">
+    <choice first="{LBRACE, STRING}">
+     <action first="{STRING}">
+      <nonterminal first="{STRING}" ruleName="StringValue"/>
+     </action>
+     <action first="{LBRACE}">
+      <nonterminal first="{LBRACE}" ruleName="TupleValue"/>
+     </action>
+    </choice>
+    <action first="{LBRACKET}">
+     <nonterminal first="{LBRACKET}" ruleName="ListValue"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{STRING}" name="StringValue">
+   <action first="{STRING}">
+    <token first="{STRING}" name="STRING"/>
+   </action>
+  </rule>
+  <rule first="{LBRACE}" name="TupleValue">
+   <action first="{LBRACE}">
+    <group first="{LBRACE}">
+     <sequence first="{LBRACE}">
+      <sequence first="{LBRACE}">
+       <action first="{LBRACE}">
+        <token first="{LBRACE}" name="LBRACE"/>
+       </action>
+       <optional first="{#, NAME}">
+        <group first="{NAME}">
+         <list first="{NAME}">
+          <sequence first="{NAME}">
+           <group first="{NAME}">
+            <action first="{NAME}">
+             <nonterminal first="{NAME}" ruleName="Item"/>
+            </action>
+           </group>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <group first="{NAME}">
+              <action first="{NAME}">
+               <nonterminal first="{NAME}" ruleName="Item"/>
+              </action>
+             </group>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
+        </group>
+       </optional>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LBRACKET}" name="ListValue">
+   <action first="{LBRACKET}">
+    <group first="{LBRACKET}">
+     <sequence first="{LBRACKET}">
+      <sequence first="{LBRACKET}">
+       <action first="{LBRACKET}">
+        <token first="{LBRACKET}" name="LBRACKET"/>
+       </action>
+       <kleene first="{#, LBRACE, LBRACKET, NAME, STRING}">
+        <group first="{LBRACE, LBRACKET, NAME, STRING}">
+         <choice first="{LBRACE, LBRACKET, NAME, STRING}">
+          <action first="{NAME}">
+           <nonterminal first="{NAME}" ruleName="Item"/>
+          </action>
+          <action first="{LBRACE, LBRACKET, STRING}">
+           <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+          </action>
+         </choice>
+        </group>
+       </kleene>
+      </sequence>
+      <token first="{RBRACKET}" name="RBRACKET"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{STRING}" name="Output">
+   <action first="{STRING}">
+    <token first="{STRING}" name="STRING"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

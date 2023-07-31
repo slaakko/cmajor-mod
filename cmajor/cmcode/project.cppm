@@ -6,6 +6,7 @@
 export module cmcode.project;
 
 import cmajor.service;
+import cmajor.debuggers;
 import cmajor.ast;
 import std.core;
 
@@ -19,13 +20,13 @@ public:
     void Save(const std::string& projectSettingsFilePath);
     bool Changed();
     cmajor::ast::Project* GetProject() const { return project; }
-    cmajor::service::BreakpointCollection& GetBreakpointCollection() { return breakpointCollection; }
+    cmajor::debugger::BreakpointCollection& GetBreakpointCollection() { return breakpointCollection; }
     const std::string& ProgramArguments() const { return programArguments; }
     void SetProgramArguments(const std::string& programArguments_);
 private:
     bool changed;
     cmajor::ast::Project* project;
-    cmajor::service::BreakpointCollection breakpointCollection;
+    cmajor::debugger::BreakpointCollection breakpointCollection;
     std::string programArguments;
 };
 

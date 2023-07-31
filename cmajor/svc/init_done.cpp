@@ -23,7 +23,6 @@ void Init()
     cmajor::symbols::SetCompilerVersion(util::CmajorVersionStr());
     StartLoggerService();
     StartBuildService();
-    InitDebugService();
     InitRunService();
     //InitCodeCompletionService();
 }
@@ -32,7 +31,6 @@ void Done()
 {
     //DoneCodeCompletionService();
     DoneRunService();
-    DoneDebugService();
     StopBuildService();
     StopLoggerService();
 }

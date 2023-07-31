@@ -6,6 +6,7 @@
 export module cmcode.main.window;
 
 import cmajor.service;
+import cmajor.debuggers;
 import cmajor.view;
 import cmajor.ast;
 import cmajor.common.message;
@@ -120,13 +121,10 @@ private:
     void HandleBuildStopped();
     void HandleGetDefinitionReply(bs::GetDefinitionReply& getDefinitionReply);
     void HandleGetDefinitionError(const std::string& getDefinitionError);
-    void HandleStartDebugReply(const db::StartDebugReply& startDebugReply);
+    void HandleStartDebugReply(cmajor::debugger::Reply* reply);
     void HandleStartDebugError(const std::string& error);
-    void HandleContinueReply(const db::ContinueReply& continueReply);
-    void HandleNextReply(const db::NextReply& nextReply);
-    void HandleStepReply(const db::StepReply& stepReply);
-    void HandleFinishReply(const db::FinishReply& finishReply);
-    void HandleUntilReply(const db::UntilReply& untilReply);
+    void HandleExecReply(cmajor::debugger::Reply* reply);
+    void HandleDebugError(const std::string& error);
     void HandleBreakReply(const db::BreakReply& breakReply);
     void HandleDeleteReply(const db::DeleteReply& deleteReply);
     void HandleDepthReply(const db::DepthReply& depthReply);
@@ -134,11 +132,11 @@ private:
     void HandleEvaluateReply(const db::EvaluateReply& evaluateReply, int requestId);
     void HandleCountReply(const db::CountReply& countReply);
     void HandleEvaluateChildReply(const db::EvaluateChildReply& evaluateChildReply);
-    void HandleLocation(const db::Location& location, bool saveLocation, bool setSelection);
-    void HandleTargetState(db::TargetState state);
+    void HandleLocation(const cmajor::debugger::Location& location, bool saveLocation, bool setSelection);
+    void HandleTargetState(const cmajor::debugger::TargetState& state);
     void HandleTargetRunning();
     void HandleTargetInput();
-    void HandleTargetOutputRequest(const db::TargetOutputRequest& targetOutputRequest);
+    void HandleTargetOutputRequest(const cmajor::debugger::OutputRequest& outputRequest);
     void ConsoleInputReady();
     void HandleDebugServiceStopped();
     void HandleProcessTerminated();
@@ -158,6 +156,7 @@ private:
     void SetState(MainWindowState state_);
     void SetEditorState();
     void ResetDebugLocations();
+    void ResetBreakpoints();
     void SetEditorsReadOnly();
     void SetEditorsReadWrite();
     void SetFocusToEditor();
@@ -239,6 +238,7 @@ private:
     void OutputTabControlTabPageRemoved(wing::ControlEventArgs& args);
     void OutputTabControlTabPageSelected();
     wing::LogView* GetOutputLogView();
+    wing::LogView* GetDebugLog();
     cmajor::view::ErrorView* GetErrorView();
     void ViewError(cmajor::view::ViewErrorArgs& args);
     cmajor::view::Editor* CurrentEditor() const;
@@ -330,6 +330,7 @@ private:
     wing::TabPage* consoleTabPage;
     wing::Console* console;
     wing::TabPage* debugTabPage;
+    wing::LogView* debugLog;
     wing::StatusBar* statusBar;
     wing::TabPage* searchResultsTabPage;
     cmajor::view::SearchResultsView* searchResultsView;
@@ -369,7 +370,7 @@ private:
     std::vector<std::unique_ptr<wing::ClickAction>> clickActions;
     LocationList locations;
     std::unique_ptr<cmajor::service::Request> debugRequest;
-    db::Location savedLocation;
+    cmajor::debugger::Location savedLocation;
     std::vector<std::string> buildIndicatorTexts;
     std::vector<ExpressionEvaluateRequest> expressionEvaluateRequests;
     wing::ToolTip* toolTipWindow;

@@ -25,6 +25,12 @@ public:
     virtual ~JsonValue();
     virtual JsonValue* Clone() const = 0;
     JsonValueType Type() const { return type; }
+    bool IsObject() const { return type == JsonValueType::object; }
+    bool IsArray() const { return type == JsonValueType::array; }
+    bool IsString() const { return type == JsonValueType::string; }
+    bool IsNumber() const { return type == JsonValueType::number; }
+    bool IsBoolean() const { return type == JsonValueType::boolean; }
+    bool IsNull() const { return type == JsonValueType::null; }
     virtual std::string ToString() const = 0;
     virtual void Write(CodeFormatter& formatter);
 private:
@@ -108,3 +114,4 @@ public:
 };
 
 } // namespace util
+

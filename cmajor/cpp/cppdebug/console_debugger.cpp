@@ -34,7 +34,7 @@ ConsoleDebugger::ConsoleDebugger(const std::string& executable, const std::vecto
     bool breakOnThrow_) : Debugger(verbose_, breakOnThrow_, new ConsoleDebuggerOutputWriter(formatter_), executable, args), formatter(formatter_), console(console_),
     outFormatter(std::cout), errorFormatter(std::cerr)
 {
-    StartDebugging();
+    StartDebugging(true);
 }
 
 ConsoleDebugger::~ConsoleDebugger()

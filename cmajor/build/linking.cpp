@@ -58,9 +58,9 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
             bdp.remove_filename();
             std::filesystem::create_directories(bdp);
             std::string linkCommand = "g++";
+            linkCommand.append(" -g");
             linkCommand.append(" -L" + cmajorLibDir);
             linkCommand.append(" -L" + cmajorBinDir);
-            linkCommand.append(" -g");
             linkCommand.append(" -Xlinker --start-group");
             for (const auto& libraryFilePath : rootModule->LibraryFilePaths())
             {
@@ -69,7 +69,7 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
             linkCommand.append(" -Xlinker --end-group");
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
             {
-                util::LogMessage(-1, "Note: linking against debug runtime (cmajor.cpp.rt.debug.dll).");
+                util::LogMessage(-1, "Note: linking with debug runtime (cmajor.cpp.rt.debug.dll).");
                 linkCommand.append(" ").append(dynamicDebugRuntimeArg);
             }
             else

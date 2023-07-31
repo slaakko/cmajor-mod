@@ -3,19 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.service.breakpoint;
+module cmajor.debugger.breakpoint;
 
-namespace cmajor::service {
+namespace cmajor::debugger {
 
-Breakpoint::Breakpoint(int line_) : line(line_), condition(), disabled(false), info(), list(nullptr)
+Breakpoint::Breakpoint(int line_) : line(line_), condition(), disabled(false), list(nullptr), location()
 {
 }
 
-Breakpoint::Breakpoint(int line_, const std::string& condition_) : line(line_), condition(condition_), disabled(false), info(), list(nullptr)
+Breakpoint::Breakpoint(int line_, const std::string& condition_) : line(line_), condition(condition_), disabled(false), list(nullptr), location()
 {
 }
 
-Breakpoint::Breakpoint(int line_, const std::string& condition_, bool disabled_) : line(line_), condition(condition_), disabled(disabled_), info(), list(nullptr)
+Breakpoint::Breakpoint(int line_, const std::string& condition_, bool disabled_) : line(line_), condition(condition_), disabled(disabled_), list(nullptr), location()
 {
 }
 
@@ -58,7 +58,9 @@ struct ByLine
 {
     bool operator()(Breakpoint* left, Breakpoint* right) const
     {
-        return left->line < right->line;
+        int leftLine = left->LocationOrLine();
+        int rightLine = right->LocationOrLine();
+        return leftLine < rightLine;
     }
 };
 
@@ -70,7 +72,7 @@ Breakpoint* BreakpointList::GetBreakpoint(int line) const
     if (it != breakpoints.cend())
     {
         Breakpoint* foundBp = *it;
-        if (foundBp->line == line)
+        if (foundBp->LocationOrLine() == line)
         {
             return foundBp;
         }

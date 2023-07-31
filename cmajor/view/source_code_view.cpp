@@ -6,6 +6,7 @@
 module cmajor.view.source.code.view;
 
 import cmajor.view.debug.strip;
+import cmajor.debuggers;
 import cmajor.service;
 import cmajor.token;
 import wing;
@@ -161,7 +162,7 @@ void CmajorSourceCodeView::ToggleBreakpoint()
     if (debugStrip)
     {
         int line = CaretLine();
-        cmajor::service::Breakpoint* bp = debugStrip->GetBreakpoint(line);
+        cmajor::debugger::Breakpoint* bp = debugStrip->GetBreakpoint(line);
         if (bp)
         {
             debugStrip->RemoveBreakpoint(bp);
@@ -169,7 +170,7 @@ void CmajorSourceCodeView::ToggleBreakpoint()
         }
         else
         {
-            cmajor::service::Breakpoint* bp = new cmajor::service::Breakpoint(line);
+            cmajor::debugger::Breakpoint* bp = new cmajor::debugger::Breakpoint(line);
             debugStrip->AddBreakpoint(bp);
             debugStrip->Invalidate();
         }

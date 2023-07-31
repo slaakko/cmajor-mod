@@ -291,7 +291,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             }
         }
     }
-    catch (const soul::lexer::ParsingException& ex)
+    catch (const soul::lexer::ParsingException&)
     {
         throw;
     }

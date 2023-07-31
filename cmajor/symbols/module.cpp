@@ -1589,6 +1589,7 @@ void Module::WriteCmdbFile(const std::string& cmdbFilePath)
     util::BufferedStream bufferedStream(fileStream);
     util::BinaryStreamWriter cmdbWriter(bufferedStream);
     cmajor::debug::WriteCmdbFileTag(cmdbWriter);
+    cmajor::debug::WriteCmajorRootPrefix(cmdbWriter, cmajor::debug::GetCurrentCmajorRootPrefix());
     std::string mainProjectName = util::ToUtf8(name);
     cmajor::debug::WriteMainProjectName(cmdbWriter, mainProjectName);
     int32_t numProjects = 0;

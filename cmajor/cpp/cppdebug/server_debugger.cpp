@@ -506,7 +506,7 @@ std::unique_ptr<soul::xml::Element> ServerDebugger::ProcessStartRequest(const St
     StartDebugReply startDebugReply;
     try
     {
-        StartDebugging();
+        StartDebugging(true);
         startDebugReply.location = location;
         startDebugReply.state = state;
         OutputWriter()->WriteLogMessage("setting breakpoints...");

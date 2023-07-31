@@ -6,6 +6,7 @@
 export module cmajor.view.debug.strip;
 
 import cmajor.service;
+import cmajor.debuggers;
 import wing;
 
 export namespace cmajor::view {
@@ -13,7 +14,7 @@ export namespace cmajor::view {
 struct AddBreakpointEventArgs
 {
     AddBreakpointEventArgs();
-    cmajor::service::Breakpoint* breakpoint;
+    cmajor::debugger::Breakpoint* breakpoint;
 };
 
 struct RemoveBreakpointEventArgs
@@ -36,7 +37,7 @@ wing::Dock DefaultDebugStripDock();
 
 struct DebugStripCreateParams
 {
-    DebugStripCreateParams(cmajor::service::BreakpointList* breakpointList_);
+    DebugStripCreateParams(cmajor::debugger::BreakpointList* breakpointList_);
     DebugStripCreateParams& Defaults();
     DebugStripCreateParams& WindowClassName(const std::string& windowClassName_);
     DebugStripCreateParams& WindowClassStyle(uint32_t windowClassStyle_);
@@ -57,7 +58,7 @@ struct DebugStripCreateParams
     DebugStripCreateParams& Width(int width_);
     wing::ControlCreateParams controlCreateParams;
     wing::TextView* view;
-    cmajor::service::BreakpointList* breakpointList;
+    cmajor::debugger::BreakpointList* breakpointList;
     wing::Color breakpointColor;
     wing::Color transparentColor;
     wing::Point arrowOffset;
@@ -70,9 +71,9 @@ class DebugStrip : public wing::Control
 {
 public:
     DebugStrip(DebugStripCreateParams& createParams);
-    cmajor::service::Breakpoint* GetBreakpoint(int line) const;
-    void AddBreakpoint(cmajor::service::Breakpoint* breakpoint);
-    void RemoveBreakpoint(cmajor::service::Breakpoint* breakpoint);
+    cmajor::debugger::Breakpoint* GetBreakpoint(int line) const;
+    void AddBreakpoint(cmajor::debugger::Breakpoint* breakpoint);
+    void RemoveBreakpoint(cmajor::debugger::Breakpoint* breakpoint);
     const wing::SourceSpan& DebugLocation() const { return debugLocation; }
     void SetDebugLocation(const wing::SourceSpan& debugLocation_);
     void ResetDebugLocation();
@@ -84,7 +85,7 @@ protected:
     void OnPaint(wing::PaintEventArgs& args) override;
     void OnMouseDown(wing::MouseEventArgs& args) override;
     virtual void OnChangeBreakpoints(wing::CancelArgs& args);
-    virtual void OnBreakpointAdded(cmajor::service::Breakpoint* breakpoint);
+    virtual void OnBreakpointAdded(cmajor::debugger::Breakpoint* breakpoint);
     virtual void OnBreakpointRemoved(const std::string& breakpointId);
 private:
     void DrawArrow(wing::Graphics& graphics, const wing::PointF& location);
@@ -92,7 +93,7 @@ private:
     void ViewLineInserted(wing::LineEventArgs& args);
     void ViewLineDeleted(wing::LineEventArgs& args);
     wing::TextView* view;
-    cmajor::service::BreakpointList* breakpointList;
+    cmajor::debugger::BreakpointList* breakpointList;
     wing::SourceSpan debugLocation;
     int topLineNumber;
     wing::Point origin;

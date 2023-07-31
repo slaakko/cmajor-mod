@@ -147,7 +147,11 @@ void BuildService::ExecuteCommand()
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::release);
         }
-        else if (!buildCommand->config.empty() && buildCommand->config != "debug")
+        else if (buildCommand->config.empty() || buildCommand->config == "debug")
+        {
+            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo); 
+        }
+        else 
         {
             throw std::runtime_error("unknown configuration '" + buildCommand->config);
         }

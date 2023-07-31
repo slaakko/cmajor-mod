@@ -23,7 +23,10 @@ RemoveCmdbSessionFileGuard::~RemoveCmdbSessionFileGuard()
 {
     try
     {
-        std::filesystem::remove(cmdbSessionFilePath);
+        if (!cmdbSessionFilePath.empty())
+        {
+            std::filesystem::remove(cmdbSessionFilePath);
+        }
     }
     catch (...)
     {

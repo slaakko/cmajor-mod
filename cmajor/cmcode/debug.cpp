@@ -10,18 +10,33 @@ import util;
 
 namespace cmcode {
 
-cmajor::service::DebugServiceStartParams MakeDebugServiceStartParams(int pid, const std::string& backend, const std::string& config, cmajor::ast::Project* project, const std::string& programArguments)
+cmajor::service::DebugServiceStartParams MakeDebugServiceStartParams(const std::string& backend, const std::string& config, cmajor::ast::Project* project,
+    const std::string& programArguments)
 {
     cmajor::service::DebugServiceStartParams startParams;
-    return startParams.ProcessName("cmcode").Pid(pid).Backend(backend).Config(config).ProjectFilePath(project->FilePath()).ExecutableName(util::ToUtf8(project->Name())).
-        ProgramArguments(programArguments).DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait()).Verbose(ServerVerbose());
+    std::string projectFilePath = project->FilePath();
+    std::string executableName = util::ToUtf8(project->Name());
+    executableName.append(".exe");
+    std::string executableFilePath;
+    if (backend == "llvm")
+    {
+        executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(projectFilePath), "bin"), config),
+            executableName));
+    }
+    else if (backend == "cpp")
+    {
+        executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(
+            util::Path::GetDirectoryName(projectFilePath), "bin"), "cpp"), config), executableName));
+    }
+    return startParams.Backend(backend).Config(config).ExecutableFilePath(executableFilePath).ProgramArguments(programArguments);
 }
 
-void StartDebugService(int pid, const std::string& backend, const std::string& config, cmajor::ast::Project* project, const std::string& programArguments, 
-    const std::vector<cmajor::service::Breakpoint*>& breakpoints)
+void StartDebugService(const std::string& backend, const std::string& config, cmajor::ast::Project* project, const std::string& programArguments, 
+    const std::vector<cmajor::debugger::Breakpoint*>& breakpoints)
 {
-    cmajor::service::DebugServiceStartParams startParams = MakeDebugServiceStartParams(pid, backend, config, project, programArguments);
-    cmajor::service::PutRequest(new cmajor::service::StartDebugServiceRequest(startParams, breakpoints));
+    cmajor::service::DebugServiceStartParams startParams = MakeDebugServiceStartParams(backend, config, project, programArguments);
+    startParams.breakpoints = breakpoints;
+    cmajor::service::PutRequest(new cmajor::service::StartDebugServiceRequest(startParams));
 }
 
 } // namespace cmcode

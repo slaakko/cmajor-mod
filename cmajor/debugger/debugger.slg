@@ -1,0 +1,5 @@
+project cmajor.debugger.slg;
+tokens <reply.token>;
+keywords <reply.keyword>;
+expressions <reply.expr>;
+lexer <reply.lexer>;

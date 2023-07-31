@@ -76,7 +76,7 @@ public:
     {
         initializing, programStarted, running, stopped, programExitedNormally, programExited, signalReceived, exitingDebugger
     };
-    void StartDebugging();
+    void StartDebugging(bool startCmdbSession);
     void ResetRunningFlag() { wasRunning = false; }
     void ResetTargetOutputFlag() { targetOutput = false; }
     bool TargetWasRunning() const override { return wasRunning; }

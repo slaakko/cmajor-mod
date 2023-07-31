@@ -22,20 +22,20 @@ private:
     std::string processName;
 };
 
-class PutProgramInputLineRequest : public Request
+class PutRunServiceProgramInputLineRequest : public Request
 {
 public:
-    PutProgramInputLineRequest(const std::string& inputLine_);
+    PutRunServiceProgramInputLineRequest(const std::string& inputLine_);
     void Execute() override;
     std::string Name() const override;
 private:
     std::string inputLine;
 };
 
-class SetProgramEofRequest : public Request
+class SetRunServiceProgramEofRequest : public Request
 {
 public:
-    SetProgramEofRequest();
+    SetRunServiceProgramEofRequest();
     void Execute() override;
     std::string Name() const override;
 };

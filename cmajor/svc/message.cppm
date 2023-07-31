@@ -18,10 +18,12 @@ const int SM_SERVICE_MESSAGE_AVAILABLE = WM_USER + 1;
 enum class ServiceMessageKind : int
 {
     clearOutput = 0, outputMessage = 1, buildResult = 2, buildStoppedMessage = 3, getDefinitionReply = 5, getDefinitionError = 6,
-    startDebugReply = 7, startError = 8, continueReply = 9, nextReply = 10, stepReply = 11, finishReply = 12, untilReply = 13, breakReply = 14, deleteReply = 15, depthReply = 16, framesReply = 17,
-    evaluateReply = 18, countReply = 19, evaluateChildReply = 20, targetRunning = 21, targetInput = 22, targetOutput = 23, debugServiceStopped = 24, processTerminated = 25, runServiceStopped = 26,
-    loadEditModuleReply = 27, loadEditModuleError = 28, parseSourceReply = 29, parseSourceError = 30, resetEditModuleCacheReply = 31, resetEditModuleCacheError = 32,
-    getCCListReply = 33, getCCListError = 34, getParamHelpListReply = 35, getParamHelpListError = 36
+    startDebugReply = 7, startError = 8, execReply = 9, debugError = 10,
+    breakReply = 16, deleteReply = 17, depthReply = 18, framesReply = 19, errorReply = 20,
+    evaluateReply = 21, countReply = 22, evaluateChildReply = 23, targetRunning = 24, targetInput = 25, targetOutput = 26, debugServiceStopped = 27,
+    processTerminated = 28, runServiceStopped = 29,
+    loadEditModuleReply = 30, loadEditModuleError = 31, parseSourceReply = 32, parseSourceError = 33, resetEditModuleCacheReply = 34, resetEditModuleCacheError = 35,
+    getCCListReply = 36, getCCListError = 37, getParamHelpListReply = 38, getParamHelpListError = 39, clearDebugLog = 40, debugLogMessage = 41
 };
 
 class ServiceMessage
@@ -44,6 +46,21 @@ class OutputServiceMessage : public ServiceMessage
 {
 public:
     OutputServiceMessage(const std::string& text_);
+    const std::string& Text() const { return text; }
+private:
+    std::string text;
+};
+
+class ClearDebugLogMessage : public ServiceMessage
+{
+public:
+    ClearDebugLogMessage();
+};
+
+class DebugLogMessage : public ServiceMessage
+{
+public:
+    DebugLogMessage(const std::string& text_);
     const std::string& Text() const { return text; }
 private:
     std::string text;

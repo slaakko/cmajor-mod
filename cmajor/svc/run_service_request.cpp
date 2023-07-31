@@ -24,30 +24,30 @@ std::string StartProgramRequest::Name() const
     return "startProgramRequest";
 }
 
-PutProgramInputLineRequest::PutProgramInputLineRequest(const std::string& inputLine_) : inputLine(inputLine_)
+PutRunServiceProgramInputLineRequest::PutRunServiceProgramInputLineRequest(const std::string& inputLine_) : inputLine(inputLine_)
 {
 }
 
-void PutProgramInputLineRequest::Execute()
+void PutRunServiceProgramInputLineRequest::Execute()
 {
-    PutProgramTargetInputLine(inputLine);
+    PutRunServiceProgramTargetInputLine(inputLine);
 }
 
-std::string PutProgramInputLineRequest::Name() const
+std::string PutRunServiceProgramInputLineRequest::Name() const
 {
     return "putProgramInputLineRequest";
 }
 
-SetProgramEofRequest::SetProgramEofRequest()
+SetRunServiceProgramEofRequest::SetRunServiceProgramEofRequest()
 {
 }
 
-void SetProgramEofRequest::Execute()
+void SetRunServiceProgramEofRequest::Execute()
 {
-    SetProgramTargetInputEof();
+    SetRunServiceProgramTargetInputEof();
 }
 
-std::string SetProgramEofRequest::Name() const
+std::string SetRunServiceProgramEofRequest::Name() const
 {
     return "setProgramEofRequest";
 }

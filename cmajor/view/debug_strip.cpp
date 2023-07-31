@@ -56,7 +56,7 @@ wing::Dock DefaultDebugStripDock()
     return wing::Dock::left;
 }
 
-DebugStripCreateParams::DebugStripCreateParams(cmajor::service::BreakpointList* breakpointList_) : 
+DebugStripCreateParams::DebugStripCreateParams(cmajor::debugger::BreakpointList* breakpointList_) : 
     controlCreateParams(), view(nullptr), breakpointList(breakpointList_)
 {
     controlCreateParams.WindowClassName("cmajor.view.DebugStrip");
@@ -201,12 +201,12 @@ DebugStrip::DebugStrip(DebugStripCreateParams& createParams) :
     view->LineDeleted().AddHandler(this, &DebugStrip::ViewLineDeleted);
 }
 
-cmajor::service::Breakpoint* DebugStrip::GetBreakpoint(int line) const
+cmajor::debugger::Breakpoint* DebugStrip::GetBreakpoint(int line) const
 {
     return breakpointList->GetBreakpoint(line);
 }
 
-void DebugStrip::AddBreakpoint(cmajor::service::Breakpoint* breakpoint)
+void DebugStrip::AddBreakpoint(cmajor::debugger::Breakpoint* breakpoint)
 {
     bool cancel = false;
     wing::CancelArgs cancelArgs(cancel);
@@ -216,13 +216,13 @@ void DebugStrip::AddBreakpoint(cmajor::service::Breakpoint* breakpoint)
     OnBreakpointAdded(breakpoint);
 }
 
-void DebugStrip::RemoveBreakpoint(cmajor::service::Breakpoint* breakpoint)
+void DebugStrip::RemoveBreakpoint(cmajor::debugger::Breakpoint* breakpoint)
 {
     bool cancel = false;
     wing::CancelArgs cancelArgs(cancel);
     OnChangeBreakpoints(cancelArgs);
     if (cancel) return;
-    std::string breakpointId = breakpoint->info.breakpointId;
+    std::string breakpointId = breakpoint->id;
     breakpointList->RemoveBreakpoint(breakpoint);
     OnBreakpointRemoved(breakpointId);
 }
@@ -248,12 +248,17 @@ void DebugStrip::ResetDebugLocation()
 void DebugStrip::Update()
 {
     bool changed = false;
-    for (cmajor::service::Breakpoint* breakpoint : breakpointList->Breakpoints())
+    for (cmajor::debugger::Breakpoint* breakpoint : breakpointList->Breakpoints())
     {
-        if (breakpoint->disabled != !breakpoint->info.success)
+        bool hasId = !breakpoint->id.empty();
+        if (breakpoint->disabled != !hasId)
         {
             changed = true;
-            breakpoint->disabled = !breakpoint->info.success;
+            breakpoint->disabled = !hasId;
+        }
+        if (breakpoint->location.line != breakpoint->line)
+        {
+            changed = true;
         }
     }
     if (changed)
@@ -281,7 +286,7 @@ void DebugStrip::OnPaint(wing::PaintEventArgs& args)
         wing::SizeF size(s.Width, s.Width);
         for (int line = topLineNumber; line < topLineNumber + visibleLineCount; ++line)
         {
-            cmajor::service::Breakpoint* bp = GetBreakpoint(line);
+            cmajor::debugger::Breakpoint* bp = GetBreakpoint(line);
             wing::RectF r(o, size);
             r.Inflate(breakpointInflate.Width, breakpointInflate.Height);
             r.Offset(breakpointOffset.X, breakpointOffset.Y);
@@ -321,7 +326,7 @@ void DebugStrip::OnMouseDown(wing::MouseEventArgs& args)
         int line = static_cast<int>(location.Y / view->CharHeight() + 1);
         if (args.buttons == wing::MouseButtons::lbutton && args.clicks == 1)
         {
-            cmajor::service::Breakpoint* bp = GetBreakpoint(line);
+            cmajor::debugger::Breakpoint* bp = GetBreakpoint(line);
             if (bp)
             {
                 RemoveBreakpoint(bp);
@@ -329,7 +334,7 @@ void DebugStrip::OnMouseDown(wing::MouseEventArgs& args)
             }
             else
             {
-                cmajor::service::Breakpoint* bp = new cmajor::service::Breakpoint(line);
+                cmajor::debugger::Breakpoint* bp = new cmajor::debugger::Breakpoint(line);
                 AddBreakpoint(bp);
                 Invalidate();
             }
@@ -350,7 +355,7 @@ void DebugStrip::OnChangeBreakpoints(wing::CancelArgs& args)
     changeBreakpoints.Fire(args);
 }
 
-void DebugStrip::OnBreakpointAdded(cmajor::service::Breakpoint* breakpoint)
+void DebugStrip::OnBreakpointAdded(cmajor::debugger::Breakpoint* breakpoint)
 {
     AddBreakpointEventArgs args;
     args.breakpoint = breakpoint;
@@ -389,7 +394,7 @@ void DebugStrip::ViewLineInserted(wing::LineEventArgs& args)
 {
     bool changed = false;
     int line = args.lineIndex + 1 - 1;
-    for (cmajor::service::Breakpoint* breakpoint : breakpointList->Breakpoints())
+    for (cmajor::debugger::Breakpoint* breakpoint : breakpointList->Breakpoints())
     {
         if (breakpoint->line >= line)
         {
@@ -406,9 +411,9 @@ void DebugStrip::ViewLineInserted(wing::LineEventArgs& args)
 void DebugStrip::ViewLineDeleted(wing::LineEventArgs& args)
 {
     bool changed = false;
-    std::vector<cmajor::service::Breakpoint*> breakpointsToDelete;
+    std::vector<cmajor::debugger::Breakpoint*> breakpointsToDelete;
     int line = args.lineIndex + 1;
-    for (cmajor::service::Breakpoint* breakpoint : breakpointList->Breakpoints())
+    for (cmajor::debugger::Breakpoint* breakpoint : breakpointList->Breakpoints())
     {
         if (breakpoint->line == line)
         {
@@ -420,7 +425,7 @@ void DebugStrip::ViewLineDeleted(wing::LineEventArgs& args)
             changed = true;
         }
     }
-    for (cmajor::service::Breakpoint* breakpointToDelete : breakpointsToDelete)
+    for (cmajor::debugger::Breakpoint* breakpointToDelete : breakpointsToDelete)
     {
         breakpointList->RemoveBreakpoint(breakpointToDelete);
         changed = true;

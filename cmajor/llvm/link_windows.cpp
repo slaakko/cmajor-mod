@@ -41,7 +41,7 @@ void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::M
     std::string rtLibName = "cmajor.rt.lib";
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
     {
-        util::LogMessage(rootModule->LogStreamId(), "Note: linking against debug runtime (cmajor.rtd.dll).");
+        util::LogMessage(rootModule->LogStreamId(), "Note: linking with debug runtime (cmajor.rtd.dll).");
         rtLibName = "cmajor.rtd.lib";
     }
     argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), rtLibName))));

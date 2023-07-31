@@ -176,6 +176,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
     <ResourceCompile Include="..\cppdebug\cmajor.debug.command.lexer.classmap.rc" />
     <ResourceCompile Include="..\cppdebug\cmajor.debug.gdb.reply.lexer.classmap.rc" />
   </ItemGroup>

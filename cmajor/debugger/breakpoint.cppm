@@ -3,12 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.service.breakpoint;
+export module cmajor.debugger.breakpoint;
 
-import cmajor.debug.message;
+import cmajor.debugger.location;
 import std.core;
 
-export namespace cmajor::service {
+export namespace cmajor::debugger {
 
 class BreakpointList;
 
@@ -17,10 +17,12 @@ struct Breakpoint
     Breakpoint(int line_);
     Breakpoint(int line_, const std::string& condition_);
     Breakpoint(int line_, const std::string& condition_, bool disabled_);
+    int LocationOrLine() const { return location.line != 0 ? location.line : line; }
     int line;
     std::string condition;
     bool disabled;
-    db::BreakpointInfo info;
+    std::string id;
+    Location location;
     BreakpointList* list;
 };
 
@@ -62,4 +64,4 @@ private:
     bool changed;
 };
 
-} // namespace cmajor::service
+} // namespace cmajor::debugger

@@ -1,0 +1,164 @@
+// =================================
+// Copyright (c) 2023 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.debugger.reply.parser;
+
+[interface]import cmajor.debugger.value;
+[interface]import cmajor.debugger.record;
+[interface]import cmajor.debugger.reply;
+[implementation]import cmajor.debugger.reply.lexer;
+[implementation]import cmajor.debugger.reply.token;
+[implementation]import cmajor.debugger.token.value.parser;
+[implementation]import util;
+
+parser ReplyParser
+{
+    lexer reply::lexer::ReplyLexer<char32_t>;
+    main;
+
+    Reply(var std::unique_ptr<cmajor::debugger::Reply> reply) : cmajor::debugger::Reply*
+        ::= 
+        (
+            empty{ reply.reset(new cmajor::debugger::Reply()); }
+            (
+                Record:record{ reply->Add(record); }
+            )*
+        )
+        {
+            return reply.release();
+        }
+        ;
+
+    Record : cmajor::debugger::Record*
+        ::= Prompt:prompt{ return prompt; }
+        |   ResultRecord:resultRecord{ return resultRecord;}
+        |   StreamRecord:streamRecord{ return streamRecord;}
+        |   AsyncRecord:asyncRecord{ return asyncRecord;}
+        ;
+
+    Prompt : cmajor::debugger::Record*
+        ::= (LPAREN GDB RPAREN){ return new cmajor::debugger::Prompt(); }
+        ;
+
+    ResultRecord(var cmajor::debugger::ResultRecordKind kind) : cmajor::debugger::Record*
+        ::= 
+        (   CARET 
+            (   DONE{ kind = cmajor::debugger::ResultRecordKind::done;}
+            |   RUNNING{ kind = cmajor::debugger::ResultRecordKind::running;}
+            |   CONNECTED{ kind = cmajor::debugger::ResultRecordKind::connected;}
+            |   ERROR{ kind = cmajor::debugger::ResultRecordKind::error;}
+            |   EXIT{ kind = cmajor::debugger::ResultRecordKind::exit;}
+            )
+            Results:results
+        )
+        {
+            return new cmajor::debugger::ResultRecord(kind, std::move(results));
+        }
+        ;
+
+    StreamRecord : cmajor::debugger::Record*
+        ::= TILDE Output:output{ return new cmajor::debugger::StreamRecord(cmajor::debugger::StreamRecordKind::console, output); }
+        |   AT Output:output{ return new cmajor::debugger::StreamRecord(cmajor::debugger::StreamRecordKind::target, output); }
+        |   AMP Output:output{ return new cmajor::debugger::StreamRecord(cmajor::debugger::StreamRecordKind::log, output); }
+        ;
+
+    AsyncRecord : cmajor::debugger::Record*
+        ::= ExecRecord:execRecord{ return execRecord;}
+        |   StatusRecord:statusRecord{ return statusRecord; }
+        |   NotifyRecord:notifyRecord{ return notifyRecord; }
+        ;
+
+    ExecRecord : cmajor::debugger::Record*
+        ::= 
+        (
+            AST Class:asyncClass Results:results
+        )
+        {
+            return new cmajor::debugger::AsyncRecord(cmajor::debugger::AsyncRecordKind::exec, asyncClass, results); 
+        }
+        ;
+
+    StatusRecord : cmajor::debugger::Record*
+        ::=
+        (
+            PLUS Class:asyncClass Results:results
+        )
+        {
+            return new cmajor::debugger::AsyncRecord(cmajor::debugger::AsyncRecordKind::status, asyncClass, results); 
+        }
+        ;
+
+    NotifyRecord : cmajor::debugger::Record*
+        ::= 
+        (
+            EQ Class:asyncClass Results:results
+        )
+        {
+            return new cmajor::debugger::AsyncRecord(cmajor::debugger::AsyncRecordKind::notify, asyncClass, results); 
+        }
+        ;
+
+    Class : cmajor::debugger::AsyncClass
+        ::= RUNNING{ return cmajor::debugger::AsyncClass::running; }
+        |   STOPPED{ return cmajor::debugger::AsyncClass::stopped; }
+        |   NAME{ return cmajor::debugger::ParseAsyncClass(lexer.FileName(), lexer.GetToken(pos)); } 
+        ;
+
+    Results(var std::unique_ptr<cmajor::debugger::Results> results) : cmajor::debugger::Results*
+        ::= empty{ results.reset(new cmajor::debugger::Results()); }
+        (
+            (COMMA Item:item{ results->Add(item); })*
+        )
+        {
+            return results.release();
+        }
+        ;
+
+    Item(var std::string name) : cmajor::debugger::Item*
+        ::= NAME{ name = util::ToUtf8(lexer.GetToken(pos).ToString()); } EQ Value:value{ return new cmajor::debugger::Item(name, value); }
+        ;
+
+    Value : cmajor::debugger::Value*
+        ::= StringValue:stringValue{ return stringValue; }
+        |   TupleValue:tupleValue{ return tupleValue; }
+        |   ListValue:listValue{ return listValue;}
+        ;
+
+    StringValue : cmajor::debugger::Value*
+        ::= STRING{ return new cmajor::debugger::String(util::ToUtf8(cmajor::debugger::ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos)))); }
+        ;
+
+    TupleValue(var std::unique_ptr<cmajor::debugger::Tuple> tuple, var std::unique_ptr<cmajor::debugger::Item> item) : cmajor::debugger::Value*
+        ::= 
+        (
+            LBRACE{ tuple.reset(new cmajor::debugger::Tuple()); }
+            (
+                (Item:itm{ item.reset(itm); tuple->Add(item->Name(), item->ReleaseValue()); }) % COMMA
+            )?
+            RBRACE
+        )
+        {
+            return tuple.release();
+        }
+        ;
+
+    ListValue(var std::unique_ptr<cmajor::debugger::List> list) : cmajor::debugger::Value*
+        ::= 
+        (
+            LBRACKET{ list.reset(new cmajor::debugger::List()); }
+            (   Item:item{ list->Add(item); }
+            |   Value:value{ list->Add(new cmajor::debugger::Item("", value)); }
+            )*
+            RBRACKET
+        )
+        {
+            return list.release();
+        }
+        ;
+
+    Output : std::string
+        ::= STRING{ return util::ToUtf8(cmajor::debugger::ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos))); }
+        ;
+}

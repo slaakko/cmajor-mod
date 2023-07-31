@@ -378,7 +378,7 @@ Debugger::Debugger(bool verbose_, bool breakOnThrow_, DebuggerOutputWriter* outp
 {
 }
 
-void Debugger::StartDebugging()
+void Debugger::StartDebugging(bool startCmdbSession)
 {
     std::string cmdbFilePath;
     if (executable.ends_with(".exe"))
@@ -403,15 +403,18 @@ void Debugger::StartDebugging()
         throw std::runtime_error("error: debug information '" + cmdbFilePath + "' file for executable '" + executable + "' not found");
     }
     std::string cmdbSessionFilePath;
-    if (executable.ends_with(".exe"))
+    if (startCmdbSession)
     {
-        cmdbSessionFilePath = util::Path::ChangeExtension(executable, ".cmdbs");
+        if (executable.ends_with(".exe"))
+        {
+            cmdbSessionFilePath = util::Path::ChangeExtension(executable, ".cmdbs");
+        }
+        else
+        {
+            cmdbSessionFilePath = executable + ".cmdbs";
+        }
+        StartCmdbSession(cmdbSessionFilePath, OutputWriter(), this, Verbose());
     }
-    else
-    {
-        cmdbSessionFilePath = executable + ".cmdbs";
-    }
-    StartCmdbSession(cmdbSessionFilePath, OutputWriter(), this, Verbose());
     RemoveCmdbSessionFileGuard removeSessionFileGuard(cmdbSessionFilePath);
     if (Verbose())
     {
@@ -650,6 +653,27 @@ bool Debugger::Run()
     ClearBrowsingData();
     GdbExecRunCommand execRunCommand;
     bool succeeded = ExecuteGDBCommand(execRunCommand);
+    if (state == State::stopped)
+    {
+        if (stoppedInstruction != nullptr)
+        {
+            if (stoppedInstruction->CppLineIndex() == 0 && IsStopInstruction(stoppedInstruction))
+            {
+                AddStopResultToResult();
+                WriteResult(result.get(), stoppedInstruction);
+            }
+        }
+    }
+    else
+    {
+        AddStopResultToResult();
+        Instruction* instruction = nullptr;
+        if (state != State::programExitedNormally && state != State::programExited)
+        {
+            instruction = stoppedInstruction;
+        }
+        WriteResult(result.get(), instruction);
+    }
     return succeeded;
 }
 
