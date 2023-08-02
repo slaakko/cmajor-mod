@@ -21,9 +21,9 @@ struct Breakpoint
     int line;
     std::string condition;
     bool disabled;
-    std::string id;
     Location location;
     BreakpointList* list;
+    std::vector<std::string> ids;
 };
 
 class BreakpointCollection;

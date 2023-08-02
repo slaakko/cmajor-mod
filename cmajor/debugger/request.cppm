@@ -11,7 +11,7 @@ export namespace cmajor::debugger {
 
 enum class RequestKind
 {
-    run, cont, exit, breakInsert
+    run, cont, next, step, exit, breakInsert, frames
 };
 
 class Request
@@ -41,6 +41,20 @@ public:
     std::string ToString() const override;
 };
 
+class NextRequest : public Request
+{
+public:
+    NextRequest();
+    std::string ToString() const override;
+};
+
+class StepRequest : public Request
+{
+public:
+    StepRequest();
+    std::string ToString() const override;
+};
+
 class ExitRequest : public Request
 {
 public:
@@ -55,6 +69,16 @@ public:
     std::string ToString() const override;
 private:
     std::string location;
+};
+
+class FramesRequest : public Request
+{
+public:
+    FramesRequest(int lowFrame_, int highFrame_);
+    std::string ToString() const override;
+private:
+    int lowFrame;
+    int highFrame;
 };
 
 } // namespace cmajor::debugger

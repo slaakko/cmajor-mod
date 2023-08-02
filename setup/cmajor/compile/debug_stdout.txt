@@ -1,0 +1,6 @@
+MSBuild version 17.6.3+07e294721 for .NET Framework
+
+  data.cpp
+  main.cpp
+  Generating Code...
+  setup.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Debug\setupd.exe

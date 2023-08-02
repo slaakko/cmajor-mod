@@ -1558,13 +1558,14 @@ void Module::AddCompileUnitId(const std::string& compileUnitId)
     allCompileUnitIds.insert(compileUnitId);
 }
 
-void Module::WriteProjectDebugInfoFile(const std::string& projectDebufInfoFilePath)
+void Module::WriteProjectDebugInfoFile(const std::string& projectDebugInfoFilePath)
 {
-    util::FileStream fileStream(projectDebufInfoFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::FileStream fileStream(projectDebugInfoFilePath, util::OpenMode::write | util::OpenMode::binary);
     util::BufferedStream bufferedStream(fileStream);
     util::BinaryStreamWriter writer(bufferedStream);
     int32_t numCompileUnits = fileTable.NumFilePaths();
-    cmajor::debug::WriteProjectTableHeader(writer, util::ToUtf8(name), util::Path::GetDirectoryName(originalFilePath), Id(), numCompileUnits, functionIndex.GetMainFunctionId());
+    cmajor::debug::WriteProjectTableHeader(writer, util::ToUtf8(name), 
+        util::Path::GetDirectoryName(originalFilePath), cmajor::debug::GetCurrentCmajorRootPrefix(), Id(), numCompileUnits, functionIndex.GetMainFunctionId());
     for (int32_t i = 0; i < numCompileUnits; ++i)
     {
         std::string compileUnitBaseName = util::Path::GetFileNameWithoutExtension(fileTable.GetFilePath(i));
@@ -1589,7 +1590,6 @@ void Module::WriteCmdbFile(const std::string& cmdbFilePath)
     util::BufferedStream bufferedStream(fileStream);
     util::BinaryStreamWriter cmdbWriter(bufferedStream);
     cmajor::debug::WriteCmdbFileTag(cmdbWriter);
-    cmajor::debug::WriteCmajorRootPrefix(cmdbWriter, cmajor::debug::GetCurrentCmajorRootPrefix());
     std::string mainProjectName = util::ToUtf8(name);
     cmajor::debug::WriteMainProjectName(cmdbWriter, mainProjectName);
     int32_t numProjects = 0;
@@ -1614,11 +1614,12 @@ void Module::WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numPr
     util::BinaryStreamReader pdiReader(bufferedStream);
     std::string projectName;
     std::string projectDirectoryPath;
+    std::string cmajorRootPrefix;
     util::uuid moduleId;
     int32_t numCompileUnits;
     util::uuid mainFunctionId;
-    cmajor::debug::ReadProjectTableHeader(pdiReader, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
-    cmajor::debug::WriteProjectTableHeader(cmdbWriter, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
+    cmajor::debug::ReadProjectTableHeader(pdiReader, projectName, projectDirectoryPath, cmajorRootPrefix, moduleId, numCompileUnits, mainFunctionId);
+    cmajor::debug::WriteProjectTableHeader(cmdbWriter, projectName, projectDirectoryPath, cmajorRootPrefix, moduleId, numCompileUnits, mainFunctionId);
     for (int32_t i = 0; i < numCompileUnits; ++i)
     {
         std::string compileUnitBaseName;

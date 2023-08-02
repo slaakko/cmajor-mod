@@ -215,7 +215,7 @@ public:
     const std::set<std::string>& AllCompileUnitIds() const { return allCompileUnitIds; }
     FunctionIndex& GetFunctionIndex() { return functionIndex; }
     TypeIndex& GetTypeIndex() { return typeIndex; }
-    void WriteProjectDebugInfoFile(const std::string& projectDebufInfoFilePath);
+    void WriteProjectDebugInfoFile(const std::string& projectDebugInfoFilePath);
     void WriteCmdbFile(const std::string& cmdbFilePath);
     void WriteDebugInfo(util::BinaryStreamWriter& cmdbWriter, int32_t& numProjects, Module* rootModule);
     std::unordered_map<int16_t, std::string>* GetModuleNameTable() { return &moduleNameTable; }

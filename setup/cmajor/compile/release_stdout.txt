@@ -1,0 +1,9 @@
+MSBuild version 17.6.3+07e294721 for .NET Framework
+
+  data.cpp
+  main.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 13939 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  setup.vcxproj -> C:\work\cmajor-mod\setup\cmajor\program\x64\Release\setup.exe

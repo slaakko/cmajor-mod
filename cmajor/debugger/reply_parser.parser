@@ -148,9 +148,11 @@ parser ReplyParser
         ::= 
         (
             LBRACKET{ list.reset(new cmajor::debugger::List()); }
-            (   Item:item{ list->Add(item); }
-            |   Value:value{ list->Add(new cmajor::debugger::Item("", value)); }
-            )*
+            (
+                (   Item:item{ list->Add(item); }
+                |   Value:value{ list->Add(new cmajor::debugger::Item("", value)); }
+                ) % COMMA
+            )?
             RBRACKET
         )
         {

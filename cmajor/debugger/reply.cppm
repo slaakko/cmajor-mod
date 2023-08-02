@@ -7,6 +7,7 @@ export module cmajor.debugger.reply;
 
 import cmajor.debugger.record;
 import cmajor.debugger.location;
+import cmajor.debug;
 import soul.xml.dom;
 import soul.xml.xpath;
 import std.core;
@@ -32,8 +33,12 @@ public:
     StopReason GetStopReason() const { return stopReason; }
     const Location& GetLocation() const { return location; }
     void SetLocation(const Location& location_) { location = location_; }
-    soul::xml::Element* Xml();
     std::unique_ptr<soul::xml::xpath::NodeSet> Evaluate(const std::string& keyPath);
+    cmajor::debug::Instruction* StoppedInstruction() const { return stoppedInstruction; }
+    void SetStoppedInstruction(cmajor::debug::Instruction* stoppedInstruction_) { stoppedInstruction = stoppedInstruction_; }
+    int ExitCode() const { return exitCode; }
+    void SetExitCode(int exitCode_) { exitCode = exitCode_; }
+    soul::xml::Element* ToXml();
 private:
     std::vector<std::unique_ptr<Record>> records;
     std::unique_ptr<soul::xml::Element> xml;
@@ -42,6 +47,8 @@ private:
     ResultRecord* resultRecord;
     StopReason stopReason;
     Location location;
+    int exitCode;
+    cmajor::debug::Instruction* stoppedInstruction;
 };
 
 } // namespace cmajor::debugger

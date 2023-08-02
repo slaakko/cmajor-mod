@@ -1916,23 +1916,26 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
                     soul::parser::Match* parentMatch5 = &match;
                     {
                         soul::parser::Match match(true);
+                        int64_t save = lexer.GetPos();
                         soul::parser::Match* parentMatch6 = &match;
                         {
-                            while (true)
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch7 = &match;
                             {
-                                int64_t save = lexer.GetPos();
+                                soul::parser::Match match(false);
+                                soul::parser::Match* parentMatch8 = &match;
                                 {
                                     soul::parser::Match match(false);
-                                    soul::parser::Match* parentMatch7 = &match;
+                                    soul::parser::Match* parentMatch9 = &match;
                                     {
                                         soul::parser::Match match(false);
-                                        soul::parser::Match* parentMatch8 = &match;
+                                        soul::parser::Match* parentMatch10 = &match;
                                         switch (*lexer)
                                         {
                                             case NAME:
                                             {
                                                 soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch9 = &match;
+                                                soul::parser::Match* parentMatch11 = &match;
                                                 {
                                                     int64_t pos = lexer.GetPos();
                                                     soul::parser::Match match = ReplyParser<LexerT>::Item(lexer);
@@ -1941,11 +1944,11 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
                                                     {
                                                         list->Add(item.release());
                                                     }
-                                                    *parentMatch9 = match;
+                                                    *parentMatch11 = match;
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    *parentMatch8 = match;
+                                                    *parentMatch10 = match;
                                                 }
                                                 break;
                                             }
@@ -1954,7 +1957,7 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
                                             case STRING:
                                             {
                                                 soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch10 = &match;
+                                                soul::parser::Match* parentMatch12 = &match;
                                                 {
                                                     int64_t pos = lexer.GetPos();
                                                     soul::parser::Match match = ReplyParser<LexerT>::Value(lexer);
@@ -1963,27 +1966,128 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
                                                     {
                                                         list->Add(new cmajor::debugger::Item("", value.release()));
                                                     }
-                                                    *parentMatch10 = match;
+                                                    *parentMatch12 = match;
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    *parentMatch8 = match;
+                                                    *parentMatch10 = match;
                                                 }
                                                 break;
                                             }
                                         }
-                                        *parentMatch7 = match;
+                                        *parentMatch9 = match;
                                     }
-                                    if (match.hit)
-                                    {
-                                        *parentMatch6 = match;
-                                    }
-                                    else
-                                    {
-                                        lexer.SetPos(save);
-                                        break;
-                                    }
+                                    *parentMatch8 = match;
                                 }
+                                if (match.hit)
+                                {
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch13 = &match;
+                                    {
+                                        soul::parser::Match match(true);
+                                        soul::parser::Match* parentMatch14 = &match;
+                                        {
+                                            while (true)
+                                            {
+                                                int64_t save = lexer.GetPos();
+                                                {
+                                                    soul::parser::Match match(false);
+                                                    soul::parser::Match* parentMatch15 = &match;
+                                                    {
+                                                        soul::parser::Match match(false);
+                                                        if (*lexer == COMMA)
+                                                        {
+                                                            ++lexer;
+                                                            match.hit = true;
+                                                        }
+                                                        *parentMatch15 = match;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        soul::parser::Match match(false);
+                                                        soul::parser::Match* parentMatch16 = &match;
+                                                        {
+                                                            soul::parser::Match match(false);
+                                                            soul::parser::Match* parentMatch17 = &match;
+                                                            {
+                                                                soul::parser::Match match(false);
+                                                                soul::parser::Match* parentMatch18 = &match;
+                                                                switch (*lexer)
+                                                                {
+                                                                    case NAME:
+                                                                    {
+                                                                        soul::parser::Match match(false);
+                                                                        soul::parser::Match* parentMatch19 = &match;
+                                                                        {
+                                                                            int64_t pos = lexer.GetPos();
+                                                                            soul::parser::Match match = ReplyParser<LexerT>::Item(lexer);
+                                                                            item.reset(static_cast<cmajor::debugger::Item*>(match.value));
+                                                                            if (match.hit)
+                                                                            {
+                                                                                list->Add(item.release());
+                                                                            }
+                                                                            *parentMatch19 = match;
+                                                                        }
+                                                                        if (match.hit)
+                                                                        {
+                                                                            *parentMatch18 = match;
+                                                                        }
+                                                                        break;
+                                                                    }
+                                                                    case LBRACE:
+                                                                    case LBRACKET:
+                                                                    case STRING:
+                                                                    {
+                                                                        soul::parser::Match match(false);
+                                                                        soul::parser::Match* parentMatch20 = &match;
+                                                                        {
+                                                                            int64_t pos = lexer.GetPos();
+                                                                            soul::parser::Match match = ReplyParser<LexerT>::Value(lexer);
+                                                                            value.reset(static_cast<cmajor::debugger::Value*>(match.value));
+                                                                            if (match.hit)
+                                                                            {
+                                                                                list->Add(new cmajor::debugger::Item("", value.release()));
+                                                                            }
+                                                                            *parentMatch20 = match;
+                                                                        }
+                                                                        if (match.hit)
+                                                                        {
+                                                                            *parentMatch18 = match;
+                                                                        }
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                *parentMatch17 = match;
+                                                            }
+                                                            *parentMatch16 = match;
+                                                        }
+                                                        *parentMatch15 = match;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        *parentMatch14 = match;
+                                                    }
+                                                    else
+                                                    {
+                                                        lexer.SetPos(save);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        *parentMatch13 = match;
+                                    }
+                                    *parentMatch8 = match;
+                                }
+                                *parentMatch7 = match;
+                            }
+                            if (match.hit)
+                            {
+                                *parentMatch6 = match;
+                            }
+                            else
+                            {
+                                lexer.SetPos(save);
                             }
                         }
                         *parentMatch5 = match;
@@ -1995,7 +2099,7 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch11 = &match;
+                soul::parser::Match* parentMatch21 = &match;
                 {
                     soul::parser::Match match(false);
                     if (*lexer == RBRACKET)
@@ -2003,7 +2107,7 @@ soul::parser::Match ReplyParser<LexerT>::ListValue(LexerT& lexer)
                         ++lexer;
                         match.hit = true;
                     }
-                    *parentMatch11 = match;
+                    *parentMatch21 = match;
                 }
                 *parentMatch2 = match;
             }

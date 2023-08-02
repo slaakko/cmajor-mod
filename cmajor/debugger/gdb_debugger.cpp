@@ -8,6 +8,7 @@ module cmajor.gdb.debugger;
 import cmajor.debugger.reply.lexer;
 import cmajor.debugger.reply.parser;
 import cmajor.debugger.message.writer;
+import cmajor.debugger.util;
 
 namespace cmajor::debugger {
 
@@ -46,55 +47,7 @@ void OutputWriter::WriteWarning(const std::string& warning)
     }
 }
 
-cmajor::debug::Frame GetCppFrame(Results* results)
-{
-    cmajor::debug::Frame frame;
-    if (results && !results->IsEmpty())
-    {
-        Value* value = results->Get("frame");
-        if (value && value->IsTuple())
-        {
-            Tuple* tuple = static_cast<Tuple*>(value);
-            frame.level = tuple->GetInt("level");
-            frame.func = tuple->GetString("func");
-            frame.file = tuple->GetString("file");
-            frame.line = tuple->GetInt("line");
-        }
-    }
-    return frame;
-}
-
-Tuple* MakeFrameTuple(const cmajor::debug::Frame& frame)
-{
-    Tuple* tuple = new Tuple();
-    if (frame.level != 0)
-    {
-        tuple->Add("level", new String(std::to_string(frame.level)));
-    }
-    if (!frame.func.empty())
-    {
-        tuple->Add("func", new String(frame.func));
-    }
-    if (!frame.file.empty())
-    {
-        tuple->Add("file", new String(frame.file));
-    }
-    if (frame.line != 0)
-    {
-        tuple->Add("line", new String(std::to_string(frame.line)));
-    }
-    if (frame.scol != 0)
-    {
-        tuple->Add("scol", new String(std::to_string(frame.scol)));
-    }
-    if (frame.ecol != 0)
-    {
-        tuple->Add("ecol", new String(std::to_string(frame.ecol)));
-    }
-    return tuple;
-}
-
-GDBDebugger::GDBDebugger() : exited(false), gdbExitCode(0), outputWriter(new OutputWriter(nullptr))
+GDBDebugger::GDBDebugger() : exited(false), gdbExitCode(0), outputWriter(new OutputWriter(nullptr)), stoppedInstruction(nullptr)
 {
 }
 
@@ -231,13 +184,23 @@ std::unique_ptr<Reply> GDBDebugger::ReadReply(Request* request)
                         {
                             StopReason reason = ParseStopReason(reasonText);
                             reply->SetStopReason(reason);
+                            if (reason == StopReason::exited)
+                            {
+                                std::string exitCodeStr = results->GetString("exit-code");
+                                if (!exitCodeStr.empty())
+                                {
+                                    int exitCode = std::stoi(exitCodeStr);
+                                    reply->SetExitCode(exitCode);
+                                }
+                            }
                         }
-                        cmajor::debug::Frame cppFrame = GetCppFrame(results);
+                        cmajor::debug::Frame cppFrame = GetCppFrame(results, debugInfo.get());
                         if (!cppFrame.IsEmpty())
                         {
-                            cmajor::debug::Instruction* stoppedInstruction = debugInfo->GetInstruction(cppFrame, *outputWriter);
+                            stoppedInstruction = debugInfo->GetInstruction(cppFrame, *outputWriter);
                             if (stoppedInstruction)
                             {
+                                reply->SetStoppedInstruction(stoppedInstruction);
                                 cmajor::debug::Frame cmajorFrame = stoppedInstruction->GetCmajorFrame();
                                 if (!cmajorFrame.IsEmpty())
                                 {
@@ -281,12 +244,147 @@ std::unique_ptr<Reply> GDBDebugger::Continue()
 
 std::unique_ptr<Reply> GDBDebugger::Next()
 {
-    return std::unique_ptr<Reply>();
+    cmajor::debug::Instruction* prevStoppedInstruction = stoppedInstruction;
+    std::set<cmajor::debug::Instruction*> nextSet;
+    if (stoppedInstruction)
+    {
+        cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
+    }
+    while (true)
+    {
+        NextRequest nextRequest;
+        std::unique_ptr<Reply> nextReply = Execute(&nextRequest);
+        ResultRecord* resultRecord = nextReply->GetResultRecord();
+        if (resultRecord && resultRecord->IsError())
+        {
+            throw std::runtime_error(resultRecord->ErrorMessage());
+        }
+        StopReason stopReason = nextReply->GetStopReason();
+        switch (stopReason)
+        {
+            case StopReason::exitedNormally:
+            case StopReason::exited:
+            case StopReason::exitedSignaled:
+            case StopReason::signalReceived:
+            {
+                return nextReply;
+            }
+            case StopReason::endSteppingRange:
+            case StopReason::breakpointHit:
+            {
+                if (stoppedInstruction)
+                {
+                    cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
+                    bool foundInNextSet = nextSet.find(stoppedInstruction) != nextSet.end();
+                    if (stoppedInstruction->CppLineIndex() == 0)
+                    {
+                        if (stoppedInstruction->IsStopInstruction() || foundInNextSet)
+                        {
+                            if (prevStoppedInstruction == nullptr ||
+                                prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction() ||
+                                stoppedInstruction->GetSourceSpan().line > prevStoppedInstruction->GetSourceSpan().line || 
+                                foundInNextSet)
+                            {
+                                return nextReply;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (prevStoppedInstruction == nullptr ||
+                            prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction())
+                        {
+                            if (stoppedInstruction->IsStopInstruction())
+                            {
+                                return nextReply;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
 }
 
 std::unique_ptr<Reply> GDBDebugger::Step()
 {
-    return std::unique_ptr<Reply>();
+    bool step = true;
+    if (stoppedInstruction && stoppedInstruction->AtEndBrace())
+    {
+        step = false;
+        FramesRequest framesRequest(1, 1); // parent frame
+        std::unique_ptr<Reply> framesReply = Execute(&framesRequest);
+        if (StackFrameHasLine(framesReply.get()))
+        {
+            step = true;
+        }
+    }
+    if (!step)
+    {
+        return Next();
+    }
+    std::set<cmajor::debug::Instruction*> nextSet;
+    if (stoppedInstruction)
+    {
+        cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
+    }
+    cmajor::debug::Instruction* prevStoppedInstruction = stoppedInstruction;
+    while (true)
+    {
+        StepRequest stepRequest;
+        std::unique_ptr<Reply> stepReply = Execute(&stepRequest);
+        ResultRecord* resultRecord = stepReply->GetResultRecord();
+        if (resultRecord && resultRecord->IsError())
+        {
+            throw std::runtime_error(resultRecord->ErrorMessage());
+        }
+        StopReason stopReason = stepReply->GetStopReason();
+        switch (stopReason)
+        {
+            case StopReason::exitedNormally:
+            case StopReason::exited:
+            case StopReason::exitedSignaled:
+            case StopReason::signalReceived:
+            {
+                return stepReply;
+            }
+            case StopReason::endSteppingRange:
+            case StopReason::breakpointHit:
+            {
+                if (stoppedInstruction)
+                {
+                    cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
+                    bool foundInNextSet = nextSet.find(stoppedInstruction) != nextSet.end();
+                    if (stoppedInstruction->CppLineIndex() == 0)
+                    {
+                        if (stoppedInstruction->IsStopInstruction() || foundInNextSet)
+                        {
+                            if (prevStoppedInstruction == nullptr ||
+                                prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction() ||
+                                stoppedInstruction->GetSourceSpan().line > prevStoppedInstruction->GetSourceSpan().line ||
+                                foundInNextSet)
+                            {
+                                return stepReply;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (prevStoppedInstruction == nullptr ||
+                            prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction())
+                        {
+                            if (stoppedInstruction->IsStopInstruction())
+                            {
+                                return stepReply;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
 }
 
 std::unique_ptr<Reply> GDBDebugger::Finish()
@@ -313,6 +411,8 @@ void GDBDebugger::SetBreakpoint(Breakpoint* breakpoint)
 {
     cmajor::debug::SourceLocation breakpointLocation(breakpoint->list->FilePath(), breakpoint->line);
     std::vector<cmajor::debug::Instruction*> instructions = debugInfo->GetSourceFileMap().GetInstructions(breakpointLocation);
+    breakpoint->ids.clear();
+    breakpoint->disabled = true;
     for (const auto& instruction : instructions)
     {
         BreakInsertRequest request(instruction->GetExplicitCppLocationArgs());
@@ -338,21 +438,17 @@ void GDBDebugger::SetBreakpoint(Breakpoint* breakpoint)
                 }
                 if (breakpointId.empty())
                 {
-                    breakpoint->id.clear();
-                    breakpoint->disabled = true;
                     messageWriter->WriteMessage("> error setting breakpoint: 'number' field not found in reply");
                 }
                 else
                 {
-                    breakpoint->id = breakpointId;
+                    breakpoint->ids.push_back(breakpointId);
                     breakpoint->disabled = false;
-                    messageWriter->WriteMessage("> breakpoint " + breakpoint->id + " set");
+                    messageWriter->WriteMessage("> breakpoint " + breakpointId + " set");
                 }
             }
             else if (resultRecord->IsError())
             {
-                breakpoint->id.clear();
-                breakpoint->disabled = true;
                 messageWriter->WriteMessage("> error setting breakpoint: " + resultRecord->ErrorMessage());
             }
         }

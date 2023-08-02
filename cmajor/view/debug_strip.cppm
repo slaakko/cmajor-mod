@@ -86,7 +86,7 @@ protected:
     void OnMouseDown(wing::MouseEventArgs& args) override;
     virtual void OnChangeBreakpoints(wing::CancelArgs& args);
     virtual void OnBreakpointAdded(cmajor::debugger::Breakpoint* breakpoint);
-    virtual void OnBreakpointRemoved(const std::string& breakpointId);
+    virtual void OnBreakpointRemoved(cmajor::debugger::Breakpoint* breakpoint);
 private:
     void DrawArrow(wing::Graphics& graphics, const wing::PointF& location);
     void ViewContentLocationChanged();

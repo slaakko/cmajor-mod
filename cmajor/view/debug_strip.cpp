@@ -222,9 +222,7 @@ void DebugStrip::RemoveBreakpoint(cmajor::debugger::Breakpoint* breakpoint)
     wing::CancelArgs cancelArgs(cancel);
     OnChangeBreakpoints(cancelArgs);
     if (cancel) return;
-    std::string breakpointId = breakpoint->id;
     breakpointList->RemoveBreakpoint(breakpoint);
-    OnBreakpointRemoved(breakpointId);
 }
 
 void DebugStrip::SetDebugLocation(const wing::SourceSpan& debugLocation_)
@@ -250,11 +248,11 @@ void DebugStrip::Update()
     bool changed = false;
     for (cmajor::debugger::Breakpoint* breakpoint : breakpointList->Breakpoints())
     {
-        bool hasId = !breakpoint->id.empty();
-        if (breakpoint->disabled != !hasId)
+        bool hasIds = !breakpoint->ids.empty();
+        if (breakpoint->disabled != !hasIds)
         {
             changed = true;
-            breakpoint->disabled = !hasId;
+            breakpoint->disabled = !hasIds;
         }
         if (breakpoint->location.line != breakpoint->line)
         {
@@ -363,10 +361,9 @@ void DebugStrip::OnBreakpointAdded(cmajor::debugger::Breakpoint* breakpoint)
     Invalidate();
 }
 
-void DebugStrip::OnBreakpointRemoved(const std::string& breakpointId)
+void DebugStrip::OnBreakpointRemoved(cmajor::debugger::Breakpoint* breakpoint)
 {
     RemoveBreakpointEventArgs args;
-    args.breakpointId = breakpointId;
     breakpointRemoved.Fire(args);
     Invalidate();
 }

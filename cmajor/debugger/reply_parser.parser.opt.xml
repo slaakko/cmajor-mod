@@ -304,22 +304,47 @@
        <action first="{LBRACKET}">
         <token first="{LBRACKET}" name="LBRACKET"/>
        </action>
-       <kleene first="{#, LBRACE, LBRACKET, NAME, STRING}">
+       <optional first="{#, LBRACE, LBRACKET, NAME, STRING}">
         <group first="{LBRACE, LBRACKET, NAME, STRING}">
-         <switch first="{LBRACE, LBRACKET, NAME, STRING}">
-          <case first="{NAME}">
-           <action first="{NAME}">
-            <nonterminal first="{NAME}" ruleName="Item"/>
-           </action>
-          </case>
-          <case first="{LBRACE, LBRACKET, STRING}">
-           <action first="{LBRACE, LBRACKET, STRING}">
-            <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
-           </action>
-          </case>
-         </switch>
+         <list first="{LBRACE, LBRACKET, NAME, STRING}">
+          <sequence first="{LBRACE, LBRACKET, NAME, STRING}">
+           <group first="{LBRACE, LBRACKET, NAME, STRING}">
+            <switch first="{LBRACE, LBRACKET, NAME, STRING}">
+             <case first="{NAME}">
+              <action first="{NAME}">
+               <nonterminal first="{NAME}" ruleName="Item"/>
+              </action>
+             </case>
+             <case first="{LBRACE, LBRACKET, STRING}">
+              <action first="{LBRACE, LBRACKET, STRING}">
+               <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+              </action>
+             </case>
+            </switch>
+           </group>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <group first="{LBRACE, LBRACKET, NAME, STRING}">
+              <switch first="{LBRACE, LBRACKET, NAME, STRING}">
+               <case first="{NAME}">
+                <action first="{NAME}">
+                 <nonterminal first="{NAME}" ruleName="Item"/>
+                </action>
+               </case>
+               <case first="{LBRACE, LBRACKET, STRING}">
+                <action first="{LBRACE, LBRACKET, STRING}">
+                 <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+                </action>
+               </case>
+              </switch>
+             </group>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
         </group>
-       </kleene>
+       </optional>
       </sequence>
       <token first="{RBRACKET}" name="RBRACKET"/>
      </sequence>

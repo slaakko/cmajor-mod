@@ -21,6 +21,8 @@ bool Request::IsExecRequest() const
     {
         case RequestKind::run:
         case RequestKind::cont:
+        case RequestKind::next:
+        case RequestKind::step:
         {
             return true;
         }
@@ -46,6 +48,24 @@ std::string ContinueRequest::ToString() const
     return "-exec-continue";
 }
 
+NextRequest::NextRequest() : Request(RequestKind::next)
+{
+}
+
+std::string NextRequest::ToString() const
+{
+    return "-exec-next";
+}
+
+StepRequest::StepRequest() : Request(RequestKind::step)
+{
+}
+
+std::string StepRequest::ToString() const
+{
+    return "-exec-step";
+}
+
 ExitRequest::ExitRequest() : Request(RequestKind::exit)
 {
 }
@@ -62,6 +82,15 @@ BreakInsertRequest::BreakInsertRequest(const std::string& location_) : Request(R
 std::string BreakInsertRequest::ToString() const
 {
     return "-break-insert " + location;
+}
+
+FramesRequest::FramesRequest(int lowFrame_, int highFrame_) : Request(RequestKind::frames), lowFrame(lowFrame_), highFrame(highFrame_)
+{
+}
+
+std::string FramesRequest::ToString() const
+{
+    return "-stack-list-frames " + std::to_string(lowFrame) + " " + std::to_string(highFrame);
 }
 
 } // namespace cmajor::debugger

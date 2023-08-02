@@ -92,6 +92,15 @@ void DebugOutputWriter::WriteWarning(const std::string& warning)
 {
 }
 
+class RequestGuard
+{
+public:
+    RequestGuard(bool& requestInProgress_) : requestInProgress(requestInProgress_) {}
+    ~RequestGuard() { requestInProgress = false; }
+private:
+    bool& requestInProgress;
+};
+
 class DebugService : public cmajor::debug::CmdbSessionClient
 {
 public:
@@ -111,6 +120,8 @@ public:
     void WriteTargetOuput(int handle, const std::string& s) override;
     void SetInputEof();
     void PutInputLine(const std::string& inputLine);
+    bool RequestInProgress() const { return requestInProgress; }
+    void SetRequestInProgress(bool requestInProgress_) { requestInProgress = requestInProgress_; }
 private:
     DebugService();
     std::unique_ptr<cmajor::debugger::Debugger> debugger;
@@ -121,6 +132,7 @@ private:
     bool waitingForInput;
     bool exiting;
     bool started;
+    bool requestInProgress;
     std::mutex mtx;
     std::condition_variable waitingForInputOrExitVar;
     std::list<std::string> inputLines;
@@ -221,7 +233,8 @@ void DebugService::RunSession()
     }
 }
 
-DebugService::DebugService() : sessionPort(0), outputWriter(), sessionThreadStarted(false), started(false), inputEof(false), waitingForInput(false), exiting(false)
+DebugService::DebugService() : sessionPort(0), outputWriter(), sessionThreadStarted(false), started(false), inputEof(false), waitingForInput(false), exiting(false), 
+    requestInProgress(false)
 {
 }
 
@@ -229,6 +242,7 @@ void DebugService::Start(const DebugServiceStartParams& startParams)
 {
     try
     {
+        RequestGuard requestGuard(requestInProgress);
         started = false;
         PutServiceMessage(new ClearDebugLogMessage());
         if (startParams.backend == "llvm")
@@ -302,6 +316,7 @@ void DebugService::Run()
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Run();
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -316,6 +331,7 @@ void DebugService::Continue()
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Continue();
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -330,6 +346,7 @@ void DebugService::Next()
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Next();
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -344,6 +361,7 @@ void DebugService::Step()
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Step();
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -358,6 +376,7 @@ void DebugService::Finish()
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Finish();
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -372,6 +391,7 @@ void DebugService::Until(const cmajor::debugger::Location& loc)
     try
     {
         if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Until(loc);
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
     }
@@ -522,6 +542,11 @@ void SetDebugServiceProgramTargetInputEof()
 void PutDebugServiceProgramTargetInputLine(const std::string& targetInputLine)
 {
     DebugService::Instance().PutInputLine(targetInputLine);
+}
+
+bool DebugRequestInProgress()
+{
+    return DebugService::Instance().RequestInProgress();
 }
 
 } // cmajor::service

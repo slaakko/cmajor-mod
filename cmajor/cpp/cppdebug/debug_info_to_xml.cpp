@@ -251,13 +251,15 @@ std::unique_ptr<soul::xml::Document> GetDebugInfoAsXml(const std::string& cmdbFi
         soul::xml::Element* projectElement = soul::xml::MakeElement("project");
         std::string projectName;
         std::string projectDirectoryPath;
+        std::string cmajorRootPrefix;
         util::uuid moduleId;
         int32_t numCompileUnits;
         util::uuid mainFunctionId;
-        ReadProjectTableHeader(reader, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
+        ReadProjectTableHeader(reader, projectName, projectDirectoryPath, cmajorRootPrefix, moduleId, numCompileUnits, mainFunctionId);
         projectElement->SetAttribute("name", projectName);
         projectElement->SetAttribute("directoryPath", projectDirectoryPath);
         projectElement->SetAttribute("moduleId", util::ToString(moduleId));
+        projectElement->SetAttribute("cmajorRootPrefix", cmajorRootPrefix);
         if (!mainFunctionId.is_nil())
         {
             projectElement->SetAttribute("mainFunctionId", util::ToString(mainFunctionId));

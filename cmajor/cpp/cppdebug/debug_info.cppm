@@ -109,6 +109,8 @@ public:
     void PrintSource(util::CodeFormatter& formatter);
     Instruction* Next() const { return next; }
     void SetNext(Instruction* next_) { next = next_; }
+    bool IsStopInstruction() const;
+    bool AtEndBrace() const;
 private:
     CompileUnitFunction* compileUnitFunction;
     int32_t cppLineNumber;
@@ -118,6 +120,8 @@ private:
     InstructionFlags flags;
     Instruction* next;
 };
+
+void AddToNextSet(std::set<Instruction*>& nextSet, Instruction* inst);
 
 class ControlFlowGraphNode
 {
@@ -282,13 +286,15 @@ class DebugInfo;
 class Project
 {
 public:
-    Project(DebugInfo* debugInfo_, const std::string& name_, const std::string& directoryPath_, const util::uuid& moduleId_);
+    Project(DebugInfo* debugInfo_, const std::string& name_, const std::string& directoryPath_, const std::string& cmajorRootPrefix_, const util::uuid& moduleId_);
     Project(const Project&) = delete;
     Project(Project&&) = delete;
     Project& operator=(const Project&) = delete;
     Project& operator=(Project&&) = delete;
     const std::string& Name() const { return name; }
     const std::string& DirectoryPath() const { return directoryPath; }
+    std::string InternalDirectoryPath() const;
+    const std::string& CmajorRootPrefix() const { return cmajorRootPrefix; }
     void AddCompileUnit(CompileUnit* compileUnit);
     CompileUnit* GetCompileUnit(const std::string& baseName) const;
     CompileUnit* GetCompileUnit(int32_t compileUnitIndex) const;
@@ -312,6 +318,7 @@ private:
     DebugInfo* debugInfo;
     std::string name;
     std::string directoryPath;
+    std::string cmajorRootPrefix;
     util::uuid moduleId;
     std::vector<std::unique_ptr<CompileUnit>> compileUnits;
     std::unordered_map<std::string, CompileUnit*> compileUnitMap;
@@ -410,11 +417,10 @@ public:
     DebugInfo(DebugInfo&&) = delete;
     DebugInfo& operator=(const DebugInfo&) = delete;
     DebugInfo& operator=(DebugInfo&&) = delete;
-    void SetCmajorRootPrefix(const std::string& cmajorRootPrefix_);
-    const std::string& CmajorRootPrefix() const { return cmajorRootPrefix; }
     void SetMainProject(Project* mainProject_);
     Project* GetMainProject() const;
     void AddProject(Project* project);
+    Project* GetProjectByInternalPath(const std::string& internalPath) const;
     Project* GetProjectByPath(const std::string& directoryPath) const;
     Project* GetProjectByName(const std::string& projectName) const;
     Project* GetProjectById(const util::uuid& projectId) const;
@@ -438,7 +444,6 @@ public:
     void ProcessSourceFileKeyLocationsMap();
 private:
     std::string filePath;
-    std::string cmajorRootPrefix;
     std::vector<std::unique_ptr<Project>> projects;
     std::unordered_map<std::string, Project*> projectPathMap;
     std::unordered_map<std::string, Project*> projectNameMap;

@@ -280,18 +280,39 @@
        <action first="{LBRACKET}">
         <token first="{LBRACKET}" name="LBRACKET"/>
        </action>
-       <kleene first="{#, LBRACE, LBRACKET, NAME, STRING}">
+       <optional first="{#, LBRACE, LBRACKET, NAME, STRING}">
         <group first="{LBRACE, LBRACKET, NAME, STRING}">
-         <choice first="{LBRACE, LBRACKET, NAME, STRING}">
-          <action first="{NAME}">
-           <nonterminal first="{NAME}" ruleName="Item"/>
-          </action>
-          <action first="{LBRACE, LBRACKET, STRING}">
-           <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
-          </action>
-         </choice>
+         <list first="{LBRACE, LBRACKET, NAME, STRING}">
+          <sequence first="{LBRACE, LBRACKET, NAME, STRING}">
+           <group first="{LBRACE, LBRACKET, NAME, STRING}">
+            <choice first="{LBRACE, LBRACKET, NAME, STRING}">
+             <action first="{NAME}">
+              <nonterminal first="{NAME}" ruleName="Item"/>
+             </action>
+             <action first="{LBRACE, LBRACKET, STRING}">
+              <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+             </action>
+            </choice>
+           </group>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <group first="{LBRACE, LBRACKET, NAME, STRING}">
+              <choice first="{LBRACE, LBRACKET, NAME, STRING}">
+               <action first="{NAME}">
+                <nonterminal first="{NAME}" ruleName="Item"/>
+               </action>
+               <action first="{LBRACE, LBRACKET, STRING}">
+                <nonterminal first="{LBRACE, LBRACKET, STRING}" ruleName="Value"/>
+               </action>
+              </choice>
+             </group>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
         </group>
-       </kleene>
+       </optional>
       </sequence>
       <token first="{RBRACKET}" name="RBRACKET"/>
      </sequence>

@@ -24,9 +24,6 @@ public:
     void SetMessageWriter(MessageWriter* messageWriter_) override;
     std::unique_ptr<Reply> Start(DebuggerStartParams& startParams) override;
     void Stop() override;
-    std::unique_ptr<Reply> Execute(Request* request);
-    std::unique_ptr<Reply> ReadReply(Request* request);
-    std::unique_ptr<Reply> ParseReplyLine(const std::string& line);
     std::unique_ptr<Reply> Run() override;
     std::unique_ptr<Reply> Continue() override;
     std::unique_ptr<Reply> Next() override;
@@ -35,12 +32,16 @@ public:
     std::unique_ptr<Reply> Until(const Location& loc) override;
     void SetBreakpoints(const std::vector<Breakpoint*>& breakpoints);
     void SetBreakpoint(Breakpoint* breakpoint);
+    std::unique_ptr<Reply> Execute(Request* request);
+    std::unique_ptr<Reply> ReadReply(Request* request);
+    std::unique_ptr<Reply> ParseReplyLine(const std::string& line);
 private:
     std::unique_ptr<util::Process> gdb;
     std::unique_ptr<DebugLogger> logger;
     std::unique_ptr<MessageWriter> messageWriter;
     std::unique_ptr<cmajor::debug::DebuggerOutputWriter> outputWriter;
     std::unique_ptr<cmajor::debug::DebugInfo> debugInfo;
+    cmajor::debug::Instruction* stoppedInstruction;
     bool exited;
     int gdbExitCode;
 };

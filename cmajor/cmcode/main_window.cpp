@@ -1766,7 +1766,14 @@ void MainWindow::HandleExecReply(cmajor::debugger::Reply* reply)
     cmajor::debugger::StopReason stopReason = reply->GetStopReason();
     if (stopReason != cmajor::debugger::StopReason::unknown)
     {
-        cmajor::service::PutOutputServiceMessage(cmajor::debugger::StopReasonStr(stopReason));
+        if (stopReason == cmajor::debugger::StopReason::exited)
+        {
+            cmajor::service::PutOutputServiceMessage(cmajor::debugger::StopReasonStr(stopReason) + " with code " + std::to_string(reply->ExitCode()));
+        }
+        else
+        {
+            cmajor::service::PutOutputServiceMessage(cmajor::debugger::StopReasonStr(stopReason));
+        }
         switch (stopReason)
         {
             case cmajor::debugger::StopReason::exitedNormally:
@@ -3045,12 +3052,11 @@ void MainWindow::ChangeBreakpoints(wing::CancelArgs& args)
 {
     try
     {
-        std::string requestName;
-        /* TODO if (cmajor::service::DebugRequestInProgress(requestName))
+        if (cmajor::service::DebugRequestInProgress())
         {
-            throw std::runtime_error("cannot change breakpoints while debug request is running (request=" + requestName + ")");
+            args.cancel = true;
+            throw std::runtime_error("cannot change breakpoints while debug request is running");
         }
-        */ 
     }
     catch (const std::exception& ex)
     {

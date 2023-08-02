@@ -9,7 +9,7 @@ import cmajor.debugger.request;
 
 namespace cmajor::debugger {
 
-Reply::Reply() : prompt(nullptr), execRecord(nullptr), resultRecord(nullptr), stopReason(StopReason::unknown)
+Reply::Reply() : prompt(nullptr), execRecord(nullptr), resultRecord(nullptr), stopReason(StopReason::unknown), stoppedInstruction(nullptr), exitCode(0)
 {
 }
 
@@ -63,6 +63,10 @@ bool Reply::IsFinal(Request* request) const
     }
     else if (request->IsExecRequest())
     {
+        if (resultRecord && resultRecord->IsError())
+        {
+            return true;
+        }
         if (execRecord)
         {
             return execRecord->IsStoppedRecord();
@@ -78,7 +82,7 @@ bool Reply::IsFinal(Request* request) const
     return false;
 }
 
-soul::xml::Element* Reply::Xml()
+soul::xml::Element* Reply::ToXml()
 {
     if (!xml)
     {
@@ -96,7 +100,7 @@ soul::xml::Element* Reply::Xml()
 
 std::unique_ptr<soul::xml::xpath::NodeSet> Reply::Evaluate(const std::string& keyPath)
 {
-    soul::xml::Element* xml = Xml();
+    soul::xml::Element* xml = ToXml();
     return soul::xml::xpath::EvaluateToNodeSet(keyPath, xml);
 }
 

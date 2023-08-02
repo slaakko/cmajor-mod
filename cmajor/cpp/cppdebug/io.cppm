@@ -18,16 +18,14 @@ const uint8_t currentDebugInfoFormat = debugInfoFormat_3;
 
 void WriteCmdbFileTag(util::BinaryStreamWriter& writer);
 void ReadCmdbFileTag(util::BinaryStreamReader& reader, const std::string& filePath);
-void WriteCmajorRootPrefix(util::BinaryStreamWriter& writer, const std::string& cmajorRootPrefix);
-void ReadCmajorRootPrefix(util::BinaryStreamReader& reader, std::string& cmajorRootPrefix);
 void WriteMainProjectName(util::BinaryStreamWriter& writer, const std::string& mainProjectName);
 void ReadMainProjectName(util::BinaryStreamReader& reader, std::string& mainProjectName);
 void WriteNumberOfProjects(util::BinaryStreamWriter& writer, int32_t numProjects);
 void ReadNumberOfProjects(util::BinaryStreamReader& reader, int32_t& numProjects);
-void WriteProjectTableHeader(util::BinaryStreamWriter& writer, const std::string& projectName, const std::string& projectDirectoryPath, const util::uuid& moduleId, int32_t numCompileUnits,
-    const util::uuid& mainFunctionId);
-void ReadProjectTableHeader(util::BinaryStreamReader& reader, std::string& projectName, std::string& projectDirectoryPath, util::uuid& moduleId, int32_t& numCompileUnits,
-    util::uuid& mainFunctionId);
+void WriteProjectTableHeader(util::BinaryStreamWriter& writer, const std::string& projectName, const std::string& projectDirectoryPath, const std::string& cmajorRootPrefix,
+    const util::uuid& moduleId, int32_t numCompileUnits, const util::uuid& mainFunctionId);
+void ReadProjectTableHeader(util::BinaryStreamReader& reader, std::string& projectName, std::string& projectDirectoryPath, std::string& cmajorRootPrefix, 
+    util::uuid& moduleId, int32_t& numCompileUnits, util::uuid& mainFunctionId);
 void WriteProjectTableRecord(util::BinaryStreamWriter& writer, const std::string& compileUnitBaseName);
 void ReadProjectTableRecord(util::BinaryStreamReader& reader, std::string& compileUnitBaseName);
 void WriteNumberOfCompileUnitFunctionRecords(util::BinaryStreamWriter& writer, int32_t numFunctionRecords);

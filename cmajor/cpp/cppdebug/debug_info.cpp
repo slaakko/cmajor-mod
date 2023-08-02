@@ -202,7 +202,7 @@ void Instruction::PrintSource(util::CodeFormatter& formatter)
 std::string Instruction::GetExplicitCppLocationArgs() const
 {
     std::string cppLocationArgs = "--source ";
-    std::string projectDirectory = compileUnitFunction->GetCompileUnit()->GetProject()->DirectoryPath();
+    std::string projectDirectory = compileUnitFunction->GetCompileUnit()->GetProject()->InternalDirectoryPath();
     std::string cppSourceFileName = compileUnitFunction->GetCompileUnit()->BaseName() + ".cpp";
     cppLocationArgs.append(util::QuotedPath(util::Path::Combine(projectDirectory, cppSourceFileName)));
     cppLocationArgs.append(" --line ").append(std::to_string(cppLineNumber));
@@ -212,7 +212,7 @@ std::string Instruction::GetExplicitCppLocationArgs() const
 std::string Instruction::GetFileLineCppLocationArgs() const
 {
     std::string cppLocationArgs;
-    std::string projectDirectory = compileUnitFunction->GetCompileUnit()->GetProject()->DirectoryPath();
+    std::string projectDirectory = compileUnitFunction->GetCompileUnit()->GetProject()->InternalDirectoryPath();
     std::string cppSourceFileName = compileUnitFunction->GetCompileUnit()->BaseName() + ".cpp";
     cppLocationArgs.append(util::QuotedPath(util::Path::Combine(projectDirectory, cppSourceFileName + ":" + std::to_string(cppLineNumber))));
     return cppLocationArgs;
@@ -227,6 +227,64 @@ Scope* Instruction::GetScope() const
     else
     {
         return nullptr;
+    }
+}
+
+bool Instruction::IsStopInstruction() const
+{
+    if ((flags & (InstructionFlags::beginBrace | InstructionFlags::endBrace)) != InstructionFlags::none)
+    {
+        return true;
+    }
+    if ((flags & (InstructionFlags::entryCode | InstructionFlags::exitCode)) != InstructionFlags::none)
+    {
+        return false;
+    }
+    if ((flags & (InstructionFlags::startFunction)) != InstructionFlags::none)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool Instruction::AtEndBrace() const
+{
+    return (flags & InstructionFlags::endBrace) != InstructionFlags::none;
+}
+
+void AddToNextSet(std::set<Instruction*>& nextSet, Instruction* inst)
+{
+    CompileUnitFunction* function = inst->GetCompileUnitFunction();
+    if (function)
+    {
+        ControlFlowGraphNode* node = function->GetControlFlowGraph().GetNodeByCppLineNumber(inst->CppLineNumber());
+        if (node)
+        {
+            for (int32_t nextId : node->Next())
+            {
+                ControlFlowGraphNode* next = function->GetControlFlowGraph().GetNodeById(nextId);
+                if (next)
+                {
+                    Instruction* inst = next->Inst();
+                    if (!inst)
+                    {
+                        CompileUnit* compileUnit = function->GetCompileUnit();
+                        if (compileUnit)
+                        {
+                            inst = compileUnit->GetInstruction(next->CppLineNumber());
+                            if (inst)
+                            {
+                                next->SetInst(inst);
+                            }
+                        }
+                    }
+                    if (inst)
+                    {
+                        nextSet.insert(inst);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -431,8 +489,9 @@ Function::Function(const util::uuid& id_, const std::string& fullName_, const st
 {
 }
 
-Project::Project(DebugInfo* debugInfo_, const std::string& name_, const std::string& directoryPath_, const util::uuid& moduleId_) :
-    debugInfo(debugInfo_), name(name_), directoryPath(directoryPath_), moduleId(moduleId_), mainFunction(nullptr), longType(nullptr), boolType(nullptr)
+Project::Project(DebugInfo* debugInfo_, const std::string& name_, const std::string& directoryPath_, const std::string& cmajorRootPrefix_, const util::uuid& moduleId_) :
+    debugInfo(debugInfo_), name(name_), directoryPath(directoryPath_), cmajorRootPrefix(cmajorRootPrefix_), 
+    moduleId(moduleId_), mainFunction(nullptr), longType(nullptr), boolType(nullptr)
 {
 }
 
@@ -453,6 +512,20 @@ CompileUnit* Project::GetCompileUnit(const std::string& baseName) const
     {
         throw std::runtime_error("compile unit with base name '" + baseName + "' not found from project '" + name + "'");
     }
+}
+
+std::string Project::InternalDirectoryPath() const
+{
+    std::string currentCmajorRootPrefix = GetCurrentCmajorRootPrefix();
+    if (cmajorRootPrefix != currentCmajorRootPrefix)
+    {
+        if (directoryPath.starts_with(currentCmajorRootPrefix))
+        {
+            std::string suffix = directoryPath.substr(currentCmajorRootPrefix.length() + 1);
+            return util::Path::Combine(cmajorRootPrefix, suffix);
+        }
+    }
+    return directoryPath;
 }
 
 CompileUnit* Project::GetCompileUnit(int32_t compileUnitIndex) const
@@ -1002,11 +1075,6 @@ DebugInfo::DebugInfo(const std::string& filePath_) : filePath(filePath_), mainPr
 {
 }
 
-void DebugInfo::SetCmajorRootPrefix(const std::string& cmajorRootPrefix_)
-{
-    cmajorRootPrefix = cmajorRootPrefix_;
-}
-
 void DebugInfo::SetMainProject(Project* mainProject_)
 {
     mainProject = mainProject_;
@@ -1030,6 +1098,18 @@ void DebugInfo::AddProject(Project* project)
     projectPathMap[project->DirectoryPath()] = project;
     projectNameMap[project->Name()] = project;
     projectIdMap[project->ModuleId()] = project;
+}
+
+Project* DebugInfo::GetProjectByInternalPath(const std::string& internalPath) const
+{
+    for (const auto& project : projects)
+    {
+        if (internalPath.starts_with(project->CmajorRootPrefix()))
+        {
+            return project.get();
+        }
+    }
+    return nullptr;
 }
 
 Project* DebugInfo::GetProjectByPath(const std::string& directoryPath) const
@@ -1184,9 +1264,6 @@ std::unique_ptr<DebugInfo> ReadDebugInfo(const std::string& cmdbFilePath)
     util::BufferedStream bufferedStream(fileStream);
     util::BinaryStreamReader reader(bufferedStream);
     ReadCmdbFileTag(reader, cmdbFilePath);
-    std::string cmajorRootPrefix;
-    ReadCmajorRootPrefix(reader, cmajorRootPrefix);
-    debugInfo->SetCmajorRootPrefix(cmajorRootPrefix);
     std::string mainProjectName;
     ReadMainProjectName(reader, mainProjectName);
     int32_t numProjects;
@@ -1196,11 +1273,12 @@ std::unique_ptr<DebugInfo> ReadDebugInfo(const std::string& cmdbFilePath)
         int32_t projectIndex = i;
         std::string projectName;
         std::string projectDirectoryPath;
+        std::string cmajorRootPrefix;
         int32_t numCompileUnits;
         util::uuid moduleId;
         util::uuid mainFunctionId;
-        ReadProjectTableHeader(reader, projectName, projectDirectoryPath, moduleId, numCompileUnits, mainFunctionId);
-        std::unique_ptr<Project> project(new Project(debugInfo.get(), projectName, projectDirectoryPath, moduleId));
+        ReadProjectTableHeader(reader, projectName, projectDirectoryPath, cmajorRootPrefix, moduleId, numCompileUnits, mainFunctionId);
+        std::unique_ptr<Project> project(new Project(debugInfo.get(), projectName, projectDirectoryPath, cmajorRootPrefix, moduleId));
         if (projectName == mainProjectName)
         {
             debugInfo->SetMainProject(project.get());

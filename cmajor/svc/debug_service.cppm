@@ -165,6 +165,7 @@ private:
 
 void StartDebugService(const DebugServiceStartParams& startParams);
 void StopDebugService();
+bool DebugRequestInProgress();
 
 void SetDebugServiceProgramTargetInputEof();
 void PutDebugServiceProgramTargetInputLine(const std::string& targetInputLine);

@@ -75,23 +75,25 @@ void ReadNumberOfProjects(util::BinaryStreamReader& reader, int32_t& numProjects
     numProjects = reader.ReadInt();
 }
 
-void WriteProjectTableHeader(util::BinaryStreamWriter& writer, const std::string& projectName, const std::string& projectDirectoryPath, const util::uuid& moduleId, int32_t numCompileUnits,
-    const util::uuid& mainFunctionId)
+void WriteProjectTableHeader(util::BinaryStreamWriter& writer, const std::string& projectName, const std::string& projectDirectoryPath, const std::string& cmajorRootPrefix, 
+    const util::uuid& moduleId, int32_t numCompileUnits, const util::uuid& mainFunctionId)
 {
     writer.Write(projectName);
     std::string cmajorRootRelativeDirectoryPath = cmajor::ast::MakeCmajorRootRelativeFilePath(projectDirectoryPath);
     writer.Write(cmajorRootRelativeDirectoryPath);
+    writer.Write(cmajorRootPrefix);
     writer.Write(moduleId);
     writer.Write(numCompileUnits);
     writer.Write(mainFunctionId);
 }
 
-void ReadProjectTableHeader(util::BinaryStreamReader& reader, std::string& projectName, std::string& projectDirectoryPath, util::uuid& moduleId, int32_t& numCompileUnits,
-    util::uuid& mainFunctionId)
+void ReadProjectTableHeader(util::BinaryStreamReader& reader, std::string& projectName, std::string& projectDirectoryPath, std::string& cmajorRootPrefix, 
+    util::uuid& moduleId, int32_t& numCompileUnits, util::uuid& mainFunctionId)
 {
     projectName = reader.ReadUtf8String();
     std::string cmajorRootRelativeDirectoryPath = reader.ReadUtf8String();
     projectDirectoryPath = cmajor::ast::ExpandCmajorRootRelativeFilePath(cmajorRootRelativeDirectoryPath);
+    cmajorRootPrefix = reader.ReadUtf8String();
     reader.ReadUuid(moduleId);
     numCompileUnits = reader.ReadInt();
     reader.ReadUuid(mainFunctionId);

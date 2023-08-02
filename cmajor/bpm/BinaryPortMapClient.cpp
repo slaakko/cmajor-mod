@@ -126,6 +126,19 @@ int GetPortMapServicePortNumberFromConfig()
     try
     {
         portMapConfigFilePath = BinaryPortMapConfigFilePath();
+        if (!std::filesystem::exists(portMapConfigFilePath))
+        {
+            soul::xml::Document portMapConfigDoc;
+            soul::xml::Element* rootElement = soul::xml::MakeElement("bpm");
+            portMapConfigDoc.AppendChild(rootElement);
+            rootElement->SetAttribute("startPortRange", "54400");
+            rootElement->SetAttribute("endPortRange", "54420");
+            rootElement->SetAttribute("portMapServicePort", "54421");
+            std::ofstream file(portMapConfigFilePath);
+            util::CodeFormatter formatter(file);
+            formatter.SetIndentSize(1);
+            portMapConfigDoc.Write(formatter);
+        }
         std::unique_ptr<soul::xml::Document> portMapConfigDoc = soul::xml::ParseXmlFile(portMapConfigFilePath);
         std::unique_ptr<soul::xml::xpath::NodeSet> nodeSet = soul::xml::xpath::EvaluateToNodeSet("/bpm", portMapConfigDoc.get());
         if (nodeSet->Count() == 1)

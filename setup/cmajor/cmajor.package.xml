@@ -1,0 +1,43 @@
+<package appName="Cmajor" compression="deflate" id="f3d90054-58ae-4653-bd6d-a3937bbb7ddb" includeUninstaller="true" name="cmajor" publisher="Seppo Laakko" sourceRootDir="C:/work/cmajor-mod/cmajor" targetRootDir="C:/cmajor" version="5.0.0">
+ <component name="binaries">
+  <directory name="bin"/>
+ </component>
+ <component name="system">
+  <directory name="system">
+   <exclude cascade="true" dir="Debug"/>
+   <exclude cascade="true" dir="Release"/>
+   <exclude cascade="true" dir="x64"/>
+   <exclude cascade="true" dir=".vs"/>
+   <exclude dir="ext"/>
+   <include dir="platform">
+    <include dir="windows">
+     <exclude file="System.cms.settings.xml"/>
+    </include>
+   </include>
+  </directory>
+ </component>
+ <component name="projects">
+  <directory name="projects"/>
+ </component>
+ <component name="unicode">
+  <directory name="unicode"/>
+ </component>
+ <component name="configuration">
+  <directory name="config">
+   <exclude file="*"/>
+   <include file="passes.xml"/>
+   <include file="sx.machine.config.xml"/>
+  </directory>
+ </component>
+ <environment>
+  <variable name="CMAJOR_ROOT" value="$TARGET_ROOT_DIR$"/>
+  <pathDirectory value="$TARGET_ROOT_DIR$/bin"/>
+ </environment>
+ <links>
+  <linkDirectory path="$START_MENU_PROGRAMS_FOLDER$/Cmajor"/>
+  <link description="Cmajor Code" iconIndex="0" iconPath="$TARGET_ROOT_DIR$/bin/cmcode.exe" linkFilePath="$DESKTOP_FOLDER$/Cmajor Code.lnk" path="$TARGET_ROOT_DIR$/bin/cmcode.exe" workingDirectory="$TARGET_ROOT_DIR$/bin"/>
+  <link description="Cmajor Code" iconIndex="0" iconPath="$TARGET_ROOT_DIR$/bin/cmcode.exe" linkFilePath="$START_MENU_PROGRAMS_FOLDER$/Cmajor/Cmajor Code.lnk" path="$TARGET_ROOT_DIR$/bin/cmcode.exe" workingDirectory="$TARGET_ROOT_DIR$/bin/cmcode.exe"/>
+ </links>
+<uninstall>
+  <run command="cmstopbpms"/>
+ </uninstall></package>
