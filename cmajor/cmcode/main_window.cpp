@@ -1146,7 +1146,7 @@ void MainWindow::StartDebugging()
     ResetDebugLocations();
     if (state == MainWindowState::debugging) return;
     expressionEvaluateRequests.clear();
-    savedLocation = cmajor::debugger::Location();
+    savedLocation = cmajor::info::db::Location();
     SetEditorsReadOnly();
     startDebugging = true;
     signalReceived = false;
@@ -1171,7 +1171,7 @@ void MainWindow::StopDebugging()
 {
     ResetDebugLocations();
     ResetBreakpoints();
-    savedLocation = cmajor::debugger::Location();
+    savedLocation = cmajor::info::db::Location();
     startDebuggingMenuItem->SetText("Start Debugging");
     startDebuggingToolButton->SetToolTip("Start Debugging (F5)");
     SetState(MainWindowState::idle);
@@ -1394,14 +1394,14 @@ void MainWindow::HandleServiceMessage()
         }
         case cmajor::service::ServiceMessageKind::depthReply:
         {
-            //cmajor::service::DepthReplyServiceMessage* message = static_cast<cmajor::service::DepthReplyServiceMessage*>(serviceMessage.get());
-            //HandleDepthReply(message->GetDepthReply()); TODO
+            cmajor::service::DepthDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::DepthDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleDepthReply(message->DepthReply());
             break;
         }
         case cmajor::service::ServiceMessageKind::framesReply:
         {
-            //cmajor::service::FramesReplyServiceMessage* message = static_cast<cmajor::service::FramesReplyServiceMessage*>(serviceMessage.get());
-            // HandleFramesReply(message->GetFramesReply()); TODO
+            cmajor::service::FramesDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::FramesDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleFramesReply(message->FramesReply()); 
             break;
         }
         case cmajor::service::ServiceMessageKind::evaluateReply:
@@ -1707,7 +1707,7 @@ void MainWindow::AddEditor(const std::string& filePath)
     }
 }
 
-void MainWindow::HandleBuildResult(const cmajor::command::BuildResult& buildResult)
+void MainWindow::HandleBuildResult(const cmajor::info::bs::BuildResult& buildResult)
 {
     StopBuilding();
     if (buildResult.success)
@@ -1788,11 +1788,11 @@ void MainWindow::HandleExecReply(cmajor::debugger::Reply* reply)
             default:
             {
                 SetState(MainWindowState::debugging);
-                UpdateCallStack();
+                UpdateCallStack(true);
                 break;
             }
         }
-        cmajor::debugger::Location loc = reply->GetLocation(); 
+        cmajor::info::db::Location loc = reply->GetLocation();
         if (loc.IsValid())
         {
             HandleLocation(loc, true, false);
@@ -1806,70 +1806,34 @@ void MainWindow::HandleDebugError(const std::string& error)
     cmajor::service::PutOutputServiceMessage("command failed: " + error);
 }
 
-void MainWindow::HandleBreakReply(const db::BreakReply& breakReply)
+void MainWindow::HandleBreakReply(const cmajor::info::db::BreakReply& breakReply)
 {
-    /*  TODO
     UpdateCurrentDebugStrip();
-    if (breakReply.breakpointInfo.success)
-    {
-        cmajor::service::PutOutputServiceMessage("breakpoint added");
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("break request failed: " + breakReply.breakpointInfo.error);
-    }
-    */
+    cmajor::service::PutOutputServiceMessage("breakpoint added");
 }
 
-void MainWindow::HandleDeleteReply(const db::DeleteReply& deleteReply)
+void MainWindow::HandleDeleteReply(const cmajor::info::db::DeleteReply& deleteReply)
 {
-    /*  TODO
     UpdateCurrentDebugStrip();
-    if (deleteReply.success)
-    {
-        cmajor::service::PutOutputServiceMessage("breakpoint removed");
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("delete request failed: " + deleteReply.error);
-    }
-    */
+    cmajor::service::PutOutputServiceMessage("breakpoint removed");
 }
 
-void MainWindow::HandleDepthReply(const db::DepthReply& depthReply)
+void MainWindow::HandleDepthReply(const cmajor::info::db::DepthReply& depthReply)
 {
-    /*  TODO
-    if (depthReply.success)
-    {
-        callStackDepth = depthReply.depth;
-        UpdateCallStack();
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("depth request failed: " + depthReply.error);
-    }
-    */
+    callStackDepth = depthReply.depth;
+    UpdateCallStack(false);
 }
 
-void MainWindow::HandleFramesReply(const db::FramesReply& framesReply)
+void MainWindow::HandleFramesReply(const cmajor::info::db::FramesReply& framesReply)
 {
-    /*  TODO
-    if (framesReply.success)
-    {
-        GetCallStackView()->SetFrameRange(framesReply.frames);
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("frames request failed: " + framesReply.error);
-    }
+    GetCallStackView()->SetFrameRange(framesReply.frames);
     if (signalReceived)
     {
         GetOutputLogView()->Select();
     }
-    */
 }
 
-void MainWindow::HandleEvaluateReply(const db::EvaluateReply& evaluateReply, int requestId)
+void MainWindow::HandleEvaluateReply(const cmajor::info::db::EvaluateReply& evaluateReply, int requestId)
 {
     /*  TODO
     if (evaluateReply.success)
@@ -1902,7 +1866,7 @@ void MainWindow::HandleEvaluateReply(const db::EvaluateReply& evaluateReply, int
     */
 }
 
-void MainWindow::HandleCountReply(const db::CountReply& countReply)
+void MainWindow::HandleCountReply(const cmajor::info::db::CountReply& countReply)
 {
     /*  TODO
     if (countReply.success)
@@ -1921,7 +1885,7 @@ void MainWindow::HandleCountReply(const db::CountReply& countReply)
     */
 }
 
-void MainWindow::HandleEvaluateChildReply(const db::EvaluateChildReply& evaluateChildReply)
+void MainWindow::HandleEvaluateChildReply(const cmajor::info::db::EvaluateChildReply& evaluateChildReply)
 {
     /*  TODO
     if (evaluateChildReply.success)
@@ -1940,7 +1904,7 @@ void MainWindow::HandleEvaluateChildReply(const db::EvaluateChildReply& evaluate
     */
 }
 
-void MainWindow::HandleLocation(const cmajor::debugger::Location& location, bool saveLocation, bool setSelection)
+void MainWindow::HandleLocation(const cmajor::info::db::Location& location, bool saveLocation, bool setSelection)
 {
     try
     {
@@ -2036,13 +2000,12 @@ void MainWindow::HandleTargetState(const cmajor::debugger::TargetState& state)
         message.append(", signal=" + state.signalName + ", meaning=" + state.signalMeaning);
         signalReceived = true;
         cmajor::service::PutOutputServiceMessage(message);
-        callStackDepth = -1;
         GetCallStackView();
-        UpdateCallStack();
+        UpdateCallStack(true);
     }
     else if (state.stopReason == "breakpoint-hit")
     {
-        UpdateCallStack();
+        UpdateCallStack(true);
         if (!state.breakpointId.empty())
         {
             std::string message = "breakpoint hit";
@@ -2052,7 +2015,7 @@ void MainWindow::HandleTargetState(const cmajor::debugger::TargetState& state)
     }
     else if (state.stopReason == "end-stepping-range")
     {
-        UpdateCallStack();
+        UpdateCallStack(true);
     }
 }
 
@@ -2305,20 +2268,13 @@ void MainWindow::HandleGetParamHelpListError(const std::string& error)
 }
 */
 
-void MainWindow::HandleGetDefinitionReply(bs::GetDefinitionReply& getDefinitionReply)
+void MainWindow::HandleGetDefinitionReply(cmajor::info::bs::GetDefinitionReply& getDefinitionReply)
 {
     StopBuilding();
-    if (getDefinitionReply.ok)
-    {
-        bs::DefinitionSourceLocation currentLocation = CurrentLocation();
-        locations.AddLocation(currentLocation);
-        locations.AddLocation(getDefinitionReply.definitionLocation);
-        locations.GotoPreviousLocation(currentLocation);
-    }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("goto definition command unsuccessful: " + getDefinitionReply.error);
-    }
+    cmajor::info::bs::DefinitionSourceLocation currentLocation = CurrentLocation();
+    locations.AddLocation(currentLocation);
+    locations.AddLocation(getDefinitionReply.definitionLocation);
+    locations.GotoPreviousLocation(currentLocation);
 }
 
 void MainWindow::HandleGetDefinitionError(const std::string& getDefinitionError)
@@ -2820,7 +2776,7 @@ void MainWindow::EditorRightClick(wing::RightClickEventArgs& args)
             if (state == MainWindowState::idle)
             {
                 std::string identifier;
-                bs::DefinitionSourceLocation sourceLocation;
+                cmajor::info::bs::DefinitionSourceLocation sourceLocation;
                 if (GetDefinitionSourceLocationAt(args.location, textView, identifier, sourceLocation))
                 {
                     std::unique_ptr<wing::MenuItem> gotoDefinitionMenuItem(new wing::MenuItem("Go To Definition"));
@@ -2835,7 +2791,7 @@ void MainWindow::EditorRightClick(wing::RightClickEventArgs& args)
             }
             else if (state == MainWindowState::debugging)
             {
-                common::SourceLoc sourceLocation;
+                cmajor::info::db::SourceLoc sourceLocation;
                 sourceLocation.path = textView->FilePath();
                 sourceLocation.line = textView->CaretLine();
                 std::unique_ptr<wing::MenuItem> gotoCursorMenuItem(new wing::MenuItem("Go To Cursor"));
@@ -2857,7 +2813,7 @@ void MainWindow::EditorRightClick(wing::RightClickEventArgs& args)
     }
 }
 
-bool MainWindow::GetDefinitionSourceLocationAt(const wing::Point& loc, wing::TextView* textView, std::string& identifier, bs::DefinitionSourceLocation& sourceLocation)
+bool MainWindow::GetDefinitionSourceLocationAt(const wing::Point& loc, wing::TextView* textView, std::string& identifier, cmajor::info::bs::DefinitionSourceLocation& sourceLocation)
 {
     int line = 0;
     int column = 0;
@@ -2901,7 +2857,7 @@ bool MainWindow::GetDefinitionSourceLocationAt(const wing::Point& loc, wing::Tex
     return false;
 }
 
-int MainWindow::GetEndColumn(wing::TextView* textView, const bs::DefinitionSourceLocation& sourceLocation) const
+int MainWindow::GetEndColumn(wing::TextView* textView, const cmajor::info::bs::DefinitionSourceLocation& sourceLocation) const
 {
     char32_t c = textView->GetCharAt(sourceLocation.line, sourceLocation.scol);
     int line = sourceLocation.line;
@@ -2937,11 +2893,11 @@ cmajor::ast::Project* MainWindow::CurrentProject()
     return project;
 }
 
-void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string& identifier, const bs::DefinitionSourceLocation& sourceLocation)
+void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string& identifier, const cmajor::info::bs::DefinitionSourceLocation& sourceLocation)
 {
     try
     {
-        bs::GetDefinitionRequest request;
+        cmajor::info::bs::GetDefinitionRequest request;
         request.backend = backend;
         request.config = config;
         request.projectName = util::ToUtf8(project->Name());
@@ -2957,12 +2913,12 @@ void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string
     }
 }
 
-void MainWindow::GotoCursor(const common::SourceLoc& sourceLocation)
+void MainWindow::GotoCursor(const cmajor::info::db::SourceLoc& sourceLocation)
 {
     //cmajor::service::PutRequest(new cmajor::service::UntilDebugServiceRequest(sourceLocation));
 }
 
-void MainWindow::GotoLocation(const bs::DefinitionSourceLocation& location)
+void MainWindow::GotoLocation(const cmajor::info::bs::DefinitionSourceLocation& location)
 {
     wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(location.file);
     cmajor::view::CmajorEditor* cmajorEditor = nullptr;
@@ -3028,9 +2984,9 @@ void MainWindow::SetProjectReferences(cmajor::ast::Project* project)
     }
 }
 
-bs::DefinitionSourceLocation MainWindow::CurrentLocation() const
+cmajor::info::bs::DefinitionSourceLocation MainWindow::CurrentLocation() const
 {
-    bs::DefinitionSourceLocation currentLocation;
+    cmajor::info::bs::DefinitionSourceLocation currentLocation;
     if (!solutionData) return currentLocation;
     cmajor::view::Editor* editor = CurrentEditor();
     if (editor)
@@ -5440,7 +5396,14 @@ void MainWindow::OutputTabControlTabPageRemoved(wing::ControlEventArgs& args)
 
 void MainWindow::OutputTabControlTabPageSelected()
 {
-    // todo?
+    wing::TabPage* tabPage = outputTabControl->SelectedTabPage();
+    if (tabPage == callStackTabPage)
+    {
+        if (state == MainWindowState::debugging)
+        {
+            UpdateCallStack(true);
+        }
+    }
 }
 
 wing::LogView* MainWindow::GetOutputLogView()
@@ -5485,7 +5448,7 @@ void MainWindow::ViewError(cmajor::view::ViewErrorArgs& args)
 {
     try
     {
-        cmajor::command::CompileError* error = args.error;
+        cmajor::info::bs::CompileError* error = args.error;
         if (error)
         {
             wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(error->file);
@@ -5571,7 +5534,7 @@ cmajor::view::CallStackView* MainWindow::GetCallStackView()
         callStackView->FrameSelected().AddHandler(this, &MainWindow::CallStackFrameSelected);
         if (state == MainWindowState::debugging)
         {
-            UpdateCallStack();
+            UpdateCallStack(true);
         }
         callStackTabPage = new wing::TabPage("Call Stack", "callStack");
         callStackTabPage->AddChild(callStackView);
@@ -5592,12 +5555,16 @@ void MainWindow::ClearCallStack()
     }
 }
 
-void MainWindow::UpdateCallStack()
+void MainWindow::UpdateCallStack(bool fetchDepth)
 {
     if (!callStackView) return;
+    if (fetchDepth)
+    {
+        callStackDepth = -1;
+    }
     if (callStackDepth == -1)
     {
-        //cmajor::service::PutRequest(new cmajor::service::DepthDebugServiceRequest()); TODO
+        cmajor::service::PutRequest(new cmajor::service::DepthDebugServiceRequest()); 
     }
     else if (callStackDepth >= 0)
     {
@@ -5605,7 +5572,7 @@ void MainWindow::UpdateCallStack()
         std::pair<int, int> frameRange = callStackView->GetFrameRange();
         if (frameRange.first != -1 && frameRange.second != -1)
         {
-            //cmajor::service::PutRequest(new cmajor::service::FramesDebugServiceRequest(frameRange.first, frameRange.second)); TODO
+            cmajor::service::PutRequest(new cmajor::service::FramesDebugServiceRequest(frameRange.first, frameRange.second)); 
         }
     }
 }
@@ -5614,7 +5581,7 @@ void MainWindow::CallStackFrameSelected(cmajor::view::FrameSelectedEventArgs& ar
 {
     try
     {
-        //HandleLocation(*args.frame, false, true);  TODO
+        HandleLocation(*args.frame, false, true);  
     }
     catch (const std::exception& ex)
     {

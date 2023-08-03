@@ -5,8 +5,7 @@
 
 export module cmcode.action;
 
-import cmajor.build.server.message;
-import cmajor.common.message;
+import cmajor.info;
 import cmajor.ast;
 import wing;
 import std.core;
@@ -204,23 +203,23 @@ class GotoDefinitionAction : public wing::ClickAction
 {
 public:
     GotoDefinitionAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, cmajor::ast::Project* project_, const std::string& identifier_, 
-        const bs::DefinitionSourceLocation& sourceLocation_);
+        const cmajor::info::bs::DefinitionSourceLocation& sourceLocation_);
     void Execute() override;
 private:
     MainWindow* mainWindow;
     cmajor::ast::Project* project;
     std::string identifier;
-    bs::DefinitionSourceLocation sourceLocation;
+    cmajor::info::bs::DefinitionSourceLocation sourceLocation;
 };
 
 class GotoCursorAction : public wing::ClickAction
 {
 public:
-    GotoCursorAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, const common::SourceLoc& sourceLocation_);
+    GotoCursorAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, const cmajor::info::db::SourceLoc& sourceLocation_);
     void Execute() override;
 private:
     MainWindow* mainWindow;
-    common::SourceLoc sourceLocation;
+    cmajor::info::db::SourceLoc sourceLocation;
 };
 
 class ProjectReferencesAction : public wing::ClickAction

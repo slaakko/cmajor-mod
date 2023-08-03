@@ -40,7 +40,7 @@ void LocationList::UpdateToolButtons()
     }
 }
 
-void LocationList::AddLocation(const bs::DefinitionSourceLocation& location)
+void LocationList::AddLocation(const cmajor::info::bs::DefinitionSourceLocation& location)
 {
     while (locations.size() > maxLocations)
     {
@@ -51,7 +51,7 @@ void LocationList::AddLocation(const bs::DefinitionSourceLocation& location)
     UpdateToolButtons();
 }
 
-void LocationList::GotoPreviousLocation(const bs::DefinitionSourceLocation& currentLocation)
+void LocationList::GotoPreviousLocation(const cmajor::info::bs::DefinitionSourceLocation& currentLocation)
 {
     while (CanGotoPrev())
     {
@@ -65,7 +65,7 @@ void LocationList::GotoPreviousLocation(const bs::DefinitionSourceLocation& curr
     UpdateToolButtons();
 }
 
-void LocationList::GotoNextLocation(const bs::DefinitionSourceLocation& currentLocation)
+void LocationList::GotoNextLocation(const cmajor::info::bs::DefinitionSourceLocation& currentLocation)
 {
     while (CanGotoNext())
     {

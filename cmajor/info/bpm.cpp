@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/bmsg/bpm.schema' by cmajor binary protocol message generator version 5.0.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/info/bpm.schema' by cmajor binary protocol message generator version 5.0.0
 
 module cmajor.binary.portmap.message;
 

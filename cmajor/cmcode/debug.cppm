@@ -6,7 +6,7 @@
 export module cmcode.debug;
 
 import cmajor.service;
-import cmajor.debug.message;
+import cmajor.info;
 import cmajor.debuggers;
 import cmajor.ast;
 import std.core;

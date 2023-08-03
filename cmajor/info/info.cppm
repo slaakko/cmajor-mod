@@ -3,6 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.command;
+export module cmajor.info;
 
-export import cmajor.build.command;
+export import cmajor.binary.portmap.message;
+export import cmajor.info.bs;
+export import cmajor.info.db;

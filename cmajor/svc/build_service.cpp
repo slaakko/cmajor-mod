@@ -14,9 +14,9 @@ import util;
 
 namespace cmajor::service {
 
-cmajor::command::CompileError ToError(const soul::lexer::ParsingException& ex)
+cmajor::info::bs::CompileError ToError(const soul::lexer::ParsingException& ex)
 {
-    cmajor::command::CompileError error;
+    cmajor::info::bs::CompileError error;
     error.message = ex.Message();
     error.project = ex.Project();
     error.file = ex.FileName();
@@ -28,7 +28,7 @@ cmajor::command::CompileError ToError(const soul::lexer::ParsingException& ex)
     return error;
 }
 
-BuildResultMessage::BuildResultMessage(const cmajor::command::BuildResult& result_) : ServiceMessage(ServiceMessageKind::buildResult), result(result_)
+BuildResultMessage::BuildResultMessage(const cmajor::info::bs::BuildResult& result_) : ServiceMessage(ServiceMessageKind::buildResult), result(result_)
 {
 }
 
@@ -46,12 +46,12 @@ public:
     bool Running() const { return running; }
     bool BuildInProgress() const { return buildInProgress; }
     void CancelBuild();
-    void ExecuteBuildCommand(cmajor::command::BuildCommand* command);
+    void ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command);
     bool CommandAvailableOrExiting() const { return buildCommand != nullptr || exit; }
 private:
     BuildService();
     void ExecuteCommand();
-    std::unique_ptr<cmajor::command::BuildCommand> buildCommand;
+    std::unique_ptr<cmajor::info::bs::BuildCommand> buildCommand;
     bool buildInProgress;
     bool exit;
     bool running;
@@ -80,7 +80,7 @@ void BuildService::Start()
     thread = std::thread(RunBuildService, this);
 }
 
-void BuildService::ExecuteBuildCommand(cmajor::command::BuildCommand* command)
+void BuildService::ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command)
 {
     std::lock_guard<std::mutex> lock(mtx);
     buildCommand.reset(command);
@@ -112,7 +112,7 @@ void BuildService::ExecuteCommand()
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     std::set<std::string> builtProjects;
     int logStreamId = -1;
-    cmajor::command::BuildResult result;
+    cmajor::info::bs::BuildResult result;
     try
     {
         cmajor::symbols::BackEnd backend = cmajor::symbols::BackEnd::cpp;
@@ -253,7 +253,7 @@ void BuildService::ExecuteCommand()
     {
         util::LogMessage(logStreamId, ex.what());
         result.success = false;
-        cmajor::command::CompileError error;
+        cmajor::info::bs::CompileError error;
         error.message = ex.what();
         result.errors.push_back(error);
     }
@@ -294,7 +294,7 @@ void StopBuildService()
     }
 }
 
-void ExecuteBuildCommand(cmajor::command::BuildCommand* command)
+void ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command)
 {
     if (BuildInProgress())
     {

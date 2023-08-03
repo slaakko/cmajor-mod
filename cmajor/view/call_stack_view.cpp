@@ -12,7 +12,7 @@ module cmajor.view.call.stack.view;
 
 namespace cmajor::view {
 
-FrameSelectedEventArgs::FrameSelectedEventArgs(db::Location* frame_) : frame(frame_)
+FrameSelectedEventArgs::FrameSelectedEventArgs(cmajor::info::db::Location* frame_) : frame(frame_)
 {
 }
 
@@ -99,13 +99,13 @@ const std::pair<int, int>& CallStackView::GetFrameRange()
     return frameRange;
 }
 
-void CallStackView::SetFrameRange(const std::vector<db::Location>& frames_)
+void CallStackView::SetFrameRange(const std::vector<cmajor::info::db::Location>& frames_)
 {
     if (frameRange.first == frameRange.second) return;
     frames.resize(std::max(frameRange.second + 1, static_cast<int>(frameRange.first + frames_.size())));
     for (int i = 0; i < frames_.size(); ++i)
     {
-        frames[frameRange.first + i] = std::unique_ptr<db::Location>(new db::Location(frames_[i]));
+        frames[frameRange.first + i] = std::unique_ptr<cmajor::info::db::Location>(new cmajor::info::db::Location(frames_[i]));
     }
     UpdateNodes();
     treeView->SetChanged();
@@ -134,7 +134,7 @@ void CallStackView::UpdateNodes()
 
 void CallStackView::UpdateNode(wing::TreeViewNode* node)
 {
-    db::Location* location = static_cast<db::Location*>(node->Data());
+    cmajor::info::db::Location* location = static_cast<cmajor::info::db::Location*>(node->Data());
     if (location)
     {
         std::string func = location->func;
@@ -154,6 +154,13 @@ void CallStackView::UpdateNode(wing::TreeViewNode* node)
             lineText.append("Line ").append(std::to_string(location->line));
             wing::TreeViewNode* lineNode = new wing::TreeViewNode(lineText);
             node->AddChild(lineNode);
+            if (!location->addr.empty())
+            {
+                std::string addrText;
+                addrText.append("Address ").append(location->addr);
+                wing::TreeViewNode* addrNode = new wing::TreeViewNode(addrText);
+                node->AddChild(addrNode);
+            }
         }
     }
 }
@@ -163,7 +170,7 @@ void CallStackView::TreeViewNodeDoubleClick(wing::TreeViewNodeClickEventArgs& ar
     wing::TreeViewNode* node = args.node;
     if (node->Data())
     {
-        db::Location* frame = static_cast<db::Location*>(node->Data());
+        cmajor::info::db::Location* frame = static_cast<cmajor::info::db::Location*>(node->Data());
         FrameSelectedEventArgs args(frame);
         OnFrameSelected(args);
     }

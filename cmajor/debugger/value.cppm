@@ -91,6 +91,7 @@ public:
     void Add(Item* item);
     Value* Get(const std::string& key) const;
     std::string GetString(const std::string& key) const;
+    int GetInt(const std::string& key) const;
     std::string ToString() const;
     std::unique_ptr<soul::xml::Element> ToXml() const;
 private:

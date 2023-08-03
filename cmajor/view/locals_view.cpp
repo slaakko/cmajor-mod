@@ -117,7 +117,7 @@ std::string LocalsView::FetchExpression() const
 {
     if (fetchNode)
     {
-        db::ChildResult* childResult = static_cast<db::ChildResult*>(fetchNode->Data());
+        cmajor::info::db::ChildResult* childResult = static_cast<cmajor::info::db::ChildResult*>(fetchNode->Data());
         if (childResult)
         {
             return childResult->expr;
@@ -126,7 +126,7 @@ std::string LocalsView::FetchExpression() const
     return "@locals";
 }
 
-void LocalsView::SetChildResults(const std::vector<db::ChildResult>& childResults)
+void LocalsView::SetChildResults(const std::vector<cmajor::info::db::ChildResult>& childResults)
 {
     wing::LogView* logView = wing::Application::GetLogView();
     if (!childExtent.IsEmpty())
@@ -134,7 +134,7 @@ void LocalsView::SetChildResults(const std::vector<db::ChildResult>& childResult
         childResultVec.resize(childExtent.dataStart + std::max(childExtent.count, static_cast<int>(childResults.size())));
         for (int i = 0; i < childResults.size(); ++i)
         {
-            childResultVec[childExtent.dataStart + i].reset(new db::ChildResult(childResults[i]));
+            childResultVec[childExtent.dataStart + i].reset(new cmajor::info::db::ChildResult(childResults[i]));
         }
         int n = childResultVec.size();
         wing::TreeViewNode* parentNode = fetchNode;
@@ -154,7 +154,7 @@ void LocalsView::SetChildResults(const std::vector<db::ChildResult>& childResult
             int index = node->Index();
             if (index >= 0 && index < childResultVec.size())
             {
-                db::ChildResult* childResult = childResultVec[index].get();
+                cmajor::info::db::ChildResult* childResult = childResultVec[index].get();
                 node->SetData(childResult);
                 std::string text = std::to_string(index);
                 if (childResult)
@@ -247,7 +247,7 @@ void LocalsView::PopulateTreeViewNode(wing::TreeViewNode* node, int n)
     }
     else
     {
-        db::ChildResult* result = static_cast<db::ChildResult*>(node->Data());
+        cmajor::info::db::ChildResult* result = static_cast<cmajor::info::db::ChildResult*>(node->Data());
         if (result)
         {
             int count = result->count;

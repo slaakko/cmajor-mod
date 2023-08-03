@@ -6,8 +6,8 @@
 
 import std.core;
 import cmajor.debug;
-import cmajor.portmap;
 import cmajor.msg;
+import cmajor.portmap;
 import soul.xml.serialization;
 import soul.xml.xpath;
 import util;
@@ -323,3 +323,4 @@ int main(int argc, const char** argv)
     }
     return 0;
 }
+

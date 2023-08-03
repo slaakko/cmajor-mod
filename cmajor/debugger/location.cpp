@@ -7,7 +7,7 @@ module cmajor.debugger.location;
 
 namespace cmajor::debugger {
 
-Location::Location() : func(), file(), line(0), scol(0), ecol(0), level(0)
+Location::Location() : func(), addr(), file(), line(0), scol(0), ecol(0), level(0)
 {
 }
 
@@ -24,6 +24,7 @@ Location ToLocation(const cmajor::debug::Frame& frame, bool includeLevel)
 {
     Location loc;
     loc.func = frame.func;
+    loc.addr = frame.addr;
     loc.file = frame.file;
     loc.line = frame.line;
     loc.scol = frame.scol;

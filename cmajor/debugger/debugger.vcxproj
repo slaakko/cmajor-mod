@@ -160,8 +160,6 @@
     <ClCompile Include="io.cpp" />
     <ClCompile Include="lldb_debugger.cpp" />
     <ClCompile Include="lldb_debugger.cppm" />
-    <ClCompile Include="location.cpp" />
-    <ClCompile Include="location.cppm" />
     <ClCompile Include="io.cppm" />
     <ClCompile Include="message_writer.cpp" />
     <ClCompile Include="message_writer.cppm" />
@@ -197,6 +195,9 @@
     </ProjectReference>
     <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\info\info.vcxproj">
+      <Project>{4b55ce70-b5dc-4928-a56d-6cde46dc8186}</Project>
     </ProjectReference>
     <ProjectReference Include="..\msg\msg.vcxproj">
       <Project>{c38f8022-d886-4e11-90ff-7d8cd198812d}</Project>

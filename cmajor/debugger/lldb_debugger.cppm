@@ -25,7 +25,9 @@ public:
     std::unique_ptr<Reply> Next() override;
     std::unique_ptr<Reply> Step() override;
     std::unique_ptr<Reply> Finish() override;
-    std::unique_ptr<Reply> Until(const Location& loc) override;
+    std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) override;
+    int Depth() override;
+    std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) override;
 private:
     std::unique_ptr<util::Process> lldb;
     std::unique_ptr<DebugLogger> logger;

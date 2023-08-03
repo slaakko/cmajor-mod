@@ -46,6 +46,7 @@ struct Frame
     std::unique_ptr<util::JsonValue> ToJson(bool includeLevel) const;
     bool IsEmpty() const { return func.empty() && file.empty() && line == 0; }
     int level;
+    std::string addr;
     std::string func;
     std::string file;
     int line;
@@ -250,11 +251,12 @@ public:
     const std::vector<std::unique_ptr<CompileUnitFunction>>& CompileUnitFunctions() const { return compileUnitFunctions; }
     void AddInstruction(Instruction* instruction);
     Instruction* GetInstruction(int32_t cppLineNumber) const;
+    Instruction* GetNearestInstruction(int32_t cppLineNumber) const;
 private:
     Project* project;
     std::string baseName;
     std::vector<std::unique_ptr<CompileUnitFunction>> compileUnitFunctions;
-    std::unordered_map<int32_t, Instruction*> instructionMap;
+    std::map<int32_t, Instruction*> instructionMap;
 };
 
 class SourceFileReference
@@ -431,6 +433,7 @@ public:
     Instruction* GetEntryInstruction(CompileUnitFunction* compileUnitFunction) const;
     Instruction* GetMainFunctionEntryInstruction() const;
     Instruction* GetInstruction(const Frame& frame, DebuggerOutputWriter& outputWriter) const;
+    Instruction* GetNearestInstruction(const Frame& frame) const;
     Instruction* GetInstruction(const InstructionLocation& location) const;
     DIType* GetPolymorphicType(const std::string& vmtVarName) const;
     void AddPolymorphicType(DIClassType* polymorphicType);

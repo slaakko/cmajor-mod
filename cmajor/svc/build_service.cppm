@@ -5,7 +5,7 @@
 
 export module cmajor.build.service;
 
-import cmajor.command;
+import cmajor.info.bs;
 import cmajor.service.message;
 import std.core;
 
@@ -14,10 +14,10 @@ export namespace cmajor::service {
 class BuildResultMessage : public ServiceMessage
 {
 public:
-    BuildResultMessage(const cmajor::command::BuildResult& result_);
-    const cmajor::command::BuildResult& Result() const { return result; }
+    BuildResultMessage(const cmajor::info::bs::BuildResult& result_);
+    const cmajor::info::bs::BuildResult& Result() const { return result; }
 private:
-    cmajor::command::BuildResult result;
+    cmajor::info::bs::BuildResult result;
 };
 
 class BuildStoppedMessage : public ServiceMessage
@@ -28,7 +28,7 @@ public:
 
 void StartBuildService();
 void StopBuildService();
-void ExecuteBuildCommand(cmajor::command::BuildCommand* command);
+void ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command);
 bool BuildInProgress();
 void CancelBuild();
 

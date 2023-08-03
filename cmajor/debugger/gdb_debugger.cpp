@@ -8,6 +8,7 @@ module cmajor.gdb.debugger;
 import cmajor.debugger.reply.lexer;
 import cmajor.debugger.reply.parser;
 import cmajor.debugger.message.writer;
+import cmajor.debugger.record;
 import cmajor.debugger.util;
 
 namespace cmajor::debugger {
@@ -342,47 +343,47 @@ std::unique_ptr<Reply> GDBDebugger::Step()
         StopReason stopReason = stepReply->GetStopReason();
         switch (stopReason)
         {
-            case StopReason::exitedNormally:
-            case StopReason::exited:
-            case StopReason::exitedSignaled:
-            case StopReason::signalReceived:
+        case StopReason::exitedNormally:
+        case StopReason::exited:
+        case StopReason::exitedSignaled:
+        case StopReason::signalReceived:
+        {
+            return stepReply;
+        }
+        case StopReason::endSteppingRange:
+        case StopReason::breakpointHit:
+        {
+            if (stoppedInstruction)
             {
-                return stepReply;
-            }
-            case StopReason::endSteppingRange:
-            case StopReason::breakpointHit:
-            {
-                if (stoppedInstruction)
+                cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
+                bool foundInNextSet = nextSet.find(stoppedInstruction) != nextSet.end();
+                if (stoppedInstruction->CppLineIndex() == 0)
                 {
-                    cmajor::debug::AddToNextSet(nextSet, stoppedInstruction);
-                    bool foundInNextSet = nextSet.find(stoppedInstruction) != nextSet.end();
-                    if (stoppedInstruction->CppLineIndex() == 0)
-                    {
-                        if (stoppedInstruction->IsStopInstruction() || foundInNextSet)
-                        {
-                            if (prevStoppedInstruction == nullptr ||
-                                prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction() ||
-                                stoppedInstruction->GetSourceSpan().line > prevStoppedInstruction->GetSourceSpan().line ||
-                                foundInNextSet)
-                            {
-                                return stepReply;
-                            }
-                        }
-                    }
-                    else
+                    if (stoppedInstruction->IsStopInstruction() || foundInNextSet)
                     {
                         if (prevStoppedInstruction == nullptr ||
-                            prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction())
+                            prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction() ||
+                            stoppedInstruction->GetSourceSpan().line > prevStoppedInstruction->GetSourceSpan().line ||
+                            foundInNextSet)
                         {
-                            if (stoppedInstruction->IsStopInstruction())
-                            {
-                                return stepReply;
-                            }
+                            return stepReply;
                         }
                     }
                 }
-                break;
+                else
+                {
+                    if (prevStoppedInstruction == nullptr ||
+                        prevStoppedInstruction->GetCompileUnitFunction() != stoppedInstruction->GetCompileUnitFunction())
+                    {
+                        if (stoppedInstruction->IsStopInstruction())
+                        {
+                            return stepReply;
+                        }
+                    }
+                }
             }
+            break;
+        }
         }
     }
 }
@@ -392,9 +393,70 @@ std::unique_ptr<Reply> GDBDebugger::Finish()
     return std::unique_ptr<Reply>();
 }
 
-std::unique_ptr<Reply> GDBDebugger::Until(const Location& loc)
+std::unique_ptr<Reply> GDBDebugger::Until(const cmajor::info::db::Location& loc)
 {
     return std::unique_ptr<Reply>();
+}
+
+
+int GDBDebugger::Depth()
+{
+    DepthRequest depthRequest;
+    std::unique_ptr<Reply> depthReply = Execute(&depthRequest);
+    ResultRecord* resultRecord = depthReply->GetResultRecord();
+    if (resultRecord)
+    {
+        if (resultRecord->IsError())
+        {
+            throw std::runtime_error(resultRecord->ErrorMessage());
+        }
+        else if (resultRecord->IsDone())
+        {
+            cmajor::debugger::Results* results = resultRecord->GetResults();
+            if (results)
+            {
+                int depth = results->GetInt("depth");
+                return depth;
+            }
+            else
+            {
+                throw std::runtime_error("depth request failed: empty results");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("depth request failed: result record kind='" + ResultRecordKindStr(resultRecord->GetResultRecordKind()) + "'");
+        }
+    }
+    throw std::runtime_error("depth request failed");
+}
+
+std::vector<cmajor::info::db::Location> GDBDebugger::Frames(int lowFrame, int highFrame)
+{
+    FramesRequest framesRequest(lowFrame, highFrame);
+    std::unique_ptr<Reply> framesReply = Execute(&framesRequest);
+    ResultRecord* resultRecord = framesReply->GetResultRecord();
+    if (resultRecord && resultRecord->IsError())
+    {
+        throw std::runtime_error(resultRecord->ErrorMessage());
+    }
+    else if (resultRecord->IsDone())
+    {
+        cmajor::debugger::Results* results = resultRecord->GetResults();
+        if (results)
+        {
+            std::vector<cmajor::info::db::Location> frames = GetFrames(results, debugInfo.get(), outputWriter.get());
+            return frames;
+        }
+        else
+        {
+            throw std::runtime_error("frames request failed: empty results");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("frames request failed: result record kind='" + ResultRecordKindStr(resultRecord->GetResultRecordKind()) + "'");
+    }
 }
 
 void GDBDebugger::SetBreakpoints(const std::vector<Breakpoint*>& breakpoints)

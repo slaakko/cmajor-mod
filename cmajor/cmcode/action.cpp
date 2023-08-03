@@ -197,7 +197,8 @@ void RemoveFileAction::Execute()
     mainWindow->RemoveFile(project, filePath, fileName, fileNode);
 }
 
-GotoDefinitionAction::GotoDefinitionAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, cmajor::ast::Project* project_, const std::string& identifier_, const bs::DefinitionSourceLocation& sourceLocation_) :
+GotoDefinitionAction::GotoDefinitionAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, cmajor::ast::Project* project_, const std::string& identifier_, 
+    const cmajor::info::bs::DefinitionSourceLocation& sourceLocation_) :
     ClickAction(menuItem), mainWindow(mainWindow_), project(project_), identifier(identifier_), sourceLocation(sourceLocation_)
 {
 }
@@ -208,7 +209,8 @@ void GotoDefinitionAction::Execute()
     mainWindow->GotoDefinition(project, identifier, sourceLocation);
 }
 
-GotoCursorAction::GotoCursorAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, const common::SourceLoc& sourceLocation_) : ClickAction(menuItem), mainWindow(mainWindow_), sourceLocation(sourceLocation_)
+GotoCursorAction::GotoCursorAction(wing::MenuItem* menuItem, MainWindow* mainWindow_, const cmajor::info::db::SourceLoc& sourceLocation_) : 
+    ClickAction(menuItem), mainWindow(mainWindow_), sourceLocation(sourceLocation_)
 {
 }
 

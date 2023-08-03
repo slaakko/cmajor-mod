@@ -29,7 +29,9 @@ public:
     std::unique_ptr<Reply> Next() override;
     std::unique_ptr<Reply> Step() override;
     std::unique_ptr<Reply> Finish() override;
-    std::unique_ptr<Reply> Until(const Location& loc) override;
+    std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) override;
+    int Depth() override;
+    std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) override;
     void SetBreakpoints(const std::vector<Breakpoint*>& breakpoints);
     void SetBreakpoint(Breakpoint* breakpoint);
     std::unique_ptr<Reply> Execute(Request* request);

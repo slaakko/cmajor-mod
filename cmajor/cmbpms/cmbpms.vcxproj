@@ -152,6 +152,9 @@
     <ProjectReference Include="..\bpm\bpm.vcxproj">
       <Project>{e1e0c658-66d5-4056-a0aa-afebd16e5655}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\info\info.vcxproj">
+      <Project>{4b55ce70-b5dc-4928-a56d-6cde46dc8186}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />

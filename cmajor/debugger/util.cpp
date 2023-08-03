@@ -12,6 +12,19 @@ import util;
 
 namespace cmajor::debugger {
 
+cmajor::info::db::Location ToLocation(const cmajor::debug::Frame& frame)
+{
+    cmajor::info::db::Location location;
+    location.level = frame.level;
+    location.func = frame.func;
+    location.addr = frame.addr;
+    location.file = frame.file;
+    location.line = frame.line;
+    location.scol = frame.scol;
+    location.ecol = frame.ecol;
+    return location;
+}
+
 std::string ToExternalFilePath(const std::string& path, const std::string& externalRootPrefix, const std::string& internalRootPrefix)
 {
     if (externalRootPrefix != internalRootPrefix)
@@ -38,6 +51,23 @@ std::string ToInternalFilePath(const std::string& path, const std::string& exter
     return path;
 }
 
+std::string MakeExternalFilePath(const std::string& path, cmajor::debug::DebugInfo* debugInfo)
+{
+    if (!path.empty())
+    {
+        std::string currentCmajorRootPrefix = cmajor::debug::GetCurrentCmajorRootPrefix();
+        if (!path.starts_with(currentCmajorRootPrefix))
+        {
+            cmajor::debug::Project* project = debugInfo->GetProjectByInternalPath(path);
+            if (project)
+            {
+                return ToExternalFilePath(path, currentCmajorRootPrefix, project->CmajorRootPrefix());
+            }
+        }
+    }
+    return path;
+}
+
 cmajor::debug::Frame GetCppFrame(Results* results, cmajor::debug::DebugInfo* debugInfo)
 {
     cmajor::debug::Frame frame;
@@ -49,19 +79,8 @@ cmajor::debug::Frame GetCppFrame(Results* results, cmajor::debug::DebugInfo* deb
             Tuple* tuple = static_cast<Tuple*>(value);
             frame.level = tuple->GetInt("level");
             frame.func = tuple->GetString("func");
-            frame.file = tuple->GetString("file");
-            if (!frame.file.empty())
-            {
-                std::string currentCmajorRootPrefix = cmajor::debug::GetCurrentCmajorRootPrefix();
-                if (!frame.file.starts_with(currentCmajorRootPrefix))
-                {
-                    cmajor::debug::Project* project = debugInfo->GetProjectByInternalPath(frame.file);
-                    if (project)
-                    {
-                        frame.file = ToExternalFilePath(frame.file, currentCmajorRootPrefix, project->CmajorRootPrefix());
-                    }
-                }
-            }
+            frame.addr = tuple->GetString("addr");
+            frame.file = MakeExternalFilePath(tuple->GetString("file"), debugInfo);
             frame.line = tuple->GetInt("line");
         }
     }
@@ -78,6 +97,10 @@ Tuple* MakeFrameTuple(const cmajor::debug::Frame& frame)
     if (!frame.func.empty())
     {
         tuple->Add("func", new String(frame.func));
+    }
+    if (!frame.addr.empty())
+    {
+        tuple->Add("addr", new String(frame.addr));
     }
     if (!frame.file.empty())
     {
@@ -127,6 +150,42 @@ bool StackFrameHasLine(Reply* reply)
         }
     }
     return false;
+}
+
+std::vector<cmajor::info::db::Location> GetFrames(cmajor::debugger::Results* results, cmajor::debug::DebugInfo* debugInfo, cmajor::debug::DebuggerOutputWriter* outputWriter)
+{
+    std::vector<cmajor::info::db::Location> frames;
+    Value* stack = results->Get("stack");
+    if (stack && stack->IsList())
+    {
+        List* frameList = static_cast<List*>(stack);
+        int n = frameList->Items().size();
+        for (int i = 0; i < n; ++i)
+        {
+            Value* frame = frameList->Items()[i]->GetValue();
+            if (frame && frame->IsTuple())
+            {
+                Tuple* frameTuple = static_cast<Tuple*>(frame);
+                cmajor::debug::Frame cppFrame;
+                cppFrame.level = frameTuple->GetInt("level");
+                cppFrame.addr = frameTuple->GetString("addr");
+                cppFrame.func = frameTuple->GetString("func");
+                cppFrame.file = MakeExternalFilePath(frameTuple->GetString("file"), debugInfo);
+                cppFrame.line = frameTuple->GetInt("line");
+                cmajor::debug::Instruction* inst = debugInfo->GetNearestInstruction(cppFrame);
+                cmajor::debug::Frame cmajorFrame;
+                if (inst)
+                {
+                    cmajorFrame = inst->GetCmajorFrame();
+                }
+                cmajorFrame.level = cppFrame.level;
+                cmajorFrame.addr = cppFrame.addr;
+                cmajor::info::db::Location loc = ToLocation(cmajorFrame);
+                frames.push_back(loc);
+            }
+        }
+    }
+    return frames;
 }
 
 } // namespace cmajor::debugger

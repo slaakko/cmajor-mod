@@ -8,13 +8,13 @@ module cmcode.build;
 import cmcode.config;
 import cmcode.configuration;
 import cmajor.service;
-import cmajor.command;
+import cmajor.info;
 
 namespace cmcode {
 
 void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, BuildRequestKind requestKind)
 {
-    std::unique_ptr<cmajor::command::BuildCommand> buildCommand(new cmajor::command::BuildCommand());
+    std::unique_ptr<cmajor::info::bs::BuildCommand> buildCommand(new cmajor::info::bs::BuildCommand());
     const BuildSettings& buildSettings = GetBuildSettings();
     buildCommand->backend = backend;
     buildCommand->config = config;
@@ -46,7 +46,7 @@ void StopBuild()
     PutRequest(stopBuildRequest.release());
 }
 
-void StartGetDefinitionRequest(const bs::GetDefinitionRequest& getDefinitionRequest)
+void StartGetDefinitionRequest(const cmajor::info::bs::GetDefinitionRequest& getDefinitionRequest)
 {
     //cmajor::service::BuildServiceStartParams serviceStartParams = cmajor::service::BuildServiceStartParams().
         //ProcessName("cmcode").DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait());

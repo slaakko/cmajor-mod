@@ -158,8 +158,8 @@
     <ProjectReference Include="..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\bmsg\bmsg.vcxproj">
-      <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
+    <ProjectReference Include="..\info\info.vcxproj">
+      <Project>{4b55ce70-b5dc-4928-a56d-6cde46dc8186}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

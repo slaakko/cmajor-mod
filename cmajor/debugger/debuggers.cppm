@@ -6,7 +6,6 @@
 export module cmajor.debuggers;
 
 export import cmajor.debugger.breakpoint;
-export import cmajor.debugger.location;
 export import cmajor.debugger;
 export import cmajor.gdb.debugger;
 export import cmajor.lldb.debugger;

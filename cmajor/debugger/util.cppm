@@ -6,6 +6,7 @@
 export module cmajor.debugger.util;
 
 import cmajor.debug;
+import cmajor.info;
 import std.core;
 
 export namespace cmajor::debugger {
@@ -14,7 +15,11 @@ class Results;
 class Reply;
 class Tuple;
 
+cmajor::info::db::Location ToLocation(const cmajor::debug::Frame& frame);
+
 cmajor::debug::Frame GetCppFrame(Results* results, cmajor::debug::DebugInfo* debugInfo);
+
+std::string MakeExternalFilePath(const std::string& path, cmajor::debug::DebugInfo* debugInfo);
 
 std::string ToExternalFilePath(const std::string& path, const std::string& externalRootPrefix, const std::string& internalRootPrefix);
 
@@ -23,5 +28,7 @@ std::string ToInternalFilePath(const std::string& path, const std::string& exter
 Tuple* MakeFrameTuple(const cmajor::debug::Frame& frame);
 
 bool StackFrameHasLine(Reply* reply);
+
+std::vector<cmajor::info::db::Location> GetFrames(cmajor::debugger::Results* results, cmajor::debug::DebugInfo* debugInfo, cmajor::debug::DebuggerOutputWriter* outputWriter);
 
 } // namespace cmajor::debugger

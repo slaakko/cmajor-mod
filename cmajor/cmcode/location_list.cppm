@@ -5,7 +5,7 @@
 
 export module cmcode.location.list;
 
-import cmajor.build.server.message;
+import cmajor.info;
 import wing;
 import std.core;
 
@@ -15,7 +15,7 @@ const int maxLocations = 20;
 
 class MainWindow;
 
-inline bool operator==(const bs::DefinitionSourceLocation& left, const bs::DefinitionSourceLocation& right)
+inline bool operator==(const cmajor::info::bs::DefinitionSourceLocation& left, const cmajor::info::bs::DefinitionSourceLocation& right)
 {
     return left.file == right.file && left.line == right.line;
 }
@@ -28,15 +28,15 @@ public:
     void UpdateToolButtons();
     bool CanGotoPrev() const { return currentIndex > 0; }
     bool CanGotoNext() const { return currentIndex < locations.size(); }
-    void AddLocation(const bs::DefinitionSourceLocation& location);
-    void GotoPreviousLocation(const bs::DefinitionSourceLocation& currentLocation);
-    void GotoNextLocation(const bs::DefinitionSourceLocation& currentLocation);
+    void AddLocation(const cmajor::info::bs::DefinitionSourceLocation& location);
+    void GotoPreviousLocation(const cmajor::info::bs::DefinitionSourceLocation& currentLocation);
+    void GotoNextLocation(const cmajor::info::bs::DefinitionSourceLocation& currentLocation);
 private:
     MainWindow* mainWindow;
     int currentIndex;
     wing::ToolButton* prevToolButton;
     wing::ToolButton* nextToolButton;
-    std::vector<bs::DefinitionSourceLocation> locations;
+    std::vector<cmajor::info::bs::DefinitionSourceLocation> locations;
 };
 
 } // namespace cmcode

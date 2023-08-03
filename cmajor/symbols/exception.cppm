@@ -5,7 +5,7 @@
 
 export module cmajor.symbols.exception;
 
-import cmajor.command;
+import cmajor.info;
 import std.core;
 import soul.ast.source.pos;
 import soul.xml.dom;
@@ -40,7 +40,7 @@ public:
     const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& References() const { return references; }
     void SetProject(const std::string& projectName_);
     const std::string& ProjectName() const { return projectName; }
-    std::vector<cmajor::command::CompileError> ToErrors() const;
+    std::vector<cmajor::info::bs::CompileError> ToErrors() const;
 private:
     std::string what;
     std::string message;

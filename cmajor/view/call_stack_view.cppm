@@ -5,7 +5,7 @@
 
 export module cmajor.view.call.stack.view;
 
-import cmajor.debug.message;
+import cmajor.info.db;
 import wing;
 import std.core;
 
@@ -13,8 +13,8 @@ export namespace cmajor::view {
 
 struct FrameSelectedEventArgs
 {
-    FrameSelectedEventArgs(db::Location* frame_);
-    db::Location* frame;
+    FrameSelectedEventArgs(cmajor::info::db::Location* frame_);
+    cmajor::info::db::Location* frame;
 };
 
 using FrameSelectedEvent = wing::EventWithArgs<FrameSelectedEventArgs>;
@@ -28,7 +28,7 @@ public:
     int Depth() const { return depth; }
     void SetDepth(int depth_);
     const std::pair<int, int>& GetFrameRange();
-    void SetFrameRange(const std::vector<db::Location>& frames_);
+    void SetFrameRange(const std::vector<cmajor::info::db::Location>& frames_);
     FrameSelectedEvent& FrameSelected() { return frameSelected; }
 protected:
     void OnLocationChanged() override;
@@ -46,7 +46,7 @@ private:
     wing::Control* child;
     int depth;
     std::pair<int, int> frameRange;
-    std::vector<std::unique_ptr<db::Location>> frames;
+    std::vector<std::unique_ptr<cmajor::info::db::Location>> frames;
     FrameSelectedEvent frameSelected;
 };
 

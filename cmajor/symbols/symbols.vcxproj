@@ -268,6 +268,9 @@
     <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\info\info.vcxproj">
+      <Project>{4b55ce70-b5dc-4928-a56d-6cde46dc8186}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
     </ProjectReference>

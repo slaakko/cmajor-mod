@@ -5,7 +5,7 @@
 
 export module cmajor.view.locals.view;
 
-import cmajor.debug.message;
+import cmajor.info.db;
 import wing;
 
 export namespace cmajor::view {
@@ -40,7 +40,7 @@ public:
     void ResetChildExtentRequested() { childExtentRequested = false; }
     bool ChildExtentRequested() const { return childExtentRequested; }
     std::string FetchExpression() const;
-    void SetChildResults(const std::vector<db::ChildResult>& childResults);
+    void SetChildResults(const std::vector<cmajor::info::db::ChildResult>& childResults);
     bool IsFetchSetEmpty() const { return fetchSet.empty(); }
     void UpdateFetchSet();
     void Fetch();
@@ -68,7 +68,7 @@ private:
     bool childExtentRequested;
     wing::TreeViewNode* fetchNode;
     std::set<wing::TreeViewNode*> fetchSet;
-    std::vector<std::unique_ptr<db::ChildResult>> childResultVec;
+    std::vector<std::unique_ptr<cmajor::info::db::ChildResult>> childResultVec;
     wing::Container container;
     wing::TreeView* treeView;
     wing::Control* child;

@@ -191,14 +191,14 @@
     <ProjectReference Include="..\ast\ast.vcxproj">
       <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\bmsg\bmsg.vcxproj">
-      <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\command\command.vcxproj">
       <Project>{86f27ef1-b28b-4900-a2be-ef1ded44a369}</Project>
     </ProjectReference>
     <ProjectReference Include="..\debugger\debugger.vcxproj">
       <Project>{18f216d5-8885-4f16-a0ad-af16c208eeae}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\info\info.vcxproj">
+      <Project>{4b55ce70-b5dc-4928-a56d-6cde46dc8186}</Project>
     </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>

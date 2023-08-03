@@ -481,6 +481,19 @@ Instruction* CompileUnit::GetInstruction(int32_t cppLineNumber) const
     }
 }
 
+Instruction* CompileUnit::GetNearestInstruction(int32_t cppLineNumber) const
+{
+    auto it = instructionMap.lower_bound(cppLineNumber);
+    if (it != instructionMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 SourceFileReference::SourceFileReference(int32_t fileIndex_, const std::string& filePath_) : fileIndex(fileIndex_), filePath(filePath_)
 {
 }
@@ -1168,6 +1181,33 @@ Instruction* DebugInfo::GetMainFunctionEntryInstruction() const
         inst = mainFunction->GetInstruction(index);
     }
     return inst;
+}
+
+Instruction* DebugInfo::GetNearestInstruction(const Frame& frame) const
+{
+    try
+    {
+        if (frame.func == "main" || frame.func == "wmain" || frame.func == "WinMain" || frame.func == "wWinMain")
+        {
+            return nullptr;
+        }
+        std::string projectDir = util::Path::GetDirectoryName(frame.file);
+        Project* project = GetProjectByPath(projectDir);
+        if (project)
+        {
+            std::string compileUnitBaseName = util::Path::GetFileNameWithoutExtension(frame.file);
+            CompileUnit* compileUnit = project->GetCompileUnit(compileUnitBaseName);
+            if (compileUnit)
+            {
+                Instruction* instruction = compileUnit->GetNearestInstruction(frame.line);
+                return instruction;
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+    return nullptr;
 }
 
 Instruction* DebugInfo::GetInstruction(const Frame& frame, DebuggerOutputWriter& outputWriter) const

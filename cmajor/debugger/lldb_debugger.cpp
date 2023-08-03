@@ -88,10 +88,20 @@ std::unique_ptr<Reply> LLDBDebugger::Finish()
     return std::unique_ptr<Reply>();
 }
 
-std::unique_ptr<Reply> LLDBDebugger::Until(const Location& loc)
+std::unique_ptr<Reply> LLDBDebugger::Until(const cmajor::info::db::Location& loc)
 {
     lldb->WriteLine("until");
     return std::unique_ptr<Reply>();
+}
+
+int LLDBDebugger::Depth()
+{
+    return 0;
+}
+
+std::vector<cmajor::info::db::Location>  LLDBDebugger::Frames(int lowFrame, int highFrame)
+{
+    return std::vector<cmajor::info::db::Location>();
 }
 
 } // namespace cmajor::debugger

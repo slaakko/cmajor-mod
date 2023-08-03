@@ -84,6 +84,15 @@ std::string BreakInsertRequest::ToString() const
     return "-break-insert " + location;
 }
 
+DepthRequest::DepthRequest() : Request(RequestKind::depth)
+{
+}
+
+std::string DepthRequest::ToString() const
+{
+    return "-stack-info-depth";
+}
+
 FramesRequest::FramesRequest(int lowFrame_, int highFrame_) : Request(RequestKind::frames), lowFrame(lowFrame_), highFrame(highFrame_)
 {
 }

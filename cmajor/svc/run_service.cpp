@@ -8,7 +8,7 @@ module cmajor.run.service;
 import cmajor.debug.service;
 import cmajor.debug;
 import cmajor.debuggers;
-import cmajor.debug.message;
+import cmajor.info.db;
 import cmajor.port.map.service;
 import util;
 

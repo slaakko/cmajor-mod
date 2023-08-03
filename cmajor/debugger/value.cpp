@@ -189,6 +189,16 @@ std::string Results::GetString(const std::string& key) const
     return std::string();
 }
 
+int Results::GetInt(const std::string& key) const
+{
+    std::string str = GetString(key);
+    if (!str.empty())
+    {
+        return std::stoi(str);
+    }
+    return 0;
+}
+
 std::string Results::ToString() const
 {
     std::string str;

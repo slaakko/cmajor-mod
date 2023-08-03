@@ -6,10 +6,10 @@
 export module cmajor.debugger;
 
 import cmajor.debugger.breakpoint;
-import cmajor.debugger.location;
 import cmajor.debugger.debug.logger;
 import cmajor.debugger.message.writer;
 import cmajor.debug;
+import cmajor.info;
 import util;
 import std.core;
 
@@ -50,7 +50,9 @@ public:
     virtual std::unique_ptr<Reply> Step() = 0;
     virtual std::unique_ptr<Reply> Next() = 0;
     virtual std::unique_ptr<Reply> Finish() = 0;
-    virtual std::unique_ptr<Reply> Until(const Location& loc) = 0;
+    virtual std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) = 0;
+    virtual int Depth() = 0;
+    virtual std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) = 0;
 };
 
 } // namespace cmajor::debugger

@@ -6,6 +6,7 @@
 export module cmajor.debug.service;
 
 import cmajor.debuggers;
+import cmajor.info;
 import cmajor.service.request;
 import cmajor.service.message;
 import std.core;
@@ -87,11 +88,30 @@ public:
 class UntilDebugServiceRequest : public Request
 {
 public:
-    UntilDebugServiceRequest(const cmajor::debugger::Location& loc_);
+    UntilDebugServiceRequest(const cmajor::info::db::Location& loc_);
     void Execute() override;
     std::string Name() const override { return "untilDebugServiceRequest"; }
 private:
-    cmajor::debugger::Location loc;
+    cmajor::info::db::Location loc;
+};
+
+class DepthDebugServiceRequest : public Request
+{
+public:
+    DepthDebugServiceRequest();
+    void Execute() override;
+    std::string Name() const override { return "depthDebugServiceRequest"; }
+};
+
+class FramesDebugServiceRequest : public Request
+{
+public:
+    FramesDebugServiceRequest(int lowFrame_, int highFrame_);
+    void Execute() override;
+    std::string Name() const override { return "framesDebugServiceRequest"; }
+private:
+    int lowFrame;
+    int highFrame;
 };
 
 class PutDebugServiceProgramInputLineRequest : public Request
@@ -154,6 +174,24 @@ private:
     std::string errorMessage;
 };
 
+class DepthDebugServiceReplyServiceMessage : public ServiceMessage
+{
+public:
+    DepthDebugServiceReplyServiceMessage(const cmajor::info::db::DepthReply& depthReply_);
+    const cmajor::info::db::DepthReply& DepthReply() const { return depthReply; }
+private:
+    cmajor::info::db::DepthReply depthReply;
+};
+
+class FramesDebugServiceReplyServiceMessage : public ServiceMessage
+{
+public:
+    FramesDebugServiceReplyServiceMessage(const cmajor::info::db::FramesReply& framesReply_);
+    const cmajor::info::db::FramesReply& FramesReply() const { return framesReply; }
+private:
+    cmajor::info::db::FramesReply framesReply;
+};
+
 class TargetOutputServiceMessage : public ServiceMessage
 {
 public:
@@ -171,3 +209,4 @@ void SetDebugServiceProgramTargetInputEof();
 void PutDebugServiceProgramTargetInputLine(const std::string& targetInputLine);
 
 } // cmajor::service
+

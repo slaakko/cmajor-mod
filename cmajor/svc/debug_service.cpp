@@ -113,7 +113,9 @@ public:
     void Next();
     void Step();
     void Finish();
-    void Until(const cmajor::debugger::Location& loc);
+    void Until(const cmajor::info::db::Location& loc);
+    void Depth();
+    void Frames(int lowFrame, int highFrame);
     bool Running() const { return debugger.get() != nullptr; }
     void RunSession();
     std::string GetTargetInputBytes() override;
@@ -386,7 +388,7 @@ void DebugService::Finish()
     }
 }
 
-void DebugService::Until(const cmajor::debugger::Location& loc)
+void DebugService::Until(const cmajor::info::db::Location& loc)
 {
     try
     {
@@ -394,6 +396,39 @@ void DebugService::Until(const cmajor::debugger::Location& loc)
         RequestGuard requestGuard(requestInProgress);
         std::unique_ptr<cmajor::debugger::Reply> reply = debugger->Until(loc);
         PutServiceMessage(new ExecDebugServiceReplyServiceMessage(reply.release()));
+    }
+    catch (const std::exception& ex)
+    {
+        PutServiceMessage(new DebugErrorServiceMessage(ex.what()));
+    }
+}
+
+void DebugService::Depth()
+{
+    try
+    {
+        if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
+        int depth = debugger->Depth();
+        cmajor::info::db::DepthReply depthReply;
+        depthReply.depth = depth;
+        PutServiceMessage(new DepthDebugServiceReplyServiceMessage(depthReply));
+    }
+    catch (const std::exception& ex)
+    {
+        PutServiceMessage(new DebugErrorServiceMessage(ex.what()));
+    }
+}
+
+void DebugService::Frames(int lowFrame, int highFrame)
+{
+    try
+    {
+        if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
+        cmajor::info::db::FramesReply framesReply;
+        framesReply.frames = debugger->Frames(lowFrame, highFrame);
+        PutServiceMessage(new FramesDebugServiceReplyServiceMessage(framesReply));
     }
     catch (const std::exception& ex)
     {
@@ -479,13 +514,31 @@ void FinishDebugServiceRequest::Execute()
     DebugService::Instance().Finish();
 }
 
-UntilDebugServiceRequest::UntilDebugServiceRequest(const cmajor::debugger::Location& loc_) : loc(loc_)
+UntilDebugServiceRequest::UntilDebugServiceRequest(const cmajor::info::db::Location& loc_) : loc(loc_)
 {
 }
 
 void UntilDebugServiceRequest::Execute()
 {
     DebugService::Instance().Until(loc);
+}
+
+DepthDebugServiceRequest::DepthDebugServiceRequest()
+{
+}
+
+void DepthDebugServiceRequest::Execute()
+{
+    DebugService::Instance().Depth();
+}
+
+FramesDebugServiceRequest::FramesDebugServiceRequest(int lowFrame_, int highFrame_) : lowFrame(lowFrame_), highFrame(highFrame_)
+{
+}
+
+void FramesDebugServiceRequest::Execute()
+{
+    DebugService::Instance().Frames(lowFrame, highFrame);
 }
 
 PutDebugServiceProgramInputLineRequest::PutDebugServiceProgramInputLineRequest(const std::string& inputLine_) : inputLine(inputLine_)
@@ -531,6 +584,16 @@ DebugServiceStoppedServiceMessage::DebugServiceStoppedServiceMessage() : Service
 }
 
 DebugErrorServiceMessage::DebugErrorServiceMessage(const std::string& errorMessage_) : ServiceMessage(ServiceMessageKind::debugError), errorMessage(errorMessage_)
+{
+}
+
+DepthDebugServiceReplyServiceMessage::DepthDebugServiceReplyServiceMessage(const cmajor::info::db::DepthReply& depthReply_) : 
+    ServiceMessage(ServiceMessageKind::depthReply), depthReply(depthReply_)
+{
+}
+
+FramesDebugServiceReplyServiceMessage::FramesDebugServiceReplyServiceMessage(const cmajor::info::db::FramesReply& framesReply_) :
+    ServiceMessage(ServiceMessageKind::framesReply), framesReply(framesReply_)
 {
 }
 

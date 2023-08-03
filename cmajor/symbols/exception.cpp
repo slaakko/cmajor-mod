@@ -162,13 +162,13 @@ void Exception::SetProject(const std::string& projectName_)
     what = "project: " + projectName + " " + what;
 }
 
-std::vector<cmajor::command::CompileError> Exception::ToErrors() const
+std::vector<cmajor::info::bs::CompileError> Exception::ToErrors() const
 {
-    std::vector<cmajor::command::CompileError> errors;
+    std::vector<cmajor::info::bs::CompileError> errors;
     Module* module = GetModuleById(definedModuleId);
     if (module)
     {
-        cmajor::command::CompileError mainError;
+        cmajor::info::bs::CompileError mainError;
         mainError.message = message;
         mainError.project = projectName;
         mainError.file = module->GetFilePath(defined.file);
@@ -181,7 +181,7 @@ std::vector<cmajor::command::CompileError> Exception::ToErrors() const
             if (module)
             {
                 const soul::ast::SourcePos& sourcePos = ref.first;
-                cmajor::command::CompileError refError;
+                cmajor::info::bs::CompileError refError;
                 refError.message = "See reference to: ";
                 refError.file = module->GetFilePath(sourcePos.file);
                 refError.line = sourcePos.line;

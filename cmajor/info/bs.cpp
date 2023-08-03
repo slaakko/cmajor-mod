@@ -3,9 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
-module cmajor.build.command;
+module cmajor.info.bs;
 
-namespace cmajor::command {
+namespace cmajor::info::bs {
 
 BuildCommand::BuildCommand() :
     verbose(false), quiet(false), clean(false), rebuild(false), emitIR(false), linkWithDebugRuntime(false), disableModuleCache(false),
@@ -21,4 +21,16 @@ BuildResult::BuildResult()
 {
 }
 
-} // cmajor::command
+DefinitionSourceLocation::DefinitionSourceLocation() : file(), line(0), scol(0)
+{
+}
+
+GetDefinitionRequest::GetDefinitionRequest() : projectName(), projectFilePath(), backend(), config(), identifier(), identifierLocation()
+{
+}
+
+GetDefinitionReply::GetDefinitionReply() : definitionLocation()
+{
+}
+
+} // cmajor::info::bs

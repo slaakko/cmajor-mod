@@ -6,8 +6,8 @@
 export module cmajor.debugger.reply;
 
 import cmajor.debugger.record;
-import cmajor.debugger.location;
 import cmajor.debug;
+import cmajor.info;
 import soul.xml.dom;
 import soul.xml.xpath;
 import std.core;
@@ -31,8 +31,8 @@ public:
     bool IsFinal(Request* request) const;
     void SetStopReason(StopReason stopReason_) { stopReason = stopReason_; }
     StopReason GetStopReason() const { return stopReason; }
-    const Location& GetLocation() const { return location; }
-    void SetLocation(const Location& location_) { location = location_; }
+    const cmajor::info::db::Location& GetLocation() const { return location; }
+    void SetLocation(const cmajor::info::db::Location& location_) { location = location_; }
     std::unique_ptr<soul::xml::xpath::NodeSet> Evaluate(const std::string& keyPath);
     cmajor::debug::Instruction* StoppedInstruction() const { return stoppedInstruction; }
     void SetStoppedInstruction(cmajor::debug::Instruction* stoppedInstruction_) { stoppedInstruction = stoppedInstruction_; }
@@ -46,7 +46,7 @@ private:
     AsyncRecord* execRecord;
     ResultRecord* resultRecord;
     StopReason stopReason;
-    Location location;
+    cmajor::info::db::Location location;
     int exitCode;
     cmajor::debug::Instruction* stoppedInstruction;
 };

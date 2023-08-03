@@ -9,7 +9,7 @@ import cmajor.build.service;
 
 namespace cmajor::service {
 
-StartBuildServiceRequest::StartBuildServiceRequest(cmajor::command::BuildCommand* buildCommand_) : buildCommand(buildCommand_)
+StartBuildServiceRequest::StartBuildServiceRequest(cmajor::info::bs::BuildCommand* buildCommand_) : buildCommand(buildCommand_)
 {
 }
 

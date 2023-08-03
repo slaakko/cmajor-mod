@@ -5,7 +5,7 @@
 
 export module cmajor.debugger.breakpoint;
 
-import cmajor.debugger.location;
+import cmajor.info;
 import std.core;
 
 export namespace cmajor::debugger {
@@ -21,7 +21,7 @@ struct Breakpoint
     int line;
     std::string condition;
     bool disabled;
-    Location location;
+    cmajor::info::db::Location location;
     BreakpointList* list;
     std::vector<std::string> ids;
 };

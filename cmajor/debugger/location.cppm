@@ -16,6 +16,7 @@ struct Location
     Location(const std::string& file_, int line_);
     bool IsValid() const { return !file.empty() && line != 0; }
     std::string func;
+    std::string addr;
     std::string file;
     int line;
     int scol;

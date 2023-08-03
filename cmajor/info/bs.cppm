@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module cmajor.build.command;
+export module cmajor.info.bs;
 
 import std.core;
 
-export namespace cmajor::command {
+export namespace cmajor::info::bs {
 
 struct BuildCommand
 {
@@ -46,4 +46,29 @@ struct BuildResult
     std::vector<CompileError> errors;
 };
 
-} // cmajor::command
+struct DefinitionSourceLocation
+{
+    DefinitionSourceLocation();
+    std::string file;
+    int line;
+    int scol;
+};
+
+struct GetDefinitionRequest
+{
+    GetDefinitionRequest();
+    std::string projectName;
+    std::string projectFilePath;
+    std::string backend;
+    std::string config;
+    std::string identifier;
+    DefinitionSourceLocation identifierLocation;
+};
+
+struct GetDefinitionReply
+{
+    GetDefinitionReply();
+    DefinitionSourceLocation definitionLocation;
+};
+
+} // namespace cmajor::info::bs

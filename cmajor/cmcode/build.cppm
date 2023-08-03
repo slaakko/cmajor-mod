@@ -5,7 +5,7 @@
 
 export module cmcode.build;
 
-import cmajor.build.server.message;
+import cmajor.info;
 import std.core;
 
 export namespace cmcode {
@@ -32,6 +32,6 @@ inline BuildRequestKind operator~(BuildRequestKind flags)
 
 void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, BuildRequestKind requestKind);
 void StopBuild();
-void StartGetDefinitionRequest(const bs::GetDefinitionRequest& getDefinitionRequest);
+void StartGetDefinitionRequest(const cmajor::info::bs::GetDefinitionRequest& getDefinitionRequest);
 
 } // namespace cmcode

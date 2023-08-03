@@ -3,6 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
+// Cmajor binary port map server
+
 import std.core;
 import bpm.server;
 import util;
