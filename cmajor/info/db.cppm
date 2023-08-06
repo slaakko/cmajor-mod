@@ -5,6 +5,7 @@
 
 export module cmajor.info.db;
 
+import soul.xml.dom;
 import std.core;
 
 export namespace cmajor::info::db {
@@ -12,6 +13,7 @@ export namespace cmajor::info::db {
 struct SourceLoc
 {
     SourceLoc();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     std::string path;
     int line;
 };
@@ -20,6 +22,7 @@ struct Location
 {
     Location();
     bool IsValid() const;
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     std::string func;
     std::string addr;
     std::string file;
@@ -32,6 +35,7 @@ struct Location
 struct Type
 {
     Type();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     std::string name;
     std::string id;
 };
@@ -39,6 +43,7 @@ struct Type
 struct Result
 {
     Result();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     Type staticType;
     Type dynamicType;
     bool initialized;
@@ -48,6 +53,7 @@ struct Result
 struct ChildResult
 {
     ChildResult();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     std::string expr;
     std::string name;
     std::string type;
@@ -63,10 +69,6 @@ struct BreakReply
 };
 
 struct DeleteReply
-{
-};
-
-struct DepthRequest
 {
 };
 
@@ -89,16 +91,13 @@ struct FramesReply
     std::vector<Location> frames;
 };
 
-struct EvaluateRequest
-{
-    EvaluateRequest();
-    std::string expression;
-};
-
 struct EvaluateReply
 {
     EvaluateReply();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     Result result;
+    bool success;
+    std::string error;
 };
 
 struct CountRequest
@@ -124,7 +123,10 @@ struct EvaluateChildRequest
 struct EvaluateChildReply
 {
     EvaluateChildReply();
+    std::unique_ptr<soul::xml::Element> ToXml() const;
     std::vector<ChildResult> results;
+    bool success;
+    std::string error;
 };
 
 } // namespace cmajor::info::db

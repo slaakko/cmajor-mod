@@ -28,6 +28,13 @@ public:
     std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) override;
     int Depth() override;
     std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) override;
+    cmajor::info::db::CountReply Count(const cmajor::info::db::CountRequest& countRequest) override;
+    cmajor::info::db::EvaluateReply Evaluate(const std::string& expression) override;
+    cmajor::info::db::EvaluateChildReply EvaluateChild(const cmajor::info::db::EvaluateChildRequest& request) override;
+    cmajor::debug::DebugInfo* GetDebugInfo() override { return nullptr; }
+    cmajor::debug::Instruction* StoppedInstruction() override { return nullptr; }
+    cmajor::debug::DebuggerVariable GetNextDebuggerVariable() override;
+    std::unique_ptr<Reply> Execute(Request* request) override;
 private:
     std::unique_ptr<util::Process> lldb;
     std::unique_ptr<DebugLogger> logger;

@@ -150,11 +150,19 @@
   <ItemGroup>
     <ClCompile Include="breakpoint.cpp" />
     <ClCompile Include="breakpoint.cppm" />
+    <ClCompile Include="container.cpp" />
+    <ClCompile Include="container.cppm" />
+    <ClCompile Include="container_subscript_translator.cpp" />
+    <ClCompile Include="container_subscript_translator.cppm" />
     <ClCompile Include="debugger.cpp" />
     <ClCompile Include="debugger.cppm" />
     <ClCompile Include="debuggers.cppm" />
+    <ClCompile Include="debug_expr_evaluator.cpp" />
+    <ClCompile Include="debug_expr_evaluator.cppm" />
     <ClCompile Include="debug_logger.cpp" />
     <ClCompile Include="debug_logger.cppm" />
+    <ClCompile Include="evaluator.cpp" />
+    <ClCompile Include="evaluator.cppm" />
     <ClCompile Include="gdb_debugger.cpp" />
     <ClCompile Include="gdb_debugger.cppm" />
     <ClCompile Include="io.cpp" />

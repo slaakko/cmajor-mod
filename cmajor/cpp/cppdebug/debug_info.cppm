@@ -18,6 +18,7 @@ export namespace debug::info {}
 
 class CompileUnitFunction;
 class Scope;
+class FunctionScope;
 class SourceFileReference;
 class DebuggerOutputWriter;
 
@@ -99,6 +100,7 @@ public:
     CompileUnitFunction* GetCompileUnitFunction() const { return compileUnitFunction; }
     SourceFileReference* GetSourceFileReference() const;
     Scope* GetScope() const;
+    FunctionScope* GetFunctionScope() const;
     int32_t CppLineNumber() const { return cppLineNumber; }
     const SourceSpan& GetSourceSpan() const { return span; }
     int32_t CppLineIndex() const { return cppLineIndex; }
@@ -178,6 +180,8 @@ public:
     void AddLocalVariable(DIVariable* localVariable);
     DIVariable* GetVariable(const std::string& name) const override;
     const std::vector<std::unique_ptr<DIVariable>>& LocalVariables() const { return localVariables; }
+    int LocalVariableCount() const override { return localVariables.size(); }
+    bool IsFunctionScope() const { return true; }
 private:
     CompileUnitFunction* compileUnitFunction;
     int16_t id;

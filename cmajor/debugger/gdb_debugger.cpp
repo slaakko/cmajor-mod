@@ -10,6 +10,7 @@ import cmajor.debugger.reply.parser;
 import cmajor.debugger.message.writer;
 import cmajor.debugger.record;
 import cmajor.debugger.util;
+import cmajor.debugger.evaluator;
 
 namespace cmajor::debugger {
 
@@ -48,7 +49,7 @@ void OutputWriter::WriteWarning(const std::string& warning)
     }
 }
 
-GDBDebugger::GDBDebugger() : exited(false), gdbExitCode(0), outputWriter(new OutputWriter(nullptr)), stoppedInstruction(nullptr)
+GDBDebugger::GDBDebugger() : exited(false), gdbExitCode(0), outputWriter(new OutputWriter(nullptr)), stoppedInstruction(nullptr), nextGdbVariableIndex(0)
 {
 }
 
@@ -76,6 +77,7 @@ void GDBDebugger::SetMessageWriter(MessageWriter* messageWriter_)
 
 std::unique_ptr<Reply> GDBDebugger::Start(DebuggerStartParams& startParams)
 {
+    ClearBrowsingData();
     std::string startCommand;
     startCommand.append("gdb");
     startCommand.append(" --interpreter=mi");
@@ -233,18 +235,21 @@ std::unique_ptr<Reply> GDBDebugger::ParseReplyLine(const std::string& line)
 
 std::unique_ptr<Reply> GDBDebugger::Run()
 {
+    ClearBrowsingData();
     RunRequest runRequest;
     return Execute(&runRequest);
 }
 
 std::unique_ptr<Reply> GDBDebugger::Continue()
 {
+    ClearBrowsingData();
     ContinueRequest continueRequest;
     return Execute(&continueRequest);
 }
 
 std::unique_ptr<Reply> GDBDebugger::Next()
 {
+    ClearBrowsingData();
     cmajor::debug::Instruction* prevStoppedInstruction = stoppedInstruction;
     std::set<cmajor::debug::Instruction*> nextSet;
     if (stoppedInstruction)
@@ -310,6 +315,7 @@ std::unique_ptr<Reply> GDBDebugger::Next()
 
 std::unique_ptr<Reply> GDBDebugger::Step()
 {
+    ClearBrowsingData();
     bool step = true;
     if (stoppedInstruction && stoppedInstruction->AtEndBrace())
     {
@@ -390,14 +396,15 @@ std::unique_ptr<Reply> GDBDebugger::Step()
 
 std::unique_ptr<Reply> GDBDebugger::Finish()
 {
+    ClearBrowsingData();
     return std::unique_ptr<Reply>();
 }
 
 std::unique_ptr<Reply> GDBDebugger::Until(const cmajor::info::db::Location& loc)
 {
+    ClearBrowsingData();
     return std::unique_ptr<Reply>();
 }
-
 
 int GDBDebugger::Depth()
 {
@@ -459,6 +466,116 @@ std::vector<cmajor::info::db::Location> GDBDebugger::Frames(int lowFrame, int hi
     }
 }
 
+cmajor::info::db::CountReply GDBDebugger::Count(const cmajor::info::db::CountRequest& countRequest)
+{
+    if (stoppedInstruction)
+    {
+        cmajor::debug::CompileUnitFunction* function = stoppedInstruction->GetCompileUnitFunction();
+        if (countRequest.expression == "@locals")
+        {
+            int localVariableCount = function->LocalVariables().size();
+            cmajor::info::db::CountReply countReply;
+            countReply.count = localVariableCount;
+            return countReply;
+        }
+        else
+        {
+            throw std::runtime_error("cannot evaluate count: unknown count expression");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("cannot evaluate count: not stopped");
+    }
+}
+
+cmajor::info::db::EvaluateReply GDBDebugger::Evaluate(const std::string& expression)
+{
+    cmajor::info::db::EvaluateReply evaluateReply = cmajor::debugger::Evaluate(expression, this);
+    util::uuid staticTypeId = util::ParseUuid(evaluateReply.result.staticType.id);
+    if (stoppedInstruction)
+    {
+        cmajor::debug::CompileUnitFunction* function = stoppedInstruction->GetCompileUnitFunction();
+        cmajor::debug::CompileUnit* compileUnit = function->GetCompileUnit();
+        cmajor::debug::Project* project = compileUnit->GetProject();
+        cmajor::debug::DIType* type = project->GetType(staticTypeId);
+        int64_t count = 0;
+        cmajor::debug::DIType* dynType = nullptr;
+        std::set<uint64_t> printedPointers;
+        int level = 0;
+        int maxLevel = maxPointerLevel;
+        evaluateReply.result.value = cmajor::debugger::GetValue(expression, type, count, dynType, printedPointers, level, maxLevel, this);
+    }
+    else
+    {
+        throw std::runtime_error("cannot evaluate: not stopped");
+    }
+    return evaluateReply;
+}
+
+cmajor::info::db::EvaluateChildReply GDBDebugger::EvaluateChild(const cmajor::info::db::EvaluateChildRequest& request)
+{
+    cmajor::info::db::EvaluateChildReply reply;
+    int start = request.start;
+    int count = request.count;
+    if (stoppedInstruction)
+    {
+        cmajor::debug::CompileUnitFunction* function = stoppedInstruction->GetCompileUnitFunction();
+        if (request.expression == "@locals")
+        {
+            int localVariableCount = function->LocalVariables().size();
+            if (start >= 0 && start < localVariableCount)
+            {
+                if (start + count >= 0 && start + count <= localVariableCount)
+                {
+                    for (int i = start; i < start + count; ++i)
+                    {
+                        cmajor::debug::DIVariable* localVariable = function->LocalVariables()[i];
+                        cmajor::info::db::ChildResult result;
+                        result.expr = localVariable->Name();
+                        result.name = localVariable->Name();
+                        result.type = localVariable->GetType()->Name();
+                        int64_t count = 0;
+                        cmajor::debug::DIType* dynType = nullptr;
+                        std::set<uint64_t> printedPointers;
+                        int level = 0;
+                        int maxLevel = maxPointerLevel;
+                        result.value = GetValue(std::string(), localVariable, count, dynType, printedPointers, level, maxLevel, this);
+                        if (dynType != nullptr)
+                        {
+                            result.dynType = dynType->Name();
+                        }
+                        result.count = count;
+                        reply.results.push_back(result);
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("start/count not valid");
+                }
+            }
+            else
+            {
+                throw std::runtime_error("start not valid");
+            }
+        }
+        else
+        {
+            cmajor::debug::CompileUnit* compileUnit = function->GetCompileUnit();
+            cmajor::debug::Project* project = compileUnit->GetProject();
+            std::set<uint64_t> printedPointers;
+            int level = 0;
+            int maxLevel = maxPointerLevel;
+            cmajor::debugger::EvaluateChildRequest(project, request.expression, start, count, reply, printedPointers, level, maxLevel, this);
+        }
+    }
+    else
+    {
+        throw std::runtime_error("cannot evaluate: not stopped");
+    }
+    return reply;
+}
+
 void GDBDebugger::SetBreakpoints(const std::vector<Breakpoint*>& breakpoints)
 {
     int n = breakpoints.size();
@@ -515,6 +632,13 @@ void GDBDebugger::SetBreakpoint(Breakpoint* breakpoint)
             }
         }
     }
+}
+
+cmajor::debug::DebuggerVariable GDBDebugger::GetNextDebuggerVariable()
+{
+    int index = nextGdbVariableIndex++;
+    std::string variableName = "v" + std::to_string(index);
+    return cmajor::debug::DebuggerVariable(index, variableName);
 }
 
 } // namespace cmajor::debugger

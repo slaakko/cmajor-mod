@@ -271,6 +271,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
+    <ResourceCompile Include="..\cpp\cppdebug\cmajor.debug.expr.lexer.classmap.rc" />
     <ResourceCompile Include="..\cpp\cppdebug\cmajor.debug.gdb.reply.lexer.classmap.rc" />
     <ResourceCompile Include="..\debugger\cmajor.debugger.reply.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.container.file.lexer.classmap.rc" />

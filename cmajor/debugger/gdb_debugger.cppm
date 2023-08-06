@@ -32,11 +32,17 @@ public:
     std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) override;
     int Depth() override;
     std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) override;
+    cmajor::info::db::CountReply Count(const cmajor::info::db::CountRequest& countRequest) override;
+    cmajor::info::db::EvaluateReply Evaluate(const std::string& expression) override;
+    cmajor::info::db::EvaluateChildReply EvaluateChild(const cmajor::info::db::EvaluateChildRequest& request) override;
     void SetBreakpoints(const std::vector<Breakpoint*>& breakpoints);
     void SetBreakpoint(Breakpoint* breakpoint);
-    std::unique_ptr<Reply> Execute(Request* request);
+    std::unique_ptr<Reply> Execute(Request* request) override;
     std::unique_ptr<Reply> ReadReply(Request* request);
     std::unique_ptr<Reply> ParseReplyLine(const std::string& line);
+    cmajor::debug::DebugInfo* GetDebugInfo() override { return debugInfo.get(); }
+    cmajor::debug::Instruction* StoppedInstruction() override { return stoppedInstruction; }
+    cmajor::debug::DebuggerVariable GetNextDebuggerVariable() override;
 private:
     std::unique_ptr<util::Process> gdb;
     std::unique_ptr<DebugLogger> logger;
@@ -46,6 +52,7 @@ private:
     cmajor::debug::Instruction* stoppedInstruction;
     bool exited;
     int gdbExitCode;
+    int nextGdbVariableIndex;
 };
 
 } // namespace cmajor::debugger

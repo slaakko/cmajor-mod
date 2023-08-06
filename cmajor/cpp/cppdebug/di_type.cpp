@@ -118,6 +118,16 @@ std::unique_ptr<util::JsonValue> DIType::ToJson() const
     return std::unique_ptr<util::JsonValue>(jsonObject);
 }
 
+std::unique_ptr<soul::xml::Element> DIType::ToXml() const
+{
+    soul::xml::Element* typeElement = soul::xml::MakeElement("type");
+    typeElement->SetAttribute("kind", KindStr(kind));
+    typeElement->SetAttribute("id", util::ToString(id));
+    typeElement->SetAttribute("name", name);
+    typeElement->SetAttribute("irName", irName);
+    return std::unique_ptr<soul::xml::Element>(typeElement);
+}
+
 DITypeRef::DITypeRef(DIType* type_) : type(type_)
 {
 }
@@ -129,6 +139,15 @@ std::unique_ptr<util::JsonValue> DITypeRef::ToJson()
     jsonObject->AddField(U"irName", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(type->IrName()))));
     jsonObject->AddField(U"id", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(util::ToString(type->Id())))));
     return std::unique_ptr<util::JsonValue>(jsonObject);
+}
+
+std::unique_ptr<soul::xml::Element> DITypeRef::ToXml(const std::string& elementName) const
+{
+    soul::xml::Element* typeRefElement = soul::xml::MakeElement(elementName);
+    typeRefElement->SetAttribute("name", type->Name());
+    typeRefElement->SetAttribute("irName", type->IrName());
+    typeRefElement->SetAttribute("id", util::ToString(type->Id()));
+    return std::unique_ptr<soul::xml::Element>(typeRefElement);
 }
 
 DIPrimitiveType::DIPrimitiveType() : DIType(DIType::Kind::primitiveType), kind(Kind::none)
@@ -179,6 +198,13 @@ std::unique_ptr<util::JsonValue> DIPrimitiveType::ToJson() const
         jsonObject->AddField(U"primitiveType", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(PrimitiveTypeKindStr(kind)))));
     }
     return value;
+}
+
+std::unique_ptr<soul::xml::Element> DIPrimitiveType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("primitiveType", PrimitiveTypeKindStr(kind));
+    return typeElement;
 }
 
 bool DIPrimitiveType::IsIntegerType() const
@@ -279,6 +305,13 @@ std::unique_ptr<util::JsonValue> DIEnumType::ToJson() const
         jsonObject->AddField(U"underlyingTypeId", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(util::ToString(underlyingTypeId)))));
     }
     return value;
+}
+
+std::unique_ptr<soul::xml::Element> DIEnumType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("underlyingTypeId", util::ToString(underlyingTypeId));
+    return typeElement;
 }
 
 DITemplateParameter::DITemplateParameter() : DIType(Kind::templateParameter)
@@ -429,6 +462,34 @@ std::unique_ptr<util::JsonValue> DIClassType::ToJson() const
     return value;
 }
 
+std::unique_ptr<soul::xml::Element> DIClassType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("baseClassId", util::ToString(baseClassId));
+    if (!templateParameters.empty())
+    {
+        soul::xml::Element* templateParametersElement = soul::xml::MakeElement("templateParameters");
+        typeElement->AppendChild(templateParametersElement);
+        for (const auto& templateParameter : templateParameters)
+        {
+            templateParametersElement->AppendChild(templateParameter->ToXml().release());
+        }
+    }
+    soul::xml::Element* memberVariablesElement = soul::xml::MakeElement("memberVariables");
+    typeElement->AppendChild(memberVariablesElement);
+    for (const auto& memberVariable : memberVariables)
+    {
+        memberVariablesElement->AppendChild(memberVariable->ToXml().release());
+    }
+    typeElement->SetAttribute("polymorphic", polymorphic ? "true" : "false");
+    if (polymorphic)
+    {
+        typeElement->SetAttribute("vmtPtrIndex", std::to_string(vmtPtrIndex));
+        typeElement->SetAttribute("vmtVariableName", vmtVariableName);
+    }
+    return typeElement;
+}
+
 int NumBaseClasses(DIClassType* classType)
 {
     if (classType->BaseClassId().is_nil())
@@ -524,6 +585,28 @@ std::unique_ptr<util::JsonValue> DIClassTemplateSpecializationType::ToJson() con
     return value;
 }
 
+std::unique_ptr<soul::xml::Element> DIClassTemplateSpecializationType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIClassType::ToXml();
+    typeElement->SetAttribute("primaryTypeId", util::ToString(primaryTypeId));
+    if (containerKind != ContainerClassTemplateKind::notContainerClassTemplate)
+    {
+        typeElement->SetAttribute("container", ContainerName(containerKind));
+        typeElement->SetAttribute("valueTypeId", util::ToString(valueTypeId));
+    }
+    if (!templateArgumentTypeIds.empty())
+    {
+        soul::xml::Element* templateArgumentTypeIdsElement = soul::xml::MakeElement("templateArgumentTypeIds");
+        for (const util::uuid& templateArgumentTypeId : templateArgumentTypeIds)
+        {
+            soul::xml::Element* idElement = soul::xml::MakeElement("id");
+            idElement->SetAttribute("value", util::ToString(templateArgumentTypeId));
+            templateArgumentTypeIdsElement->AppendChild(idElement);
+        }
+    }
+    return typeElement;
+}
+
 DIDelegateType::DIDelegateType() : DIType(Kind::delegateType)
 {
 }
@@ -563,6 +646,12 @@ std::unique_ptr<util::JsonValue> DIClassDelegateType::ToJson() const
 {
     DIType* clsType = GetClassType();
     return clsType->ToJson();
+}
+
+std::unique_ptr<soul::xml::Element> DIClassDelegateType::ToXml() const
+{
+    DIType* clsType = GetClassType();
+    return clsType->ToXml();
 }
 
 DIInterfaceType::DIInterfaceType() : DIType(Kind::interfaceType)
@@ -606,6 +695,13 @@ std::unique_ptr<util::JsonValue> DIConstType::ToJson() const
     return value;
 }
 
+std::unique_ptr<soul::xml::Element> DIConstType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("baseTypeId", util::ToString(baseTypeId));
+    return typeElement;
+}
+
 DIReferenceType::DIReferenceType() : DIType(Kind::referenceType), baseTypeId(util::nil_uuid())
 {
 }
@@ -643,6 +739,13 @@ std::unique_ptr<util::JsonValue> DIReferenceType::ToJson() const
     return value;
 }
 
+std::unique_ptr<soul::xml::Element> DIReferenceType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("baseTypeId", util::ToString(baseTypeId));
+    return typeElement;
+}
+
 DIPointerType::DIPointerType() : DIType(Kind::pointerType), pointedTypeId(util::nil_uuid())
 {
 }
@@ -678,6 +781,13 @@ std::unique_ptr<util::JsonValue> DIPointerType::ToJson() const
         jsonObject->AddField(U"pointedTypeId", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(util::ToString(pointedTypeId)))));
     }
     return value;
+}
+
+std::unique_ptr<soul::xml::Element> DIPointerType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("pointedTypeId", util::ToString(pointedTypeId));
+    return typeElement;
 }
 
 DIArrayType::DIArrayType() : DIType(Kind::arrayType), elementTypeId(util::nil_uuid()), size(-1)
@@ -718,6 +828,14 @@ std::unique_ptr<util::JsonValue> DIArrayType::ToJson() const
         jsonObject->AddField(U"size", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(size)))));
     }
     return value;
+}
+
+std::unique_ptr<soul::xml::Element> DIArrayType::ToXml() const
+{
+    std::unique_ptr<soul::xml::Element> typeElement = DIType::ToXml();
+    typeElement->SetAttribute("elementTypeId", util::ToString(elementTypeId));
+    typeElement->SetAttribute("size", std::to_string(size));
+    return typeElement;
 }
 
 DIType* MakePointerType(DIType* pointedToType)

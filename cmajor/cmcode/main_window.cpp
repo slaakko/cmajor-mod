@@ -1404,22 +1404,22 @@ void MainWindow::HandleServiceMessage()
             HandleFramesReply(message->FramesReply()); 
             break;
         }
-        case cmajor::service::ServiceMessageKind::evaluateReply:
-        {
-            //cmajor::service::EvaluateReplyServiceMessage* message = static_cast<cmajor::service::EvaluateReplyServiceMessage*>(serviceMessage.get());
-            // HandleEvaluateReply(message->GetEvaluateReply(), message->RequestId()); TODO
-            break;
-        }
         case cmajor::service::ServiceMessageKind::countReply:
         {
-            //cmajor::service::CountReplyServiceMessage* message = static_cast<cmajor::service::CountReplyServiceMessage*>(serviceMessage.get());
-            //HandleCountReply(message->GetCountReply()); TODO
+            cmajor::service::CountDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::CountDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleCountReply(message->CountReply()); 
             break;
         }
         case cmajor::service::ServiceMessageKind::evaluateChildReply:
         {
-            //cmajor::service::EvaluateChildReplyServiceMessage* message = static_cast<cmajor::service::EvaluateChildReplyServiceMessage*>(serviceMessage.get());
-            //HandleEvaluateChildReply(message->GetEvaluateChildReply()); TODO
+            cmajor::service::EvaluateChildDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::EvaluateChildDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleEvaluateChildReply(message->Reply()); 
+            break;
+        }
+        case cmajor::service::ServiceMessageKind::evaluateReply:
+        {
+            cmajor::service::EvaluateDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::EvaluateDebugServiceReplyServiceMessage*>(serviceMessage.get());
+            HandleEvaluateReply(message->Reply(), message->RequestId());
             break;
         }
         case cmajor::service::ServiceMessageKind::targetRunning:
@@ -1835,7 +1835,6 @@ void MainWindow::HandleFramesReply(const cmajor::info::db::FramesReply& framesRe
 
 void MainWindow::HandleEvaluateReply(const cmajor::info::db::EvaluateReply& evaluateReply, int requestId)
 {
-    /*  TODO
     if (evaluateReply.success)
     {
         if (requestId >= 0 && requestId < expressionEvaluateRequests.size())
@@ -1863,31 +1862,20 @@ void MainWindow::HandleEvaluateReply(const cmajor::info::db::EvaluateReply& eval
     {
         cmajor::service::PutOutputServiceMessage("evaluate request failed: " + evaluateReply.error);
     }
-    */
 }
 
 void MainWindow::HandleCountReply(const cmajor::info::db::CountReply& countReply)
 {
-    /*  TODO
-    if (countReply.success)
+    cmajor::view::LocalsView* view = GetLocalsView();
+    if (view)
     {
-        cmajor::view::LocalsView* view = GetLocalsView();
-        if (view)
-        {
-            view->SetLocalCount(countReply.count);
-            UpdateLocals();
-        }
+        view->SetLocalCount(countReply.count);
+        UpdateLocals();
     }
-    else
-    {
-        cmajor::service::PutOutputServiceMessage("count request failed: " + countReply.error);
-    }
-    */
 }
 
 void MainWindow::HandleEvaluateChildReply(const cmajor::info::db::EvaluateChildReply& evaluateChildReply)
 {
-    /*  TODO
     if (evaluateChildReply.success)
     {
         cmajor::view::LocalsView* view = GetLocalsView();
@@ -1901,7 +1889,6 @@ void MainWindow::HandleEvaluateChildReply(const cmajor::info::db::EvaluateChildR
     {
         cmajor::service::PutOutputServiceMessage("evaluate child request failed: " + evaluateChildReply.error);
     }
-    */
 }
 
 void MainWindow::HandleLocation(const cmajor::info::db::Location& location, bool saveLocation, bool setSelection)
@@ -5404,6 +5391,14 @@ void MainWindow::OutputTabControlTabPageSelected()
             UpdateCallStack(true);
         }
     }
+    else if (tabPage == localsTabPage)
+    {
+        if (state == MainWindowState::debugging)
+        {
+            ClearLocals();
+            UpdateLocals();
+        }
+    }
 }
 
 wing::LogView* MainWindow::GetOutputLogView()
@@ -5622,7 +5617,7 @@ void MainWindow::UpdateLocals()
         if (!localsView->LocalCountRequested())
         {
             localsView->SetLocalCountRequested();
-            //cmajor::service::PutRequest(new cmajor::service::CountDebugServiceRequest("@locals")); TODO
+            cmajor::service::PutRequest(new cmajor::service::CountDebugServiceRequest("@locals")); 
         }
     }
     else
@@ -5633,7 +5628,7 @@ void MainWindow::UpdateLocals()
             if (!childExtent.IsEmpty())
             {
                 localsView->SetChildExtentRequested();
-                //cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); TODO
+                cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); 
             }
         }
         else
@@ -5646,7 +5641,7 @@ void MainWindow::UpdateLocals()
                 if (!childExtent.IsEmpty())
                 {
                     localsView->SetChildExtentRequested();
-                    //cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); TODO
+                    cmajor::service::PutRequest(new cmajor::service::EvaluateChildDebugServiceRequest(localsView->FetchExpression(), childExtent.start, childExtent.count)); 
                 }
             }
         }
@@ -5769,7 +5764,7 @@ void MainWindow::ExpressionHover(cmajor::view::ExpressionHoverEventArgs& args)
     int requestId = expressionEvaluateRequests.size();
     ExpressionEvaluateRequest request(args.expression, args.screenLoc);
     expressionEvaluateRequests.push_back(request);
-    //cmajor::service::PutRequest(new cmajor::service::EvaluateDebugServiceRequest(args.expression, requestId)); TODO
+    cmajor::service::PutRequest(new cmajor::service::EvaluateDebugServiceRequest(args.expression, requestId)); 
 }
 
 /*  TODO

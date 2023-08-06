@@ -12,7 +12,7 @@ import cmajor.debug.gdb;
 import cmajor.debug.evaluation.guard;
 import util;
 
-namespace cmajor::debug{
+namespace cmajor::debug {
 
 DebugExpressionEvaluator::DebugExpressionEvaluator(Debugger& debugger_, DebugInfo* debugInfo_) :
     debugger(debugger_), debugInfo(debugInfo_), integer(-1), rangeStart(-1), rangeEnd(-1), status(InitializationStatus::unknown)
@@ -204,6 +204,7 @@ void DebugExpressionEvaluator::Evaluate(BoundDebugNode* node)
         {
             util::JsonObject* jsonObject = static_cast<util::JsonObject*>(result.get());
             jsonObject->AddField(U"status", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(InitializationStatusStr(status)))));
+            uninitialized = status == InitializationStatus::uninitialized;
         }
         AddTypes(node);
         ContainerClassTemplateKind containerKind = GetContainerKind(node->Type());

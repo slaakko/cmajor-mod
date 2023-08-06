@@ -5,6 +5,7 @@
 
 export module cmajor.debug.di.type;
 
+import soul.xml.dom;
 import cmajor.debug.container;
 import cmajor.debug.di.enum_constant;
 import cmajor.debug.di.variable;
@@ -20,6 +21,8 @@ public:
     virtual ~Scope();
     virtual DIVariable* GetVariable(const std::string& name) const = 0;
     virtual std::string Name() const = 0;
+    virtual int LocalVariableCount() const = 0;
+    virtual bool IsFunctionScope() const { return false; }
 };
 
 class DIType
@@ -57,6 +60,7 @@ public:
     void SetProject(Project* project_) { project = project_; }
     virtual std::unique_ptr<util::JsonValue> ToJson() const;
     virtual DIType* DerefType() { return this; }
+    virtual std::unique_ptr<soul::xml::Element> ToXml() const;
 private:
     Kind kind;
     util::uuid id;
@@ -70,6 +74,7 @@ class DITypeRef
 public:
     DITypeRef(DIType* type_);
     std::unique_ptr<util::JsonValue> ToJson();
+    std::unique_ptr<soul::xml::Element> ToXml(const std::string& elementName) const;
 private:
     DIType* type;
 };
@@ -88,6 +93,7 @@ public:
     Kind GetPrimitiveTypeKind() const { return kind; }
     static std::string PrimitiveTypeKindStr(Kind kind);
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     bool IsIntegerType() const;
 private:
     Kind kind;
@@ -105,6 +111,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
 private:
     util::uuid underlyingTypeId;
     std::vector<DIEnumConstant> enumConstants;
@@ -129,6 +136,7 @@ public:
     std::string Name() const override;
     void AddMemberVariable(DIVariable* memberVariable);
     DIVariable* GetVariable(const std::string& name) const override;
+    int LocalVariableCount() const override { return 0; }
 private:
     DIClassType* classType;
     std::unordered_map<std::string, DIVariable*> memberVariableMap;
@@ -159,6 +167,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     Scope* GetScope() override { return &scope; }
 private:
     ClassScope scope;
@@ -188,6 +197,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
 private:
     ContainerClassTemplateKind containerKind;
     util::uuid primaryTypeId;
@@ -210,6 +220,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     Scope* GetScope() override;
 private:
     util::uuid classTypeId;
@@ -231,6 +242,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     DIType* DerefType() override { return BaseType()->DerefType(); }
 private:
     util::uuid baseTypeId;
@@ -246,6 +258,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     DIType* DerefType() override { return BaseType(); }
 private:
     util::uuid baseTypeId;
@@ -261,6 +274,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
     DIType* DerefType() override { return PointedToType(); }
 private:
     util::uuid pointedTypeId;
@@ -278,6 +292,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     std::unique_ptr<util::JsonValue> ToJson() const override;
+    std::unique_ptr<soul::xml::Element> ToXml() const override;
 private:
     util::uuid elementTypeId;
     int64_t size;

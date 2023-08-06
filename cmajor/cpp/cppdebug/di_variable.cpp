@@ -87,4 +87,13 @@ std::unique_ptr<util::JsonValue> DIVariable::ToJson() const
     return std::unique_ptr<util::JsonValue>(jsonObject);
 }
 
+std::unique_ptr<soul::xml::Element> DIVariable::ToXml() const
+{
+    soul::xml::Element* variableElement = soul::xml::MakeElement("variable");
+    variableElement->SetAttribute("name", name);
+    variableElement->SetAttribute("irName", irName);
+    variableElement->SetAttribute("typeId", util::ToString(typeId));
+    return std::unique_ptr<soul::xml::Element>(variableElement);
+}
+
 } // namespace cmajor::debug

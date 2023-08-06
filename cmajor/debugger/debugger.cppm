@@ -53,6 +53,13 @@ public:
     virtual std::unique_ptr<Reply> Until(const cmajor::info::db::Location& loc) = 0;
     virtual int Depth() = 0;
     virtual std::vector<cmajor::info::db::Location> Frames(int lowFrame, int highFrame) = 0;
+    virtual cmajor::info::db::CountReply Count(const cmajor::info::db::CountRequest& countRequest) = 0;
+    virtual cmajor::info::db::EvaluateReply Evaluate(const std::string& expression) = 0;
+    virtual cmajor::info::db::EvaluateChildReply EvaluateChild(const cmajor::info::db::EvaluateChildRequest& request) = 0;
+    virtual cmajor::debug::DebugInfo* GetDebugInfo() = 0;
+    virtual cmajor::debug::Instruction* StoppedInstruction() = 0;
+    virtual cmajor::debug::DebuggerVariable GetNextDebuggerVariable() = 0;
+    virtual std::unique_ptr<Reply> Execute(Request* request) = 0;
 };
 
 } // namespace cmajor::debugger

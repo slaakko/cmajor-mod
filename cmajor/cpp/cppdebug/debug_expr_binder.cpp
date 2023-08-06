@@ -13,8 +13,8 @@ import cmajor.debug.di.type;
 
 namespace cmajor::debug{
 
-DebugExprBinder::DebugExprBinder(Debugger& debugger_, DebugInfo* debugInfo_, Scope* scope_, bool isBreakConditionExpr_) :
-    debugger(debugger_), debugInfo(debugInfo_), scope(scope_), hasContainerSubscript(false), status(InitializationStatus::unknown),
+DebugExprBinder::DebugExprBinder(Instruction* stoppedInstruction_, DebugInfo* debugInfo_, Scope* scope_, bool isBreakConditionExpr_) :
+    stoppedInstruction(stoppedInstruction_), debugInfo(debugInfo_), scope(scope_), hasContainerSubscript(false), status(InitializationStatus::unknown),
     isBreakConditionExpr(isBreakConditionExpr_)
 {
 }
@@ -27,7 +27,7 @@ void DebugExprBinder::Visit(IdentifierDebugExprNode& node)
         InitializationStatus varStatus = InitializationStatus::unknown;
         if (variable->GetKind() == DIVariable::Kind::localVariable && variable->GetInitLineNumber() != -1)
         {
-            if (debugger.StoppedInstruction()->GetSourceSpan().line > variable->GetInitLineNumber())
+            if (stoppedInstruction->GetSourceSpan().line > variable->GetInitLineNumber())
             {
                 varStatus = InitializationStatus::initialized;
             }

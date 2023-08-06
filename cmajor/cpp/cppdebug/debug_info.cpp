@@ -230,6 +230,16 @@ Scope* Instruction::GetScope() const
     }
 }
 
+FunctionScope* Instruction::GetFunctionScope() const
+{
+    Scope* scope = GetScope();
+    if (scope && scope->IsFunctionScope())
+    {
+        return static_cast<FunctionScope*>(scope);
+    }
+    return nullptr;
+}
+
 bool Instruction::IsStopInstruction() const
 {
     if ((flags & (InstructionFlags::beginBrace | InstructionFlags::endBrace)) != InstructionFlags::none)

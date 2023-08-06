@@ -40,3 +40,4 @@ export import cmajor.debug.io;
 export import cmajor.debug.kill.channel;
 export import cmajor.debug.server.debugger;
 export import cmajor.debug.token.value.parser;
+export import cmajor.debug.expression.parser;

@@ -7,6 +7,7 @@ export module cmajor.debug.di.variable;
 
 import util;
 import std.core;
+import soul.xml.dom;
 
 export namespace cmajor::debug {
 
@@ -37,6 +38,7 @@ public:
     void SetTypeId(const util::uuid& typeId_);
     DIType* GetType() const;
     std::unique_ptr<util::JsonValue> ToJson() const;
+    std::unique_ptr<soul::xml::Element> ToXml() const;
 private:
     Kind kind;
     int32_t initLineNumber;

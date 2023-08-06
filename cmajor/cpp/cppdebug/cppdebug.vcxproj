@@ -175,6 +175,8 @@
     <ClCompile Include="debug_expr_evaluator.cpp" />
     <ClCompile Include="debug_expr_visitor.cpp" />
     <ClCompile Include="debug_info_to_xml.cpp" />
+    <ClCompile Include="expression_parser.cpp" />
+    <ClCompile Include="expression_parser.cppm" />
     <ClCompile Include="kill_channel.cpp" />
     <ClCompile Include="server_debugger.cpp" />
     <ClCompile Include="server_debugger.cppm" />

@@ -1164,7 +1164,7 @@ void Debugger::SetBreakCondition(int breakpointId, const std::string& expression
     auto lexer = cmajor::debug::expr::lexer::MakeLexer(expr.c_str(), expr.c_str() + expr.length(), "");
     using LexerType = decltype(lexer);
     std::unique_ptr<DebugExprNode> node = cmajor::debug::expr::parser::DebugExprParser<LexerType>::Parse(lexer);
-    DebugExprBinder binder(*this, debugInfo.get(), stoppedInstruction->GetScope(), true);
+    DebugExprBinder binder(stoppedInstruction, debugInfo.get(), stoppedInstruction->GetScope(), true);
     node->Accept(binder);
     BoundDebugExpression* boundExpression = binder.BoundExpression(node.get());
     std::string condition;
@@ -1702,7 +1702,7 @@ void Debugger::Evaluate(const std::string& expression)
     auto lexer = cmajor::debug::expr::lexer::MakeLexer(expr.c_str(), expr.c_str() + expr.length(), "");
     using LexerType = decltype(lexer);
     std::unique_ptr<DebugExprNode> node = cmajor::debug::expr::parser::DebugExprParser<LexerType>::Parse(lexer);
-    DebugExprBinder binder(*this, debugInfo.get(), stoppedInstruction->GetScope(), false);
+    DebugExprBinder binder(stoppedInstruction, debugInfo.get(), stoppedInstruction->GetScope(), false);
     node->Accept(binder);
     BoundDebugExpression* boundExpression = binder.BoundExpression(node.get());
     if (boundExpression->HasContainerSubscript())
@@ -1725,7 +1725,7 @@ DIType* Debugger::GetType(const std::string& expression)
     auto lexer = cmajor::debug::expr::lexer::MakeLexer(expr.c_str(), expr.c_str() + expr.length(), "");
     using LexerType = decltype(lexer);
     std::unique_ptr<DebugExprNode> node = cmajor::debug::expr::parser::DebugExprParser<LexerType>::Parse(lexer);
-    DebugExprBinder binder(*this, debugInfo.get(), stoppedInstruction->GetScope(), false);
+    DebugExprBinder binder(stoppedInstruction, debugInfo.get(), stoppedInstruction->GetScope(), false);
     node->Accept(binder);
     BoundDebugExpression* boundExpression = binder.BoundExpression(node.get());
     return boundExpression->Type();

@@ -11,7 +11,7 @@ export namespace cmajor::debugger {
 
 enum class RequestKind
 {
-    run, cont, next, step, exit, breakInsert, depth, frames
+    run, cont, next, step, exit, breakInsert, depth, frames, varCreate, varDelete
 };
 
 class Request
@@ -86,6 +86,28 @@ public:
 private:
     int lowFrame;
     int highFrame;
+};
+
+class VarCreateRequest : public Request
+{
+public:
+    VarCreateRequest(const std::string& name_, const std::string& frame_, const std::string& expression_);
+    std::string ToString() const override;
+private:
+    std::string name;
+    std::string frame;
+    std::string expression;
+};
+
+class VarDeleteRequest : public Request
+{
+public:
+    VarDeleteRequest(const std::string& name_);
+    void SetJustChildren(bool justChildren_);
+    std::string ToString() const override;
+private:
+    std::string name;
+    bool justChildren;
 };
 
 } // namespace cmajor::debugger

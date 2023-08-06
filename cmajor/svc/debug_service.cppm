@@ -114,6 +114,39 @@ private:
     int highFrame;
 };
 
+class CountDebugServiceRequest : public Request
+{
+public:
+    CountDebugServiceRequest(const std::string& expression_);
+    void Execute() override;
+    std::string Name() const override { return "countDebugServiceRequest"; }
+private:
+    std::string expression;
+};
+
+class EvaluateChildDebugServiceRequest : public Request
+{
+public:
+    EvaluateChildDebugServiceRequest(const std::string& expression_, int start_, int count_);
+    void Execute() override;
+    std::string Name() const override { return "evaluateChildDebugServiceRequest"; }
+private:
+    std::string expression;
+    int start;
+    int count;
+};
+
+class EvaluateDebugServiceRequest : public Request
+{
+public:
+    EvaluateDebugServiceRequest(const std::string& expression_, int requestId_);
+    void Execute() override;
+    std::string Name() const override { return "evaluateDebugServiceRequest"; }
+private:
+    std::string expression;
+    int requestId;
+};
+
 class PutDebugServiceProgramInputLineRequest : public Request
 {
 public:
@@ -190,6 +223,35 @@ public:
     const cmajor::info::db::FramesReply& FramesReply() const { return framesReply; }
 private:
     cmajor::info::db::FramesReply framesReply;
+};
+
+class CountDebugServiceReplyServiceMessage : public ServiceMessage
+{
+public:
+    CountDebugServiceReplyServiceMessage(const cmajor::info::db::CountReply& countReply_);
+    const cmajor::info::db::CountReply& CountReply() const { return countReply; }
+private:
+    cmajor::info::db::CountReply countReply;
+};
+
+class EvaluateChildDebugServiceReplyServiceMessage : public ServiceMessage
+{
+public:
+    EvaluateChildDebugServiceReplyServiceMessage(const cmajor::info::db::EvaluateChildReply& reply_);
+    const cmajor::info::db::EvaluateChildReply& Reply() const { return reply; }
+private:
+    cmajor::info::db::EvaluateChildReply reply;
+};
+
+class EvaluateDebugServiceReplyServiceMessage : public  ServiceMessage
+{
+public:
+    EvaluateDebugServiceReplyServiceMessage(const cmajor::info::db::EvaluateReply& reply_, int requestId_);
+    const cmajor::info::db::EvaluateReply& Reply() const { return reply; }
+    int RequestId() const { return requestId; }
+private:
+    cmajor::info::db::EvaluateReply reply;
+    int requestId;
 };
 
 class TargetOutputServiceMessage : public ServiceMessage

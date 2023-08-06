@@ -38,7 +38,7 @@ public:
     void SetStoppedInstruction(cmajor::debug::Instruction* stoppedInstruction_) { stoppedInstruction = stoppedInstruction_; }
     int ExitCode() const { return exitCode; }
     void SetExitCode(int exitCode_) { exitCode = exitCode_; }
-    soul::xml::Element* ToXml();
+    std::unique_ptr<soul::xml::Element> ToXml();
 private:
     std::vector<std::unique_ptr<Record>> records;
     std::unique_ptr<soul::xml::Element> xml;

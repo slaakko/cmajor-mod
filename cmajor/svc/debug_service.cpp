@@ -116,6 +116,9 @@ public:
     void Until(const cmajor::info::db::Location& loc);
     void Depth();
     void Frames(int lowFrame, int highFrame);
+    void Count(const std::string& expression);
+    void EvaluateChild(const std::string& expression, int start, int count);
+    void Evaluate(const std::string& expression, int requestId);
     bool Running() const { return debugger.get() != nullptr; }
     void RunSession();
     std::string GetTargetInputBytes() override;
@@ -436,6 +439,60 @@ void DebugService::Frames(int lowFrame, int highFrame)
     }
 }
 
+void DebugService::Count(const std::string& expression)
+{
+    try
+    {
+        if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
+        if (debugger && debugger->StoppedInstruction() != nullptr)
+        {
+            cmajor::info::db::CountRequest countRequest;
+            countRequest.expression = expression;
+            cmajor::info::db::CountReply countReply = debugger->Count(countRequest);
+            PutServiceMessage(new CountDebugServiceReplyServiceMessage(countReply));
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        PutServiceMessage(new DebugErrorServiceMessage(ex.what()));
+    }
+}
+
+void DebugService::EvaluateChild(const std::string& expression, int start, int count)
+{
+    try
+    {
+        if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
+        cmajor::info::db::EvaluateChildRequest request;
+        request.expression = expression;
+        request.start = start;
+        request.count = count;
+        cmajor::info::db::EvaluateChildReply reply = debugger->EvaluateChild(request);
+        PutServiceMessage(new EvaluateChildDebugServiceReplyServiceMessage(reply));
+    }
+    catch (const std::exception& ex)
+    {
+        PutServiceMessage(new DebugErrorServiceMessage(ex.what()));
+    }
+}
+
+void DebugService::Evaluate(const const std::string& expression, int requestId)
+{
+    try
+    {
+        if (!started) return;
+        RequestGuard requestGuard(requestInProgress);
+        cmajor::info::db::EvaluateReply reply = debugger->Evaluate(expression);
+        PutServiceMessage(new EvaluateDebugServiceReplyServiceMessage(reply, requestId));
+    }
+    catch (const std::exception& ex)
+    {
+        PutServiceMessage(new DebugErrorServiceMessage(ex.what()));
+    }
+}
+
 ExecDebugServiceReplyServiceMessage::ExecDebugServiceReplyServiceMessage(cmajor::debugger::Reply* reply_) :
     ServiceMessage(ServiceMessageKind::execReply), reply(reply_)
 {
@@ -541,6 +598,33 @@ void FramesDebugServiceRequest::Execute()
     DebugService::Instance().Frames(lowFrame, highFrame);
 }
 
+CountDebugServiceRequest::CountDebugServiceRequest(const std::string& expression_) : expression(expression_)
+{
+}
+
+void CountDebugServiceRequest::Execute()
+{
+    DebugService::Instance().Count(expression);
+}
+
+EvaluateChildDebugServiceRequest::EvaluateChildDebugServiceRequest(const std::string& expression_, int start_, int count_) : expression(expression_), start(start_), count(count_)
+{
+}
+
+void EvaluateChildDebugServiceRequest::Execute()
+{
+    DebugService::Instance().EvaluateChild(expression, start, count);
+}
+
+EvaluateDebugServiceRequest::EvaluateDebugServiceRequest(const std::string& expression_, int requestId_) : expression(expression_), requestId(requestId_)
+{
+}
+
+void EvaluateDebugServiceRequest::Execute()
+{
+    DebugService::Instance().Evaluate(expression, requestId);
+}
+
 PutDebugServiceProgramInputLineRequest::PutDebugServiceProgramInputLineRequest(const std::string& inputLine_) : inputLine(inputLine_)
 {
 }
@@ -594,6 +678,21 @@ DepthDebugServiceReplyServiceMessage::DepthDebugServiceReplyServiceMessage(const
 
 FramesDebugServiceReplyServiceMessage::FramesDebugServiceReplyServiceMessage(const cmajor::info::db::FramesReply& framesReply_) :
     ServiceMessage(ServiceMessageKind::framesReply), framesReply(framesReply_)
+{
+}
+
+CountDebugServiceReplyServiceMessage::CountDebugServiceReplyServiceMessage(const cmajor::info::db::CountReply& countReply_) :
+    ServiceMessage(ServiceMessageKind::countReply), countReply(countReply_)
+{
+}
+
+EvaluateChildDebugServiceReplyServiceMessage::EvaluateChildDebugServiceReplyServiceMessage(const cmajor::info::db::EvaluateChildReply& reply_) :
+    ServiceMessage(ServiceMessageKind::evaluateChildReply), reply(reply_)
+{
+}
+
+EvaluateDebugServiceReplyServiceMessage::EvaluateDebugServiceReplyServiceMessage(const cmajor::info::db::EvaluateReply& reply_, int requestId_) : 
+    ServiceMessage(ServiceMessageKind::evaluateReply), reply(reply_), requestId(requestId_)
 {
 }
 

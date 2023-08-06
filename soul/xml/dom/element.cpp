@@ -164,6 +164,15 @@ void Element::WalkAttribute(NodeOperation& operation)
     }
 }
 
+std::string Element::ToString() 
+{
+    std::stringstream stream;
+    util::CodeFormatter formatter(stream);
+    formatter.SetIndentSize(1);
+    Write(formatter);
+    return stream.str();
+}
+
 Element* MakeElement(const std::string& name)
 {
     return new Element(soul::ast::SourcePos(), name);

@@ -104,4 +104,29 @@ std::vector<cmajor::info::db::Location>  LLDBDebugger::Frames(int lowFrame, int 
     return std::vector<cmajor::info::db::Location>();
 }
 
+cmajor::info::db::CountReply LLDBDebugger::Count(const cmajor::info::db::CountRequest& countRequest)
+{
+    return cmajor::info::db::CountReply();
+}
+
+cmajor::info::db::EvaluateReply LLDBDebugger::Evaluate(const std::string& expression)
+{
+    return cmajor::info::db::EvaluateReply();
+}
+
+cmajor::info::db::EvaluateChildReply LLDBDebugger::EvaluateChild(const cmajor::info::db::EvaluateChildRequest& request)
+{
+    return cmajor::info::db::EvaluateChildReply();
+}
+
+cmajor::debug::DebuggerVariable LLDBDebugger::GetNextDebuggerVariable()
+{
+    return cmajor::debug::DebuggerVariable();
+}
+
+std::unique_ptr<Reply> LLDBDebugger::Execute(Request* request)
+{
+    return std::unique_ptr<Reply>();
+}
+
 } // namespace cmajor::debugger

@@ -82,26 +82,23 @@ bool Reply::IsFinal(Request* request) const
     return false;
 }
 
-soul::xml::Element* Reply::ToXml()
+std::unique_ptr<soul::xml::Element> Reply::ToXml()
 {
-    if (!xml)
+    if (execRecord)
     {
-        if (execRecord)
-        {
-            xml = execRecord->GetResults()->ToXml();
-        }
-        else if (resultRecord)
-        {
-            xml = resultRecord->GetResults()->ToXml();
-        }
+        return execRecord->GetResults()->ToXml();
     }
-    return xml.get();
+    else if (resultRecord)
+    {
+        return resultRecord->GetResults()->ToXml();
+    }
+    return std::unique_ptr<soul::xml::Element>();
 }
 
 std::unique_ptr<soul::xml::xpath::NodeSet> Reply::Evaluate(const std::string& keyPath)
 {
-    soul::xml::Element* xml = ToXml();
-    return soul::xml::xpath::EvaluateToNodeSet(keyPath, xml);
+    std::unique_ptr<soul::xml::Element> xml = ToXml();
+    return soul::xml::xpath::EvaluateToNodeSet(keyPath, xml.get());
 }
 
 } // namespace cmajor::debugger

@@ -25,6 +25,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
     void WalkAttribute(NodeOperation& operation) override;
+    std::string ToString();
 private:
     void WriteAttributes(util::CodeFormatter& formatter);
     bool HasMultilineContent() const;

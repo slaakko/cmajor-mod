@@ -19,11 +19,12 @@ class BoundDebugExpression;
 class DebugExprNode;
 class DIType;
 class DIClassTemplateSpecializationType;
+class Instruction;
 
 class DebugExprBinder : public DebugExprVisitor
 {
 public:
-    DebugExprBinder(Debugger& debugger_, DebugInfo* debugInfo_, Scope* scope_, bool isBreakConditionExpr_);
+    DebugExprBinder(Instruction* stoppedInstruction_, DebugInfo* debugInfo_, Scope* scope_, bool isBreakConditionExpr_);
     void Visit(IdentifierDebugExprNode& node) override;
     void Visit(IntegerDebugExprNode& node) override;
     void Visit(DisjunctionDebugExprNode& node) override;
@@ -55,7 +56,7 @@ public:
     BoundDebugExpression* BoundExpression(DebugExprNode* sourceNode);
     DIType* GetValueType(DIClassTemplateSpecializationType* specializationType) const;
 private:
-    Debugger& debugger;
+    Instruction* stoppedInstruction;
     DebugInfo* debugInfo;
     Scope* scope;
     std::unique_ptr<BoundDebugNode> currentNode;
