@@ -14,6 +14,7 @@ export namespace cmajor::debugger {
 class Results;
 class Reply;
 class Tuple;
+class Debugger;
 
 cmajor::info::db::Location ToLocation(const cmajor::debug::Frame& frame);
 
@@ -30,5 +31,7 @@ Tuple* MakeFrameTuple(const cmajor::debug::Frame& frame);
 bool StackFrameHasLine(Reply* reply);
 
 std::vector<cmajor::info::db::Location> GetFrames(cmajor::debugger::Results* results, cmajor::debug::DebugInfo* debugInfo, cmajor::debug::DebuggerOutputWriter* outputWriter);
+
+cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debugger* debugger);
 
 } // namespace cmajor::debugger

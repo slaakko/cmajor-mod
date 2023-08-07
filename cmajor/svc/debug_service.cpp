@@ -66,11 +66,6 @@ DebugServiceStartParams& DebugServiceStartParams::ProgramArguments(const std::st
     return *this;
 }
 
-TargetOutputServiceMessage::TargetOutputServiceMessage(const cmajor::debugger::OutputRequest& outputRequest_) : 
-    ServiceMessage(ServiceMessageKind::targetOutput), outputRequest(outputRequest_)
-{
-}
-
 class DebugOutputWriter : public cmajor::debug::DebuggerOutputWriter
 {
 public:
@@ -101,6 +96,23 @@ private:
     bool& requestInProgress;
 };
 
+class DebugCommand
+{
+public:
+    DebugCommand();
+    virtual ~DebugCommand();
+    virtual void Execute() = 0;
+    virtual std::string Name() = 0;
+};
+
+DebugCommand::DebugCommand()
+{
+}
+
+DebugCommand::~DebugCommand()
+{
+}
+
 class DebugService : public cmajor::debug::CmdbSessionClient
 {
 public:
@@ -121,18 +133,22 @@ public:
     void Evaluate(const std::string& expression, int requestId);
     bool Running() const { return debugger.get() != nullptr; }
     void RunSession();
+    void RunQueue();
     std::string GetTargetInputBytes() override;
     void WriteTargetOuput(int handle, const std::string& s) override;
     void SetInputEof();
     void PutInputLine(const std::string& inputLine);
     bool RequestInProgress() const { return requestInProgress; }
     void SetRequestInProgress(bool requestInProgress_) { requestInProgress = requestInProgress_; }
+    void PutCommand(DebugCommand* command);
+    std::unique_ptr<DebugCommand> GetCommand();
 private:
     DebugService();
     std::unique_ptr<cmajor::debugger::Debugger> debugger;
     std::string cmdbSessionFilePath;
     int sessionPort;
     bool sessionThreadStarted;
+    bool commandThreadStarted;
     bool inputEof;
     bool waitingForInput;
     bool exiting;
@@ -143,6 +159,228 @@ private:
     std::list<std::string> inputLines;
     DebugOutputWriter outputWriter;
     std::thread sessionThread;
+    std::thread commandThread;
+    std::mutex commandQueueMutex;
+    bool CommandAvailableOrExiting() const { return !commandQueue.empty() || exiting; }
+    std::list<std::unique_ptr<DebugCommand>> commandQueue;
+    std::condition_variable commandAvailableOrExiting;
+};
+
+void DebugService::PutCommand(DebugCommand* command)
+{
+    std::lock_guard<std::mutex> lock(commandQueueMutex);
+    commandQueue.push_back(std::unique_ptr<DebugCommand>(command));
+    commandAvailableOrExiting.notify_one();
+}
+
+std::unique_ptr<DebugCommand> DebugService::GetCommand()
+{
+    std::unique_lock<std::mutex> lock(commandQueueMutex);
+    commandAvailableOrExiting.wait(lock, [this] { return CommandAvailableOrExiting(); });
+    if (exiting) return std::unique_ptr<DebugCommand>();
+    std::unique_ptr<DebugCommand> command = std::move(commandQueue.front());
+    commandQueue.pop_front();
+    return command;
+}
+
+void DebugService::RunQueue()
+{
+    while (!exiting)
+    {
+        std::unique_ptr<DebugCommand> command = GetCommand();
+        if (exiting || !command) return;
+        try
+        {
+            command->Execute();
+        }
+        catch (const std::exception& ex)
+        {
+            PutOutputServiceMessage("debugger: error executing " + command->Name() + ": " + std::string(ex.what()));
+        }
+    }
+}
+
+void RunCommandQueue()
+{
+    try
+    {
+        DebugService::Instance().RunQueue();
+    }
+    catch (...)
+    {
+    }
+}
+
+class RunCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Run();
+    }
+    std::string Name() override
+    {
+        return "run command";
+    }
+};
+
+class ContinueCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Continue();
+    }
+    std::string Name() override
+    {
+        return "continue command";
+    }
+};
+
+class NextCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Next();
+    }
+    std::string Name() override
+    {
+        return "next command";
+    }
+};
+
+class StepCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Step();
+    }
+    std::string Name() override
+    {
+        return "step command";
+    }
+};
+
+class FinishCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Finish();
+    }
+    std::string Name() override
+    {
+        return "finish command";
+    }
+};
+
+class UntilCommand : public DebugCommand
+{
+public:
+    UntilCommand(const cmajor::info::db::Location& loc_) : loc(loc_) 
+    {
+    }
+    void Execute() override
+    {
+        DebugService::Instance().Until(loc);
+    }
+    std::string Name() override
+    {
+        return "until command";
+    }
+private:
+    cmajor::info::db::Location loc;
+};
+
+class DepthCommand : public DebugCommand
+{
+public:
+    void Execute() override
+    {
+        DebugService::Instance().Depth();
+    }
+    std::string Name() override
+    {
+        return "depth command";
+    }
+};
+
+class FramesCommand : public DebugCommand
+{
+public:
+    FramesCommand(int lowFrame_, int highFrame_) : lowFrame(lowFrame_), highFrame(highFrame_)
+    {
+    }
+    void Execute() override
+    {
+        DebugService::Instance().Frames(lowFrame, highFrame);
+    }
+    std::string Name() override
+    {
+        return "frames command";
+    }
+private:
+    int lowFrame;
+    int highFrame;
+};
+
+class CountCommand : public DebugCommand
+{
+public:
+    CountCommand(const std::string& expression_) : expression(expression_)
+    {
+    }
+    void Execute() override
+    {
+        DebugService::Instance().Count(expression);
+    }
+    std::string Name() override
+    {
+        return "count command";
+    }
+private:
+    std::string expression;
+};
+
+class EvaluateChildCommand : public DebugCommand
+{
+public:
+    EvaluateChildCommand(const std::string& expression_, int start_, int count_) : expression(expression_), start(start_), count(count_)
+    {
+    }
+    void Execute() override
+    {
+        DebugService::Instance().EvaluateChild(expression, start, count);
+    }
+    std::string Name() override
+    {
+        return "evaluate child command";
+    }
+private:
+    std::string expression;
+    int start;
+    int count;
+};
+
+class EvaluateCommand : public DebugCommand
+{
+public:
+    EvaluateCommand(const std::string& expression_, int requestId_) : expression(expression_), requestId(requestId_)
+    {
+    }
+    void Execute() override
+    {
+        DebugService::Instance().Evaluate(expression, requestId);
+    }
+    std::string Name() override
+    {
+        return "evaluate command";
+    }
+private:
+    std::string expression;
+    int requestId;
 };
 
 std::string DebugService::GetTargetInputBytes()
@@ -193,7 +431,7 @@ void DebugService::SetInputEof()
     inputEof = true;
     if (waitingForInput)
     {
-        waitingForInputOrExitVar.notify_one();
+        waitingForInputOrExitVar.notify_all();
     }
 }
 
@@ -203,7 +441,7 @@ void DebugService::PutInputLine(const std::string& inputLine)
     inputLines.push_back(inputLine);
     if (waitingForInput)
     {
-        waitingForInputOrExitVar.notify_one();
+        waitingForInputOrExitVar.notify_all();
     }
 }
 
@@ -238,8 +476,8 @@ void DebugService::RunSession()
     }
 }
 
-DebugService::DebugService() : sessionPort(0), outputWriter(), sessionThreadStarted(false), started(false), inputEof(false), waitingForInput(false), exiting(false), 
-    requestInProgress(false)
+DebugService::DebugService() : sessionPort(0), outputWriter(), sessionThreadStarted(false), commandThreadStarted(false), started(false), inputEof(false), 
+    waitingForInput(false), exiting(false), requestInProgress(false)
 {
 }
 
@@ -247,6 +485,7 @@ void DebugService::Start(const DebugServiceStartParams& startParams)
 {
     try
     {
+        commandQueue.clear();
         RequestGuard requestGuard(requestInProgress);
         started = false;
         PutServiceMessage(new ClearDebugLogMessage());
@@ -281,6 +520,8 @@ void DebugService::Start(const DebugServiceStartParams& startParams)
         sessionThreadStarted = false;
         sessionThread = std::thread(RunDebugSession, this);
         sessionThreadStarted = true;
+        commandThread = std::thread(RunCommandQueue);
+        commandThreadStarted = true;
         started = true;
     }
     catch (const std::exception& ex)
@@ -296,6 +537,7 @@ void DebugService::Stop()
     {
         exiting = true;
         waitingForInputOrExitVar.notify_all();
+        commandAvailableOrExiting.notify_all();
         if (Running())
         {
             debugger->Stop();
@@ -305,6 +547,11 @@ void DebugService::Stop()
         {
             sessionThread.join();
             sessionThreadStarted = false;
+        }
+        if (commandThreadStarted)
+        {
+            commandThread.join();
+            commandThreadStarted = false;
         }
         PutServiceMessage(new DebugServiceStoppedServiceMessage());
     }
@@ -478,7 +725,7 @@ void DebugService::EvaluateChild(const std::string& expression, int start, int c
     }
 }
 
-void DebugService::Evaluate(const const std::string& expression, int requestId)
+void DebugService::Evaluate(const std::string& expression, int requestId)
 {
     try
     {
@@ -532,7 +779,7 @@ RunDebugServiceRequest::RunDebugServiceRequest()
 
 void RunDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Run();
+    DebugService::Instance().PutCommand(new RunCommand());
 }
 
 ContinueDebugServiceRequest::ContinueDebugServiceRequest()
@@ -541,7 +788,7 @@ ContinueDebugServiceRequest::ContinueDebugServiceRequest()
 
 void ContinueDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Continue();
+    DebugService::Instance().PutCommand(new ContinueCommand());
 }
 
 NextDebugServiceRequest::NextDebugServiceRequest()
@@ -550,7 +797,7 @@ NextDebugServiceRequest::NextDebugServiceRequest()
 
 void NextDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Next();
+    DebugService::Instance().PutCommand(new NextCommand());
 }
 
 StepDebugServiceRequest::StepDebugServiceRequest()
@@ -559,7 +806,7 @@ StepDebugServiceRequest::StepDebugServiceRequest()
 
 void StepDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Step();
+    DebugService::Instance().PutCommand(new StepCommand());
 }
 
 FinishDebugServiceRequest::FinishDebugServiceRequest()
@@ -568,7 +815,7 @@ FinishDebugServiceRequest::FinishDebugServiceRequest()
 
 void FinishDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Finish();
+    DebugService::Instance().PutCommand(new FinishCommand());
 }
 
 UntilDebugServiceRequest::UntilDebugServiceRequest(const cmajor::info::db::Location& loc_) : loc(loc_)
@@ -577,7 +824,7 @@ UntilDebugServiceRequest::UntilDebugServiceRequest(const cmajor::info::db::Locat
 
 void UntilDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Until(loc);
+    DebugService::Instance().PutCommand(new UntilCommand(loc));
 }
 
 DepthDebugServiceRequest::DepthDebugServiceRequest()
@@ -586,7 +833,7 @@ DepthDebugServiceRequest::DepthDebugServiceRequest()
 
 void DepthDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Depth();
+    DebugService::Instance().PutCommand(new DepthCommand());
 }
 
 FramesDebugServiceRequest::FramesDebugServiceRequest(int lowFrame_, int highFrame_) : lowFrame(lowFrame_), highFrame(highFrame_)
@@ -595,7 +842,7 @@ FramesDebugServiceRequest::FramesDebugServiceRequest(int lowFrame_, int highFram
 
 void FramesDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Frames(lowFrame, highFrame);
+    DebugService::Instance().PutCommand(new FramesCommand(lowFrame, highFrame));
 }
 
 CountDebugServiceRequest::CountDebugServiceRequest(const std::string& expression_) : expression(expression_)
@@ -604,7 +851,7 @@ CountDebugServiceRequest::CountDebugServiceRequest(const std::string& expression
 
 void CountDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Count(expression);
+    DebugService::Instance().PutCommand(new CountCommand(expression));
 }
 
 EvaluateChildDebugServiceRequest::EvaluateChildDebugServiceRequest(const std::string& expression_, int start_, int count_) : expression(expression_), start(start_), count(count_)
@@ -613,7 +860,7 @@ EvaluateChildDebugServiceRequest::EvaluateChildDebugServiceRequest(const std::st
 
 void EvaluateChildDebugServiceRequest::Execute()
 {
-    DebugService::Instance().EvaluateChild(expression, start, count);
+    DebugService::Instance().PutCommand(new EvaluateChildCommand(expression, start, count));
 }
 
 EvaluateDebugServiceRequest::EvaluateDebugServiceRequest(const std::string& expression_, int requestId_) : expression(expression_), requestId(requestId_)
@@ -622,7 +869,7 @@ EvaluateDebugServiceRequest::EvaluateDebugServiceRequest(const std::string& expr
 
 void EvaluateDebugServiceRequest::Execute()
 {
-    DebugService::Instance().Evaluate(expression, requestId);
+    DebugService::Instance().PutCommand(new EvaluateCommand(expression, requestId));
 }
 
 PutDebugServiceProgramInputLineRequest::PutDebugServiceProgramInputLineRequest(const std::string& inputLine_) : inputLine(inputLine_)
@@ -693,6 +940,19 @@ EvaluateChildDebugServiceReplyServiceMessage::EvaluateChildDebugServiceReplyServ
 
 EvaluateDebugServiceReplyServiceMessage::EvaluateDebugServiceReplyServiceMessage(const cmajor::info::db::EvaluateReply& reply_, int requestId_) : 
     ServiceMessage(ServiceMessageKind::evaluateReply), reply(reply_), requestId(requestId_)
+{
+}
+
+TargetOutputServiceMessage::TargetOutputServiceMessage(const cmajor::debugger::OutputRequest& outputRequest_) :
+    ServiceMessage(ServiceMessageKind::targetOutput), outputRequest(outputRequest_)
+{
+}
+
+TargetInputServiceMessage::TargetInputServiceMessage() : ServiceMessage(ServiceMessageKind::targetInput)
+{
+}
+
+TargetRunningServiceMessage::TargetRunningServiceMessage() : ServiceMessage(ServiceMessageKind::targetRunning)
 {
 }
 

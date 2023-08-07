@@ -86,7 +86,14 @@ bool Process::Eof(StdHandle handle)
 
 std::string Process::ReadLine(StdHandle handle)
 {
-    return nativeProcess->ReadLine(ConvertHandle(handle));
+    if (nativeProcess)
+    {
+        return nativeProcess->ReadLine(ConvertHandle(handle));
+    }
+    else
+    {
+        return std::string();
+    }
 }
 
 std::string Process::ReadToEnd(StdHandle handle)

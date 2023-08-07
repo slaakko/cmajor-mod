@@ -159,7 +159,20 @@ void LocalsView::SetChildResults(const std::vector<cmajor::info::db::ChildResult
                 std::string text = std::to_string(index);
                 if (childResult)
                 {
+                    std::string typeName;
+                    if (!childResult->dynType.empty())
+                    {
+                        typeName = "[" + childResult->dynType + "]";
+                    }
+                    else if (!childResult->type.empty())
+                    {
+                        typeName = childResult->type;
+                    }
                     text = childResult->name;
+                    if (!childResult->name.starts_with("["))
+                    {
+                        text.append(" : ").append(typeName);
+                    }
                     if (!childResult->value.empty())
                     {
                         text.append(" = ").append(childResult->value);

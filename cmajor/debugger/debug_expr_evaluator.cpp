@@ -7,6 +7,7 @@ module cmajor.debugger.debug.expr.evaluator;
 
 import cmajor.debugger.container;
 import cmajor.debugger.evaluator;
+import cmajor.debugger.util;
 
 namespace cmajor::debugger {
 
@@ -211,13 +212,13 @@ void DebugExprEvaluator::AddTypes(cmajor::debug::BoundDebugNode* node)
     if (result)
     {
         cmajor::debug::DITypeRef staticTypeRef(node->Type());
-        result->AppendChild(staticTypeRef.ToXml("staticType").release());
-        //cmajor::debug::DIType* dynamicType = GetDynamicType(node->Type(), node, debugger); todo
-        //if (dynamicType)
-        //{
-           // cmajor::debug::DITypeRef dynamicTypeRef(dynamicType);
-            //result->AppendChild(dynamic_type.ToXml().release());
-        //}
+        result->AppendChild(staticTypeRef.ToXml("static_type").release());
+        cmajor::debug::DIType* dynamicType = GetDynamicType(node, debugger); 
+        if (dynamicType)
+        {
+            cmajor::debug::DITypeRef dynamicTypeRef(dynamicType);
+            result->AppendChild(dynamicTypeRef.ToXml("dynamic_type").release());
+        }
     }
 }
 

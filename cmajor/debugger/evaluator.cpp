@@ -111,7 +111,7 @@ cmajor::info::db::Result ToResultObject(soul::xml::Element* element)
             }
         }
     }
-    std::unique_ptr<soul::xml::xpath::NodeSet> staticTypeNodeSet = soul::xml::xpath::EvaluateToNodeSet("staticType", element);
+    std::unique_ptr<soul::xml::xpath::NodeSet> staticTypeNodeSet = soul::xml::xpath::EvaluateToNodeSet("static_type", element);
     if (staticTypeNodeSet->Count() == 1)
     {
         soul::xml::Node* node = staticTypeNodeSet->GetNode(0);
@@ -121,7 +121,7 @@ cmajor::info::db::Result ToResultObject(soul::xml::Element* element)
             result.staticType = ToTypeObject(elem);
         }
     }
-    std::unique_ptr<soul::xml::xpath::NodeSet> dynamicTypeNodeSet = soul::xml::xpath::EvaluateToNodeSet("dynamicType", element);
+    std::unique_ptr<soul::xml::xpath::NodeSet> dynamicTypeNodeSet = soul::xml::xpath::EvaluateToNodeSet("dynamic_type", element);
     if (dynamicTypeNodeSet->Count() == 1)
     {
         soul::xml::Node* node = dynamicTypeNodeSet->GetNode(0);

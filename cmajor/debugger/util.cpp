@@ -5,6 +5,7 @@
 
 module cmajor.debugger.util;
 
+import cmajor.debugger;
 import cmajor.debugger.reply;
 import cmajor.debugger.record;
 import cmajor.debugger.value;
@@ -186,6 +187,124 @@ std::vector<cmajor::info::db::Location> GetFrames(cmajor::debugger::Results* res
         }
     }
     return frames;
+}
+
+cmajor::debug::DIType* GetDynamicTypeFromVmt(cmajor::debug::DIClassType* classType, cmajor::debug::BoundDebugNode* node, Debugger* debugger)
+{
+    std::string member = "m" + std::to_string(classType->VmtPtrIndex());
+    std::string gdbExprString = node->GdbExprString() + "." + member;
+    cmajor::debug::BoundDotNode vmtPtrMember(classType, node->Clone(), member, gdbExprString, nullptr);
+    cmajor::debug::BoundAddrOfNode vmtPtrAddr(classType, vmtPtrMember.Clone(), nullptr);
+    cmajor::debug::DebuggerVariable variable = debugger->GetNextDebuggerVariable();
+    VarCreateRequest varCreateRequest(variable.GdbVarName(), "*", vmtPtrAddr.GdbExprString());
+    std::unique_ptr<Reply> vmtAddrReply = debugger->Execute(&varCreateRequest);
+    VarDeleteRequest varDeleteRequest(variable.GdbVarName());
+    std::unique_ptr<Reply> deleteReply = debugger->Execute(&varDeleteRequest);
+    ResultRecord* resultRecord = vmtAddrReply->GetResultRecord();
+    if (resultRecord && resultRecord->IsDone())
+    {
+        Results* results = resultRecord->GetResults();
+        if (results)
+        {
+            std::string vmtVarFieldStr = results->GetString("value");
+            std::string vmtVarName = cmajor::debug::ParseVmtVariableName(vmtVarFieldStr);
+            if (!vmtVarName.empty())
+            {
+                cmajor::debug::DIType* dynamicType = debugger->GetDebugInfo()->GetPolymorphicType(vmtVarName);
+                return dynamicType;
+            }
+            else
+            {
+                cmajor::debug::DebuggerVariable variable = debugger->GetNextDebuggerVariable();
+                VarCreateRequest varCreateRequest(variable.GdbVarName(), "*", vmtPtrMember.GdbExprString());
+                std::unique_ptr<Reply> vmtAddrReply = debugger->Execute(&varCreateRequest);
+                VarDeleteRequest varDeleteRequest(variable.GdbVarName());
+                std::unique_ptr<Reply> deleteReply = debugger->Execute(&varDeleteRequest);
+                ResultRecord* resultRecord = vmtAddrReply->GetResultRecord();
+                if (resultRecord && resultRecord->IsDone())
+                {
+                    Results* results = resultRecord->GetResults();
+                    if (results)
+                    {
+                        std::string vmtVarFieldStr = results->GetString("value");
+                        std::string vmtVarName = cmajor::debug::ParseVmtVariableName(vmtVarFieldStr);
+                        if (!vmtVarName.empty())
+                        {
+                            cmajor::debug::DIType* dynamicType = debugger->GetDebugInfo()->GetPolymorphicType(vmtVarName);
+                            return dynamicType;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debugger* debugger)
+{
+    cmajor::debug::DIType* type = node->Type();
+    switch (type->GetKind())
+    {
+        case cmajor::debug::DIType::Kind::pointerType:
+        {
+            cmajor::debug::DIPointerType* pointerType = static_cast<cmajor::debug::DIPointerType*>(type);
+            cmajor::debug::DIType* pointedType = pointerType->PointedToType();
+            cmajor::debug::BoundDerefNode derefNode(pointedType, node->Clone(), nullptr);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            if (dynamicType)
+            {
+                cmajor::debug::DIType* ptrType = cmajor::debug::MakePointerType(dynamicType);
+                return ptrType;
+            }
+            break;
+        }
+        case cmajor::debug::DIType::Kind::referenceType:
+        {
+            cmajor::debug::DIReferenceType* referenceType = static_cast<cmajor::debug::DIReferenceType*>(type);
+            cmajor::debug::DIType* referredType = referenceType->BaseType();
+            cmajor::debug::BoundDerefNode derefNode(referredType, node->Clone(), nullptr);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            if (dynamicType)
+            {
+                cmajor::debug::DIType* refType = cmajor::debug::MakeReferenceType(dynamicType);
+                return refType;
+            }
+            break;
+        }
+        case cmajor::debug::DIType::Kind::constType:
+        {
+            cmajor::debug::DIConstType* constType = static_cast<cmajor::debug::DIConstType*>(type);
+            cmajor::debug::DIType* baseType = constType->BaseType();
+            cmajor::debug::BoundDerefNode derefNode(baseType, node->Clone(), nullptr);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            if (dynamicType)
+            {
+                cmajor::debug::DIType* constType = cmajor::debug::MakeConstType(dynamicType);
+                return constType;
+            }
+            break;
+        }
+        case cmajor::debug::DIType::Kind::classType:
+        case cmajor::debug::DIType::Kind::specializationType:
+        {
+            cmajor::debug::DIClassType* classType = static_cast<cmajor::debug::DIClassType*>(type);
+            if (classType->IsPolymorphic())
+            {
+                if (classType->VmtPtrIndex() != -1)
+                {
+                    return GetDynamicTypeFromVmt(classType, node, debugger);
+                }
+                else if (!classType->BaseClassId().is_nil())
+                {
+                    cmajor::debug::BoundDerefNode derefNode(classType->BaseClassType(), node->Clone(), nullptr);
+                    return GetDynamicType(&derefNode, debugger);
+                }
+            }
+            break;
+        }
+    }
+    return nullptr;
 }
 
 } // namespace cmajor::debugger

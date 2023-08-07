@@ -1424,14 +1424,14 @@ void MainWindow::HandleServiceMessage()
         }
         case cmajor::service::ServiceMessageKind::targetRunning:
         {
-            //cmajor::service::TargetRunningServiceMessage* message = static_cast<cmajor::service::TargetRunningServiceMessage*>(serviceMessage.get());
-            //HandleTargetRunning(); TODO
+            cmajor::service::TargetRunningServiceMessage* message = static_cast<cmajor::service::TargetRunningServiceMessage*>(serviceMessage.get());
+            HandleTargetRunning(); 
             break;
         }
         case cmajor::service::ServiceMessageKind::targetInput:
         {
-            //cmajor::service::TargetInputServiceMessage* message = static_cast<cmajor::service::TargetInputServiceMessage*>(serviceMessage.get());
-            //HandleTargetInput(); TODO
+            cmajor::service::TargetInputServiceMessage* message = static_cast<cmajor::service::TargetInputServiceMessage*>(serviceMessage.get());
+            HandleTargetInput(); 
             break;
         }
         case cmajor::service::ServiceMessageKind::targetOutput:
@@ -1841,7 +1841,16 @@ void MainWindow::HandleEvaluateReply(const cmajor::info::db::EvaluateReply& eval
         {
             const ExpressionEvaluateRequest& evaluateRequest = expressionEvaluateRequests[requestId];
             toolTipWindow->Hide();
-            toolTipWindow->SetText(evaluateRequest.expression + " = " + evaluateReply.result.value);
+            std::string typeName;
+            if (!evaluateReply.result.dynamicType.name.empty())
+            {
+                typeName = "[" + evaluateReply.result.dynamicType.name + "]";
+            }
+            else if (!evaluateReply.result.staticType.name.empty())
+            {
+                typeName = evaluateReply.result.staticType.name;
+            }
+            toolTipWindow->SetText(evaluateRequest.expression + " : " + typeName + " = " + evaluateReply.result.value);
             toolTipWindow->MeasureExtent();
             wing::Point loc = evaluateRequest.screenLoc;
             loc = ScreenToClient(loc);
@@ -5379,6 +5388,7 @@ void MainWindow::OutputTabControlTabPageRemoved(wing::ControlEventArgs& args)
         debugTabPage = nullptr;
         debugLog = nullptr;
     }
+    SaveSolutionData();
 }
 
 void MainWindow::OutputTabControlTabPageSelected()
@@ -5694,7 +5704,7 @@ wing::Console* MainWindow::GetConsole()
         console = new wing::Console(wing::ConsoleCreateParams().Defaults());
         console->SetFlag(wing::ControlFlags::scrollSubject);
         console->SetDoubleBuffered();
-        //console->ConsoleInputReady().AddHandler(this, &MainWindow::ConsoleInputReady); TODO
+        console->ConsoleInputReady().AddHandler(this, &MainWindow::ConsoleInputReady); 
         wing::ScrollableControl* scrollableConsole = new wing::ScrollableControl(wing::ScrollableControlCreateParams(console).SetDock(wing::Dock::fill));
         consoleTabPage = new wing::TabPage("Console", "console");
         consoleTabPage->AddChild(scrollableConsole);

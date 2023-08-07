@@ -263,6 +263,18 @@ private:
     cmajor::debugger::OutputRequest outputRequest;
 };
 
+class TargetInputServiceMessage : public ServiceMessage
+{
+public:
+    TargetInputServiceMessage();
+};
+
+class TargetRunningServiceMessage : public ServiceMessage
+{
+public:
+    TargetRunningServiceMessage();
+};
+
 void StartDebugService(const DebugServiceStartParams& startParams);
 void StopDebugService();
 bool DebugRequestInProgress();

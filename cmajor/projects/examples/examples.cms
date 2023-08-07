@@ -1,2 +1,4 @@
-solution examples;
+solution Examples;
+project <Calculator/Calculator.cmp>;
 project <Hello/Hello.cmp>;
+activeProject Calculator;
