@@ -107,6 +107,7 @@ void BuildService::Run()
 
 void BuildService::ExecuteCommand()
 {
+    cmajor::symbols::SetRootModuleForCurrentThread(nullptr);
     buildInProgress = true;
     std::unique_ptr<cmajor::symbols::Module> rootModule;
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
@@ -301,7 +302,6 @@ void ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command)
         throw std::runtime_error("build in progress");
     }
     BuildService::Instance().ExecuteBuildCommand(command);
-
 }
 
 bool BuildInProgress()
@@ -315,6 +315,128 @@ void CancelBuild()
     {
         BuildService::Instance().CancelBuild();
     }
+}
+
+GetDefinitionReplyServiceMessage::GetDefinitionReplyServiceMessage(const cmajor::info::bs::GetDefinitionReply& reply_) : 
+    ServiceMessage(ServiceMessageKind::getDefinitionReply), reply(reply_)
+{
+}
+
+cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDefinitionRequest& request)
+{
+    cmajor::symbols::SetRootModuleForCurrentThread(nullptr);
+    cmajor::info::bs::GetDefinitionReply reply;
+    try
+    {
+        cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
+        if (request.backend == "cpp")
+        {
+            backend = cmajor::ast::BackEnd::cpp;
+        }
+        else if (request.backend == "systemx")
+        {
+            backend = cmajor::ast::BackEnd::systemx;
+        }
+        cmajor::ast::Config config = cmajor::ast::Config::debug;
+        if (request.config == "release")
+        {
+            config = cmajor::ast::Config::release;
+        }
+        cmajor::symbols::Module* module = cmajor::symbols::GetModuleBySourceFile(backend, config, request.identifierLocation.file);
+        if (!module)
+        {
+            std::u32string moduleName = util::ToUtf32(request.projectName);
+            cmajor::ast::Project project(moduleName, request.projectFilePath, request.config, backend);
+            std::string moduleFilePath = project.ModuleFilePath();
+            bool readModule = false;
+            if (!cmajor::symbols::IsModuleCached(moduleFilePath))
+            {
+                readModule = true;
+            }
+            else
+            {
+                module = cmajor::symbols::GetModuleBySourceFile(backend, config, request.identifierLocation.file);
+                if (!module)
+                {
+                    readModule = true;
+                }
+            }
+            if (!module && readModule)
+            {
+                std::unique_ptr<cmajor::symbols::ModuleCache> prevCache;
+                try
+                {
+                    if (cmajor::symbols::IsSystemModule(moduleName))
+                    {
+                        prevCache = cmajor::symbols::ReleaseModuleCache();
+                        cmajor::symbols::InitModuleCache();
+                    }
+                    else
+                    {
+                        cmajor::symbols::MoveNonSystemModulesTo(prevCache);
+                        cmajor::symbols::UpdateModuleCache();
+                    }
+                    std::unique_ptr<cmajor::symbols::Module> module(new cmajor::symbols::Module(moduleFilePath, true));
+                    cmajor::symbols::SetCacheModule(moduleFilePath, std::move(module));
+                    cmajor::symbols::RestoreModulesFrom(prevCache.get());
+                }
+                catch (...)
+                {
+                    cmajor::symbols::RestoreModulesFrom(prevCache.get());
+                    throw;
+                }
+            }
+            module = cmajor::symbols::GetModuleBySourceFile(backend, config, request.identifierLocation.file);
+        }
+        if (module)
+        {
+            int32_t fileIndex = module->GetFileIndexForFilePath(request.identifierLocation.file);
+            if (fileIndex != -1)
+            {
+                int32_t line = request.identifierLocation.line;
+                int32_t scol = request.identifierLocation.scol;
+                cmajor::symbols::SymbolLocation identifierLocation(module->Id(), fileIndex, line, scol);
+                cmajor::symbols::SymbolLocation* definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
+                if (definitionLocation)
+                {
+                    std::string filePath = cmajor::symbols::GetSourceFilePath(definitionLocation->fileIndex, definitionLocation->moduleId);
+                    if (filePath.empty())
+                    {
+                        std::string moduleName = "<unknown>";
+                        cmajor::symbols::Module* m = cmajor::symbols::GetModuleById(definitionLocation->moduleId);
+                        if (m)
+                        {
+                            moduleName = util::ToUtf8(m->Name());
+                        }
+                        throw std::runtime_error("file path for file index " + std::to_string(definitionLocation->fileIndex) + " not found from module '" + moduleName + "'");
+                    }
+                    reply.definitionLocation.file = filePath;
+                    reply.definitionLocation.line = definitionLocation->line;
+                    reply.definitionLocation.scol = definitionLocation->scol;
+                    reply.succeeded = true;
+                }
+                else
+                {
+                    throw std::runtime_error("definition location of identifier '" + request.identifier + "' not found");
+                }
+            }
+            else
+            {
+                throw std::runtime_error("source file '" + request.identifierLocation.file + "' not included by module '" + util::ToUtf8(module->Name()) + 
+                    "' or any of its referenced modules");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("module for source file '" + request.identifierLocation.file + "' not in cache");
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        reply.succeeded = false;
+        reply.error = ex.what();
+    }
+    return reply;
 }
 
 } // cmajor::service

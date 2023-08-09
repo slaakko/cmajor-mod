@@ -28,4 +28,14 @@ public:
     std::string Name() const override { return "stopBuildServiceRequest"; }
 };
 
+class GetDefinitionRequest : public Request
+{
+public:
+    GetDefinitionRequest(const cmajor::info::bs::GetDefinitionRequest& request_);
+    void Execute() override;
+    std::string Name() const override { return "getDefinitionRequest"; }
+private:
+    cmajor::info::bs::GetDefinitionRequest request;
+};
+
 } // namespace cmajor::service

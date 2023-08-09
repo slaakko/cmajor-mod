@@ -116,7 +116,7 @@ private:
     void AddEditor(const std::string& filePath);
     void HandleBuildResult(const cmajor::info::bs::BuildResult& buildResult);
     void HandleBuildStopped();
-    void HandleGetDefinitionReply(cmajor::info::bs::GetDefinitionReply& getDefinitionReply);
+    void HandleGetDefinitionReply(const cmajor::info::bs::GetDefinitionReply& getDefinitionReply);
     void HandleGetDefinitionError(const std::string& getDefinitionError);
     void HandleStartDebugReply(cmajor::debugger::Reply* reply);
     void HandleStartDebugError(const std::string& error);
@@ -367,6 +367,7 @@ private:
     std::vector<std::unique_ptr<wing::ClickAction>> clickActions;
     LocationList locations;
     std::unique_ptr<cmajor::service::Request> debugRequest;
+    std::unique_ptr<cmajor::service::Request> getDefinitionRequest;
     cmajor::info::db::Location savedLocation;
     std::vector<std::string> buildIndicatorTexts;
     std::vector<ExpressionEvaluateRequest> expressionEvaluateRequests;

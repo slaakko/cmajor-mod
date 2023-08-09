@@ -185,7 +185,8 @@ SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module*
 }
 
 Symbol::Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), flags(SymbolFlags::project), parent(nullptr), module(nullptr), compileUnit(nullptr), symbolIndex(-1)
+    symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), 
+    flags(SymbolFlags::project), parent(nullptr), module(nullptr), compileUnit(nullptr), symbolIndex(-1)
 {
 }
 

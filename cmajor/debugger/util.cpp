@@ -241,9 +241,8 @@ cmajor::debug::DIType* GetDynamicTypeFromVmt(cmajor::debug::DIClassType* classTy
     return nullptr;
 }
 
-cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debugger* debugger)
+cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, cmajor::debug::DIType* type, Debugger* debugger)
 {
-    cmajor::debug::DIType* type = node->Type();
     switch (type->GetKind())
     {
         case cmajor::debug::DIType::Kind::pointerType:
@@ -251,7 +250,7 @@ cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debug
             cmajor::debug::DIPointerType* pointerType = static_cast<cmajor::debug::DIPointerType*>(type);
             cmajor::debug::DIType* pointedType = pointerType->PointedToType();
             cmajor::debug::BoundDerefNode derefNode(pointedType, node->Clone(), nullptr);
-            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, pointedType, debugger);
             if (dynamicType)
             {
                 cmajor::debug::DIType* ptrType = cmajor::debug::MakePointerType(dynamicType);
@@ -264,7 +263,7 @@ cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debug
             cmajor::debug::DIReferenceType* referenceType = static_cast<cmajor::debug::DIReferenceType*>(type);
             cmajor::debug::DIType* referredType = referenceType->BaseType();
             cmajor::debug::BoundDerefNode derefNode(referredType, node->Clone(), nullptr);
-            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, referredType, debugger);
             if (dynamicType)
             {
                 cmajor::debug::DIType* refType = cmajor::debug::MakeReferenceType(dynamicType);
@@ -276,8 +275,7 @@ cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debug
         {
             cmajor::debug::DIConstType* constType = static_cast<cmajor::debug::DIConstType*>(type);
             cmajor::debug::DIType* baseType = constType->BaseType();
-            cmajor::debug::BoundDerefNode derefNode(baseType, node->Clone(), nullptr);
-            cmajor::debug::DIType* dynamicType = GetDynamicType(&derefNode, debugger);
+            cmajor::debug::DIType* dynamicType = GetDynamicType(node, baseType, debugger);
             if (dynamicType)
             {
                 cmajor::debug::DIType* constType = cmajor::debug::MakeConstType(dynamicType);
@@ -297,8 +295,7 @@ cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debug
                 }
                 else if (!classType->BaseClassId().is_nil())
                 {
-                    cmajor::debug::BoundDerefNode derefNode(classType->BaseClassType(), node->Clone(), nullptr);
-                    return GetDynamicType(&derefNode, debugger);
+                    return GetDynamicType(node, classType->BaseClassType(), debugger);
                 }
             }
             break;

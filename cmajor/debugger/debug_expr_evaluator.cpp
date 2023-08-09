@@ -213,7 +213,7 @@ void DebugExprEvaluator::AddTypes(cmajor::debug::BoundDebugNode* node)
     {
         cmajor::debug::DITypeRef staticTypeRef(node->Type());
         result->AppendChild(staticTypeRef.ToXml("static_type").release());
-        cmajor::debug::DIType* dynamicType = GetDynamicType(node, debugger); 
+        cmajor::debug::DIType* dynamicType = GetDynamicType(node, node->Type(), debugger); 
         if (dynamicType)
         {
             cmajor::debug::DITypeRef dynamicTypeRef(dynamicType);

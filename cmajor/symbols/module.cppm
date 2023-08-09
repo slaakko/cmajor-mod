@@ -105,8 +105,8 @@ public:
     std::string GetFilePath(int32_t fileIndex) const;
     int32_t NumFilePaths() const { return filePaths.size(); }
     bool IsEmpty() const { return filePaths.empty(); }
-    void Write(util::BinaryStreamWriter& writer, bool systemModule);
-    void Read(util::BinaryStreamReader& reader, bool systemModule);
+    void Write(util::BinaryStreamWriter& writer);
+    void Read(util::BinaryStreamReader& reader);
     void Dump(util::CodeFormatter& formatter);
 private:
     std::vector<std::string> filePaths;
@@ -230,6 +230,7 @@ public:
     std::string GetCCList(const std::string& sourceFilePath, const std::u32string& ccText, const std::u32string& cursorLine, const std::vector<int>& ruleContext);
     std::string GetParamHelpList(const std::string& sourceFilePath, int symbolIndex);
     soul::lexer::FileMap& FileMap() { return fileMap; }
+    void MakeFileMapFromFileTable();
     std::string GetErrorLines(const soul::ast::SourcePos& sourcePos);
 private:
     uint8_t format;

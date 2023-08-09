@@ -26,9 +26,19 @@ public:
     BuildStoppedMessage();
 };
 
+class GetDefinitionReplyServiceMessage : public ServiceMessage
+{
+public:
+    GetDefinitionReplyServiceMessage(const cmajor::info::bs::GetDefinitionReply& reply_);
+    const cmajor::info::bs::GetDefinitionReply& Reply() const { return reply; }
+private:
+    cmajor::info::bs::GetDefinitionReply reply;
+};
+
 void StartBuildService();
 void StopBuildService();
 void ExecuteBuildCommand(cmajor::info::bs::BuildCommand* command);
+cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDefinitionRequest& request);
 bool BuildInProgress();
 void CancelBuild();
 

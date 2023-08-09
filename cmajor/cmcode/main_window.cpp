@@ -1332,30 +1332,12 @@ void MainWindow::HandleServiceMessage()
             HandleBuildStopped();
             break;
         }
-/*      case cmajor::service::ServiceMessageKind::buildError:
-        {
-            cmajor::service::BuildErrorServiceMessage* message = static_cast<cmajor::service::BuildErrorServiceMessage*>(serviceMessage.get());
-            HandleBuildError(message->Error());
-            break;
-        }
         case cmajor::service::ServiceMessageKind::getDefinitionReply:
         {
             cmajor::service::GetDefinitionReplyServiceMessage* message = static_cast<cmajor::service::GetDefinitionReplyServiceMessage*>(serviceMessage.get());
-            HandleGetDefinitionReply(message->GetGetDefinitionReply());
+            HandleGetDefinitionReply(message->Reply());
             break;
         }
-        case cmajor::service::ServiceMessageKind::getDefinitionError:
-        {
-            cmajor::service::GetDefinitionErrorServiceMessage* message = static_cast<cmajor::service::GetDefinitionErrorServiceMessage*>(serviceMessage.get());
-            HandleGetDefinitionError(message->Error());
-            break;
-        }
-        case cmajor::service::ServiceMessageKind::stopBuild:
-        {
-            HandleStopBuild();
-            break;
-        }
-*/
         case cmajor::service::ServiceMessageKind::startDebugReply:
         {
             cmajor::service::StartDebugServiceReplyServiceMessage* message = static_cast<cmajor::service::StartDebugServiceReplyServiceMessage*>(serviceMessage.get());
@@ -1716,6 +1698,10 @@ void MainWindow::HandleBuildResult(const cmajor::info::bs::BuildResult& buildRes
         {
             StartDebugging();
             cmajor::service::PutRequest(debugRequest.release());
+        }
+        else if (getDefinitionRequest)
+        {
+            cmajor::service::PutRequest(getDefinitionRequest.release());
         }
     }
     else
@@ -2264,13 +2250,19 @@ void MainWindow::HandleGetParamHelpListError(const std::string& error)
 }
 */
 
-void MainWindow::HandleGetDefinitionReply(cmajor::info::bs::GetDefinitionReply& getDefinitionReply)
+void MainWindow::HandleGetDefinitionReply(const cmajor::info::bs::GetDefinitionReply& getDefinitionReply)
 {
-    StopBuilding();
-    cmajor::info::bs::DefinitionSourceLocation currentLocation = CurrentLocation();
-    locations.AddLocation(currentLocation);
-    locations.AddLocation(getDefinitionReply.definitionLocation);
-    locations.GotoPreviousLocation(currentLocation);
+    if (getDefinitionReply.succeeded)
+    {
+        cmajor::info::bs::DefinitionSourceLocation currentLocation = CurrentLocation();
+        locations.AddLocation(currentLocation);
+        locations.AddLocation(getDefinitionReply.definitionLocation);
+        locations.GotoPreviousLocation(currentLocation);
+    }
+    else
+    {
+        cmajor::service::PutOutputServiceMessage(getDefinitionReply.error);
+    }
 }
 
 void MainWindow::HandleGetDefinitionError(const std::string& getDefinitionError)
@@ -2900,8 +2892,12 @@ void MainWindow::GotoDefinition(cmajor::ast::Project* project, const std::string
         request.projectFilePath = project->FilePath();
         request.identifier = identifier;
         request.identifierLocation = sourceLocation;
-        StartBuilding();
-        StartGetDefinitionRequest(request);
+        getDefinitionRequest.reset(new cmajor::service::GetDefinitionRequest(request));
+        if (!BuildActiveProject())
+        {
+            getDefinitionRequest.reset();
+        }
+
     }
     catch (const std::exception& ex)
     {

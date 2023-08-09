@@ -578,10 +578,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     }
     debugInfo = prevDebugInfo;
     emitter->SetCurrentDIBuilder(prevDIBuilder);
-    if (functionSymbol->Name() == U"main()")
-    {
-        int x = 0;
-    }
 }
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSequenceStatement)

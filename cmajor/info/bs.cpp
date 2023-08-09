@@ -29,7 +29,7 @@ GetDefinitionRequest::GetDefinitionRequest() : projectName(), projectFilePath(),
 {
 }
 
-GetDefinitionReply::GetDefinitionReply() : definitionLocation()
+GetDefinitionReply::GetDefinitionReply() : definitionLocation(), succeeded(true), error()
 {
 }
 

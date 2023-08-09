@@ -241,8 +241,8 @@ soul::ast::SourcePos AstReader::ReadSourcePos()
     int32_t line = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
     if (line)
     {
-        int32_t file = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
-        int32_t col = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
+        file = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
+        col = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
     }
     return soul::ast::SourcePos(file, line, col);
 }

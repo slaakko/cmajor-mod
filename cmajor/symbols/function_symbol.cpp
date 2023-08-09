@@ -471,10 +471,6 @@ FunctionSymbol::FunctionSymbol(const soul::ast::SourcePos& sourcePos_, const uti
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
     conversionSourceType(nullptr), conversionTargetType(nullptr)
 {
-    if (Name() == U"Deallocate(String<char> this)")
-    {
-        int x = 0;
-    }
 }
 
 FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
@@ -484,10 +480,6 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::SourcePo
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
     conversionSourceType(nullptr), conversionTargetType(nullptr)
 {
-    if (Name() == U"Deallocate(String<char> this)")
-    {
-        int x = 0;
-    }
 }
 
 void FunctionSymbol::Write(SymbolWriter& writer)

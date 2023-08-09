@@ -46,11 +46,4 @@ void StopBuild()
     PutRequest(stopBuildRequest.release());
 }
 
-void StartGetDefinitionRequest(const cmajor::info::bs::GetDefinitionRequest& getDefinitionRequest)
-{
-    //cmajor::service::BuildServiceStartParams serviceStartParams = cmajor::service::BuildServiceStartParams().
-        //ProcessName("cmcode").DebugServer(UseDebugServers()).Log(ServerLogging()).Wait(DebugWait());
-    //PutRequest(new cmajor::service::GotoDefinitionRequest(serviceStartParams, getDefinitionRequest));
-}
-
 } // namespace cmcode

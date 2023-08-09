@@ -17,7 +17,11 @@
   </directory>
  </component>
  <component name="projects">
-  <directory name="projects"/>
+  <directory name="projects">
+   <exclude cascade="true" dir="bin"/>
+   <exclude cascade="true" dir="lib"/>
+   <exclude cascade="true" file="*.settings.xml"/>
+  </directory>
  </component>
  <component name="unicode">
   <directory name="unicode"/>
@@ -29,6 +33,13 @@
    <include file="sx.machine.config.xml"/>
   </directory>
  </component>
+ <component name="libraries">
+  <directory name="lib">
+   <exclude file="*"/>
+   <include file="cmajor.rt.lib"/>
+   <include file="cmajor.rtd.lib"/>
+  </directory>
+ </component>
  <environment>
   <variable name="CMAJOR_ROOT" value="$TARGET_ROOT_DIR$"/>
   <pathDirectory value="$TARGET_ROOT_DIR$/bin"/>
@@ -38,6 +49,7 @@
   <link description="Cmajor Code" iconIndex="0" iconPath="$TARGET_ROOT_DIR$/bin/cmcode.exe" linkFilePath="$DESKTOP_FOLDER$/Cmajor Code.lnk" path="$TARGET_ROOT_DIR$/bin/cmcode.exe" workingDirectory="$TARGET_ROOT_DIR$/bin"/>
   <link description="Cmajor Code" iconIndex="0" iconPath="$TARGET_ROOT_DIR$/bin/cmcode.exe" linkFilePath="$START_MENU_PROGRAMS_FOLDER$/Cmajor/Cmajor Code.lnk" path="$TARGET_ROOT_DIR$/bin/cmcode.exe" workingDirectory="$TARGET_ROOT_DIR$/bin/cmcode.exe"/>
  </links>
-<uninstall>
+ <uninstall>
   <run command="cmstopbpms"/>
- </uninstall></package>
+ </uninstall>
+</package>

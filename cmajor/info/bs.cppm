@@ -69,6 +69,8 @@ struct GetDefinitionReply
 {
     GetDefinitionReply();
     DefinitionSourceLocation definitionLocation;
+    bool succeeded;
+    std::string error;
 };
 
 } // namespace cmajor::info::bs

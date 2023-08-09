@@ -218,59 +218,25 @@ std::string FileTable::GetFilePath(int32_t fileIndex) const
     return std::string();
 }
 
-void FileTable::Write(util::BinaryStreamWriter& writer, bool systemModule)
+void FileTable::Write(util::BinaryStreamWriter& writer)
 {
     uint32_t n = filePaths.size();
     writer.WriteULEB128UInt(n);
-    std::string cmajorRoot;
-    if (systemModule)
-    {
-        cmajorRoot = util::GetFullPath(cmajor::ast::CmajorRootDir());
-        if (!cmajorRoot.ends_with("/"))
-        {
-            cmajorRoot.append("/");
-        }
-    }
     for (uint32_t i = 0; i < n; ++i)
     {
-        std::string filePath = util::GetFullPath(filePaths[i]);
-        if (systemModule)
-        {
-            if (filePath.find(cmajorRoot, 0) == 0)
-            {
-                filePath = filePath.substr(cmajorRoot.size());
-            }
-        }
+        std::string filePath = cmajor::ast::MakeCmajorRootRelativeFilePath(util::GetFullPath(filePaths[i]));
         writer.Write(filePath);
     }
 }
 
-void FileTable::Read(util::BinaryStreamReader& reader, bool systemModule)
+void FileTable::Read(util::BinaryStreamReader& reader)
 {
     filePaths.clear();
-    std::string cmajorRoot;
-    if (systemModule)
-    {
-        cmajorRoot = util::GetFullPath(cmajor::ast::CmajorRootDir());
-        if (!cmajorRoot.ends_with("/"))
-        {
-            cmajorRoot.append("/");
-        }
-    }
     uint32_t n = reader.ReadULEB128UInt();
     for (uint32_t i = 0; i < n; ++i)
     {
-        if (systemModule)
-        {
-            std::string filePath = reader.ReadUtf8String();
-            filePath = util::Path::Combine(cmajorRoot, filePath);
-            filePaths.push_back(std::move(filePath));
-        }
-        else
-        {
-            std::string filePath = reader.ReadUtf8String();
-            filePaths.push_back(std::move(filePath));
-        }
+        std::string filePath = cmajor::ast::ExpandCmajorRootRelativeFilePath(reader.ReadUtf8String());
+        filePaths.push_back(std::move(filePath));
     }
 }
 
@@ -902,6 +868,16 @@ std::string Module::GetFilePath(int32_t fileIndex) const
     return filePath;
 }
 
+void Module::MakeFileMapFromFileTable()
+{
+    int n = fileTable.NumFilePaths();
+    for  (int i = 0; i < n; ++i)
+    {
+        std::string filePath = fileTable.GetFilePath(i);
+        fileMap.MapFile(filePath, i);
+    }
+}
+
 std::string Module::GetErrorLines(const soul::ast::SourcePos& sourcePos) 
 {
     if (sourcePos.file == -1 || sourcePos.line == 0)
@@ -931,7 +907,7 @@ void Module::Write(SymbolWriter& writer)
         std::string cmajorRootRelativeReferenceFilePath = cmajor::ast::MakeCmajorRootRelativeFilePath(referencedModule->OriginalFilePath());
         writer.GetBinaryStreamWriter().Write(cmajorRootRelativeReferenceFilePath);
     }
-    fileTable.Write(writer.GetBinaryStreamWriter(), IsSystemModule());
+    fileTable.Write(writer.GetBinaryStreamWriter());
     int16_t nmnt = moduleNameTable.size();
     writer.GetBinaryStreamWriter().Write(nmnt);
     for (const auto& p : moduleNameTable)
@@ -1088,11 +1064,9 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         std::string referenceFilePath = cmajor::ast::ExpandCmajorRootRelativeFilePath(cmajorRootRelativeReferenceFilePath);
         referenceFilePaths.push_back(referenceFilePath);
     }
-    fileTable.Read(reader.GetBinaryStreamReader(), IsSystemModule());
-    if (GetGlobalFlag(GlobalFlags::updateSourceFileModuleMap))
-    {
-        UpdateSourceFileModuleMap();
-    }
+    fileTable.Read(reader.GetBinaryStreamReader());
+    MakeFileMapFromFileTable(); 
+    UpdateSourceFileModuleMap();
     if (!fileTable.IsEmpty())
     {
 #ifdef _WIN32

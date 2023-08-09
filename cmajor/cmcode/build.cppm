@@ -32,6 +32,5 @@ inline BuildRequestKind operator~(BuildRequestKind flags)
 
 void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, BuildRequestKind requestKind);
 void StopBuild();
-void StartGetDefinitionRequest(const cmajor::info::bs::GetDefinitionRequest& getDefinitionRequest);
 
 } // namespace cmcode

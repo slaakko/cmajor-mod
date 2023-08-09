@@ -32,6 +32,6 @@ bool StackFrameHasLine(Reply* reply);
 
 std::vector<cmajor::info::db::Location> GetFrames(cmajor::debugger::Results* results, cmajor::debug::DebugInfo* debugInfo, cmajor::debug::DebuggerOutputWriter* outputWriter);
 
-cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, Debugger* debugger);
+cmajor::debug::DIType* GetDynamicType(cmajor::debug::BoundDebugNode* node, cmajor::debug::DIType* type, Debugger* debugger);
 
 } // namespace cmajor::debugger

@@ -1713,6 +1713,10 @@ void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* i
     SymbolLocation definitionLocation;
     if (symbol->GetLocation(definitionLocation))
     {
+        if (definitionLocation.fileIndex == -1)
+        {
+            int x = 0;
+        }
         symbolDefinitionMap[identifierLocation] = definitionLocation;
     }
 }

@@ -34,7 +34,8 @@ const std::string& FileMap::GetFilePath(int32_t fileId) const
     }
     else
     {
-        throw std::runtime_error("file path for file id " + std::to_string(fileId) + " not found from file map");
+        static std::string empty;
+        return empty;
     }
 }
 
