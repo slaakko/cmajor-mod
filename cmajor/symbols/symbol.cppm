@@ -107,20 +107,20 @@ std::string SymbolFlagStr(SymbolFlags symbolFlags, bool noAccess);
 class SymbolLocation
 {
 public:
-    SymbolLocation() : moduleId(util::nil_uuid()), fileIndex(0), line(0), scol(0)
+    SymbolLocation() : moduleId(util::nil_uuid()), fileIndex(-1), line(0), scol(0)
     {
     }
     SymbolLocation(const util::uuid& moduleId_, int32_t fileIndex_, int32_t line_, int32_t scol_) :
         moduleId(moduleId_), fileIndex(fileIndex_), line(line_), scol(scol_)
     {
     }
+    bool IsValid() const { return !moduleId.is_nil() && fileIndex != -1 && line != 0; }
     util::uuid moduleId;
     int32_t fileIndex;
     int32_t line;
     int32_t scol;
 };
 
-bool operator==(const SymbolLocation& left, const SymbolLocation& right);
 bool operator<(const SymbolLocation& left, const SymbolLocation& right);
 
 SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module* module);

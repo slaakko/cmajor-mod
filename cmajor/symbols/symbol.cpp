@@ -163,11 +163,6 @@ uint32_t AccessFlag(cmajor::ir::Emitter& emitter, SymbolAccess access)
     return emitter.GetNoFlags();
 }
 
-bool operator==(const SymbolLocation& left, const SymbolLocation& right)
-{
-    return left.moduleId == right.moduleId && left.fileIndex == right.fileIndex && left.line == right.line && left.scol == right.scol;
-}
-
 bool operator<(const SymbolLocation& left, const SymbolLocation& right)
 {
     if (left.moduleId < right.moduleId) return true;

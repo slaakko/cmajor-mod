@@ -1,5 +1,5 @@
 
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/parser/class.parser' using soul parser generator spg version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/parser/class.parser' using soul parser generator spg version 5.0.0
 
 module cmajor.classes.parser;
 
@@ -191,6 +191,7 @@ soul::parser::Match ClassParser<LexerT>::Class(LexerT& lexer, cmajor::parser::co
                                                 id.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                                                 if (match.hit)
                                                 {
+                                                    s = lexer.GetSourcePos(pos);
                                                     classNode.reset(new cmajor::ast::ClassNode(s, context->ModuleId(), specifiers->value, id.release(), attrs.release()));
                                                 }
                                                 *parentMatch18 = match;

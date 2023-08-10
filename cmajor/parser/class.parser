@@ -57,6 +57,7 @@ parser ClassParser
             CLASS
             Identifier(context):id
             {
+                s = lexer.GetSourcePos(pos);
                 classNode.reset(new cmajor::ast::ClassNode(s, context->ModuleId(), specifiers, id, attrs));
             }
             TemplateParameterList(context, classNode.get()):templateParams?

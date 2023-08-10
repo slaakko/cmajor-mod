@@ -2,9 +2,14 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Parser.cm"/>
         <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Scanner.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/SymbolTable.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Token.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Hello/Hello.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/Console.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Scanner.cm"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/Hello/Hello.cm"/>
     <currentCursorLine value="7"/>
     <breakpoints/>
     <expandedProjects>

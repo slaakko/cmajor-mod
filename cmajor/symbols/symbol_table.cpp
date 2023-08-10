@@ -1715,22 +1715,23 @@ void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* i
     {
         if (definitionLocation.fileIndex == -1)
         {
+            std::cout << util::ToUtf8(symbol->Name()) << "\n";
             int x = 0;
         }
         symbolDefinitionMap[identifierLocation] = definitionLocation;
     }
 }
 
-SymbolLocation* SymbolTable::GetDefinitionLocation(const SymbolLocation& identifierLocation)
+SymbolLocation SymbolTable::GetDefinitionLocation(const SymbolLocation& identifierLocation) const
 {
     auto it = symbolDefinitionMap.find(identifierLocation);
     if (it != symbolDefinitionMap.cend())
     {
-        return &(it->second);
+        return it->second;
     }
     else
     {
-        return nullptr;
+        return SymbolLocation();
     }
 }
 

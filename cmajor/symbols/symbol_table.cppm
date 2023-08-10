@@ -199,7 +199,7 @@ public:
     void MapSymbol(cmajor::ast::Node* node, Symbol* symbol);
     Symbol* GetMappedSymbol(cmajor::ast::Node* node) const;
     void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode, Module* module, Symbol* symbol);
-    SymbolLocation* GetDefinitionLocation(const SymbolLocation& identifierLocation);
+    SymbolLocation GetDefinitionLocation(const SymbolLocation& identifierLocation) const;
     void InitUuids();
     const util::uuid& GetDerivationId(Derivation derivation) const;
     const util::uuid& GetPositionId(int index) const;

@@ -396,23 +396,23 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                 int32_t line = request.identifierLocation.line;
                 int32_t scol = request.identifierLocation.scol;
                 cmajor::symbols::SymbolLocation identifierLocation(module->Id(), fileIndex, line, scol);
-                cmajor::symbols::SymbolLocation* definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
-                if (definitionLocation)
+                cmajor::symbols::SymbolLocation definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
+                if (definitionLocation.IsValid())
                 {
-                    std::string filePath = cmajor::symbols::GetSourceFilePath(definitionLocation->fileIndex, definitionLocation->moduleId);
+                    std::string filePath = cmajor::symbols::GetSourceFilePath(definitionLocation.fileIndex, definitionLocation.moduleId);
                     if (filePath.empty())
                     {
                         std::string moduleName = "<unknown>";
-                        cmajor::symbols::Module* m = cmajor::symbols::GetModuleById(definitionLocation->moduleId);
+                        cmajor::symbols::Module* m = cmajor::symbols::GetModuleById(definitionLocation.moduleId);
                         if (m)
                         {
                             moduleName = util::ToUtf8(m->Name());
                         }
-                        throw std::runtime_error("file path for file index " + std::to_string(definitionLocation->fileIndex) + " not found from module '" + moduleName + "'");
+                        throw std::runtime_error("file path for file index " + std::to_string(definitionLocation.fileIndex) + " not found from module '" + moduleName + "'");
                     }
                     reply.definitionLocation.file = filePath;
-                    reply.definitionLocation.line = definitionLocation->line;
-                    reply.definitionLocation.scol = definitionLocation->scol;
+                    reply.definitionLocation.line = definitionLocation.line;
+                    reply.definitionLocation.scol = definitionLocation.scol;
                     reply.succeeded = true;
                 }
                 else
