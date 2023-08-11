@@ -1,0 +1,213 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>CompileUnit Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>CompileUnit Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#constructor_CompileUnit_7DB09F471F2BBA1D37F0C7ED2155D6E6FE234421">CompileUnit</a>(<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;&nbsp;context_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html">Function</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_AddFunction_CompileUnit_66E258AADFE8FA521755B89EE0815CD4A1655102">AddFunction</a>(<span class="kw">int</span>&nbsp;lineNumber, <a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name, <span class="kw">bool</span>&nbsp;once, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;md)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_AddGlobalVariable_CompileUnit_29AB4A59A625FE39381729376F56BD0122A45DE7">AddGlobalVariable</a>(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name, <a href="../../cmsxi/doc/class_ConstantValue_6CBE7195C18A92AA788961FEB9859AF11A2CA755.html">ConstantValue</a>*&nbsp;initializer, <span class="kw">int</span>&nbsp;line, <span class="kw">bool</span>&nbsp;once)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_AddInfo_CompileUnit_92AAB83090530C4736533051B0098AA6DCB8854E">AddInfo</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;id_, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;mdRef_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_CombineBasicBlocks_CompileUnit_F876E02104F4D8E5832B88E7BC10467011289DE6">CombineBasicBlocks</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_ComputeLivenessAndNextUse_CompileUnit_307A133C9E341F3E019AC9C4F627A8DD3BD69269">ComputeLivenessAndNextUse</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_GenerateCode_CompileUnit_E3904AAA100220B00DA7F0367E69B5FDB99E5CC8">GenerateCode</a>(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_GetGlobalVariable_CompileUnit_7DB88216672290A8CBAF1119D15FDF19A8BA6B92">GetGlobalVariable</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;globalVariableName)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_GetGlobalVariableNothrow_CompileUnit_40E641EA83F72554782EBC8541E52C1A2834F1DF">GetGlobalVariableNothrow</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;globalVariableName)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_MapInstructions_CompileUnit_D77693658CE188BE93E61665DDCA71A12D8385D2">MapInstructions</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_Print_CompileUnit_602A06A3FC2FB86341B1A3D37AE2056D560D6B3A">Print</a>(<span class="kw">int</span>&nbsp;stage)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_SetFileName_CompileUnit_DA387290AA04BA4027AE606485B187AE285F03A5">SetFileName</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_Validate_CompileUnit_0BDFA7E15BC504B22914FA51AEC35A237E7B35A1">Validate</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_CompileUnit_93E51ED840927029D53ED2C00E2A8EAB3228099C.html#member_function_ValidateGlobalVariables_CompileUnit_31F8C7D4A6D43F1121FD40A97A9540D3F4B84FE6">ValidateGlobalVariables</a>()</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;</td>
+    <td xml:space="preserve">context</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxi/doc/class_DataLocations_A4F3B634A7686A5FA1D95CE22BB805C0B47A74B8.html">DataLocations</a></td>
+    <td xml:space="preserve">dataLocations</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve">fileName</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html">Function</a>>></td>
+    <td xml:space="preserve">functions</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>*, <a href="../../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>, <a href="../../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>></td>
+    <td xml:space="preserve">globalVariableMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>>></td>
+    <td xml:space="preserve">globalVariables</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve">id</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*</td>
+    <td xml:space="preserve">mdRef</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Metadata_04D955F319C145208CB7046148005BFEC8AB49B2.html">Metadata</a></td>
+    <td xml:space="preserve">metadata</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_CompileUnit_7DB09F471F2BBA1D37F0C7ED2155D6E6FE234421" xml:space="preserve">CompileUnit&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;CompileUnit(<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;&nbsp;context_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddFunction_CompileUnit_66E258AADFE8FA521755B89EE0815CD4A1655102" xml:space="preserve">AddFunction&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html">Function</a>*&nbsp;AddFunction(<span class="kw">int</span>&nbsp;lineNumber, <a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name, <span class="kw">bool</span>&nbsp;once, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;md)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_AddGlobalVariable_CompileUnit_29AB4A59A625FE39381729376F56BD0122A45DE7" xml:space="preserve">AddGlobalVariable&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;AddGlobalVariable(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name, <a href="../../cmsxi/doc/class_ConstantValue_6CBE7195C18A92AA788961FEB9859AF11A2CA755.html">ConstantValue</a>*&nbsp;initializer, <span class="kw">int</span>&nbsp;line, <span class="kw">bool</span>&nbsp;once)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#144">144</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_AddInfo_CompileUnit_92AAB83090530C4736533051B0098AA6DCB8854E" xml:space="preserve">AddInfo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;AddInfo(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;id_, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;mdRef_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#19">19</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CombineBasicBlocks_CompileUnit_F876E02104F4D8E5832B88E7BC10467011289DE6" xml:space="preserve">CombineBasicBlocks&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;CombineBasicBlocks()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#44">44</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ComputeLivenessAndNextUse_CompileUnit_307A133C9E341F3E019AC9C4F627A8DD3BD69269" xml:space="preserve">ComputeLivenessAndNextUse&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;ComputeLivenessAndNextUse()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#113">113</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GenerateCode_CompileUnit_E3904AAA100220B00DA7F0367E69B5FDB99E5CC8" xml:space="preserve">GenerateCode&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;GenerateCode(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#158">158</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetGlobalVariable_CompileUnit_7DB88216672290A8CBAF1119D15FDF19A8BA6B92" xml:space="preserve">GetGlobalVariable&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>*&nbsp;GetGlobalVariable(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;globalVariableName)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#132">132</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetGlobalVariableNothrow_CompileUnit_40E641EA83F72554782EBC8541E52C1A2834F1DF" xml:space="preserve">GetGlobalVariableNothrow&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_GlobalVariable_6F9B1DB4548E4E759C97758F6E6010AE21132A8C.html">GlobalVariable</a>*&nbsp;GetGlobalVariableNothrow(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;globalVariableName)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#120">120</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MapInstructions_CompileUnit_D77693658CE188BE93E61665DDCA71A12D8385D2" xml:space="preserve">MapInstructions&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;MapInstructions()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#37">37</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Print_CompileUnit_602A06A3FC2FB86341B1A3D37AE2056D560D6B3A" xml:space="preserve">Print&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Print(<span class="kw">int</span>&nbsp;stage)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#65">65</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetFileName_CompileUnit_DA387290AA04BA4027AE606485B187AE285F03A5" xml:space="preserve">SetFileName&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;SetFileName(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#15">15</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Validate_CompileUnit_0BDFA7E15BC504B22914FA51AEC35A237E7B35A1" xml:space="preserve">Validate&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Validate()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#51">51</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ValidateGlobalVariables_CompileUnit_31F8C7D4A6D43F1121FD40A97A9540D3F4B84FE6" xml:space="preserve">ValidateGlobalVariables&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;ValidateGlobalVariables()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html#151">151</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/CompileUnit.cm.html">cmsxi/CompileUnit.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

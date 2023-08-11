@@ -1,0 +1,317 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Registers Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Registers Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#default_constructor_Registers_0150A5BF97ECA0D9E98BFC75E952711681FC0D61">Registers</a>()</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_Get_Registers_970D43DD9418C694574276AE1D431EC4B6CB9883">Get</a>(<span class="kw">byte</span>&nbsp;regNum)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_GetInterruptBits_Registers_DD41444CCC4D76293B256D8956C952704B9C60AB">GetInterruptBits</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_Mutex_CAF802A5F8A71934B07EA6C23937F60D9AECD650.html">Mutex</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_GetInterruptMutex_Registers_213307FF07F3EA394F1F260FC1C7A4C754ED4E98">GetInterruptMutex</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_GetPC_Registers_99016FB53DFE90D2F9E3DCC5D25A2D1A1778A234">GetPC</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_GetSpecial_Registers_103321C060030E210C8911836A31868D08EC08B5">GetSpecial</a>(<span class="kw">byte</span>&nbsp;regNum)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_GetSpecialRegName_Registers_222DFE1673E6659EB0149EDAE6F9CB2731BE896A">GetSpecialRegName</a>(<span class="kw">byte</span>&nbsp;specialReg)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_ResetInterrupt_Registers_5C796013114F4D1386D1EFB13021D01DA8CAC69E">ResetInterrupt</a>(<span class="kw">ulong</span>&nbsp;interruptBit)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_Set_Registers_1600E58A086BD293DD205DEDBE36D9518D1E93EA">Set</a>(<span class="kw">byte</span>&nbsp;regNum, <span class="kw">ulong</span>&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_SetInterrupt_Registers_2BA8FFE6F74BE6A22EA9B78F3577B6441A4753D5">SetInterrupt</a>(<span class="kw">ulong</span>&nbsp;interruptBit)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_SetPC_Registers_5D1351F5D4229F3C6EDB038808C6B9A4581F6DA0">SetPC</a>(<span class="kw">ulong</span>&nbsp;pc_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_SetSpecial_Registers_F1EA587A47D07639143B9438C0CA04EDAB8505AF">SetSpecial</a>(<span class="kw">byte</span>&nbsp;regNum, <span class="kw">ulong</span>&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html#member_function_ToString_Registers_4154D7A593EF30B91C0ECF2851850E00195095FC">ToString</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+  </table>
+  <h2>Constants</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rA = 0u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rB = 1u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rBB = 26u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rC = 2u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rD = 3u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rE = 4u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rF = 5u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rG = 6u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rH = 7u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rI = 8u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rJ = 9u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rK = 10u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rL = 11u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rM = 12u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rN = 13u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rO = 14u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rP = 15u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rQ = 16u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rR = 17u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rS = 18u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rT = 19u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rTT = 27u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rU = 20u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rV = 21u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rW = 22u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rWW = 28u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rX = 23u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rXX = 29u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rY = 24u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rYY = 30u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rZ = 25u</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span></td>
+    <td xml:space="preserve">rZZ = 31u</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">ulong</span>[256]</td>
+    <td xml:space="preserve">globalRegs</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_Mutex_CAF802A5F8A71934B07EA6C23937F60D9AECD650.html">Mutex</a></td>
+    <td xml:space="preserve">interruptMutex</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">ulong</span>[256]</td>
+    <td xml:space="preserve">localRegs</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">pc</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_Map_Key_Value_KeyCompare_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">byte</span>, <a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <a href="../../../../../../system/content/System.Base/doc/class_Less_T_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">byte</span>>></td>
+    <td xml:space="preserve">specialRegMap</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_Registers_0150A5BF97ECA0D9E98BFC75E952711681FC0D61" xml:space="preserve">Registers&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;Registers()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#60">60</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Get_Registers_970D43DD9418C694574276AE1D431EC4B6CB9883" xml:space="preserve">Get&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;Get(<span class="kw">byte</span>&nbsp;regNum)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#95">95</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetInterruptBits_Registers_DD41444CCC4D76293B256D8956C952704B9C60AB" xml:space="preserve">GetInterruptBits&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetInterruptBits()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#165">165</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetInterruptMutex_Registers_213307FF07F3EA394F1F260FC1C7A4C754ED4E98" xml:space="preserve">GetInterruptMutex&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_Mutex_CAF802A5F8A71934B07EA6C23937F60D9AECD650.html">Mutex</a>&amp;&nbsp;GetInterruptMutex()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#173">173</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetPC_Registers_99016FB53DFE90D2F9E3DCC5D25A2D1A1778A234" xml:space="preserve">GetPC&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetPC()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#177">177</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetSpecial_Registers_103321C060030E210C8911836A31868D08EC08B5" xml:space="preserve">GetSpecial&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetSpecial(<span class="kw">byte</span>&nbsp;regNum)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#129">129</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetSpecialRegName_Registers_222DFE1673E6659EB0149EDAE6F9CB2731BE896A" xml:space="preserve">GetSpecialRegName&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;GetSpecialRegName(<span class="kw">byte</span>&nbsp;specialReg)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#139">139</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ResetInterrupt_Registers_5C796013114F4D1386D1EFB13021D01DA8CAC69E" xml:space="preserve">ResetInterrupt&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;ResetInterrupt(<span class="kw">ulong</span>&nbsp;interruptBit)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#158">158</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Set_Registers_1600E58A086BD293DD205DEDBE36D9518D1E93EA" xml:space="preserve">Set&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Set(<span class="kw">byte</span>&nbsp;regNum, <span class="kw">ulong</span>&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#112">112</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetInterrupt_Registers_2BA8FFE6F74BE6A22EA9B78F3577B6441A4753D5" xml:space="preserve">SetInterrupt&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetInterrupt(<span class="kw">ulong</span>&nbsp;interruptBit)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#151">151</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetPC_Registers_5D1351F5D4229F3C6EDB038808C6B9A4581F6DA0" xml:space="preserve">SetPC&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;SetPC(<span class="kw">ulong</span>&nbsp;pc_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#181">181</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetSpecial_Registers_F1EA587A47D07639143B9438C0CA04EDAB8505AF" xml:space="preserve">SetSpecial&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetSpecial(<span class="kw">byte</span>&nbsp;regNum, <span class="kw">ulong</span>&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#134">134</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ToString_Registers_4154D7A593EF30B91C0ECF2851850E00195095FC" xml:space="preserve">ToString&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;ToString()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Registers.cm.html#185">185</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Registers.cm.html">cmsxm/Registers.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

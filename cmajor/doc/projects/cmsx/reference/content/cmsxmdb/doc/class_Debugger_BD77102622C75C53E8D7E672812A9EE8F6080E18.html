@@ -1,0 +1,379 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Debugger Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>Debugger Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1560">1560</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#default_constructor_Debugger_A30916B0D634EAD7C59357A4F7250C1F17233956">Debugger</a>()</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_AddOutputLine_Debugger_670C3319451CCBD1BD0E55C2346A65340F866224">AddOutputLine</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;line, <span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Done_Debugger_C6F3606CB01BE35858773D07DE128DF7CEF62701">Done</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Eof_Debugger_0ECCF4BE9D096C80FD42FCD07936EE26E4666DF9">Eof</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Exit_Debugger_5978410EC8001CCB2776BC1629692F0A1087CE8C">Exit</a>(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_FindSymbolsMatchingPrefix_Debugger_07276C67CC4FDE2A707789FCB6E9D24F67326419">FindSymbolsMatchingPrefix</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;line, <a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&amp;&nbsp;matches)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_GetInst_Debugger_B17D3DD46B6B0DB73400D1561FD92E659699EC87">GetInst</a>(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process, <span class="kw">ulong</span>&nbsp;pc, <span class="kw">long</span>&nbsp;inst)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_GetRegisterValue_Debugger_A469F8244FC1D0A516672F338E1FC55508B95E06">GetRegisterValue</a>(<span class="kw">byte</span>&nbsp;regNumber)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_GetSymbolValue_Debugger_E331F0B201B5C0A20F146786E97A755D055F35DC">GetSymbolValue</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;id)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Init_Debugger_A57FC382E5AD9389CB4244F4C2E3F58C6023031C">Init</a>(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ReadInputLine_Debugger_E7CCD00DADD32BD3A71E0409F5A9B4EE0CFC5CB7">ReadInputLine</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ReadMemoryContent_Debugger_EB136FE74558BF65872C309B5E310C5530F5B78C">ReadMemoryContent</a>(<span class="kw">ulong</span>&nbsp;address, <span class="kw">byte</span>&nbsp;size)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ReadStringFromMemory_Debugger_E09AE7010D543F80D3228014CC0412AB2E7523F7">ReadStringFromMemory</a>(<span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_RemoveStepBreakpoints_Debugger_D773DA62FA534C3C82442DA96E8BB4F7DA06E7A8">RemoveStepBreakpoints</a>(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process, <span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ResetEof_Debugger_6392A98DA8F9709168CD54C25401A7C59ABA07D4">ResetEof</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Run_Debugger_90ED23C3C8D40DC06A4BA6188174CD4734745DC2">Run</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Run_Debugger_149625E41FB7A644F6E7CF239ABEB63B41FAEB0A">Run</a>(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ShowAddress_Debugger_C5822BDFDBD33D5535A72F6772152F8A9B94509E">ShowAddress</a>(<span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_SkipStepBreakpoint_Debugger_1B85006D881D1BE38291ADAE15A2FC8491BA787E">SkipStepBreakpoint</a>(<span class="kw">ulong</span>&nbsp;address, <span class="kw">ulong</span>&nbsp;fp, <a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&nbsp;machine)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_StepInto_Debugger_BE5AFEBB49831030236C6A948C1A8523C7E3EF30">StepInto</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_StepOut_Debugger_CA4A88CF6508079B4AF3ADD3B81FF07D5261ABFC">StepOut</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_StepOver_Debugger_28D40A3C093AE8EBE3B054BED4C4A2C3321F9CBA">StepOver</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_ToggleBreakpoint_Debugger_3B795158926F6F88B30E9674BD7183B5E91A2796">ToggleBreakpoint</a>(<span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_Trace_Debugger_755D5548634A45D771C61A6F11492B055D030725">Trace</a>(<span class="kw">ulong</span>&nbsp;count)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxmdb/doc/class_Debugger_BD77102622C75C53E8D7E672812A9EE8F6080E18.html#member_function_WriteOutput_Debugger_45EF1AC18522B04B80A5FB647BB115B284813C2C">WriteOutput</a>(<span class="kw">byte</span>*&nbsp;buffer, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_Breakpoints_AA059F8FFEDE52A7BDE56F8F111FFC4C3EC18E98.html">Breakpoints</a></td>
+    <td xml:space="preserve">breakpoints</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_CommandWindow_EBEDBB2CAC1DB22330ED6C3059C7661E733F3D90.html">CommandWindow</a></td>
+    <td xml:space="preserve">commandWindow</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_Disassembly_92B5C90E37833AB84782B8B19AA4ADE9B3DB21DD.html">Disassembly</a></td>
+    <td xml:space="preserve">disassembly</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve">eof</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_InputWindow_931B45CBA5EC81A49C0AB668DBCBF674ED019F15.html">InputWindow</a></td>
+    <td xml:space="preserve">inputWindow</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">inst</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>*</td>
+    <td xml:space="preserve">machine</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_Memory_C983D4B6B38EF37ADA491E8A54EF8F3490DFD197.html">Memory</a></td>
+    <td xml:space="preserve">memory</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">middle</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">numInstsInWindow</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/class_Output_EBC9DB6543ED7AE14F65B8E3E1A05CF84279FB3C.html">Output</a></td>
+    <td xml:space="preserve">output</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">pc</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*</td>
+    <td xml:space="preserve">process</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">programEntryPoint</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxmdb/doc/class_Screen_D32074EC104AC7C0123899FFF10D81DED727AFF0.html">Screen</a>></td>
+    <td xml:space="preserve">screen</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">start</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxmdb/doc/enumerated_type_State_60047DD4393502BF438E57FC26EE4F169CD3CF11.html">State</a></td>
+    <td xml:space="preserve">state</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../cmsxmdb/doc/class_Breakpoint_696FC6E9EB3E0948F35F0F7C2E1C355577815824.html">Breakpoint</a>></td>
+    <td xml:space="preserve">stepBreakpoints</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxo/doc/class_SymbolTable_6680E9AAED88C43C46AEB81B9610A8E0EEBADE6E.html">SymbolTable</a>*</td>
+    <td xml:space="preserve">symbolTable</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_Debugger_A30916B0D634EAD7C59357A4F7250C1F17233956" xml:space="preserve">Debugger&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;Debugger()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1562">1562</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddOutputLine_Debugger_670C3319451CCBD1BD0E55C2346A65340F866224" xml:space="preserve">AddOutputLine&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;AddOutputLine(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;line, <span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1816">1816</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Done_Debugger_C6F3606CB01BE35858773D07DE128DF7CEF62701" xml:space="preserve">Done&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Done()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1697">1697</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Eof_Debugger_0ECCF4BE9D096C80FD42FCD07936EE26E4666DF9" xml:space="preserve">Eof&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">bool</span>&nbsp;Eof()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1714">1714</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Exit_Debugger_5978410EC8001CCB2776BC1629692F0A1087CE8C" xml:space="preserve">Exit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Exit(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1701">1701</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_FindSymbolsMatchingPrefix_Debugger_07276C67CC4FDE2A707789FCB6E9D24F67326419" xml:space="preserve">FindSymbolsMatchingPrefix&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;FindSymbolsMatchingPrefix(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;line, <a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&amp;&nbsp;matches)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1957">1957</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetInst_Debugger_B17D3DD46B6B0DB73400D1561FD92E659699EC87" xml:space="preserve">GetInst&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span>&nbsp;GetInst(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process, <span class="kw">ulong</span>&nbsp;pc, <span class="kw">long</span>&nbsp;inst)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1800">1800</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetRegisterValue_Debugger_A469F8244FC1D0A516672F338E1FC55508B95E06" xml:space="preserve">GetRegisterValue&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetRegisterValue(<span class="kw">byte</span>&nbsp;regNumber)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1983">1983</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetSymbolValue_Debugger_E331F0B201B5C0A20F146786E97A755D055F35DC" xml:space="preserve">GetSymbolValue&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetSymbolValue(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;id)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1929">1929</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Init_Debugger_A57FC382E5AD9389CB4244F4C2E3F58C6023031C" xml:space="preserve">Init&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Init(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1565">1565</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadInputLine_Debugger_E7CCD00DADD32BD3A71E0409F5A9B4EE0CFC5CB7" xml:space="preserve">ReadInputLine&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;ReadInputLine()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1722">1722</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadMemoryContent_Debugger_EB136FE74558BF65872C309B5E310C5530F5B78C" xml:space="preserve">ReadMemoryContent&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span>&nbsp;ReadMemoryContent(<span class="kw">ulong</span>&nbsp;address, <span class="kw">byte</span>&nbsp;size)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1999">1999</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadStringFromMemory_Debugger_E09AE7010D543F80D3228014CC0412AB2E7523F7" xml:space="preserve">ReadStringFromMemory&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;ReadStringFromMemory(<span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1987">1987</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveStepBreakpoints_Debugger_D773DA62FA534C3C82442DA96E8BB4F7DA06E7A8" xml:space="preserve">RemoveStepBreakpoints&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span>&nbsp;RemoveStepBreakpoints(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process, <span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1786">1786</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ResetEof_Debugger_6392A98DA8F9709168CD54C25401A7C59ABA07D4" xml:space="preserve">ResetEof&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;ResetEof()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1718">1718</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Run_Debugger_90ED23C3C8D40DC06A4BA6188174CD4734745DC2" xml:space="preserve">Run&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Run()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1839">1839</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Run_Debugger_149625E41FB7A644F6E7CF239ABEB63B41FAEB0A" xml:space="preserve">Run&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Run(<a href="../../cmsxk/doc/class_Process_96BF1BFE7F4BA73B2BD2D2BA6C0FA69CD799B3B3.html">Process</a>*&nbsp;process)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1601">1601</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ShowAddress_Debugger_C5822BDFDBD33D5535A72F6772152F8A9B94509E" xml:space="preserve">ShowAddress&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;ShowAddress(<span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#2041">2041</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SkipStepBreakpoint_Debugger_1B85006D881D1BE38291ADAE15A2FC8491BA787E" xml:space="preserve">SkipStepBreakpoint&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span>&nbsp;SkipStepBreakpoint(<span class="kw">ulong</span>&nbsp;address, <span class="kw">ulong</span>&nbsp;fp, <a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&nbsp;machine)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1768">1768</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_StepInto_Debugger_BE5AFEBB49831030236C6A948C1A8523C7E3EF30" xml:space="preserve">StepInto&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;StepInto()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1844">1844</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_StepOut_Debugger_CA4A88CF6508079B4AF3ADD3B81FF07D5261ABFC" xml:space="preserve">StepOut&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;StepOut()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1893">1893</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_StepOver_Debugger_28D40A3C093AE8EBE3B054BED4C4A2C3321F9CBA" xml:space="preserve">StepOver&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;StepOver()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1875">1875</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ToggleBreakpoint_Debugger_3B795158926F6F88B30E9674BD7183B5E91A2796" xml:space="preserve">ToggleBreakpoint&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;ToggleBreakpoint(<span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1821">1821</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Trace_Debugger_755D5548634A45D771C61A6F11492B055D030725" xml:space="preserve">Trace&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Trace(<span class="kw">ulong</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#2086">2086</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WriteOutput_Debugger_45EF1AC18522B04B80A5FB647BB115B284813C2C" xml:space="preserve">WriteOutput&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WriteOutput(<span class="kw">byte</span>*&nbsp;buffer, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html#1705">1705</a>&nbsp;of&nbsp;<a href="../../cmsxmdb/file/Debug.cm.html">cmsxmdb/Debug.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

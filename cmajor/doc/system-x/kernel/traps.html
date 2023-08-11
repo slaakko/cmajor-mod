@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>System X Kernel Traps</title>
+    <link href="../style/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <h1>System X Kernel Traps</h1>
+
+	<p>
+		System X <a href="../il/sxil_reference.html#trap"><span class="kw">trap</span></a> instruction has three fixed arguments and 
+		in addition up to four arguments supplied using the <a href="../il/sxil_reference.html#arg">arg</a> instruction.
+		The first three arguments are bytes that define the kernel trap to be called
+		and the rest are arguments to that trap function passed in registers 
+		<span class="kw">ax</span>, <span class="kw">bx</span>, <span class="kw">cx</span> and
+		<span class="kw">dx</span>. If the trap function returns a value it is returned in the 
+		<span class="kw">ax</span> register. If the trap fails, the <span class="kw">ax</span> register 
+		will contain value -1 otherwise the return value will be nonnegative.
+	</p>
+	
+	<p>
+		Currently the first and the third byte arguments have zero value and the second argument value
+		determine the virtual operating system function to be called.
+	</p>
+		
+	<table class="type">
+		<tr>
+			<th>trap</th>
+			<th>second byte value</th>
+			<th>arguments</th>
+			<th>description</th>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_exit</span></td>
+			<td>0</td>
+			<td>exit code (byte)</td>
+			<td>exits a process</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_memory_page_size</span></td>
+			<td>1</td>
+			<td>-</td>
+			<td>returns the size of memory page in bytes (ulong)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_heap_start</span></td>
+			<td>2</td>
+			<td>-</td>
+			<td>returns the starting address of the heap (ulong)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_heap_length</span></td>
+			<td>3</td>
+			<td>-</td>
+			<td>returns the current size of the heap in bytes (ulong)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_allocate_memory_pages</span></td>
+			<td>4</td>
+			<td>number of pages to allocate (int)</td>
+			<td>allocates given number of memory pages from the heap and returns the number of bytes allocated (ulong)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_dump_heap</span></td>
+			<td>5</td>
+			<td>-</td>
+			<td>writes information about the heap contents to the standard output</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_random_seed</span></td>
+			<td>6</td>
+			<td>-</td>
+			<td>returns a randomly chosen seed value, it will be truely random if the hardware supports it (uint)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_current_time_point</span></td>
+			<td>7</td>
+			<td>-</td>
+			<td>returns the number of nanoseconds elapsed since epoch (ulong)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_sleep</span></td>
+			<td>8</td>
+			<td>duration in nanoseconds (long)</td>
+			<td>puts the calling process to sleep for the given duration, the duration the process will actually sleep will be accurate only about in hundreds of milliseconds</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_current_date</span></td>
+			<td>9</td>
+			<td>address of year variable (pointer to short), address of month variable (pointer to sbyte), address of day variable (pointer to sbyte)</td>
+			<td>obtains current date</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_current_date_time</span></td>
+			<td>10</td>
+			<td>address of year variable (pointer to short), address of month variable (pointer to sbyte), address of day variable (a pointer to sbyte), address of seconds variable (pointer to int)</td>
+			<td>obtains current date and time</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_times</span></td>
+			<td>11</td>
+			<td>address of variable containing user time in nanoseconds (pointer to ulong), address of variable containing sleep time in nanoseconds (pointer to ulong), 
+			address of variable containing kernel time in nanoseconds (pointer to ulong)</td>
+			<td>obtains process times</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_pow</span></td>
+			<td>12</td>
+			<td>x (double), y (double)</td>
+			<td>returns exponentiation x to the power of y (double)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_throw</span></td>
+			<td>13</td>
+			<td>address of exception (pointer), class ID of exception (ulong)</td>
+			<td>throws an exception</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_catch</span></td>
+			<td>14</td>
+			<td>-</td>
+			<td>returns the address of the currently thrown exception</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_resume</span></td>
+			<td>15</td>
+			<td>-</td>
+			<td>continues exception dispatch after a cleanup, or in case of rethrow</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_stack_trace</span></td>
+			<td>16</td>
+			<td>address of string buffer (pointer to string), size of the string buffer (long)</td>
+			<td>obtains a stack trace</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_system_error</span></td>
+			<td>17</td>
+			<td>address of the error code (pointer to int), address to string buffer for error message (pointer to string buffer), size of the string buffer (long)</td>
+			<td>obtains latest occurred kernel error when a kernel trap has returned -1</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_fork</span></td>
+			<td>18</td>
+			<td>-</td>
+			<td>forks a child process, returns the PID of the child to the parent and 0 to the child</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_exec</span></td>
+			<td>19</td>
+			<td>address of file path to execute (pointer to string), address of argument array (pointer), address environment array (pointer)</td>
+			<td>executes a program within context of the current process, does not return if no error, otherwise returns -1</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_wait</span></td>
+			<td>20</td>
+			<td>address of child exit code (pointer to byte)</td>
+			<td>waits one child process to exit (the called process is put to sleep), 
+			returns the PID of the child exited or -1 in case of error and when there are no more child processes to wait (system error code will be ENOCHILD in that case)</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_getpid</span></td>
+			<td>21</td>
+			<td>-</td>
+			<td>returns the nonnegative process id of the calling process, or -1 if an error occurred</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_create</span></td>
+			<td>22</td>
+			<td>address of file path to create (pointer to string), mode (int)</td>
+			<td>creates a file, returns a nonnegative file descriptor (int), or -1 in case of error, has the same effect as calling trap_open 
+			with flags OpenFlags.create | OpenFlags.truncate | OpenFlags.write</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_open</span></td>
+			<td>23</td>
+			<td>address of file path to open (pointer to string), flags (int): 1 << 0 = read, 1 << 1 = write, 1 << 2 = create, 1 << 3 = append, 1 << 4 = truncate, 
+			1 << 5 = text, 1 << 6 = random_access, mode (int)</td>
+			<td>opens a file, returns a nonnegative file descriptor (int), or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_close</span></td>
+			<td>24</td>
+			<td>a file descriptor to close (int)</td>
+			<td>closes a file, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_read</span></td>
+			<td>25</td>
+			<td>a file descriptor (int), address of a buffer (ulong), maximum number of bytes to read (long)</td>
+			<td>reads the contents of the file, returns the number of bytes actually read, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_write</span></td>
+			<td>26</td>
+			<td>a file descriptor (int), address of a buffer (ulong), maximum number of bytes to write (long)</td>
+			<td>writes to a file, returns the number of bytes actually written, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_ioctl</span></td>
+			<td>27</td>
+			<td>a file descriptor (int), an item ID (int), argument pointer (pointer to byte), argument size (</td>
+			<td>performs I/O-control function or returns information about a file:
+			IOControlItem.isConsole=0, returns 1 if file is a console, 0 if file is not a console, -1 if error;
+			IOControlItem.isHostTextFile=1, returns 1 if file is is host text file, 0 if file is not a host text file, -1 if error;
+			IOControlItem.hasColors=2, returns 1 if file has colors, 0 if file does not have colors, -1 if error;
+			IOControlItem.columns=3, returns the number of screen columns, 0 if file has no screen columns, -1 if error;
+			IOControlItem.rows=4, returns the number of screen rows, 0 if file has no screen rows, -1 if error;
+			IOControlItem.cursor_x=5, returns the x-coordinate of the cursor location;
+			IOControlItem.cursor_y=6, returns the y-coordinate of the cursor location;
+			IOControlItem.set_cursor_pos=7, sets the cursor location, argument must point to two ints;
+			IOControlItem.set_cooked=8, sets the terminal to the cooked mode (default);
+			IOControlItem.set_raw=9, sets the terminal to the raw mode;
+			IOControlItem.set_echo=10, sets terminal echo on/off, argument must point to a byte with value (1 = on, or 0 = off);
+			IOControlItem.push_lines=11, push terminal line history;
+			IOControlItem.pop_lines=12, pop terminal line history</td>
+			</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_unlink</span></td>
+			<td>28</td>
+			<td>address of a file or directory path (pointer to a string)</td>
+			<td>decrements the link count of a file or a directory; if the link count drops to zero, deletes the file or directory and frees the blocks the file or directory has occupied, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_seek</span></td>
+			<td>29</td>
+			<td>a file descriptor (int), offset (long), whence (int): 0=seekSet, 1=seekCur, 2=seekEnd</td>
+			<td>sets the file position of the given file, the next read or write operation will start in that file position, returns the current file position after it has been set</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_tell</span></td>
+			<td>30</td>
+			<td>a file descriptor (int)</td>
+			<td>returns the current file position of the given file, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_stat</span></td>
+			<td>31</td>
+			<td>path address of a file or directory (pointer to string), stat buffer address (pointer), stat buffer size (int), stat buffer size must be at least 68</td>
+			<td>obtains information about a file or a directory, returns 0, or -1 in case of error, system error code will be ENOTFOUND if the path is not found</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_getcwd</span></td>
+			<td>32</td>
+			<td>buffer address (pointer to string buffer), buffer size (long)</td>
+			<td>obtains the current working directory of the calling process, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_chdir</span></td>
+			<td>33</td>
+			<td>path address (pointer to a string)</td>
+			<td>changes the current working directory of the calling process, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_mkdir</span></td>
+			<td>34</td>
+			<td>path address (pointer to a string), mode (int) (mode not used currently)</td>
+			<td>creates a directory, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_opendir</span></td>
+			<td>35</td>
+			<td>path address (pointer to a string)</td>
+			<td>opens a directory for inspection, returns a nonnegative directory descriptor (int), or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_closedir</span></td>
+			<td>36</td>
+			<td>directory descriptor (int)</td>
+			<td>close a directory, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_readdir</span></td>
+			<td>37</td>
+			<td>directory descriptor (int), directory entry buffer address (pointer), directory entry buffer size (long)</td>
+			<td>reads a directory entry, returns 1 if an entry read, 0 if no more entries, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_utime</span></td>
+			<td>38</td>
+			<td>path address (pointer to string), time buffer address (pointer to two ulongs that contain time in nanoseconds), time buffer size (long)</td>
+			<td>updates the access and modification timestamps of a file or directory, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_mcpy</span></td>
+			<td>39</td>
+			<td>source buffer address (pointer), target buffer address (pointer), count (long)</td>
+			<td>copies memory from source buffer to target buffer, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_open_resource</span></td>
+			<td>40</td>
+			<td>address of resource name (pointer to string)</td>
+			<td>returns a nonnegative resource descriptor (int) for a resource linked inside the program executable of the calling process, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_close_resource</span></td>
+			<td>41</td>
+			<td>a resource descriptor (int)</td>
+			<td>closes a resource, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_resource_size</span></td>
+			<td>42</td>
+			<td>a resource descriptor (int)</td>
+			<td>returns the size of the given resource (long), or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_read_resource</span></td>
+			<td>43</td>
+			<td>a resource descriptor (int), offset (long), length (long), address of buffer (pointer)</td>
+			<td>reads the contents of a resource to a buffer, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_decompress</span></td>
+			<td>44</td>
+			<td>buffer address (pointer), length (long)</td>
+			<td>decompresses a memory buffer using ZLIB, returns a nonnegative decompression descriptor, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_decompressed_data_size</span></td>
+			<td>45</td>
+			<td>decompression descriptor (int), </td>
+			<td>returns the size of the decompressed data (long), or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_decompressed_data</span></td>
+			<td>46</td>
+			<td>decompression descriptor (int), address of a buffer (pointer), buffer size (long)</td>
+			<td>reads the decompressed data to a buffer, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_close_decompression</span></td>
+			<td>47</td>
+			<td>decompression descriptor (int)</td>
+			<td>closes a decompression descriptor, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_host_name</span></td>
+			<td>48</td>
+			<td>buffer address (pointer to string), buffer size (long)</td>
+			<td>obtains the computer name, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_user_name</span></td>
+			<td>49</td>
+			<td>buffer address (pointer to string), buffer size (long)</td>
+			<td>obtains the name of the logged on user, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_pipe</span></td>
+			<td>50</td>
+			<td>read file descriptor (pointer to int), write file descriptor (pointer to int)</td>
+			<td>creates a pipe and obtains file descriptors for reading from and writing to the pipe, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_dup</span></td>
+			<td>51</td>
+			<td>file descriptor (int)</td>
+			<td>duplicates a file descriptor returning an identical file descriptor that has the smallest available number, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_setuid</span></td>
+			<td>52</td>
+			<td>user identifier (int)</td>
+			<td>sets the user ID and the effective user ID of the current process, if permissions allow it, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_setgid</span></td>
+			<td>53</td>
+			<td>group identifier (int)</td>
+			<td>sets the group ID and the effective group ID of the current process, if permissions allow it, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_getuid</span></td>
+			<td>54</td>
+			<td>-</td>
+			<td>returns the user ID of the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_getgid</span></td>
+			<td>55</td>
+			<td>-</td>
+			<td>returns the group ID of the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_seteuid</span></td>
+			<td>56</td>
+			<td>effective user identifier (int)</td>
+			<td>sets the effective user ID of the current process, if permissions allow it, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_setegid</span></td>
+			<td>57</td>
+			<td>effective group identifier (int)</td>
+			<td>sets the effective group ID of the current process, if permissions allow it, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_geteuid</span></td>
+			<td>58</td>
+			<td>-</td>
+			<td>returns the effective user ID of the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_getegid</span></td>
+			<td>59</td>
+			<td></td>
+			<td>returns the effective group ID of the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_umask</span></td>
+			<td>60</td>
+			<td>umask (int)</td>
+			<td>sets the umask of the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_chmod</span></td>
+			<td>61</td>
+			<td>path (pointer to a string), mode (int)</td>
+			<td>changes the access mode of a file, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_chown</span></td>
+			<td>62</td>
+			<td>path (pointer to a string), UID (int), GID (int)</td>
+			<td>changes the owner of a file, if permmissions allow it, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_rename</span></td>
+			<td>63</td>
+			<td>source file path (pointer to a string), target file path (pointer to a string)</td>
+			<td>renames or moves a file, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_add_dir_change_notification</span></td>
+			<td>64</td>
+			<td>directories separated by colons (pointer to a string)</td>
+			<td>starts watching changes in the specified directories, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_remove_dir_change_notifications</span></td>
+			<td>65</td>
+			<td>-</td>
+			<td>stops watching changes in directories, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_directories_changed</span></td>
+			<td>66</td>
+			<td>-</td>
+			<td>returns 1 if watched directories have been changed (new or removed files), 0 if no changes have occurred, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_clear_directories_changed</span></td>
+			<td>67</td>
+			<td>-</td>
+			<td>resets the 'directories changed' flag from the current process, returns -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_child_times</span></td>
+			<td>68</td>
+			<td>address of a variable containing child user time in nanoseconds (pointer to ulong), address of a variable containing child sleep time in nanoseconds (pointer to ulong), 
+			address of a variable containing child kernel time in nanoseconds (pointer to ulong)</td>
+			<td>obtains execution statistics for the exited child processes of the current process</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_msgq</span></td>
+			<td>69</td>
+			<td>name of the message queueu to create or open (pointer to string)</td>
+			<td>creates or opens a message queue, returns message queue descriptor, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_close_msgq</span></td>
+			<td>70</td>
+			<td>message queue descriptor (int)</td>
+			<td>closes a message queue, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_wait_msg</span></td>
+			<td>71</td>
+			<td>message queue descriptor (int)</td>
+			<td>waits until message queue is not empty, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_put_msg</span></td>
+			<td>72</td>
+			<td>message queue descriptor (int), message data buffer (pointer), message size (int)</td>
+			<td>enqueues a message to the given message queue</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_msgq_length</span></td>
+			<td>73</td>
+			<td>message queue descriptor (int)</td>
+			<td>returns the length of the given message queue, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_msg_size</span></td>
+			<td>74</td>
+			<td>message queue descriptor (int)</td>
+			<td>returns the size of the message in front of the given message queue, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_msg</span></td>
+			<td>75</td>
+			<td>message queue descriptor (int), buffer address (pointer)</td>
+			<td>fetches and removes the message in front of the given message queue, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_bind_terminal</span></td>
+			<td>76</td>
+			<td>message queue descriptor (int)</td>
+			<td>binds terminal input system to the given message queue, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_unbind_terminal</span></td>
+			<td>77</td>
+			<td>-</td>
+			<td>unbinds terminal input system from message queues, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_timer_msg</span></td>
+			<td>78</td>
+			<td>duration in nanoseconds (long), message queue descriptor (int), message data (pointer), message size (int)</td>
+			<td>generates given message until duration nanoseconds have been elapsed and puts the message to the given message queue, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_connect</span></td>
+			<td>79</td>
+			<td>node (pointer to string), service (pointer to strign)</td>
+			<td>connects to the given node address and service (or port number) and returns a connected socket descriptor</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_get_debug_mode</span></td>
+			<td>80</td>
+			<td>-</td>
+			<td>returns current kernel debug mode (0 is the default=no kernel debugging enabled), or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_set_debug_mode</span></td>
+			<td>81</td>
+			<td>mode (int)</td>
+			<td>sets the kernel debug mode to the given mode value, returns 0, or -1 in case of error</td>
+		</tr>
+		<tr>
+			<td><span class="kw">trap_write_debug_message</span></td>
+			<td>82</td>
+			<td>debug messsage (pointer to string)
+			<td>writes a debug message, returns 0, or -1 in case of error (debug messsages show up in a 'cmlog' command line process if it is started and kernel debugging is enabled)</td>
+		</tr>
+	</table>
+</body>
+</html>

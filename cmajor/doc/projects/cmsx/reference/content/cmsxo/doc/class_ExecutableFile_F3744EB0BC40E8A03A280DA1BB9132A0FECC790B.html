@@ -1,0 +1,161 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>ExecutableFile Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>ExecutableFile Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#535">535</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#constructor_ExecutableFile_4F85D778B9517CC9F85CA2E3189793763C09138F">ExecutableFile</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_, <span class="kw">bool</span>&nbsp;createSections_, <span class="kw">bool</span>&nbsp;initSymbolTable, <span class="kw">ulong</span>&nbsp;minStackSize_, <span class="kw">ulong</span>&nbsp;maxStackSize_, <span class="kw">ulong</span>&nbsp;stackSizeIncrement_, <span class="kw">ulong</span>&nbsp;initialPoolSize_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#constructor_ExecutableFile_7517121F709AEB3D8DCF965A2330DDE8F24EDEF5">ExecutableFile</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_, <span class="kw">bool</span>&nbsp;initSymbolTable, <span class="kw">ulong</span>&nbsp;minStackSize_, <span class="kw">ulong</span>&nbsp;maxStackSize_, <span class="kw">ulong</span>&nbsp;stackSizeIncrement_, <span class="kw">ulong</span>&nbsp;initialPoolSize_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_AddSection_ExecutableFile_7565BCA13958775A17FBEDADEBF03276272D94EF">AddSection</a>(<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*&nbsp;section)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_AddSymbolsToAddressMap_ExecutableFile_B4B956BCFCBB6ED8DC518093B0B617843AB6BF15">AddSymbolsToAddressMap</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_GetCodeSection_ExecutableFile_CE7A0F1B96DBC95059BD0AB7C559EEE8A75D02EA">GetCodeSection</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_GetDataSection_ExecutableFile_077381491D098BC7A6DF2A3B9C6A359D849E1C59">GetDataSection</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_GetSymbolSection_ExecutableFile_06F8B7DF33D2E6DF5E2AAA3ECA643A9C86FA6580">GetSymbolSection</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_InitialPoolSize_ExecutableFile_C5140362558DB2C608DE4ED8534F5A40ED19E202">InitialPoolSize</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_MaxStackSize_ExecutableFile_7EE6F1D94A782A01E1F3E901E3E128FD5ACCB325">MaxStackSize</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_MinStackSize_ExecutableFile_25FA491EAAB49D476A6BFA4EEFAB260DE1091C46">MinStackSize</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_ExecutableFile_F3744EB0BC40E8A03A280DA1BB9132A0FECC790B.html#member_function_StackSizeIncrement_ExecutableFile_1BABBDA28A4DEBCF1F433A80F8CE66440802C18C">StackSizeIncrement</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve">codeSection</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve">dataSection</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*</td>
+    <td xml:space="preserve">symbolSection</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_ExecutableFile_4F85D778B9517CC9F85CA2E3189793763C09138F" xml:space="preserve">ExecutableFile&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;ExecutableFile(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_, <span class="kw">bool</span>&nbsp;createSections_, <span class="kw">bool</span>&nbsp;initSymbolTable, <span class="kw">ulong</span>&nbsp;minStackSize_, <span class="kw">ulong</span>&nbsp;maxStackSize_, <span class="kw">ulong</span>&nbsp;stackSizeIncrement_, <span class="kw">ulong</span>&nbsp;initialPoolSize_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#537">537</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_ExecutableFile_7517121F709AEB3D8DCF965A2330DDE8F24EDEF5" xml:space="preserve">ExecutableFile&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;ExecutableFile(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;fileName_, <span class="kw">bool</span>&nbsp;initSymbolTable, <span class="kw">ulong</span>&nbsp;minStackSize_, <span class="kw">ulong</span>&nbsp;maxStackSize_, <span class="kw">ulong</span>&nbsp;stackSizeIncrement_, <span class="kw">ulong</span>&nbsp;initialPoolSize_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#547">547</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddSection_ExecutableFile_7565BCA13958775A17FBEDADEBF03276272D94EF" xml:space="preserve">AddSection&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;AddSection(<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*&nbsp;section)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#619">619</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_AddSymbolsToAddressMap_ExecutableFile_B4B956BCFCBB6ED8DC518093B0B617843AB6BF15" xml:space="preserve">AddSymbolsToAddressMap&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;AddSymbolsToAddressMap()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#615">615</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetCodeSection_ExecutableFile_CE7A0F1B96DBC95059BD0AB7C559EEE8A75D02EA" xml:space="preserve">GetCodeSection&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*&nbsp;GetCodeSection()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#603">603</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetDataSection_ExecutableFile_077381491D098BC7A6DF2A3B9C6A359D849E1C59" xml:space="preserve">GetDataSection&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*&nbsp;GetDataSection()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#607">607</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetSymbolSection_ExecutableFile_06F8B7DF33D2E6DF5E2AAA3ECA643A9C86FA6580" xml:space="preserve">GetSymbolSection&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxo/doc/class_Section_780A0CBF3D266EB0465B242D95ED2E7ABB3AF164.html">Section</a>*&nbsp;GetSymbolSection()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#611">611</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InitialPoolSize_ExecutableFile_C5140362558DB2C608DE4ED8534F5A40ED19E202" xml:space="preserve">InitialPoolSize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;InitialPoolSize()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#590">590</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MaxStackSize_ExecutableFile_7EE6F1D94A782A01E1F3E901E3E128FD5ACCB325" xml:space="preserve">MaxStackSize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;MaxStackSize()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#564">564</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MinStackSize_ExecutableFile_25FA491EAAB49D476A6BFA4EEFAB260DE1091C46" xml:space="preserve">MinStackSize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;MinStackSize()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#551">551</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_StackSizeIncrement_ExecutableFile_1BABBDA28A4DEBCF1F433A80F8CE66440802C18C" xml:space="preserve">StackSizeIncrement&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;StackSizeIncrement()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#577">577</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

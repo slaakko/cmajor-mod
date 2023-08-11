@@ -1,0 +1,304 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Machine Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Machine Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#39">39</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">static</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#static_constructor_Machine_FAE5E1247D40B7FCABE82CC5A6BFD1A3D6FAAD7B">Machine</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#default_constructor_Machine_42F5E4A0E91041CE286A9CF7970E3C6CB47F5780">Machine</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#move_constructor_Machine_553499FA26E48678B8C6328BF648FE0B03E7AB2F">Machine</a>(<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&amp;)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#copy_constructor_Machine_44EDC260286ACC797CF334C77DBA1E7D0A364C50">Machine</a>(<span class="kw">const</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_AddInst_Machine_FF191616A87DCE4E95CBA383712EB0BA13F24E75">AddInst</a>(<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>*&nbsp;inst)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_Exit_Machine_706D3A62D022AD9CE68FD2D6EEC31F2CE157E15C">Exit</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C.html">ExceptionPtr</a></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetException_Machine_065C0A50727BA7B43830B6BC6F24DF951C7954B1">GetException</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetFlag_Machine_94D0A0DC01EA8CD589D7E35764642621B42C7C77">GetFlag</a>(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetInst_Machine_115F32343EC470A17D45B8D3E594C6D9DCE3FB42">GetInst</a>(<span class="kw">byte</span>&nbsp;opCode)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetKernelRootPageAddress_Machine_C4AB722FDFD6CA39ED536F5D168155101A00C6CE">GetKernelRootPageAddress</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Memory_27683CF353D0B5510170AC366952DB43A1B0607A.html">Memory</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetMemory_Machine_03E1154C0BC700D6E05B881778C3C475C5E47F47">GetMemory</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Processor_7D84949499729E33711280E96109B03701955F19.html">Processor</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetProcessor_Machine_1159BB9410C3FE172B21A7ED6C7279DCC15F9E8E">GetProcessor</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html">Registers</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_GetRegisters_Machine_C7B54C9C6C78550A296FCCE9283B4935568281D7">GetRegisters</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_InitInsts_Machine_515398981E670BB2622EE4CAA41C034967B2E6EE">InitInsts</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_Instance_Machine_067085FC4BA2F94721B30B358222FB83645D3DDA">Instance</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_ResetFlag_Machine_905FF3845F7B307420362A05CDE12BCDE756E310">ResetFlag</a>(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_Run_Machine_DECD88480591F1E69FA7955906185A9EFE7E4721">Run</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_SetException_Machine_6930E93131E3CBB386677D6880247F2A80ED71AB">SetException</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C.html">ExceptionPtr</a>&amp;&nbsp;ex)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_SetFlag_Machine_BDD2F6487DE4B5C86CD69714AD6BBC3B13405C1C">SetFlag</a>(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#member_function_SetKernelRootPageAddress_Machine_78A89EE09B97E4213E0505B6A6BB5BD368B34739">SetKernelRootPageAddress</a>(<span class="kw">ulong</span>&nbsp;kernelRootPageAddress_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#move_assignment_op_assign_Machine_0BA93EAE9A5468738AFAD5FA52FCE6A8CB9E4DAD">operator=</a>(<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&amp;)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html#copy_assignment_op_assign_Machine_94731B2A9C9574C23974F47CEA3B2EE07D453B8D">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;)</td>
+   </tr>
+  </table>
+  <h2>Enumerated Types</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span></td>
+    <td xml:space="preserve"><a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a></td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C.html">ExceptionPtr</a></td>
+    <td xml:space="preserve">exceptionPtr</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a></td>
+    <td xml:space="preserve">flags</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>></td>
+    <td xml:space="preserve">instance</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>>></td>
+    <td xml:space="preserve">instructionList</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>*[256]</td>
+    <td xml:space="preserve">instructions</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">kernelRootPageAddress</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxm/doc/class_Memory_27683CF353D0B5510170AC366952DB43A1B0607A.html">Memory</a></td>
+    <td xml:space="preserve">memory</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxm/doc/class_Processor_7D84949499729E33711280E96109B03701955F19.html">Processor</a></td>
+    <td xml:space="preserve">processor</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="static_constructor_Machine_FAE5E1247D40B7FCABE82CC5A6BFD1A3D6FAAD7B" xml:space="preserve">Machine&nbsp;Static Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">static</span>&nbsp;Machine()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#65">65</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="default_constructor_Machine_42F5E4A0E91041CE286A9CF7970E3C6CB47F5780" xml:space="preserve">Machine&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;Machine()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#104">104</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_Machine_553499FA26E48678B8C6328BF648FE0B03E7AB2F" xml:space="preserve">Machine&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;Machine(<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#69">69</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_Machine_44EDC260286ACC797CF334C77DBA1E7D0A364C50" xml:space="preserve">Machine&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;Machine(<span class="kw">const</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#68">68</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddInst_Machine_FF191616A87DCE4E95CBA383712EB0BA13F24E75" xml:space="preserve">AddInst&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;AddInst(<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>*&nbsp;inst)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#349">349</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Exit_Machine_706D3A62D022AD9CE68FD2D6EEC31F2CE157E15C" xml:space="preserve">Exit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Exit()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#80">80</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetException_Machine_065C0A50727BA7B43830B6BC6F24DF951C7954B1" xml:space="preserve">GetException&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C.html">ExceptionPtr</a>&nbsp;GetException()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#88">88</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetFlag_Machine_94D0A0DC01EA8CD589D7E35764642621B42C7C77" xml:space="preserve">GetFlag&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">bool</span>&nbsp;GetFlag(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#57">57</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetInst_Machine_115F32343EC470A17D45B8D3E594C6D9DCE3FB42" xml:space="preserve">GetInst&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Instruction_61CA97905FA327FF82F3A21A4CE02020705D3A00.html">Instruction</a>*&nbsp;GetInst(<span class="kw">byte</span>&nbsp;opCode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#328">328</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetKernelRootPageAddress_Machine_C4AB722FDFD6CA39ED536F5D168155101A00C6CE" xml:space="preserve">GetKernelRootPageAddress&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">ulong</span>&nbsp;GetKernelRootPageAddress()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#332">332</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetMemory_Machine_03E1154C0BC700D6E05B881778C3C475C5E47F47" xml:space="preserve">GetMemory&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Memory_27683CF353D0B5510170AC366952DB43A1B0607A.html">Memory</a>&amp;&nbsp;GetMemory()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#92">92</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetProcessor_Machine_1159BB9410C3FE172B21A7ED6C7279DCC15F9E8E" xml:space="preserve">GetProcessor&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Processor_7D84949499729E33711280E96109B03701955F19.html">Processor</a>&amp;&nbsp;GetProcessor()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#96">96</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetRegisters_Machine_C7B54C9C6C78550A296FCCE9283B4935568281D7" xml:space="preserve">GetRegisters&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Registers_C454B634EBC16B04713098024D17633A35E20066.html">Registers</a>&amp;&nbsp;GetRegisters()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#100">100</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InitInsts_Machine_515398981E670BB2622EE4CAA41C034967B2E6EE" xml:space="preserve">InitInsts&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;InitInsts()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#340">340</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Instance_Machine_067085FC4BA2F94721B30B358222FB83645D3DDA" xml:space="preserve">Instance&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&nbsp;Instance()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#72">72</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ResetFlag_Machine_905FF3845F7B307420362A05CDE12BCDE756E310" xml:space="preserve">ResetFlag&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;ResetFlag(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#61">61</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Run_Machine_DECD88480591F1E69FA7955906185A9EFE7E4721" xml:space="preserve">Run&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Run()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#76">76</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetException_Machine_6930E93131E3CBB386677D6880247F2A80ED71AB" xml:space="preserve">SetException&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetException(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C.html">ExceptionPtr</a>&amp;&nbsp;ex)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#84">84</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetFlag_Machine_BDD2F6487DE4B5C86CD69714AD6BBC3B13405C1C" xml:space="preserve">SetFlag&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;SetFlag(<a href="../../cmsxm/doc/enumerated_type_Flags_5E89187822582EA13BF2218221380764CDE12E8B.html">Flags</a>&nbsp;flag)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#53">53</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetKernelRootPageAddress_Machine_78A89EE09B97E4213E0505B6A6BB5BD368B34739" xml:space="preserve">SetKernelRootPageAddress&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;SetKernelRootPageAddress(<span class="kw">ulong</span>&nbsp;kernelRootPageAddress_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#336">336</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_Machine_0BA93EAE9A5468738AFAD5FA52FCE6A8CB9E4DAD" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#71">71</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_Machine_94731B2A9C9574C23974F47CEA3B2EE07D453B8D" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../cmsxm/doc/class_Machine_F7663CCABD183952965566D1944B82FAFEDE0822.html">Machine</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxm/file/Machine.cm.html#70">70</a>&nbsp;of&nbsp;<a href="../../cmsxm/file/Machine.cm.html">cmsxm/Machine.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

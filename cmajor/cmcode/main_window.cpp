@@ -4336,10 +4336,6 @@ bool MainWindow::BuildActiveProject()
         {
             throw std::runtime_error("no active project set for the solution");
         }
-        if (!IsProgramTarget(activeProject->GetTarget()))
-        {
-            throw std::runtime_error("active project is a library project");
-        }
         StartBuilding();
         StartBuild(backend, config, activeProject->FilePath(), BuildRequestKind::build | BuildRequestKind::buildDependencies);
         return true;

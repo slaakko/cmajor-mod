@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<title>System X Executor</title>
+	<link rel="stylesheet" type="text/css" href="../../style/style.css" />
+</head>
+<body>
+	<h1>
+		System X Executor
+	</h1>
+	
+	<p>
+		Usage: <b>sxx [options] [ FILE.x [ arguments for FILE.x ] ]</b>
+	</p>
+	
+	<p>
+		Run from a Windows Terminal window (wt.exe).
+	</p>
+	
+	<p>
+		If <b>sxx</b> is run without a FILE parameter, <b>sxx</b> starts the System X <a href="../../shell/shell.html">shell</a> (sh.x).
+	</p>
+	
+	<h2>
+		Example
+	</h2>
+	
+	<p>
+		sxx<br/>
+	</p>
+	
+	<h2>
+		Options
+	</h2>
+	
+	<table class="type">
+		<tr>
+			<th>long option</th>
+			<th>short option</th>
+			<th>description</th>
+			<th>notes</th>
+		</tr>
+		<tr>
+			<td>&#8209;&#8209;help</td>
+			<td>&#8209;h</td>
+			<td>Print help and exit.</td>
+		</tr>
+		<tr>
+			<td>&#8209;&#8209;verbose</td>
+			<td>&#8209;v</td>
+			<td>Be verbose.</td>
+		</tr>
+		<tr>
+			<td>&#8209;&#8209;debug=MODE</td>
+			<td>&#8209;d=MODE</td>
+			<td>Set kernel debug mode to MODE (1-63).</td>
+			<td> When kernel is started in debug mode != 0 kernel debug messages show up in a 'cmlog' command-line application if it is started.<br/>
+			Mode should be the sum of the following values:<br/>
+			MODE=1: show system errors<br/>
+			MODE=2: show terminal input messages<br/>
+			MODE=4: show message queue messages<br/>
+			MODE=8: show shell messages<br/>
+			MODE=16: show lexer messages<br/>
+			MODE=32: show application messages<br/>
+		
+			</td>
+		</tr>
+	</table>
+	
+	<p>
+		If <b>--verbose</b> option is given, the executor prints execution statistics after a command has been run:
+		
+<pre>
+	sxx --verbose fibonacci.x
+	running '.../fibonacci.x'...
+	21
+	'.../fibonacci.x' exited with code 0
+	
+	user time:         00:00:00.000.885 (59.5118%)
+	sleep time:        00:00:00.000.000 (0%)
+	system time:       00:00:00.000.602 (40.4882%)
+	total time:        00:00:00.001.487
+	child user time:   00:00:00.000.000 (0%)
+	child sleep time:  00:00:00.000.000 (0%)
+	child system time: 00:00:00.000.000 (0%)
+	child total time:  00:00:00.000.000	
+</pre>
+	</p>
+	
+	<table class="type">
+		<tr>
+			<th>value</th>
+			<th>description</th>
+		</tr>
+		<tr>
+			<td>user time</td>
+			<td>the duration that the virtual machine processor threads has executed the user process</td>
+		<tr>
+		<tr>
+			<td>sleep time</td>
+			<td>the duration that the user process has been asleep waiting for I/O or exit of a child process</td>
+		<tr>
+		<tr>
+			<td>system time</td>
+			<td>the duration that the virtual machine processor threads has executed kernel interrupts</td>
+		</tr>
+		<tr>
+			<td>child user time</td>
+			<td>user time of the direct child processes of the top level process (child processes of the children not accounted)</td>
+		<tr>
+		<tr>
+			<td>child sleep time</td>
+			<td>sleep time of the direct child processes of the top level process (child processes of the children not accounted)</td>
+		<tr>
+		<tr>
+			<td>child system time</td>
+			<td>system time of the direct child processes of the top level process (child processes of the children not accounted)</td>
+		<tr>
+	</table>
+</body>
+</html>

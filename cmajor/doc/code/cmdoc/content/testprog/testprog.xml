@@ -1,0 +1,16 @@
+<symbolTable id="testprog" module="testprog">
+ <files>
+  <file name="testprog/testprog.cm" path="file/testprog.cm.html"/>
+ </files>
+ <namespace docPath="../../testprog/doc/ns_.html" extPath="testprog/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../testprog/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="testprog/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="testprog/testprog.cm" filePath="../../testprog/file/testprog.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="3" name="main" returnType="6d96cd6a-f875-45c9-9486-06d303b6803c" specifiers="">
+    <parameters>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="6d96cd6a-f875-45c9-9486-06d303b6803c"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="02eebf00-84b5-4920-82a9-defcd98ab1b3"/>
+    </parameters>
+   </function>
+  </functions>
+ </namespace>
+ <types/>
+</symbolTable>

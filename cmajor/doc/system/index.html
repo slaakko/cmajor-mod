@@ -1,0 +1,158 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>System Reference</title>
+  <link href="style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>System Reference</h1>
+  <p class="description" xml:space="preserve">The Cmajor System Library consists of nineteen modules. The <a href="content/System.Base/index.html"> System.Base</a> module constitutes the major part of the System Library.</p>
+  <h2>Modules</h2>
+  <table>
+   <tr>
+    <td>
+     <a href="content/System.Windows.Install/index.html">System.Windows.Install</a>
+    </td>
+    <td>
+     The System.Windows.Install module is a special module that takes care of installing the System and System.Windows libraries to cmajor/system/lib/&lt;config> directory. It contains no source code entities, but references the <a href="content/System/doc/../../System.Windows/index.html">System.Windows</a>
+      module.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Windows/index.html">System.Windows</a>
+    </td>
+    <td>
+     The System.Windows module provides interface to Windows API and contains support for Windows GUI applications. This library is linked with programs and libraries that have <strong> target=winguiapp</strong>
+      , <strong> target=winapp</strong>
+      or <strong> target=winlib</strong>
+      in a <em> .cmp</em>
+      file.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System/index.html">System</a>
+    </td>
+    <td>
+     The System module acts as an umbrella module that references all other System Library modules except System.Windows module. It contains no source code entities. The System module is implicitly referenced by all user programs and libraries, so an explicit reference for any system library module is not needed. This library is linked with programs and libraries that have <strong> target=program</strong>
+      or <strong> target=library</strong>
+      in a <em> .cmp</em>
+      file respectively.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Xml.Serialization/index.html">System.Xml.Serialization</a>
+    </td>
+    <td>Library support for XML serialization.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.XPath/index.html">System.XPath</a>
+    </td>
+    <td>
+     The System.XPath module contains an implementation of the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/"> XML Path Language</a>
+      version 1.0 query engine.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.RegularExpressions/index.html">System.RegularExpressions</a>
+    </td>
+    <td>The System.RegularExpressions contains a minimal implementation of a regular expression matching engine.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Numerics.Multiprecision/index.html">System.Numerics.Multiprecision</a>
+    </td>
+    <td>
+     The System.Numerics.Multiprecision library provides three arbitrary precision number classes <a href="content/System/doc/../../System.Numerics.Multiprecision/doc/class_BigInt_9326EADB23C0E0FE1858A97CCC64FF60DD2A22D0.html">BigInt</a>
+      , <a href="content/System/doc/../../System.Numerics.Multiprecision/doc/class_BigRational_0F62DE7516E5ADB5CE79939E2167456710EF7B23.html">BigRational</a>
+      and <a href="content/System/doc/../../System.Numerics.Multiprecision/doc/class_BigFloat_BC19EFB82C8E666524B4436C56800B572EFBED53.html">BigFloat</a>
+      and arithmetic operations for them. It is implemented by means of <a href="https://www.boost.org/"> Boost.Multiprecision library</a>
+      .</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Net.Http/index.html">System.Net.Http</a>
+    </td>
+    <td>The System.Net.Http module contains a simple HTTP/1.1 client and URI parser.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Net.Sockets/index.html">System.Net.Sockets</a>
+    </td>
+    <td>The System.Net.Sockets module provides client and server-side synchronous network socket connections.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Json/index.html">System.Json</a>
+    </td>
+    <td>
+     The System.Json module contains support for <a href="https://www.json.org/"> JSON</a>
+      serialization.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Init/index.html">System.Init</a>
+    </td>
+    <td>The System.Init library does dynamic initialization before program main function is called.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.IO.Compression/index.html">System.IO.Compression</a>
+    </td>
+    <td>
+     The System.IO.Compression module contains data compression/decompression streams. It is implemented by means of <a href="http://www.zlib.net/"> zlib</a>
+      and <a href="http://www.sourceware.org/bzip2/"> bzip2</a>
+      libraries.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Dom/index.html">System.Dom</a>
+    </td>
+    <td>
+     The System.Dom module contains basic implementation of the <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/"> Document Object Model Core</a>
+      specification.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Xml/index.html">System.Xml</a>
+    </td>
+    <td>
+     The System.Xml module contains an implementation of a non-validating <a href="http://www.w3.org/TR/xml/"> XML</a>
+      parser and a <a href="http://en.wikipedia.org/wiki/Simple_API_for_XML"> SAX</a>
+      -like API to it.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Parsing/index.html">System.Parsing</a>
+    </td>
+    <td>The System.Parsing module contains parsing helper classes.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Lex/index.html">System.Lex</a>
+    </td>
+    <td>The System.Lex module contains lexical analyzer engine and lexing utilities.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Base/index.html">System.Base</a>
+    </td>
+    <td>The System.Base module contains basic facilities, containers, algorithms, and I/O.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Runtime/index.html">System.Runtime</a>
+    </td>
+    <td>
+     The System.Runtime module contains symbols for functions that form the lowest level of the Cmajor runtime library. The functions themselves are defined in the <a href="../compiler/reference/rt/rt.html"> rt</a>
+      library written in C++.</td>
+   </tr>
+   <tr>
+    <td>
+     <a href="content/System.Core/index.html">System.Core</a>
+    </td>
+    <td>The System.Core module contains primitive types, operations for primitive types, intrinsic functions and intrinsic concepts known by the compiler. It does not have any source code.</td>
+   </tr>
+  </table>
+ </body>
+</html>

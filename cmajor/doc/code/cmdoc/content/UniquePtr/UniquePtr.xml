@@ -1,0 +1,115 @@
+<symbolTable id="UniquePtr" module="UniquePtr">
+ <files>
+  <file name="UniquePtr/unique_ptr.cm" path="file/unique_ptr.cm.html"/>
+ </files>
+ <namespace docPath="../../UniquePtr/doc/ns_.html" extPath="UniquePtr/doc/ns_.html" id="ns_" name="">
+  <classes>
+   <class docPath="../../UniquePtr/doc/class_TestClass_079E8B4A9B78C3F9DFD00602DF43C1A58978B594.html" extPath="UniquePtr/doc/class_TestClass_079E8B4A9B78C3F9DFD00602DF43C1A58978B594.html" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="class_TestClass_079E8B4A9B78C3F9DFD00602DF43C1A58978B594" line="96" name="TestClass" specifiers="public">
+    <functions>
+     <function docPath="../../UniquePtr/doc/class_TestClass_079E8B4A9B78C3F9DFD00602DF43C1A58978B594.html#member_function_foo_TestClass_37FC95669F6996355C89AD673073A4BE0F3A14FD" extPath="UniquePtr/doc/class_TestClass_079E8B4A9B78C3F9DFD00602DF43C1A58978B594.html#member_function_foo_TestClass_37FC95669F6996355C89AD673073A4BE0F3A14FD" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_foo_TestClass_37FC95669F6996355C89AD673073A4BE0F3A14FD" kind="Member Function" line="98" name="foo" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public"/>
+    </functions>
+   </class>
+   <class docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html" fileName="" filePath="" id="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009" line="-1" name="UniquePtr" specifiers="public">
+    <templateParameters>
+     <templateParameter docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#a01719ac-f171-4a3f-bb07-28141854bf6b" id="a01719ac-f171-4a3f-bb07-28141854bf6b" name="T"/>
+    </templateParameters>
+    <ctorsDtors>
+     <ctorDtor docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#default_constructor_UniquePtr_T_A253191C16116894F10FA3D0A58488CE20B40801" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#default_constructor_UniquePtr_T_A253191C16116894F10FA3D0A58488CE20B40801" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="default_constructor_UniquePtr_T_A253191C16116894F10FA3D0A58488CE20B40801" kind="Constructor" line="5" name="UniquePtr" specifiers="public nothrow"/>
+     <ctorDtor docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#constructor_UniquePtr_T_DDA51AA725ADE72A720CA0299AD10617F19BDC63" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#constructor_UniquePtr_T_DDA51AA725ADE72A720CA0299AD10617F19BDC63" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="constructor_UniquePtr_T_DDA51AA725ADE72A720CA0299AD10617F19BDC63" kind="Constructor" line="8" name="UniquePtr" specifiers="public explicit nothrow">
+      <parameters>
+       <parameter id="parameter_ptr__23D519BFC0FF0BB41EF10BD7F372C37F10804E74" name="ptr_" type="177eea6c-ffa7-444f-b6d8-a5d72a7264e1"/>
+      </parameters>
+     </ctorDtor>
+     <ctorDtor docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_constructor_UniquePtr_T_3A0986DE0F343ECBCC1A982D281AA84ECFB15078" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_constructor_UniquePtr_T_3A0986DE0F343ECBCC1A982D281AA84ECFB15078" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="move_constructor_UniquePtr_T_3A0986DE0F343ECBCC1A982D281AA84ECFB15078" kind="Constructor" line="12" name="UniquePtr" specifiers="public nothrow">
+      <parameters>
+       <parameter id="parameter_that_5CF9CB9792FB830C4D542EA3078C237A94D48506" name="that" type="a38dac27-c48f-4374-83b5-dda63cf18d90"/>
+      </parameters>
+     </ctorDtor>
+     <ctorDtor docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_constructor_UniquePtr_T_9CFDBDA0E4D8295C2741C64B9065D4976094F6F7" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_constructor_UniquePtr_T_9CFDBDA0E4D8295C2741C64B9065D4976094F6F7" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="copy_constructor_UniquePtr_T_9CFDBDA0E4D8295C2741C64B9065D4976094F6F7" kind="Constructor" line="11" name="UniquePtr" specifiers="suppress">
+      <parameters>
+       <parameter id="parameter_@p0_46883551E5385DB47421BAC4BF4BF29F2E60A56A" name="" type="14f9de7f-f55d-4aaa-b68e-151746c040f2"/>
+      </parameters>
+     </ctorDtor>
+     <ctorDtor docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#destructor_UniquePtr_T_EFDA71B1621B0A4F5BA4D26C071626B0BDD1EA6A" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#destructor_UniquePtr_T_EFDA71B1621B0A4F5BA4D26C071626B0BDD1EA6A" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="destructor_UniquePtr_T_EFDA71B1621B0A4F5BA4D26C071626B0BDD1EA6A" kind="Destructor" line="32" name="~UniquePtr" specifiers="public"/>
+    </ctorsDtors>
+    <functions>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Get_UniquePtr_T_FCD418BE87FDFF047B735BFF614331FDF363D493" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Get_UniquePtr_T_FCD418BE87FDFF047B735BFF614331FDF363D493" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_Get_UniquePtr_T_FCD418BE87FDFF047B735BFF614331FDF363D493" kind="Member Function" line="61" name="Get" returnType="177eea6c-ffa7-444f-b6d8-a5d72a7264e1" specifiers="public inline nothrow"/>
+     <function const="true" docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_IsNull_UniquePtr_T_A0A2597C6547039647C155637A0B5D3DDF1891D1" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_IsNull_UniquePtr_T_A0A2597C6547039647C155637A0B5D3DDF1891D1" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_IsNull_UniquePtr_T_A0A2597C6547039647C155637A0B5D3DDF1891D1" kind="Member Function" line="65" name="IsNull" returnType="67465419-e18a-485b-966c-df592cd7bcff" specifiers="public inline nothrow"/>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Release_UniquePtr_T_BD692A8B4EC0BB834683B6D86AD6B401F41B8D98" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Release_UniquePtr_T_BD692A8B4EC0BB834683B6D86AD6B401F41B8D98" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_Release_UniquePtr_T_BD692A8B4EC0BB834683B6D86AD6B401F41B8D98" kind="Member Function" line="55" name="Release" returnType="177eea6c-ffa7-444f-b6d8-a5d72a7264e1" specifiers="public inline nothrow"/>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_T_CA950ACE3CA0F02EC24CACCFF3B36D94D2C937F9" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_T_CA950ACE3CA0F02EC24CACCFF3B36D94D2C937F9" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_Reset_UniquePtr_T_CA950ACE3CA0F02EC24CACCFF3B36D94D2C937F9" kind="Member Function" line="39" name="Reset" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public nothrow"/>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_T_9C93CD847C714920B57DC08C5FE4AC117C5D192E" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_T_9C93CD847C714920B57DC08C5FE4AC117C5D192E" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_Reset_UniquePtr_T_9C93CD847C714920B57DC08C5FE4AC117C5D192E" kind="Member Function" line="47" name="Reset" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public nothrow">
+      <parameters>
+       <parameter id="parameter_ptr__28D61521F0AC3CE14F6A2508E15BBA27D481E72E" name="ptr_" type="177eea6c-ffa7-444f-b6d8-a5d72a7264e1"/>
+      </parameters>
+     </function>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Swap_UniquePtr_T_D41905F21412A55C0CBB8245F39175206E19DD4C" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Swap_UniquePtr_T_D41905F21412A55C0CBB8245F39175206E19DD4C" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_Swap_UniquePtr_T_D41905F21412A55C0CBB8245F39175206E19DD4C" kind="Member Function" line="89" name="Swap" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public nothrow">
+      <parameters>
+       <parameter id="parameter_that_1ECB3C446EFF6E6998BE8BBEC52009E8BD3D1BA5" name="that" type="375a62a8-d867-4f16-a279-b983b82ddcf8"/>
+      </parameters>
+     </function>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_T_96ADBECB9856DC7B70F454FBD33D9455AF0339B6" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_T_96ADBECB9856DC7B70F454FBD33D9455AF0339B6" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_op_star_UniquePtr_T_96ADBECB9856DC7B70F454FBD33D9455AF0339B6" kind="Member Function" line="79" name="operator*" returnType="2832d985-bdb3-4869-a746-b690d705a278" specifiers="public inline nothrow"/>
+     <function const="true" docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_T_275E61EDC414DE983B23674E9CAA63E6527F938C" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_T_275E61EDC414DE983B23674E9CAA63E6527F938C" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_op_star_UniquePtr_T_275E61EDC414DE983B23674E9CAA63E6527F938C" kind="Member Function" line="84" name="operator*" returnType="0b916552-9089-4dd5-b3b1-1a0429e83e72" specifiers="public inline nothrow"/>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_T_3BF8E69222428814694DDC8B64CDCB5EB2270360" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_T_3BF8E69222428814694DDC8B64CDCB5EB2270360" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_op_arrow_UniquePtr_T_3BF8E69222428814694DDC8B64CDCB5EB2270360" kind="Member Function" line="69" name="operator->" returnType="177eea6c-ffa7-444f-b6d8-a5d72a7264e1" specifiers="public inline nothrow"/>
+     <function const="true" docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_T_0CA8735BB82812EF87BB04C689366C3F9E8242DF" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_T_0CA8735BB82812EF87BB04C689366C3F9E8242DF" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_op_arrow_UniquePtr_T_0CA8735BB82812EF87BB04C689366C3F9E8242DF" kind="Member Function" line="74" name="operator->" returnType="34dd56bb-d29d-41f3-a22f-0943d49ff8eb" specifiers="public inline nothrow"/>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_assign_UniquePtr_T_E14E57B2E66089010F84F91A1A47874CB11B894C" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_assign_UniquePtr_T_E14E57B2E66089010F84F91A1A47874CB11B894C" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="member_function_op_assign_UniquePtr_T_E14E57B2E66089010F84F91A1A47874CB11B894C" kind="Member Function" line="15" name="operator=" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public nothrow">
+      <parameters>
+       <parameter id="parameter_ptr__2A4DD77DBE336845E4EBF21CF4F729F2F1220655" name="ptr_" type="177eea6c-ffa7-444f-b6d8-a5d72a7264e1"/>
+      </parameters>
+     </function>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_assignment_op_assign_UniquePtr_T_F4501990A5BD400C60CDB5327A402183F54C516C" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_assignment_op_assign_UniquePtr_T_F4501990A5BD400C60CDB5327A402183F54C516C" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="move_assignment_op_assign_UniquePtr_T_F4501990A5BD400C60CDB5327A402183F54C516C" kind="Member Function" line="24" name="operator=" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public nothrow">
+      <parameters>
+       <parameter id="parameter_that_3A0496E5B9A5BEACB5045DDFE7348A3D4B1BB984" name="that" type="a38dac27-c48f-4374-83b5-dda63cf18d90"/>
+      </parameters>
+     </function>
+     <function docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_assignment_op_assign_UniquePtr_T_DF6C3054D0ABDE976C753B0AFB7B9FE9E8647894" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_assignment_op_assign_UniquePtr_T_DF6C3054D0ABDE976C753B0AFB7B9FE9E8647894" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="copy_assignment_op_assign_UniquePtr_T_DF6C3054D0ABDE976C753B0AFB7B9FE9E8647894" kind="Member Function" line="23" name="operator=" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="suppress">
+      <parameters>
+       <parameter id="parameter_@p0_351A9C292148C3FA05B2EE9AAEFD72054A83A001" name="" type="14f9de7f-f55d-4aaa-b68e-151746c040f2"/>
+      </parameters>
+     </function>
+    </functions>
+    <typedefs>
+     <typedef docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#typedef_Self_4D42F9D3D295689ABC4667C2F95DE9DE5C8D890C" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#typedef_Self_4D42F9D3D295689ABC4667C2F95DE9DE5C8D890C" id="typedef_Self_4D42F9D3D295689ABC4667C2F95DE9DE5C8D890C" name="Self" specifiers="private" type="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009"/>
+    </typedefs>
+    <variables>
+     <variable docPath="../../UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_variable_ptr_FD383A9C3FDC1F45FEEE7ED35642946CD6378982" extPath="UniquePtr/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_variable_ptr_FD383A9C3FDC1F45FEEE7ED35642946CD6378982" id="member_variable_ptr_FD383A9C3FDC1F45FEEE7ED35642946CD6378982" name="ptr" specifiers="private" type="177eea6c-ffa7-444f-b6d8-a5d72a7264e1"/>
+    </variables>
+   </class>
+  </classes>
+  <functions>
+   <function docPath="../../UniquePtr/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" extPath="UniquePtr/doc/../index.html#function_main_30D71DA93A80E84640D467E0841F28966485AC6A" fileName="UniquePtr/unique_ptr.cm" filePath="../../UniquePtr/file/unique_ptr.cm.html" id="function_main_30D71DA93A80E84640D467E0841F28966485AC6A" kind="Function" line="104" name="main" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers="public"/>
+  </functions>
+ </namespace>
+ <types>
+  <derivedType id="177eea6c-ffa7-444f-b6d8-a5d72a7264e1" name="T*">
+   <derivation baseType="a01719ac-f171-4a3f-bb07-28141854bf6b"/>
+   <derivation name="*"/>
+  </derivedType>
+  <derivedType id="a38dac27-c48f-4374-83b5-dda63cf18d90" name="UniquePtr&lt;T>&amp;&amp;">
+   <derivation baseType="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009"/>
+   <derivation name="&amp;&amp;"/>
+  </derivedType>
+  <derivedType id="14f9de7f-f55d-4aaa-b68e-151746c040f2" name="const UniquePtr&lt;T>&amp;">
+   <derivation name="const"/>
+   <derivation baseType="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <derivedType id="375a62a8-d867-4f16-a279-b983b82ddcf8" name="UniquePtr&lt;T>&amp;">
+   <derivation baseType="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <derivedType id="2832d985-bdb3-4869-a746-b690d705a278" name="T&amp;">
+   <derivation baseType="a01719ac-f171-4a3f-bb07-28141854bf6b"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <derivedType id="0b916552-9089-4dd5-b3b1-1a0429e83e72" name="const T&amp;">
+   <derivation name="const"/>
+   <derivation baseType="a01719ac-f171-4a3f-bb07-28141854bf6b"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <derivedType id="34dd56bb-d29d-41f3-a22f-0943d49ff8eb" name="const T*">
+   <derivation name="const"/>
+   <derivation baseType="a01719ac-f171-4a3f-bb07-28141854bf6b"/>
+   <derivation name="*"/>
+  </derivedType>
+ </types>
+</symbolTable>

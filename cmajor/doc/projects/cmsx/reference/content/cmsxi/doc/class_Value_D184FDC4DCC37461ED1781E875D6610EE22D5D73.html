@@ -1,0 +1,153 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Value Abstract Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>Value Abstract Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#6">6</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_GenerateSetValue_Value_E44C5351DCB95CC86ABA6F52FF35F28C1E425626">GenerateSetValue</a>(<a href="../../cmsxi/doc/class_Register_7971689F6E9F4EC50736F8814BD96321B11B0DE6.html">Register</a>*&nbsp;reg, <a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode, <span class="kw">int</span>&nbsp;line, <a href="../../cmsxi/doc/class_Instruction_5E05DB58E4B1651C9C3A965474ED1B4E9BB774F7.html">Instruction</a>*&nbsp;inst)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxi/doc/class_Location_BE5B0B4F6121C4382E496712B4F67F5152B95437.html">Location</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_HomeLocation_Value_4818D9E177E8E3F65F14DAC45428AFBD79BAE04E">HomeLocation</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_IncNumUses_Value_A0DF0B802F0EA6368B3AB160AB058D455EB7FD13">IncNumUses</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_IndexStr_Value_3ACACD3B7ED941C54D16AEE5C9B905D17A60A520">IndexStr</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_IsImmediate_Value_A5ED2717D094646697E5075811FF0868D0893446">IsImmediate</a>(<span class="kw">byte</span>&amp;&nbsp;immediateValue)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_Name_Value_B5B1396F40F65611586038393135438BB689042D">Name</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_PrintName_Value_ED36387875BEE1D6EC925302D72853C2353A7BF6">PrintName</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_SignExtendTo_Value_352E18CDAF879DE077010893A4FDE697A32D42A4">SignExtendTo</a>(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_TruncateTo_Value_6E8E92E8620B243B368E65ED8E0BAAFC02DC00D9">TruncateTo</a>(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_Validate_Value_F85F8E91EFB8F45ECF41B8A07012E415A54214FC">Validate</a>(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;index)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html#member_function_ZeroExtendTo_Value_F0916CFA420C3F8EC29D770DC7C4B94FC8D34A03">ZeroExtendTo</a>(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">line</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*</td>
+    <td xml:space="preserve">type</td>
+   </tr>
+  </table>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_GenerateSetValue_Value_E44C5351DCB95CC86ABA6F52FF35F28C1E425626" xml:space="preserve">GenerateSetValue&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;GenerateSetValue(<a href="../../cmsxi/doc/class_Register_7971689F6E9F4EC50736F8814BD96321B11B0DE6.html">Register</a>*&nbsp;reg, <a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode, <span class="kw">int</span>&nbsp;line, <a href="../../cmsxi/doc/class_Instruction_5E05DB58E4B1651C9C3A965474ED1B4E9BB774F7.html">Instruction</a>*&nbsp;inst)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_HomeLocation_Value_4818D9E177E8E3F65F14DAC45428AFBD79BAE04E" xml:space="preserve">HomeLocation&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../cmsxi/doc/class_Location_BE5B0B4F6121C4382E496712B4F67F5152B95437.html">Location</a>*&nbsp;HomeLocation()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#19">19</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IncNumUses_Value_A0DF0B802F0EA6368B3AB160AB058D455EB7FD13" xml:space="preserve">IncNumUses&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;IncNumUses()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#51">51</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IndexStr_Value_3ACACD3B7ED941C54D16AEE5C9B905D17A60A520" xml:space="preserve">IndexStr&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;IndexStr()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#15">15</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsImmediate_Value_A5ED2717D094646697E5075811FF0868D0893446" xml:space="preserve">IsImmediate&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">bool</span>&nbsp;IsImmediate(<span class="kw">byte</span>&amp;&nbsp;immediateValue)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Name_Value_B5B1396F40F65611586038393135438BB689042D" xml:space="preserve">Name&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;Name()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_PrintName_Value_ED36387875BEE1D6EC925302D72853C2353A7BF6" xml:space="preserve">PrintName&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;PrintName()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#11">11</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SignExtendTo_Value_352E18CDAF879DE077010893A4FDE697A32D42A4" xml:space="preserve">SignExtendTo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;SignExtendTo(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_TruncateTo_Value_6E8E92E8620B243B368E65ED8E0BAAFC02DC00D9" xml:space="preserve">TruncateTo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;TruncateTo(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#39">39</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Validate_Value_F85F8E91EFB8F45ECF41B8A07012E415A54214FC" xml:space="preserve">Validate&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;Validate(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;index)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#43">43</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ZeroExtendTo_Value_F0916CFA420C3F8EC29D770DC7C4B94FC8D34A03" xml:space="preserve">ZeroExtendTo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;ZeroExtendTo(<a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;targetType, <span class="kw">int</span>&nbsp;line)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Value.cm.html#35">35</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Value.cm.html">cmsxi/Value.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

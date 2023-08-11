@@ -1,0 +1,168 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>DebugSection Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>DebugSection Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1652">1652</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#constructor_DebugSection_8C218CCD8F341FF29466F566AFC3A4F60F1F9DF0">DebugSection</a>(<a href="../../cmsxo/doc/class_BinaryFile_A6208ACB7AD8280018BCB4C0D3287F7C8B9B49E2.html">BinaryFile</a>*&nbsp;file_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_Dump_DebugSection_56BF671B170019E8622072710E38F81CA317F7DE">Dump</a>(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitBeginCleanup_DebugSection_18AB01ABA6BD452B5FEA189E2DB0FD5673F1B93B">EmitBeginCleanup</a>(<span class="kw">uint</span>&nbsp;cleanupBlockId, <span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;offset)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitBeginTry_DebugSection_18C5650B0CBC9C59EADBA77B29E81CCE576BFAC6">EmitBeginTry</a>(<span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;parentTryBlockId, <span class="kw">uint</span>&nbsp;offset)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitCatch_DebugSection_A21F02E0EC0982B416385C7DFFE9D7F0F911BCF7">EmitCatch</a>(<span class="kw">uint</span>&nbsp;catchBlockId, <span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">ulong</span>&nbsp;catchedTypeId1, <span class="kw">ulong</span>&nbsp;catchedTypeId2)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitEndCleanup_DebugSection_89246B074ABE6D5078AF59EFB4270949BF395079">EmitEndCleanup</a>(<span class="kw">uint</span>&nbsp;cleanupBlockId, <span class="kw">uint</span>&nbsp;offset)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitEndFunc_DebugSection_C6012F2F06B5F1FA80EC00BB4806CAA931F2BD01">EmitEndFunc</a>(<span class="kw">uint</span>&nbsp;functionSymbolIndex)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitEndTry_DebugSection_D6F40093E818FE3ED623C7B1D70B425BE159538A">EmitEndTry</a>(<span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;offset)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitFunctionInfo_DebugSection_2A03C7EA01C09A43A488FDFCE21F429DC2289E55">EmitFunctionInfo</a>(<span class="kw">const</span>&nbsp;<a href="../../cmsxo/doc/class_FunctionInfo_CD580AFFA96E3A3ADEB41BCE0A148DB61612CF94.html">FunctionInfo</a>&amp;&nbsp;functionInfo)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitLineInfo_DebugSection_2AFFB18D7CDEF631776F47156BBDAD87EE56425E">EmitLineInfo</a>(<span class="kw">const</span>&nbsp;<a href="../../cmsxo/doc/class_LineInfo_7E3CD6FB831A0D0F248C0AC92FB4ED20A8BD3418.html">LineInfo</a>&amp;&nbsp;lineInfo)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitSourceFileName_DebugSection_CEB00C53631E3BB9A72E18D5BC2A83A3F9A8376D">EmitSourceFileName</a>(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;sourceFileName, <span class="kw">uint</span>&nbsp;sourceFileNameId)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_EmitStartFunc_DebugSection_97B3354AFEBF508F80655C92B9B79F6E801818CF">EmitStartFunc</a>(<span class="kw">uint</span>&nbsp;functionSymbolIndex)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DebugSection_0F3CDAB41A79F530049DB3EA3185D5EDD000A3AE.html#member_function_Finalize_DebugSection_E6E495CD7C177957D6A9F8FDE303E48D04AF1681">Finalize</a>()</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_DebugSection_8C218CCD8F341FF29466F566AFC3A4F60F1F9DF0" xml:space="preserve">DebugSection&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;DebugSection(<a href="../../cmsxo/doc/class_BinaryFile_A6208ACB7AD8280018BCB4C0D3287F7C8B9B49E2.html">BinaryFile</a>*&nbsp;file_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1654">1654</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Dump_DebugSection_56BF671B170019E8622072710E38F81CA317F7DE" xml:space="preserve">Dump&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Dump(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1657">1657</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitBeginCleanup_DebugSection_18AB01ABA6BD452B5FEA189E2DB0FD5673F1B93B" xml:space="preserve">EmitBeginCleanup&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitBeginCleanup(<span class="kw">uint</span>&nbsp;cleanupBlockId, <span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;offset)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1797">1797</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitBeginTry_DebugSection_18C5650B0CBC9C59EADBA77B29E81CCE576BFAC6" xml:space="preserve">EmitBeginTry&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitBeginTry(<span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;parentTryBlockId, <span class="kw">uint</span>&nbsp;offset)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1776">1776</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitCatch_DebugSection_A21F02E0EC0982B416385C7DFFE9D7F0F911BCF7" xml:space="preserve">EmitCatch&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitCatch(<span class="kw">uint</span>&nbsp;catchBlockId, <span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">ulong</span>&nbsp;catchedTypeId1, <span class="kw">ulong</span>&nbsp;catchedTypeId2)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1789">1789</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitEndCleanup_DebugSection_89246B074ABE6D5078AF59EFB4270949BF395079" xml:space="preserve">EmitEndCleanup&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitEndCleanup(<span class="kw">uint</span>&nbsp;cleanupBlockId, <span class="kw">uint</span>&nbsp;offset)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1804">1804</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitEndFunc_DebugSection_C6012F2F06B5F1FA80EC00BB4806CAA931F2BD01" xml:space="preserve">EmitEndFunc&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitEndFunc(<span class="kw">uint</span>&nbsp;functionSymbolIndex)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1771">1771</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitEndTry_DebugSection_D6F40093E818FE3ED623C7B1D70B425BE159538A" xml:space="preserve">EmitEndTry&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitEndTry(<span class="kw">uint</span>&nbsp;tryBlockId, <span class="kw">uint</span>&nbsp;offset)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1783">1783</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitFunctionInfo_DebugSection_2A03C7EA01C09A43A488FDFCE21F429DC2289E55" xml:space="preserve">EmitFunctionInfo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitFunctionInfo(<span class="kw">const</span>&nbsp;<a href="../../cmsxo/doc/class_FunctionInfo_CD580AFFA96E3A3ADEB41BCE0A148DB61612CF94.html">FunctionInfo</a>&amp;&nbsp;functionInfo)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1746">1746</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitLineInfo_DebugSection_2AFFB18D7CDEF631776F47156BBDAD87EE56425E" xml:space="preserve">EmitLineInfo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitLineInfo(<span class="kw">const</span>&nbsp;<a href="../../cmsxo/doc/class_LineInfo_7E3CD6FB831A0D0F248C0AC92FB4ED20A8BD3418.html">LineInfo</a>&amp;&nbsp;lineInfo)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1754">1754</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitSourceFileName_DebugSection_CEB00C53631E3BB9A72E18D5BC2A83A3F9A8376D" xml:space="preserve">EmitSourceFileName&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitSourceFileName(<span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;sourceFileName, <span class="kw">uint</span>&nbsp;sourceFileNameId)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1760">1760</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_EmitStartFunc_DebugSection_97B3354AFEBF508F80655C92B9B79F6E801818CF" xml:space="preserve">EmitStartFunc&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;EmitStartFunc(<span class="kw">uint</span>&nbsp;functionSymbolIndex)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1766">1766</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Finalize_DebugSection_E6E495CD7C177957D6A9F8FDE303E48D04AF1681" xml:space="preserve">Finalize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Finalize()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1810">1810</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

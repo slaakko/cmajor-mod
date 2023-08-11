@@ -1,0 +1,1975 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>SyntaxTreeBuilder Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>SyntaxTreeBuilder Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#7">7</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#constructor_SyntaxTreeBuilder_25F74F28A2DDD32D812196886B4A183A2915D809">SyntaxTreeBuilder</a>(BASE_TYPE&amp;&nbsp;lexer_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">int</span>, <a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">int</span>>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">int</span>>></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_GetIndexNodeMap_SyntaxTreeBuilder_1BC7EFB6995EF842ED3DEEA4EDCA8794BD598C56">GetIndexNodeMap</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <span class="kw">int</span>, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_GetNodeIndexMap_SyntaxTreeBuilder_ED0859C0A2A81ECEDE842C86A62B8979E4F60488">GetNodeIndexMap</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*</td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_GetRoot_SyntaxTreeBuilder_DE37C87279F416D2A2717CD59DD319A37E9E5B5D">GetRoot</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_C66DD1B8DD7AF84BA8895CEE9CD172BC79E481C9">Visit</a>(BASE_TYPE&amp;&nbsp;addNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0186F0DC9FE1ED9F1418251C93BB0950A8EC3364">Visit</a>(BASE_TYPE&amp;&nbsp;addrOfNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_122ABF1E72D54FB3619279FC52089AE924B460DF">Visit</a>(BASE_TYPE&amp;&nbsp;aliasNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_847EBD6E6C42EFAF885EE592ED668525B0E8AAC1">Visit</a>(BASE_TYPE&amp;&nbsp;arrayLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_DFC845CAEE4ED7DAAC6F049B201BB6D1AEDC6E38">Visit</a>(BASE_TYPE&amp;&nbsp;arrayNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_299F36EFED369161802829FA40F1909B3391A905">Visit</a>(BASE_TYPE&amp;&nbsp;arrowNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3ABD0411EADE121732637E4E9B9947A687CF859C">Visit</a>(BASE_TYPE&amp;&nbsp;asNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_779BEFB4181535E0F689987D6E60CEA2D869A3E3">Visit</a>(BASE_TYPE&amp;&nbsp;assertStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_BE3C9E5130A016873A61E52F6F44BC01BDA22D68">Visit</a>(BASE_TYPE&amp;&nbsp;assignmentStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D235BF7B418C1D395CCFAD63CD9A8CFDD80267AE">Visit</a>(BASE_TYPE&amp;&nbsp;attribute)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6EBE5F5F40D2D709F980ECEB80D84CB57130FBB9">Visit</a>(BASE_TYPE&amp;&nbsp;attributes)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7CCCEDD1FF1FDFF5B4454B036F5077C1859EF18A">Visit</a>(BASE_TYPE&amp;&nbsp;axiomNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CA1B2EF7A6B792AC3F7360E9B20AC7E9F70C968B">Visit</a>(BASE_TYPE&amp;&nbsp;axiomStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AA735F5FC5A8E6D8F7B1D756E6FF5630A213FA86">Visit</a>(BASE_TYPE&amp;&nbsp;baseInitializerNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_FB927CF2A49155005B31CF5E76D013BCC4635E21">Visit</a>(BASE_TYPE&amp;&nbsp;baseNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_A8F30CDEFD25BE538AB40F1B77F5799F910C0D0F">Visit</a>(BASE_TYPE&amp;&nbsp;bitAndNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CAB72C410FD7552488EB4BC2BFE11DAC413750E1">Visit</a>(BASE_TYPE&amp;&nbsp;bitOrNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_9969629B2598E2A3E405381F1A7F134F79FC169D">Visit</a>(BASE_TYPE&amp;&nbsp;bitXorNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CB0A52756608781345954A53BBB6C11BC72BD112">Visit</a>(BASE_TYPE&amp;&nbsp;boolNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E575DF5DD2F33C36DB05B3B1DD2C922DE2D2C376">Visit</a>(BASE_TYPE&amp;&nbsp;booleanLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_14F0F2C17F26268DD1ABD947FFEED51474110E92">Visit</a>(BASE_TYPE&amp;&nbsp;breakStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E3CC3BE13FE4D952F933ED2D490D3E8C0FDA34DC">Visit</a>(BASE_TYPE&amp;&nbsp;byteLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_161B7444DCA4ABC493233F38603CA3B888524B15">Visit</a>(BASE_TYPE&amp;&nbsp;byteNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D5DCF46C836A3A050945C52853749923C15E0EDF">Visit</a>(BASE_TYPE&amp;&nbsp;caseStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_A3957979F8ACA5669C46843C859B3BF565480FF4">Visit</a>(BASE_TYPE&amp;&nbsp;castNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_02AE80E1FB17B2A2B9B73A6911A7A65FA615F077">Visit</a>(BASE_TYPE&amp;&nbsp;catchNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_958835B42D322C8ADADE13EC12038DD422859B68">Visit</a>(BASE_TYPE&amp;&nbsp;charLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7A3A02F3277347DA6C132D7D91A7BE9FBCFC1F4C">Visit</a>(BASE_TYPE&amp;&nbsp;charNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_04D3B322FDA90E59477A6CAF1ECD0AB2B88633B9">Visit</a>(BASE_TYPE&amp;&nbsp;classDelegateNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_1B39B010A5EA04DAC85A88C5D4D11E934FF0427E">Visit</a>(BASE_TYPE&amp;&nbsp;classNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0CA954B9241ABC930A3CB836521C22A1D2D4F1F1">Visit</a>(BASE_TYPE&amp;&nbsp;commentNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_2F2C905D4AEDF97D87A9E6B1153401A3551D10CE">Visit</a>(BASE_TYPE&amp;&nbsp;commonConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_24B6E67766760B17FA6FC084856616E39A9423D9">Visit</a>(BASE_TYPE&amp;&nbsp;compileUnitNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_DD0D57F232AE0998F110382B44C2A67845995DD7">Visit</a>(BASE_TYPE&amp;&nbsp;complementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AC7CCF212D1BDABD8C6B4356ADBC8C2FCAC33C1C">Visit</a>(BASE_TYPE&amp;&nbsp;compoundStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AB02B7898CA1887EDD0AFF8E7A3C6388FF5F901A">Visit</a>(BASE_TYPE&amp;&nbsp;conceptIdNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_93FE890B7F688FD22E310B257926D321ECF52440">Visit</a>(BASE_TYPE&amp;&nbsp;conceptNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_8CBC77388BF254AE7DBB827A05955CEAE784CFBC">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationConjunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F204778C91CE1184F4DDBBC264A4501492F24A5F">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationDisjunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_32B072240385658BF222838E460FE5D7FCF544B2">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationNotNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6BC5D143591CCA12AAFF5E0AA2E7710DB22FF47F">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationPartNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6AB20D9A07ED327FD307A17D355251A8D5675E95">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationPrimaryNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3AC80D880C6877DA7642DCDB04A41BF76C6B2056">Visit</a>(BASE_TYPE&amp;&nbsp;conditionalCompilationStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0C0A4521AA23D209EF1D573BDF8CD6CDC0DE0B0E">Visit</a>(BASE_TYPE&amp;&nbsp;conjunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B51B1900DB3B49E19EC17DE06F0F31B7B47CBBC2">Visit</a>(BASE_TYPE&amp;&nbsp;conjunctiveConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6C14E678504E1394A3FDC74C35C5F6EA4DD1631C">Visit</a>(BASE_TYPE&amp;&nbsp;constNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_515578BC40F06EB667803958339C17A1280B6655">Visit</a>(BASE_TYPE&amp;&nbsp;constantNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_8F30CD44A9A30C01087D07A804DA3BBB4E17C4E8">Visit</a>(BASE_TYPE&amp;&nbsp;constructNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CBBCC2197ABFA6E3A61D3F19153DB44B2F2C9476">Visit</a>(BASE_TYPE&amp;&nbsp;constructionStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6F890C060C7D2BDEBE51161C53763E92A9DAFAA7">Visit</a>(BASE_TYPE&amp;&nbsp;constructorConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0984E563AD9AD28745F192699973DF82B8B49060">Visit</a>(BASE_TYPE&amp;&nbsp;constructorNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_09DD23F430FEC29B09FEE8386124ECF480C8E51C">Visit</a>(BASE_TYPE&amp;&nbsp;continueStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F60A5460A505F3342B3F680A8D1AE6CB081A8036">Visit</a>(BASE_TYPE&amp;&nbsp;conversionFunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_263673303F955EAE559EE0D509056658888BEAD2">Visit</a>(BASE_TYPE&amp;&nbsp;convertibleConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_BFC3D67B1D34B8751B2332C0567B8CB621B5C8AD">Visit</a>(BASE_TYPE&amp;&nbsp;defaultStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_1B00A9CDB64F2311D0CFC2CCE32993F67B13F9EE">Visit</a>(BASE_TYPE&amp;&nbsp;delegateNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E02BDFCAD667D5D86FC32D7559D14933D43DDE1B">Visit</a>(BASE_TYPE&amp;&nbsp;deleteStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6D81712D4CE5A1314C3F159F2B874EB024ED9F76">Visit</a>(BASE_TYPE&amp;&nbsp;derefNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4D6DEC5D640A4DFC7E0F53440FC6B864F0CF364F">Visit</a>(BASE_TYPE&amp;&nbsp;derivedConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_C700901233E674A1E423829BA0BC8C211C29B069">Visit</a>(BASE_TYPE&amp;&nbsp;destroyStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_40428D20888C7BD38770CB5D0F81865F1884607D">Visit</a>(BASE_TYPE&amp;&nbsp;destructorConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_85DDD44EEDDC8FD04F37BED5ADC75C9C9600EE92">Visit</a>(BASE_TYPE&amp;&nbsp;destructorNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_33D9BF658B23CA7CA8AEFDE329F7BF1E7FA87BB4">Visit</a>(BASE_TYPE&amp;&nbsp;disjunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6B07B8E1DA1ABEE87BA67DB6A72FE1D2ABD61359">Visit</a>(BASE_TYPE&amp;&nbsp;disjunctiveConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0F79E27DD5D817004ACBFC9A9396A2B53C6970E5">Visit</a>(BASE_TYPE&amp;&nbsp;divNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_8EE458F7B84ABEF97D9D47AE5E8E4FF999C2617E">Visit</a>(BASE_TYPE&amp;&nbsp;doStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3FE919B3C07248A87AC7F370B2C17255C64BA78A">Visit</a>(BASE_TYPE&amp;&nbsp;dotNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CDF8DD63FFA32942B89049CB94363A931AAF9DB8">Visit</a>(BASE_TYPE&amp;&nbsp;doubleLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D8D237AC38CB2F342546D66FA34A9620563C974F">Visit</a>(BASE_TYPE&amp;&nbsp;doubleNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_43285759DEC22EAFFBAFDDF0606AC9B568944C0E">Visit</a>(BASE_TYPE&amp;&nbsp;emptyStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_1A5D88C75247BC919E874D2C463BF27052946D08">Visit</a>(BASE_TYPE&amp;&nbsp;enumConstantNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_5F796F6F3C3277272AFE08B15A24249A27922811">Visit</a>(BASE_TYPE&amp;&nbsp;enumTypeNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_16A656E6A57C2BA1B28E377FE0C6B0DC52CDDE6A">Visit</a>(BASE_TYPE&amp;&nbsp;equalNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E7EF1FC63EAA87E0EE99540B9569ADE3DFE93B98">Visit</a>(BASE_TYPE&amp;&nbsp;equivalenceNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_94A8AE6E38E71265869899C15678565712650DFF">Visit</a>(BASE_TYPE&amp;&nbsp;explicitlyConvertibleConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4D81FC1E313E9B3E25124D702E27AD3024EF1511">Visit</a>(BASE_TYPE&amp;&nbsp;expressionStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E69E017423CCA8294C8D4FCAE323910385971700">Visit</a>(BASE_TYPE&amp;&nbsp;floatLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_04BEBE2B5F925FA8A6588BAE4889297358F9A62D">Visit</a>(BASE_TYPE&amp;&nbsp;floatNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_9822A853F3BCA21D8AD24274E7F1F89C3BAE1D76">Visit</a>(BASE_TYPE&amp;&nbsp;forStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B010352BE02D925908104AACBEC5D74CFC0DCD12">Visit</a>(BASE_TYPE&amp;&nbsp;functionConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_097F7BC418E2BF2B4FAEF6726411C6F8A9D3853B">Visit</a>(BASE_TYPE&amp;&nbsp;functionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_0550BDA698B21FA6A76A6809C96D530B3D7F2937">Visit</a>(BASE_TYPE&amp;&nbsp;globalVariableNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_EE28F9914D24E68CD8C7F195A02A9F8677349229">Visit</a>(BASE_TYPE&amp;&nbsp;gotoCaseStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_38AC38E9234C05220E4A340A9D17634AD4434189">Visit</a>(BASE_TYPE&amp;&nbsp;gotoDefaultStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_5A727BAF8E9073FEE16DFB2838E9CC98FA98FF6B">Visit</a>(BASE_TYPE&amp;&nbsp;gotoStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6565EDBFA04E1B64A6C962C8FBF95AD2007FBA66">Visit</a>(BASE_TYPE&amp;&nbsp;greaterNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B3249886C8C981D3D3D230532D8FBE85F8AC2A0E">Visit</a>(BASE_TYPE&amp;&nbsp;greaterOrEqualNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_26378C278AB0C99E7396966EA78168978AE782EF">Visit</a>(BASE_TYPE&amp;&nbsp;identifierNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3C3F93B315EC2DCCEA1EAC91A95632636C48A629">Visit</a>(BASE_TYPE&amp;&nbsp;ifStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4ACF90CB9E71ED523EB614CC9219F1A6BA9D4BF9">Visit</a>(BASE_TYPE&amp;&nbsp;implicationNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AC735560CCF7AE1260875E7CA3233504E7EDF65F">Visit</a>(BASE_TYPE&amp;&nbsp;indexingNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_57E9FF2671A8D0607FF501859CB3B9788D4868AE">Visit</a>(BASE_TYPE&amp;&nbsp;intLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D435ABA02101A16BF24F7EAEBB72AC6B0B1EFF1B">Visit</a>(BASE_TYPE&amp;&nbsp;intNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_85AA3069B92DFA1963C6E9245E44DC3C94EB6228">Visit</a>(BASE_TYPE&amp;&nbsp;interfaceNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_95BCC0A7639E9D2F3BB2584FCD5A724AE0192D92">Visit</a>(BASE_TYPE&amp;&nbsp;invokeNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F85167413D0D51621E9414F75CDE23BC2240A6B9">Visit</a>(BASE_TYPE&amp;&nbsp;isConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7FE2F7DA5F47C0B81A80F08E8D90FB28F7A9BD76">Visit</a>(BASE_TYPE&amp;&nbsp;isNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B81E195B742003A1CED858E9E0001C6F71E1D3AF">Visit</a>(BASE_TYPE&amp;&nbsp;lvalueRefNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4B61C51F53FCCA8EA475BA4C5C196447AC0AFFAA">Visit</a>(BASE_TYPE&amp;&nbsp;labelNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F2E629A59A7594C7D8C0A225F5A02B5F029F5100">Visit</a>(BASE_TYPE&amp;&nbsp;labeledStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7A9A553801F3FE32D590D7D0B8EE25DB2B696C68">Visit</a>(BASE_TYPE&amp;&nbsp;lessNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_9616EFA9355CE98E94A74C324C443D25D3E0BD4C">Visit</a>(BASE_TYPE&amp;&nbsp;lessOrEqualNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_12B1D5AF46C3F424FB55FA42239FB184DEF01DE9">Visit</a>(BASE_TYPE&amp;&nbsp;longLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_EC04FDB7354A5CC7CCD61AA923B317AB73CC306B">Visit</a>(BASE_TYPE&amp;&nbsp;longNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_93EF217EB752F0B1B2AE88957ECBF495BF75242C">Visit</a>(BASE_TYPE&amp;&nbsp;memberFunctionConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_8CB4771F11594B09498DAE89BE80AB212C6B8BF1">Visit</a>(BASE_TYPE&amp;&nbsp;memberFunctionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_FBC262DF6ECA6F33082D938E798199CD9CBAD48E">Visit</a>(BASE_TYPE&amp;&nbsp;memberInitializerNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_147057FF102C89BD962401E35E1EEEBFF9232BFC">Visit</a>(BASE_TYPE&amp;&nbsp;memberVariableNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_24E28C3427858AFB84ED7CAFC6E7B3F9E7CDB9DA">Visit</a>(BASE_TYPE&amp;&nbsp;mulNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_A8704281EFF8E6490180DF3A89E9A2A96069E0CF">Visit</a>(BASE_TYPE&amp;&nbsp;multiParamConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_55A46E5250D636A79F77DDAF36070A1487A65B3A">Visit</a>(BASE_TYPE&amp;&nbsp;namespaceImportNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_04709F6FCB992CAD04C0FE000E0269553E7A4E25">Visit</a>(BASE_TYPE&amp;&nbsp;namespaceNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D0BFF7F43B386D225BA459C85C35CA0A82A6480C">Visit</a>(BASE_TYPE&amp;&nbsp;newNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F73AF5BC811279D8749C62917ED98F2782F52DDB">Visit</a>(BASE_TYPE&amp;&nbsp;nonreferenceTypeConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F5BF7BAAF88C9C49F85DCF4083823F3D9A0B298D">Visit</a>(BASE_TYPE&amp;&nbsp;notEqualNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_98B030080B3EB3828C540E7B019DF253FA03AEC8">Visit</a>(BASE_TYPE&amp;&nbsp;notNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_DDA57831B0A11F908CC2549F173EAB1943000336">Visit</a>(BASE_TYPE&amp;&nbsp;nullLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4FDBCE50B3C4F89F3D8A1E73693AF42E88F347D8">Visit</a>(BASE_TYPE&amp;&nbsp;parameterNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_DA0487383A7B09CF83072A1130BD4FB29205E542">Visit</a>(BASE_TYPE&amp;&nbsp;parenthesizeCondCompExprNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_41A0978F8DDA24DA8D5A3E0998D4389FC32B29ED">Visit</a>(BASE_TYPE&amp;&nbsp;parenthesizedConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4714DB5857A10597EA1537D3E7C938EC4EC77798">Visit</a>(BASE_TYPE&amp;&nbsp;parenthesizedExpressionNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_93E91F74AE518D1E14B607839B3FD987C4AB7522">Visit</a>(BASE_TYPE&amp;&nbsp;pointerNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F4BA0C6181C4BF652817B2CA015F5CA127C78B90">Visit</a>(BASE_TYPE&amp;&nbsp;postfixDecrementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D90B2963671FB99AE87BE5A211CEA16CBC990857">Visit</a>(BASE_TYPE&amp;&nbsp;postfixIncrementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_4580F266B46B503BB38547F93DAED795DBFBABF8">Visit</a>(BASE_TYPE&amp;&nbsp;predicateConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_48CAAFD7A30088A4F8E43D1B3BDED24602B0B605">Visit</a>(BASE_TYPE&amp;&nbsp;prefixDecrementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D3DAB79145A96A991B9B579B74071D4054C3175E">Visit</a>(BASE_TYPE&amp;&nbsp;prefixIncrementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_C8A07E6875403F40E2200FF55F8D2E14E90C70C6">Visit</a>(BASE_TYPE&amp;&nbsp;rvalueRefNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_34B43AEFA22AE74AB89352ADFAB354F18A9891AB">Visit</a>(BASE_TYPE&amp;&nbsp;rangeForStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_05002C6A960FD905D72A6B0CCC39ED4A257CF4A0">Visit</a>(BASE_TYPE&amp;&nbsp;remNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_28267F57D27A621F2F2E1D2A0D688E90411E0739">Visit</a>(BASE_TYPE&amp;&nbsp;returnStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_2A00F3C4067C98A803A0A22767CA96FA4A095B8B">Visit</a>(BASE_TYPE&amp;&nbsp;sbyteLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3C5AA143FDFF4034F4F0A0041B58951FCAD0E860">Visit</a>(BASE_TYPE&amp;&nbsp;sbyteNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CB67D80E8D1A1AA63A56EAE0AC498D4951F628A5">Visit</a>(BASE_TYPE&amp;&nbsp;sameConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CCA89013C5D89D84766ABC9C47A7C77B60CEB02A">Visit</a>(BASE_TYPE&amp;&nbsp;shiftLeftNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F088850E82E0B7A6EE3BB9EF7CC892B0EB5161EF">Visit</a>(BASE_TYPE&amp;&nbsp;shiftRightNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_1303704289596E5E29898CF2F1367A4E56332FCE">Visit</a>(BASE_TYPE&amp;&nbsp;shortLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_CE8B3BE609FB95063773DD28F4F329F6D9297728">Visit</a>(BASE_TYPE&amp;&nbsp;shortNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_312BB999F5EF6CEE99DCA95E9692ED9D18419F76">Visit</a>(BASE_TYPE&amp;&nbsp;sizeOfNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7A1E7433AAF74FAD4F841645737D681EBC481D84">Visit</a>(BASE_TYPE&amp;&nbsp;staticConstructorNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_9EFBADF5CEC078F139F9B38001C088ADF06BE1B3">Visit</a>(BASE_TYPE&amp;&nbsp;stringLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D82AC2EE0547AA7B6F0D343FE14B32C894B09C75">Visit</a>(BASE_TYPE&amp;&nbsp;structuredLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D3A593A930F9C7AE5B25E16CD5E9DC2ADF43F15F">Visit</a>(BASE_TYPE&amp;&nbsp;subNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AEF6EE2F1834FE5E8E9E8BE47928EE6924A402B0">Visit</a>(BASE_TYPE&amp;&nbsp;switchStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B836EEFF2A20E276DF76EAE703B0958D01E70A0A">Visit</a>(BASE_TYPE&amp;&nbsp;templateIdNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_8EA109484C5BD2134F55859C4DD0A80520874B69">Visit</a>(BASE_TYPE&amp;&nbsp;templateParameterNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_6358B1D54A01100354272E8CD29A2C95471E26C3">Visit</a>(BASE_TYPE&amp;&nbsp;thisInitializerNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_29F9008A9BA1CD9378E26A646C06D23D70FFD54C">Visit</a>(BASE_TYPE&amp;&nbsp;thisNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_07A3359733682A976170D8DB0498B15D87C6BB2F">Visit</a>(BASE_TYPE&amp;&nbsp;throwStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_07E55EABCEAFEE66ADDCA4EA30F7E28D5E50622C">Visit</a>(BASE_TYPE&amp;&nbsp;tryStatementNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D50C3DE89512DC3560512AC8119C1F60342151BB">Visit</a>(BASE_TYPE&amp;&nbsp;typeIdNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_34807A83457E7132938CE40F748136763CDA19E9">Visit</a>(BASE_TYPE&amp;&nbsp;typeNameConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_F76F8B436ACC99CD2A798F476203F3F03FEF5B7F">Visit</a>(BASE_TYPE&amp;&nbsp;typeNameNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B579B18DEE9918B67A907F5250FEE0D3403184F3">Visit</a>(BASE_TYPE&amp;&nbsp;typedefNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_46960F11908FF48F1A176769C24F0A83B93BA01E">Visit</a>(BASE_TYPE&amp;&nbsp;ucharLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_1F3B63E46D7C9E10E5199DAFA49C6C1217D2C031">Visit</a>(BASE_TYPE&amp;&nbsp;ucharNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_77771ADC781F0E27F858464E442480E6EBCBB207">Visit</a>(BASE_TYPE&amp;&nbsp;uintLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B327A8356A3C7EE8BBC5E68105AD435F4C63B960">Visit</a>(BASE_TYPE&amp;&nbsp;uintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_89041B0598A8E78607F3813799B1FA34B12EDD1A">Visit</a>(BASE_TYPE&amp;&nbsp;ulongLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D038A0D8C7D4856A45784103EB37172CEE5E597B">Visit</a>(BASE_TYPE&amp;&nbsp;ulongNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7E3EAC7B0D6B09D3323EB8B4E3F85DA796501847">Visit</a>(BASE_TYPE&amp;&nbsp;ushortLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_3F6B738AC189D12353F54985B9937B20FD0DE8FF">Visit</a>(BASE_TYPE&amp;&nbsp;ushortNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E094758DD48D72D3A51E27347F3D166961C8D798">Visit</a>(BASE_TYPE&amp;&nbsp;ustringLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_7C74942CC7EB3E7FEA5F81441DECD16DBF936E92">Visit</a>(BASE_TYPE&amp;&nbsp;unaryMinusNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B9D0913C66B6D004AA9D9CE84512DB65DAD47768">Visit</a>(BASE_TYPE&amp;&nbsp;unaryPlusNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_C06BCC4BBA638608626CB17B66B1AE220A44E42E">Visit</a>(BASE_TYPE&amp;&nbsp;uuidLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_A3941C92E8A0B433E8D1C11DD6DE0C88449F0093">Visit</a>(BASE_TYPE&amp;&nbsp;voidNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_B53D188B17C19A3FD9A5ACE44096542F096067AE">Visit</a>(BASE_TYPE&amp;&nbsp;wcharLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_D94D51F4FFFB8261A5FCA06808524169C9251F65">Visit</a>(BASE_TYPE&amp;&nbsp;wcharNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_E3338D314C89930CC25335C3037986B352E8ECBD">Visit</a>(BASE_TYPE&amp;&nbsp;wstringLiteralNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_53BFA5287BDE2418A86838CCA7275A49D45B8DE3">Visit</a>(BASE_TYPE&amp;&nbsp;whereConstraintNode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../ASTViewer/doc/class_SyntaxTreeBuilder_8AC54B453C5B85FF153845409A3461F65FD22C1D.html#member_function_Visit_SyntaxTreeBuilder_AD26ADBFDE4267E0FD82C8F3FBE0D811E361A366">Visit</a>(BASE_TYPE&amp;&nbsp;whileStatementNode)</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">int</span>, <a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">int</span>>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">int</span>>></td>
+    <td xml:space="preserve">indexNodeMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;BASE_TYPE&amp;</td>
+    <td xml:space="preserve">lexer</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>></td>
+    <td xml:space="preserve">node</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <span class="kw">int</span>, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>></td>
+    <td xml:space="preserve">nodeIndexMap</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_SyntaxTreeBuilder_25F74F28A2DDD32D812196886B4A183A2915D809" xml:space="preserve">SyntaxTreeBuilder&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;SyntaxTreeBuilder(BASE_TYPE&amp;&nbsp;lexer_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#9">9</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_GetIndexNodeMap_SyntaxTreeBuilder_1BC7EFB6995EF842ED3DEEA4EDCA8794BD598C56" xml:space="preserve">GetIndexNodeMap&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">int</span>, <a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">int</span>>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">int</span>>>&nbsp;GetIndexNodeMap()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#16">16</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetNodeIndexMap_SyntaxTreeBuilder_ED0859C0A2A81ECEDE842C86A62B8979E4F60488" xml:space="preserve">GetNodeIndexMap&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*, <span class="kw">int</span>, <a href="../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>, <a href="../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*>>&nbsp;GetNodeIndexMap()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetRoot_SyntaxTreeBuilder_DE37C87279F416D2A2717CD59DD319A37E9E5B5D" xml:space="preserve">GetRoot&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../system/content/System.Windows/doc/class_TreeViewNode_2FF16651D6E066D7A512562FAB4A67F4E9DB4945.html">TreeViewNode</a>*&nbsp;GetRoot()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_C66DD1B8DD7AF84BA8895CEE9CD172BC79E481C9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;addNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2199">2199</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0186F0DC9FE1ED9F1418251C93BB0950A8EC3364" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;addrOfNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2352">2352</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_122ABF1E72D54FB3619279FC52089AE924B460DF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;aliasNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#433">433</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_847EBD6E6C42EFAF885EE592ED668525B0E8AAC1" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;arrayLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#354">354</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_DFC845CAEE4ED7DAAC6F049B201BB6D1AEDC6E38" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;arrayNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1926">1926</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_299F36EFED369161802829FA40F1909B3391A905" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;arrowNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1959">1959</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3ABD0411EADE121732637E4E9B9947A687CF859C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;asNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2393">2393</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_779BEFB4181535E0F689987D6E60CEA2D869A3E3" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;assertStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1635">1635</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_BE3C9E5130A016873A61E52F6F44BC01BDA22D68" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;assignmentStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1434">1434</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D235BF7B418C1D395CCFAD63CD9A8CFDD80267AE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;attribute)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2615">2615</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6EBE5F5F40D2D709F980ECEB80D84CB57130FBB9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;attributes)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2626">2626</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7CCCEDD1FF1FDFF5B4454B036F5077C1859EF18A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;axiomNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1075">1075</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CA1B2EF7A6B792AC3F7360E9B20AC7E9F70C968B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;axiomStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1062">1062</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AA735F5FC5A8E6D8F7B1D756E6FF5630A213FA86" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;baseInitializerNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#588">588</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_FB927CF2A49155005B31CF5E76D013BCC4635E21" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;baseNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2571">2571</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_A8F30CDEFD25BE538AB40F1B77F5799F910C0D0F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;bitAndNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2064">2064</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CAB72C410FD7552488EB4BC2BFE11DAC413750E1" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;bitOrNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2034">2034</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_9969629B2598E2A3E405381F1A7F134F79FC169D" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;bitXorNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2049">2049</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CB0A52756608781345954A53BBB6C11BC72BD112" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;boolNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E575DF5DD2F33C36DB05B3B1DD2C922DE2D2C376" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;booleanLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#174">174</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_14F0F2C17F26268DD1ABD947FFEED51474110E92" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;breakStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1354">1354</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E3CC3BE13FE4D952F933ED2D490D3E8C0FDA34DC" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;byteLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#194">194</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_161B7444DCA4ABC493233F38603CA3B888524B15" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;byteNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#44">44</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D5DCF46C836A3A050945C52853749923C15E0EDF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;caseStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1516">1516</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_A3957979F8ACA5669C46843C859B3BF565480FF4" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;castNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2507">2507</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_02AE80E1FB17B2A2B9B73A6911A7A65FA615F077" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;catchNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1615">1615</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_958835B42D322C8ADADE13EC12038DD422859B68" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;charLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#284">284</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7A3A02F3277347DA6C132D7D91A7BE9FBCFC1F4C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;charNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#134">134</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_04D3B322FDA90E59477A6CAF1ECD0AB2B88633B9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;classDelegateNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#853">853</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_1B39B010A5EA04DAC85A88C5D4D11E934FF0427E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;classNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#530">530</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0CA954B9241ABC930A3CB836521C22A1D2D4F1F1" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;commentNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2643">2643</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_2F2C905D4AEDF97D87A9E6B1153401A3551D10CE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;commonConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1201">1201</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_24B6E67766760B17FA6FC084856616E39A9423D9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;compileUnitNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#398">398</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_DD0D57F232AE0998F110382B44C2A67845995DD7" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;complementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2365">2365</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AC7CCF212D1BDABD8C6B4356ADBC8C2FCAC33C1C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;compoundStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1249">1249</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AB02B7898CA1887EDD0AFF8E7A3C6388FF5F901A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conceptIdNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1103">1103</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_93FE890B7F688FD22E310B257926D321ECF52440" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conceptNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1122">1122</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_8CBC77388BF254AE7DBB827A05955CEAE784CFBC" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationConjunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1685">1685</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F204778C91CE1184F4DDBBC264A4501492F24A5F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationDisjunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1670">1670</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_32B072240385658BF222838E460FE5D7FCF544B2" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationNotNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1700">1700</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6BC5D143591CCA12AAFF5E0AA2E7710DB22FF47F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationPartNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1648">1648</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6AB20D9A07ED327FD307A17D355251A8D5675E95" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationPrimaryNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1713">1713</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3AC80D880C6877DA7642DCDB04A41BF76C6B2056" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conditionalCompilationStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1737">1737</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0C0A4521AA23D209EF1D573BDF8CD6CDC0DE0B0E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conjunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2019">2019</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B51B1900DB3B49E19EC17DE06F0F31B7B47CBBC2" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conjunctiveConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#902">902</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6C14E678504E1394A3FDC74C35C5F6EA4DD1631C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1874">1874</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_515578BC40F06EB667803958339C17A1280B6655" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constantNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1776">1776</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_8F30CD44A9A30C01087D07A804DA3BBB4E17C4E8" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constructNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2522">2522</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CBBCC2197ABFA6E3A61D3F19153DB44B2F2C9476" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constructionStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1387">1387</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6F890C060C7D2BDEBE51161C53763E92A9DAFAA7" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constructorConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#990">990</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0984E563AD9AD28745F192699973DF82B8B49060" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;constructorNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#658">658</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_09DD23F430FEC29B09FEE8386124ECF480C8E51C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;continueStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1365">1365</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F60A5460A505F3342B3F680A8D1AE6CB081A8036" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;conversionFunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#760">760</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_263673303F955EAE559EE0D509056658888BEAD2" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;convertibleConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1179">1179</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_BFC3D67B1D34B8751B2332C0567B8CB621B5C8AD" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;defaultStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1539">1539</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_1B00A9CDB64F2311D0CFC2CCE32993F67B13F9EE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;delegateNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#832">832</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E02BDFCAD667D5D86FC32D7559D14933D43DDE1B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;deleteStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1408">1408</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6D81712D4CE5A1314C3F159F2B874EB024ED9F76" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;derefNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2339">2339</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4D6DEC5D640A4DFC7E0F53440FC6B864F0CF364F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;derivedConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1168">1168</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_C700901233E674A1E423829BA0BC8C211C29B069" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;destroyStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1421">1421</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_40428D20888C7BD38770CB5D0F81865F1884607D" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;destructorConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1009">1009</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_85DDD44EEDDC8FD04F37BED5ADC75C9C9600EE92" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;destructorNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#698">698</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_33D9BF658B23CA7CA8AEFDE329F7BF1E7FA87BB4" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;disjunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2004">2004</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6B07B8E1DA1ABEE87BA67DB6A72FE1D2ABD61359" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;disjunctiveConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#887">887</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0F79E27DD5D817004ACBFC9A9396A2B53C6970E5" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;divNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2244">2244</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_8EE458F7B84ABEF97D9D47AE5E8E4FF999C2617E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;doStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1317">1317</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3FE919B3C07248A87AC7F370B2C17255C64BA78A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;dotNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1944">1944</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CDF8DD63FFA32942B89049CB94363A931AAF9DB8" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;doubleLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#274">274</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D8D237AC38CB2F342546D66FA34A9620563C974F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;doubleNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#124">124</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_43285759DEC22EAFFBAFDDF0606AC9B568944C0E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;emptyStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1462">1462</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_1A5D88C75247BC919E874D2C463BF27052946D08" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;enumConstantNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1817">1817</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_5F796F6F3C3277272AFE08B15A24249A27922811" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;enumTypeNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1793">1793</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_16A656E6A57C2BA1B28E377FE0C6B0DC52CDDE6A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;equalNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2079">2079</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E7EF1FC63EAA87E0EE99540B9569ADE3DFE93B98" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;equivalenceNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1974">1974</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_94A8AE6E38E71265869899C15678565712650DFF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;explicitlyConvertibleConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1190">1190</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4D81FC1E313E9B3E25124D702E27AD3024EF1511" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;expressionStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1449">1449</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E69E017423CCA8294C8D4FCAE323910385971700" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;floatLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#264">264</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_04BEBE2B5F925FA8A6588BAE4889297358F9A62D" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;floatNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#114">114</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_9822A853F3BCA21D8AD24274E7F1F89C3BAE1D76" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;forStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1332">1332</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B010352BE02D925908104AACBEC5D74CFC0DCD12" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;functionConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1043">1043</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_097F7BC418E2BF2B4FAEF6726411C6F8A9D3853B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;functionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#490">490</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_0550BDA698B21FA6A76A6809C96D530B3D7F2937" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;globalVariableNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2595">2595</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_EE28F9914D24E68CD8C7F195A02A9F8677349229" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;gotoCaseStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1556">1556</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_38AC38E9234C05220E4A340A9D17634AD4434189" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;gotoDefaultStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1569">1569</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_5A727BAF8E9073FEE16DFB2838E9CC98FA98FF6B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;gotoStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1376">1376</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6565EDBFA04E1B64A6C962C8FBF95AD2007FBA66" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;greaterNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2124">2124</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B3249886C8C981D3D3D230532D8FBE85F8AC2A0E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;greaterOrEqualNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2154">2154</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_26378C278AB0C99E7396966EA78168978AE782EF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;identifierNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#461">461</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3C3F93B315EC2DCCEA1EAC91A95632636C48A629" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ifStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1282">1282</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4ACF90CB9E71ED523EB614CC9219F1A6BA9D4BF9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;implicationNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1989">1989</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AC735560CCF7AE1260875E7CA3233504E7EDF65F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;indexingNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2408">2408</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_57E9FF2671A8D0607FF501859CB3B9788D4868AE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;intLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#224">224</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D435ABA02101A16BF24F7EAEBB72AC6B0B1EFF1B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;intNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#74">74</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_85AA3069B92DFA1963C6E9245E44DC3C94EB6228" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;interfaceNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#808">808</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_95BCC0A7639E9D2F3BB2584FCD5A724AE0192D92" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;invokeNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2423">2423</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F85167413D0D51621E9414F75CDE23BC2240A6B9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;isConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#943">943</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7FE2F7DA5F47C0B81A80F08E8D90FB28F7A9BD76" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;isNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2378">2378</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B81E195B742003A1CED858E9E0001C6F71E1D3AF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;lvalueRefNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1887">1887</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4B61C51F53FCCA8EA475BA4C5C196447AC0AFFAA" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;labelNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1223">1223</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F2E629A59A7594C7D8C0A225F5A02B5F029F5100" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;labeledStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1234">1234</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7A9A553801F3FE32D590D7D0B8EE25DB2B696C68" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;lessNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2109">2109</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_9616EFA9355CE98E94A74C324C443D25D3E0BD4C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;lessOrEqualNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2139">2139</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_12B1D5AF46C3F424FB55FA42239FB184DEF01DE9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;longLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#244">244</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_EC04FDB7354A5CC7CCD61AA923B317AB73CC306B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;longNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#94">94</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_93EF217EB752F0B1B2AE88957ECBF495BF75242C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;memberFunctionConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1022">1022</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_8CB4771F11594B09498DAE89BE80AB212C6B8BF1" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;memberFunctionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#726">726</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_FBC262DF6ECA6F33082D938E798199CD9CBAD48E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;memberInitializerNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#605">605</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_147057FF102C89BD962401E35E1EEEBFF9232BFC" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;memberVariableNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#788">788</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_24E28C3427858AFB84ED7CAFC6E7B3F9E7CDB9DA" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;mulNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2229">2229</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_A8704281EFF8E6490180DF3A89E9A2A96069E0CF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;multiParamConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#958">958</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_55A46E5250D636A79F77DDAF36070A1487A65B3A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;namespaceImportNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#448">448</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_04709F6FCB992CAD04C0FE000E0269553E7A4E25" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;namespaceNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#411">411</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D0BFF7F43B386D225BA459C85C35CA0A82A6480C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;newNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2541">2541</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F73AF5BC811279D8749C62917ED98F2782F52DDB" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;nonreferenceTypeConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1212">1212</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F5BF7BAAF88C9C49F85DCF4083823F3D9A0B298D" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;notEqualNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2094">2094</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_98B030080B3EB3828C540E7B019DF253FA03AEC8" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;notNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2274">2274</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_DDA57831B0A11F908CC2549F173EAB1943000336" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;nullLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#344">344</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4FDBCE50B3C4F89F3D8A1E73693AF42E88F347D8" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;parameterNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1838">1838</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_DA0487383A7B09CF83072A1130BD4FB29205E542" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;parenthesizeCondCompExprNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1724">1724</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_41A0978F8DDA24DA8D5A3E0998D4389FC32B29ED" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;parenthesizedConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#874">874</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4714DB5857A10597EA1537D3E7C938EC4EC77798" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;parenthesizedExpressionNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2582">2582</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_93E91F74AE518D1E14B607839B3FD987C4AB7522" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;pointerNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1913">1913</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F4BA0C6181C4BF652817B2CA015F5CA127C78B90" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;postfixDecrementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2455">2455</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D90B2963671FB99AE87BE5A211CEA16CBC990857" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;postfixIncrementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2442">2442</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_4580F266B46B503BB38547F93DAED795DBFBABF8" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;predicateConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#930">930</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_48CAAFD7A30088A4F8E43D1B3BDED24602B0B605" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;prefixDecrementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2326">2326</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D3DAB79145A96A991B9B579B74071D4054C3175E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;prefixIncrementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2313">2313</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_C8A07E6875403F40E2200FF55F8D2E14E90C70C6" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;rvalueRefNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1900">1900</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_34B43AEFA22AE74AB89352ADFAB354F18A9891AB" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;rangeForStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1473">1473</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_05002C6A960FD905D72A6B0CCC39ED4A257CF4A0" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;remNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2259">2259</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_28267F57D27A621F2F2E1D2A0D688E90411E0739" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;returnStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1266">1266</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_2A00F3C4067C98A803A0A22767CA96FA4A095B8B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;sbyteLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#184">184</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3C5AA143FDFF4034F4F0A0041B58951FCAD0E860" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;sbyteNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#34">34</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CB67D80E8D1A1AA63A56EAE0AC498D4951F628A5" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;sameConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1157">1157</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CCA89013C5D89D84766ABC9C47A7C77B60CEB02A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;shiftLeftNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2169">2169</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F088850E82E0B7A6EE3BB9EF7CC892B0EB5161EF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;shiftRightNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2184">2184</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_1303704289596E5E29898CF2F1367A4E56332FCE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;shortLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#204">204</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_CE8B3BE609FB95063773DD28F4F329F6D9297728" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;shortNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#54">54</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_312BB999F5EF6CEE99DCA95E9692ED9D18419F76" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;sizeOfNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2468">2468</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7A1E7433AAF74FAD4F841645737D681EBC481D84" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;staticConstructorNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#624">624</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_9EFBADF5CEC078F139F9B38001C088ADF06BE1B3" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;stringLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#314">314</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D82AC2EE0547AA7B6F0D343FE14B32C894B09C75" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;structuredLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#371">371</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D3A593A930F9C7AE5B25E16CD5E9DC2ADF43F15F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;subNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2214">2214</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AEF6EE2F1834FE5E8E9E8BE47928EE6924A402B0" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;switchStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1492">1492</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B836EEFF2A20E276DF76EAE703B0958D01E70A0A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;templateIdNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#471">471</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_8EA109484C5BD2134F55859C4DD0A80520874B69" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;templateParameterNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1856">1856</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_6358B1D54A01100354272E8CD29A2C95471E26C3" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;thisInitializerNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#571">571</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_29F9008A9BA1CD9378E26A646C06D23D70FFD54C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;thisNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2560">2560</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_07A3359733682A976170D8DB0498B15D87C6BB2F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;throwStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1580">1580</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_07E55EABCEAFEE66ADDCA4EA30F7E28D5E50622C" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;tryStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1596">1596</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D50C3DE89512DC3560512AC8119C1F60342151BB" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;typeIdNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2494">2494</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_34807A83457E7132938CE40F748136763CDA19E9" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;typeNameConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#977">977</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_F76F8B436ACC99CD2A798F476203F3F03FEF5B7F" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;typeNameNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2481">2481</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B579B18DEE9918B67A907F5250FEE0D3403184F3" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;typedefNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1761">1761</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_46960F11908FF48F1A176769C24F0A83B93BA01E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ucharLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#304">304</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_1F3B63E46D7C9E10E5199DAFA49C6C1217D2C031" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ucharNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#154">154</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_77771ADC781F0E27F858464E442480E6EBCBB207" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;uintLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#234">234</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B327A8356A3C7EE8BBC5E68105AD435F4C63B960" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;uintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#84">84</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_89041B0598A8E78607F3813799B1FA34B12EDD1A" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ulongLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#254">254</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D038A0D8C7D4856A45784103EB37172CEE5E597B" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ulongNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#104">104</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7E3EAC7B0D6B09D3323EB8B4E3F85DA796501847" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ushortLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#214">214</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_3F6B738AC189D12353F54985B9937B20FD0DE8FF" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ushortNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#64">64</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E094758DD48D72D3A51E27347F3D166961C8D798" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;ustringLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#334">334</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_7C74942CC7EB3E7FEA5F81441DECD16DBF936E92" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;unaryMinusNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2300">2300</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B9D0913C66B6D004AA9D9CE84512DB65DAD47768" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;unaryPlusNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#2287">2287</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_C06BCC4BBA638608626CB17B66B1AE220A44E42E" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;uuidLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#388">388</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_A3941C92E8A0B433E8D1C11DD6DE0C88449F0093" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;voidNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#164">164</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_B53D188B17C19A3FD9A5ACE44096542F096067AE" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;wcharLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#294">294</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_D94D51F4FFFB8261A5FCA06808524169C9251F65" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;wcharNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#144">144</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_E3338D314C89930CC25335C3037986B352E8ECBD" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;wstringLiteralNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#324">324</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_53BFA5287BDE2418A86838CCA7275A49D45B8DE3" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;whereConstraintNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#917">917</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Visit_SyntaxTreeBuilder_AD26ADBFDE4267E0FD82C8F3FBE0D811E361A366" xml:space="preserve">Visit&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Visit(BASE_TYPE&amp;&nbsp;whileStatementNode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html#1302">1302</a>&nbsp;of&nbsp;<a href="../../ASTViewer/file/SyntaxTreeBuilder.cm.html">ASTViewer/SyntaxTreeBuilder.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

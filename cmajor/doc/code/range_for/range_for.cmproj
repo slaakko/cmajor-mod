@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <PropertyGroup Label="Globals">
+  <CustomProjectExtensionsPath>$(LocalAppData)\CustomProjectSystems\Cmajor\</CustomProjectExtensionsPath>
+  <ProjectGuid>8cdf3fc5-e40e-4bcd-a1ee-47e0f101e2e7</ProjectGuid>
+ </PropertyGroup>
+ <PropertyGroup>
+  <TargetType>program</TargetType>
+ </PropertyGroup>
+ <ItemGroup>
+  <CmCompile Include="range_for.cm"/>
+ </ItemGroup>
+ <ItemGroup/>
+ <ItemGroup/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.props"/>
+ <Import Project="$(CustomProjectExtensionsPath)Cmajor.targets"/>
+</Project>

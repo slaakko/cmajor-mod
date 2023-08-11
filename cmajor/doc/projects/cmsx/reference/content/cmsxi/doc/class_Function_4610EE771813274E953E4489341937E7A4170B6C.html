@@ -1,0 +1,308 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Function Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Function Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#constructor_Function_C8E8843B1E10ED472888F60B5EE6C6AFF15F305A">Function</a>(<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;&nbsp;context_, <a href="../../cmsxi/doc/class_FunctionType_1BC9B539BE3FDBFBC0363FB7160BB9736CBA69C7.html">FunctionType</a>*&nbsp;type_, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name_, <span class="kw">bool</span>&nbsp;once_, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;md_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_AddBasicBlock_Function_02B02BEDACF793B67E0D9DF937D41A8E280DD175">AddBasicBlock</a>(<span class="kw">uint</span>&nbsp;id)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_CombineBasicBlocks_Function_2693C89BFABE0E0FE54A407D4806485F6B718F8C">CombineBasicBlocks</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_ComputeLivenessAndNextUse_Function_5DE6C67871026CA43067018C4E74D2716FF2490C">ComputeLivenessAndNextUse</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_CreateEpilog_Function_7C1D08429BF92D0F7378CC89250F49B4C602C50A">CreateEpilog</a>(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_CreateProlog_Function_BE8D80787659F59B42DAB03F7D22C1249D1EB54D">CreateProlog</a>(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GenerateCode_Function_6E7F1A3531584CF3A5CC2447C27F0410F643B603">GenerateCode</a>(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode, <a href="../../../../../../system/content/System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GenerateDeclaration_Function_D625B596FA4278ACBD908D85CD43C780A7630F0F">GenerateDeclaration</a>(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GetBasicBlock_Function_A554311C6329EF78A78A6CECEC34518C5ED59380">GetBasicBlock</a>(<span class="kw">uint</span>&nbsp;target)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GetNextArgIndex_Function_30C6892778C823300188ECE897E190FD5EA5FA06">GetNextArgIndex</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GetNextInstructionIndex_Function_321A3E11EB339F7FB2F6B04BA47B202459C3B987">GetNextInstructionIndex</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_GetNextValueNumber_Function_D10DF855CAF9AB6E0CBE3175F69F96F6237205E2">GetNextValueNumber</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_MakeIdValue_Function_F6B821DD42DC9C04DC1592DC8B328F7FCAA8E922">MakeIdValue</a>(<span class="kw">int</span>&nbsp;lineNumber, <span class="kw">uint</span>&nbsp;id, <a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_MapInstruction_Function_F548F5910741AC49D243EA8FBB93F563B0FCFAD1">MapInstruction</a>(<span class="kw">uint</span>&nbsp;id, <a href="../../cmsxi/doc/class_Instruction_5E05DB58E4B1651C9C3A965474ED1B4E9BB774F7.html">Instruction</a>*&nbsp;instruction)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_MapInstructions_Function_F1EE36DA9A48B9C7E9E7C255F7DC5B65E2480B94">MapInstructions</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_Print_Function_C84F3F60C9C766B18D81DD7702C5AA6DDEC80868">Print</a>(<a href="../../../../../../system/content/System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter, <span class="kw">int</span>&nbsp;stage)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_ResetNextArgIndex_Function_C3BA1C48C172419C26B2FD6A76015A6C8AC0F7BE">ResetNextArgIndex</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*</td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_ResolveOperand_Function_43DBEE4650E5DA38D8398D3296C1084E08C70AF2">ResolveOperand</a>(<span class="kw">int</span>&nbsp;line, <a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;operand)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxi/doc/class_Function_4610EE771813274E953E4489341937E7A4170B6C.html#member_function_Validate_Function_629E8584831B8C9A4EA2C1332C23F9A8C23DC18B">Validate</a>()</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_AddressDescriptors_792E45417D099CD560946B9B447F76E4172AAF08.html">AddressDescriptors</a></td>
+    <td xml:space="preserve">addressDescriptors</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a>>></td>
+    <td xml:space="preserve">basicBlocks</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;</td>
+    <td xml:space="preserve">context</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a></td>
+    <td xml:space="preserve">epilog</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_FrameLocations_4292E1F122A69D56490B2221D56FC67C793E7823.html">FrameLocations</a></td>
+    <td xml:space="preserve">frameLocations</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">ulong</span></td>
+    <td xml:space="preserve">frameSize</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../cmsxi/doc/class_LiteralOperand_7FE2403AC52465CB5E9F4B0F9CD0986E2B93E627.html">LiteralOperand</a>*</td>
+    <td xml:space="preserve">frameSizeOperand</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">uint</span>, <a href="../../cmsxi/doc/class_IdValue_5205C8BD1F67B50DCD771BFC2CD69F04EE8A24D7.html">IdValue</a>*, <a href="../../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">uint</span>>, <a href="../../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">uint</span>>></td>
+    <td xml:space="preserve">idValueMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">uint</span>, <a href="../../cmsxi/doc/class_Instruction_5E05DB58E4B1651C9C3A965474ED1B4E9BB774F7.html">Instruction</a>*, <a href="../../../../../../system/content/System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">uint</span>>, <a href="../../../../../../system/content/System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">uint</span>>></td>
+    <td xml:space="preserve">instructionMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*</td>
+    <td xml:space="preserve">md</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve">name</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">nextArgIndex</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">nextInstructionIndex</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">nextValueNumber</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve">once</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a></td>
+    <td xml:space="preserve">prolog</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../cmsxi/doc/class_ParamInstruction_805B3BFA4FFB1600D5C8F63F77BC29989D74FC4F.html">ParamInstruction</a>*></td>
+    <td xml:space="preserve">regParams</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_FunctionType_1BC9B539BE3FDBFBC0363FB7160BB9736CBA69C7.html">FunctionType</a>*</td>
+    <td xml:space="preserve">type</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../../../../../system/content/System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>>></td>
+    <td xml:space="preserve">values</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_Function_C8E8843B1E10ED472888F60B5EE6C6AFF15F305A" xml:space="preserve">Function&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;Function(<a href="../../cmsxi/doc/class_Context_626104DB77A27C849A57E15345A750ACBB9AA96A.html">Context</a>&amp;&nbsp;context_, <a href="../../cmsxi/doc/class_FunctionType_1BC9B539BE3FDBFBC0363FB7160BB9736CBA69C7.html">FunctionType</a>*&nbsp;type_, <span class="kw">const</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name_, <span class="kw">bool</span>&nbsp;once_, <a href="../../cmsxi/doc/class_MDStructRef_26072651C07C7EB988246DBF2A99C4FA35C94CD7.html">MDStructRef</a>*&nbsp;md_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddBasicBlock_Function_02B02BEDACF793B67E0D9DF937D41A8E280DD175" xml:space="preserve">AddBasicBlock&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a>*&nbsp;AddBasicBlock(<span class="kw">uint</span>&nbsp;id)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#17">17</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CombineBasicBlocks_Function_2693C89BFABE0E0FE54A407D4806485F6B718F8C" xml:space="preserve">CombineBasicBlocks&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;CombineBasicBlocks()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#264">264</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ComputeLivenessAndNextUse_Function_5DE6C67871026CA43067018C4E74D2716FF2490C" xml:space="preserve">ComputeLivenessAndNextUse&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;ComputeLivenessAndNextUse()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#162">162</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CreateEpilog_Function_7C1D08429BF92D0F7378CC89250F49B4C602C50A" xml:space="preserve">CreateEpilog&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;CreateEpilog(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#251">251</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CreateProlog_Function_BE8D80787659F59B42DAB03F7D22C1249D1EB54D" xml:space="preserve">CreateProlog&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;CreateProlog(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#235">235</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GenerateCode_Function_6E7F1A3531584CF3A5CC2447C27F0410F643B603" xml:space="preserve">GenerateCode&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;GenerateCode(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode, <a href="../../../../../../system/content/System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#182">182</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GenerateDeclaration_Function_D625B596FA4278ACBD908D85CD43C780A7630F0F" xml:space="preserve">GenerateDeclaration&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;GenerateDeclaration(<a href="../../cmsxi/doc/class_MachineCode_DB0C1263C7B40380BA26404218C7D5773F3B36BA.html">MachineCode</a>&amp;&nbsp;machineCode)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#169">169</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetBasicBlock_Function_A554311C6329EF78A78A6CECEC34518C5ED59380" xml:space="preserve">GetBasicBlock&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_BasicBlock_DF255E7A633F93AC88501B4027F2A2969533A06F.html">BasicBlock</a>*&nbsp;GetBasicBlock(<span class="kw">uint</span>&nbsp;target)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#107">107</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetNextArgIndex_Function_30C6892778C823300188ECE897E190FD5EA5FA06" xml:space="preserve">GetNextArgIndex&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;GetNextArgIndex()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#154">154</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetNextInstructionIndex_Function_321A3E11EB339F7FB2F6B04BA47B202459C3B987" xml:space="preserve">GetNextInstructionIndex&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;GetNextInstructionIndex()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#146">146</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetNextValueNumber_Function_D10DF855CAF9AB6E0CBE3175F69F96F6237205E2" xml:space="preserve">GetNextValueNumber&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;GetNextValueNumber()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#150">150</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MakeIdValue_Function_F6B821DD42DC9C04DC1592DC8B328F7FCAA8E922" xml:space="preserve">MakeIdValue&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;MakeIdValue(<span class="kw">int</span>&nbsp;lineNumber, <span class="kw">uint</span>&nbsp;id, <a href="../../cmsxi/doc/class_Type_393488CEAF1419035267DD493BD6F8EC930655F3.html">Type</a>*&nbsp;type)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MapInstruction_Function_F548F5910741AC49D243EA8FBB93F563B0FCFAD1" xml:space="preserve">MapInstruction&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;MapInstruction(<span class="kw">uint</span>&nbsp;id, <a href="../../cmsxi/doc/class_Instruction_5E05DB58E4B1651C9C3A965474ED1B4E9BB774F7.html">Instruction</a>*&nbsp;instruction)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#54">54</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_MapInstructions_Function_F1EE36DA9A48B9C7E9E7C255F7DC5B65E2480B94" xml:space="preserve">MapInstructions&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;MapInstructions()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#46">46</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Print_Function_C84F3F60C9C766B18D81DD7702C5AA6DDEC80868" xml:space="preserve">Print&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Print(<a href="../../../../../../system/content/System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter, <span class="kw">int</span>&nbsp;stage)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#118">118</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ResetNextArgIndex_Function_C3BA1C48C172419C26B2FD6A76015A6C8AC0F7BE" xml:space="preserve">ResetNextArgIndex&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;ResetNextArgIndex()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#158">158</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ResolveOperand_Function_43DBEE4650E5DA38D8398D3296C1084E08C70AF2" xml:space="preserve">ResolveOperand&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;ResolveOperand(<span class="kw">int</span>&nbsp;line, <a href="../../cmsxi/doc/class_Value_D184FDC4DCC37461ED1781E875D6610EE22D5D73.html">Value</a>*&nbsp;operand)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#73">73</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Validate_Function_629E8584831B8C9A4EA2C1332C23F9A8C23DC18B" xml:space="preserve">Validate&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Validate()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxi/file/Function.cm.html#66">66</a>&nbsp;of&nbsp;<a href="../../cmsxi/file/Function.cm.html">cmsxi/Function.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

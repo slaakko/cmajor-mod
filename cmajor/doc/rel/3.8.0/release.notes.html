@@ -1,0 +1,20 @@
+<h1>Cmajor 3.8.0 for Windows x64 and Linux</h1>
+
+<h2>Release notes</h2>
+
+<ul>
+<li><p>Bug fix (Cmajor Code editor)
+Adding lines to the middle of a file that was longer than the screen did not update scroll bars and then you could not scroll to the end of the file.</p></li>
+<li><p>Bug fix (Cmajor Code editor):
+Double clicking last word of text left last character out of selection.</p></li>
+<li><p>Bug fix (Cmajor Code editor):
+Selection with mouse.</p></li>
+<li><p>Performance bug fix (Cmajor Code):
+Tooltip window handling for the toolbar was done on OnMouseEnter and OnMouseLeave event handlers and done synchronously. It was causing a delay of about 70 ms for each toolbutton on my machine.
+Tooltip handling is now moved to OnMouseHover event handler.</p></li>
+<li><p>(Cmajor Code editor) Ctrl-A now selects entire text.</p></li>
+<li><p>(Cmajor Code editor) Go To Definition: right clicking an identifier in the editor and selecting 'Go To Definition' from the context menu 
+locates the editor to the definition location of that symbol. Not perfect. 
+This feature requires that you have successfully compiled the project containing the definition and the project in which the identifier resides.</p></li>
+<li><p><a href="https://slaakko.github.io/cmajor/tools/cmtrace2txt/cmtrace2txt.html">Tracing</a>.</p></li>
+</ul>

@@ -1,0 +1,18 @@
+<modules>
+ <module name="ASTViewer"/>
+ <module name="Args"/>
+ <module name="BigNumCalc"/>
+ <module name="Calculator"/>
+ <module name="DirectoryWatcher"/>
+ <module name="FileExplorer"/>
+ <module name="Hello"/>
+ <module name="HelloGUI"/>
+ <module name="HexDump"/>
+ <module name="dialog"/>
+ <module name="keys"/>
+ <module name="ms"/>
+ <module name="rfc"/>
+ <module name="sgrep"/>
+ <module name="sted"/>
+ <module name="xpq"/>
+</modules>

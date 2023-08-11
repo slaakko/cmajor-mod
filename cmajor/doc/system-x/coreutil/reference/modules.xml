@@ -1,0 +1,22 @@
+<modules>
+ <module name="paths"/>
+ <module name="cat"/>
+ <module name="chmod"/>
+ <module name="cp"/>
+ <module name="echo"/>
+ <module name="head"/>
+ <module name="hexdump"/>
+ <module name="kill"/>
+ <module name="less"/>
+ <module name="ls"/>
+ <module name="login"/>
+ <module name="mkdir"/>
+ <module name="mv"/>
+ <module name="passwd"/>
+ <module name="rm"/>
+ <module name="rmdir"/>
+ <module name="sudo"/>
+ <module name="tail"/>
+ <module name="time"/>
+ <module name="whoami"/>
+</modules>

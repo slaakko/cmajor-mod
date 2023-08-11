@@ -27,16 +27,18 @@ public:
     void Visit(cmajor::ast::ConceptIdNode& conceptIdNode) override;
     void Visit(cmajor::ast::IdentifierNode& identifierNode) override;
     void Visit(cmajor::ast::DotNode& dotNode) override;
+    cmajor::ast::IdentifierNode* IdNode() const { return idNode; }
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::ContainerScope* containerScope;
     cmajor::symbols::ConceptGroupSymbol* conceptGroup;
     cmajor::symbols::ConceptSymbol* conceptSymbol;
     cmajor::symbols::NamespaceSymbol* ns;
+    cmajor::ast::IdentifierNode* idNode;
 };
 
 ConceptIdResolver::ConceptIdResolver(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_) :
-    boundCompileUnit(boundCompileUnit_), containerScope(containerScope_), conceptGroup(nullptr), conceptSymbol(nullptr), ns(nullptr)
+    boundCompileUnit(boundCompileUnit_), containerScope(containerScope_), conceptGroup(nullptr), conceptSymbol(nullptr), ns(nullptr), idNode(nullptr)
 {
 }
 
@@ -47,7 +49,10 @@ void ConceptIdResolver::Visit(cmajor::ast::ConceptIdNode& conceptIdNode)
     {
         int arity = conceptIdNode.Arity();
         conceptSymbol = conceptGroup->GetConcept(arity);
-        MapIdentifierToSymbolDefinition(conceptIdNode.Id(), conceptSymbol);
+        if (conceptIdNode.Id() && conceptSymbol)
+        {
+            MapIdentifierToSymbolDefinition(conceptIdNode.Id(), conceptSymbol);
+        }
     }
     else
     {
@@ -57,6 +62,7 @@ void ConceptIdResolver::Visit(cmajor::ast::ConceptIdNode& conceptIdNode)
 
 void ConceptIdResolver::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
+    idNode = &identifierNode;
     const std::u32string& name = identifierNode.Str();
     cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
     if (!symbol)
@@ -214,6 +220,7 @@ private:
     std::vector<std::unique_ptr<NamespaceTypeSymbol>> namespaceTypeSymbols;
     std::vector<std::unique_ptr<cmajor::symbols::BoundTemplateParameterSymbol>> boundTemplateParameters;
     std::unique_ptr<cmajor::symbols::Exception>& exception;
+    cmajor::ast::IdentifierNode* idNode;
     void Reset();
     cmajor::symbols::TypeSymbol* GetType();
 };
@@ -222,8 +229,8 @@ ConstraintChecker::ConstraintChecker(cmajor::symbols::TypeSymbol* firstTypeArgum
     cmajor::symbols::ContainerScope* containerScope_,
     BoundFunction* currentFunction_, const soul::ast::SourcePos& span_, const util::uuid& moduleId_, std::unique_ptr<cmajor::symbols::Exception>& exception_) :
     firstTypeArgument(firstTypeArgument_), secondTypeArgument(secondTypeArgument_), boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()),
-    containerScope(containerScope_), currentFunction(currentFunction_), sourcePos(span_), moduleId(moduleId_), type(nullptr), derivationRec(), conceptGroup(nullptr), result(false), boundConstraint(), fileScopesAdded(0),
-    exception(exception_)
+    containerScope(containerScope_), currentFunction(currentFunction_), sourcePos(span_), moduleId(moduleId_), type(nullptr), derivationRec(), conceptGroup(nullptr), 
+    result(false), boundConstraint(), fileScopesAdded(0), exception(exception_), idNode(nullptr)
 {
 }
 
@@ -383,6 +390,7 @@ void ConstraintChecker::Visit(cmajor::ast::ArrayNode& arrayNode)
 
 void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
 {
+    idNode = &identifierNode;
     Reset();
     const std::u32string& name = identifierNode.Str();
     cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
@@ -402,6 +410,10 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
         if (symbol->IsTypeSymbol())
         {
             type = static_cast<cmajor::symbols::TypeSymbol*>(symbol);
+            if (type)
+            {
+                MapIdentifierToSymbolDefinition(&identifierNode, type);
+            }
         }
         else
         {
@@ -411,18 +423,30 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
             {
                 cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
                 type = aliasTypeSymbol->GetType();
+                if (type)
+                {
+                    MapIdentifierToSymbolDefinition(&identifierNode, type);
+                }
                 break;
             }
             case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
             {
                 cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameterSymbol = static_cast<cmajor::symbols::BoundTemplateParameterSymbol*>(symbol);
                 type = boundTemplateParameterSymbol->GetType();
+                if (type)
+                {
+                    MapIdentifierToSymbolDefinition(&identifierNode, type);
+                }
                 break;
             }
             case cmajor::symbols::SymbolType::classGroupTypeSymbol:
             {
                 cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(symbol);
                 type = classGroup->GetClass(0);
+                if (type)
+                {
+                    MapIdentifierToSymbolDefinition(&identifierNode, type);
+                }
                 break;
             }
             case cmajor::symbols::SymbolType::conceptGroupSymbol:
@@ -433,6 +457,7 @@ void ConstraintChecker::Visit(cmajor::ast::IdentifierNode& identifierNode)
             case cmajor::symbols::SymbolType::namespaceSymbol:
             {
                 cmajor::symbols::NamespaceSymbol* ns = static_cast<cmajor::symbols::NamespaceSymbol*>(symbol);
+                MapIdentifierToSymbolDefinition(&identifierNode, ns);
                 NamespaceTypeSymbol* namespaceTypeSymbol = new NamespaceTypeSymbol(ns);
                 boundCompileUnit.GetSymbolTable().SetTypeIdFor(namespaceTypeSymbol);
                 namespaceTypeSymbols.push_back(std::unique_ptr<NamespaceTypeSymbol>(namespaceTypeSymbol));
@@ -497,12 +522,20 @@ void ConstraintChecker::Visit(cmajor::ast::DotNode& dotNode)
         {
             cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
             type = aliasTypeSymbol->GetType();
+            if (idNode && type)
+            {
+                MapIdentifierToSymbolDefinition(idNode, type);
+            }
             break;
         }
         case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
         {
             cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameterSymbol = static_cast<cmajor::symbols::BoundTemplateParameterSymbol*>(symbol);
             type = boundTemplateParameterSymbol->GetType();
+            if (idNode && type)
+            {
+                MapIdentifierToSymbolDefinition(idNode, type);
+            }
             break;
         }
         case cmajor::symbols::SymbolType::conceptGroupSymbol:
@@ -514,11 +547,19 @@ void ConstraintChecker::Visit(cmajor::ast::DotNode& dotNode)
         {
             cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(symbol);
             type = classGroup->GetClass(0);
+            if (idNode && type)
+            {
+                MapIdentifierToSymbolDefinition(idNode, type);
+            }
             break;
         }
         case cmajor::symbols::SymbolType::namespaceSymbol:
         {
             cmajor::symbols::NamespaceSymbol* ns = static_cast<cmajor::symbols::NamespaceSymbol*>(symbol);
+            if (idNode)
+            {
+                MapIdentifierToSymbolDefinition(idNode, ns);
+            }
             NamespaceTypeSymbol* namespaceTypeSymbol = new NamespaceTypeSymbol(ns);
             boundCompileUnit.GetSymbolTable().SetTypeIdFor(namespaceTypeSymbol);
             namespaceTypeSymbols.push_back(std::unique_ptr<NamespaceTypeSymbol>(namespaceTypeSymbol));
@@ -704,6 +745,10 @@ void ConstraintChecker::Visit(cmajor::ast::IsConstraintNode& isConstraintNode)
     else if (conceptGroup)
     {
         cmajor::symbols::ConceptSymbol* conceptSymbol = conceptGroup->GetConcept(1);
+        if (idNode && conceptSymbol)
+        {
+            MapIdentifierToSymbolDefinition(idNode, conceptSymbol);
+        }
         std::vector<cmajor::symbols::TypeSymbol*> typeArguments;
         typeArguments.push_back(leftType);
         BoundConceptKey key(conceptSymbol, typeArguments);
@@ -743,10 +788,15 @@ void ConstraintChecker::Visit(cmajor::ast::MultiParamConstraintNode& multiParamC
 {
     Reset();
     multiParamConstraintNode.ConceptId()->Accept(*this);
+    cmajor::ast::IdentifierNode* id1 = idNode;
     if (conceptGroup)
     {
         int n = multiParamConstraintNode.TypeExprs().Count();
         cmajor::symbols::ConceptSymbol* conceptSymbol = conceptGroup->GetConcept(n);
+        if (id1 && conceptSymbol)
+        {
+            MapIdentifierToSymbolDefinition(id1, conceptSymbol);
+        }
         std::vector<cmajor::symbols::TypeSymbol*> typeArguments;
         for (int i = 0; i < n; ++i)
         {
@@ -1053,6 +1103,10 @@ void ConstraintChecker::Visit(cmajor::ast::ConceptIdNode& conceptIdNode)
     {
         int n = conceptIdNode.Arity();
         cmajor::symbols::ConceptSymbol* conceptSymbol = conceptGroup->GetConcept(n);
+        if (idNode && conceptSymbol)
+        {
+            MapIdentifierToSymbolDefinition(idNode, conceptSymbol);
+        }
         std::vector<cmajor::symbols::TypeSymbol*> typeArguments;
         for (int i = 0; i < n; ++i)
         {
@@ -1116,6 +1170,10 @@ void ConstraintChecker::Visit(cmajor::ast::ConceptNode& conceptNode)
     }
     int arity = conceptNode.Arity();
     cmajor::symbols::ConceptSymbol* conceptSymbol = conceptGroup->GetConcept(arity);
+    if (idNode && conceptSymbol)
+    {
+        MapIdentifierToSymbolDefinition(idNode, conceptSymbol);
+    }
     if (conceptNode.Refinement())
     {
         Reset();

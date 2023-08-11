@@ -1,0 +1,157 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>DataSection Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>DataSection Class</h1>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1019">1019</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#constructor_DataSection_60F97A3EB3642E85C649D84E57F8B449491234BB">DataSection</a>(<a href="../../cmsxo/doc/class_BinaryFile_A6208ACB7AD8280018BCB4C0D3287F7C8B9B49E2.html">BinaryFile</a>*&nbsp;file_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_AddSymbol_DataSection_B423A075D535D3CEB7C4CC24996A0E3EEBDE07FE">AddSymbol</a>(<a href="../../cmsxo/doc/class_Symbol_E5E405F936997352D7734CC6844FB4D1CEECEC23.html">Symbol</a>*&nbsp;symbol)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_Dump_DataSection_6B2BE1C5C6FB7F157D85ACFB51FFDA9F806EA331">Dump</a>(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_DumpExceptionTable_DataSection_C20741F2274F8F4669F5CD08F5D3C9CAFB94C4EF">DumpExceptionTable</a>(<span class="kw">ulong</span>&nbsp;exceptionTableAddress, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_DumpFunctionTable_DataSection_041B390477ECAEB698D6956B06A2B795FE1C3B78">DumpFunctionTable</a>(<a href="../../cmsxo/doc/class_Symbol_E5E405F936997352D7734CC6844FB4D1CEECEC23.html">Symbol</a>*&nbsp;functionTableSymbol, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_DumpFunctionTableEntry_DataSection_73ABFCBEA589E1E01A59E511C60EE71989BC5D60">DumpFunctionTableEntry</a>(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_DumpLineNumberTable_DataSection_DB94AF4ED00BA2BF3799D0453570922E5A62F7EA">DumpLineNumberTable</a>(<span class="kw">ulong</span>&nbsp;lineNumberTableStartAddress, <span class="kw">ulong</span>&nbsp;lineNumberTableEndAddress, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_Finalize_DataSection_04C4D9C8B3DD7CEC7FE73ADB82B3ED707B5F93B7">Finalize</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_GetString_DataSection_FB61B0798DDCA27394AB5370E16B8A84072470E7">GetString</a>(<span class="kw">ulong</span>&nbsp;address)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_ReadExtended_DataSection_BB5D332896F6BBE4E26FFA365AC385E1477DD05E">ReadExtended</a>(<a href="../../../../../../system/content/System.Base/doc/class_BinaryReader_7D0A41A9C666814155001B1AF5B066E926C8F3AC.html">BinaryReader</a>&amp;&nbsp;reader)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../cmsxo/doc/class_DataSection_95C05BBA5F1FF98DEEC153D1DE048F979D8D52F3.html#member_function_WriteExtended_DataSection_0CEBD449A4946C32B486056F1AF9EA3E6A608099">WriteExtended</a>(<a href="../../../../../../system/content/System.Base/doc/class_BinaryWriter_6D47712E9CF8C098A17FFF3729140EE727BD87E2.html">BinaryWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">ulong</span>></td>
+    <td xml:space="preserve">startOffsets</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../cmsxo/doc/class_Symbol_E5E405F936997352D7734CC6844FB4D1CEECEC23.html">Symbol</a>*></td>
+    <td xml:space="preserve">symbols</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_DataSection_60F97A3EB3642E85C649D84E57F8B449491234BB" xml:space="preserve">DataSection&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;DataSection(<a href="../../cmsxo/doc/class_BinaryFile_A6208ACB7AD8280018BCB4C0D3287F7C8B9B49E2.html">BinaryFile</a>*&nbsp;file_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1021">1021</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AddSymbol_DataSection_B423A075D535D3CEB7C4CC24996A0E3EEBDE07FE" xml:space="preserve">AddSymbol&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;AddSymbol(<a href="../../cmsxo/doc/class_Symbol_E5E405F936997352D7734CC6844FB4D1CEECEC23.html">Symbol</a>*&nbsp;symbol)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1025">1025</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Dump_DataSection_6B2BE1C5C6FB7F157D85ACFB51FFDA9F806EA331" xml:space="preserve">Dump&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Dump(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1050">1050</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_DumpExceptionTable_DataSection_C20741F2274F8F4669F5CD08F5D3C9CAFB94C4EF" xml:space="preserve">DumpExceptionTable&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;DumpExceptionTable(<span class="kw">ulong</span>&nbsp;exceptionTableAddress, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1224">1224</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_DumpFunctionTable_DataSection_041B390477ECAEB698D6956B06A2B795FE1C3B78" xml:space="preserve">DumpFunctionTable&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;DumpFunctionTable(<a href="../../cmsxo/doc/class_Symbol_E5E405F936997352D7734CC6844FB4D1CEECEC23.html">Symbol</a>*&nbsp;functionTableSymbol, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1143">1143</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_DumpFunctionTableEntry_DataSection_73ABFCBEA589E1E01A59E511C60EE71989BC5D60" xml:space="preserve">DumpFunctionTableEntry&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;DumpFunctionTableEntry(<a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1158">1158</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_DumpLineNumberTable_DataSection_DB94AF4ED00BA2BF3799D0453570922E5A62F7EA" xml:space="preserve">DumpLineNumberTable&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;DumpLineNumberTable(<span class="kw">ulong</span>&nbsp;lineNumberTableStartAddress, <span class="kw">ulong</span>&nbsp;lineNumberTableEndAddress, <a href="../../../../../../system/content/System.Base/doc/class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311.html">StreamWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1200">1200</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Finalize_DataSection_04C4D9C8B3DD7CEC7FE73ADB82B3ED707B5F93B7" xml:space="preserve">Finalize&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Finalize()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1139">1139</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetString_DataSection_FB61B0798DDCA27394AB5370E16B8A84072470E7" xml:space="preserve">GetString&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../../../../../system/content/System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;GetString(<span class="kw">ulong</span>&nbsp;address)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1192">1192</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadExtended_DataSection_BB5D332896F6BBE4E26FFA365AC385E1477DD05E" xml:space="preserve">ReadExtended&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;ReadExtended(<a href="../../../../../../system/content/System.Base/doc/class_BinaryReader_7D0A41A9C666814155001B1AF5B066E926C8F3AC.html">BinaryReader</a>&amp;&nbsp;reader)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1041">1041</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WriteExtended_DataSection_0CEBD449A4946C32B486056F1AF9EA3E6A608099" xml:space="preserve">WriteExtended&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WriteExtended(<a href="../../../../../../system/content/System.Base/doc/class_BinaryWriter_6D47712E9CF8C098A17FFF3729140EE727BD87E2.html">BinaryWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html#1029">1029</a>&nbsp;of&nbsp;<a href="../../cmsxo/file/BinaryFile.cm.html">cmsxo/BinaryFile.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

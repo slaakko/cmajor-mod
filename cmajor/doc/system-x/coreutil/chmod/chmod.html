@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>chmod</title>
+    <link rel="stylesheet" type="text/css" href="../../style/style.css" />
+</head>
+<body>
+	<h1>
+		chmod - change access mode of one or more files
+	</h1>
+	
+	<p>
+        Usage: <br/>
+		<b>chmod [options] &lt;octal-mode> &lt;file></b><br/>
+    </p>
+	
+	<p>
+		<b>octal-mode</b> should be bitwise OR of the following octal values:
+		<table class="type">
+			<tr>
+				<th>octal value</th>
+				<th>access</th>
+				<th>description</th>
+			</tr>
+			<tr>
+				<td>4000</td>
+				<td>setuid bit</td>
+				<td>run the program file as the user ID of the file's owner</td>
+			</tr>
+			<tr>
+				<td>2000</td>
+				<td>setgid bit</td>
+				<td>run the program file as the group ID of the file's group</td>
+			</tr>
+			<tr>
+				<td>400</td>
+				<td>owner read access</td>
+			</tr>
+			<tr>
+				<td>200</td>
+				<td>owner write access</td>
+			</tr>
+			<tr>
+				<td>100</td>
+				<td>owner execute access</td>
+			</tr>
+			<tr>
+				<td>40</td>
+				<td>group read access</td>
+			</tr>
+			<tr>
+				<td>20</td>
+				<td>group write access</td>
+			</tr>
+			<tr>
+				<td>10</td>
+				<td>group execute access</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td>others read access</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td>others write access</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td>others execute access</td>
+			</tr>
+		</table>
+	</p>
+	
+	<h2>
+		Example
+	</h2>
+	
+	<p>
+		sxx<br/>
+		sudo chmod 755 /bin/cp.x<br/>
+	</p>
+	
+	<p>
+		755: allow owner to read, write and execute, group to read and execute and others to read and execute.
+	</p>
+
+	<h2>
+		Options
+	</h2>
+
+	<table class="type">
+		<tr>
+			<th>long option</th>
+			<th>short option</th>
+			<th>description</th>
+		</tr>
+		<tr>
+			<td>&#8209;&#8209;help</td>
+			<td>&#8209;h</td>
+			<td>Print help and exit.</td>
+		</tr>
+	</table>
+	
+	<h2>
+		Implementation
+	</h2>
+	
+	<p>
+		<a href="../reference/content/chmod/index.html">Reference</a>
+	</p>
+</body>
+</html>
