@@ -1962,6 +1962,7 @@ void IntrinsicConcepts::AddIntrinsicConcept(cmajor::ast::ConceptNode* intrinsicC
 void InitCoreSymbolTable(SymbolTable& symbolTable)
 {
     symbolTable.InitUuids();
+    AutoTypeSymbol* autoType = new AutoTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"auto");
     BoolTypeSymbol* boolType = new BoolTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"bool");
     SByteTypeSymbol* sbyteType = new SByteTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"sbyte");
     ByteTypeSymbol* byteType = new ByteTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"byte");
@@ -1977,6 +1978,7 @@ void InitCoreSymbolTable(SymbolTable& symbolTable)
     WCharTypeSymbol* wcharType = new WCharTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"wchar");
     UCharTypeSymbol* ucharType = new UCharTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"uchar");
     VoidTypeSymbol* voidType = new VoidTypeSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"void");
+    symbolTable.AddTypeSymbolToGlobalScope(autoType);
     symbolTable.AddTypeSymbolToGlobalScope(boolType);
     symbolTable.AddTypeSymbolToGlobalScope(sbyteType);
     symbolTable.AddTypeSymbolToGlobalScope(byteType);

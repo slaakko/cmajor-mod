@@ -4466,6 +4466,11 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::CommentNode& commentNode)
     symbolTable.SetCursorContainer(commentNode);
 }
 
+void SymbolCreatorVisitor::Visit(cmajor::ast::AutoNode& autoNode)
+{
+    symbolTable.SetCursorContainer(autoNode);
+}
+
 void SymbolCreatorVisitor::Visit(cmajor::ast::BoolNode& boolNode)
 {
     symbolTable.SetCursorContainer(boolNode);

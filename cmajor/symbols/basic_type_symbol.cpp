@@ -190,7 +190,23 @@ void BasicTypeSymbol::Check()
     }
 }
 
-BoolTypeSymbol::BoolTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::boolTypeSymbol, sourcePos_, sourceModuleId_, name_)
+AutoTypeSymbol::AutoTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::autoTypeSymbol, sourcePos_, sourceModuleId_, name_)
+{
+}
+
+void* AutoTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
+{
+    throw Exception("'auto' type has no IR type", GetSourcePos(), SourceModuleId());
+}
+
+void* AutoTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
+{
+    throw Exception("'auto' type: cannot create IR value", GetSourcePos(), SourceModuleId());
+}
+
+BoolTypeSymbol::BoolTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::boolTypeSymbol, sourcePos_, sourceModuleId_, name_)
 {
 }
 

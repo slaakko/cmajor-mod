@@ -242,6 +242,7 @@ wing::SourceCodeTokenKind CmajorSourceCodeView::GetTokenKind(const LexerType::To
 {
     switch (token.id)
     {
+    case cmajor::token::AUTO:
     case cmajor::token::ASSERT: case cmajor::token::ELIF: case cmajor::token::ENDIF: case cmajor::token::BOOL: case cmajor::token::TRUE: case cmajor::token::FALSE:
     case cmajor::token::SBYTE: case cmajor::token::BYTE: case cmajor::token::SHORT: case cmajor::token::USHORT: case cmajor::token::INT: case cmajor::token::UINT:
     case cmajor::token::LONG: case cmajor::token::ULONG: case cmajor::token::FLOAT: case cmajor::token::DOUBLE: case cmajor::token::CHAR: case cmajor::token::WCHAR:

@@ -154,6 +154,7 @@ public:
     void Visit(cmajor::ast::BaseNode& baseNode) override;
     void Visit(cmajor::ast::ParenthesizedExpressionNode& parenthesizedExpressionNode) override;
     void Visit(cmajor::ast::CommentNode& commentNode) override;
+    void Visit(cmajor::ast::AutoNode& autoNode) override;
     void Visit(cmajor::ast::BoolNode& boolNode) override;
     void Visit(cmajor::ast::SByteNode& sbyteNode) override;
     void Visit(cmajor::ast::ByteNode& byteNode) override;

@@ -1,4 +1,7 @@
 solution Examples;
+project <Args/Args.cmp>;
+project <Auto/Auto.cmp>;
 project <Calculator/Calculator.cmp>;
 project <Hello/Hello.cmp>;
-activeProject Calculator;
+project <HelloGUI/HelloGUI.cmp>;
+activeProject HelloGUI;

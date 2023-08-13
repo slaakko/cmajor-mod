@@ -28,6 +28,7 @@ public:
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsTypeSymbol() const override { return true; }
+    bool IsAutoType() const { return GetSymbolType() == SymbolType::autoTypeSymbol; }
     virtual bool IsInComplete() const { return false; }
     virtual bool IsIntegralType() const { return false; }
     virtual bool IsFloatingPointType() const { return false; }

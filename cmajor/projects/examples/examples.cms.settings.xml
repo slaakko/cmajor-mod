@@ -2,20 +2,12 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Error.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Parser.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Scanner.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/SymbolTable.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Token.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Hello/Hello.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/Console.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/Exception.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/HelloGUI/Hello.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/Calculator/Parser.cm"/>
-    <currentCursorLine value="175"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/HelloGUI/Hello.cm"/>
+    <currentCursorLine value="1"/>
     <breakpoints/>
     <expandedProjects>
-        <item value="Calculator"/>
-        <item value="Hello"/>
+        <item value="HelloGUI"/>
     </expandedProjects>
 </solutionSettings>

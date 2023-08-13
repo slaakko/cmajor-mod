@@ -1,0 +1,3 @@
+project Auto;
+target=program;
+source <Auto.cm>;

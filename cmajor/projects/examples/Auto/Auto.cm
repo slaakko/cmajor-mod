@@ -1,0 +1,26 @@
+using System;
+using System.Collections;
+
+Set<string> MakeStringSet()
+{
+    Set<string> set;
+    set.Insert("foo");
+    set.Insert("bar");
+    set.Insert("baz");
+    return set;
+}
+
+int main()
+{
+    Set<string> set = MakeStringSet();
+    for (const auto& s : set)
+    {
+        Console.Out() << s << endl();
+    }
+    auto it  = set.Find("foo");
+    if (it != set.End())
+    {
+        Console.Out() << *it << endl();
+    }
+    return 0;
+}

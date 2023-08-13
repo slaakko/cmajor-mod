@@ -40,6 +40,9 @@
    <include file="cmajor.rtd.lib"/>
   </directory>
  </component>
+ <component name="documentation">
+  <directory name="doc"/>
+ </component>
  <environment>
   <variable name="CMAJOR_ROOT" value="$TARGET_ROOT_DIR$"/>
   <pathDirectory value="$TARGET_ROOT_DIR$/bin"/>

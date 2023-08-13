@@ -26,6 +26,7 @@ public:
     TypeResolver(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, TypeResolverFlags flags_, cmajor::symbols::ClassTypeSymbol* currentClass_);
     cmajor::symbols::TypeSymbol* GetType() { return type; }
     const cmajor::symbols::TypeDerivationRec& DerivationRec() const { return derivationRec; }
+    void Visit(cmajor::ast::AutoNode& autoNode) override;
     void Visit(cmajor::ast::BoolNode& boolNode) override;
     void Visit(cmajor::ast::SByteNode& sbyteNode) override;
     void Visit(cmajor::ast::ByteNode& byteNode) override;
@@ -69,6 +70,11 @@ TypeResolver::TypeResolver(BoundCompileUnit& boundCompileUnit_, cmajor::symbols:
     classTemplateRepository(boundCompileUnit.GetClassTemplateRepository()), containerScope(containerScope_),
     type(nullptr), derivationRec(), nsTypeSymbol(), flags(flags_), currentClass(currentClass_)
 {
+}
+
+void TypeResolver::Visit(cmajor::ast::AutoNode& autoNode)
+{
+    type = symbolTable.GetTypeByName(U"auto");
 }
 
 void TypeResolver::Visit(cmajor::ast::BoolNode& boolNode)

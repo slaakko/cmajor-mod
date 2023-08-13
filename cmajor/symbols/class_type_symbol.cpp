@@ -361,6 +361,10 @@ const int maxStaticLayoutSize = maxObjectLayoutSize;
 
 void ClassTypeSymbol::Read(SymbolReader& reader)
 {
+    if (Name() == U"Button")
+    {
+        int x = 0;
+    }
     TypeSymbol::Read(reader);
     groupName = reader.GetBinaryStreamReader().ReadUtf32String();
     flags = static_cast<ClassTypeSymbolFlags>(reader.GetBinaryStreamReader().ReadUShort());
@@ -584,6 +588,10 @@ void ClassTypeSymbol::AddMember(Symbol* member)
     }
     case SymbolType::memberFunctionSymbol:
     {
+        if (Name() == U"Control" && member->Name().find(U"GetFirstEnabledTabStopControl") != std::u32string::npos)
+        {
+            int x = 0;
+        }
         memberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
         break;
     }
@@ -1574,6 +1582,10 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
 
 void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
 {
+    if (Name() == U"Button")
+    {
+        int x = 0;
+    }
     if (!IsPolymorphic()) return nullptr;
     void* localVmtObjectType = emitter.GetVmtObjectType(this);
     if (!localVmtObjectType)
@@ -1591,7 +1603,8 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
     {
         emitter.SetVmtObjectCreated(this);
         bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
-        if ((GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx) && !specialization)
+        //if ((GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx) && !specialization) // REMOVED
+        if (!specialization)
         {
             if (VmtEmitted())
             {

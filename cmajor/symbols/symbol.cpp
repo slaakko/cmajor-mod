@@ -65,7 +65,7 @@ const char* symbolTypeStr[uint8_t(SymbolType::maxSymbol)] =
     "interfaceTypeDefaultCtor", "interfaceTypeCopyCtor", "interfaceTypeMoveCtor", "interfaceTypeCopyAssignment", "interfaceTypeMoveAssignment", "classToInterfaceConversion",
     "getObjectPtrFromInterfaceSymbol",
     "namespaceTypeSymbol", "functionGroupTypeSymbol", "memberExpressionTypeSymbol", "variableValueSymbol", "globalVariableSymbol", "globalVariableGroupSymbol",
-    "stringFunctionContainerSymbol", "stringLengthFunctionSymbol", "axiomSymbol", "keywordSymbol"
+    "stringFunctionContainerSymbol", "stringLengthFunctionSymbol", "axiomSymbol", "keywordSymbol", "autoTypeSymbol"
 };
 
 std::string SymbolTypeStr(SymbolType symbolType)
@@ -1119,6 +1119,7 @@ SymbolFactory& SymbolFactory::Instance()
 SymbolFactory::SymbolFactory()
 {
     symbolCreators.resize(static_cast<uint8_t>(SymbolType::maxSymbol));
+    Register(SymbolType::autoTypeSymbol, new ConcreteSymbolCreator<AutoTypeSymbol>());
     Register(SymbolType::boolTypeSymbol, new ConcreteSymbolCreator<BoolTypeSymbol>());
     Register(SymbolType::sbyteTypeSymbol, new ConcreteSymbolCreator<SByteTypeSymbol>());
     Register(SymbolType::byteTypeSymbol, new ConcreteSymbolCreator<ByteTypeSymbol>());

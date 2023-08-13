@@ -34,7 +34,15 @@ void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::M
     std::filesystem::create_directories(bdp);
     std::vector<std::string> argStrings;
     argStrings.push_back("/machine:x64");
-    argStrings.push_back("/entry:main");
+    if (project->GetTarget() == cmajor::ast::Target::program)
+    {
+        argStrings.push_back("/entry:main");
+    }
+    else if (project->GetTarget() == cmajor::ast::Target::winapp || project->GetTarget() == cmajor::ast::Target::winguiapp)
+    {
+        argStrings.push_back("/entry:WinMain");
+        argStrings.push_back("/subsystem:windows");
+    }
     argStrings.push_back("/debug");
     argStrings.push_back("/out:" + util::QuotedPath(project->ExecutableFilePath()));
     argStrings.push_back("/stack:16777216");
@@ -108,7 +116,15 @@ void LinkWindowsLLDLinkProcess(cmajor::ast::Project* project, cmajor::symbols::M
     std::filesystem::create_directories(bdp);
     std::vector<std::string> args;
     args.push_back("/machine:x64");
-    args.push_back("/entry:main");
+    if (project->GetTarget() == cmajor::ast::Target::program)
+    {
+        args.push_back("/entry:main");
+    }
+    else if (project->GetTarget() == cmajor::ast::Target::winapp || project->GetTarget() == cmajor::ast::Target::winguiapp)
+    {
+        args.push_back("/entry:WinMain");
+        args.push_back("/subsystem:windows");
+    }
     args.push_back("/debug");
     args.push_back("/out:" + util::QuotedPath(project->ExecutableFilePath()));
     args.push_back("/stack:16777216");

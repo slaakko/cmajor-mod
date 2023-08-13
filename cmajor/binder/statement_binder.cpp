@@ -632,6 +632,10 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&memberFunctionNode);
+    if (symbol->Name().find(U"FocusNext") != std::u32string::npos)
+    {
+        int x = 0;
+    }
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected");
     cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)
@@ -1219,13 +1223,35 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&constructionStatementNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected");
     cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
+    bool constructDelegateOrClassDelegateType =
+        localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol ||
+        localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
+    if (localVariableSymbol->GetType()->BaseType()->IsAutoType())
+    {
+        int n = constructionStatementNode.Arguments().Count();
+        if (n != 1)
+        {
+            throw cmajor::symbols::Exception("'auto' needs an initializer", constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+        }
+        cmajor::ast::Node* argumentNode = constructionStatementNode.Arguments()[0];
+        std::unique_ptr<BoundExpression> argument = BindExpression(argumentNode, boundCompileUnit, currentFunction, containerScope, this, false, constructDelegateOrClassDelegateType);
+        cmajor::symbols::TypeSymbol* initializerType = argument->GetType();
+        cmajor::symbols::TypeDerivationRec derivations = localVariableSymbol->GetType()->DerivationRec();
+        if (derivations.IsEmpty())
+        {
+            localVariableSymbol->SetType(initializerType);
+        }
+        else
+        {
+            initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations,
+                constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            localVariableSymbol->SetType(initializerType);
+        }
+    }
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId(), localVariableSymbol);
     arguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(localVariable),
         localVariable->GetType()->AddPointer(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId()))));
-    bool constructDelegateOrClassDelegateType =
-        localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol ||
-        localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
     std::vector<FunctionScopeLookup> functionScopeLookups;
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, localVariableSymbol->GetType()->ClassInterfaceEnumDelegateOrNsScope()));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));

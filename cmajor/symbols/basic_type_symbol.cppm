@@ -54,6 +54,16 @@ private:
     FunctionSymbol* equalityOp;
 };
 
+class AutoTypeSymbol : public BasicTypeSymbol
+{
+public:
+    AutoTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    std::string TypeString() const override { return "auto"; }
+    const char* ClassName() const override { return "AutoTypeSymbol"; }
+    void* IrType(cmajor::ir::Emitter& emitter) override;
+    void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
+};
+
 class BoolTypeSymbol : public BasicTypeSymbol
 {
 public:

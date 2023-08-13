@@ -61,7 +61,7 @@ enum class SymbolType : uint8_t
     arrayLengthFunctionSymbol, arrayBeginFunctionSymbol, arrayEndFunctionSymbol, arrayCBeginFunctionSymbol, arrayCEndFunctionSymbol,
     interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment, classToInterfaceConversion, getObjectPtrFromInterfaceSymbol,
     namespaceTypeSymbol, functionGroupTypeSymbol, memberExpressionTypeSymbol, variableValueSymbol, globalVariableSymbol, globalVariableGroupSymbol,
-    stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol,
+    stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol, autoTypeSymbol,
     maxSymbol
 };
 

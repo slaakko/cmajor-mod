@@ -157,6 +157,7 @@ public:
     ~ConstraintChecker();
     bool Result() const { return result; }
     std::unique_ptr<BoundConstraint> GetBoundConstraint() { return std::move(boundConstraint); }
+    void Visit(cmajor::ast::AutoNode& autoNode) override;
     void Visit(cmajor::ast::BoolNode& boolNode) override;
     void Visit(cmajor::ast::SByteNode& sbyteNode) override;
     void Visit(cmajor::ast::ByteNode& byteNode) override;
@@ -265,6 +266,11 @@ cmajor::symbols::TypeSymbol* ConstraintChecker::GetType()
         }
     }
     return type;
+}
+
+void ConstraintChecker::Visit(cmajor::ast::AutoNode& autoNode)
+{
+    type = symbolTable.GetTypeByName(U"auto");
 }
 
 void ConstraintChecker::Visit(cmajor::ast::BoolNode& boolNode)
