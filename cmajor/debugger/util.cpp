@@ -9,6 +9,7 @@ import cmajor.debugger;
 import cmajor.debugger.reply;
 import cmajor.debugger.record;
 import cmajor.debugger.value;
+import cmajor.debugger.request;
 import util;
 
 namespace cmajor::debugger {

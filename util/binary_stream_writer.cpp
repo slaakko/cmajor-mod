@@ -234,4 +234,10 @@ void BinaryStreamWriter::WriteTime(time_t time)
     Write(static_cast<int64_t>(time));
 }
 
+void BinaryStreamWriter::WriteFileTime(const std::chrono::file_clock::time_point& fileTime)
+{
+    std::chrono::seconds rep = std::chrono::duration_cast<std::chrono::seconds>(fileTime.time_since_epoch());
+    Write(static_cast<int64_t>(rep.count()));
+}
+
 } // namespace util

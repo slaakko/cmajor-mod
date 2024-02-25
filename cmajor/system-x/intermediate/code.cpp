@@ -42,6 +42,11 @@ void Use::Set(Value* value_)
             inst->RemoveUser(user);
         }
     }
+    else if (value->IsInstruction())
+    {
+        Instruction* inst = static_cast<Instruction*>(value);
+        inst->RemoveUser(user);
+    }
     value = value_;
     if (value->IsRegValue())
     {
@@ -51,6 +56,11 @@ void Use::Set(Value* value_)
         {
             inst->AddUser(user);
         }
+    }
+    else if (value->IsInstruction())
+    {
+        Instruction* inst = static_cast<Instruction*>(value);
+        inst->AddUser(user);
     }
 }
 

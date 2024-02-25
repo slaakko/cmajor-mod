@@ -6,6 +6,9 @@
 export module cmajor.systemx.intermediate.code.parser;
 
 [interface]import cmajor.systemx.intermediate.context;
+[interface]import cmajor.systemx.intermediate.types;
+[interface]import cmajor.systemx.intermediate.code;
+[interface]import cmajor.systemx.intermediate.metadata;
 [implementation]import cmajor.systemx.intermediate.error;
 [implementation]import cmajor.systemx.intermediate.code.token;
 [implementation]import cmajor.systemx.intermediate.code.lexer;

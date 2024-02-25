@@ -371,7 +371,7 @@ void HostFilesystem::Stat(INode* inode, cmajor::systemx::machine::Process* proce
             std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(fullPath, ec);
             if (!ec)
             {
-                util::DateTime mtime = util::ToDateTime(lastWriteTime);
+                util::DateTime mtime = util::ToFileDatetime(lastWriteTime);
                 inode->SetMTime(mtime);
             }
         }
@@ -521,6 +521,8 @@ INodePtr HostFilesystem::ReadINode(INodeKey inodeKey, cmajor::systemx::machine::
 
 void HostFilesystem::WriteINode(INode* inode, cmajor::systemx::machine::Process* process)
 {
+    // TODO
+/*
     auto it = data.inodePathMap.find(inode->Key().inodeNumber);
     if (it != data.inodePathMap.cend())
     {
@@ -542,6 +544,7 @@ void HostFilesystem::WriteINode(INode* inode, cmajor::systemx::machine::Process*
             }
         }
     }
+*/
 }
 
 std::string HostFilesystem::INodeToPath(INodeKey inodeKey, cmajor::systemx::machine::Process* process)

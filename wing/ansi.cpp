@@ -744,7 +744,7 @@ void AnsiEngine::Put(char c)
 void AnsiEngine::Emit(char c)
 {
     unicodeEngine.Put(static_cast<uint8_t>(c));
-    if (unicodeEngine.ResulReady())
+    if (unicodeEngine.ResultReady())
     {
         outputMethod(textColor, backColor, handle, unicodeEngine.Result());
     }

@@ -5,6 +5,7 @@
 
 module cmajor.build.resources;
 
+import cmajor.resource.processor;
 import cmajor.symbols;
 import cmajor.systemx.object;
 
@@ -19,11 +20,15 @@ void AddResourcesSystemX(cmajor::ast::Project* project, std::vector<std::string>
     }
 }
 
-void AddResources(cmajor::ast::Project* project, std::vector<std::string>& objectFilePaths)
+void AddResources(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         AddResourcesSystemX(project, objectFilePaths);
+    }
+    else
+    {
+        cmajor::resources::ProcessResourcesInProject(project, rootModule);
     }
 }
 

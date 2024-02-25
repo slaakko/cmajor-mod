@@ -386,7 +386,11 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = currentClass->GetClassTypeSymbol();
         if (!emitter->IsVmtObjectCreated(classTypeSymbol))
         {
-            classTypeSymbol->VmtObject(*emitter, true);
+            if (classTypeSymbol->GetCompileUnit() == compileUnit->GetCompileUnitNode() || 
+                classTypeSymbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
+            {
+                classTypeSymbol->VmtObject(*emitter, true);
+            }
         }
         if (!emitter->IsStaticObjectCreated(classTypeSymbol))
         {

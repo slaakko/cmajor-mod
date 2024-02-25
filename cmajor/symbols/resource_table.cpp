@@ -8,14 +8,6 @@ module cmajor.symbols.resource.table;
 import cmajor.ast.project;
 import util;
 
-/*
-#include <cmajor/symbols/ResourceTable.hpp>
-#include <sngcm/ast/Project.hpp>
-#include <soulng/util/Path.hpp>
-#include <soulng/util/TextUtils.hpp>
-#include <soulng/util/Unicode.hpp>
-*/
-
 namespace cmajor::symbols {
 
 std::string ResourceTypeStr(Resource::Type resourceType)
@@ -25,6 +17,7 @@ std::string ResourceTypeStr(Resource::Type resourceType)
         case Resource::Type::bitmap: return "bitmap";
         case Resource::Type::icon: return "icon";
         case Resource::Type::cursor: return "cursor";
+        case Resource::Type::rcData: return "rcdata";
     }
     return std::string();
 }
@@ -51,7 +44,7 @@ Resource::Resource() : name(), type(), filePath()
 {
 }
 
-Resource::Resource(const std::u32string& name_, Type type_, const std::string& filePath_) : name(name_), type(type_), filePath(util::GetFullPath(filePath_))
+Resource::Resource(const std::string& name_, Type type_, const std::string& filePath_) : name(name_), type(type_), filePath(util::GetFullPath(filePath_))
 {
 }
 
@@ -64,7 +57,7 @@ void Resource::Write(util::BinaryStreamWriter& writer, const std::string& cmajor
 
 void Resource::Read(util::BinaryStreamReader& reader, const std::string& cmajorRootDir)
 {
-    name = reader.ReadUtf32String();
+    name = reader.ReadUtf8String();
     type = static_cast<Type>(reader.ReadInt());
     filePath = reader.ReadUtf8String();
     filePath = MakeFullPathFromCmajorRootDirRelativeFilePath(cmajorRootDir, filePath);
@@ -78,7 +71,7 @@ void Resource::Dump(util::CodeFormatter& formatter, int index)
     formatter.WriteLine("resource file: " + filePath);
 }
 
-bool ResourceTable::Contains(const std::u32string& resourceName) const
+bool ResourceTable::Contains(const std::string& resourceName) const
 {
     return resourceNameSet.find(resourceName) != resourceNameSet.cend();
 }

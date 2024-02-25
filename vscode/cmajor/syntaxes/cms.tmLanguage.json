@@ -1,0 +1,72 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Cmajor Solution",
+    "patterns": [
+		{
+			"include": "#solution"
+		},
+        {
+            "include": "#project"
+        },
+        {
+            "include": "#active-project"
+        }
+    ],
+    "repository": {
+        "solution": {
+            "patterns": [
+                {
+                    "match": "\\b(solution)\\b\\s+([_[:alpha:]][_[:alnum:].]*)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cms.cmajor"
+                        },
+                        "2": {
+                            "name": "entity.name.type.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cms.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "project": {
+            "patterns": [
+                {
+                    "match": "\\b(project)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cms.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cms.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "active-project": {
+            "patterns": [
+                {
+                    "match": "\\b(activeProject)\\b\\s+([_[:alpha:]][_[:alnum:].]*)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cms.cmajor"
+                        },
+                        "2": {
+                            "name": "entity.name.type.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.seperator.semicolon.cms.cmajor"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "scopeName": "source.cms.cmajor"
+}

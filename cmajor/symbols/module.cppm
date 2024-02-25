@@ -14,9 +14,8 @@ import cmajor.symbols.sources;
 import cmajor.ast.project;
 import soul.lexer.file.map;
 import soul.lexer.base;
-import util.code.formatter;
-import util.binary.stream.writer;
-import util.binary.stream.reader;
+import soul.ast.source.pos;
+import util;
 import std.core;
 
 export namespace cmajor::symbols {

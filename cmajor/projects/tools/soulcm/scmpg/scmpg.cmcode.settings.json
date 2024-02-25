@@ -1,0 +1,540 @@
+{
+    "breakpoints" : 
+    {
+        "breakpointLists" : 
+        [
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/AstReader.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Attribute.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/BasicType.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Class.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Comment.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/CompileUnit.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Concept.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Constant.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Delegate.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Enumeration.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Expression.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Function.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/GlobalVariable.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Identifier.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Interface.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Literal.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Namespace.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Node.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/NodeList.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Parameter.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Project.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Solution.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/SourceWriter.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Specifier.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Statement.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Template.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/TypeExpr.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Typedef.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/cm\/ast\/Visitor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scm2html\/LexBasicType.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scm2html\/LexerFileParser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scm2html\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scm2html\/ParsingContext.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scm2html\/Project.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/BasicType.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/LexerContext.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/Literal.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/Model.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/ParsingContext.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmlg\/Statement.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ArrayGeneratorVisitor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/BasicType.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeEmittingVisitor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeGeneratorVisitor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/CodeUtils.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Domain.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Expression.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/LinkerVisitor.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Main.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Parser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFile.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParserFileParser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ParsingContext.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/ProjectFileParser.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/projects\/tools\/soulcm\/scmpg\/Statement.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/RandomAccessIterator.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/String.cm"
+            }
+            , 
+            {
+                "breakpoints" : 
+                [
+
+                ]
+                , 
+                "filePath" : "C:\/work\/cmajorm\/cmajor\/system\/System.Base\/UniquePtr.cm"
+            }
+        ]
+    }
+    , 
+    "programArguments" : "-v C:\\work\\cmajorm\\cmajor\\projects\\cm\\testparser\\Cm.Parser.spg"
+}

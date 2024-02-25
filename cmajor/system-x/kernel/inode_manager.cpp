@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <boost/pool/pool_alloc.hpp>
+
 module cmajor.systemx.kernel.inode.manager;
 
 import cmajor.systemx.kernel.event.manager;

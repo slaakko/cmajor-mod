@@ -12,6 +12,7 @@ import cmajor.systemx.intermediate.code;
 import cmajor.systemx.intermediate.metadata;
 import cmajor.systemx.intermediate.reg.allocator;
 import soul.lexer;
+import soul.ast.source.pos;
 import std.core;
 
 export namespace cmajor::systemx::intermediate {

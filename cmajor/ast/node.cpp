@@ -25,6 +25,8 @@ import cmajor.ast.comment;
 import cmajor.ast.templates;
 import cmajor.ast.attribute;
 import cmajor.ast.parameter;
+import cmajor.ast.namespaces;
+import cmajor.ast.identifier;
 
 namespace cmajor::ast {
 

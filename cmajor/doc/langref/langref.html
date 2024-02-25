@@ -97,6 +97,7 @@
         &nbsp;&nbsp;&nbsp;&nbsp;4.5 <a href="#empty-statement">Empty Statement</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.6 <a href="#assignment-statement">Assignment Statement</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.7 <a href="#construction-statement">Construction Statement</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.7.1 <a href="#construction-statement-with-auto">Declaring a Construction Statement with a Placeholder Type</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.8 <a href="#delete-and-destroy-statements">Delete and Destroy Statements</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.9 <a href="#throw-statement">Throw Statement</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;4.10 <a href="#try-statement">Try Statement</a><br />
@@ -2468,8 +2469,33 @@
         allocates memory for it from the stack frame of the current function<sup><a href="#footnote-2">2</a></sup> and
         sets an initial value for it. The local variable will have given <a href="#type-expressions">type</a> and <a href="#identifiers">name</a>.
         It is initialized to the value given on the right side of the assignment operator symbol or
-        resulting of a call to a constructor with arguments enclosed in parentheses.
+        resulting of a call to a constructor with arguments enclosed in parenthesis.
         If no initializer is given, the variable will be <a href="#default-initialization">default initialized</a>.
+    </p>
+
+    <h4 id="construction-statement-with-auto">4.7.1 Declaring a Construction Statement with a Placeholder Type</h4>
+
+    <p>
+        The  local variable can also be declared with a placeholder type <span class="kw">auto</span> in which case 
+        the actual type is deduced from the type of the initializer. An <span class="kw">auto</span> variable must always
+        have an initializer.
+    </p>
+
+    <p>
+        For example in the following code that contains a range-for statement
+    </p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>List</em>&lt;<em>string</em>> <em>cars</em><span class="mono">;</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>cars</em><span class="mono">.</span><em>Add</em><span class="mono">(</span>"Honda"<span class="mono">)</span><span class="mono">;</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>cars</em><span class="mono">.</span><em>Add</em><span class="mono">(</span>"Jaguar"<span class="mono">)</span><span class="mono">;</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>cars</em><span class="mono">.</span><em>Add</em><span class="mono">(</span>"Porsche"<span class="mono">)</span><span class="mono">;</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span> <span class="mono">(</span><span class="kw">const</span> <span class="kw">auto</span><span class="mono">&amp;</span> <em>car</em> <span class="mono">:</span> <em>cars</em><span class="mono">)</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">{</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>Console</em><span class="mono">.</span><em>WriteLine</em><span class="mono">(</span><em>car</em><span class="mono">)</span><span class="mono">;</span><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="mono">}</span><br/>
+
+    <p>
+        the type of local variable <em>car</em> is deduced to be <br/><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">const</span> <em>System</em><span class="mono">.</span><em>Collections</em><span class="mono">.</span><em>List</em><span class="mono">&lt;</span><em>System</em><span class="mono">.</span><em>String</em><span class="mono">&lt;</span><span class="kw">char</span><span class="mono">></span><span class="mono">></span><span class="mono">&amp;</span><br/>
     </p>
 
     <h3 id="delete-and-destroy-statements">4.8 Delete and Destroy Statements</h3>
@@ -2705,7 +2731,8 @@
             <td class="rcontent">
                 <span class="rule"><a href="#rule.basic-type">basic&#8209;type</a></span> |
                 <span class="rule"><a href="#rule.template-id">template&#8209;id</a></span> |
-                <span class="rule"><a href="#rule.identifier">identifier</a></span>
+                <span class="rule"><a href="#rule.identifier">identifier</a></span> |
+                <span class="kw">auto</span>
             </td>
         </tr>
         <tr>
@@ -2729,6 +2756,11 @@
     <p>
         A <a href="#rule.primary-type-expr">primary type expression</a> is a name of a <a href="#basic-types">basic</a> or <a href="#user-defined-type">user-defined</a> type,
         or a name of a <a href="#class-templates">class template</a> with type arguments.
+    </p>
+
+    <p>
+        If the type expression occurs in the context of <a href="#rule.construction-statement">construction statement</a>, the primary 
+        type expression can also be a placeholder type <span class="kw">auto</span>. See reference to <a href="#construction-statement-with-auto">declaring a construction statement with a placeholder type</a>.
     </p>
 
     <h3 id="const-qualifier">6.3 Const Qualifier</h3>

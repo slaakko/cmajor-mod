@@ -7,6 +7,10 @@ module cmajor.build.main.unit;
 
 import cmajor.binder;
 import cmajor.backend;
+import cmajor.ir.emitting.context;
+import soul.ast.source.pos;
+import util;
+import std.filesystem;
 
 namespace cmajor::build {
 

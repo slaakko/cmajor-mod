@@ -13,3 +13,6 @@ cminst -v ..\cmajor\lexer\*.classmap.compressed ..\rc
 cminst -v ..\cmajor\lexer\*.classmap.rc ..\rc
 cminst -v ..\soul\rex\*.classmap.compressed ..\rc
 cminst -v ..\soul\rex\*.classmap.rc ..\rc
+cminst -v ..\cmajor\projects\tools\soulcm\scm2html\bin\release\scm2html.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\soulcm\scmlg\bin\release\scmlg.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\soulcm\scmpg\bin\release\scmpg.exe ..\cmajor\bin

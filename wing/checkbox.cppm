@@ -9,6 +9,7 @@ import wing.button;
 import wing.event;
 import wing.graphics;
 import wing.control;
+import std.core;
 
 export namespace wing {
 

@@ -376,7 +376,8 @@ std::string TypeNameConstraintNode::ToString() const
     return "typename " + typeId->ToString();
 }
 
-SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_)
+SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
+    ConstraintNode(nodeType_, sourcePos_, moduleId_)
 {
 }
 

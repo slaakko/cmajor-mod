@@ -7,6 +7,7 @@ module cmajor.systemx.object.instruction.formatter;
 
 import cmajor.systemx.machine.registers;
 import cmajor.systemx.machine.opcode;
+import cmajor.systemx.machine.instruction;
 
 namespace cmajor::systemx::object {
 

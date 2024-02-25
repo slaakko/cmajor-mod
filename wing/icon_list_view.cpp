@@ -11,6 +11,7 @@ module;
 module wing.icon.list.view;
 
 import wing.button;
+import wing.window;
 import util;
 
 namespace wing {

@@ -156,14 +156,15 @@
     <ClCompile Include="backend.cppm" />
     <ClCompile Include="cpp.cpp" />
     <ClCompile Include="cpp.cppm" />
-    <ClCompile Include="llvm.cpp" />
-    <ClCompile Include="llvm.cppm" />
     <ClCompile Include="selector.cpp" />
     <ClCompile Include="selector.cppm" />
     <ClCompile Include="systemx.cpp" />
     <ClCompile Include="systemx.cppm" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ast\ast.vcxproj">
+      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\codegen\codegen.vcxproj">
       <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
     </ProjectReference>
@@ -172,9 +173,6 @@
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\llvm\llvm.vcxproj">
-      <Project>{d9913dcb-1325-426c-95b1-f80d2751d081}</Project>
     </ProjectReference>
     <ProjectReference Include="..\system-x\backend\backend.vcxproj">
       <Project>{b4430f33-0890-4ff5-a10b-e553a0cc5193}</Project>

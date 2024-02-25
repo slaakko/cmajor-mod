@@ -1,0 +1,2 @@
+project json.parser;
+parser <json.content.parser>;

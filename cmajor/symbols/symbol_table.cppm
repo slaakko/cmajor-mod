@@ -276,8 +276,5 @@ private:
 
 void InitCoreSymbolTable(SymbolTable& symbolTable);
 
-void InitSymbolTable();
-void DoneSymbolTable();
-
 } // namespace cmajor::symbols
 

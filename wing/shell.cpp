@@ -18,7 +18,6 @@ namespace wing {
 void ShellInit()
 {
     HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-    int x = 0;
 }
 
 void ShellDone()

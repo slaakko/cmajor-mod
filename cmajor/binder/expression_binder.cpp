@@ -16,6 +16,7 @@ import cmajor.binder.statement.binder;
 import cmajor.binder.type.resolver;
 import cmajor.binder.evaluator;
 import cmajor.binder.access;
+import soul.ast.source.pos;
 import util;
 
 namespace cmajor::binder {

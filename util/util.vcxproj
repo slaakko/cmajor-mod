@@ -219,6 +219,10 @@
     <ClCompile Include="sha1.cppm" />
     <ClCompile Include="socket.cpp" />
     <ClCompile Include="socket.cppm" />
+    <ClCompile Include="socket_stream.cpp" />
+    <ClCompile Include="socket_stream.cppm" />
+    <ClCompile Include="stdio_stream.cpp" />
+    <ClCompile Include="stdio_stream.cppm" />
     <ClCompile Include="stream.cpp" />
     <ClCompile Include="stream.cppm" />
     <ClCompile Include="synchronized_queue.cppm" />
@@ -232,6 +236,8 @@
     <ClCompile Include="unicode.cpp" />
     <ClCompile Include="unicode.engine.cpp" />
     <ClCompile Include="unicode.cppm" />
+    <ClCompile Include="uri.cpp" />
+    <ClCompile Include="uri.cppm" />
     <ClCompile Include="util.cppm" />
     <ClCompile Include="uuid.cpp" />
     <ClCompile Include="uuid.cppm" />

@@ -9,6 +9,8 @@ module;
 export module sxgmdb.main.window;
 
 import cmajor.systemx.guiterm;
+import cmajor.systemx.machine;
+import cmajor.systemx.kernel;
 import sxgmdb.code.view;
 import sxgmdb.debug.view;
 import sxgmdb.reg.view;

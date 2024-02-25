@@ -8,6 +8,7 @@ export module util.unicode;
 import std.core;
 import util.binary.stream.writer;
 import util.binary.stream.reader;
+import util.stream;
 
 export namespace util {
 
@@ -39,7 +40,7 @@ class Utf8ToUtf32Engine
 public:
     Utf8ToUtf32Engine();
     void Put(uint8_t x);
-    bool ResulReady() const { return resultReady; }
+    bool ResultReady() const { return resultReady; }
     char32_t Result() const { return result; }
 private:
     int state;

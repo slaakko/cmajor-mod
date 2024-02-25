@@ -7,6 +7,7 @@ export module cmajor.cpp.ir.context;
 
 import cmajor.cpp.ir.type;
 import cmajor.cpp.ir.data;
+import cmajor.cpp.ir.value;
 import cmajor.debug;
 import util;
 import std.core;

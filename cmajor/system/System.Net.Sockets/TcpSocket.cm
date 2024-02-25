@@ -55,6 +55,9 @@ namespace System.Net.Sockets
         public TcpSocket(const string& node, const string& service) : this(node, service, ConnectOptions.none)
         {
         }
+        public TcpSocket(const string& node, int port) : this(node, ToString(port))
+        {
+        }
         public nothrow TcpSocket(void* handle_) : handle(handle_), connected(true), shutdown(false)
         {
         }
@@ -112,6 +115,10 @@ namespace System.Net.Sockets
                 handle = null;
                 connected = false;
             }
+        }
+        public void Connect(const string& node, int port)
+        {
+            Connect(node, ToString(port));
         }
         public void Connect(const string& node, const string& service) 
         {

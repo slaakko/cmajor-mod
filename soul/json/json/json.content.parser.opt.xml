@@ -1,0 +1,114 @@
+<parserFile>
+ <grammar name="JsonParser">
+  <rule first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" name="Value">
+   <switch first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+    <case first="{STRING}">
+     <action first="{STRING}">
+      <token first="{STRING}" name="STRING"/>
+     </action>
+    </case>
+    <case first="{NUMBER}">
+     <action first="{NUMBER}">
+      <token first="{NUMBER}" name="NUMBER"/>
+     </action>
+    </case>
+    <case first="{LBRACE}">
+     <action first="{LBRACE}">
+      <nonterminal first="{LBRACE}" ruleName="Object"/>
+     </action>
+    </case>
+    <case first="{LBRACKET}">
+     <action first="{LBRACKET}">
+      <nonterminal first="{LBRACKET}" ruleName="Array"/>
+     </action>
+    </case>
+    <case first="{TRUE}">
+     <action first="{TRUE}">
+      <token first="{TRUE}" name="TRUE"/>
+     </action>
+    </case>
+    <case first="{FALSE}">
+     <action first="{FALSE}">
+      <token first="{FALSE}" name="FALSE"/>
+     </action>
+    </case>
+    <case first="{NULL}">
+     <action first="{NULL}">
+      <token first="{NULL}" name="NULL"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
+  <rule first="{LBRACE}" name="Object">
+   <sequence first="{LBRACE}">
+    <sequence first="{LBRACE}">
+     <action first="{LBRACE}">
+      <token first="{LBRACE}" name="LBRACE"/>
+     </action>
+     <optional first="{#, STRING}">
+      <group first="{STRING}">
+       <list first="{STRING}">
+        <sequence first="{STRING}">
+         <nonterminal first="{STRING}" ruleName="Field"/>
+         <kleene first="{#, COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <nonterminal first="{STRING}" ruleName="Field"/>
+          </sequence>
+         </kleene>
+        </sequence>
+       </list>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{RBRACE}">
+     <token first="{RBRACE}" name="RBRACE"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{STRING}" name="Field">
+   <sequence first="{STRING}">
+    <sequence first="{STRING}">
+     <action first="{STRING}">
+      <token first="{STRING}" name="STRING"/>
+     </action>
+     <token first="{COLON}" name="COLON"/>
+    </sequence>
+    <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+     <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LBRACKET}" name="Array">
+   <sequence first="{LBRACKET}">
+    <sequence first="{LBRACKET}">
+     <action first="{LBRACKET}">
+      <token first="{LBRACKET}" name="LBRACKET"/>
+     </action>
+     <optional first="{#, FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+      <group first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+       <list first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+        <sequence first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+         <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+          <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
+         </action>
+         <kleene first="{#, COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+            <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
+           </action>
+          </sequence>
+         </kleene>
+        </sequence>
+       </list>
+      </group>
+     </optional>
+    </sequence>
+    <action first="{RBRACKET}">
+     <token first="{RBRACKET}" name="RBRACKET"/>
+    </action>
+   </sequence>
+  </rule>
+ </grammar>
+</parserFile>

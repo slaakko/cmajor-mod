@@ -7,6 +7,7 @@ export module cmajor.view.error.view;
 
 import cmajor.info.bs;
 import wing;
+import std.core;
 
 export namespace cmajor::view {
 

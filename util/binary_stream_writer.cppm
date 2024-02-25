@@ -41,6 +41,7 @@ public:
     void WriteSLEB128Long(int64_t x);
     void Write(const util::uuid& uuid);
     void WriteTime(time_t time);
+    void WriteFileTime(const std::chrono::file_clock::time_point& fileTime);
     int64_t Position() const { return stream.Position(); }
 private:
     Stream& stream;

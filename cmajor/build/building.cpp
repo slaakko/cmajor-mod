@@ -16,7 +16,7 @@ import cmajor.build.resources;
 import cmajor.build.main.unit;
 import cmajor.binder;
 import cmajor.ast;
-import cmajor.llvm;
+// import cmajor.llvm;
 import soul.lexer;
 import std.filesystem;
 import util;
@@ -38,7 +38,10 @@ void ResetStopBuild()
 std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFilePath)
 {
     std::string config = cmajor::symbols::GetConfig();
+/*
     cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
+*/
+    cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::cpp;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         backend = cmajor::ast::BackEnd::systemx;
@@ -220,7 +223,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
                 }
                 RunBuildActions(*project, variables);
-                AddResources(project, objectFilePaths);
+                AddResources(project, rootModule.get(), objectFilePaths);
                 if (!objectFilePaths.empty())
                 {
                     Archive(project, objectFilePaths);

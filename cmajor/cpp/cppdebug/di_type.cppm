@@ -9,6 +9,7 @@ import soul.xml.dom;
 import cmajor.debug.container;
 import cmajor.debug.di.enum_constant;
 import cmajor.debug.di.variable;
+import util;
 import std.core;
 
 export namespace cmajor::debug {

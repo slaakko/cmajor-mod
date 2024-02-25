@@ -11,6 +11,7 @@ import cmajor.debugger.message.writer;
 import cmajor.debugger.record;
 import cmajor.debugger.util;
 import cmajor.debugger.evaluator;
+import cmajor.debugger.request;
 
 namespace cmajor::debugger {
 

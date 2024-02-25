@@ -115,8 +115,8 @@ LoadEditModuleResult EditModuleCache::LoadEditModule(const std::string& projectF
     result.numberOfErrors = parseResult.numberOfErrors;
     result.synchronized = parseResult.synchronized;
     result.error = parseResult.error;
-    result.startParsing = parseResult.start;
-    result.endParsing = parseResult.end;
+    //result.startParsing = parseResult.start; TODO!!!
+    //result.endParsing = parseResult.end; TODO!!!
     while (index >= editModules.size())
     {
         editModules.push_back(std::unique_ptr<Module>());

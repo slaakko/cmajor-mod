@@ -51,3 +51,17 @@ xcopy /F /Y ..\..\soul-mod\soul\xml\serialization\*.bat xml\serialization\
 
 xcopy /F /Y ..\..\soul-mod\soul\rex\*.cppm rex\
 xcopy /F /Y ..\..\soul-mod\soul\rex\*.cpp rex\
+
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.cppm json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.cpp json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.parser json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.expr json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.keyword json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.lexer json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.token json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.spg json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.slg json\json\
+xcopy /F /Y ..\..\soul-mod\soul\json\json\*.bat json\json\
+
+xcopy /F /Y ..\..\soul-mod\soul\json\jsonrpc\*.cppm json\jsonrpc\
+xcopy /F /Y ..\..\soul-mod\soul\json\jsonrpc\*.cpp json\jsonrpc\

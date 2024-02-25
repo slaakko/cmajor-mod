@@ -6,6 +6,7 @@
 module cmajor.systemx.kernel.process.manager;
 
 import cmajor.systemx.kernel.debug.help;
+import cmajor.systemx.kernel.error;
 import cmajor.systemx.machine;
 
 namespace cmajor::systemx::kernel {

@@ -5,11 +5,10 @@
 
 export module cmajor.ast.parameter;
 
+import cmajor.ast.identifier;
 import cmajor.ast.node;
 
 export namespace cmajor::ast {
-
-class IdentifierNode;
 
 class ParameterNode : public Node
 {

@@ -8,10 +8,14 @@ import soul.ast.spg;
 import cmajor.systemx.assembler.lexer;
 import cmajor.systemx.assembler.token;
 import cmajor.systemx.assembler.expression;
+import cmajor.systemx.assembler.opcode;
+import cmajor.systemx.assembler.symbol;
 
 using namespace cmajor::systemx::assembler::lexer;
 using namespace cmajor::systemx::assembler::token;
 using namespace cmajor::systemx::assembler::expression;
+using namespace cmajor::systemx::assembler::opcode;
+using namespace cmajor::systemx::assembler::symbol;
 
 namespace cmajor::systemx::assembler::parser {
 

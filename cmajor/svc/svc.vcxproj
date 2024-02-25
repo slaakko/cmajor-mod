@@ -189,9 +189,6 @@
     <ProjectReference Include="..\backend\backend.vcxproj">
       <Project>{f9426554-e003-4b1d-9431-04a894271dca}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\bmsg\bmsg.vcxproj">
-      <Project>{f8d1a9dd-6f9b-417c-9ac5-0ae26a1b3468}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\bm\bm.vcxproj">
       <Project>{7e92d97d-688e-42d3-bd85-8046a4ff9cb7}</Project>
     </ProjectReference>
@@ -200,9 +197,6 @@
     </ProjectReference>
     <ProjectReference Include="..\build\build.vcxproj">
       <Project>{846f8ef1-64d7-4e89-96ee-edd591438dbf}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\command\command.vcxproj">
-      <Project>{86f27ef1-b28b-4900-a2be-ef1ded44a369}</Project>
     </ProjectReference>
     <ProjectReference Include="..\cpp\cppdebug\cppdebug.vcxproj">
       <Project>{28905a8e-c8e3-4048-aecf-57041ceb853a}</Project>

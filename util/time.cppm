@@ -200,9 +200,15 @@ std::time_t MkTime(const DateTime& dt);
 
 DateTime ToDateTime(time_t time);
 
-DateTime ToDateTime(const std::filesystem::file_time_type& time);
+DateTime ToFileDatetime(const std::filesystem::file_time_type& fileTime);
+
+std::filesystem::file_time_type ToFileTime(const DateTime& dt);
 
 std::string TimeToString(std::time_t time);
+
+std::string FileTimeToString(const std::chrono::file_clock::time_point& fileTime);
+
+std::chrono::file_clock::time_point ToFileTime(int64_t seconds);
 
 void TimeInit();
 void TimeDone();

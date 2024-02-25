@@ -294,12 +294,12 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
 #else
         objfp = (objectFileDirectory / fileName).replace_extension(".o");
 #endif
-        llFilePath = util::GetFullPath(llfp.generic_string());
-        cppFilePath = util::GetFullPath(cppfp.generic_string());
-        bcFilePath = util::GetFullPath(bcfp.generic_string());
-        optBCFilePath = util::GetFullPath(optbcfp.generic_string());
-        optLLFilePath = util::GetFullPath(optllfp.generic_string());
-        objectFilePath = util::GetFullPath(objfp.generic_string());
+        llFilePath = util::GetFullPath(util::ToUtf8(llfp.generic_u32string()));
+        cppFilePath = util::GetFullPath(util::ToUtf8(cppfp.generic_u32string()));
+        bcFilePath = util::GetFullPath(util::ToUtf8(bcfp.generic_u32string()));
+        optBCFilePath = util::GetFullPath(util::ToUtf8(optbcfp.generic_u32string()));
+        optLLFilePath = util::GetFullPath(util::ToUtf8(optllfp.generic_u32string()));
+        objectFilePath = util::GetFullPath(util::ToUtf8(objfp.generic_u32string()));
     }
 }
 

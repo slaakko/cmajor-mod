@@ -9,6 +9,7 @@ import wing.control;
 import wing.container;
 import wing.color;
 import wing.graphics;
+import std.core;
 
 export namespace wing {
 

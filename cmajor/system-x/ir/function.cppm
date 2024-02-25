@@ -8,6 +8,8 @@ export module cmajor.systemx.ir.function;
 import cmajor.systemx.ir.type;
 import cmajor.systemx.ir.basic.block;
 import cmajor.systemx.ir.value;
+import cmajor.systemx.ir.instruction;
+import util;
 
 export namespace cmajor::systemx::ir {
 

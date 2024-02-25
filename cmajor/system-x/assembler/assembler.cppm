@@ -10,6 +10,7 @@ import cmajor.systemx.assembler.visitor;
 import cmajor.systemx.object;
 import soul.lexer;
 import soul.ast.source.pos;
+import util;
 import std.core;
 
 export namespace cmajor::systemx::assembler::assembler {

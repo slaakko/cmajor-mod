@@ -11,6 +11,8 @@ import std.core;
 
 export namespace cmajor::systemx::intermediate {
 
+export namespace metadata {}
+
 class MetadataStruct;
 class Context;
 

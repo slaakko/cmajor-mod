@@ -119,7 +119,7 @@ int64_t Console::Write(const std::vector<uint8_t>& buffer, cmajor::systemx::mach
     for (uint8_t x : buffer)
     {
         utf8Engine.Put(x);
-        if (utf8Engine.ResulReady())
+        if (utf8Engine.ResultReady())
         {
             char32_t c = utf8Engine.Result();
             if (c < static_cast<char32_t>(0x100000u))

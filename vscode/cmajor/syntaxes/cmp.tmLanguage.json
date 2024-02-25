@@ -1,0 +1,159 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Cmajor Project",
+    "patterns": [
+        {
+            "include": "#project"
+        },
+        {
+            "include": "#source"
+        },
+        {
+            "include": "#reference"
+        },
+        {
+            "include": "#resource"
+        },
+        {
+            "include": "#text"
+        },
+        {
+            "include": "#action"
+        },
+        {
+            "include": "#target"
+        }
+    ],
+    "repository": {
+        "project": {
+            "patterns": [
+                {
+                    "match": "\\b(project)\\b\\s+([_[:alpha:]][_[:alnum:].]*)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "entity.name.type.cmp.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "source": {
+            "patterns": [
+                {
+                    "match": "\\b(source)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "reference": {
+            "patterns": [
+                {
+                    "match": "\\b(reference)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "resource": {
+            "patterns": [
+                {
+                    "match": "\\b(resource)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "text": {
+            "patterns": [
+                {
+                    "match": "\\b(text)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "action": {
+            "patterns": [
+                {
+                    "match": "\\b(action)\\b\\s*(<.*>)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "string.quoted.double.cms.cmajor"
+                        },
+                        "3": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        },
+        "target": {
+            "patterns": [
+                {
+                    "match": "\\b(target)\\b\\s*(=)\\s*\\b(program|library|winlib|winapp|winguiapp|unit_test)\\b\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.other.cmp.cmajor"
+                        },
+                        "2": {
+                            "name": "keyword.operator.assign.cmp.cmajor"
+                        },
+                        "3": {
+                            "name": "entity.name.variable.cmp.cmajor"
+                        },
+                        "4": {
+                            "name": "punctuation.separator.semicolon.cmp.cmajor"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "scopeName": "source.cmp.cmajor"
+}

@@ -6,11 +6,11 @@
 export module cmajor.ast.concepts;
 
 import cmajor.ast.node;
+import cmajor.ast.identifier;
 import cmajor.ast.node.list;
 
 export namespace cmajor::ast {
 
-class IdentifierNode;
 class ParameterNode;
 
 class ConstraintNode : public Node

@@ -512,7 +512,7 @@ int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_
     for (const uint8_t* p = buffer; p != e; ++p)
     {
         engine.Put(*p);
-        if (engine.ResulReady())
+        if (engine.ResultReady())
         {
             utf32Chars.append(1, engine.Result());
         }

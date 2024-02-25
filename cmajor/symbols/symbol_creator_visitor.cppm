@@ -6,6 +6,7 @@
 export module cmajor.symbols.symbol.creator.visitor;
 
 import cmajor.ast;
+import std.core;
 
 export namespace cmajor::symbols {
 

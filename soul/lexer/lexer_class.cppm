@@ -16,6 +16,7 @@ import soul.lexer.error;
 import soul.lexer.parsing.log;
 import soul.lexer.token;
 import soul.ast.lexer.pos.pair;
+import soul.ast.span;
 
 export namespace soul::lexer {
 
@@ -190,6 +191,15 @@ public:
     {
         current = tokens.begin() + static_cast<int32_t>(pos);
         line = static_cast<int32_t>(pos >> 32);
+    }
+    soul::ast::Span GetSpan() const override
+    {
+        return GetSpan(GetPos());
+    }
+    soul::ast::Span GetSpan(int64_t pos) const override
+    {
+        const auto& token = GetToken(pos);
+        return soul::ast::Span(static_cast<int>(token.match.begin - start), token.match.Length());
     }
     const soul::lexer::Token<Char, LexerBase<Char>>& GetToken(int64_t pos) const override
     {
@@ -423,7 +433,7 @@ public:
         }
         return restOfLine;
     }
-    std::vector<int> GetLineStartIndeces() const
+    std::vector<int> GetLineStartIndeces() const override
     {
         std::vector<int> lineStartIndeces;
         for (int i = 0; i < lineStarts.size(); ++i)

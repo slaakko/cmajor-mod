@@ -10,6 +10,8 @@ import cmajor.systemx.assembler.node;
 
 export namespace cmajor::systemx::assembler {
 
+export namespace opcode {}
+
 const int IS = 256;
 const int EXTERN = 257;
 const int LINKONCE = 258;

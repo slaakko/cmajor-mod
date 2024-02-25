@@ -7,6 +7,7 @@ export module cmajor.binder.class_template_repository;
 
 import std.core;
 import cmajor.symbols;
+import soul.ast.source.pos;
 import util;
 
 export namespace cmajor::binder {

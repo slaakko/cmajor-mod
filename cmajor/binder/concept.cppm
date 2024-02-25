@@ -8,6 +8,8 @@ export module cmajor.binder.concepts;
 import std.core;
 import cmajor.symbols;
 import cmajor.ast;
+import soul.ast.source.pos;
+import util;
 
 export namespace cmajor::binder {
 

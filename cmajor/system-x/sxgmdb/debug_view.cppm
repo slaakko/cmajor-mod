@@ -7,6 +7,7 @@ export module sxgmdb.debug.view;
 
 import cmajor.systemx.kernel;
 import cmajor.systemx.machine;
+import std.core;
 
 export namespace sxgmdb {
 

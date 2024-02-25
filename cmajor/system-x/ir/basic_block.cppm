@@ -6,6 +6,7 @@
 export module cmajor.systemx.ir.basic.block;
 
 import cmajor.systemx.ir.instruction;
+import util;
 import std.core;
 
 export namespace cmajor::systemx::ir {

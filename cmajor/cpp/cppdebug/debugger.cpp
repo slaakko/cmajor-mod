@@ -1007,9 +1007,9 @@ void Debugger::Finish()
                                     if (cppFrameValue && cppFrameValue->Type() == util::JsonValueType::object)
                                     {
                                         util::JsonObject* cppFrameObject = static_cast<util::JsonObject*>(cppFrameValue);
-                                        std::string func = cppFrameObject->GetStringField(U"func");
-                                        std::string file = cppFrameObject->GetStringField(U"file");
-                                        std::string line = cppFrameObject->GetStringField(U"line");
+                                        std::string func = util::ToUtf8(cppFrameObject->GetStringField(U"func")->Value());
+                                        std::string file = util::ToUtf8(cppFrameObject->GetStringField(U"file")->Value());
+                                        std::string line = util::ToUtf8(cppFrameObject->GetStringField(U"line")->Value());
                                         Frame frame;
                                         frame.func = func;
                                         frame.file = file;

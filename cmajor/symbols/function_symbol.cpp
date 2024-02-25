@@ -17,6 +17,7 @@ import cmajor.symbols.symbol.collector;
 import cmajor.symbols.templates;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.classes;
+import cmajor.symbols.value;
 import cmajor.ast.parameter;
 import soul.ast.source.pos;
 import cmajor.ast.node;

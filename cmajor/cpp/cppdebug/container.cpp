@@ -7,6 +7,7 @@ module cmajor.debug.container;
 
 import cmajor.debug.debugger;
 import cmajor.debug.evaluation.guard;
+import cmajor.debug.di.type;
 import util;
 
 namespace cmajor::debug {

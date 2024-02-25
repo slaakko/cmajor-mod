@@ -9,6 +9,7 @@ import cmajor.systemx.machine.process;
 import cmajor.systemx.machine.clock;
 import cmajor.systemx.machine.memory;
 import cmajor.systemx.machine.instruction;
+import std.core;
 
 export namespace cmajor::systemx::machine {
 

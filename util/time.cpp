@@ -561,11 +561,31 @@ DateTime ToDateTime(time_t time)
     return DateTime(Date(1900 + localTime->tm_year, static_cast<Month>(1 + localTime->tm_mon), static_cast<int8_t>(localTime->tm_mday)), localTime->tm_hour * 3600 + localTime->tm_min * 60 + localTime->tm_sec);
 }
 
-DateTime ToDateTime(const std::filesystem::file_time_type& time)
+DateTime ToFileDatetime(const std::filesystem::file_time_type& fileTime)
 {
-    auto t = std::chrono::clock_cast<std::chrono::system_clock>(time);
-    std::time_t tim = std::chrono::system_clock::to_time_t(t);
-    return ToDateTime(tim);
+    std::chrono::seconds rep = std::chrono::duration_cast<std::chrono::seconds>(fileTime.time_since_epoch());
+    return ToDateTime(static_cast<time_t>(rep.count()));
+}
+
+std::filesystem::file_time_type ToFileTime(const DateTime& dt)
+{
+    time_t seconds = MkTime(dt);
+    std::chrono::seconds fileTime(seconds);
+    std::chrono::file_clock::duration dur(std::chrono::duration_cast<std::chrono::file_clock::duration>(fileTime));
+    return std::chrono::file_clock::time_point(dur);
+}
+
+std::string FileTimeToString(const std::chrono::file_clock::time_point& fileTime)
+{
+    std::chrono::seconds rep = std::chrono::duration_cast<std::chrono::seconds>(fileTime.time_since_epoch());
+    return std::to_string(static_cast<int64_t>(rep.count()));
+}
+
+std::chrono::file_clock::time_point ToFileTime(int64_t seconds)
+{
+    std::chrono::seconds fileTime(seconds);
+    std::chrono::file_clock::duration dur(std::chrono::duration_cast<std::chrono::file_clock::duration>(fileTime));
+    return std::chrono::file_clock::time_point(dur);
 }
 
 void TimeInit()

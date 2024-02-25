@@ -7,6 +7,7 @@ export module cmajor.cpp.ir.data;
 
 import cmajor.cpp.ir.type;
 import cmajor.cpp.ir.value;
+import util;
 
 export namespace cmajor::cpp::ir {
 

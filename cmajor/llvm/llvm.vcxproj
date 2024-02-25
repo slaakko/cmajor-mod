@@ -169,6 +169,8 @@
     <ClCompile Include="llvm_emitter.cppm" />
     <ClCompile Include="llvm_emitting_context.cpp" />
     <ClCompile Include="llvm_emitting_context.cppm" />
+    <ClCompile Include="rc.cpp" />
+    <ClCompile Include="rc.cppm" />
     <ClCompile Include="value_stack.cppm" />
     <ClCompile Include="windows_codegen.cpp" />
     <ClCompile Include="windows_codegen.cppm" />

@@ -7,6 +7,8 @@ module cmajor.debugger.debug.expr.evaluator;
 
 import cmajor.debugger.container;
 import cmajor.debugger.evaluator;
+import cmajor.debugger;
+import cmajor.debugger.request;
 import cmajor.debugger.util;
 
 namespace cmajor::debugger {

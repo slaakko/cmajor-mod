@@ -8,6 +8,7 @@ export module cmajor.view.debug.strip;
 import cmajor.service;
 import cmajor.debuggers;
 import wing;
+import std.core;
 
 export namespace cmajor::view {
 

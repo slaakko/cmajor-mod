@@ -50,7 +50,7 @@ const std::string& OutDir();
 
 enum class ProjectDeclarationType : uint8_t
 {
-    referenceDeclaration, sourceFileDeclaration, resourceFileDeclaration, textFileDeclaration, targetDeclaration, actionFileDeclaration
+    referenceDeclaration, sourceFileDeclaration, resourceFileDeclaration, textFileDeclaration, actionFileDeclaration, targetDeclaration
 };
 
 class ProjectDeclaration
@@ -202,6 +202,7 @@ public:
     void AddCompileUnit(CompileUnitNode* compileUnit);
     const std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() const { return compileUnits; }
     std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() { return compileUnits; }
+    BackEnd GetBackEnd() const { return backend; }
 private:
     BackEnd backend;
     std::u32string name;

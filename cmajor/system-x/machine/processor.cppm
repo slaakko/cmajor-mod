@@ -6,6 +6,7 @@
 export module cmajor.systemx.machine.processor;
 
 import cmajor.systemx.machine.registers;
+import std.core;
 
 export namespace cmajor::systemx::machine {
 

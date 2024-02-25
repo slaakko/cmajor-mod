@@ -8,7 +8,10 @@ module cmajor.systemx.intermediate.verify;
 import cmajor.systemx.intermediate.visitor;
 import cmajor.systemx.intermediate.error;
 import cmajor.systemx.intermediate.util;
+import cmajor.systemx.intermediate.types;
+import cmajor.systemx.intermediate.code;
 import cmajor.symbols;
+import soul.ast.source.pos;
 import util;
 
 namespace cmajor::systemx::intermediate {

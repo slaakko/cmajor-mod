@@ -7,6 +7,7 @@ export module cmajor.ast.source.writer;
 
 import cmajor.ast.visitor;
 import util.code.formatter;
+import std.core;
 
 export namespace cmajor::ast {
 

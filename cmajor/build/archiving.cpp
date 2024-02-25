@@ -6,7 +6,7 @@
 module cmajor.build.archiving;
 
 import cmajor.symbols;
-import cmajor.llvm;
+// import cmajor.llvm;
 import cmajor.backend.systemx;
 import cmajor.systemx.object;
 import util;
@@ -72,6 +72,7 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     switch (cmajor::symbols::GetBackEnd())
     {
+/*
         case cmajor::symbols::BackEnd::llvm:
         {
             if (verbose)
@@ -89,6 +90,7 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
             }
             break;
         }
+*/
         case cmajor::symbols::BackEnd::systemx:
         {
             cmajor::systemx::object::CreateArchive(0, project->LibraryFilePath(), objectFilePaths, verbose);

@@ -588,10 +588,6 @@ void ProcessExternalSymbol(LinkTable& linkTable, Symbol* symbol, Symbol*& parent
 
 void RemoveSymbol(Symbol* symbol)
 {
-    if (symbol->GetSection()->IsDataSection())
-    {
-        int x = 0;
-    }
     symbol->SetLinkage(Linkage::remove);
     uint64_t length = symbol->Length();
     if (symbol->GetSegment() == Segment::data)
@@ -771,10 +767,6 @@ void ProcessSymbols(LinkTable& linkTable, ObjectFile* objectFile, ExecutableFile
 
 void LinkObjectFile(LinkTable& linkTable, ObjectFile* objectFile, Section*& prevCodeSection, Section*& prevDataSection, ExecutableFile* executable)
 {
-    if (objectFile->FileName() == "opt_switch.o")
-    {
-        int x = 0;
-    }
     Section* codeSection = objectFile->GetCodeSection();
     if (!prevCodeSection)
     {

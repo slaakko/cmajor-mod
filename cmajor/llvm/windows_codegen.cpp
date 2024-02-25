@@ -8,6 +8,8 @@ module;
 
 module cmajor.llvm.codegen.windows;
 
+import cmajor.symbols.exception;
+
 namespace cmajor::llvm {
 
 WindowsCodeGenerator::WindowsCodeGenerator(cmajor::ir::Emitter* emitter_) : LLVMCodeGenerator(emitter_)

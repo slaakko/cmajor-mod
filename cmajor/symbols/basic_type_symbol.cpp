@@ -18,6 +18,7 @@ import cmajor.symbols.symbol.collector;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.exception;
 import cmajor.symbols.function.symbol;
+import cmajor.symbols.value;
 import cmajor.ir.emitter;
 import cmajor.ir.gen.object;
 import util;

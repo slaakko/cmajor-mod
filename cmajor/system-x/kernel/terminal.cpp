@@ -1066,7 +1066,7 @@ std::vector<uint8_t> Terminal::Read(int64_t count, cmajor::systemx::machine::Pro
                     DebugWrite("kernel.terminal: read.byte(" + util::ToHexString(x) + ")");
                 }
                 readEngine.Put(x);
-                if (readEngine.ResulReady())
+                if (readEngine.ResultReady())
                 {
                     char32_t ch = readEngine.Result();
                     if ((GetDebugMode() & debugTerminalMode) != 0)
@@ -1096,7 +1096,7 @@ int64_t Terminal::Write(const std::vector<uint8_t>& buffer, cmajor::systemx::mac
     for (uint8_t x : buffer)
     {
         writeEngine.Put(x);
-        if (writeEngine.ResulReady())
+        if (writeEngine.ResultReady())
         {
             char32_t ch = writeEngine.Result();
             if (ch < static_cast<char32_t>(0x100000u))

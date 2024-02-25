@@ -9,6 +9,10 @@ import util.unicode;
 
 namespace util {
 
+EndOfStreamException::EndOfStreamException(const std::string& message_) : std::runtime_error(message_)
+{
+}
+
 BinaryStreamReader::BinaryStreamReader(Stream& stream_) : stream(stream_)
 {
 }
@@ -23,7 +27,7 @@ uint8_t BinaryStreamReader::ReadByte()
     int x = stream.ReadByte();
     if (x == -1)
     {
-        throw std::runtime_error("unexpected end of stream");
+        throw EndOfStreamException("unexpected end of stream");
     }
     return static_cast<uint8_t>(x);
 }
@@ -216,6 +220,13 @@ void BinaryStreamReader::ReadUuid(util::uuid& uuid)
 time_t BinaryStreamReader::ReadTime()
 {
     return static_cast<time_t>(ReadLong());
+}
+
+std::chrono::file_clock::time_point BinaryStreamReader::ReadFileTime()
+{
+    std::chrono::seconds fileTime(ReadLong());
+    std::chrono::file_clock::duration dur(std::chrono::duration_cast<std::chrono::file_clock::duration>(fileTime));
+    return std::chrono::file_clock::time_point(dur);
 }
 
 } // namespace util

@@ -6,6 +6,7 @@
 export module cmajor.cpp.ir.compile.unit;
 
 import cmajor.cpp.ir.context;
+import cmajor.cpp.ir.type;
 import std.core;
 
 export namespace cmajor::cpp::ir {

@@ -8,6 +8,7 @@ export module cmajor.systemx.intermediate.dominator.tree.cooper;
 import cmajor.systemx.intermediate.code;
 import util;
 import soul.xml.dom;
+import std.core;
 
 export namespace cmajor::systemx::intermediate {
 

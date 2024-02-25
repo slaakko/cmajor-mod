@@ -140,7 +140,6 @@ inline FunctionSymbolFlags operator~(FunctionSymbolFlags flag)
 std::string FunctionSymbolFlagStr(FunctionSymbolFlags flags);
 
 class ParameterSymbol;
-class LocalVariableSymbol;
 class TemplateParameterSymbol;
 class BoundTemplateParameterSymbol;
 

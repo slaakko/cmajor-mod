@@ -8,6 +8,7 @@ import soul.ast.spg;
 import soul.rex.token;
 import soul.rex.lexer;
 import soul.rex.token.parser;
+import soul.rex.symbol;
 
 using namespace soul::rex::token;
 using namespace soul::rex::lexer;

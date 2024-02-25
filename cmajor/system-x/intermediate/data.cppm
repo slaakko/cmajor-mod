@@ -7,6 +7,7 @@ export module cmajor.systemx.intermediate.data;
 
 import cmajor.systemx.intermediate.types;
 import soul.ast.source.pos;
+import std.core;
 
 export namespace cmajor::systemx::intermediate {
 

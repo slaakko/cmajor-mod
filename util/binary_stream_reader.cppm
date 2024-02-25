@@ -11,6 +11,12 @@ import util.uuid;
 
 export namespace util {
 
+class EndOfStreamException : public std::runtime_error
+{
+public:
+    EndOfStreamException(const std::string& message_);
+};
+
 class BinaryStreamReader
 {
 public:
@@ -40,6 +46,7 @@ public:
     int64_t ReadSLEB128Long();
     void ReadUuid(util::uuid& uuid);
     time_t ReadTime();
+    std::chrono::file_clock::time_point ReadFileTime();
     int64_t Position() const { return stream.Position(); }
 private:
     Stream& stream;

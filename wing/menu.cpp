@@ -809,7 +809,6 @@ ContextMenu::ContextMenu() : MenuBox(nullptr, new MenuItem("root")), menuItems(t
 
 ContextMenu::~ContextMenu()
 {
-    int x = 0;
 }
 
 void ContextMenu::AddMenuItem(MenuItemBase* menuItem)

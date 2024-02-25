@@ -8,6 +8,7 @@ export module cmajor.systemx.ir.compile.unit;
 import cmajor.systemx.ir.function;
 import cmajor.systemx.ir.metadata;
 import cmajor.systemx.ir.context;
+import cmajor.systemx.ir.type;
 import std.core;
 
 export namespace cmajor::systemx::ir {

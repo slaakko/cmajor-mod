@@ -23,6 +23,7 @@ import cmajor.symbols.templates;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.concepts;
+import cmajor.symbols.value;
 import cmajor.ast.basic.type;
 import cmajor.ast.node;
 import cmajor.ast.classes;
@@ -36,8 +37,6 @@ import util;
 import std.core;
 
 namespace cmajor::symbols {
-
-//using namespace soulng::unicode;
 
 int32_t GetClassIdVmtIndexOffset()
 {
@@ -361,10 +360,6 @@ const int maxStaticLayoutSize = maxObjectLayoutSize;
 
 void ClassTypeSymbol::Read(SymbolReader& reader)
 {
-    if (Name() == U"Button")
-    {
-        int x = 0;
-    }
     TypeSymbol::Read(reader);
     groupName = reader.GetBinaryStreamReader().ReadUtf32String();
     flags = static_cast<ClassTypeSymbolFlags>(reader.GetBinaryStreamReader().ReadUShort());
@@ -588,10 +583,6 @@ void ClassTypeSymbol::AddMember(Symbol* member)
     }
     case SymbolType::memberFunctionSymbol:
     {
-        if (Name() == U"Control" && member->Name().find(U"GetFirstEnabledTabStopControl") != std::u32string::npos)
-        {
-            int x = 0;
-        }
         memberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
         break;
     }
@@ -1582,10 +1573,6 @@ void* ClassTypeSymbol::CreateImts(cmajor::ir::Emitter& emitter)
 
 void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
 {
-    if (Name() == U"Button")
-    {
-        int x = 0;
-    }
     if (!IsPolymorphic()) return nullptr;
     void* localVmtObjectType = emitter.GetVmtObjectType(this);
     if (!localVmtObjectType)

@@ -8,6 +8,7 @@ export module cmajor.debugger;
 import cmajor.debugger.breakpoint;
 import cmajor.debugger.debug.logger;
 import cmajor.debugger.message.writer;
+import cmajor.debugger.reply;
 import cmajor.debug;
 import cmajor.info;
 import util;

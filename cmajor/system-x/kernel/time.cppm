@@ -29,4 +29,5 @@ DateTime CurrentDateTime();
 void WriteDate(const Date& date, int64_t yearAddr, int64_t monthAddr, int64_t dayAddr, uint64_t rv, cmajor::systemx::machine::Memory& mem);
 void WriteDateTime(const DateTime& dateTime, int64_t yearAddr, int64_t monthAddr, int64_t dayAddr, int64_t secsAddr, uint64_t rv, cmajor::systemx::machine::Memory& mem);
 
+
 } // namespace cmajor::systemx::kernel

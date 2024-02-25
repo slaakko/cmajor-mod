@@ -9,6 +9,7 @@ import cmajor.systemx.object.symbol;
 import cmajor.systemx.object.link;
 import cmajor.systemx.object.debug;
 import cmajor.systemx.object.resource;
+import std.core;
 import util;
 
 export namespace cmajor::systemx::object {

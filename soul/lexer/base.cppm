@@ -13,6 +13,7 @@ import soul.lexer.classmap;
 import soul.lexer.variables;
 import soul.ast.slg;
 import soul.ast.lexer.pos.pair;
+import soul.ast.span;
 
 export namespace soul::lexer {
 
@@ -28,6 +29,8 @@ public:
     virtual soul::lexer::Token<Char, Self>& CurrentToken() = 0;
     virtual const Lexeme<Char>& CurrentLexeme() const = 0;
     virtual Lexeme<Char>& CurrentLexeme() = 0;
+    virtual soul::ast::Span GetSpan() const = 0;
+    virtual soul::ast::Span GetSpan(int64_t pos) const = 0;
     virtual const soul::lexer::Token<Char, Self>& GetToken(int64_t pos) const = 0;
     virtual const std::string& FileName() const = 0;
     virtual int File() const = 0;
@@ -36,6 +39,7 @@ public:
     virtual soul::lexer::ClassMap<Char>* GetClassMap() const = 0;
     virtual void SetClassMap(soul::lexer::ClassMap<Char>* classMap) = 0;
     virtual Variables* GetVariables() const = 0;
+    virtual std::vector<int> GetLineStartIndeces() const = 0;
     virtual soul::ast::slg::TokenCollection* GetTokenCollection() const = 0;
     virtual void SetTokenCollection(soul::ast::slg::TokenCollection* tokenCollection_) = 0;
     virtual KeywordMap<Char>* GetKeywordMap() const = 0;

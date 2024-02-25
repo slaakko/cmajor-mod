@@ -11,6 +11,7 @@ import cmajor.binary.portmap.message;
 import soul.xml.dom;
 import soul.xml.dom.parser;
 import soul.xml.xpath;
+import std.filesystem;
 import util;
 
 namespace bpm {

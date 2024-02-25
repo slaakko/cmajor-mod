@@ -42,7 +42,7 @@ class Utf8ToUtf32Engine
 public:
     Utf8ToUtf32Engine();
     void Put(uint8_t x);
-    bool ResulReady() const { return resultReady; }
+    bool ResultReady() const { return resultReady; }
     char32_t Result() const { return result; }
 private:
     int state;

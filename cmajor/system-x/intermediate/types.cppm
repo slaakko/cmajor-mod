@@ -11,6 +11,8 @@ import std.core;
 
 export namespace cmajor::systemx::intermediate {
 
+export namespace types {}
+
 class Context;
 class Types;
 class Visitor;

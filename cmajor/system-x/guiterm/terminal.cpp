@@ -85,7 +85,7 @@ int64_t TerminalFile::Write(const std::vector<uint8_t>& buffer, cmajor::systemx:
     for (uint8_t x : buffer)
     {
         utfEngine.Put(x);
-        if (utfEngine.ResulReady())
+        if (utfEngine.ResultReady())
         {
             char32_t ch = utfEngine.Result();
             if (ch < static_cast<char32_t>(0x100000u))

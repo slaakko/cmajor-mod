@@ -9,6 +9,8 @@ import cmajor.systemx.intermediate.opt.codegen;
 import cmajor.systemx.intermediate.linear.scan.reg.allocator;
 import cmajor.systemx.intermediate.context;
 import cmajor.systemx.intermediate.error;
+import cmajor.systemx.intermediate.compile.unit;
+import cmajor.systemx.intermediate.code;
 import cmajor.systemx.assembler;
 import cmajor.symbols;
 import util;

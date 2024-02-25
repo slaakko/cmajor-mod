@@ -9,6 +9,8 @@ import cmajor.systemx.assembler.node;
 
 export namespace cmajor::systemx::assembler {
 
+export namespace symbol {}
+
 class Symbol : public Node
 {
 public:

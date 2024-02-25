@@ -6,15 +6,40 @@
 export module util.json;
 
 import std.core;
+import util.code.formatter;
 
 export namespace util {
 
-enum class JsonValueType
+export namespace json {}
+
+enum class JsonValueType : int
 {
-    object, array, string, number, boolean, null
+    none = 0, 
+    object = 1 << 0, 
+    array = 1 << 1, 
+    string = 1 << 2, 
+    number = 1 << 3, 
+    boolean = 1 << 4, 
+    null = 1 << 5, 
+    any = object | array | string | number | boolean | null
 };
 
-class CodeFormatter;
+constexpr JsonValueType operator|(JsonValueType left, JsonValueType right)
+{
+    return JsonValueType(int(left) | int(right));
+}
+
+constexpr JsonValueType operator&(JsonValueType left, JsonValueType right)
+{
+    return JsonValueType(int(left) & int(right));
+}
+
+constexpr JsonValueType operator~(JsonValueType type)
+{
+    return JsonValueType(~int(type));
+}
+
+std::string JsonValueTypeStr(JsonValueType type);
 
 class JsonValue
 {
@@ -27,6 +52,7 @@ public:
     JsonValueType Type() const { return type; }
     bool IsObject() const { return type == JsonValueType::object; }
     bool IsArray() const { return type == JsonValueType::array; }
+    bool IsStructuredValue() const { return IsObject() || IsArray(); }
     bool IsString() const { return type == JsonValueType::string; }
     bool IsNumber() const { return type == JsonValueType::number; }
     bool IsBoolean() const { return type == JsonValueType::boolean; }
@@ -76,13 +102,21 @@ private:
     bool value;
 };
 
+class JsonArray;
+
 class JsonObject : public JsonValue
 {
 public:
     JsonObject();
     void AddField(const std::u32string& fieldName, std::unique_ptr<JsonValue>&& fieldValue);
-    JsonValue* GetField(const std::u32string& fieldName);
-    std::string GetStringField(const std::u32string& fieldName);
+    int FieldCount() const { return fieldValues.size(); }
+    JsonValue* GetField(const std::u32string& fieldName) const;
+    bool HasField(const std::u32string& fieldName) const;
+    JsonString* GetStringField(const std::u32string& fieldName) const;
+    JsonNumber* GetNumberField(const std::u32string& fieldName) const;
+    JsonBool* GetBooleanField(const std::u32string& fieldName) const;
+    JsonObject* GetObjectField(const std::u32string& fieldName) const;
+    JsonArray* GetArrayField(const std::u32string& fieldName) const;
     JsonValue* Clone() const override;
     std::string ToString() const override;
     void Write(CodeFormatter& formatter) override;
@@ -97,6 +131,7 @@ public:
     JsonArray();
     void AddItem(std::unique_ptr<JsonValue>&& item);
     int Count() const { return items.size(); }
+    JsonValue* GetItem(int index) const;
     JsonValue* operator[](int index) const;
     JsonValue* Clone() const override;
     std::string ToString() const override;
@@ -114,4 +149,3 @@ public:
 };
 
 } // namespace util
-

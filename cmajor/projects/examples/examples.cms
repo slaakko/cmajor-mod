@@ -4,4 +4,5 @@ project <Auto/Auto.cmp>;
 project <Calculator/Calculator.cmp>;
 project <Hello/Hello.cmp>;
 project <HelloGUI/HelloGUI.cmp>;
-activeProject HelloGUI;
+project <HexDump/hexdump.cmp>;
+activeProject HexDump;

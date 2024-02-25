@@ -5,6 +5,7 @@ module cmajor.attribute.parser;
 
 import util;
 import soul.ast.spg;
+import soul.ast.source.pos;
 import cmajor.token;
 import soul.lexer;
 import cmajor.lexer;

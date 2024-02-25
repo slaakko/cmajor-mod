@@ -7,8 +7,14 @@ import std.core;
 import soul.lexer;
 import soul.parser;
 import cmajor.systemx.intermediate.context;
+import cmajor.systemx.intermediate.types;
+import cmajor.systemx.intermediate.code;
+import cmajor.systemx.intermediate.metadata;
 
 using namespace cmajor::systemx::intermediate::context;
+using namespace cmajor::systemx::intermediate::types;
+using namespace cmajor::systemx::intermediate::code;
+using namespace cmajor::systemx::intermediate::metadata;
 
 export namespace cmajor::systemx::intermediate::code::parser {
 

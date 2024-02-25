@@ -90,7 +90,7 @@ namespace System.IO
             Write(date.ToString());
         }
         public override void Write(const DateTime& dateTime)
-        {            
+        {
             Write(dateTime.ToString());
         }
         public override void WriteLine()
@@ -117,21 +117,21 @@ namespace System.IO
             Write(x);
             WriteLine();
         }
-		public override void WriteLine(char x)
-		{
-			Write(x);
-			WriteLine();
-		}
-		public override void WriteLine(wchar x)
-		{
-			Write(x);
-			WriteLine();
-		}
-		public override void WriteLine(uchar x)
-		{
-			Write(x);
-			WriteLine();
-		}
+        public override void WriteLine(char x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(wchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
+        public override void WriteLine(uchar x)
+        {
+            Write(x);
+            WriteLine();
+        }
         public override void WriteLine(sbyte x)
         {
             Write(x);
@@ -188,7 +188,7 @@ namespace System.IO
             WriteLine();
         }
         public override void WriteLine(const DateTime& dateTime)
-        {            
+        {
             Write(dateTime);
             WriteLine();
         }

@@ -415,5 +415,5 @@ private:
     friend llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::SourcePos& sourcePos);
 };
 
-
 } // namespace cmllvm
+

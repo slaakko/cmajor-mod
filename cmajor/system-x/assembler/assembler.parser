@@ -9,6 +9,8 @@ export module cmajor.systemx.assembler.parser;
 [implementation]import cmajor.systemx.assembler.lexer;
 [implementation]import cmajor.systemx.assembler.token;
 [implementation]import cmajor.systemx.assembler.expression;
+[implementation]import cmajor.systemx.assembler.opcode;
+[implementation]import cmajor.systemx.assembler.symbol;
 
 parser AssemblyParser
 {

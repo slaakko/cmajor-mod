@@ -6,6 +6,7 @@
 export module cmajor.systemx.assembler.assembly.file;
 
 import cmajor.systemx.assembler.instruction;
+import cmajor.systemx.assembler.symbol;
 import util;
 import std.core;
 

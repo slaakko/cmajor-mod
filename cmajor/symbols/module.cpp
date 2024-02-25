@@ -5,7 +5,6 @@
 
 module;
 #include <util/assert.hpp>
-// #define RESOURCE_DEBUG
 
 module cmajor.symbols.modules;
 
@@ -19,6 +18,7 @@ import cmajor.symbols.classes;
 import cmajor.symbols.interfaces;
 import cmajor.symbols.concepts;
 import cmajor.symbols.source.file.module_map;
+import cmajor.symbols.value;
 import util;
 import std.filesystem;
 
@@ -416,8 +416,10 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     backend = cmajor::ast::BackEnd::cpp;
                 }
+                std::filesystem::path p;
                 mfp = CmajorSystemLibDir(config, backend);
-                searchedDirectories.append("\n").append(mfp.generic_string());
+                std::string mfps = util::ToUtf8(mfp.generic_u32string());
+                searchedDirectories.append("\n").append(mfps);
                 mfp /= mfn;
                 if (!std::filesystem::exists(mfp))
                 {
@@ -426,8 +428,8 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                     {
                         std::filesystem::path mrd = mfp;
                         mrd.remove_filename();
-                        searchedDirectories.append("\n").append(mrd.generic_string());
-                        throw std::runtime_error("Could not find module reference '" + mfn.generic_string() + "'.\nDirectories searched:\n" + searchedDirectories);
+                        searchedDirectories.append("\n").append(util::ToUtf8(mrd.generic_u32string()));
+                        throw std::runtime_error("Could not find module reference '" + util::ToUtf8(mfn.generic_u32string()) + "'.\nDirectories searched:\n" + searchedDirectories);
                     }
                 }
             }
@@ -438,11 +440,11 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     std::filesystem::path mrd = mfp;
                     mrd.remove_filename();
-                    searchedDirectories.append("\n").append(mrd.generic_string());
-                    throw std::runtime_error("Could not find module reference '" + mfn.generic_string() + "'.\nDirectories searched:\n" + searchedDirectories);
+                    searchedDirectories.append("\n").append(util::ToUtf8(mrd.generic_u32string()));
+                    throw std::runtime_error("Could not find module reference '" + util::ToUtf8(mfn.generic_u32string()) + "'.\nDirectories searched:\n" + searchedDirectories);
                 }
             }
-            std::string moduleFilePath = util::GetFullPath(mfp.generic_string());
+            std::string moduleFilePath = util::GetFullPath(util::ToUtf8(mfp.generic_u32string()));
             if (readMap.find(moduleFilePath) == readMap.cend())
             {
                 Module* referencedModule = GetModuleFromModuleCache(moduleFilePath);
@@ -491,8 +493,8 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                     {
                         std::filesystem::path mrd = mfp;
                         mrd.remove_filename();
-                        searchedDirectories.append("\n").append(mrd.generic_string());
-                        throw std::runtime_error("Could not find module reference '" + mfn.generic_string() + "'.\nDirectories searched:\n" + searchedDirectories);
+                        searchedDirectories.append("\n").append(util::ToUtf8(mrd.generic_u32string()));
+                        throw std::runtime_error("Could not find module reference '" + util::ToUtf8(mfn.generic_u32string()) + "'.\nDirectories searched:\n" + searchedDirectories);
                     }
                 }
             }
@@ -503,11 +505,11 @@ void Import(cmajor::ast::Target target, Module* rootModule, Module* module, cons
                 {
                     std::filesystem::path mrd = mfp;
                     mrd.remove_filename();
-                    searchedDirectories.append("\n").append(mrd.generic_string());
-                    throw std::runtime_error("Could not find module reference '" + mfn.generic_string() + "'.\nDirectories searched:\n" + searchedDirectories);
+                    searchedDirectories.append("\n").append(util::ToUtf8(mrd.generic_u32string()));
+                    throw std::runtime_error("Could not find module reference '" + util::ToUtf8(mfn.generic_u32string()) + "'.\nDirectories searched:\n" + searchedDirectories);
                 }
             }
-            std::string moduleFilePath = util::GetFullPath(mfp.generic_string());
+            std::string moduleFilePath = util::GetFullPath(util::ToUtf8(mfp.generic_u32string()));
             auto it = readMap.find(moduleFilePath);
             if (it != readMap.cend())
             {
@@ -663,24 +665,24 @@ Module::Module(const std::string& filePath, bool readRoot) :
 #ifdef _WIN32
         if (GetBackEnd() == BackEnd::systemx)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::llvm)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
         else
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
 #endif
     }
@@ -761,8 +763,8 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     std::filesystem::path mfd = originalFilePath;
     mfd.remove_filename();
     std::filesystem::create_directories(mfd);
-    SetDirectoryPath(util::GetFullPath(mfd.generic_string()));
-    SetObjectFileDirectoryPath(util::GetFullPath(mfd.generic_string()));
+    SetDirectoryPath(util::GetFullPath(util::ToUtf8(mfd.generic_u32string())));
+    SetObjectFileDirectoryPath(util::GetFullPath(util::ToUtf8(mfd.generic_u32string())));
     if (name == U"System.Core")
     {
         InitCoreSymbolTable(*symbolTable);
@@ -788,24 +790,24 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
 #ifdef _WIN32
         if (GetBackEnd() == BackEnd::systemx)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::llvm)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".lib").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
         else
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(originalFilePath).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(originalFilePath).replace_extension(".a").generic_u32string()));
         }
 #endif
     }
@@ -1072,24 +1074,24 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
 #ifdef _WIN32
         if (GetBackEnd() == BackEnd::systemx)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::llvm)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".lib").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(filePathReadFrom).replace_extension(".lib").generic_u32string()));
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_u32string()));
         }
 #else
         if (GetBackEnd() == BackEnd::cpp)
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_u32string()));
         }
         else
         {
-            libraryFilePath = util::GetFullPath(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_string());
+            libraryFilePath = util::GetFullPath(util::ToUtf8(std::filesystem::path(filePathReadFrom).replace_extension(".a").generic_u32string()));
         }
 #endif
     }
@@ -1353,10 +1355,12 @@ void Module::CheckUpToDate()
 #endif
             if (std::filesystem::exists(objectFilePath))
             {
-                if (std::filesystem::last_write_time(sfp) > std::filesystem::last_write_time(objectFilePath))
+                std::string sourceFilePath = util::ToUtf8(sfp.generic_u32string());
+                std::string objectFilePathStr = util::ToUtf8(objectFilePath.generic_u32string());
+                if (false /*std::filesystem::last_write_time(sourceFilePath) > std::filesystem::last_write_time(objectFilePathStr)*/) // TODO!!!!
                 {
-                    Warning warning(name, "source file '" + util::GetFullPath(sfp.generic_string()) + "' is more recent than object file '" +
-                        util::GetFullPath(objectFilePath.generic_string()) + "'");
+                    Warning warning(name, "source file '" + util::GetFullPath(util::ToUtf8(sfp.generic_u32string())) + "' is more recent than object file '" +
+                        util::GetFullPath(util::ToUtf8(objectFilePath.generic_u32string())) + "'");
                     bool found = false;
                     for (const Warning& prev : warnings.Warnings())
                     {

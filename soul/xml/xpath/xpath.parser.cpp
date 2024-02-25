@@ -8,6 +8,7 @@ import soul.ast.spg;
 import soul.xml.xpath.lexer;
 import soul.xml.xpath.token;
 import soul.xml.xpath.token.parser;
+import soul.xml.dom;
 
 using namespace soul::xml::xpath::lexer;
 using namespace soul::xml::xpath::token;

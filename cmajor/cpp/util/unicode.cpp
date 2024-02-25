@@ -10,6 +10,7 @@
 #include <util/text_util.hpp>
 #include <util/path.hpp>
 #include <filesystem>
+#include <mutex>
 
 namespace util {
 

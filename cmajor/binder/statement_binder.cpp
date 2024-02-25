@@ -632,10 +632,6 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
 {
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&memberFunctionNode);
-    if (symbol->Name().find(U"FocusNext") != std::u32string::npos)
-    {
-        int x = 0;
-    }
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol, "member function symbol expected");
     cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol = static_cast<cmajor::symbols::MemberFunctionSymbol*>(symbol);
     if (!dontCheckDuplicateFunctionSymbols)

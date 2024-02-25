@@ -9,6 +9,7 @@ import std.core;
 import cmajor.ast.compile.unit;
 import cmajor.ast.namespaces;
 import cmajor.symbols.scope;
+import util;
 
 export namespace cmajor::symbols {
 
@@ -72,7 +73,7 @@ private:
 
 struct ParseResult
 {
-    ParseResult() : ok(true), numberOfErrors(0), synchronized(false), start(), end() {}
+    ParseResult() : ok(true), numberOfErrors(0), synchronized(false) , start(), end() {}
     bool ok;
     std::string error;
     int numberOfErrors;
@@ -80,8 +81,10 @@ struct ParseResult
     std::string cursorContainer;
     std::vector<int> ruleContext;
     std::vector<std::string> errors;
-    std::chrono::steady_clock::time_point start;
-    std::chrono::steady_clock::time_point end;
+    //std::chrono::steady_clock::time_point start; TODO!!!
+    int start;
+    //std::chrono::steady_clock::time_point end; TODO!!!
+    int end;
 };
 
 class Sources

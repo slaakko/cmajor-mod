@@ -7,6 +7,7 @@ export module cmajor.systemx.intermediate.codegen;
 
 import cmajor.systemx.assembler;
 import soul.ast.source.pos;
+import std.core;
 
 export namespace cmajor::systemx::intermediate {
 

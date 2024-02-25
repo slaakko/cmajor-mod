@@ -8,6 +8,7 @@ export module cmajor.view.cmajor.editor;
 import cmajor.view.editor;
 import cmajor.view.source.code.view;
 import cmajor.view.debug.strip;
+import wing;
 import std.core;
 
 export namespace cmajor::view {

@@ -15,6 +15,7 @@ struct Lexeme
     Lexeme() : begin(nullptr), end(nullptr) {}
     Lexeme(const Char* begin_, const Char* end_) : begin(begin_), end(end_) {}
     std::basic_string<Char> ToString() const { return std::basic_string<Char>(begin, end); }
+    int Length() const { return static_cast<int>(end - begin); }
     const Char* begin;
     const Char* end;
 };

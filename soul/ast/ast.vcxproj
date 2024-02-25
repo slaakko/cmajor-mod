@@ -165,6 +165,8 @@
     <ClCompile Include="slg.cppm" />
     <ClCompile Include="source_pos.cpp" />
     <ClCompile Include="source_pos.cppm" />
+    <ClCompile Include="span.cpp" />
+    <ClCompile Include="span.cppm" />
     <ClCompile Include="spg.cpp" />
     <ClCompile Include="spg.cppm" />
   </ItemGroup>

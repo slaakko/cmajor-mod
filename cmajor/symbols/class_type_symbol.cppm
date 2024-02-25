@@ -24,7 +24,6 @@ export namespace cmajor::symbols {
 
 class InterfaceTypeSymbol;
 class TemplateParameterSymbol;
-class MemberVariableSymbol;
 class StaticConstructorSymbol;
 class ConstructorSymbol;
 class DestructorSymbol;

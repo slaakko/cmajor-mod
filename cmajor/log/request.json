@@ -1,0 +1,12 @@
+{
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "textDocument/semanticTokens/full",
+    "params": 
+        {
+            "textDocument": 
+                {
+                    "uri": "file:///c%3A/work/cmajor-mod/cmajor/system/System.Base/Algorithm.cm"
+                }
+        }
+}

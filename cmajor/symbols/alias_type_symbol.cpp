@@ -23,11 +23,6 @@ namespace cmajor::symbols {
 AliasTypeSymbol::AliasTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
     Symbol(SymbolType::aliasTypeSymbol, sourcePos_, sourceModuleId_, name_), type()
 {
-    if (Name() == U"string" && sourcePos_.file == -1)
-    {
-        std::cout << "foo"; 
-        int x = 0;
-    }
 }
 
 void AliasTypeSymbol::Write(SymbolWriter& writer)

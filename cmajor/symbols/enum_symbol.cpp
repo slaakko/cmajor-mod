@@ -16,6 +16,7 @@ import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.exception;
 import cmajor.symbols.modules;
+import cmajor.symbols.value;
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import util;

@@ -5,7 +5,6 @@
 
 module;
 #include <llvm/IR/Value.h>
-#include <util/assert.hpp>
 
 export module cmajor.llvm.value.stack;
 
@@ -24,7 +23,10 @@ public:
     }
     void* Pop() override
     {
-        Assert(!s.empty(), "value stack is empty"); 
+        if (s.empty())
+        {
+            throw std::runtime_error("value stack is empty");
+        }
         ::llvm::Value* top = s.back();
         s.pop_back();
         return top;

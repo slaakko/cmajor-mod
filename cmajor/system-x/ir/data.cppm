@@ -7,6 +7,7 @@ export module cmajor.systemx.ir.data;
 
 import cmajor.systemx.ir.type;
 import cmajor.systemx.ir.value;
+import util;
 
 export namespace cmajor::systemx::ir {
 

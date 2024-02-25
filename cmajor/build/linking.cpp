@@ -5,7 +5,7 @@
 
 module cmajor.build.linking;
 
-import cmajor.llvm;
+// import cmajor.llvm;
 import cmajor.systemx.object;
 import util;
 
@@ -141,11 +141,13 @@ void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
     switch (cmajor::symbols::GetBackEnd())
     {
+/*
         case cmajor::symbols::BackEnd::llvm:
         {
             cmajor::llvmlink::Link(project, rootModule);
             break;
         }
+*/
         case cmajor::symbols::BackEnd::systemx:
         {
             LinkSystemX(project, rootModule);

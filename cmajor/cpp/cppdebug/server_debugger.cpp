@@ -9,6 +9,8 @@ import cmajor.debug.client.channel;
 import cmajor.debug.debug.info;
 import cmajor.debug.debugger;
 import cmajor.debug.debugger.output.writer;
+import cmajor.debug.di.type;
+import cmajor.debug.di.variable;
 import cmajor.msg.cmdb.message;
 import cmajor.msg.message.map;
 import soul.xml.dom.parser;
