@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,7 +13,9 @@ export namespace cmajor::symbols {
 class NamespaceSymbol : public ContainerSymbol
 {
 public:
-    NamespaceSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    NamespaceSymbol(const soul::ast::Span& span_, const std::u32string& name_);
+    void Write(SymbolWriter& writer) override;
+    void Read(SymbolReader& reader) override;
     std::string TypeString() const override { return "namespace"; }
     std::u32string Id() const override { return U"ns_" + FullName(); }
     bool IsParentSymbol() const override { return true; }
@@ -25,4 +27,5 @@ public:
     std::string GetSymbolCategoryStr() const override { return "NS"; }
     std::string GetSymbolCategoryDescription() const override { return "namespace"; }
 };
+
 } // namespace cmajor::symbols

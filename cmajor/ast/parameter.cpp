@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,13 +14,13 @@ import util;
 
 namespace cmajor::ast {
 
-ParameterNode::ParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    Node(NodeType::parameterNode, sourcePos_, moduleId_), typeExpr(), id(), artificialId(false)
+ParameterNode::ParameterNode(const soul::ast::Span& span_) :
+    Node(NodeType::parameterNode, span_), typeExpr(), id(), artificialId(false)
 {
 }
 
-ParameterNode::ParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_) :
-    Node(NodeType::parameterNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), artificialId(false)
+ParameterNode::ParameterNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_) :
+    Node(NodeType::parameterNode, span_), typeExpr(typeExpr_), id(id_), artificialId(false)
 {
     typeExpr->SetParent(this);
     if (id)
@@ -36,7 +36,7 @@ Node* ParameterNode::Clone(CloneContext& cloneContext) const
     {
         clonedId = static_cast<IdentifierNode*>(id->Clone(cloneContext));
     }
-    ParameterNode* clone = new ParameterNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), clonedId);
+    ParameterNode* clone = new ParameterNode(GetSpan(), typeExpr->Clone(cloneContext), clonedId);
     if (artificialId)
     {
         clone->artificialId = true;

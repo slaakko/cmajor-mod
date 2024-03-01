@@ -50,7 +50,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::AutoNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::AutoNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch1 = match;
@@ -79,7 +79,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::BoolNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::BoolNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch2 = match;
@@ -108,7 +108,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::SByteNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::SByteNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch3 = match;
@@ -137,7 +137,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::ByteNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::ByteNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch4 = match;
@@ -166,7 +166,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::ShortNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::ShortNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch5 = match;
@@ -195,7 +195,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::UShortNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::UShortNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch6 = match;
@@ -224,7 +224,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::IntNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::IntNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch7 = match;
@@ -253,7 +253,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::UIntNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::UIntNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch8 = match;
@@ -282,7 +282,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::LongNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::LongNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch9 = match;
@@ -311,7 +311,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::ULongNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::ULongNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch10 = match;
@@ -340,7 +340,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::FloatNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::FloatNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch11 = match;
@@ -369,7 +369,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::DoubleNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::DoubleNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch12 = match;
@@ -398,7 +398,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::CharNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::CharNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch13 = match;
@@ -427,7 +427,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::WCharNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::WCharNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch14 = match;
@@ -456,7 +456,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::UCharNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::UCharNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch15 = match;
@@ -485,7 +485,7 @@ soul::parser::Match BasicTypeParser<LexerT>::BasicType(LexerT& lexer, cmajor::pa
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BasicType");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::VoidNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::VoidNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch16 = match;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.ir.emitter;
 
 import std.core;
 import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.value.stack;
 import util.uuid;
 import cmajor.ir.emitting.context;
@@ -34,7 +35,7 @@ public:
     virtual bool InTryBlock() const { return false; }
     virtual int CurrentTryBlockId() const { return 0; }
     virtual void CreateCleanup() { }
-    virtual std::string GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return std::string(); }
+    virtual std::string GetSourceFilePath(const util::uuid& moduleId) { return std::string(); }
     virtual cmajor::ir::Pad* CurrentPad() { return nullptr; }
     virtual void* CreateClassDIType(void* classPtr) { return nullptr; }
     virtual int Install(const std::string& str) = 0;
@@ -144,18 +145,18 @@ public:
     virtual void* CreateDITypeForVoid() = 0;
     virtual void* CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements) = 0;
     virtual void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) = 0;
-    virtual void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
+    virtual void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) = 0;
-    virtual void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) = 0;
+    virtual void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName) = 0;
     virtual uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) = 0;
-    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
         const std::string& mangledName, void* baseClassDIType) = 0;
     virtual void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) = 0;
     virtual void* GetDITypeByTypeId(const util::uuid& typeId) const = 0;
     virtual void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) = 0;
     virtual void* GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId) = 0;
     virtual void SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType) = 0;
-    virtual void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) = 0;
+    virtual void* CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) = 0;
     virtual void* CreateConstDIType(void* diType) = 0;
     virtual void* CreateLValueRefDIType(void* diType) = 0;
     virtual void* CreateRValueRefDIType(void* diType) = 0;
@@ -165,6 +166,7 @@ public:
     virtual uint64_t GetSizeInBits(void* irType) = 0;
     virtual uint64_t GetAlignmentInBits(void* irType) = 0;
     virtual void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void SetCurrentDebugLocation(const soul::ast::Span& span) = 0;
     virtual void* GetArrayBeginAddress(void* arrayType, void* arrayPtr) = 0;
     virtual void* GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size) = 0;
     virtual void* CreateBasicBlock(const std::string& name) = 0;
@@ -259,11 +261,10 @@ public:
     virtual void* CreateCatchPad(void* parentPad, const std::vector<void*>& args) = 0;
     virtual void* CreateClassDIType(void* classPtr) = 0;
     virtual void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) = 0;
-    virtual void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) = 0;
     virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) = 0;
     virtual void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) = 0;
-    virtual void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, 
-        const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) = 0;
     virtual void* DIBuilder() = 0;
     virtual void SetCurrentDIBuilder(void* diBuilder_) = 0;
     virtual void* GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr) = 0;

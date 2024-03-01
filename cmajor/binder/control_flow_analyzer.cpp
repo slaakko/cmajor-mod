@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -79,8 +79,8 @@ void ControlFlowAnalyzer::CollectLabel(BoundStatement& statement)
         }
         else
         {
-            throw cmajor::symbols::Exception("duplicate label '" + util::ToUtf8(statement.Label()) + "'", statement.GetSourcePos(), statement.ModuleId(), 
-                it->second->GetSourcePos(), it->second->ModuleId());
+            throw cmajor::symbols::Exception("duplicate label '" + util::ToUtf8(statement.Label()) + "'", statement.GetFullSpan(),
+                it->second->GetFullSpan());
         }
     }
 }
@@ -102,7 +102,7 @@ void ControlFlowAnalyzer::ResolveGoto(BoundGotoStatement& boundGotoStatement)
         {
             if (gotoBlock->Parent())
             {
-                gotoBlock = gotoBlock->Parent()->Block();
+                gotoBlock = gotoBlock->StatementParent()->Block();
             }
             else
             {
@@ -112,12 +112,12 @@ void ControlFlowAnalyzer::ResolveGoto(BoundGotoStatement& boundGotoStatement)
         if (!gotoBlock)
         {
             throw cmajor::symbols::Exception("goto target '" + util::ToUtf8(target) + "' not in enclosing block", 
-                boundGotoStatement.GetSourcePos(), boundGotoStatement.ModuleId(), targetStatement->GetSourcePos(), targetStatement->ModuleId());
+                boundGotoStatement.GetFullSpan(), targetStatement->GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("goto target '" + util::ToUtf8(target) + "' not found", boundGotoStatement.GetSourcePos(), boundGotoStatement.ModuleId());
+        throw cmajor::symbols::Exception("goto target '" + util::ToUtf8(target) + "' not found", boundGotoStatement.GetFullSpan());
     }
 }
 

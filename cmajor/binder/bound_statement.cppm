@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -39,13 +39,13 @@ inline BoundStatementFlags operator&(BoundStatementFlags left, BoundStatementFla
 class BoundStatement : public BoundNode
 {
 public:
-    BoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_);
+    BoundStatement(const soul::ast::Span& span_, BoundNodeType boundNodeType_);
     BoundStatement(const BoundStatement&) = delete;
     BoundStatement& operator=(const BoundStatement&) = delete;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
-    BoundStatement* Parent() { return parent; }
-    void SetParent(BoundStatement* parent_) { parent = parent_; }
+    bool IsBoundStatement() const override { return true; }
+    BoundStatement* StatementParent() const;
     BoundCompoundStatement* Block();
     void SetLabel(const std::u32string& label_);
     const std::u32string& Label() const { return label; }
@@ -62,7 +62,6 @@ public:
     void SetAssertNode() { SetFlag(BoundStatementFlags::assertNode); }
 private:
     std::u32string label;
-    BoundStatement* parent;
     BoundStatementFlags flags;
     bool GetFlag(BoundStatementFlags flag) const { return (flags & flag) != BoundStatementFlags::none; }
     void SetFlag(BoundStatementFlags flag) { flags = flags | flag; }
@@ -71,7 +70,7 @@ private:
 class BoundSequenceStatement : public BoundStatement
 {
 public:
-    BoundSequenceStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& first_, std::unique_ptr<BoundStatement>&& second_);
+    BoundSequenceStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& first_, std::unique_ptr<BoundStatement>&& second_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundStatement* First() { return first.get(); }
     BoundStatement* Second() { return second.get(); }
@@ -85,24 +84,24 @@ private:
 class BoundCompoundStatement : public BoundStatement
 {
 public:
-    BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSourcePos_, const util::uuid& moduleId_);
+    BoundCompoundStatement(const soul::ast::Span& span_);
+    BoundCompoundStatement(const soul::ast::Span& span_, const soul::ast::Span& endSpan_);
     BoundCompoundStatement(const BoundCompoundStatement&) = delete;
     BoundCompoundStatement& operator=(const BoundCompoundStatement&) = delete;
     void Accept(BoundNodeVisitor& visitor) override;
     void InsertStatementToFront(std::unique_ptr<BoundStatement>&& statement);
     void AddStatement(std::unique_ptr<BoundStatement>&& statement);
     const std::vector<std::unique_ptr<BoundStatement>>& Statements() const { return statements; }
-    const soul::ast::SourcePos& EndSourcePos() const { return endSourcePos; }
+    const soul::ast::Span& EndSpan() const { return endSpan; }
 private:
     std::vector<std::unique_ptr<BoundStatement>> statements;
-    soul::ast::SourcePos endSourcePos;
+    soul::ast::Span endSpan;
 };
 
 class BoundReturnStatement : public BoundStatement
 {
 public:
-    BoundReturnStatement(std::unique_ptr<BoundFunctionCall>&& returnFunctionCall_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundReturnStatement(std::unique_ptr<BoundFunctionCall>&& returnFunctionCall_, const soul::ast::Span& span_);
     BoundReturnStatement(const BoundReturnStatement&) = delete;
     BoundReturnStatement& operator=(const BoundReturnStatement&) = delete;
     void Accept(BoundNodeVisitor& visitor) override;
@@ -115,7 +114,7 @@ private:
 class BoundIfStatement : public BoundStatement
 {
 public:
-    BoundIfStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_, 
+    BoundIfStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_, 
         std::unique_ptr<BoundStatement>&& thenS_, std::unique_ptr<BoundStatement>&& elseS_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundExpression* Condition() { return condition.get(); }
@@ -130,7 +129,7 @@ private:
 class BoundWhileStatement : public BoundStatement
 {
 public:
-    BoundWhileStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_, 
+    BoundWhileStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_, 
         std::unique_ptr<BoundStatement>&& statement_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundExpression* Condition() { return condition.get(); }
@@ -143,7 +142,7 @@ private:
 class BoundDoStatement : public BoundStatement
 {
 public:
-    BoundDoStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& statement_, 
+    BoundDoStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& statement_, 
         std::unique_ptr<BoundExpression>&& condition_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundStatement* Statement() { return statement.get(); }
@@ -156,7 +155,7 @@ private:
 class BoundForStatement : public BoundStatement
 {
 public:
-    BoundForStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& initS_, 
+    BoundForStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& initS_, 
         std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& loopS_, std::unique_ptr<BoundStatement>&& actionS_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundStatement* InitS() { return initS.get(); }
@@ -176,7 +175,7 @@ class BoundDefaultStatement;
 class BoundSwitchStatement : public BoundStatement
 {
 public:
-    BoundSwitchStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_);
+    BoundSwitchStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_);
     BoundExpression* Condition() { return condition.get(); }
     const std::vector<std::unique_ptr<BoundCaseStatement>>& CaseStatements() { return caseStatements; }
     void AddCaseStatement(std::unique_ptr<BoundCaseStatement>&& caseStatement);
@@ -192,7 +191,7 @@ private:
 class BoundCaseStatement : public BoundStatement
 {
 public:
-    BoundCaseStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundCaseStatement(const soul::ast::Span& span_);
     void AddCaseValue(std::unique_ptr<cmajor::symbols::Value>&& caseValue_);
     const std::vector<std::unique_ptr<cmajor::symbols::Value>>& CaseValues() const { return caseValues; }
     void AddStatement(std::unique_ptr<BoundStatement>&& statement);
@@ -206,7 +205,7 @@ private:
 class BoundDefaultStatement : public BoundStatement
 {
 public:
-    BoundDefaultStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundDefaultStatement(const soul::ast::Span& span_);
     void AddStatement(std::unique_ptr<BoundStatement>&& statement);
     BoundCompoundStatement* CompoundStatement() { return compoundStatement.get(); }
     void Accept(BoundNodeVisitor& visitor) override;
@@ -217,7 +216,7 @@ private:
 class BoundGotoCaseStatement : public BoundStatement
 {
 public:
-    BoundGotoCaseStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<cmajor::symbols::Value>&& caseValue_);
+    BoundGotoCaseStatement(const soul::ast::Span& span_, std::unique_ptr<cmajor::symbols::Value>&& caseValue_);
     void Accept(BoundNodeVisitor& visitor) override;
     cmajor::symbols::Value* CaseValue() { return caseValue.get(); }
 private:
@@ -227,28 +226,28 @@ private:
 class BoundGotoDefaultStatement : public BoundStatement
 {
 public:
-    BoundGotoDefaultStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundGotoDefaultStatement(const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
 };
 
 class BoundBreakStatement : public BoundStatement
 {
 public:
-    BoundBreakStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundBreakStatement(const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
 };
 
 class BoundContinueStatement : public BoundStatement
 {
 public:
-    BoundContinueStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundContinueStatement(const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
 };
 
 class BoundGotoStatement : public BoundStatement
 {
 public:
-    BoundGotoStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& target_);
+    BoundGotoStatement(const soul::ast::Span& span_, const std::u32string& target_);
     void Accept(BoundNodeVisitor& visitor) override;
     const std::u32string& Target() const { return target; }
     void SetTargetStatement(BoundStatement* targetStatement_) { targetStatement = targetStatement_; }
@@ -264,7 +263,7 @@ private:
 class BoundConstructionStatement : public BoundStatement
 {
 public:
-    BoundConstructionStatement(std::unique_ptr<BoundFunctionCall>&& constructorCall_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_);
+    BoundConstructionStatement(std::unique_ptr<BoundFunctionCall>&& constructorCall_, const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundFunctionCall* ConstructorCall() { return constructorCall.get(); }
     void SetLocalVariable(cmajor::symbols::LocalVariableSymbol* localVariable_);
@@ -277,7 +276,7 @@ private:
 class BoundAssignmentStatement : public BoundStatement
 {
 public:
-    BoundAssignmentStatement(std::unique_ptr<BoundFunctionCall>&& assignmentCall_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_);
+    BoundAssignmentStatement(std::unique_ptr<BoundFunctionCall>&& assignmentCall_, const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundFunctionCall* AssignmentCall() { return assignmentCall.get(); }
 private:
@@ -287,7 +286,7 @@ private:
 class BoundExpressionStatement : public BoundStatement
 {
 public:
-    BoundExpressionStatement(std::unique_ptr<BoundExpression>&& expression_, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_);
+    BoundExpressionStatement(std::unique_ptr<BoundExpression>&& expression_, const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundExpression* Expression() { return expression.get(); }
 private:
@@ -307,7 +306,7 @@ private:
 class BoundEmptyStatement : public BoundStatement
 {
 public:
-    BoundEmptyStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundEmptyStatement(const soul::ast::Span& span_);
     void Accept(BoundNodeVisitor& visitor) override;
 };
 
@@ -326,7 +325,7 @@ private:
 class BoundThrowStatement : public BoundStatement
 {
 public:
-    BoundThrowStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& throwCallExpr_);
+    BoundThrowStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& throwCallExpr_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundExpression* ThrowCallExpr() { return throwCallExpr.get(); }
 private:
@@ -336,7 +335,7 @@ private:
 class BoundRethrowStatement : public BoundStatement
 {
 public:
-    BoundRethrowStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& releaseCall_);
+    BoundRethrowStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& releaseCall_);
     void Accept(BoundNodeVisitor& visitor) override;
     BoundExpression* ReleaseCall() { return releaseCall.get(); }
 private:
@@ -348,7 +347,7 @@ class BoundCatchStatement;
 class BoundTryStatement : public BoundStatement
 {
 public:
-    BoundTryStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundTryStatement(const soul::ast::Span& span_);
     void SetTryBlock(std::unique_ptr<BoundStatement>&& tryBlock_);
     BoundStatement* TryBlock() { return tryBlock.get(); }
     void AddCatch(std::unique_ptr<BoundCatchStatement>&& catchStatement);
@@ -362,7 +361,7 @@ private:
 class BoundCatchStatement : public BoundStatement
 {
 public:
-    BoundCatchStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    BoundCatchStatement(const soul::ast::Span& span_);
     void SetCaughtType(cmajor::symbols::TypeSymbol* caughtType_) { caughtType = caughtType_; }
     cmajor::symbols::TypeSymbol* CaughtType() { return caughtType; }
     void SetCatchVar(cmajor::symbols::LocalVariableSymbol* catchVar_) { catchVar = catchVar_; }

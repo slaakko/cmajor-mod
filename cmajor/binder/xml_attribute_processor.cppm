@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -29,7 +29,7 @@ private:
         cmajor::symbols::ContainerScope* containerScope);
     void CheckXmlSerializableInterface(cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope);
     void CheckVirtualDestructor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol);
-    void GenerateDestructorImplementation(cmajor::symbols::DestructorSymbol* destructorSymbol, StatementBinder* statementBinder);
+    void GenerateDestructorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::DestructorSymbol* destructorSymbol, StatementBinder* statementBinder);
     void GenerateMemberVariableSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateStaticClassNameSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,12 +12,12 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::aliasNode, sourcePos_, moduleId_), specifiers(), id(), typeExpr()
+AliasNode::AliasNode(const soul::ast::Span& span_) : Node(NodeType::aliasNode, span_), specifiers(), id(), typeExpr()
 {
 }
 
-AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, Node* typeExpr_) :
-    Node(NodeType::aliasNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), typeExpr(typeExpr_)
+AliasNode::AliasNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_, Node* typeExpr_) :
+    Node(NodeType::aliasNode, span_), specifiers(specifiers_), id(id_), typeExpr(typeExpr_)
 {
     id->SetParent(this);
     typeExpr->SetParent(this);
@@ -25,7 +25,7 @@ AliasNode::AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& m
 
 Node* AliasNode::Clone(CloneContext& cloneContext) const
 {
-    AliasNode* clone = new AliasNode(GetSourcePos(), ModuleId(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), typeExpr->Clone(cloneContext));
+    AliasNode* clone = new AliasNode(GetSpan(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), typeExpr->Clone(cloneContext));
     return clone;
 }
 
@@ -62,13 +62,13 @@ Node* AliasNode::TypeExpr() const
     return typeExpr.get();
 }
 
-TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    Node(NodeType::typedefNode, sourcePos_, moduleId_), specifiers(Specifiers::none), typeExpr(), id()
+TypedefNode::TypedefNode(const soul::ast::Span& span_) :
+    Node(NodeType::typedefNode, span_), specifiers(Specifiers::none), typeExpr(), id()
 {
 }
 
-TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
-    Node(NodeType::typedefNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_)
+TypedefNode::TypedefNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
+    Node(NodeType::typedefNode, span_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_)
 {
     typeExpr->SetParent(this);
     id->SetParent(this);
@@ -76,7 +76,7 @@ TypedefNode::TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uui
 
 Node* TypedefNode::Clone(CloneContext& cloneContext) const
 {
-    TypedefNode* clone = new TypedefNode(GetSourcePos(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    TypedefNode* clone = new TypedefNode(GetSpan(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     return clone;
 }
 

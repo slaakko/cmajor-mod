@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -29,7 +29,7 @@ soul::parser::Match ParseAttribute(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::AssignNode> assign;
     if (*lexer == ASSIGN)
     {
-        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         soul::parser::Match valueMatch = ParseStringLiteral(context, lexer);
         if (valueMatch.hit)
@@ -72,7 +72,7 @@ void ParseAttributes(Context& context, Lexer& lexer, cmajor::fault::tolerant::as
         std::unique_ptr<cmajor::fault::tolerant::ast::CommaNode> comma;
         if (*lexer == COMMA)
         {
-            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -101,7 +101,7 @@ soul::parser::Match ParseAttributes(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::LBracketNode> lbracket;
     if (*lexer == LBRACKET)
     {
-        lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -115,7 +115,7 @@ soul::parser::Match ParseAttributes(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::RBracketNode> rbracket;
     if (*lexer == RBRACKET)
     {
-        rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     attributes->SetRBracket(rbracket.release());

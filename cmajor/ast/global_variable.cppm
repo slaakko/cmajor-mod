@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,8 +16,8 @@ class CompileUnitNode;
 class GlobalVariableNode : public Node
 {
 public:
-    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    GlobalVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* initializer_, 
+    GlobalVariableNode(const soul::ast::Span& span_);
+    GlobalVariableNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* initializer_, 
         CompileUnitNode* cu_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;

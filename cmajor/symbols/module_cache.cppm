@@ -1,11 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.module_cache;
 
 import std.core;
+import soul.ast.span;
 import util.uuid;
 import cmajor.ast;
 
@@ -46,7 +47,8 @@ private:
     void CollectModuleIndices(Module* module, std::unordered_set<int>& moduleIndeces);
 };
 
-void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target);
+void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int32_t rootFileIndex,
+    cmajor::ast::CompileUnitNode* rootCompileUnit);
 Module* GetModuleFromModuleCache(const std::string& moduleFilePath);
 void PutModuleToModuleCache(std::unique_ptr<Module>&& module);
 Module* ResetCachedModule(const std::string& moduleFilePath);

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -601,7 +601,7 @@ Module::Module() :
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
     symbolTable(nullptr), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
     systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
-    config(cmajor::ast::Config::debug), functionIndex(this)
+    config(cmajor::ast::Config::debug), functionIndex(this), lexer(nullptr)
 {
 }
 
@@ -614,7 +614,7 @@ Module::Module(const std::string& filePath, bool readRoot) :
     originalFilePath(), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
     symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), 
     systemCoreModule(nullptr), debugLogIndent(0), index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), 
-    config(cmajor::ast::Config::debug), functionIndex(this)
+    config(cmajor::ast::Config::debug), functionIndex(this), lexer(nullptr)
 {
     SymbolReader reader(filePath);
     ModuleTag expectedTag;
@@ -701,7 +701,7 @@ Module::Module(const std::u32string& name_, const std::string& filePath_, cmajor
     format(currentModuleFormat), flags(ModuleFlags::none), name(name_), id(util::random_uuid()),
     originalFilePath(filePath_), filePathReadFrom(), referenceFilePaths(), moduleDependency(this), symbolTablePos(0),
     symbolTable(new SymbolTable(this)), directoryPath(), objectFileDirectoryPath(), libraryFilePaths(), moduleIdMap(), logStreamId(0), headerRead(false), systemCoreModule(nullptr), debugLogIndent(0),
-    index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this)
+    index(-1), buildStartMs(0), buildStopMs(0), preparing(false), backend(cmajor::ast::BackEnd::llvm), config(cmajor::ast::Config::debug), functionIndex(this), lexer(nullptr)
 {
     if (SystemModuleSet::Instance().IsSystemModule(name))
     {
@@ -722,7 +722,8 @@ void Module::SetResourceFilePath(const std::string& resourceFilePath_)
     resourceFilePath = resourceFilePath_;
 }
 
-void Module::PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target)
+void Module::PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
+    cmajor::ast::CompileUnitNode* rootCompileUnit)
 {
     MapModule(this);
     switch (GetBackEnd())
@@ -765,9 +766,11 @@ void Module::PrepareForCompilation(const std::vector<std::string>& references, c
     std::filesystem::create_directories(mfd);
     SetDirectoryPath(util::GetFullPath(util::ToUtf8(mfd.generic_u32string())));
     SetObjectFileDirectoryPath(util::GetFullPath(util::ToUtf8(mfd.generic_u32string())));
+    symbolTable->GlobalNs().SetSpan(rootSpan);
+    symbolTable->GlobalNs().SetFileIndex(rootFileIndex);
     if (name == U"System.Core")
     {
-        InitCoreSymbolTable(*symbolTable);
+        InitCoreSymbolTable(*symbolTable, rootSpan, rootCompileUnit);
     }
     std::unordered_set<std::string> importSet;
     Module* rootModule = this;
@@ -880,13 +883,44 @@ void Module::MakeFileMapFromFileTable()
     }
 }
 
-std::string Module::GetErrorLines(const soul::ast::SourcePos& sourcePos) 
+std::string Module::GetErrorLines(const soul::ast::Span& span, int fileIndex, soul::ast::LineColLen& lineColLen)
 {
-    if (sourcePos.file == -1 || sourcePos.line == 0)
+    if (!span.IsValid())
     {
         return std::string();
     }
-    return util::ToUtf8(fileMap.GetFileLine(sourcePos.file, sourcePos.line)) + "\n" + std::string(sourcePos.col - 1, ' ') + std::string(1, '^');
+    if (!fileMap.HasFileContent(fileIndex))
+    {
+        fileMap.ReadFile(fileIndex);
+    }
+    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIndex);
+    if (lineStartIndeces)
+    {
+        lineColLen = soul::ast::SpanToLineColLen(span, *lineStartIndeces);
+        return util::ToUtf8(fileMap.GetFileLine(fileIndex, lineColLen.line)) + "\n" + std::string(lineColLen.col - 1, ' ') + std::string(lineColLen.len, '^');
+    }
+    else
+    {
+        return std::string();
+    }
+}
+
+soul::ast::LineColLen Module::GetLineColLen(const soul::ast::Span& span, int fileIndex)
+{
+    if (!span.IsValid()) return soul::ast::LineColLen();
+    if (!fileMap.HasFileContent(fileIndex))
+    {
+        fileMap.ReadFile(fileIndex);
+    }
+    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIndex);
+    if (lineStartIndeces)
+    {
+        return soul::ast::SpanToLineColLen(span, *lineStartIndeces);
+    }
+    else
+    {
+        return soul::ast::LineColLen();
+    }
 }
 
 void Module::Write(SymbolWriter& writer)
@@ -1831,6 +1865,15 @@ std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId)
     {
         return std::string();
     }
+}
+
+int GetLineNumber(const soul::ast::FullSpan& fullSpan)
+{
+    Module* module = GetModuleById(fullSpan.moduleId);
+    if (!module) return -1;
+    soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
+    if (!lineColLen.IsValid()) return -1;
+    return lineColLen.line;
 }
 
 bool HasRootModuleForCurrentThread()

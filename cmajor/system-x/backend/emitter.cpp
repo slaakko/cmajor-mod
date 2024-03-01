@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -542,13 +542,13 @@ void* SystemXEmitter::CreateDITypeForEnumConstant(const std::string& name, int64
     return nullptr;
 }
 
-void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
+void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
     uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     return nullptr;
 }
 
-void* SystemXEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* SystemXEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
 {
     return nullptr;
 }
@@ -558,7 +558,7 @@ uint64_t SystemXEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
     return uint64_t();
 }
 
-void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSpan, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
     const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
@@ -586,7 +586,7 @@ void SystemXEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& membe
 {
 }
 
-void* SystemXEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* SystemXEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     return nullptr;
 }
@@ -630,7 +630,11 @@ uint64_t SystemXEmitter::GetAlignmentInBits(void* irType)
     return 0;
 }
 
-void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
+void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+{
+}
+
+void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::Span& span)
 {
 }
 
@@ -1141,7 +1145,7 @@ void* SystemXEmitter::CreateCall(void* functionType, void* callee, const std::ve
     return context->CreateCall(calleeValue);
 }
 
-void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
 {
     for (void* arg : args)
     {
@@ -1198,7 +1202,7 @@ void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* norma
     return call;
 }
 
-void* SystemXEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles)
 {
     return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }

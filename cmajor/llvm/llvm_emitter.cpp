@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -803,8 +803,7 @@ void* LLVMEmitter::CreateDITypeForArray(void* elementDIType, const std::vector<v
 
 #if (LLVM_VERSION_MAJOR >= 10)
 
-void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos,
-    const util::uuid& moduleId)
+void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
 {
     uint64_t sizeInBits = dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getSizeInBits();
     uint64_t alignInBits = 8 * dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getAlignment().value();
@@ -816,8 +815,7 @@ void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string&
 
 #else
 
-void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos,
-    const util::uuid& moduleId)
+void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
 {
     uint64_t sizeInBits = dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getSizeInBits();
     uint32_t alignInBits = 8 * dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getAlignment();
@@ -901,7 +899,7 @@ void* LLVMEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t 
     return diBuilder->createEnumerator(name, value);
 }
 
-void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName,
     const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     std::vector<llvm::Metadata*> elements;
@@ -952,8 +950,7 @@ void LLVMEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVa
     diMemberTypeMap[memberVariableId] = static_cast<llvm::DIDerivedType*>(diType);
 }
 
-void* LLVMEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
-    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* LLVMEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
     return diBuilder->createMemberType(static_cast<llvm::DIType*>(scope), name, static_cast<llvm::DIFile*>(
@@ -1056,6 +1053,10 @@ void LLVMEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
         currentDebugLocation = GetDebugLocation(this, sourcePos);
         builder.SetCurrentDebugLocation(currentDebugLocation);
     }
+}
+
+void LLVMEmitter::SetCurrentDebugLocation(const soul::ast::Span& span)
+{
 }
 
 void LLVMEmitter::ResetCurrentDebugLocation()
@@ -1227,7 +1228,7 @@ void* LLVMEmitter::CreateCall(void* functionType, void* callee, const std::vecto
 #endif
 }
 
-void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos)
+void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
 {
     std::vector<llvm::Value*> arguments;
     for (void* arg : args)
@@ -1315,8 +1316,7 @@ void* LLVMEmitter::CreateInvoke(void* functionType, void* callee, void* normalBl
 #endif
 }
 
-void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
-    const soul::ast::SourcePos& sourcePos)
+void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles)
 {
     std::vector<llvm::Value*> arguments;
     for (void* arg : args)

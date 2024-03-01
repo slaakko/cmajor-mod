@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -43,7 +43,7 @@ public:
     virtual void CollectViableFunctions(cmajor::symbols::ContainerScope* containerScope_, 
         const std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundFunction* currentFunction,
         cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, CollectFlags flags) = 0;
+        cmajor::ast::Node* node, CollectFlags flags) = 0;
     const std::u32string& GroupName() const { return groupName; }
     int Arity() const { return arity; }
     cmajor::symbols::SymbolTable* GetSymbolTable();
@@ -59,8 +59,7 @@ class ArityOperation
 public:
     void Add(Operation* operation);
     void CollectViableFunctions(cmajor::symbols::ContainerScope* containerScope, const std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundFunction* currentFunction,
-        cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, CollectFlags flags);
+        cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node, CollectFlags flags);
 private:
     std::vector<Operation*> operations;
 };
@@ -70,8 +69,7 @@ class OperationGroup
 public:
     void Add(Operation* operation);
     void CollectViableFunctions(cmajor::symbols::ContainerScope* containerScope, const std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundFunction* currentFunction,
-        cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, CollectFlags flags);
+        cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node, CollectFlags flags);
 private:
     std::vector<std::unique_ptr<ArityOperation>> arityOperations;
 };
@@ -83,11 +81,10 @@ public:
     void Add(Operation* operation);
     void CollectViableFunctions(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, const std::vector<std::unique_ptr<BoundExpression>>& arguments,
         BoundFunction* currentFunction, cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& modukeId, CollectFlags flags);
+        cmajor::ast::Node* node, CollectFlags flags);
     void GenerateCopyConstructorFor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    void GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
+    void GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node);
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_map<std::u32string, OperationGroup*> operationGroupMap;
@@ -97,25 +94,24 @@ private:
 };
 
 void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::DestructorSymbol* destructorSymbol, BoundCompileUnit& boundCompileUnit, 
-    cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, cmajor::ast::Node* node);
 
 void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol* staticConstructorSymbol, cmajor::ast::StaticConstructorNode* staticConstructorNode, 
     BoundCompileUnit& boundCompileUnit, BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, cmajor::symbols::ContainerScope* containerScope, 
-    StatementBinder* statementBinder, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    StatementBinder* statementBinder, cmajor::ast::Node* node);
 
 void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructorSymbol, cmajor::ast::ConstructorNode* constructorNode, 
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction,
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, 
-    bool generateDefault, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    bool generateDefault, cmajor::ast::Node* node);
 
 void GenerateClassAssignment(cmajor::symbols::MemberFunctionSymbol* assignmentFunctionSymbol, cmajor::ast::MemberFunctionNode* assignmentNode, 
     BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction,
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::ast::Node* node);
 
 void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbol, cmajor::ast::DestructorNode* destructorNode, BoundCompoundStatement* boundCompoundStatement, 
     BoundFunction* boundFunction, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::ast::Node* node);
 
 } // namespace cmajor::binder

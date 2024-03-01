@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.basic.type.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -16,21 +17,21 @@ parser BasicTypeParser
     lexer cmajor::lexer::CmajorLexer<char32_t>;
 
     BasicType(cmajor::parser::context::Context* context) : cmajor::ast::Node*
-        ::= AUTO{ return new cmajor::ast::AutoNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   BOOL{ return new cmajor::ast::BoolNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   SBYTE{ return new cmajor::ast::SByteNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   BYTE{ return new cmajor::ast::ByteNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   SHORT{ return new cmajor::ast::ShortNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   USHORT{ return new cmajor::ast::UShortNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   INT{ return new cmajor::ast::IntNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   UINT{ return new cmajor::ast::UIntNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   LONG{ return new cmajor::ast::LongNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   ULONG{ return new cmajor::ast::ULongNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   FLOAT{ return new cmajor::ast::FloatNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   DOUBLE{ return new cmajor::ast::DoubleNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   CHAR{ return new cmajor::ast::CharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   WCHAR{ return new cmajor::ast::WCharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   UCHAR{ return new cmajor::ast::UCharNode(lexer.GetSourcePos(pos), context->ModuleId()); }
-        |   VOID{ return new cmajor::ast::VoidNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        ::= AUTO{ return new cmajor::ast::AutoNode(lexer.GetSpan(pos)); }
+        |   BOOL{ return new cmajor::ast::BoolNode(lexer.GetSpan(pos)); }
+        |   SBYTE{ return new cmajor::ast::SByteNode(lexer.GetSpan(pos)); }
+        |   BYTE{ return new cmajor::ast::ByteNode(lexer.GetSpan(pos)); }
+        |   SHORT{ return new cmajor::ast::ShortNode(lexer.GetSpan(pos)); }
+        |   USHORT{ return new cmajor::ast::UShortNode(lexer.GetSpan(pos)); }
+        |   INT{ return new cmajor::ast::IntNode(lexer.GetSpan(pos)); }
+        |   UINT{ return new cmajor::ast::UIntNode(lexer.GetSpan(pos)); }
+        |   LONG{ return new cmajor::ast::LongNode(lexer.GetSpan(pos)); }
+        |   ULONG{ return new cmajor::ast::ULongNode(lexer.GetSpan(pos)); }
+        |   FLOAT{ return new cmajor::ast::FloatNode(lexer.GetSpan(pos)); }
+        |   DOUBLE{ return new cmajor::ast::DoubleNode(lexer.GetSpan(pos)); }
+        |   CHAR{ return new cmajor::ast::CharNode(lexer.GetSpan(pos)); }
+        |   WCHAR{ return new cmajor::ast::WCharNode(lexer.GetSpan(pos)); }
+        |   UCHAR{ return new cmajor::ast::UCharNode(lexer.GetSpan(pos)); }
+        |   VOID{ return new cmajor::ast::VoidNode(lexer.GetSpan(pos)); }
         ;
 }

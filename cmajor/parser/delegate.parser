@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.delegate.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -25,13 +26,13 @@ parser DelegateParser
     using TypeExprParser.TypeExpr;
     using ParameterParser.ParameterList;
 
-    Delegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::DelegateNode> delegateNode, var soul::ast::SourcePos s) : cmajor::ast::DelegateNode*
+    Delegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::DelegateNode> delegateNode, var soul::ast::Span s) : cmajor::ast::DelegateNode*
         ::= 
         (
-            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             DELEGATE
             TypeExpr(context):type
-            Identifier(context):id{ delegateNode.reset(new cmajor::ast::DelegateNode(s, context->ModuleId(), specifiers, type, id)); }
+            Identifier(context):id{ delegateNode.reset(new cmajor::ast::DelegateNode(s, specifiers, type, id)); }
             ParameterList(context, delegateNode.get()):parameters
             SEMICOLON
         )
@@ -40,15 +41,15 @@ parser DelegateParser
         }
         ;
 
-    ClassDelegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ClassDelegateNode> classDelegateNode, var soul::ast::SourcePos s) : 
+    ClassDelegate(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ClassDelegateNode> classDelegateNode, var soul::ast::Span s) : 
         cmajor::ast::ClassDelegateNode*
         ::= 
         (
-            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             CLASS
             DELEGATE
             TypeExpr(context):type
-            Identifier(context):id{ classDelegateNode.reset(new cmajor::ast::ClassDelegateNode(s, context->ModuleId(), specifiers, type, id)); }
+            Identifier(context):id{ classDelegateNode.reset(new cmajor::ast::ClassDelegateNode(s, specifiers, type, id)); }
             ParameterList(context, classDelegateNode.get()):parameters
             SEMICOLON
         )

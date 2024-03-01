@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -31,7 +31,7 @@ soul::parser::Match ParseDelegate(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::DelegateKeywordNode> delegateKeyword;
     if (*lexer == DELEGATE)
     {
-        delegateKeyword.reset(new cmajor::fault::tolerant::ast::DelegateKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        delegateKeyword.reset(new cmajor::fault::tolerant::ast::DelegateKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -68,7 +68,7 @@ soul::parser::Match ParseDelegate(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
     if (*lexer == SEMICOLON)
     {
-        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -96,7 +96,7 @@ soul::parser::Match ParseClassDelegate(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::ClassKeywordNode> classKeyword;
     if (*lexer == CLASS)
     {
-        classKeyword.reset(new cmajor::fault::tolerant::ast::ClassKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        classKeyword.reset(new cmajor::fault::tolerant::ast::ClassKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -106,7 +106,7 @@ soul::parser::Match ParseClassDelegate(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::DelegateKeywordNode> delegateKeyword;
     if (*lexer == DELEGATE)
     {
-        delegateKeyword.reset(new cmajor::fault::tolerant::ast::DelegateKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        delegateKeyword.reset(new cmajor::fault::tolerant::ast::DelegateKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -144,7 +144,7 @@ soul::parser::Match ParseClassDelegate(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
     if (*lexer == SEMICOLON)
     {
-        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

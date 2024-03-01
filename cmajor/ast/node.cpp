@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -76,8 +76,8 @@ std::string NodeTypeStr(NodeType nodeType)
     return nodeTypeStr[static_cast<size_t>(nodeType)];
 }
 
-Node::Node(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    nodeType(nodeType_), sourcePos(sourcePos_), moduleId(moduleId_), parent(nullptr), lexerFlags()
+Node::Node(NodeType nodeType_, const soul::ast::Span& span_) : 
+    nodeType(nodeType_), span(span_), parent(nullptr), lexerFlags()
 {
 }
 
@@ -88,6 +88,40 @@ Node::~Node()
 void Node::SetParent(Node* parent_)
 {
     parent = parent_;
+    if (parent == this)
+    {
+        int x = 0;
+    }
+}
+
+const util::uuid& Node::ModuleId() const
+{
+    if (parent)
+    {
+        return parent->ModuleId();
+    }
+    else
+    {
+        static util::uuid emptyId;
+        return emptyId;
+    }
+}
+
+int Node::FileIndex() const
+{
+    if (parent)
+    {
+        return parent->FileIndex();
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+soul::ast::FullSpan Node::GetFullSpan() const
+{
+    return soul::ast::FullSpan(ModuleId(), FileIndex(), GetSpan());
 }
 
 void Node::Write(AstWriter& writer)
@@ -113,13 +147,13 @@ void Node::AddTemplateParameter(TemplateParameterNode* templateParameter)
     throw std::runtime_error("Node::AddTemplateParameter not overridden");
 }
 
-UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(nodeType_, sourcePos_, moduleId_), subject()
+UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::Span& span_) : 
+    Node(nodeType_, span_), subject()
 {
 }
 
-UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : 
-    Node(nodeType_, sourcePos_, moduleId_), subject(subject_)
+UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::Span& span_, Node* subject_) : 
+    Node(nodeType_, span_), subject(subject_)
 {
 }
 
@@ -136,13 +170,13 @@ void UnaryNode::Read(AstReader& reader)
     subject->SetParent(this);
 }
 
-BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(nodeType, sourcePos_, moduleId_), left(), right()
+BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::Span& span_) : 
+    Node(nodeType, span_), left(), right()
 {
 }
 
-BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_) : 
-    Node(nodeType, sourcePos_, moduleId_), left(left_), right(right_)
+BinaryNode::BinaryNode(NodeType nodeType, const soul::ast::Span& span_, Node* left_, Node* right_) : 
+    Node(nodeType, span_), left(left_), right(right_)
 {
     left->SetParent(this);
     right->SetParent(this);
@@ -179,9 +213,9 @@ public:
     ConcreteNodeCreator() : NodeCreator() {}
     ConcreteNodeCreator(const ConcreteNodeCreator&) = delete;
     ConcreteNodeCreator& operator=(const ConcreteNodeCreator&) = delete;
-    Node* CreateNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    Node* CreateNode(const soul::ast::Span& span) override
     {
-        return new T(sourcePos, moduleId);
+        return new T(span);
     }
 };
 
@@ -392,12 +426,12 @@ void NodeFactory::Register(NodeType nodeType, NodeCreator* creator)
     creators[static_cast<size_t>(nodeType)] = std::unique_ptr<NodeCreator>(creator);
 }
 
-Node* NodeFactory::CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+Node* NodeFactory::CreateNode(NodeType nodeType, const soul::ast::Span& span)
 {
     const std::unique_ptr<NodeCreator>& creator = creators[static_cast<size_t>(nodeType)];
     if (creator)
     {
-        Node* value = creator->CreateNode(sourcePos, moduleId);
+        Node* value = creator->CreateNode(span);
         if (value)
         {
             return value;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,8 +18,8 @@ class IdentifierNode;
 class InterfaceNode : public Node
 {
 public:
-    InterfaceNode(const soul::ast::SourcePos& span_, const util::uuid& moduleId_);
-    InterfaceNode(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
+    InterfaceNode(const soul::ast::Span& span_);
+    InterfaceNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

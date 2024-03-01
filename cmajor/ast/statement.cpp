@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,17 +13,17 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::labelNode, sourcePos_, moduleId_)
+LabelNode::LabelNode(const soul::ast::Span& span_) : Node(NodeType::labelNode, span_)
 {
 }
 
-LabelNode::LabelNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& label_) : Node(NodeType::labelNode, sourcePos_, moduleId_), label(label_)
+LabelNode::LabelNode(const soul::ast::Span& span_, const std::u32string& label_) : Node(NodeType::labelNode, span_), label(label_)
 {
 }
 
 Node* LabelNode::Clone(CloneContext& cloneContext) const
 {
-    LabelNode* clone = new LabelNode(GetSourcePos(), ModuleId(), label);
+    LabelNode* clone = new LabelNode(GetSpan(), label);
     return clone;
 }
 
@@ -44,7 +44,7 @@ void LabelNode::Read(AstReader& reader)
     label = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-StatementNode::StatementNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+StatementNode::StatementNode(NodeType nodeType_, const soul::ast::Span& span_) : Node(nodeType_, span_)
 {
 }
 
@@ -58,19 +58,19 @@ void StatementNode::Read(AstReader& reader)
     Node::Read(reader);
 }
 
-LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::labeledStatementNode, sourcePos_, moduleId_)
+LabeledStatementNode::LabeledStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::labeledStatementNode, span_)
 {
 }
 
-LabeledStatementNode::LabeledStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* stmt_) :
-    StatementNode(NodeType::labeledStatementNode, sourcePos_, moduleId_), stmt(stmt_)
+LabeledStatementNode::LabeledStatementNode(const soul::ast::Span& span_, StatementNode* stmt_) :
+    StatementNode(NodeType::labeledStatementNode, span_), stmt(stmt_)
 {
     stmt->SetParent(this);
 }
 
 Node* LabeledStatementNode::Clone(CloneContext& cloneContext) const
 {
-    LabeledStatementNode* clone = new LabeledStatementNode(GetSourcePos(), ModuleId(), static_cast<StatementNode*>(stmt->Clone(cloneContext)));
+    LabeledStatementNode* clone = new LabeledStatementNode(GetSpan(), static_cast<StatementNode*>(stmt->Clone(cloneContext)));
     clone->SetLabelNode(static_cast<LabelNode*>(labelNode->Clone(cloneContext)));
     return clone;
 }
@@ -102,13 +102,13 @@ void LabeledStatementNode::SetLabelNode(LabelNode* labelNode_)
     labelNode->SetParent(this);
 }
 
-SyncStatementNode::SyncStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::syncStatementNode, sourcePos_, moduleId_)
+SyncStatementNode::SyncStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::syncStatementNode, span_)
 {
 }
 
 Node* SyncStatementNode::Clone(CloneContext& cloneContext) const
 {
-    return new SyncStatementNode(GetSourcePos(), ModuleId());
+    return new SyncStatementNode(GetSpan());
 }
 
 void SyncStatementNode::Accept(Visitor& visitor)
@@ -116,21 +116,21 @@ void SyncStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CompoundStatementNode::CompoundStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::compoundStatementNode, sourcePos_, moduleId_), statements(), tracerInserted(false), endSourcePos(sourcePos_)
+CompoundStatementNode::CompoundStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::compoundStatementNode, span_), statements(), tracerInserted(false), endSpan(span_)
 {
 }
 
 Node* CompoundStatementNode::Clone(CloneContext& cloneContext) const
 {
-    CompoundStatementNode* clone = new CompoundStatementNode(GetSourcePos(), ModuleId());
+    CompoundStatementNode* clone = new CompoundStatementNode(GetSpan());
     int n = statements.Count();
     for (int i = 0; i < n; ++i)
     {
         StatementNode* statement = statements[i];
         clone->AddStatement(static_cast<StatementNode*>(statement->Clone(cloneContext)));
     }
-    clone->SetEndSourcePos(endSourcePos);
+    clone->SetEndSpan(endSpan);
     return clone;
 }
 
@@ -172,13 +172,13 @@ int CompoundStatementNode::Level() const
     return level;
 }
 
-ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::returnStatementNode, sourcePos_, moduleId_), expression()
+ReturnStatementNode::ReturnStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::returnStatementNode, span_), expression()
 {
 }
 
-ReturnStatementNode::ReturnStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    StatementNode(NodeType::returnStatementNode, sourcePos_, moduleId_), expression(expression_)
+ReturnStatementNode::ReturnStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    StatementNode(NodeType::returnStatementNode, span_), expression(expression_)
 {
     if (expression)
     {
@@ -193,7 +193,7 @@ Node* ReturnStatementNode::Clone(CloneContext& cloneContext) const
     {
         clonedExpression = expression->Clone(cloneContext);
     }
-    ReturnStatementNode* clone = new ReturnStatementNode(GetSourcePos(), ModuleId(), clonedExpression);
+    ReturnStatementNode* clone = new ReturnStatementNode(GetSpan(), clonedExpression);
     return clone;
 }
 
@@ -224,13 +224,13 @@ void ReturnStatementNode::Read(AstReader& reader)
     }
 }
 
-IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::ifStatementNode, sourcePos_, moduleId_), condition(), thenS(), elseS()
+IfStatementNode::IfStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::ifStatementNode, span_), condition(), thenS(), elseS()
 {
 }
 
-IfStatementNode::IfStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_, StatementNode* thenS_, StatementNode* elseS_) :
-    StatementNode(NodeType::ifStatementNode, sourcePos_, moduleId_), condition(condition_), thenS(thenS_), elseS(elseS_)
+IfStatementNode::IfStatementNode(const soul::ast::Span& span_, Node* condition_, StatementNode* thenS_, StatementNode* elseS_) :
+    StatementNode(NodeType::ifStatementNode, span_), condition(condition_), thenS(thenS_), elseS(elseS_)
 {
     condition->SetParent(this);
     thenS->SetParent(this);
@@ -247,7 +247,7 @@ Node* IfStatementNode::Clone(CloneContext& cloneContext) const
     {
         clonedElseS = static_cast<StatementNode*>(elseS->Clone(cloneContext));
     }
-    IfStatementNode* clone = new IfStatementNode(GetSourcePos(), ModuleId(), condition->Clone(cloneContext), static_cast<StatementNode*>(thenS->Clone(cloneContext)), clonedElseS);
+    IfStatementNode* clone = new IfStatementNode(GetSpan(), condition->Clone(cloneContext), static_cast<StatementNode*>(thenS->Clone(cloneContext)), clonedElseS);
     return clone;
 }
 
@@ -284,13 +284,13 @@ void IfStatementNode::Read(AstReader& reader)
     }
 }
 
-WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::whileStatementNode, sourcePos_, moduleId_), condition(), statement()
+WhileStatementNode::WhileStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::whileStatementNode, span_), condition(), statement()
 {
 }
 
-WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_, StatementNode* statement_) :
-    StatementNode(NodeType::whileStatementNode, sourcePos_, moduleId_), condition(condition_), statement(statement_)
+WhileStatementNode::WhileStatementNode(const soul::ast::Span& span_, Node* condition_, StatementNode* statement_) :
+    StatementNode(NodeType::whileStatementNode, span_), condition(condition_), statement(statement_)
 {
     condition->SetParent(this);
     statement->SetParent(this);
@@ -298,7 +298,7 @@ WhileStatementNode::WhileStatementNode(const soul::ast::SourcePos& sourcePos_, c
 
 Node* WhileStatementNode::Clone(CloneContext& cloneContext) const
 {
-    WhileStatementNode* clone = new WhileStatementNode(GetSourcePos(), ModuleId(), condition->Clone(cloneContext), static_cast<StatementNode*>(statement->Clone(cloneContext)));
+    WhileStatementNode* clone = new WhileStatementNode(GetSpan(), condition->Clone(cloneContext), static_cast<StatementNode*>(statement->Clone(cloneContext)));
     return clone;
 }
 
@@ -323,13 +323,13 @@ void WhileStatementNode::Read(AstReader& reader)
     statement->SetParent(this);
 }
 
-DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::doStatementNode, sourcePos_, moduleId_), statement(), condition()
+DoStatementNode::DoStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::doStatementNode, span_), statement(), condition()
 {
 }
 
-DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* statement_, Node* condition_) :
-    StatementNode(NodeType::doStatementNode, sourcePos_, moduleId_), statement(statement_), condition(condition_)
+DoStatementNode::DoStatementNode(const soul::ast::Span& span_, StatementNode* statement_, Node* condition_) :
+    StatementNode(NodeType::doStatementNode, span_), statement(statement_), condition(condition_)
 {
     statement->SetParent(this);
     condition->SetParent(this);
@@ -337,7 +337,7 @@ DoStatementNode::DoStatementNode(const soul::ast::SourcePos& sourcePos_, const u
 
 Node* DoStatementNode::Clone(CloneContext& cloneContext) const
 {
-    DoStatementNode* clone = new DoStatementNode(GetSourcePos(), ModuleId(), static_cast<StatementNode*>(statement->Clone(cloneContext)), condition->Clone(cloneContext));
+    DoStatementNode* clone = new DoStatementNode(GetSpan(), static_cast<StatementNode*>(statement->Clone(cloneContext)), condition->Clone(cloneContext));
     return clone;
 }
 
@@ -362,13 +362,13 @@ void DoStatementNode::Read(AstReader& reader)
     condition->SetParent(this);
 }
 
-ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::forStatementNode, sourcePos_, moduleId_), initS(), condition(), loopS(), actionS()
+ForStatementNode::ForStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::forStatementNode, span_), initS(), condition(), loopS(), actionS()
 {
 }
 
-ForStatementNode::ForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, StatementNode* initS_, Node* condition_, StatementNode* loopS_, StatementNode* actionS_) :
-    StatementNode(NodeType::forStatementNode, sourcePos_, moduleId_), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
+ForStatementNode::ForStatementNode(const soul::ast::Span& span_, StatementNode* initS_, Node* condition_, StatementNode* loopS_, StatementNode* actionS_) :
+    StatementNode(NodeType::forStatementNode, span_), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
 {
     initS->SetParent(this);
     if (condition)
@@ -392,7 +392,7 @@ Node* ForStatementNode::Clone(CloneContext& cloneContext) const
     {
         clonedCondition = condition->Clone(cloneContext);
     }
-    ForStatementNode* clone = new ForStatementNode(GetSourcePos(), ModuleId(), static_cast<StatementNode*>(initS->Clone(cloneContext)), clonedCondition, static_cast<StatementNode*>(loopS->Clone(cloneContext)),
+    ForStatementNode* clone = new ForStatementNode(GetSpan(), static_cast<StatementNode*>(initS->Clone(cloneContext)), clonedCondition, static_cast<StatementNode*>(loopS->Clone(cloneContext)),
         static_cast<StatementNode*>(actionS->Clone(cloneContext)));
     return clone;
 }
@@ -433,13 +433,13 @@ void ForStatementNode::Read(AstReader& reader)
     actionS->SetParent(this);
 }
 
-BreakStatementNode::BreakStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::breakStatementNode, sourcePos_, moduleId_)
+BreakStatementNode::BreakStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::breakStatementNode, span_)
 {
 }
 
 Node* BreakStatementNode::Clone(CloneContext& cloneContext) const
 {
-    BreakStatementNode* clone = new BreakStatementNode(GetSourcePos(), ModuleId());
+    BreakStatementNode* clone = new BreakStatementNode(GetSpan());
     return clone;
 }
 
@@ -448,13 +448,13 @@ void BreakStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ContinueStatementNode::ContinueStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::continueStatementNode, sourcePos_, moduleId_)
+ContinueStatementNode::ContinueStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::continueStatementNode, span_)
 {
 }
 
 Node* ContinueStatementNode::Clone(CloneContext& cloneContext) const
 {
-    ContinueStatementNode* clone = new ContinueStatementNode(GetSourcePos(), ModuleId());
+    ContinueStatementNode* clone = new ContinueStatementNode(GetSpan());
     return clone;
 }
 
@@ -463,19 +463,19 @@ void ContinueStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::gotoStatementNode, sourcePos_, moduleId_)
+GotoStatementNode::GotoStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::gotoStatementNode, span_)
 {
 }
 
-GotoStatementNode::GotoStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& target_) :
-    StatementNode(NodeType::gotoStatementNode, sourcePos_, moduleId_), target(target_)
+GotoStatementNode::GotoStatementNode(const soul::ast::Span& span_, const std::u32string& target_) :
+    StatementNode(NodeType::gotoStatementNode, span_), target(target_)
 {
 }
 
 Node* GotoStatementNode::Clone(CloneContext& cloneContext) const
 {
-    GotoStatementNode* clone = new GotoStatementNode(GetSourcePos(), ModuleId(), target);
+    GotoStatementNode* clone = new GotoStatementNode(GetSpan(), target);
     return clone;
 }
 
@@ -496,13 +496,13 @@ void GotoStatementNode::Read(AstReader& reader)
     target = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::constructionStatementNode, sourcePos_, moduleId_), typeExpr(), id(), arguments(), assignment(false), empty(false)
+ConstructionStatementNode::ConstructionStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::constructionStatementNode, span_), typeExpr(), id(), arguments(), assignment(false), empty(false)
 {
 }
 
-ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_) :
-    StatementNode(NodeType::constructionStatementNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), arguments(), assignment(false), empty(false)
+ConstructionStatementNode::ConstructionStatementNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_) :
+    StatementNode(NodeType::constructionStatementNode, span_), typeExpr(typeExpr_), id(id_), arguments(), assignment(false), empty(false)
 {
     typeExpr->SetParent(this);
     if (id)
@@ -513,7 +513,7 @@ ConstructionStatementNode::ConstructionStatementNode(const soul::ast::SourcePos&
 
 Node* ConstructionStatementNode::Clone(CloneContext& cloneContext) const
 {
-    ConstructionStatementNode* clone = new ConstructionStatementNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    ConstructionStatementNode* clone = new ConstructionStatementNode(GetSpan(), typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int n = arguments.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -561,19 +561,19 @@ void ConstructionStatementNode::AddArgument(Node* argument)
     }
 }
 
-DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::deleteStatementNode, sourcePos_, moduleId_), expression()
+DeleteStatementNode::DeleteStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::deleteStatementNode, span_), expression()
 {
 }
 
-DeleteStatementNode::DeleteStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    StatementNode(NodeType::deleteStatementNode, sourcePos_, moduleId_), expression(expression_)
+DeleteStatementNode::DeleteStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    StatementNode(NodeType::deleteStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
 }
 
 Node* DeleteStatementNode::Clone(CloneContext& cloneContext) const
 {
-    DeleteStatementNode* clone = new DeleteStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext));
+    DeleteStatementNode* clone = new DeleteStatementNode(GetSpan(), expression->Clone(cloneContext));
     return clone;
 }
 
@@ -595,20 +595,20 @@ void DeleteStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::destroyStatementNode, sourcePos_, moduleId_), expression()
+DestroyStatementNode::DestroyStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::destroyStatementNode, span_), expression()
 {
 }
 
-DestroyStatementNode::DestroyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    StatementNode(NodeType::destroyStatementNode, sourcePos_, moduleId_), expression(expression_)
+DestroyStatementNode::DestroyStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    StatementNode(NodeType::destroyStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
 }
 
 Node* DestroyStatementNode::Clone(CloneContext& cloneContext) const
 {
-    DestroyStatementNode* clone = new DestroyStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext));
+    DestroyStatementNode* clone = new DestroyStatementNode(GetSpan(), expression->Clone(cloneContext));
     return clone;
 }
 
@@ -630,13 +630,13 @@ void DestroyStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::assignmentStatementNode, sourcePos_, moduleId_), targetExpr(), sourceExpr()
+AssignmentStatementNode::AssignmentStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::assignmentStatementNode, span_), targetExpr(), sourceExpr()
 {
 }
 
-AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* targetExpr_, Node* sourceExpr_) :
-    StatementNode(NodeType::assignmentStatementNode, sourcePos_, moduleId_), targetExpr(targetExpr_), sourceExpr(sourceExpr_)
+AssignmentStatementNode::AssignmentStatementNode(const soul::ast::Span& span_, Node* targetExpr_, Node* sourceExpr_) :
+    StatementNode(NodeType::assignmentStatementNode, span_), targetExpr(targetExpr_), sourceExpr(sourceExpr_)
 {
     targetExpr->SetParent(this);
     sourceExpr->SetParent(this);
@@ -644,7 +644,7 @@ AssignmentStatementNode::AssignmentStatementNode(const soul::ast::SourcePos& sou
 
 Node* AssignmentStatementNode::Clone(CloneContext& cloneContext) const
 {
-    AssignmentStatementNode* clone = new AssignmentStatementNode(GetSourcePos(), ModuleId(), targetExpr->Clone(cloneContext), sourceExpr->Clone(cloneContext));
+    AssignmentStatementNode* clone = new AssignmentStatementNode(GetSpan(), targetExpr->Clone(cloneContext), sourceExpr->Clone(cloneContext));
     return clone;
 }
 
@@ -669,20 +669,20 @@ void AssignmentStatementNode::Read(AstReader& reader)
     sourceExpr->SetParent(this);
 }
 
-ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::expressionStatementNode, sourcePos_, moduleId_), expression()
+ExpressionStatementNode::ExpressionStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::expressionStatementNode, span_), expression()
 {
 }
 
-ExpressionStatementNode::ExpressionStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    StatementNode(NodeType::expressionStatementNode, sourcePos_, moduleId_), expression(expression_)
+ExpressionStatementNode::ExpressionStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    StatementNode(NodeType::expressionStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
 }
 
 Node* ExpressionStatementNode::Clone(CloneContext& cloneContext) const
 {
-    ExpressionStatementNode* clone = new ExpressionStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext));
+    ExpressionStatementNode* clone = new ExpressionStatementNode(GetSpan(), expression->Clone(cloneContext));
     return clone;
 }
 
@@ -704,13 +704,13 @@ void ExpressionStatementNode::Read(AstReader& reader)
     expression->SetParent(this);
 }
 
-EmptyStatementNode::EmptyStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::emptyStatementNode, sourcePos_, moduleId_)
+EmptyStatementNode::EmptyStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::emptyStatementNode, span_)
 {
 }
 
 Node* EmptyStatementNode::Clone(CloneContext& cloneContext) const
 {
-    EmptyStatementNode* clone = new EmptyStatementNode(GetSourcePos(), ModuleId());
+    EmptyStatementNode* clone = new EmptyStatementNode(GetSpan());
     return clone;
 }
 
@@ -719,13 +719,13 @@ void EmptyStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::rangeForStatementNode, sourcePos_, moduleId_), typeExpr(), id(), container(), action()
+RangeForStatementNode::RangeForStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::rangeForStatementNode, span_), typeExpr(), id(), container(), action()
 {
 }
 
-RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
-    StatementNode(NodeType::rangeForStatementNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), container(container_), action(action_)
+RangeForStatementNode::RangeForStatementNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
+    StatementNode(NodeType::rangeForStatementNode, span_), typeExpr(typeExpr_), id(id_), container(container_), action(action_)
 {
     typeExpr->SetParent(this);
     id->SetParent(this);
@@ -735,7 +735,7 @@ RangeForStatementNode::RangeForStatementNode(const soul::ast::SourcePos& sourceP
 
 Node* RangeForStatementNode::Clone(CloneContext& cloneContext) const
 {
-    RangeForStatementNode* clone = new RangeForStatementNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), container->Clone(cloneContext),
+    RangeForStatementNode* clone = new RangeForStatementNode(GetSpan(), typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), container->Clone(cloneContext),
         static_cast<StatementNode*>(action->Clone(cloneContext)));
     return clone;
 }
@@ -767,20 +767,20 @@ void RangeForStatementNode::Read(AstReader& reader)
     action->SetParent(this);
 }
 
-SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::switchStatementNode, sourcePos_, moduleId_), condition(), cases(), defaultS()
+SwitchStatementNode::SwitchStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::switchStatementNode, span_), condition(), cases(), defaultS()
 {
 }
 
-SwitchStatementNode::SwitchStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* condition_) :
-    StatementNode(NodeType::switchStatementNode, sourcePos_, moduleId_), condition(condition_), cases(), defaultS()
+SwitchStatementNode::SwitchStatementNode(const soul::ast::Span& span_, Node* condition_) :
+    StatementNode(NodeType::switchStatementNode, span_), condition(condition_), cases(), defaultS()
 {
     condition->SetParent(this);
 }
 
 Node* SwitchStatementNode::Clone(CloneContext& cloneContext) const
 {
-    SwitchStatementNode* clone = new SwitchStatementNode(GetSourcePos(), ModuleId(), condition->Clone(cloneContext));
+    SwitchStatementNode* clone = new SwitchStatementNode(GetSpan(), condition->Clone(cloneContext));
     int n = cases.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -838,14 +838,14 @@ void SwitchStatementNode::SetDefault(DefaultStatementNode* defaultS_)
     defaultS->SetParent(this);
 }
 
-CaseStatementNode::CaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::caseStatementNode, sourcePos_, moduleId_), caseExprs(), statements()
+CaseStatementNode::CaseStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::caseStatementNode, span_), caseExprs(), statements()
 {
 }
 
 Node* CaseStatementNode::Clone(CloneContext& cloneContext) const
 {
-    CaseStatementNode* clone = new CaseStatementNode(GetSourcePos(), ModuleId());
+    CaseStatementNode* clone = new CaseStatementNode(GetSpan());
     int ne = caseExprs.Count();
     for (int i = 0; i < ne; ++i)
     {
@@ -892,13 +892,13 @@ void CaseStatementNode::AddStatement(StatementNode* statement)
     statements.Add(statement);
 }
 
-DefaultStatementNode::DefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::defaultStatementNode, sourcePos_, moduleId_), statements()
+DefaultStatementNode::DefaultStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::defaultStatementNode, span_), statements()
 {
 }
 
 Node* DefaultStatementNode::Clone(CloneContext& cloneContext) const
 {
-    DefaultStatementNode* clone = new DefaultStatementNode(GetSourcePos(), ModuleId());
+    DefaultStatementNode* clone = new DefaultStatementNode(GetSpan());
     int n = statements.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -931,20 +931,20 @@ void DefaultStatementNode::AddStatement(StatementNode* statement)
     statements.Add(statement);
 }
 
-GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::gotoCaseStatementNode, sourcePos_, moduleId_), caseExpr()
+GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::gotoCaseStatementNode, span_), caseExpr()
 {
 }
 
-GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* caseExpr_) :
-    StatementNode(NodeType::gotoCaseStatementNode, sourcePos_, moduleId_), caseExpr(caseExpr_)
+GotoCaseStatementNode::GotoCaseStatementNode(const soul::ast::Span& span_, Node* caseExpr_) :
+    StatementNode(NodeType::gotoCaseStatementNode, span_), caseExpr(caseExpr_)
 {
     caseExpr->SetParent(this);
 }
 
 Node* GotoCaseStatementNode::Clone(CloneContext& cloneContext) const
 {
-    GotoCaseStatementNode* clone = new GotoCaseStatementNode(GetSourcePos(), ModuleId(), caseExpr->Clone(cloneContext));
+    GotoCaseStatementNode* clone = new GotoCaseStatementNode(GetSpan(), caseExpr->Clone(cloneContext));
     return clone;
 }
 
@@ -965,13 +965,13 @@ void GotoCaseStatementNode::Read(AstReader& reader)
     caseExpr.reset(reader.ReadNode());
 }
 
-GotoDefaultStatementNode::GotoDefaultStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : StatementNode(NodeType::gotoDefaultStatementNode, sourcePos_, moduleId_)
+GotoDefaultStatementNode::GotoDefaultStatementNode(const soul::ast::Span& span_) : StatementNode(NodeType::gotoDefaultStatementNode, span_)
 {
 }
 
 Node* GotoDefaultStatementNode::Clone(CloneContext& cloneContext) const
 {
-    GotoDefaultStatementNode* clone = new GotoDefaultStatementNode(GetSourcePos(), ModuleId());
+    GotoDefaultStatementNode* clone = new GotoDefaultStatementNode(GetSpan());
     return clone;
 }
 
@@ -980,13 +980,13 @@ void GotoDefaultStatementNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::throwStatementNode, sourcePos_, moduleId_), expression()
+ThrowStatementNode::ThrowStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::throwStatementNode, span_), expression()
 {
 }
 
-ThrowStatementNode::ThrowStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    StatementNode(NodeType::throwStatementNode, sourcePos_, moduleId_), expression(expression_)
+ThrowStatementNode::ThrowStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    StatementNode(NodeType::throwStatementNode, span_), expression(expression_)
 {
     if (expression)
     {
@@ -1001,7 +1001,7 @@ Node* ThrowStatementNode::Clone(CloneContext& cloneContext) const
     {
         clonedExpression = expression->Clone(cloneContext);
     }
-    ThrowStatementNode* clone = new ThrowStatementNode(GetSourcePos(), ModuleId(), clonedExpression);
+    ThrowStatementNode* clone = new ThrowStatementNode(GetSpan(), clonedExpression);
     return clone;
 }
 
@@ -1032,12 +1032,12 @@ void ThrowStatementNode::Read(AstReader& reader)
     }
 }
 
-CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::catchNode, sourcePos_, moduleId_), typeExpr(), id(), catchBlock()
+CatchNode::CatchNode(const soul::ast::Span& span_) : Node(NodeType::catchNode, span_), typeExpr(), id(), catchBlock()
 {
 }
 
-CatchNode::CatchNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_, CompoundStatementNode* catchBlock_) :
-    Node(NodeType::catchNode, sourcePos_, moduleId_), typeExpr(typeExpr_), id(id_), catchBlock(catchBlock_)
+CatchNode::CatchNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_, CompoundStatementNode* catchBlock_) :
+    Node(NodeType::catchNode, span_), typeExpr(typeExpr_), id(id_), catchBlock(catchBlock_)
 {
     typeExpr->SetParent(this);
     if (id)
@@ -1054,7 +1054,7 @@ Node* CatchNode::Clone(CloneContext& cloneContext) const
     {
         clonedId = static_cast<IdentifierNode*>(id->Clone(cloneContext));
     }
-    CatchNode* clone = new CatchNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), clonedId, static_cast<CompoundStatementNode*>(catchBlock->Clone(cloneContext)));
+    CatchNode* clone = new CatchNode(GetSpan(), typeExpr->Clone(cloneContext), clonedId, static_cast<CompoundStatementNode*>(catchBlock->Clone(cloneContext)));
     return clone;
 }
 
@@ -1091,20 +1091,20 @@ void CatchNode::Read(AstReader& reader)
     catchBlock->SetParent(this);
 }
 
-TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::tryStatementNode, sourcePos_, moduleId_), tryBlock(), catches()
+TryStatementNode::TryStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::tryStatementNode, span_), tryBlock(), catches()
 {
 }
 
-TryStatementNode::TryStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, CompoundStatementNode* tryBlock_) :
-    StatementNode(NodeType::tryStatementNode, sourcePos_, moduleId_), tryBlock(tryBlock_), catches()
+TryStatementNode::TryStatementNode(const soul::ast::Span& span_, CompoundStatementNode* tryBlock_) :
+    StatementNode(NodeType::tryStatementNode, span_), tryBlock(tryBlock_), catches()
 {
     tryBlock->SetParent(this);
 }
 
 Node* TryStatementNode::Clone(CloneContext& cloneContext) const
 {
-    TryStatementNode* clone = new TryStatementNode(GetSourcePos(), ModuleId(), static_cast<CompoundStatementNode*>(tryBlock->Clone(cloneContext)));
+    TryStatementNode* clone = new TryStatementNode(GetSpan(), static_cast<CompoundStatementNode*>(tryBlock->Clone(cloneContext)));
     int n = catches.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -1140,20 +1140,20 @@ void TryStatementNode::AddCatch(CatchNode* catch_)
     catches.Add(catch_);
 }
 
-AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::assertStatementNode, sourcePos_, moduleId_), assertExpr()
+AssertStatementNode::AssertStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::assertStatementNode, span_), assertExpr()
 {
 }
 
-AssertStatementNode::AssertStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* assertExpr_) :
-    StatementNode(NodeType::assertStatementNode, sourcePos_, moduleId_), assertExpr(assertExpr_)
+AssertStatementNode::AssertStatementNode(const soul::ast::Span& span_, Node* assertExpr_) :
+    StatementNode(NodeType::assertStatementNode, span_), assertExpr(assertExpr_)
 {
     assertExpr->SetParent(this);
 }
 
 Node* AssertStatementNode::Clone(CloneContext& cloneContext) const
 {
-    AssertStatementNode* clone = new AssertStatementNode(GetSourcePos(), ModuleId(), assertExpr->Clone(cloneContext));
+    AssertStatementNode* clone = new AssertStatementNode(GetSpan(), assertExpr->Clone(cloneContext));
     return clone;
 }
 
@@ -1175,17 +1175,17 @@ void AssertStatementNode::Read(AstReader& reader)
     assertExpr->SetParent(this);
 }
 
-ConditionalCompilationExpressionNode::ConditionalCompilationExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+ConditionalCompilationExpressionNode::ConditionalCompilationExpressionNode(NodeType nodeType_, const soul::ast::Span& span_) : Node(nodeType_, span_)
 {
 }
 
-ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationExpressionNode(nodeType_, sourcePos_, moduleId_)
+ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::Span& span_) :
+    ConditionalCompilationExpressionNode(nodeType_, span_)
 {
 }
 
-ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
-    ConditionalCompilationExpressionNode(nodeType_, sourcePos_, moduleId_), left(left_), right(right_)
+ConditionalCompilationBinaryExpressionNode::ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const soul::ast::Span& span_, ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
+    ConditionalCompilationExpressionNode(nodeType_, span_), left(left_), right(right_)
 {
     left->SetParent(this);
     right->SetParent(this);
@@ -1207,20 +1207,20 @@ void ConditionalCompilationBinaryExpressionNode::Read(AstReader& reader)
     right->SetParent(this);
 }
 
-ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, sourcePos_, moduleId_)
+ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::Span& span_) :
+    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, span_)
 {
 }
 
-ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
+ConditionalCompilationDisjunctionNode::ConditionalCompilationDisjunctionNode(const soul::ast::Span& span_,
     ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
-    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, sourcePos_, moduleId_, left_, right_)
+    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationDisjunctionNode, span_, left_, right_)
 {
 }
 
 Node* ConditionalCompilationDisjunctionNode::Clone(CloneContext& cloneContext) const
 {
-    ConditionalCompilationDisjunctionNode* clone = new ConditionalCompilationDisjunctionNode(GetSourcePos(), ModuleId(), static_cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)), static_cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
+    ConditionalCompilationDisjunctionNode* clone = new ConditionalCompilationDisjunctionNode(GetSpan(), static_cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)), static_cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
     return clone;
 }
 
@@ -1229,20 +1229,20 @@ void ConditionalCompilationDisjunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, sourcePos_, moduleId_)
+ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::Span& span_) :
+    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, span_)
 {
 }
 
-ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
+ConditionalCompilationConjunctionNode::ConditionalCompilationConjunctionNode(const soul::ast::Span& span_,
     ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
-    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, sourcePos_, moduleId_, left_, right_)
+    ConditionalCompilationBinaryExpressionNode(NodeType::conditionalCompilationConjunctionNode, span_, left_, right_)
 {
 }
 
 Node* ConditionalCompilationConjunctionNode::Clone(CloneContext& cloneContext) const
 {
-    ConditionalCompilationConjunctionNode* clone = new ConditionalCompilationConjunctionNode(GetSourcePos(), ModuleId(), static_cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)), static_cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
+    ConditionalCompilationConjunctionNode* clone = new ConditionalCompilationConjunctionNode(GetSpan(), static_cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)), static_cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
     return clone;
 }
 
@@ -1251,20 +1251,20 @@ void ConditionalCompilationConjunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, sourcePos_, moduleId_)
+ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::Span& span_) :
+    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, span_)
 {
 }
 
-ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
-    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, sourcePos_, moduleId_), expr(expr_)
+ConditionalCompilationNotNode::ConditionalCompilationNotNode(const soul::ast::Span& span_, ConditionalCompilationExpressionNode* expr_) :
+    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationNotNode, span_), expr(expr_)
 {
     expr->SetParent(this);
 }
 
 Node* ConditionalCompilationNotNode::Clone(CloneContext& cloneContext) const
 {
-    ConditionalCompilationNotNode* clone = new ConditionalCompilationNotNode(GetSourcePos(), ModuleId(), static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
+    ConditionalCompilationNotNode* clone = new ConditionalCompilationNotNode(GetSpan(), static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
     return clone;
 }
 
@@ -1286,19 +1286,19 @@ void ConditionalCompilationNotNode::Read(AstReader& reader)
     expr->SetParent(this);
 }
 
-ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, sourcePos_, moduleId_)
+ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::Span& span_) :
+    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, span_)
 {
 }
 
-ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& symbol_) :
-    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, sourcePos_, moduleId_), symbol(symbol_)
+ConditionalCompilationPrimaryNode::ConditionalCompilationPrimaryNode(const soul::ast::Span& span_, const std::u32string& symbol_) :
+    ConditionalCompilationExpressionNode(NodeType::conditionalCompilationPrimaryNode, span_), symbol(symbol_)
 {
 }
 
 Node* ConditionalCompilationPrimaryNode::Clone(CloneContext& cloneContext) const
 {
-    ConditionalCompilationPrimaryNode* clone = new ConditionalCompilationPrimaryNode(GetSourcePos(), ModuleId(), symbol);
+    ConditionalCompilationPrimaryNode* clone = new ConditionalCompilationPrimaryNode(GetSpan(), symbol);
     return clone;
 }
 
@@ -1319,19 +1319,19 @@ void ConditionalCompilationPrimaryNode::Read(AstReader& reader)
     symbol = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, sourcePos_, moduleId_)
+ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::Span& span_) :
+    ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, span_)
 {
 }
 
-ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
-    ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, sourcePos_, moduleId_), expr(expr_)
+ParenthesizedConditionalCompilationExpressionNode::ParenthesizedConditionalCompilationExpressionNode(const soul::ast::Span& span_, ConditionalCompilationExpressionNode* expr_) :
+    ConditionalCompilationExpressionNode(NodeType::parenthesizedCondCompExpressionNode, span_), expr(expr_)
 {
 }
 
 Node* ParenthesizedConditionalCompilationExpressionNode::Clone(CloneContext& cloneContext) const
 {
-    ParenthesizedConditionalCompilationExpressionNode* clone = new ParenthesizedConditionalCompilationExpressionNode(GetSourcePos(), ModuleId(), static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
+    ParenthesizedConditionalCompilationExpressionNode* clone = new ParenthesizedConditionalCompilationExpressionNode(GetSpan(), static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
     return clone;
 }
 
@@ -1353,12 +1353,12 @@ void ParenthesizedConditionalCompilationExpressionNode::Read(AstReader& reader)
     expr->SetParent(this);
 }
 
-ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conditionalCompilationPartNode, sourcePos_, moduleId_)
+ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::Span& span_) : Node(NodeType::conditionalCompilationPartNode, span_)
 {
 }
 
-ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr_) :
-    Node(NodeType::conditionalCompilationPartNode, sourcePos_, moduleId_), expr(expr_)
+ConditionalCompilationPartNode::ConditionalCompilationPartNode(const soul::ast::Span& span_, ConditionalCompilationExpressionNode* expr_) :
+    Node(NodeType::conditionalCompilationPartNode, span_), expr(expr_)
 {
     if (expr)
     {
@@ -1379,7 +1379,7 @@ Node* cmajor::ast::ConditionalCompilationPartNode::Clone(CloneContext& cloneCont
     {
         clonedIfExpr = static_cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext));
     }
-    cmajor::ast::ConditionalCompilationPartNode* clone = new cmajor::ast::ConditionalCompilationPartNode(GetSourcePos(), ModuleId(), clonedIfExpr);
+    cmajor::ast::ConditionalCompilationPartNode* clone = new cmajor::ast::ConditionalCompilationPartNode(GetSpan(), clonedIfExpr);
     int n = statements.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -1418,13 +1418,13 @@ void cmajor::ast::ConditionalCompilationPartNode::Read(AstReader& reader)
     statements.SetParent(this);
 }
 
-ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(nullptr)
+ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::Span& span_) :
+    StatementNode(NodeType::conditionalCompilationStatementNode, span_), ifPart(nullptr)
 {
 }
 
-ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* ifExpr_) :
-    StatementNode(NodeType::conditionalCompilationStatementNode, sourcePos_, moduleId_), ifPart(new cmajor::ast::ConditionalCompilationPartNode(sourcePos_, moduleId_, ifExpr_))
+ConditionalCompilationStatementNode::ConditionalCompilationStatementNode(const soul::ast::Span& span_, ConditionalCompilationExpressionNode* ifExpr_) :
+    StatementNode(NodeType::conditionalCompilationStatementNode, span_), ifPart(new cmajor::ast::ConditionalCompilationPartNode(span_, ifExpr_))
 {
 }
 
@@ -1433,9 +1433,9 @@ void ConditionalCompilationStatementNode::AddIfStatement(StatementNode* statemen
     ifPart->AddStatement(statement);
 }
 
-void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, ConditionalCompilationExpressionNode* expr)
+void ConditionalCompilationStatementNode::AddElifExpr(const soul::ast::Span& span, ConditionalCompilationExpressionNode* expr)
 {
-    elifParts.Add(new cmajor::ast::ConditionalCompilationPartNode(sourcePos, moduleId_, expr));
+    elifParts.Add(new cmajor::ast::ConditionalCompilationPartNode(span, expr));
 }
 
 void ConditionalCompilationStatementNode::AddElifStatement(StatementNode* statement)
@@ -1443,18 +1443,18 @@ void ConditionalCompilationStatementNode::AddElifStatement(StatementNode* statem
     elifParts[elifParts.Count() - 1]->AddStatement(statement);
 }
 
-void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::SourcePos& span, const util::uuid& moduleId_, StatementNode* statement)
+void ConditionalCompilationStatementNode::AddElseStatement(const soul::ast::Span& span, StatementNode* statement)
 {
     if (!elsePart)
     {
-        elsePart.reset(new cmajor::ast::ConditionalCompilationPartNode(span, moduleId_));
+        elsePart.reset(new cmajor::ast::ConditionalCompilationPartNode(span));
     }
     elsePart->AddStatement(statement);
 }
 
 Node* ConditionalCompilationStatementNode::Clone(CloneContext& cloneContext) const
 {
-    ConditionalCompilationStatementNode* clone = new ConditionalCompilationStatementNode(GetSourcePos(), ModuleId());
+    ConditionalCompilationStatementNode* clone = new ConditionalCompilationStatementNode(GetSpan());
     cmajor::ast::ConditionalCompilationPartNode* clonedIfPart = static_cast<cmajor::ast::ConditionalCompilationPartNode*>(ifPart->Clone(cloneContext));
     clone->ifPart.reset(clonedIfPart);
     int n = elifParts.Count();

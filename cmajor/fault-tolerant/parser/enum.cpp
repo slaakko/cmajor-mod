@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -33,7 +33,7 @@ soul::parser::Match ParseEnumConstant(Context& context, Lexer& lexer, cmajor::fa
     if (*lexer == ASSIGN)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::AssignNode> assign;
-        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         std::unique_ptr<cmajor::fault::tolerant::ast::Node> value;
         soul::parser::Match valueMatch = ParseExpression(context, lexer);
@@ -75,7 +75,7 @@ void ParseEnumConstants(Context& context, Lexer& lexer, cmajor::fault::tolerant:
         std::unique_ptr<cmajor::fault::tolerant::ast::CommaNode> comma;
         if (*lexer == COMMA)
         {
-            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -115,7 +115,7 @@ soul::parser::Match ParseEnumType(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::EnumKeywordNode> enumKeyword;
     if (*lexer == ENUM)
     {
-        enumKeyword.reset(new cmajor::fault::tolerant::ast::EnumKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        enumKeyword.reset(new cmajor::fault::tolerant::ast::EnumKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -137,7 +137,7 @@ soul::parser::Match ParseEnumType(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::Node> underlyingType;
     if (*lexer == COLON)
     {
-        colon.reset(new cmajor::fault::tolerant::ast::ColonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        colon.reset(new cmajor::fault::tolerant::ast::ColonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         soul::parser::Match underlyingTypeMatch = ParseTypeExpr(context, lexer);
         if (underlyingTypeMatch.hit)
@@ -156,7 +156,7 @@ soul::parser::Match ParseEnumType(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::LBraceNode> lbrace;
     if (*lexer == LBRACE)
     {
-        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -182,7 +182,7 @@ soul::parser::Match ParseEnumType(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::RBraceNode> rbrace;
     if (*lexer == RBRACE)
     {
-        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

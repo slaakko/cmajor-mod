@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -33,6 +33,11 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
         context.SetModuleId(module->Id());
     }
     std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnit = cmajor::compile::unit::parser::CompileUnitParser<LexerType>::Parse(lexer, &context);
+    if (module)
+    {
+        compileUnit->SetModuleId(module->Id());
+    }
+    compileUnit->SetFileIndex(fileIndex);
     fileMap.AddFileContent(fileIndex, std::move(ucontent), lexer.GetLineStartIndeces());
     if ((flags & Flags::ast) != Flags::none)
     {
@@ -51,7 +56,6 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
             }
         }
     }
-    fileMap.SetTokens(fileIndex, lexer.ReleaseTokens());
     return compileUnit;
 }
 

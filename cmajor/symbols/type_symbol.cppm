@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ module;
 export module cmajor.symbols.type.symbol;
 
 import cmajor.symbols.container.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.emitter;
 import std.core;
 
@@ -24,7 +24,7 @@ struct ConversionTableEntry;
 class TypeSymbol : public ContainerSymbol
 {
 public:
-    TypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    TypeSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsTypeSymbol() const override { return true; }
@@ -43,15 +43,15 @@ public:
     virtual bool IsCharacterPointerType() const { return false; }
     virtual const TypeSymbol* BaseType() const { return this; }
     virtual TypeSymbol* BaseType() { return this; }
-    virtual TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
-    virtual TypeSymbol* RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return this; }
-    virtual TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    virtual TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    virtual TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    virtual TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    virtual TypeSymbol* PlainType() { return this; }
+    virtual TypeSymbol* RemoveConst() { return this; }
+    virtual TypeSymbol* RemoveReference() { return this; }
+    virtual TypeSymbol* RemovePointer() { return this; }
+    virtual TypeSymbol* RemovePtrOrRef() { return this; }
+    virtual TypeSymbol* AddConst();
+    virtual TypeSymbol* AddLvalueReference();
+    virtual TypeSymbol* AddRvalueReference();
+    virtual TypeSymbol* AddPointer();
     virtual void* IrType(cmajor::ir::Emitter& emitter) = 0;
     virtual void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) = 0;
     virtual void* CreateDIType(cmajor::ir::Emitter& emitter);
@@ -74,9 +74,9 @@ public:
     const util::uuid& TypeId() const { Assert(!typeId.is_nil(), "type id not initialized"); return typeId; }
     bool TypeIdNotSet() const { return typeId.is_nil(); }
     virtual const TypeDerivationRec& DerivationRec() const;
-    virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    virtual TypeSymbol* Unify(TypeSymbol* that, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
-    virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) { return nullptr; }
+    virtual TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec);
+    virtual TypeSymbol* Unify(TypeSymbol* that) { return nullptr; }
+    virtual TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap) { return nullptr; }
     virtual bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested);
     virtual ValueType GetValueType() const;
     virtual Value* MakeValue() const { return nullptr; }

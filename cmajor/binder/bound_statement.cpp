@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,8 +10,8 @@ import cmajor.binder.bound.expression;
 
 namespace cmajor::binder {
 
-BoundStatement::BoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_) :
-    BoundNode(sourcePos_, moduleId_, boundNodeType_), parent(nullptr), flags(BoundStatementFlags::none)
+BoundStatement::BoundStatement(const soul::ast::Span& span_, BoundNodeType boundNodeType_) :
+    BoundNode(span_, boundNodeType_), flags(BoundStatementFlags::none)
 {
 }
 
@@ -21,17 +21,30 @@ BoundCompoundStatement* BoundStatement::Block()
     {
         return static_cast<BoundCompoundStatement*>(this);
     }
-    return parent->Block();
+    return StatementParent()->Block();
+}
+
+BoundStatement* BoundStatement::StatementParent() const
+{
+    BoundNode* parent = Parent();
+    if (parent->IsBoundStatement())
+    {
+        return static_cast<BoundStatement*>(parent);
+    }
+    else
+    {
+        throw cmajor::symbols::Exception("statement parent expected", GetFullSpan());
+    }
 }
 
 void BoundStatement::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load from statement", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot load from statement", GetFullSpan());
 }
 
 void BoundStatement::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to statement", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot store to statement", GetFullSpan());
 }
 
 void BoundStatement::SetLabel(const std::u32string& label_)
@@ -39,8 +52,8 @@ void BoundStatement::SetLabel(const std::u32string& label_)
     label = label_;
 }
 
-BoundSequenceStatement::BoundSequenceStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& first_, std::unique_ptr<BoundStatement>&& second_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundSequenceStatement), first(std::move(first_)), second(std::move(second_))
+BoundSequenceStatement::BoundSequenceStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& first_, std::unique_ptr<BoundStatement>&& second_) :
+    BoundStatement(span_, BoundNodeType::boundSequenceStatement), first(std::move(first_)), second(std::move(second_))
 {
     first->SetParent(this);
     second->SetParent(this);
@@ -56,13 +69,13 @@ void BoundSequenceStatement::SetForLoopStatementNode()
     first->SetForLoopStatementNode();
 }
 
-BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSourcePos()
+BoundCompoundStatement::BoundCompoundStatement(const soul::ast::Span& span_) : 
+    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan()
 {
 }
 
-BoundCompoundStatement::BoundCompoundStatement(const soul::ast::SourcePos& sourcePos_, const soul::ast::SourcePos& endSourcePos_, const util::uuid& moduleId_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCompoundStatement), endSourcePos(endSourcePos_)
+BoundCompoundStatement::BoundCompoundStatement(const soul::ast::Span& span_, const soul::ast::Span& endSpan_) :
+    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan(endSpan_)
 {
 }
 
@@ -83,9 +96,13 @@ void BoundCompoundStatement::AddStatement(std::unique_ptr<BoundStatement>&& stat
     statements.push_back(std::move(statement));
 }
 
-BoundReturnStatement::BoundReturnStatement(std::unique_ptr<BoundFunctionCall>&& returnFunctionCall_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundReturnStatement), returnFunctionCall(std::move(returnFunctionCall_))
+BoundReturnStatement::BoundReturnStatement(std::unique_ptr<BoundFunctionCall>&& returnFunctionCall_, const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundReturnStatement), returnFunctionCall(std::move(returnFunctionCall_))
 {
+    if (returnFunctionCall)
+    {
+        returnFunctionCall->SetParent(this);
+    }
 }
 
 void BoundReturnStatement::Accept(BoundNodeVisitor& visitor)
@@ -93,9 +110,11 @@ void BoundReturnStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundIfStatement::BoundIfStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& thenS_, std::unique_ptr<BoundStatement>&& elseS_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundIfStatement), condition(std::move(condition_)), thenS(std::move(thenS_)), elseS(std::move(elseS_))
+BoundIfStatement::BoundIfStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& thenS_, 
+    std::unique_ptr<BoundStatement>&& elseS_) :
+    BoundStatement(span_, BoundNodeType::boundIfStatement), condition(std::move(condition_)), thenS(std::move(thenS_)), elseS(std::move(elseS_))
 {
+    condition->SetParent(this);
     thenS->SetParent(this);
     if (elseS)
     {
@@ -108,9 +127,10 @@ void BoundIfStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundWhileStatement::BoundWhileStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& statement_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundWhileStatement), condition(std::move(condition_)), statement(std::move(statement_))
+BoundWhileStatement::BoundWhileStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& statement_) :
+    BoundStatement(span_, BoundNodeType::boundWhileStatement), condition(std::move(condition_)), statement(std::move(statement_))
 {
+    condition->SetParent(this);
     statement->SetParent(this);
 }
 
@@ -119,10 +139,11 @@ void BoundWhileStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundDoStatement::BoundDoStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& statement_, std::unique_ptr<BoundExpression>&& condition_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundDoStatement), statement(std::move(statement_)), condition(std::move(condition_))
+BoundDoStatement::BoundDoStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& statement_, std::unique_ptr<BoundExpression>&& condition_) :
+    BoundStatement(span_, BoundNodeType::boundDoStatement), statement(std::move(statement_)), condition(std::move(condition_))
 {
     statement->SetParent(this);
+    condition->SetParent(this);
 }
 
 void BoundDoStatement::Accept(BoundNodeVisitor& visitor)
@@ -130,11 +151,14 @@ void BoundDoStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundForStatement::BoundForStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundStatement>&& initS_, std::unique_ptr<BoundExpression>&& condition_, std::unique_ptr<BoundStatement>&& loopS_,
-    std::unique_ptr<BoundStatement>&& actionS_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundForStatement), initS(std::move(initS_)), condition(std::move(condition_)), loopS(std::move(loopS_)),
+BoundForStatement::BoundForStatement(const soul::ast::Span& span_, std::unique_ptr<BoundStatement>&& initS_, std::unique_ptr<BoundExpression>&& condition_, 
+    std::unique_ptr<BoundStatement>&& loopS_,
+    std::unique_ptr<BoundStatement>&& actionS_) : 
+    BoundStatement(span_, BoundNodeType::boundForStatement), initS(std::move(initS_)), condition(std::move(condition_)), loopS(std::move(loopS_)),
     actionS(std::move(actionS_))
 {
     initS->SetParent(this);
+    condition->SetParent(this);
     loopS->SetParent(this);
     actionS->SetParent(this);
 }
@@ -144,9 +168,10 @@ void BoundForStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundSwitchStatement::BoundSwitchStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& condition_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundSwitchStatement), condition(std::move(condition_))
+BoundSwitchStatement::BoundSwitchStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& condition_) :
+    BoundStatement(span_, BoundNodeType::boundSwitchStatement), condition(std::move(condition_))
 {
+    condition->SetParent(this);
 }
 
 void BoundSwitchStatement::AddCaseStatement(std::unique_ptr<BoundCaseStatement>&& caseStatement)
@@ -166,7 +191,7 @@ void BoundSwitchStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundCaseStatement::BoundCaseStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCaseStatement)
+BoundCaseStatement::BoundCaseStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundCaseStatement)
 {
 }
 
@@ -188,7 +213,7 @@ void BoundCaseStatement::AddStatement(std::unique_ptr<BoundStatement>&& statemen
     }
     else
     {
-        compoundStatement.reset(new BoundCompoundStatement(GetSourcePos(), ModuleId()));
+        compoundStatement.reset(new BoundCompoundStatement(GetSpan()));
         compoundStatement->SetParent(this);
         compoundStatement->AddStatement(std::move(statement));
     }
@@ -199,8 +224,8 @@ void BoundCaseStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundDefaultStatement::BoundDefaultStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundDefaultStatement)
+BoundDefaultStatement::BoundDefaultStatement(const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundDefaultStatement)
 {
 }
 
@@ -217,7 +242,7 @@ void BoundDefaultStatement::AddStatement(std::unique_ptr<BoundStatement>&& state
     }
     else
     {
-        compoundStatement.reset(new BoundCompoundStatement(GetSourcePos(), ModuleId()));
+        compoundStatement.reset(new BoundCompoundStatement(GetSpan()));
         compoundStatement->SetParent(this);
         compoundStatement->AddStatement(std::move(statement));
     }
@@ -228,8 +253,8 @@ void BoundDefaultStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundGotoCaseStatement::BoundGotoCaseStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<cmajor::symbols::Value>&& caseValue_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundGotoCaseStatement), caseValue(std::move(caseValue_))
+BoundGotoCaseStatement::BoundGotoCaseStatement(const soul::ast::Span& span_, std::unique_ptr<cmajor::symbols::Value>&& caseValue_) :
+    BoundStatement(span_, BoundNodeType::boundGotoCaseStatement), caseValue(std::move(caseValue_))
 {
 }
 
@@ -238,7 +263,7 @@ void BoundGotoCaseStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundGotoDefaultStatement::BoundGotoDefaultStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundGotoDefaultStatement)
+BoundGotoDefaultStatement::BoundGotoDefaultStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundGotoDefaultStatement)
 {
 }
 
@@ -247,7 +272,7 @@ void BoundGotoDefaultStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundBreakStatement::BoundBreakStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundBreakStatement)
+BoundBreakStatement::BoundBreakStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundBreakStatement)
 {
 }
 
@@ -256,7 +281,7 @@ void BoundBreakStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundContinueStatement::BoundContinueStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundContinueStatement)
+BoundContinueStatement::BoundContinueStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundContinueStatement)
 {
 }
 
@@ -265,8 +290,8 @@ void BoundContinueStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundGotoStatement::BoundGotoStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& target_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundGotoStatement), target(target_), targetStatement(nullptr), targetBlock(nullptr)
+BoundGotoStatement::BoundGotoStatement(const soul::ast::Span& span_, const std::u32string& target_) :
+    BoundStatement(span_, BoundNodeType::boundGotoStatement), target(target_), targetStatement(nullptr), targetBlock(nullptr)
 {
 }
 
@@ -275,9 +300,10 @@ void BoundGotoStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundConstructionStatement::BoundConstructionStatement(std::unique_ptr<BoundFunctionCall>&& constructorCall_, const soul::ast::SourcePos& span, const util::uuid& moduleId_) :
-    BoundStatement(span, moduleId_, BoundNodeType::boundConstructionStatement), constructorCall(std::move(constructorCall_)), localVariable(nullptr)
+BoundConstructionStatement::BoundConstructionStatement(std::unique_ptr<BoundFunctionCall>&& constructorCall_, const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundConstructionStatement), constructorCall(std::move(constructorCall_)), localVariable(nullptr)
 {
+    constructorCall->SetParent(this);
 }
 
 void BoundConstructionStatement::SetLocalVariable(cmajor::symbols::LocalVariableSymbol* localVariable_)
@@ -290,9 +316,10 @@ void BoundConstructionStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundAssignmentStatement::BoundAssignmentStatement(std::unique_ptr<BoundFunctionCall>&& assignmentCall_, const soul::ast::SourcePos& span, const util::uuid& moduleId_) :
-    BoundStatement(span, moduleId_, BoundNodeType::boundAssignmentStatement), assignmentCall(std::move(assignmentCall_))
+BoundAssignmentStatement::BoundAssignmentStatement(std::unique_ptr<BoundFunctionCall>&& assignmentCall_, const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundAssignmentStatement), assignmentCall(std::move(assignmentCall_))
 {
+    assignmentCall->SetParent(this);
 }
 
 void BoundAssignmentStatement::Accept(BoundNodeVisitor& visitor)
@@ -300,9 +327,13 @@ void BoundAssignmentStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundExpressionStatement::BoundExpressionStatement(std::unique_ptr<BoundExpression>&& expression_, const soul::ast::SourcePos& span, const util::uuid& moduleId_) :
-    BoundStatement(span, moduleId_, BoundNodeType::boundExpressionStatement), expression(std::move(expression_))
+BoundExpressionStatement::BoundExpressionStatement(std::unique_ptr<BoundExpression>&& expression_, const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundExpressionStatement), expression(std::move(expression_))
 {
+    if (expression)
+    {
+        expression->SetParent(this);
+    }
 }
 
 void BoundExpressionStatement::Accept(BoundNodeVisitor& visitor)
@@ -311,9 +342,10 @@ void BoundExpressionStatement::Accept(BoundNodeVisitor& visitor)
 }
 
 BoundInitializationStatement::BoundInitializationStatement(std::unique_ptr<BoundExpression>&& initializationExpression_) :
-    BoundStatement(initializationExpression_->GetSourcePos(), initializationExpression_->ModuleId(), BoundNodeType::boundInitializationStatement),
+    BoundStatement(initializationExpression_->GetSpan(), BoundNodeType::boundInitializationStatement),
     initializationExpression(std::move(initializationExpression_))
 {
+    initializationExpression->SetParent(this);
 }
 
 void BoundInitializationStatement::Accept(BoundNodeVisitor& visitor)
@@ -321,7 +353,7 @@ void BoundInitializationStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundEmptyStatement::BoundEmptyStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundEmptyStatement)
+BoundEmptyStatement::BoundEmptyStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundEmptyStatement)
 {
 }
 
@@ -331,8 +363,9 @@ void BoundEmptyStatement::Accept(BoundNodeVisitor& visitor)
 }
 
 BoundSetVmtPtrStatement::BoundSetVmtPtrStatement(std::unique_ptr<BoundExpression>&& classPtr_, cmajor::symbols::ClassTypeSymbol* classType_) :
-    BoundStatement(classPtr_->GetSourcePos(), classPtr_->ModuleId(), BoundNodeType::boundSetVmtPtrStatement), classPtr(std::move(classPtr_)), classType(classType_)
+    BoundStatement(classPtr_->GetSpan(), BoundNodeType::boundSetVmtPtrStatement), classPtr(std::move(classPtr_)), classType(classType_)
 {
+    classPtr->SetParent(this);
 }
 
 void BoundSetVmtPtrStatement::Accept(BoundNodeVisitor& visitor)
@@ -340,9 +373,10 @@ void BoundSetVmtPtrStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundThrowStatement::BoundThrowStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& throwCallExpr_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundThrowStatement), throwCallExpr(std::move(throwCallExpr_))
+BoundThrowStatement::BoundThrowStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& throwCallExpr_) :
+    BoundStatement(span_, BoundNodeType::boundThrowStatement), throwCallExpr(std::move(throwCallExpr_))
 {
+    throwCallExpr->SetParent(this);
 }
 
 void BoundThrowStatement::Accept(BoundNodeVisitor& visitor)
@@ -350,9 +384,13 @@ void BoundThrowStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundRethrowStatement::BoundRethrowStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& releaseCall_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundRethrowStatement), releaseCall(std::move(releaseCall_))
+BoundRethrowStatement::BoundRethrowStatement(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& releaseCall_) :
+    BoundStatement(span_, BoundNodeType::boundRethrowStatement), releaseCall(std::move(releaseCall_))
 {
+    if (releaseCall)
+    {
+        releaseCall->SetParent(this);
+    }
 }
 
 void BoundRethrowStatement::Accept(BoundNodeVisitor& visitor)
@@ -360,7 +398,7 @@ void BoundRethrowStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundTryStatement::BoundTryStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundTryStatement)
+BoundTryStatement::BoundTryStatement(const soul::ast::Span& span_) : BoundStatement(span_, BoundNodeType::boundTryStatement)
 {
 }
 
@@ -381,8 +419,8 @@ void BoundTryStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
-BoundCatchStatement::BoundCatchStatement(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    BoundStatement(sourcePos_, moduleId_, BoundNodeType::boundCatchStatement), caughtType(nullptr), catchTypeUuidId(-1), catchVar(nullptr)
+BoundCatchStatement::BoundCatchStatement(const soul::ast::Span& span_) :
+    BoundStatement(span_, BoundNodeType::boundCatchStatement), caughtType(nullptr), catchTypeUuidId(-1), catchVar(nullptr)
 {
 }
 

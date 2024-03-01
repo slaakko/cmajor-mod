@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -76,7 +76,7 @@ void CheckAccess(cmajor::symbols::FunctionSymbol* fromFunction, cmajor::symbols:
     if (!HasAccess(fromFunction, toSymbol))
     {
         throw cmajor::symbols::Exception(toSymbol->TypeString() + " '" + util::ToUtf8(toSymbol->FullName()) + "' is inaccessible due to its protection level",
-            fromFunction->GetSourcePos(), fromFunction->SourceModuleId(), toSymbol->GetSourcePos(), toSymbol->SourceModuleId());
+            fromFunction->GetFullSpan(), toSymbol->GetFullSpan());
     }
 }
 

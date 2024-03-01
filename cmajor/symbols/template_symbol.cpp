@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,8 +16,8 @@ import util;
 
 namespace cmajor::symbols {
 
-TemplateParameterSymbol::TemplateParameterSymbol(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::templateParameterSymbol, span_, sourceModuleId_, name_), hasDefault(false), defaultType(nullptr)
+TemplateParameterSymbol::TemplateParameterSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::templateParameterSymbol, span_, name_), hasDefault(false), defaultType(nullptr)
 {
 }
 
@@ -57,13 +57,12 @@ void TemplateParameterSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     defaultType = typeSymbol;
 }
 
-TypeSymbol* TemplateParameterSymbol::Unify(TypeSymbol* type, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+TypeSymbol* TemplateParameterSymbol::Unify(TypeSymbol* type)
 {
     return type;
 }
 
-TypeSymbol* TemplateParameterSymbol::UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+TypeSymbol* TemplateParameterSymbol::UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap)
 {
     auto it = templateParameterMap.find(this);
     if (it != templateParameterMap.cend())
@@ -76,8 +75,8 @@ TypeSymbol* TemplateParameterSymbol::UnifyTemplateArgumentType(SymbolTable& symb
     }
 }
 
-BoundTemplateParameterSymbol::BoundTemplateParameterSymbol(const soul::ast::SourcePos& span_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(SymbolType::boundTemplateParameterSymbol, span_, sourceModuleId_, name_), type(nullptr)
+BoundTemplateParameterSymbol::BoundTemplateParameterSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    Symbol(SymbolType::boundTemplateParameterSymbol, span_, name_), type(nullptr)
 {
 }
 
@@ -113,7 +112,7 @@ void BoundTemplateParameterSymbol::Check()
     Symbol::Check();
     if (!type)
     {
-        throw SymbolCheckException("bound template parameter symbol contains null type pointer", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("bound template parameter symbol contains null type pointer", GetFullSpan());
     }
 }
 

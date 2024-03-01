@@ -202,7 +202,7 @@ soul::parser::Match ParameterParser<LexerT>::Parameter(LexerT& lexer, cmajor::pa
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2143120652716998658);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> type;
     std::unique_ptr<cmajor::ast::IdentifierNode> id;
     soul::parser::Match match(false);
@@ -223,7 +223,7 @@ soul::parser::Match ParameterParser<LexerT>::Parameter(LexerT& lexer, cmajor::pa
                     type.reset(static_cast<cmajor::ast::Node*>(match.value));
                     if (match.hit)
                     {
-                        s = lexer.GetSourcePos(pos);
+                        s = lexer.GetSpan(pos);
                     }
                     *parentMatch3 = match;
                 }
@@ -266,7 +266,7 @@ soul::parser::Match ParameterParser<LexerT>::Parameter(LexerT& lexer, cmajor::pa
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Parameter");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::ParameterNode(s, context->ModuleId(), type.release(), id.release()));
+                return soul::parser::Match(true, new cmajor::ast::ParameterNode(s, type.release(), id.release()));
             }
         }
         *parentMatch0 = match;

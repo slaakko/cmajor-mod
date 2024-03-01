@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ export module cmajor.debug.debug.info;
 import cmajor.debug.di.variable;
 import cmajor.debug.di.type;
 import soul.lexer;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
 import std.core;
 
@@ -38,7 +38,7 @@ inline bool operator==(const SourceSpan& left, const SourceSpan& right)
     return left.line == right.line && left.scol == right.scol && left.ecol == right.ecol;
 }
 
-SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::SourcePos& sourcePos);
+SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::Span& span, int32_t fileIdex);
 
 struct Frame
 {

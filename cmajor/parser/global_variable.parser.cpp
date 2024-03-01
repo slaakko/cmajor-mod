@@ -38,7 +38,7 @@ soul::parser::Match GlobalVariableParser<LexerT>::GlobalVariable(LexerT& lexer, 
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 1594861368643682305);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::Node> type;
     std::unique_ptr<cmajor::ast::IdentifierNode> id;
@@ -70,7 +70,7 @@ soul::parser::Match GlobalVariableParser<LexerT>::GlobalVariable(LexerT& lexer, 
                                 specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
                                 if (match.hit)
                                 {
-                                    s = lexer.GetSourcePos(pos);
+                                    s = lexer.GetSpan(pos);
                                 }
                                 *parentMatch6 = match;
                             }
@@ -176,7 +176,7 @@ soul::parser::Match GlobalVariableParser<LexerT>::GlobalVariable(LexerT& lexer, 
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "GlobalVariable");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers->value, type.release(), id.release(), initializer.release(), context->CompileUnitNode()));
+                return soul::parser::Match(true, new cmajor::ast::GlobalVariableNode(s, specifiers->value, type.release(), id.release(), initializer.release(), context->CompileUnitNode()));
             }
         }
         *parentMatch0 = match;

@@ -8,9 +8,11 @@ import soul.lexer;
 import soul.parser;
 import cmajor.parser.context;
 import cmajor.ast;
+import soul.ast.span;
 
 using namespace cmajor::parser::context;
 using namespace cmajor::ast;
+using namespace soul::ast::span;
 
 export namespace cmajor::function::parser {
 

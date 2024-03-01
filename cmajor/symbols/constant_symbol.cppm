@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,7 +7,7 @@ export module cmajor.symbols.constant.symbol;
 
 import cmajor.symbols.symbol;
 import cmajor.ast.specifier;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util.code.formatter;
 import std.core;
 
@@ -18,7 +18,7 @@ class Value;
 class ConstantSymbol : public Symbol
 {
 public:
-    ConstantSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ConstantSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;

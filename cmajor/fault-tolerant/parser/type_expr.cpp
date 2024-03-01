@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,97 +20,97 @@ soul::parser::Match ParseBasicType(Context& context, Lexer& lexer)
     {
         case AUTO:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::AutoKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case BOOL:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::BoolKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case SBYTE:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SByteKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case BYTE:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::ByteKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case SHORT:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::ShortKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case USHORT:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::UShortKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case INT:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::IntKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case UINT:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::UIntKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case LONG:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::LongKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case ULONG:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::ULongKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case FLOAT:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::FloatKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case DOUBLE:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::DoubleKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case CHAR:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::CharKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case WCHAR:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::WCharKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case UCHAR:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::UCharKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
         case VOID:
         {
-            soul::ast::Span span = lexer.GetSpan();
+            soul::ast::Span span = lexer.GetSpan(lexer.GetPos());
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::VoidKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         }
@@ -172,7 +172,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
             case DOT:
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::DotNode> dotNode(
-                    new cmajor::fault::tolerant::ast::DotNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::DotNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 soul::parser::Match idMatch = ParseIdentifier(context, lexer, cmajor::fault::tolerant::ast::CompletionContext::dot);
                 if (idMatch.hit)
@@ -200,7 +200,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
             case STAR:
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::StarNode> starNode(
-                    new cmajor::fault::tolerant::ast::StarNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::StarNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 typeExpr.reset(
                     new cmajor::fault::tolerant::ast::PointerNode(
@@ -212,7 +212,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
             case AMPAMP:
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::AmpAmpNode> ampAmpNode(
-                    new cmajor::fault::tolerant::ast::AmpAmpNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::AmpAmpNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 typeExpr.reset(
                     new cmajor::fault::tolerant::ast::RValueRefNode(
@@ -224,7 +224,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
             case AMP:
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::AmpNode> ampNode(
-                    new cmajor::fault::tolerant::ast::AmpNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::AmpNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 typeExpr.reset(
                     new cmajor::fault::tolerant::ast::LValueRefNode(
@@ -236,7 +236,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
             case LBRACKET:
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::LBracketNode> lbracket(
-                    new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 std::unique_ptr<cmajor::fault::tolerant::ast::Node> size;
                 soul::parser::Match exprMatch = ParseExpression(context, lexer);
@@ -247,7 +247,7 @@ soul::parser::Match ParsePostfixTypeExpr(Context& context, Lexer& lexer)
                 if (*lexer == RBRACKET)
                 {
                     std::unique_ptr<cmajor::fault::tolerant::ast::RBracketNode> rbracket(
-                        new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                        new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                     ++lexer;
                     typeExpr.reset(
                         new cmajor::fault::tolerant::ast::ArrayNode(
@@ -282,7 +282,7 @@ soul::parser::Match ParseTypeExpr(Context& context, Lexer& lexer)
     if (*lexer == CONST)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::ConstKeywordNode> constNode(
-            new cmajor::fault::tolerant::ast::ConstKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            new cmajor::fault::tolerant::ast::ConstKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         typeExprNode->AddNode(constNode.release());
         ++lexer;
     }

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,7 +12,7 @@ import cmajor.symbols.type.symbol;
 import cmajor.symbols.function.symbol;
 import cmajor.ast.specifier;
 import cmajor.ir.gen.object;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util.code.formatter;
 import std.core;
 
@@ -23,7 +23,7 @@ class ParameterSymbol;
 class DelegateTypeSymbol : public TypeSymbol
 {
 public:
-    DelegateTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
@@ -46,7 +46,7 @@ public:
     void SetReturnType(TypeSymbol* returnType_) { returnType = returnType_; }
     bool ReturnsClassInterfaceOrClassDelegateByValue() const;
     void SetReturnParam(ParameterSymbol* returnParam_);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags);
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "DelegateTypeSymbol"; }
     void Check() override;
@@ -62,13 +62,13 @@ private:
 class DelegateTypeDefaultConstructor : public FunctionSymbol
 {
 public:
-    DelegateTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeDefaultConstructor(DelegateTypeSymbol* delegateType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeDefaultConstructor"; }
     void Check() override;
@@ -79,10 +79,10 @@ private:
 class DelegateTypeCopyConstructor : public FunctionSymbol
 {
 public:
-    DelegateTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeCopyConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeCopyConstructor(DelegateTypeSymbol* delegateType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeCopyConstructor"; }
 };
@@ -90,13 +90,13 @@ public:
 class DelegateTypeMoveConstructor : public FunctionSymbol
 {
 public:
-    DelegateTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeMoveConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeMoveConstructor(DelegateTypeSymbol* delegateType_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeMoveConstructor"; }
 private:
@@ -106,10 +106,10 @@ private:
 class DelegateTypeCopyAssignment : public FunctionSymbol
 {
 public:
-    DelegateTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeCopyAssignment(DelegateTypeSymbol* delegateType, TypeSymbol* voidType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeCopyAssignment"; }
 };
@@ -117,13 +117,13 @@ public:
 class DelegateTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    DelegateTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeMoveAssignment(DelegateTypeSymbol* delegateType_, TypeSymbol* voidType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeMoveAssignment"; }
 private:
@@ -133,10 +133,10 @@ private:
 class DelegateTypeReturn : public FunctionSymbol
 {
 public:
-    DelegateTypeReturn(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeReturn(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeReturn(DelegateTypeSymbol* delegateType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeReturn"; }
 };
@@ -144,10 +144,10 @@ public:
 class DelegateTypeEquality : public FunctionSymbol
 {
 public:
-    DelegateTypeEquality(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DelegateTypeEquality(const soul::ast::Span& span_, const std::u32string& name_);
     DelegateTypeEquality(DelegateTypeSymbol* delegateType, TypeSymbol* boolType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "DelegateTypeEquality"; }
 };
@@ -155,12 +155,11 @@ public:
 class FunctionToDelegateConversion : public FunctionSymbol
 {
 public:
-    FunctionToDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    FunctionToDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_);
     FunctionToDelegateConversion(TypeSymbol* sourceType_, TypeSymbol* targetType_, FunctionSymbol* function_);
     ConversionType GetConversionType() const override { return ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "FunctionToDelegateConversion"; }
     void Check() override;
@@ -177,8 +176,7 @@ public:
     ConversionType GetConversionType() const override { return ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     const char* ClassName() const override { return "DelegateToVoidPtrConversion"; }
 private:
     TypeSymbol* delegateType;
@@ -192,8 +190,7 @@ public:
     ConversionType GetConversionType() const override { return ConversionType::explicit_; }
     uint8_t ConversionDistance() const override { return 255; }
     bool IsBasicTypeOperation() const override { return true; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     const char* ClassName() const override { return "VoidPtrToDelegateConversion"; }
 private:
     TypeSymbol* voidPtrType;
@@ -204,7 +201,7 @@ private:
 class ClassDelegateTypeSymbol : public TypeSymbol
 {
 public:
-    ClassDelegateTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
@@ -229,8 +226,7 @@ public:
     DelegateTypeSymbol* DelegateType() { return delegateType; }
     ClassTypeSymbol* ObjectDelegatePairType() { Assert(objectDelegatePairType, "object delegate pair type not set"); return objectDelegatePairType; }
     FunctionSymbol* CopyConstructor() { Assert(copyConstructor, "class delegate copy constructor not set"); return copyConstructor; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags);
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "ClassDelegateTypeSymbol"; }
     void Check() override;
@@ -249,14 +245,13 @@ private:
 class ClassDelegateTypeDefaultConstructor : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeDefaultConstructor(ClassDelegateTypeSymbol* classDelegateType_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeDefaultConstructor"; }
@@ -268,14 +263,13 @@ private:
 class ClassDelegateTypeCopyConstructor : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeCopyConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeCopyConstructor(ClassDelegateTypeSymbol* classDelegateType_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     bool IsClassDelegateCopyConstructor() const override { return true; }
@@ -287,14 +281,13 @@ private:
 class ClassDelegateTypeMoveConstructor : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeMoveConstructor(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeMoveConstructor(ClassDelegateTypeSymbol* classDelegateType_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeMoveConstructor"; }
@@ -305,14 +298,13 @@ private:
 class ClassDelegateTypeCopyAssignment : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeCopyAssignment(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* voidType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeCopyAssignment"; }
@@ -323,14 +315,13 @@ private:
 class ClassDelegateTypeMoveAssignment : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeMoveAssignment(ClassDelegateTypeSymbol* classDelegateType, TypeSymbol* voidType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeMoveAssignment"; }
@@ -341,14 +332,13 @@ private:
 class ClassDelegateTypeEquality : public FunctionSymbol
 {
 public:
-    ClassDelegateTypeEquality(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassDelegateTypeEquality(const soul::ast::Span& span_, const std::u32string& name_);
     ClassDelegateTypeEquality(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* boolType);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     const char* ClassName() const override { return "ClassDelegateTypeEquality"; }
@@ -359,14 +349,13 @@ private:
 class MemberFunctionToClassDelegateConversion : public FunctionSymbol
 {
 public:
-    MemberFunctionToClassDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
-    MemberFunctionToClassDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, TypeSymbol* sourceType_, ClassDelegateTypeSymbol* targetType_, FunctionSymbol* function_);
+    MemberFunctionToClassDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_);
+    MemberFunctionToClassDelegateConversion(const soul::ast::Span& span_, TypeSymbol* sourceType_, ClassDelegateTypeSymbol* targetType_, FunctionSymbol* function_);
     ConversionType GetConversionType() const override { return ConversionType::implicit_; }
     uint8_t ConversionDistance() const override { return 1; }
     bool IsMemberFunctionToClassDelegateConversion() const override { return true; }
     std::vector<LocalVariableSymbol*> CreateTemporariesTo(FunctionSymbol* currentFunction) override;
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
     const char* ClassName() const override { return "MemberFunctionToClassDelegateConversion"; }
     void Check() override;

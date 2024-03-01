@@ -1,12 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.conversion.table;
 
 import cmajor.symbols.type.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::symbols {
@@ -46,7 +46,7 @@ public:
     ConversionTable(const ConversionTable&) = delete;
     ConversionTable& operator=(const ConversionTable&) = delete;
     void AddConversion(FunctionSymbol* conversion);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const;
     void AddGeneratedConversion(std::unique_ptr<FunctionSymbol>&& generatedConversion);
     void Add(const ConversionTable& that);
     void Check();

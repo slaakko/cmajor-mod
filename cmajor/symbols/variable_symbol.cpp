@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ module;
 
 module cmajor.symbols.variable.symbol;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.exception;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
@@ -23,8 +23,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
-VariableSymbol::VariableSymbol(SymbolType symbolType_, const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(symbolType_, sourcePos_, sourceModuleId_, name_), type()
+VariableSymbol::VariableSymbol(SymbolType symbolType_, const soul::ast::Span&  span_, const std::u32string& name_) :
+    Symbol(symbolType_, span_, name_), type()
 {
 }
 
@@ -77,7 +77,7 @@ void VariableSymbol::Check()
     Symbol::Check();
     if (!type)
     {
-        throw SymbolCheckException("variable symbol contains null type pointer", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("variable symbol contains null type pointer", GetFullSpan());
     }
 }
 
@@ -91,8 +91,8 @@ std::string VariableSymbol::GetSymbolHelp() const
     return help;
 }
 
-ParameterSymbol::ParameterSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::parameterSymbol, sourcePos_, sourceModuleId_, name_), artificialName(false)
+ParameterSymbol::ParameterSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
+    VariableSymbol(SymbolType::parameterSymbol, span_, name_), artificialName(false)
 {
 }
 
@@ -137,7 +137,7 @@ std::unique_ptr<soul::xml::Element> ParameterSymbol::CreateDomElement(TypeMap& t
 
 ParameterSymbol* ParameterSymbol::Clone() const
 {
-    ParameterSymbol* clone = new ParameterSymbol(GetSourcePos(), SourceModuleId(), Name());
+    ParameterSymbol* clone = new ParameterSymbol(GetSpan(), Name());
     clone->SetType(const_cast<TypeSymbol*>(GetType()));
     clone->artificialName = artificialName;
     return clone;
@@ -153,8 +153,8 @@ std::string ParameterSymbol::GetSymbolHelp() const
     return help;
 }
 
-LocalVariableSymbol::LocalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::localVariableSymbol, sourcePos_, sourceModuleId_, name_)
+LocalVariableSymbol::LocalVariableSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
+    VariableSymbol(SymbolType::localVariableSymbol, span_, name_)
 {
 }
 
@@ -181,8 +181,8 @@ std::string LocalVariableSymbol::GetSymbolHelp() const
     return help;
 }
 
-MemberVariableSymbol::MemberVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::memberVariableSymbol, sourcePos_, sourceModuleId_, name_), layoutIndex(-1)
+MemberVariableSymbol::MemberVariableSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
+    VariableSymbol(SymbolType::memberVariableSymbol, span_, name_), layoutIndex(-1)
 {
 }
 
@@ -244,63 +244,63 @@ void MemberVariableSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("member variable cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("member variable cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -316,7 +316,7 @@ void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64
         uint64_t sizeInBits = GetType()->SizeInBits(emitter);
         uint32_t alignInBits = GetType()->AlignmentInBits(emitter);
         void* scope = parentClassType->GetDIType(emitter);
-        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), GetSourcePos(), SourceModuleId(), sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter));
+        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter));
         emitter.SetDIMemberType(memberVariableId, localDIType);
     }
     return localDIType;
@@ -340,12 +340,12 @@ void MemberVariableSymbol::Check()
     VariableSymbol::Check();
     if (layoutIndex == -1)
     {
-        throw SymbolCheckException("member variable symbol contains invalid layout index", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("member variable symbol contains invalid layout index", GetFullSpan());
     }
 }
 
-GlobalVariableGroupSymbol::GlobalVariableGroupSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(SymbolType::globalVariableGroupSymbol, sourcePos_, sourceModuleId_, name_)
+GlobalVariableGroupSymbol::GlobalVariableGroupSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
+    Symbol(SymbolType::globalVariableGroupSymbol, span_, name_)
 {
 }
 
@@ -374,7 +374,7 @@ void GlobalVariableGroupSymbol::AddGlobalVariable(GlobalVariableSymbol* globalVa
                 {
                     throw Exception("global variable group '" + util::ToUtf8(Name()) +
                         "' already has public or internal global variable with the given name defined in the source file " + p.second,
-                        globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId(), GetSourcePos(), SourceModuleId());
+                        globalVariableSymbol->GetFullSpan(), GetFullSpan());
                 }
             }
             else
@@ -382,7 +382,7 @@ void GlobalVariableGroupSymbol::AddGlobalVariable(GlobalVariableSymbol* globalVa
                 if (p.second == globalVariableSymbol->CompileUnitFilePath())
                 {
                     throw Exception("global variable group '" + util::ToUtf8(Name()) + "' already has global variable with the given name and compile unit",
-                        globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId(), GetSourcePos(), SourceModuleId());
+                        globalVariableSymbol->GetFullSpan(), GetFullSpan());
                 }
             }
         }
@@ -395,7 +395,7 @@ void GlobalVariableGroupSymbol::AddGlobalVariable(GlobalVariableSymbol* globalVa
         else
         {
             throw Exception("global variable group '" + util::ToUtf8(Name()) + "' already has global variable with the given name and compile unit",
-                globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId(), GetSourcePos(), SourceModuleId());
+                globalVariableSymbol->GetFullSpan(), GetFullSpan());
         }
     }
 }
@@ -473,15 +473,15 @@ std::u32string MakeGlobalVariableName(const std::u32string& groupName, const std
     return name;
 }
 
-GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, 
+GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::Span&  span_, const std::u32string& groupName_, 
     const std::string& compileUnitId, const std::string& compileUnitFilePath_) :
-    VariableSymbol(SymbolType::globalVariableSymbol, sourcePos_, sourceModuleId_, MakeGlobalVariableName(groupName_, compileUnitId)), groupName(groupName_), 
+    VariableSymbol(SymbolType::globalVariableSymbol, span_, MakeGlobalVariableName(groupName_, compileUnitId)), groupName(groupName_), 
     compileUnitFilePath(compileUnitFilePath_), globalVariableGroup(nullptr)
 {
 }
 
-GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::SourcePos&  sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::globalVariableSymbol, sourcePos_, sourceModuleId_, name_), globalVariableGroup(nullptr)
+GlobalVariableSymbol::GlobalVariableSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
+    VariableSymbol(SymbolType::globalVariableSymbol, span_, name_), globalVariableGroup(nullptr)
 {
 }
 
@@ -508,7 +508,7 @@ void GlobalVariableSymbol::Read(SymbolReader& reader)
     bool privateAccess = Access() == SymbolAccess::private_;
     if (hasInitializer && !privateAccess)
     {
-        initializer = ReadValue(reader.GetBinaryStreamReader(), GetSourcePos(), SourceModuleId());
+        initializer = ReadValue(reader.GetBinaryStreamReader());
         initializer->SetType(GetType());
     }
 }
@@ -562,67 +562,67 @@ void GlobalVariableSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("global variable cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("global variable cannot be unit_test", GetFullSpan());
     }
 }
 

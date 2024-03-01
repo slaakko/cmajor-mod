@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.type.expr.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -28,20 +29,20 @@ parser TypeExprParser
         ::= PrefixTypeExpr(context):prefixTypeExpr{ return prefixTypeExpr; }
         ;
 
-    PrefixTypeExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
-        ::= CONST{ s = lexer.GetSourcePos(pos); } PostfixTypeExpr(context):constTypeExpr{ return new cmajor::ast::ConstNode(s, context->ModuleId(), constTypeExpr); }
+    PrefixTypeExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
+        ::= CONST{ s = lexer.GetSpan(pos); } PostfixTypeExpr(context):constTypeExpr{ return new cmajor::ast::ConstNode(s, constTypeExpr); }
         |   PostfixTypeExpr(context):postfixTypeExpr{ return postfixTypeExpr; }
         ;
 
-    PostfixTypeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> typeExpr, var soul::ast::SourcePos s) : cmajor::ast::Node*
+    PostfixTypeExpr(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::Node> typeExpr, var soul::ast::Span s) : cmajor::ast::Node*
         ::= 
-        (   PrimaryTypeExpr(context):primaryTypeExpr{ s = lexer.GetSourcePos(pos); typeExpr.reset(primaryTypeExpr); }
-            (   DOT ID{ typeExpr.reset(new cmajor::ast::DotNode(s, context->ModuleId(), typeExpr.release(), 
-                    new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()))); }
-            |   STAR{ typeExpr.reset(new cmajor::ast::PointerNode(s, context->ModuleId(), typeExpr.release())); }
-            |   AMPAMP{ typeExpr.reset(new cmajor::ast::RValueRefNode(s, context->ModuleId(), typeExpr.release())); }
-            |   AMP{ typeExpr.reset(new cmajor::ast::LValueRefNode(s, context->ModuleId(), typeExpr.release())); }
-            |   LBRACKET Expression(context):size? RBRACKET{ typeExpr.reset(new cmajor::ast::ArrayNode(s, context->ModuleId(), typeExpr.release(), size)); }
+        (   PrimaryTypeExpr(context):primaryTypeExpr{ s = lexer.GetSpan(pos); typeExpr.reset(primaryTypeExpr); }
+            (   DOT ID{ typeExpr.reset(new cmajor::ast::DotNode(s, typeExpr.release(), 
+                    new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()))); }
+            |   STAR{ typeExpr.reset(new cmajor::ast::PointerNode(s, typeExpr.release())); }
+            |   AMPAMP{ typeExpr.reset(new cmajor::ast::RValueRefNode(s, typeExpr.release())); }
+            |   AMP{ typeExpr.reset(new cmajor::ast::LValueRefNode(s, typeExpr.release())); }
+            |   LBRACKET Expression(context):size? RBRACKET{ typeExpr.reset(new cmajor::ast::ArrayNode(s, typeExpr.release(), size)); }
             )*
         )
         {
@@ -52,6 +53,6 @@ parser TypeExprParser
     PrimaryTypeExpr(cmajor::parser::context::Context* context) : cmajor::ast::Node*
         ::= BasicType(context):basicType{ return basicType; }
         |   TemplateId(context):templateId{ return templateId; }
-        |   ID{ return new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
+        |   ID{ return new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()); }
         ;
 }

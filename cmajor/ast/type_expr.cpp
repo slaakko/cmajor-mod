@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,18 +11,18 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::constNode, sourcePos_, moduleId_)
+ConstNode::ConstNode(const soul::ast::Span& span_) : Node(NodeType::constNode, span_)
 {
 }
 
-ConstNode::ConstNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) : Node(NodeType::constNode, sourcePos_, moduleId_), subject(subject_)
+ConstNode::ConstNode(const soul::ast::Span& span_, Node* subject_) : Node(NodeType::constNode, span_), subject(subject_)
 {
     subject->SetParent(this);
 }
 
 Node* ConstNode::Clone(CloneContext& cloneContext) const
 {
-    ConstNode* clone = new ConstNode(GetSourcePos(), ModuleId(), subject->Clone(cloneContext));
+    ConstNode* clone = new ConstNode(GetSpan(), subject->Clone(cloneContext));
     return clone;
 }
 
@@ -49,19 +49,19 @@ std::string ConstNode::ToString() const
     return "const " + subject->ToString();
 }
 
-LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::lvalueRefNode, sourcePos_, moduleId_)
+LValueRefNode::LValueRefNode(const soul::ast::Span& span_) : Node(NodeType::lvalueRefNode, span_)
 {
 }
 
-LValueRefNode::LValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
-    Node(NodeType::lvalueRefNode, sourcePos_, moduleId_), subject(subject_)
+LValueRefNode::LValueRefNode(const soul::ast::Span& span_, Node* subject_) :
+    Node(NodeType::lvalueRefNode, span_), subject(subject_)
 {
     subject->SetParent(this);
 }
 
 Node* LValueRefNode::Clone(CloneContext& cloneContext) const
 {
-    LValueRefNode* clone = new LValueRefNode(GetSourcePos(), ModuleId(), subject->Clone(cloneContext));
+    LValueRefNode* clone = new LValueRefNode(GetSpan(), subject->Clone(cloneContext));
     return clone;
 }
 
@@ -88,19 +88,19 @@ std::string LValueRefNode::ToString() const
     return subject->ToString() + "&";
 }
 
-RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::rvalueRefNode, sourcePos_, moduleId_)
+RValueRefNode::RValueRefNode(const soul::ast::Span& span_) : Node(NodeType::rvalueRefNode, span_)
 {
 }
 
-RValueRefNode::RValueRefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
-    Node(NodeType::rvalueRefNode, sourcePos_, moduleId_), subject(subject_)
+RValueRefNode::RValueRefNode(const soul::ast::Span& span_, Node* subject_) :
+    Node(NodeType::rvalueRefNode, span_), subject(subject_)
 {
     subject->SetParent(this);
 }
 
 Node* RValueRefNode::Clone(CloneContext& cloneContext) const
 {
-    RValueRefNode* clone = new RValueRefNode(GetSourcePos(), ModuleId(), subject->Clone(cloneContext));
+    RValueRefNode* clone = new RValueRefNode(GetSpan(), subject->Clone(cloneContext));
     return clone;
 }
 
@@ -127,19 +127,19 @@ std::string RValueRefNode::ToString() const
     return subject->ToString() + "&&";
 }
 
-PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::pointerNode, sourcePos_, moduleId_)
+PointerNode::PointerNode(const soul::ast::Span& span_) : Node(NodeType::pointerNode, span_)
 {
 }
 
-PointerNode::PointerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_) :
-    Node(NodeType::pointerNode, sourcePos_, moduleId_), subject(subject_)
+PointerNode::PointerNode(const soul::ast::Span& span_, Node* subject_) :
+    Node(NodeType::pointerNode, span_), subject(subject_)
 {
     subject->SetParent(this);
 }
 
 Node* PointerNode::Clone(CloneContext& cloneContext) const
 {
-    PointerNode* clone = new PointerNode(GetSourcePos(), ModuleId(), subject->Clone(cloneContext));
+    PointerNode* clone = new PointerNode(GetSpan(), subject->Clone(cloneContext));
     return clone;
 }
 
@@ -166,12 +166,12 @@ std::string PointerNode::ToString() const
     return subject->ToString() + "*";
 }
 
-ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::arrayNode, sourcePos_, moduleId_), subject(), size()
+ArrayNode::ArrayNode(const soul::ast::Span& span_) : Node(NodeType::arrayNode, span_), subject(), size()
 {
 }
 
-ArrayNode::ArrayNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_, Node* size_) :
-    Node(NodeType::arrayNode, sourcePos_, moduleId_), subject(subject_), size(size_)
+ArrayNode::ArrayNode(const soul::ast::Span& span_, Node* subject_, Node* size_) :
+    Node(NodeType::arrayNode, span_), subject(subject_), size(size_)
 {
     subject->SetParent(this);
     if (size)
@@ -187,7 +187,7 @@ Node* ArrayNode::Clone(CloneContext& cloneContext) const
     {
         clonedSize = size->Clone(cloneContext);
     }
-    ArrayNode* clone = new ArrayNode(GetSourcePos(), ModuleId(), subject->Clone(cloneContext), clonedSize);
+    ArrayNode* clone = new ArrayNode(GetSpan(), subject->Clone(cloneContext), clonedSize);
     return clone;
 }
 

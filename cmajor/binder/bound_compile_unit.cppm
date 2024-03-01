@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -22,6 +22,7 @@ import cmajor.binder.uuid.repository;
 import cmajor.binder.concept_repository;
 import cmajor.symbols;
 import cmajor.ast;
+import util;
 
 export namespace cmajor::binder {
 
@@ -39,6 +40,8 @@ public:
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Accept(BoundNodeVisitor& visitor) override;
+    const util::uuid& ModuleId() const override { return moduleId; }
+    int32_t FileIndex() const override { return fileIndex; }
     cmajor::symbols::Module& GetModule() { return module; }
     cmajor::symbols::SymbolTable& GetSymbolTable() { return symbolTable; }
     cmajor::ast::CompileUnitNode* GetCompileUnitNode() const { return compileUnitNode; }
@@ -54,22 +57,22 @@ public:
     void AddBoundNode(std::unique_ptr<BoundNode>&& boundNode);
     const std::vector<std::unique_ptr<BoundNode>>& BoundNodes() const { return boundNodes; }
     cmajor::symbols::FunctionSymbol* GetConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ContainerScope* containerScope, 
-        BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, ArgumentMatch& argumentMatch);
+        BoundFunction* currentFunction, ArgumentMatch& argumentMatch, cmajor::ast::Node* node);
     void CollectViableFunctions(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, std::vector<std::unique_ptr<BoundExpression>>& arguments, 
         BoundFunction* currentFunction, cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, CollectFlags flags);
+        cmajor::ast::Node* node, CollectFlags flags);
     cmajor::symbols::FunctionSymbol* InstantiateFunctionTemplate(cmajor::symbols::FunctionSymbol* functionTemplate, 
         const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
     bool InstantiateClassTemplateMemberFunction(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
-        BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        BoundFunction* currentFunction, cmajor::ast::Node* node);
     cmajor::symbols::FunctionSymbol* InstantiateInlineFunction(cmajor::symbols::FunctionSymbol* inlineFunction, cmajor::symbols::ContainerScope* containerScope, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
     cmajor::ast::FunctionNode* GetFunctionNodeFor(cmajor::symbols::FunctionSymbol* constExprFunctionSymbol);
     void GenerateCopyConstructorFor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
-        BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        BoundFunction* currentFunction, cmajor::ast::Node* node);
     void GenerateCopyConstructorFor(cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol, cmajor::symbols::ContainerScope* containerScope, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
     int Install(const std::string& str);
     int Install(const std::u16string& str);
     int Install(const std::u32string& str);
@@ -116,9 +119,9 @@ public:
     void SetGeneratedDestructorInstantiated(cmajor::symbols::DestructorSymbol* generatedDestructorSymbol);
     void SetSystemRuntimeUnwindInfoSymbol(cmajor::symbols::TypeSymbol* systemRuntimeUnwindInfoSymbol_);
     cmajor::symbols::TypeSymbol* GetSystemRuntimeUnwindInfoSymbol() const { return systemRuntimeUnwindInfoSymbol; }
-    void GenerateInitUnwindInfoFunctionSymbol();
+    void GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Span& span);
     cmajor::symbols::FunctionSymbol* GetInitUnwindInfoFunctionSymbol() const { return initUnwindInfoFunctionSymbol.get(); }
-    void GenerateCompileUnitInitialization();
+    void GenerateCompileUnitInitialization(const soul::ast::Span & span);
     cmajor::symbols::FunctionSymbol* GetInitCompileUnitFunctionSymbol() const { return initCompileUnitFunctionSymbol.get(); }
     cmajor::symbols::FunctionSymbol* GetPushCompileUnitUnwindInfoInitFunctionSymbol() const { return pushCompileUnitUnwindInfoInitFunctionSymbol; }
     cmajor::symbols::GlobalVariableSymbol* GetCompileUnitUnwindInfoVarSymbol() const { return compileUnitUnwindInfoVarSymbol.get(); }
@@ -128,7 +131,7 @@ public:
     { 
         systemRuntimeAddCompileUnitFunctionSymbol = systemRuntimeAddCompileUnitFunctionSymbol_; 
     }
-    void GenerateGlobalInitializationFunction();
+    void GenerateGlobalInitializationFunction(const soul::ast::Span& span);
     cmajor::symbols::FunctionSymbol* GetGlobalInitializationFunctionSymbol() const { return globalInitFunctionSymbol; }
     const std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>>& AllCompileUnitInitFunctionSymbols() const { return allCompileUnitInitFunctionSymbols; }
     bool CodeGenerated(cmajor::symbols::FunctionSymbol* functionSymbol) const;
@@ -139,6 +142,8 @@ public:
     cmajor::ast::IdentifierNode* GetLatestIdentifier() { return latestIdentifierNode; }
 private:
     cmajor::symbols::Module& module;
+    util::uuid moduleId;
+    int fileIndex;
     cmajor::symbols::SymbolTable& symbolTable;
     cmajor::ast::IdentifierNode* latestIdentifierNode;
     cmajor::ast::CompileUnitNode* compileUnitNode;

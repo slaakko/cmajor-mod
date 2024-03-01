@@ -1,22 +1,33 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 module cmajor.symbols.namespaces;
 
+import cmajor.symbols.symbol.writer;
+import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 
 namespace cmajor::symbols {
 
-NamespaceSymbol::NamespaceSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    ContainerSymbol(SymbolType::namespaceSymbol, sourcePos_, sourceModuleId_, name_)
+NamespaceSymbol::NamespaceSymbol(const soul::ast::Span& span_, const std::u32string& name_) : ContainerSymbol(SymbolType::namespaceSymbol, span_, name_)
 {
+}
+
+void NamespaceSymbol::Write(SymbolWriter& writer)
+{
+    ContainerSymbol::Write(writer);
+}
+
+void NamespaceSymbol::Read(SymbolReader& reader)
+{
+    ContainerSymbol::Read(reader);
 }
 
 void NamespaceSymbol::Import(NamespaceSymbol* that, SymbolTable& symbolTable)
 {
-    NamespaceSymbol* ns = symbolTable.BeginNamespace(that->Name(), that->GetSourcePos(), that->SourceModuleId());
+    NamespaceSymbol* ns = symbolTable.BeginNamespace(that->Name(), that->GetSpan(), that->ModuleId(), that->FileIndex());
     symbolTable.MapNs(that, ns);
     for (const std::unique_ptr<Symbol>& symbol : that->Members())
     {

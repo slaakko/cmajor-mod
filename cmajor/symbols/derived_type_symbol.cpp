@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ module;
 
 module cmajor.symbols.derived.type.symbol;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.emitter;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
@@ -332,13 +332,13 @@ std::u32string MakeDerivedTypeName(TypeSymbol* baseType, const TypeDerivationRec
     return derivedTypeName;
 }
 
-DerivedTypeSymbol::DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::derivedTypeSymbol, sourcePos_, sourceModuleId_, name_), baseType(), derivationRec()
+DerivedTypeSymbol::DerivedTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::derivedTypeSymbol, span_, name_), baseType(), derivationRec()
 {
 }
 
-DerivedTypeSymbol::DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_) :
-    TypeSymbol(SymbolType::derivedTypeSymbol, sourcePos_, sourceModuleId_, name_), baseType(baseType_), derivationRec(derivationRec_)
+DerivedTypeSymbol::DerivedTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_) :
+    TypeSymbol(SymbolType::derivedTypeSymbol, span_, name_), baseType(baseType_), derivationRec(derivationRec_)
 {
 }
 
@@ -464,30 +464,30 @@ ContainerScope* DerivedTypeSymbol::GetArrowScope()
     return baseType->GetContainerScope();
 }
 
-TypeSymbol* DerivedTypeSymbol::PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::PlainType()
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, MakePlainDerivationRec(derivationRec), sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, MakePlainDerivationRec(derivationRec));
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::RemoveReference()
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveReferenceDerivation(derivationRec), sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveReferenceDerivation(derivationRec));
 }
 
-TypeSymbol* DerivedTypeSymbol::RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::RemovePointer()
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemovePointerDerivation(derivationRec), sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemovePointerDerivation(derivationRec));
 }
 
-TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef()
 {
     if (IsReferenceType())
     {
-        return RemoveReference(sourcePos, moduleId);
+        return RemoveReference();
     }
     else if (IsPointerType())
     {
-        return RemovePointer(sourcePos, moduleId);
+        return RemovePointer();
     }
     else
     {
@@ -495,12 +495,12 @@ TypeSymbol* DerivedTypeSymbol::RemovePtrOrRef(const soul::ast::SourcePos& source
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::RemoveConst()
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveConstDerivation(derivationRec), sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, RemoveConstDerivation(derivationRec));
 }
 
-TypeSymbol* DerivedTypeSymbol::AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::AddConst()
 {
     if (IsConstType())
     {
@@ -508,11 +508,11 @@ TypeSymbol* DerivedTypeSymbol::AddConst(const soul::ast::SourcePos& sourcePos, c
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddConstDerivation(derivationRec), sourcePos, moduleId);
+        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddConstDerivation(derivationRec));
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::AddLvalueReference()
 {
     if (IsLvalueReferenceType())
     {
@@ -520,11 +520,11 @@ TypeSymbol* DerivedTypeSymbol::AddLvalueReference(const soul::ast::SourcePos& so
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddLvalueReferenceDerivation(derivationRec), sourcePos, moduleId);
+        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddLvalueReferenceDerivation(derivationRec));
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::AddRvalueReference()
 {
     if (IsRvalueReferenceType())
     {
@@ -532,16 +532,16 @@ TypeSymbol* DerivedTypeSymbol::AddRvalueReference(const soul::ast::SourcePos& so
     }
     else
     {
-        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddRvalueReferenceDerivation(derivationRec), sourcePos, moduleId);
+        return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddRvalueReferenceDerivation(derivationRec));
     }
 }
 
-TypeSymbol* DerivedTypeSymbol::AddPointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::AddPointer()
 {
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddPointerDerivation(derivationRec), sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, AddPointerDerivation(derivationRec));
 }
 
-TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& sourceDerivationRec)
 {
     TypeDerivationRec result;
     const std::vector<Derivation>& sourceDerivations = sourceDerivationRec.derivations;
@@ -565,13 +565,13 @@ TypeSymbol* DerivedTypeSymbol::RemoveDerivations(const TypeDerivationRec& source
     {
         result.derivations.push_back(Derivation::rvalueRefDerivation);
     }
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, result, sourcePos, moduleId);
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(baseType, result);
 }
 
-TypeSymbol* DerivedTypeSymbol::Unify(TypeSymbol* sourceType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* DerivedTypeSymbol::Unify(TypeSymbol* sourceType)
 {
-    TypeSymbol* newBaseType = baseType->Unify(sourceType->BaseType(), sourcePos, moduleId);
-    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(newBaseType, UnifyDerivations(derivationRec, sourceType->DerivationRec()), sourcePos, moduleId);
+    TypeSymbol* newBaseType = baseType->Unify(sourceType->BaseType());
+    return GetRootModuleForCurrentThread()->GetSymbolTable().MakeDerivedType(newBaseType, UnifyDerivations(derivationRec, sourceType->DerivationRec()));
 }
 
 bool DerivedTypeSymbol::IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested)
@@ -701,15 +701,15 @@ Value* DerivedTypeSymbol::MakeValue() const
             {
             case SymbolType::charTypeSymbol:
             {
-                return new StringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, "");
+                return new StringValue(soul::ast::Span(), -1, "");
             }
             case SymbolType::wcharTypeSymbol:
             {
-                return new WStringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, u"");
+                return new WStringValue(soul::ast::Span(), -1, u"");
             }
             case SymbolType::ucharTypeSymbol:
             {
-                return new UStringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, U"");
+                return new UStringValue(soul::ast::Span(), -1, U"");
             }
             }
         }
@@ -722,11 +722,11 @@ void DerivedTypeSymbol::Check()
     TypeSymbol::Check();
     if (!baseType)
     {
-        throw SymbolCheckException("derived type symbol has no base type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("derived type symbol has no base type", GetFullSpan());
     }
 }
 
-NullPtrType::NullPtrType(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : TypeSymbol(SymbolType::nullPtrTypeSymbol, sourcePos_, sourceModuleId_, name_)
+NullPtrType::NullPtrType(const soul::ast::Span& span_, const std::u32string& name_) : TypeSymbol(SymbolType::nullPtrTypeSymbol, span_, name_)
 {
 }
 

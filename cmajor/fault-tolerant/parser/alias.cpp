@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -30,7 +30,7 @@ soul::parser::Match ParseUsingAlias(Context& context, Lexer& lexer)
     }
     if (*lexer == USING)
     {
-        usingAliasNode->SetUsingKeyword(new cmajor::fault::tolerant::ast::UsingKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        usingAliasNode->SetUsingKeyword(new cmajor::fault::tolerant::ast::UsingKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -49,7 +49,7 @@ soul::parser::Match ParseUsingAlias(Context& context, Lexer& lexer)
     }
     if (*lexer == ASSIGN)
     {
-        usingAliasNode->SetAssign(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        usingAliasNode->SetAssign(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -67,7 +67,7 @@ soul::parser::Match ParseUsingAlias(Context& context, Lexer& lexer)
     }
     if (*lexer == SEMICOLON)
     {
-        usingAliasNode->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        usingAliasNode->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -94,7 +94,7 @@ soul::parser::Match ParseTypedef(Context& context, Lexer& lexer)
     }
     if (*lexer == TYPEDEF)
     {
-        typedefAliasNode->SetTypedefKeyword(new cmajor::fault::tolerant::ast::TypedefKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        typedefAliasNode->SetTypedefKeyword(new cmajor::fault::tolerant::ast::TypedefKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -122,7 +122,7 @@ soul::parser::Match ParseTypedef(Context& context, Lexer& lexer)
     }
     if (*lexer == SEMICOLON)
     {
-        typedefAliasNode->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        typedefAliasNode->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

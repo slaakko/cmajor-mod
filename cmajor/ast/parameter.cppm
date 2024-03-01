@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,8 +13,8 @@ export namespace cmajor::ast {
 class ParameterNode : public Node
 {
 public:
-    ParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, IdentifierNode* id_);
+    ParameterNode(const soul::ast::Span& span_);
+    ParameterNode(const soul::ast::Span& span_, Node* typeExpr_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

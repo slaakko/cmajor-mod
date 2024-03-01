@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,8 +15,8 @@ class IdentifierNode;
 class ConstantNode : public Node
 {
 public:
-    ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_);
+    ConstantNode(const soul::ast::Span& span_);
+    ConstantNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ module cmajor.symbols.class_template_specializations;
 
 import cmajor.ast.reader;
 import cmajor.ast.writer;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
@@ -40,13 +40,13 @@ std::u32string MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplat
     return name;
 }
 
-ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    ClassTypeSymbol(SymbolType::classTemplateSpecializationSymbol, sourcePos_, sourceModuleId_, name_), classTemplate(nullptr), templateArgumentTypes(), flags(ClassTemplateSpecializationFlags::none)
+ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    ClassTypeSymbol(SymbolType::classTemplateSpecializationSymbol, span_, name_), classTemplate(nullptr), templateArgumentTypes(), flags(ClassTemplateSpecializationFlags::none)
 {
 }
 
-ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_) :
-    ClassTypeSymbol(SymbolType::classTemplateSpecializationSymbol, sourcePos_, sourceModuleId_, name_), classTemplate(classTemplate_), templateArgumentTypes(templateArgumentTypes_), flags(ClassTemplateSpecializationFlags::none)
+ClassTemplateSpecializationSymbol::ClassTemplateSpecializationSymbol(const soul::ast::Span& span_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_) :
+    ClassTypeSymbol(SymbolType::classTemplateSpecializationSymbol, span_, name_), classTemplate(classTemplate_), templateArgumentTypes(templateArgumentTypes_), flags(ClassTemplateSpecializationFlags::none)
 {
 }
 
@@ -185,12 +185,12 @@ FileScope* ClassTemplateSpecializationSymbol::ReleaseFileScope()
     return fileScope.release();
 }
 
-TypeSymbol* ClassTemplateSpecializationSymbol::UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+TypeSymbol* ClassTemplateSpecializationSymbol::UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap)
 {
     std::vector<TypeSymbol*> targetTemplateArgumentTypes;
     for (int i = 0; i < templateArgumentTypes.size(); ++i)
     {
-        TypeSymbol* templateArgumentType = templateArgumentTypes[i]->UnifyTemplateArgumentType(symbolTable, templateParameterMap, sourcePos, moduleId);
+        TypeSymbol* templateArgumentType = templateArgumentTypes[i]->UnifyTemplateArgumentType(symbolTable, templateParameterMap);
         if (templateArgumentType)
         {
             targetTemplateArgumentTypes.push_back(templateArgumentType);
@@ -200,7 +200,7 @@ TypeSymbol* ClassTemplateSpecializationSymbol::UnifyTemplateArgumentType(SymbolT
             return nullptr;
         }
     }
-    return symbolTable.MakeClassTemplateSpecialization(classTemplate, targetTemplateArgumentTypes, sourcePos, GetRootModuleForCurrentThread()->Id());
+    return symbolTable.MakeClassTemplateSpecialization(classTemplate, targetTemplateArgumentTypes);
 }
 
 std::u32string ClassTemplateSpecializationSymbol::Id() const
@@ -220,13 +220,13 @@ void ClassTemplateSpecializationSymbol::Check()
     ClassTypeSymbol::Check();
     if (!classTemplate)
     {
-        throw SymbolCheckException("class template specialization has no class template", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class template specialization has no class template", GetFullSpan());
     }
     for (TypeSymbol* templateArguementType : templateArgumentTypes)
     {
         if (!templateArguementType)
         {
-            throw SymbolCheckException("class template specialization has no template argument type", GetSourcePos(), SourceModuleId());
+            throw SymbolCheckException("class template specialization has no template argument type", GetFullSpan());
         }
     }
 }

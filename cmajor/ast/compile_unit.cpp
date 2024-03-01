@@ -1,7 +1,7 @@
 module cmajor.ast.compile.unit;
 
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,19 +13,25 @@ import util;
 
 namespace cmajor::ast {
 
-CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::compileUnitNode, sourcePos_, moduleId_), globalNs(), isSynthesizedUnit(false), isProgramMainUnit(false)
+CompileUnitNode::CompileUnitNode(const soul::ast::Span& span_) : 
+    Node(NodeType::compileUnitNode, span_), globalNs(), isSynthesizedUnit(false), isProgramMainUnit(false), fileIndex(-1)
 {
 }
 
-CompileUnitNode::CompileUnitNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& filePath_) :
-    Node(NodeType::compileUnitNode, sourcePos_, moduleId_), filePath(filePath_), globalNs(new NamespaceNode(sourcePos_, moduleId_, new IdentifierNode(sourcePos_, moduleId_, U""))), isSynthesizedUnit(false), isProgramMainUnit(false)
+CompileUnitNode::CompileUnitNode(const soul::ast::Span& span_, const std::string& filePath_) :
+    Node(NodeType::compileUnitNode, span_), filePath(filePath_), globalNs(new NamespaceNode(span_, new IdentifierNode(span_, U""))), 
+    isSynthesizedUnit(false), isProgramMainUnit(false), fileIndex(-1)
 {
+    globalNs->SetParent(this);
 }
 
 Node* CompileUnitNode::Clone(CloneContext& cloneContext) const
 {
-    CompileUnitNode* clone = new CompileUnitNode(GetSourcePos(), ModuleId(), filePath);
+    CompileUnitNode* clone = new CompileUnitNode(GetSpan(), filePath);
     clone->globalNs.reset(static_cast<NamespaceNode*>(globalNs->Clone(cloneContext)));
+    clone->globalNs->SetParent(clone);
+    clone->SetModuleId(moduleId);
+    clone->SetFileIndex(fileIndex);
     return clone;
 }
 
@@ -49,6 +55,8 @@ void CompileUnitNode::Write(AstWriter& writer)
     writer.GetBinaryStreamWriter().Write(id);
     writer.GetBinaryStreamWriter().Write(hash);
     writer.GetBinaryStreamWriter().Write(isProgramMainUnit);
+    writer.GetBinaryStreamWriter().Write(moduleId);
+    writer.GetBinaryStreamWriter().Write(fileIndex);
 }
 
 void CompileUnitNode::Read(AstReader& reader)
@@ -65,11 +73,25 @@ void CompileUnitNode::Read(AstReader& reader)
     id = reader.GetBinaryStreamReader().ReadUtf8String();
     hash = reader.GetBinaryStreamReader().ReadUtf8String();
     isProgramMainUnit = reader.GetBinaryStreamReader().ReadBool();
+    reader.GetBinaryStreamReader().ReadUuid(moduleId);
+    fileIndex = reader.GetBinaryStreamReader().ReadInt();
 }
 
 void CompileUnitNode::ResetGlobalNs(NamespaceNode* ns)
 {
     globalNs.reset(ns);
+}
+
+soul::ast::Span CompileUnitNode::GlobalNsSpan() const
+{
+    if (globalNs)
+    {
+        return globalNs->GetSpan();
+    }
+    else
+    {
+        return soul::ast::Span();
+    }
 }
 
 void CompileUnitNode::ComputeLineStarts(const std::u32string& sourceFileContent)
@@ -91,11 +113,11 @@ void CompileUnitNode::ComputeLineStarts(const std::u32string& sourceFileContent)
     }
 }
 
-int CompileUnitNode::GetColumn(const soul::ast::SourcePos& sourcePos) const
+int CompileUnitNode::GetColumn(const soul::ast::Span& span) const
 {
-    if (sourcePos.IsValid())
+    if (span.IsValid())
     {
-        int32_t pos = sourcePos.pos;
+        int32_t pos = span.pos;
         auto it = std::lower_bound(lineStarts.cbegin(), lineStarts.cend(), pos);
         if (it != lineStarts.cend())
         {
@@ -110,6 +132,11 @@ int CompileUnitNode::GetColumn(const soul::ast::SourcePos& sourcePos) const
         }
     }
     return 1;
+}
+
+void CompileUnitNode::SetModuleId(const util::uuid& moduleId_)
+{
+    moduleId = moduleId_;
 }
 
 const std::string& CompileUnitNode::Id()
@@ -228,7 +255,7 @@ void UnnamedNamespaceProcessor::Visit(CompileUnitNode& compileUnitNode)
     {
         CloneContext cloneContext;
         IdentifierNode* unnamedNsId = static_cast<IdentifierNode*>(unnamedNs->Id()->Clone(cloneContext));
-        NamespaceImportNode* import = new NamespaceImportNode(compileUnitNode.GetSourcePos(), compileUnitNode.ModuleId(), unnamedNsId);
+        NamespaceImportNode* import = new NamespaceImportNode(compileUnitNode.GetSpan(), unnamedNsId);
         compileUnitNode.GlobalNs()->Members().Insert(index, import);
         ++index;
     }

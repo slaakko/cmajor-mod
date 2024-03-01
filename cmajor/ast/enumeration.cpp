@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,19 +16,19 @@ import util;
 
 namespace cmajor::ast {
 
-EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::enumTypeNode, sourcePos_, moduleId_)
+EnumTypeNode::EnumTypeNode(const soul::ast::Span& span_) : Node(NodeType::enumTypeNode, span_)
 {
 }
 
-EnumTypeNode::EnumTypeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
-    Node(NodeType::enumTypeNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_)
+EnumTypeNode::EnumTypeNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_) :
+    Node(NodeType::enumTypeNode, span_), specifiers(specifiers_), id(id_)
 {
     id->SetParent(this);
 }
 
 Node* EnumTypeNode::Clone(CloneContext& cloneContext) const
 {
-    EnumTypeNode* clone = new EnumTypeNode(GetSourcePos(), ModuleId(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    EnumTypeNode* clone = new EnumTypeNode(GetSpan(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int n = constants.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -92,13 +92,13 @@ void EnumTypeNode::SetUnderlyingType(Node* underlyingType_)
     underlyingType->SetParent(this);
 }
 
-EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    Node(NodeType::enumConstantNode, sourcePos_, moduleId_), hasValue(false)
+EnumConstantNode::EnumConstantNode(const soul::ast::Span& span_) :
+    Node(NodeType::enumConstantNode, span_), hasValue(false)
 {
 }
 
-EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* value_) :
-    Node(NodeType::enumConstantNode, sourcePos_, moduleId_), id(id_), value(value_), hasValue(false)
+EnumConstantNode::EnumConstantNode(const soul::ast::Span& span_, IdentifierNode* id_, Node* value_) :
+    Node(NodeType::enumConstantNode, span_), id(id_), value(value_), hasValue(false)
 {
     id->SetParent(this);
     if (value)
@@ -109,7 +109,7 @@ EnumConstantNode::EnumConstantNode(const soul::ast::SourcePos& sourcePos_, const
 
 Node* EnumConstantNode::Clone(CloneContext& cloneContext) const
 {
-    EnumConstantNode* clone = new EnumConstantNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), value->Clone(cloneContext));
+    EnumConstantNode* clone = new EnumConstantNode(GetSpan(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), value->Clone(cloneContext));
     if (hasValue)
     {
         clone->SetHasValue();
@@ -142,7 +142,7 @@ void EnumConstantNode::Read(AstReader& reader)
     strValue = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uuid& moduleId, EnumTypeNode* enumType)
+Node* MakeNextEnumConstantValue(const soul::ast::Span& span, EnumTypeNode* enumType)
 {
     EnumConstantNode* lastConstant = enumType->GetLastConstant();
     if (lastConstant)
@@ -156,10 +156,10 @@ Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uu
             {
                 if (enumType->GetUnderlyingType()->IsUnsignedTypeNode())
                 {
-                    return new AddNode(span, moduleId, clonedValue, new ByteLiteralNode(span, moduleId, 1u));
+                    return new AddNode(span, clonedValue, new ByteLiteralNode(span, 1u));
                 }
             }
-            return new AddNode(span, moduleId, clonedValue, new SByteLiteralNode(span, moduleId, 1));
+            return new AddNode(span, clonedValue, new SByteLiteralNode(span, 1));
         }
         else
         {
@@ -172,10 +172,10 @@ Node* MakeNextEnumConstantValue(const soul::ast::SourcePos& span, const util::uu
         {
             if (enumType->GetUnderlyingType()->IsUnsignedTypeNode())
             {
-                return new ByteLiteralNode(span, moduleId, 0u);
+                return new ByteLiteralNode(span, 0u);
             }
         }
-        return new SByteLiteralNode(span, moduleId, 0);
+        return new SByteLiteralNode(span, 0);
     }
 }
 

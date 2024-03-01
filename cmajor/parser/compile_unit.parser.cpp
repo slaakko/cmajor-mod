@@ -102,7 +102,7 @@ soul::parser::Match CompileUnitParser<LexerT>::CompileUnit(LexerT& lexer, cmajor
             soul::parser::Match match(true);
             if (match.hit)
             {
-                compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName()));
+                compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSpan(pos), lexer.FileName()));
                 context->SetCompileUnitNode(compileUnitNode.get());
             }
             *parentMatch1 = match;
@@ -214,7 +214,7 @@ soul::parser::Match CompileUnitParser<LexerT>::UsingDirectives(LexerT& lexer, cm
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 260478286054817795);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::IdentifierNode> usingNs;
     soul::parser::Match match(true);
     soul::parser::Match* parentMatch0 = &match;
@@ -244,7 +244,7 @@ soul::parser::Match CompileUnitParser<LexerT>::UsingDirectives(LexerT& lexer, cm
                                 }
                                 if (match.hit)
                                 {
-                                    s = lexer.GetSourcePos(pos);
+                                    s = lexer.GetSpan(pos);
                                 }
                                 *parentMatch4 = match;
                             }
@@ -280,7 +280,7 @@ soul::parser::Match CompileUnitParser<LexerT>::UsingDirectives(LexerT& lexer, cm
                                 }
                                 if (match.hit)
                                 {
-                                    ns->AddMember(new cmajor::ast::NamespaceImportNode(s, context->ModuleId(), usingNs.release()));
+                                    ns->AddMember(new cmajor::ast::NamespaceImportNode(s, usingNs.release()));
                                 }
                                 *parentMatch7 = match;
                             }
@@ -852,7 +852,7 @@ soul::parser::Match CompileUnitParser<LexerT>::Namespace(LexerT& lexer, cmajor::
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 260478286054817798);
     std::unique_ptr<cmajor::ast::NamespaceNode> namespaceNode = std::unique_ptr<cmajor::ast::NamespaceNode>();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::IdentifierNode> nsName;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -885,7 +885,7 @@ soul::parser::Match CompileUnitParser<LexerT>::Namespace(LexerT& lexer, cmajor::
                                 }
                                 if (match.hit)
                                 {
-                                    s = lexer.GetSourcePos(pos);
+                                    s = lexer.GetSpan(pos);
                                 }
                                 *parentMatch6 = match;
                             }
@@ -911,7 +911,7 @@ soul::parser::Match CompileUnitParser<LexerT>::Namespace(LexerT& lexer, cmajor::
                                             nsName.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                                             if (match.hit)
                                             {
-                                                namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nsName.release()));
+                                                namespaceNode.reset(new cmajor::ast::NamespaceNode(s, nsName.release()));
                                             }
                                             *parentMatch10 = match;
                                         }
@@ -929,7 +929,7 @@ soul::parser::Match CompileUnitParser<LexerT>::Namespace(LexerT& lexer, cmajor::
                                                     soul::parser::Match match(true);
                                                     if (match.hit)
                                                     {
-                                                        namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nullptr));
+                                                        namespaceNode.reset(new cmajor::ast::NamespaceNode(s, nullptr));
                                                     }
                                                     *parentMatch12 = match;
                                                 }

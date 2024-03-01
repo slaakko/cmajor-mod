@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,62 +12,63 @@ import std.core;
 
 namespace cmajor::symbols {
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::string Expand(const std::string& errorMessage, const soul::ast::FullSpan& fullSpan)
 {
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-    return Expand(errorMessage, sourcePos, moduleId, references);
+    std::vector<soul::ast::FullSpan> references;
+    return Expand(errorMessage, fullSpan, references);
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const util::uuid& primaryModuleId,
-    const soul::ast::SourcePos& referenceSourcePos, const util::uuid& referenceModuleId)
+std::string Expand(const std::string& errorMessage, const soul::ast::FullSpan& primarySpan, const soul::ast::FullSpan& referenceSpan)
 {
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
-    return Expand(errorMessage, primarySourcePos, primaryModuleId, references, "Error");
+    std::vector<soul::ast::FullSpan> references(1, referenceSpan);
+    return Expand(errorMessage, primarySpan, references, "Error");
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& primarySourcePos, const util::uuid& primaryModuleId,
-    const soul::ast::SourcePos& referenceSourcePos, const util::uuid& referenceModuleId, const std::string& title)
+std::string Expand(const std::string& errorMessage, const soul::ast::FullSpan& primarySpan, const soul::ast::FullSpan& referenceSpan, const std::string& title)
 {
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references(1, std::make_pair(referenceSourcePos, referenceModuleId));
-    return Expand(errorMessage, primarySourcePos, primaryModuleId, references, title);
+    std::vector<soul::ast::FullSpan> references(1, referenceSpan);
+    return Expand(errorMessage, primarySpan, references, title);
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references)
+std::string Expand(const std::string& errorMessage, const soul::ast::FullSpan& fullSpan, const std::vector<soul::ast::FullSpan>& references)
 {
-    return Expand(errorMessage, sourcePos, moduleId, references, "Error");
+    return Expand(errorMessage, fullSpan, references, "Error");
 }
 
-std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references,
-    const std::string& title)
+std::string Expand(const std::string& errorMessage, const soul::ast::FullSpan& fullSpan, const std::vector<soul::ast::FullSpan>& references, const std::string& title)
 {
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> referenceSourcePoss = references;
-    referenceSourcePoss.erase(std::unique(referenceSourcePoss.begin(), referenceSourcePoss.end()), referenceSourcePoss.end());
+    std::vector<soul::ast::FullSpan> referenceSpans = references;
+    referenceSpans.erase(std::unique(referenceSpans.begin(), referenceSpans.end()), referenceSpans.end());
     std::string expandedMessage = title + ": " + errorMessage;
-    if (sourcePos.IsValid())
+    if (fullSpan.IsValid())
     {
-        Module* module = GetModuleById(moduleId);
+        Module* module = GetModuleById(fullSpan.moduleId);
         if (module)
         {
-            std::string fileName = module->GetFilePath(sourcePos.file);
+            std::string fileName = module->GetFilePath(fullSpan.fileIndex);
             if (!fileName.empty())
             {
-                expandedMessage.append(" (file '" + fileName + "', line " + std::to_string(sourcePos.line) + ")");
-                expandedMessage.append(":\n").append(util::ToUtf8(module->GetErrorLines(sourcePos))); 
+                soul::ast::LineColLen lineColLen;
+                std::string errorLines = module->GetErrorLines(fullSpan.span, fullSpan.fileIndex, lineColLen);
+                expandedMessage.append(" (file '" + fileName + "', line " + std::to_string(lineColLen.line) + ")");
+                expandedMessage.append(":\n").append(errorLines);
             }
         }
     }
-    for (const std::pair<soul::ast::SourcePos, util::uuid>& referenceSourcePos : referenceSourcePoss)
+    for (const soul::ast::FullSpan& referenceSpan : referenceSpans)
     {
-        if (!referenceSourcePos.first.IsValid()) continue;
-        if (referenceSourcePos.first == sourcePos && referenceSourcePos.second == moduleId) continue;
-        Module* module = GetModuleById(referenceSourcePos.second);
+        if (!referenceSpan.IsValid()) continue;
+        if (referenceSpan == fullSpan) continue;
+        Module* module = GetModuleById(referenceSpan.moduleId);
         if (module)
         {
-            std::string fileName = module->GetFilePath(referenceSourcePos.first.file);
+            std::string fileName = module->GetFilePath(referenceSpan.fileIndex);
             if (!fileName.empty())
             {
-                expandedMessage.append("\nsee reference to file '" + fileName + "', line " + std::to_string(referenceSourcePos.first.line));
-                expandedMessage.append(":\n").append(util::ToUtf8(module->GetErrorLines(referenceSourcePos.first)));
+                soul::ast::LineColLen lineColLen;
+                std::string errorLines = module->GetErrorLines(referenceSpan.span, referenceSpan.fileIndex, lineColLen);
+                expandedMessage.append("\nsee reference to file '" + fileName + "', line " + std::to_string(lineColLen.line));
+                expandedMessage.append(":\n").append(errorLines);
             }
         }
     }
@@ -75,19 +76,19 @@ std::string Expand(const std::string& errorMessage, const soul::ast::SourcePos& 
 }
 
 /*
-std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module, const soul::ast::SourcePos& sourcePos)
+std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module, const soul::ast::Span& span)
 {
-    if (!sourcePos.IsValid()) return std::unique_ptr<util::JsonObject>();
+    if (!span.IsValid()) return std::unique_ptr<util::JsonObject>();
     if (!module)
     {
         throw std::runtime_error("module not set");
     }
-    const std::string& fileName = module->GetFilePath(sourcePos.file);
+    const std::string& fileName = module->GetFilePath(span.file);
     if (fileName.empty()) return std::unique_ptr<util::JsonObject>();
     std::unique_ptr<util::JsonObject> json(new util::JsonObject());
     json->AddField(U"file", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(fileName))));
-    json->AddField(U"line", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(sourcePos.line)))));
-    std::u32string text = module->GetErrorLines(sourcePos); 
+    json->AddField(U"line", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(span.line)))));
+    std::u32string text = module->GetErrorLines(span); 
     int32_t startCol = 0;
     int32_t endCol = 0;
     json->AddField(U"startCol", std::unique_ptr<util::JsonValue>(new util::JsonString(util::ToUtf32(std::to_string(startCol)))));
@@ -98,26 +99,26 @@ std::unique_ptr<util::JsonObject> SourcePosToJson(Module* module, const soul::as
 */
 
 /*
-std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const soul::ast::SourcePos& sourcePos)
+std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const soul::ast::Span& span)
 {
-    if (!sourcePos.IsValid()) return std::unique_ptr<soul::xml::Element>();
+    if (!span.IsValid()) return std::unique_ptr<soul::xml::Element>();
     if (!module_)
     {
         throw std::runtime_error("module not set");
     }
-    const std::string& fileName = module_->GetFilePath(sourcePos.file);
+    const std::string& fileName = module_->GetFilePath(span.file);
     if (fileName.empty()) return std::unique_ptr<soul::xml::Element>();
-    std::unique_ptr<soul::xml::Element> sourcePosElement(soul::xml::MakeElement("sourcePos"));
+    std::unique_ptr<soul::xml::Element> sourcePosElement(soul::xml::MakeElement("span"));
     std::unique_ptr<soul::xml::Element> fileElement(soul::xml::MakeElement("file"));
     std::unique_ptr<soul::xml::Text> fileText(soul::xml::MakeText((fileName)));
     fileElement->AppendChild(std::unique_ptr<soul::xml::Node>(fileText.release()));
     std::unique_ptr<soul::xml::Element> lineElement(soul::xml::MakeElement("line"));
-    std::unique_ptr<soul::xml::Text> lineText(soul::xml::MakeText((std::to_string(sourcePos.line))));
+    std::unique_ptr<soul::xml::Text> lineText(soul::xml::MakeText((std::to_string(span.line))));
     lineElement->AppendChild(std::unique_ptr<soul::xml::Node>(lineText.release()));
-    std::u32string text = module_->GetErrorLines(sourcePos);
+    std::u32string text = module_->GetErrorLines(span);
     int32_t startCol = 0;
     int32_t endCol = 0;
-    module_->GetColumns(sourcePos, startCol, endCol);
+    module_->GetColumns(span, startCol, endCol);
     sourcePosElement->AppendChild(std::unique_ptr<soul::xml::Node>(fileElement.release()));
     sourcePosElement->AppendChild(std::unique_ptr<soul::xml::Node>(lineElement.release()));
     std::unique_ptr<soul::xml::Element> startColElement(soul::xml::MakeElement("startCol"));
@@ -136,19 +137,18 @@ std::unique_ptr<soul::xml::Element> SourcePosToDomElement(Module* module_, const
 }
 */
 
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
-    what(Expand(message_, defined_, definedModuleId_)), message(message_), defined(defined_), definedModuleId(definedModuleId_)
+Exception::Exception(const std::string& message_, const soul::ast::FullSpan& defined_) : what(Expand(message_, defined_)), message(message_), defined(defined_)
 {
 }
 
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_, const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
-    what(Expand(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)), message(message_), defined(defined_), definedModuleId(definedModuleId_)
+Exception::Exception(const std::string& message_, const soul::ast::FullSpan& defined_, const soul::ast::FullSpan& referenced_) : 
+    what(Expand(message_, defined_, referenced_)), message(message_), defined(defined_)
 {
-    references.push_back(std::make_pair(referenced_, referencedModuleId_));
+    references.push_back(referenced_);
 }
 
-Exception::Exception(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_, const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
-    what(Expand(message_, defined_, definedModuleId_, references_)), message(message_), defined(defined_), definedModuleId(definedModuleId_), references(references_)
+Exception::Exception(const std::string& message_, const soul::ast::FullSpan& defined_, const std::vector<soul::ast::FullSpan>& references_) :
+    what(Expand(message_, defined_, references_)), message(message_), defined(defined_), references(references_)
 {
 }
 
@@ -165,27 +165,30 @@ void Exception::SetProject(const std::string& projectName_)
 std::vector<cmajor::info::bs::CompileError> Exception::ToErrors() const
 {
     std::vector<cmajor::info::bs::CompileError> errors;
-    Module* module = GetModuleById(definedModuleId);
+    Module* module = GetModuleById(defined.moduleId);
     if (module)
     {
         cmajor::info::bs::CompileError mainError;
         mainError.message = message;
         mainError.project = projectName;
-        mainError.file = module->GetFilePath(defined.file);
-        mainError.line = defined.line;
-        mainError.scol = defined.col;
+        mainError.file = module->GetFilePath(defined.fileIndex);
+        soul::ast::LineColLen lineColLen = module->GetLineColLen(defined.span, defined.fileIndex);
+        mainError.line = lineColLen.line;
+        mainError.scol = lineColLen.col;
+        mainError.ecol = lineColLen.col + lineColLen.len;
         errors.push_back(mainError);
         for (const auto& ref : references)
         {
-            Module* module = GetModuleById(ref.second);
+            Module* module = GetModuleById(ref.moduleId);
             if (module)
             {
-                const soul::ast::SourcePos& sourcePos = ref.first;
                 cmajor::info::bs::CompileError refError;
                 refError.message = "See reference to: ";
-                refError.file = module->GetFilePath(sourcePos.file);
-                refError.line = sourcePos.line;
-                refError.scol = sourcePos.col;
+                refError.file = module->GetFilePath(ref.fileIndex);
+                soul::ast::LineColLen lineColLen = module->GetLineColLen(ref.span, ref.fileIndex);
+                refError.line = lineColLen.line;
+                refError.scol = lineColLen.col;
+                refError.ecol = lineColLen.col + lineColLen.len;
                 errors.push_back(refError);
             }
         }
@@ -271,78 +274,68 @@ void Exception::AddToDiagnosticsElement(soul::xml::Element* diagnosticsElement) 
 }
 */
 
-ModuleImmutableException::ModuleImmutableException(Module* module, Module* immutableModule, const soul::ast::SourcePos& defined_, const soul::ast::SourcePos& referenced_) :
-    Exception("attempt to add a symbol to an immutable module' " + util::ToUtf8(immutableModule->Name()) + "'", defined_, module->Id(), referenced_, immutableModule->Id())
+ModuleImmutableException::ModuleImmutableException(Module* module, Module* immutableModule, const soul::ast::FullSpan& defined_, const soul::ast::FullSpan& referenced_) :
+    Exception("attempt to add a symbol to an immutable module' " + util::ToUtf8(immutableModule->Name()) + "'", defined_, referenced_)
 {
 }
 
-SymbolCheckException::SymbolCheckException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& moduleId_) : Exception(message_, defined_, moduleId_)
+SymbolCheckException::SymbolCheckException(const std::string& message_, const soul::ast::FullSpan& defined_) : Exception(message_, defined_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) : Exception(message_, defined_, definedModuleId_)
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_) : Exception(message_, defined_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
-    Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_, const soul::ast::FullSpan& referenced_) :
+    Exception(message_, defined_, referenced_)
 {
 }
 
-CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) : Exception(message_, defined_, definedModuleId_, references_)
+CastOverloadException::CastOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_, const std::vector<soul::ast::FullSpan>& references_) : 
+    Exception(message_, defined_, references_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
-    Exception(message_, defined_, definedModuleId_)
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_) : Exception(message_, defined_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
-    Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_, 
+    const soul::ast::FullSpan& referenced_) : Exception(message_, defined_, referenced_)
 {
 }
 
-CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
-    Exception(message_, defined_, definedModuleId_, references_)
+CannotBindConstToNonconstOverloadException::CannotBindConstToNonconstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_,
+    const std::vector<soul::ast::FullSpan>& references_) : Exception(message_, defined_, references_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
-    Exception(message_, defined_, definedModuleId_)
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_) : Exception(message_, defined_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
-    Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_, const soul::ast::FullSpan& referenced_) :
+    Exception(message_, defined_, referenced_)
 {
 }
 
-CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
-    Exception(message_, defined_, definedModuleId_, references_)
+CannotAssignToConstOverloadException::CannotAssignToConstOverloadException(const std::string& message_, const soul::ast::FullSpan& defined_, 
+    const std::vector<soul::ast::FullSpan>& references_) : Exception(message_, defined_, references_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) :
-    Exception(message_, defined_, definedModuleId_)
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::FullSpan& defined_) : Exception(message_, defined_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const soul::ast::SourcePos& referenced_, const util::uuid& referencedModuleId_) :
-    Exception(message_, defined_, definedModuleId_, referenced_, referencedModuleId_)
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::FullSpan& defined_, const soul::ast::FullSpan& referenced_) :
+    Exception(message_, defined_, referenced_)
 {
 }
 
-NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_,
-    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_) :
-    Exception(message_, defined_, definedModuleId_, references_)
+NoViableFunctionException::NoViableFunctionException(const std::string& message_, const soul::ast::FullSpan& defined_, const std::vector<soul::ast::FullSpan>& references_) :
+    Exception(message_, defined_, references_)
 {
 }
 } // namespace cmajor::symbols

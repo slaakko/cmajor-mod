@@ -145,7 +145,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), true));
+                        return soul::parser::Match(true, new cmajor::ast::BooleanLiteralNode(lexer.GetSpan(pos), true));
                     }
                 }
                 *parentMatch1 = match;
@@ -174,7 +174,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), false));
+                        return soul::parser::Match(true, new cmajor::ast::BooleanLiteralNode(lexer.GetSpan(pos), false));
                     }
                 }
                 *parentMatch2 = match;
@@ -205,7 +205,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, cmajor::ast::CreateFloatingLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, floatLiteral));
+                        return soul::parser::Match(true, cmajor::ast::CreateFloatingLiteralNode(lexer.GetSpan(pos), value, floatLiteral));
                     }
                 }
                 *parentMatch3 = match;
@@ -236,7 +236,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, cmajor::ast::CreateIntegerLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, isUnsigned));
+                        return soul::parser::Match(true, cmajor::ast::CreateIntegerLiteralNode(lexer.GetSpan(pos), value, isUnsigned));
                     }
                 }
                 *parentMatch4 = match;
@@ -267,7 +267,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, cmajor::ast::CreateCharacterLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix));
+                        return soul::parser::Match(true, cmajor::ast::CreateCharacterLiteralNode(lexer.GetSpan(pos), value, prefix));
                     }
                 }
                 *parentMatch5 = match;
@@ -298,7 +298,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, cmajor::ast::CreateStringLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix));
+                        return soul::parser::Match(true, cmajor::ast::CreateStringLiteralNode(lexer.GetSpan(pos), value, prefix));
                     }
                 }
                 *parentMatch6 = match;
@@ -327,7 +327,7 @@ soul::parser::Match LiteralParser<LexerT>::SimpleLiteral(LexerT& lexer, cmajor::
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "SimpleLiteral");
                         #endif
-                        return soul::parser::Match(true, new cmajor::ast::NullLiteralNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                        return soul::parser::Match(true, new cmajor::ast::NullLiteralNode(lexer.GetSpan(pos)));
                     }
                 }
                 *parentMatch7 = match;
@@ -477,7 +477,7 @@ soul::parser::Match LiteralParser<LexerT>::ArrayLiteral(LexerT& lexer, cmajor::p
                         }
                         if (match.hit)
                         {
-                            literalNode.reset(new cmajor::ast::ArrayLiteralNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                            literalNode.reset(new cmajor::ast::ArrayLiteralNode(lexer.GetSpan(pos)));
                         }
                         *parentMatch4 = match;
                     }
@@ -671,7 +671,7 @@ soul::parser::Match LiteralParser<LexerT>::StructuredLiteral(LexerT& lexer, cmaj
                         }
                         if (match.hit)
                         {
-                            literalNode.reset(new cmajor::ast::StructuredLiteralNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                            literalNode.reset(new cmajor::ast::StructuredLiteralNode(lexer.GetSpan(pos)));
                         }
                         *parentMatch4 = match;
                     }

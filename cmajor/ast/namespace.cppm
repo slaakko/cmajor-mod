@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -30,8 +30,8 @@ inline constexpr NsFlags operator&(NsFlags left, NsFlags right)
 class NamespaceNode : public Node
 {
 public:
-    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_);
+    NamespaceNode(const soul::ast::Span& span_);
+    NamespaceNode(const soul::ast::Span& span_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -44,17 +44,23 @@ public:
     void SetUnnamedNs() { flags = flags | NsFlags::isUnnamedNs; }
     bool HasUnnamedNs() const { return (flags & NsFlags::hasUnnamedNs) != NsFlags::none; }
     void SetHasUnnamedNs() { flags = flags | NsFlags::hasUnnamedNs; }
+    void SetFileIndex(int32_t fileIndex_) { fileIndex = fileIndex_; }
+    int32_t FileIndex() const override;
+    void SetModuleId(const util::uuid& moduleId_);
+    const util::uuid& ModuleId() const override;
 private:
     std::unique_ptr<IdentifierNode> id;
     NodeList<Node> members;
     NsFlags flags;
+    int32_t fileIndex;
+    util::uuid moduleId;
 };
 
 class NamespaceImportNode : public Node
 {
 public:
-    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_);
+    NamespaceImportNode(const soul::ast::Span& span_);
+    NamespaceImportNode(const soul::ast::Span& span_, IdentifierNode* ns_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

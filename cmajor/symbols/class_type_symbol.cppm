@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ export module cmajor.symbols.classes;
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.scope;
 import cmajor.symbols.variable.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.emitter;
 import cmajor.ast.classes;
 import cmajor.ast.concepts;
@@ -33,7 +33,7 @@ class ClassTemplateSpecializationSymbol;
 class ClassGroupTypeSymbol : public TypeSymbol
 {
 public:
-    ClassGroupTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& name_);
+    ClassGroupTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
     std::string TypeString() const override { return "class_group"; }
     bool IsInComplete() const override { return true; }
@@ -109,8 +109,8 @@ const int32_t functionVmtIndexOffset = 6;   // virtual method table
 class ClassTypeSymbol : public TypeSymbol
 {
 public:
-    ClassTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
-    ClassTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ClassTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
+    ClassTypeSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     const cmajor::ast::NodeList<cmajor::ast::Node>& UsingNodes() const { return usingNodes; }

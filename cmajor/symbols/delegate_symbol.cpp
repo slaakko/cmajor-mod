@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ module;
 
 module cmajor.symbols.delegate.symbol;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.emitter;
 import cmajor.symbols.exception;
 import cmajor.symbols.type.symbol;
@@ -24,8 +24,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
-DelegateTypeSymbol::DelegateTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::delegateTypeSymbol, sourcePos_, sourceModuleId_, name_), returnType(), parameters()
+DelegateTypeSymbol::DelegateTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::delegateTypeSymbol, span_, name_), returnType(), parameters()
 {
 }
 
@@ -180,47 +180,47 @@ void DelegateTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
@@ -230,20 +230,20 @@ void DelegateTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     {
         if (IsNothrow())
         {
-            throw Exception("delegate cannot be throw and nothrow at the same time", GetSourcePos(), SourceModuleId());
+            throw Exception("delegate cannot be throw and nothrow at the same time", GetFullSpan());
         }
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("delegate cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("delegate cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -257,7 +257,7 @@ void DelegateTypeSymbol::SetReturnParam(ParameterSymbol* returnParam_)
     returnParam.reset(returnParam_);
 }
 
-void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     void* callee = nullptr;
     int na = genObjects.size();
@@ -282,7 +282,6 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
         void* arg = emitter.Stack().Pop();
         args[n - i - 1] = arg;
     }
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* handlerBlock = emitter.HandlerBlock();
     void* cleanupBlock = emitter.CleanupBlock();
     bool newCleanupNeeded = emitter.NewCleanupNeeded();
@@ -304,7 +303,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                void* callInst = emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
+                void* callInst = emitter.CreateCallInst(functionType, callee, args, bundles);
                 emitter.Stack().Push(callInst);
             }
         }
@@ -334,7 +333,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                void* invokeInst = emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                void* invokeInst = emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
                 emitter.Stack().Push(invokeInst);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
@@ -355,7 +354,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
+                emitter.CreateCallInst(functionType, callee, args, bundles);
             }
         }
         else
@@ -384,7 +383,7 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -399,7 +398,7 @@ void DelegateTypeSymbol::Check()
     TypeSymbol::Check();
     if (!returnType)
     {
-        throw SymbolCheckException("delegate type symbol has no return type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("delegate type symbol has no return type", GetFullSpan());
     }
 }
 
@@ -425,18 +424,18 @@ std::string DelegateTypeSymbol::GetSymbolHelp() const
     return help;
 }
 
-DelegateTypeDefaultConstructor::DelegateTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeDefaultConstructor, sourcePos_, sourceModuleId_, name_), delegateType(nullptr)
+DelegateTypeDefaultConstructor::DelegateTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeDefaultConstructor, span_, name_), delegateType(nullptr)
 {
 }
 
 DelegateTypeDefaultConstructor::DelegateTypeDefaultConstructor(DelegateTypeSymbol* delegateType_) :
-    FunctionSymbol(SymbolType::delegateTypeDefaultConstructor, delegateType_->GetSourcePos(), delegateType_->SourceModuleId(), U"@constructor"), delegateType(delegateType_)
+    FunctionSymbol(SymbolType::delegateTypeDefaultConstructor, delegateType_->GetSpan(), U"@constructor"), delegateType(delegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"this");
-    thisParam->SetType(delegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSpan(), U"this");
+    thisParam->SetType(delegateType->AddPointer());
     AddMember(thisParam);
     ComputeName();
 }
@@ -468,7 +467,7 @@ void DelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int ind
     }
 }
 
-void DelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "default constructor needs one object");
     emitter.Stack().Push(delegateType->CreateDefaultIrValue(emitter));
@@ -480,51 +479,51 @@ void DelegateTypeDefaultConstructor::Check()
     FunctionSymbol::Check();
     if (!delegateType)
     {
-        throw SymbolCheckException("delegate type default constructor has no delegate type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("delegate type default constructor has no delegate type", GetFullSpan());
     }
 }
 
-DelegateTypeCopyConstructor::DelegateTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeCopyConstructor, sourcePos_, sourceModuleId_, name_)
+DelegateTypeCopyConstructor::DelegateTypeCopyConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeCopyConstructor, span_, name_)
 {
 }
 
 DelegateTypeCopyConstructor::DelegateTypeCopyConstructor(DelegateTypeSymbol* delegateType) : FunctionSymbol(SymbolType::delegateTypeCopyConstructor,
-    delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"@constructor")
+    delegateType->GetSpan(), U"@constructor")
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"this");
-    thisParam->SetType(delegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSpan(), U"this");
+    thisParam->SetType(delegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"that");
+    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSpan(), U"that");
     thatParam->SetType(delegateType);
     AddMember(thatParam);
     ComputeName();
 }
 
-void DelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
-DelegateTypeMoveConstructor::DelegateTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeMoveConstructor, sourcePos_, sourceModuleId_, name_), delegateType(nullptr)
+DelegateTypeMoveConstructor::DelegateTypeMoveConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeMoveConstructor, span_, name_), delegateType(nullptr)
 {
 }
 
 DelegateTypeMoveConstructor::DelegateTypeMoveConstructor(DelegateTypeSymbol* delegateType_) :
-    FunctionSymbol(SymbolType::delegateTypeMoveConstructor, delegateType_->GetSourcePos(), delegateType_->SourceModuleId(), U"@constructor"), delegateType(delegateType_)
+    FunctionSymbol(SymbolType::delegateTypeMoveConstructor, delegateType_->GetSpan(), U"@constructor"), delegateType(delegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"this");
-    thisParam->SetType(delegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSpan(), U"this");
+    thisParam->SetType(delegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"that");
-    thatParam->SetType(delegateType->AddRvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSpan(), U"that");
+    thatParam->SetType(delegateType->AddRvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -556,7 +555,7 @@ void DelegateTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void DelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -565,48 +564,48 @@ void DelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
-DelegateTypeCopyAssignment::DelegateTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeCopyAssignment, sourcePos_, sourceModuleId_, name_)
+DelegateTypeCopyAssignment::DelegateTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeCopyAssignment, span_, name_)
 {
 }
 
 DelegateTypeCopyAssignment::DelegateTypeCopyAssignment(DelegateTypeSymbol* delegateType, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::delegateTypeCopyAssignment, delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"operator=")
+    FunctionSymbol(SymbolType::delegateTypeCopyAssignment, delegateType->GetSpan(), U"operator=")
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"this");
-    thisParam->SetType(delegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSpan(), U"this");
+    thisParam->SetType(delegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"that");
+    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSpan(), U"that");
     thatParam->SetType(delegateType);
     AddMember(thatParam);
     SetReturnType(voidType);
     ComputeName();
 }
 
-void DelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "copy assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
-DelegateTypeMoveAssignment::DelegateTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeMoveAssignment, sourcePos_, sourceModuleId_, name_), delegateType(nullptr)
+DelegateTypeMoveAssignment::DelegateTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeMoveAssignment, span_, name_), delegateType(nullptr)
 {
 }
 
 DelegateTypeMoveAssignment::DelegateTypeMoveAssignment(DelegateTypeSymbol* delegateType_, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::delegateTypeMoveAssignment, delegateType_->GetSourcePos(), delegateType_->SourceModuleId(), U"operator="), delegateType(delegateType_)
+    FunctionSymbol(SymbolType::delegateTypeMoveAssignment, delegateType_->GetSpan(), U"operator="), delegateType(delegateType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"this");
-    thisParam->SetType(delegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(delegateType->GetSpan(), U"this");
+    thisParam->SetType(delegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"that");
-    thatParam->SetType(delegateType->AddRvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(delegateType->GetSpan(), U"that");
+    thatParam->SetType(delegateType->AddRvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType);
     ComputeName();
@@ -639,7 +638,7 @@ void DelegateTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void DelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "move assignment needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -648,48 +647,49 @@ void DelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std:
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
-DelegateTypeReturn::DelegateTypeReturn(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeReturn, sourcePos_, sourceModuleId_, name_)
+DelegateTypeReturn::DelegateTypeReturn(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeReturn, span_, name_)
 {
 }
 
-DelegateTypeReturn::DelegateTypeReturn(DelegateTypeSymbol* delegateType) : FunctionSymbol(SymbolType::delegateTypeReturn, delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"@return")
+DelegateTypeReturn::DelegateTypeReturn(DelegateTypeSymbol* delegateType) : 
+    FunctionSymbol(SymbolType::delegateTypeReturn, delegateType->GetSpan(), U"@return")
 {
     SetGroupName(U"@return");
-    ParameterSymbol* valueParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"value");
+    ParameterSymbol* valueParam = new ParameterSymbol(delegateType->GetSpan(), U"value");
     valueParam->SetType(delegateType);
     AddMember(valueParam);
     SetReturnType(delegateType);
     ComputeName();
 }
 
-void DelegateTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeReturn::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "return needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
 }
 
-DelegateTypeEquality::DelegateTypeEquality(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::delegateTypeEquality, sourcePos_, sourceModuleId_, name_)
+DelegateTypeEquality::DelegateTypeEquality(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::delegateTypeEquality, span_, name_)
 {
 }
 
 DelegateTypeEquality::DelegateTypeEquality(DelegateTypeSymbol* delegateType, TypeSymbol* boolType)
-    : FunctionSymbol(SymbolType::delegateTypeEquality, delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"operator==")
+    : FunctionSymbol(SymbolType::delegateTypeEquality, delegateType->GetSpan(), U"operator==")
 {
     SetGroupName(U"operator==");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"left");
+    ParameterSymbol* leftParam = new ParameterSymbol(delegateType->GetSpan(), U"left");
     leftParam->SetType(delegateType);
     AddMember(leftParam);
-    ParameterSymbol* rightParam = new ParameterSymbol(delegateType->GetSourcePos(), delegateType->SourceModuleId(), U"right");
+    ParameterSymbol* rightParam = new ParameterSymbol(delegateType->GetSpan(), U"right");
     rightParam->SetType(delegateType);
     AddMember(rightParam);
     SetReturnType(boolType);
     ComputeName();
 }
 
-void DelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "operator== needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -699,20 +699,20 @@ void DelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vecto
     emitter.Stack().Push(emitter.CreateICmpEQ(left, right));
 }
 
-FunctionToDelegateConversion::FunctionToDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::functionToDelegateSymbol, sourcePos_, sourceModuleId_, name_), sourceType(nullptr), targetType(nullptr), function(nullptr)
+FunctionToDelegateConversion::FunctionToDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::functionToDelegateSymbol, span_, name_), sourceType(nullptr), targetType(nullptr), function(nullptr)
 {
 }
 
 FunctionToDelegateConversion::FunctionToDelegateConversion(TypeSymbol* sourceType_, TypeSymbol* targetType_, FunctionSymbol* function_) :
-    FunctionSymbol(SymbolType::functionToDelegateSymbol, function_->GetSourcePos(), function_->SourceModuleId(), U"@conversion"), sourceType(sourceType_), targetType(targetType_), function(function_)
+    FunctionSymbol(SymbolType::functionToDelegateSymbol, function_->GetSpan(), U"@conversion"), sourceType(sourceType_), targetType(targetType_), function(function_)
 {
     SetConversion();
-    SetConversionSourceType(sourceType->PlainType(GetSourcePos(), SourceModuleId()));
-    SetConversionTargetType(targetType->PlainType(GetSourcePos(), SourceModuleId()));
+    SetConversionSourceType(sourceType->PlainType());
+    SetConversionTargetType(targetType->PlainType());
 }
 
-void FunctionToDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void FunctionToDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     emitter.Stack().Pop();
     emitter.Stack().Push(emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter), function->DontThrow()));
@@ -723,55 +723,53 @@ void FunctionToDelegateConversion::Check()
     FunctionSymbol::Check();
     if (!sourceType)
     {
-        throw SymbolCheckException("function to delegate conversion has no source type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("function to delegate conversion has no source type", GetFullSpan());
     }
     if (!targetType)
     {
-        throw SymbolCheckException("function to delegate conversion has no target type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("function to delegate conversion has no target type", GetFullSpan());
     }
     if (!function)
     {
-        throw SymbolCheckException("function to delegate conversion has no function", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("function to delegate conversion has no function", GetFullSpan());
     }
 }
 
 DelegateToVoidPtrConversion::DelegateToVoidPtrConversion(TypeSymbol* delegateType_, TypeSymbol* voidPtrType_) :
-    FunctionSymbol(delegateType_->GetSourcePos(), delegateType_->SourceModuleId(), U"dlg2voidptr"), delegateType(delegateType_), voidPtrType(voidPtrType_)
+    FunctionSymbol(delegateType_->GetSpan(), U"dlg2voidptr"), delegateType(delegateType_), voidPtrType(voidPtrType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(SymbolAccess::public_);
-    SetConversionSourceType(delegateType->PlainType(GetSourcePos(), SourceModuleId()));
-    SetConversionTargetType(voidPtrType->PlainType(GetSourcePos(), SourceModuleId()));
+    SetConversionSourceType(delegateType->PlainType());
+    SetConversionTargetType(voidPtrType->PlainType());
 }
 
-void DelegateToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void DelegateToVoidPtrConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* value = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateBitCast(value, voidPtrType->IrType(emitter)));
 }
 
 VoidPtrToDelegateConversion::VoidPtrToDelegateConversion(TypeSymbol* voidPtrType_, TypeSymbol* delegateType_, TypeSymbol* ulongType_) :
-    FunctionSymbol(delegateType_->GetSourcePos(), delegateType_->SourceModuleId(), U"voidptr2dlg"), voidPtrType(voidPtrType_), delegateType(delegateType_), ulongType(ulongType_)
+    FunctionSymbol(delegateType_->GetSpan(), U"voidptr2dlg"), voidPtrType(voidPtrType_), delegateType(delegateType_), ulongType(ulongType_)
 {
     SetConversion();
     SetGroupName(U"@conversion");
     SetAccess(SymbolAccess::public_);
-    SetConversionSourceType(delegateType->PlainType(GetSourcePos(), SourceModuleId()));
-    SetConversionTargetType(voidPtrType->PlainType(GetSourcePos(), SourceModuleId()));
+    SetConversionSourceType(delegateType->PlainType());
+    SetConversionTargetType(voidPtrType->PlainType());
 }
 
-void VoidPtrToDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void VoidPtrToDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* value = emitter.Stack().Pop();
     void* ulongValue = emitter.CreatePtrToInt(value, ulongType->IrType(emitter));
     emitter.Stack().Push(emitter.CreateIntToPtr(ulongValue, delegateType->IrType(emitter)));
 }
 
-ClassDelegateTypeSymbol::ClassDelegateTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::classDelegateTypeSymbol, sourcePos_, sourceModuleId_, name_), returnType(nullptr), parameters(), delegateType(nullptr), objectDelegatePairType(nullptr),
+ClassDelegateTypeSymbol::ClassDelegateTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::classDelegateTypeSymbol, span_, name_), returnType(nullptr), parameters(), delegateType(nullptr), objectDelegatePairType(nullptr),
     copyConstructor(nullptr)
 {
 }
@@ -939,47 +937,47 @@ void ClassDelegateTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
@@ -989,24 +987,24 @@ void ClassDelegateTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     {
         if (IsNothrow())
         {
-            throw Exception("class delegate cannot be throw and nothrow at the same time", GetSourcePos(), SourceModuleId());
+            throw Exception("class delegate cannot be throw and nothrow at the same time", GetFullSpan());
         }
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("class delegate cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("class delegate cannot be unit_test", GetFullSpan());
     }
 }
 
-void ClassDelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(!genObjects.empty(), "gen objects is empty");
     genObjects[0]->Load(emitter, flags);
@@ -1027,7 +1025,7 @@ void ClassDelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
         cmajor::ir::GenObject* genObject = genObjects[i];
         classDelegateCallObjects.push_back(genObject);
     }
-    delegateType->GenerateCall(emitter, classDelegateCallObjects, flags, sourcePos, moduleId);
+    delegateType->GenerateCall(emitter, classDelegateCallObjects, flags);
 }
 
 void ClassDelegateTypeSymbol::Check()
@@ -1035,35 +1033,35 @@ void ClassDelegateTypeSymbol::Check()
     TypeSymbol::Check();
     if (!returnType)
     {
-        throw SymbolCheckException("class delegate type symbol has no return type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class delegate type symbol has no return type", GetFullSpan());
     }
     if (!delegateType)
     {
-        throw SymbolCheckException("class delegate type symbol has no delegate type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class delegate type symbol has no delegate type", GetFullSpan());
     }
     if (!objectDelegatePairType)
     {
-        throw SymbolCheckException("class delegate type symbol has no object delegate pair type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class delegate type symbol has no object delegate pair type", GetFullSpan());
     }
     if (!copyConstructor)
     {
-        throw SymbolCheckException("class delegate type symbol has no copy constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class delegate type symbol has no copy constructor", GetFullSpan());
     }
 }
 
-ClassDelegateTypeDefaultConstructor::ClassDelegateTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeDefaultConstructor, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeDefaultConstructor::ClassDelegateTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeDefaultConstructor, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeDefaultConstructor::ClassDelegateTypeDefaultConstructor(ClassDelegateTypeSymbol* classDelegateType_) :
-    FunctionSymbol(SymbolType::classDelegateTypeDefaultConstructor, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"@constructor"), 
+    FunctionSymbol(SymbolType::classDelegateTypeDefaultConstructor, classDelegateType_->GetSpan(), U"@constructor"), 
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"this");
-    thisParam->SetType(classDelegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType_->GetSpan(), U"this");
+    thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
     ComputeName();
 }
@@ -1095,7 +1093,7 @@ void ClassDelegateTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, in
     }
 }
 
-void ClassDelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "default constructor needs one object");
     void* objectValue = emitter.CreateDefaultIrValueForVoidPtrType();
@@ -1114,26 +1112,26 @@ void ClassDelegateTypeDefaultConstructor::Check()
     FunctionSymbol::Check();
     if (!classDelegateType)
     {
-        throw SymbolCheckException("class delegate type default constructor has no class delegate type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class delegate type default constructor has no class delegate type", GetFullSpan());
     }
 }
 
-ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeCopyConstructor::ClassDelegateTypeCopyConstructor(ClassDelegateTypeSymbol* classDelegateType_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"@constructor"), 
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSpan(), U"@constructor"), 
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"this");
-    thisParam->SetType(classDelegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSpan(), U"this");
+    thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"that");
-    thatParam->SetType(classDelegateType->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddLvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSpan(), U"that");
+    thatParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -1165,7 +1163,7 @@ void ClassDelegateTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int i
     }
 }
 
-void ClassDelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
@@ -1187,22 +1185,22 @@ void ClassDelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
-ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveConstructor, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeMoveConstructor, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeMoveConstructor::ClassDelegateTypeMoveConstructor(ClassDelegateTypeSymbol* classDelegateType_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"@constructor"),
+    FunctionSymbol(SymbolType::classDelegateTypeCopyConstructor, classDelegateType_->GetSpan(), U"@constructor"),
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"this");
-    thisParam->SetType(classDelegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSpan(), U"this");
+    thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"that");
-    thatParam->SetType(classDelegateType->AddRvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSpan(), U"that");
+    thatParam->SetType(classDelegateType->AddRvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -1234,7 +1232,7 @@ void ClassDelegateTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int i
     }
 }
 
-void ClassDelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
@@ -1256,22 +1254,22 @@ void ClassDelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
-ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeCopyAssignment::ClassDelegateTypeCopyAssignment(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator="), 
+    FunctionSymbol(SymbolType::classDelegateTypeCopyAssignment, classDelegateType_->GetSpan(), U"operator="), 
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"this");
-    thisParam->SetType(classDelegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSpan(), U"this");
+    thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"that");
-    thatParam->SetType(classDelegateType->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddLvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSpan(), U"that");
+    thatParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType);
     ComputeName();
@@ -1304,7 +1302,7 @@ void ClassDelegateTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int in
     }
 }
 
-void ClassDelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
@@ -1321,22 +1319,22 @@ void ClassDelegateTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter,
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
-ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeMoveAssignment::ClassDelegateTypeMoveAssignment(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* voidType) :
-    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator="),
+    FunctionSymbol(SymbolType::classDelegateTypeMoveAssignment, classDelegateType_->GetSpan(), U"operator="),
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"this");
-    thisParam->SetType(classDelegateType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSpan(), U"this");
+    thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"that");
-    thatParam->SetType(classDelegateType->AddRvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->GetSpan(), U"that");
+    thatParam->SetType(classDelegateType->AddRvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType);
     ComputeName();
@@ -1369,7 +1367,7 @@ void ClassDelegateTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int in
     }
 }
 
-void ClassDelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* thatPtr = emitter.Stack().Pop();
@@ -1386,22 +1384,22 @@ void ClassDelegateTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter,
     emitter.CreateStore(delegateValue, thisDelegatePtr);
 }
 
-ClassDelegateTypeEquality::ClassDelegateTypeEquality(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classDelegateTypeEquality, sourcePos_, sourceModuleId_, name_), classDelegateType(nullptr)
+ClassDelegateTypeEquality::ClassDelegateTypeEquality(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classDelegateTypeEquality, span_, name_), classDelegateType(nullptr)
 {
 }
 
 ClassDelegateTypeEquality::ClassDelegateTypeEquality(ClassDelegateTypeSymbol* classDelegateType_, TypeSymbol* boolType) :
-    FunctionSymbol(SymbolType::classDelegateTypeEquality, classDelegateType_->GetSourcePos(), classDelegateType_->SourceModuleId(), U"operator=="),
+    FunctionSymbol(SymbolType::classDelegateTypeEquality, classDelegateType_->GetSpan(), U"operator=="),
     classDelegateType(classDelegateType_)
 {
     SetGroupName(U"operator==");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* leftParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"left");
-    leftParam->SetType(classDelegateType->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddLvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* leftParam = new ParameterSymbol(classDelegateType->GetSpan(), U"left");
+    leftParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
     AddMember(leftParam);
-    ParameterSymbol* rightParam = new ParameterSymbol(classDelegateType->GetSourcePos(), classDelegateType->SourceModuleId(), U"right");
-    rightParam->SetType(classDelegateType->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddLvalueReference(soul::ast::SourcePos(), util::nil_uuid()));
+    ParameterSymbol* rightParam = new ParameterSymbol(classDelegateType->GetSpan(), U"right");
+    rightParam->SetType(classDelegateType->AddConst()->AddLvalueReference());
     AddMember(rightParam);
     SetReturnType(boolType);
     ComputeName();
@@ -1434,7 +1432,7 @@ void ClassDelegateTypeEquality::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* leftPtr = emitter.Stack().Pop();
@@ -1455,34 +1453,34 @@ void ClassDelegateTypeEquality::GenerateCall(cmajor::ir::Emitter& emitter, std::
     emitter.Stack().Push(equal);
 }
 
-MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::memberFunctionToClassDelegateSymbol, sourcePos_, sourceModuleId_, name_), sourceType(nullptr), targetType(nullptr), function(nullptr)
+MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::memberFunctionToClassDelegateSymbol, span_, name_), sourceType(nullptr), targetType(nullptr), function(nullptr)
 {
 }
 
-MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, TypeSymbol* sourceType_, ClassDelegateTypeSymbol* targetType_, FunctionSymbol* function_) :
-    FunctionSymbol(SymbolType::memberFunctionToClassDelegateSymbol, sourcePos_, sourceModuleId_, U"@conversion"), sourceType(sourceType_), targetType(targetType_), function(function_)
+MemberFunctionToClassDelegateConversion::MemberFunctionToClassDelegateConversion(const soul::ast::Span& span_, TypeSymbol* sourceType_, ClassDelegateTypeSymbol* targetType_, FunctionSymbol* function_) :
+    FunctionSymbol(SymbolType::memberFunctionToClassDelegateSymbol, span_, U"@conversion"), sourceType(sourceType_), targetType(targetType_), function(function_)
 {
     SetConversion();
-    SetConversionSourceType(sourceType->PlainType(GetSourcePos(), SourceModuleId()));
-    SetConversionTargetType(targetType->PlainType(GetSourcePos(), SourceModuleId()));
+    SetConversionSourceType(sourceType->PlainType());
+    SetConversionTargetType(targetType->PlainType());
 }
 
 std::vector<LocalVariableSymbol*> MemberFunctionToClassDelegateConversion::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    LocalVariableSymbol* objectDelegatePairVariable = currentFunction->CreateTemporary(targetType->ObjectDelegatePairType(), GetSourcePos(), SourceModuleId());
+    LocalVariableSymbol* objectDelegatePairVariable = currentFunction->CreateTemporary(targetType->ObjectDelegatePairType(), GetSpan());
     temporaries.push_back(objectDelegatePairVariable);
     return temporaries;
 }
 
-void MemberFunctionToClassDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void MemberFunctionToClassDelegateConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "MemberFunctionToClassDelegateConversion needs one temporary object");
     void* objectValue = emitter.Stack().Pop();
     if (!objectValue)
     {
-        throw Exception("cannot construct class delegate because expression has no this pointer", sourcePos, moduleId);
+        throw Exception("cannot construct class delegate because expression has no this pointer", GetFullSpan());
     }
     void* objectValueAsVoidPtr = emitter.CreateBitCast(objectValue, emitter.GetIrTypeForVoidPtrType());
     void* memFunPtrValue = emitter.GetOrInsertFunction(util::ToUtf8(function->MangledName()), function->IrType(emitter), function->DontThrow());
@@ -1502,15 +1500,15 @@ void MemberFunctionToClassDelegateConversion::Check()
     FunctionSymbol::Check();
     if (!sourceType)
     {
-        throw SymbolCheckException("member function to class delegate conversion has no source type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("member function to class delegate conversion has no source type", GetFullSpan());
     }
     if (!targetType)
     {
-        throw SymbolCheckException("member function to class delegate conversion has no target type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("member function to class delegate conversion has no target type", GetFullSpan());
     }
     if (!function)
     {
-        throw SymbolCheckException("member function to class delegate conversion has no function", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("member function to class delegate conversion has no function", GetFullSpan());
     }
 }
 } // namespace cmajor::symbols

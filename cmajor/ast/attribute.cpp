@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,18 +13,18 @@ import util;
 
 namespace cmajor::ast {
 
-AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::attributeNode, sourcePos_, moduleId_), name(), value()
+AttributeNode::AttributeNode(const soul::ast::Span& span_) : Node(NodeType::attributeNode, span_), name(), value()
 {
 }
 
-AttributeNode::AttributeNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& name_, const std::u32string& value_) :
-    Node(NodeType::attributeNode, sourcePos_, moduleId_), name(name_), value(value_)
+AttributeNode::AttributeNode(const soul::ast::Span& span_, const std::u32string& name_, const std::u32string& value_) :
+    Node(NodeType::attributeNode, span_), name(name_), value(value_)
 {
 }
 
 Node* AttributeNode::Clone(CloneContext& cloneContext) const
 {
-    return new AttributeNode(GetSourcePos(), ModuleId(), name, value);
+    return new AttributeNode(GetSpan(), name, value);
 }
 
 void AttributeNode::Accept(Visitor& visitor)
@@ -46,7 +46,7 @@ void AttributeNode::Read(AstReader& reader)
     value = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
-AttributesNode::AttributesNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::attributesNode, sourcePos_, moduleId_)
+AttributesNode::AttributesNode(const soul::ast::Span& span_) : Node(NodeType::attributesNode, span_)
 {
 }
 
@@ -60,19 +60,19 @@ AttributeNode* AttributesNode::GetAttribute(const std::u32string& name) const
     return nullptr;
 }
 
-void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& name)
+void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32string& name)
 {
-    AddAttribute(sourcePos, moduleId, name, U"true");
+    AddAttribute(span, name, U"true");
 }
 
-void AttributesNode::AddAttribute(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& name, const std::u32string& value)
+void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32string& name, const std::u32string& value)
 {
     AttributeNode* prev = GetAttribute(name);
     if (prev != nullptr)
     {
-        throw AttributeNotUniqueException("attribute '" + util::ToUtf8(name) + "' not unique", sourcePos, moduleId, prev->GetSourcePos(), prev->ModuleId());
+        throw AttributeNotUniqueException("attribute '" + util::ToUtf8(name) + "' not unique", span, prev->GetSpan(), prev->ModuleId());
     }
-    AttributeNode* attribute = new AttributeNode(sourcePos, moduleId, name, value);
+    AttributeNode* attribute = new AttributeNode(span, name, value);
     AddAttribute(attribute);
 }
 
@@ -84,10 +84,10 @@ void AttributesNode::AddAttribute(AttributeNode* attribute)
 
 Node* AttributesNode::Clone(CloneContext& cloneContext) const
 {
-    std::unique_ptr<AttributesNode> clone(new AttributesNode(GetSourcePos(), ModuleId()));
+    std::unique_ptr<AttributesNode> clone(new AttributesNode(GetSpan()));
     for (const std::unique_ptr<AttributeNode>& attribute : attributes)
     {
-        clone->AddAttribute(attribute->GetSourcePos(), attribute->ModuleId(), attribute->Name(), attribute->Value());
+        clone->AddAttribute(attribute->GetSpan(), attribute->Name(), attribute->Value());
     }
     return clone.release();
 }
@@ -118,8 +118,9 @@ void AttributesNode::Read(AstReader& reader)
     }
 }
 
-AttributeNotUniqueException::AttributeNotUniqueException(const std::string& message_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_,
-    const soul::ast::SourcePos& prevSourcePos_, const util::uuid& prevModuleId_) : std::runtime_error(message_), sourcePos(sourcePos_), moduleId(moduleId_), prevSourcePos(prevSourcePos_), prevModuleId(prevModuleId_)
+AttributeNotUniqueException::AttributeNotUniqueException(const std::string& message_, const soul::ast::Span& span_,
+    const soul::ast::Span& prevSpan_, const util::uuid& prevModuleId_) : std::runtime_error(message_), span(span_), 
+    prevSpan(prevSpan_), prevModuleId(prevModuleId_)
 {
 }
 

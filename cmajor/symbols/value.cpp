@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,8 +15,9 @@ import cmajor.symbols.classes;
 import cmajor.symbols.array.type.symbol;
 import cmajor.symbols.variable.symbol;
 import cmajor.ir.emitter;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
+
 namespace cmajor::symbols {
 
 const char* valueTypeStr[]
@@ -244,7 +245,7 @@ TypeSymbol* GetTypeFor(ValueType valueType, SymbolTable* symbolTable)
     return nullptr;
 }
 
-Value::Value(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ValueType valueType_) : sourcePos(sourcePos_), moduleId(moduleId_), valueType(valueType_)
+Value::Value(const soul::ast::Span& span_, ValueType valueType_) : span(span_), valueType(valueType_)
 {
 }
 
@@ -259,7 +260,7 @@ std::unique_ptr<soul::xml::Element> Value::ToDomElement()
     return element;
 }
 
-BoolValue::BoolValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool value_) : Value(sourcePos_, moduleId_, ValueType::boolValue), value(value_)
+BoolValue::BoolValue(const soul::ast::Span& span_, bool value_) : Value(span_, ValueType::boolValue), value(value_)
 {
 }
 
@@ -278,19 +279,19 @@ void BoolValue::Read(util::BinaryStreamReader& reader)
     reader.ReadBool();
 }
 
-Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* BoolValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::boolValue:
     {
-        return new BoolValue(sourcePos, moduleId, value);
+        return new BoolValue(GetSpan(), value);
     }
     case ValueType::sbyteValue:
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -300,7 +301,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -308,7 +314,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -318,7 +324,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -326,7 +337,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -336,7 +347,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -344,7 +360,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -354,7 +370,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -362,7 +383,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -372,7 +393,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -380,7 +406,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -390,7 +416,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -398,7 +429,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -408,7 +439,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -416,7 +452,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -426,7 +462,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -434,7 +475,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new FloatValue(sourcePos, moduleId, static_cast<float>(value));
+            return new FloatValue(GetSpan(), static_cast<float>(value));
         }
         else
         {
@@ -444,7 +485,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -452,7 +498,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new DoubleValue(sourcePos, moduleId, static_cast<double>(value));
+            return new DoubleValue(GetSpan(), static_cast<double>(value));
         }
         else
         {
@@ -462,7 +508,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -470,7 +521,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -480,7 +531,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -488,7 +544,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -498,7 +554,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -506,7 +567,7 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -516,7 +577,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -528,7 +594,12 @@ Value* BoolValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -539,7 +610,7 @@ TypeSymbol* BoolValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"bool");
 }
 
-SByteValue::SByteValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int8_t value_) : Value(sourcePos_, moduleId_, ValueType::sbyteValue), value(value_)
+SByteValue::SByteValue(const soul::ast::Span& span_, int8_t value_) : Value(span_, ValueType::sbyteValue), value(value_)
 {
 }
 
@@ -558,7 +629,7 @@ void SByteValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadSByte();
 }
 
-Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* SByteValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -566,7 +637,7 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -576,19 +647,24 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::sbyteValue:
     {
-        return new SByteValue(sourcePos, moduleId, value);
+        return new SByteValue(GetSpan(), value);
     }
     case ValueType::byteValue:
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -598,19 +674,24 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::shortValue:
     {
-        return new ShortValue(sourcePos, moduleId, value);
+        return new ShortValue(GetSpan(), value);
     }
     case ValueType::ushortValue:
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -620,19 +701,24 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::intValue:
     {
-        return new IntValue(sourcePos, moduleId, value);
+        return new IntValue(GetSpan(), value);
     }
     case ValueType::uintValue:
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -642,19 +728,24 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -664,23 +755,28 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -690,7 +786,12 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -698,7 +799,7 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -708,7 +809,12 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -716,7 +822,7 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -726,7 +832,12 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -738,7 +849,12 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -749,7 +865,7 @@ TypeSymbol* SByteValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"sbyte");
 }
 
-ByteValue::ByteValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint8_t value_) : Value(sourcePos_, moduleId_, ValueType::byteValue), value(value_)
+ByteValue::ByteValue(const soul::ast::Span& span_, uint8_t value_) : Value(span_, ValueType::byteValue), value(value_)
 {
 }
 
@@ -768,7 +884,7 @@ void ByteValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadByte();
 }
 
-Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* ByteValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -776,7 +892,7 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -786,7 +902,12 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -794,7 +915,7 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -804,51 +925,56 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::byteValue:
     {
-        return new ByteValue(sourcePos, moduleId, value);
+        return new ByteValue(GetSpan(), value);
     }
     case ValueType::shortValue:
     {
-        return new ShortValue(sourcePos, moduleId, value);
+        return new ShortValue(GetSpan(), value);
     }
     case ValueType::ushortValue:
     {
-        return new UShortValue(sourcePos, moduleId, value);
+        return new UShortValue(GetSpan(), value);
     }
     case ValueType::intValue:
     {
-        return new IntValue(sourcePos, moduleId, value);
+        return new IntValue(GetSpan(), value);
     }
     case ValueType::uintValue:
     {
-        return new UIntValue(sourcePos, moduleId, value);
+        return new UIntValue(GetSpan(), value);
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
-        return new ULongValue(sourcePos, moduleId, value);
+        return new ULongValue(GetSpan(), value);
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -858,7 +984,12 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -866,7 +997,7 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -876,7 +1007,12 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -884,7 +1020,7 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -894,7 +1030,12 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -906,7 +1047,12 @@ Value* ByteValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -917,7 +1063,7 @@ TypeSymbol* ByteValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"byte");
 }
 
-ShortValue::ShortValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int16_t value_) : Value(sourcePos_, moduleId_, ValueType::shortValue), value(value_)
+ShortValue::ShortValue(const soul::ast::Span& span_, int16_t value_) : Value(span_, ValueType::shortValue), value(value_)
 {
 }
 
@@ -936,7 +1082,7 @@ void ShortValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadShort();
 }
 
-Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* ShortValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -944,7 +1090,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -954,7 +1100,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -962,7 +1113,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -972,7 +1123,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -980,7 +1136,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -990,19 +1146,24 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::shortValue:
     {
-        return new ShortValue(sourcePos, moduleId, value);
+        return new ShortValue(GetSpan(), value);
     }
     case ValueType::ushortValue:
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1012,19 +1173,24 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::intValue:
     {
-        return new IntValue(sourcePos, moduleId, value);
+        return new IntValue(GetSpan(), value);
     }
     case ValueType::uintValue:
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1034,19 +1200,24 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -1056,23 +1227,28 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1082,7 +1258,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1090,7 +1271,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1100,7 +1281,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1108,7 +1294,7 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1118,7 +1304,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1130,7 +1321,12 @@ Value* ShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -1141,7 +1337,7 @@ TypeSymbol* ShortValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"short");
 }
 
-UShortValue::UShortValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint16_t value_) : Value(sourcePos_, moduleId_, ValueType::ushortValue), value(value_)
+UShortValue::UShortValue(const soul::ast::Span& span_, uint16_t value_) : Value(span_, ValueType::ushortValue), value(value_)
 {
 }
 
@@ -1160,7 +1356,7 @@ void UShortValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadUShort();
 }
 
-Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* UShortValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -1168,7 +1364,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -1178,7 +1374,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1186,7 +1387,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -1196,7 +1397,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1204,7 +1410,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1214,7 +1420,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1222,7 +1433,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -1232,43 +1443,48 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::ushortValue:
     {
-        return new UShortValue(sourcePos, moduleId, value);
+        return new UShortValue(GetSpan(), value);
     }
     case ValueType::intValue:
     {
-        return new IntValue(sourcePos, moduleId, value);
+        return new IntValue(GetSpan(), value);
     }
     case ValueType::uintValue:
     {
-        return new UIntValue(sourcePos, moduleId, value);
+        return new UIntValue(GetSpan(), value);
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
-        return new ULongValue(sourcePos, moduleId, value);
+        return new ULongValue(GetSpan(), value);
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1278,7 +1494,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1286,7 +1507,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1296,7 +1517,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1304,7 +1530,7 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1314,7 +1540,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1326,7 +1557,12 @@ Value* UShortValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -1337,7 +1573,7 @@ TypeSymbol* UShortValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"ushort");
 }
 
-IntValue::IntValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int32_t value_) : Value(sourcePos_, moduleId_, ValueType::intValue), value(value_)
+IntValue::IntValue(const soul::ast::Span& span_, int32_t value_) : Value(span_, ValueType::intValue), value(value_)
 {
 }
 
@@ -1356,7 +1592,7 @@ void IntValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadInt();
 }
 
-Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* IntValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -1364,7 +1600,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -1374,7 +1610,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1382,7 +1623,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -1392,7 +1633,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1400,7 +1646,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1410,7 +1656,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1418,7 +1669,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -1428,7 +1679,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1436,7 +1692,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1446,19 +1702,24 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::intValue:
     {
-        return new IntValue(sourcePos, moduleId, value);
+        return new IntValue(GetSpan(), value);
     }
     case ValueType::uintValue:
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1468,19 +1729,24 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -1490,23 +1756,28 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1516,7 +1787,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1524,7 +1800,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1534,7 +1810,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1542,7 +1823,7 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1552,7 +1833,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1564,7 +1850,12 @@ Value* IntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePo
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -1575,7 +1866,7 @@ TypeSymbol* IntValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"int");
 }
 
-UIntValue::UIntValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint32_t value_) : Value(sourcePos_, moduleId_, ValueType::uintValue), value(value_)
+UIntValue::UIntValue(const soul::ast::Span& span_, uint32_t value_) : Value(span_, ValueType::uintValue), value(value_)
 {
 }
 
@@ -1594,7 +1885,7 @@ void UIntValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadUInt();
 }
 
-Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* UIntValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -1602,7 +1893,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -1612,7 +1903,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1620,7 +1916,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -1630,7 +1926,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1638,7 +1939,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1648,7 +1949,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1656,7 +1962,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -1666,7 +1972,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1674,7 +1985,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1684,7 +1995,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1692,7 +2008,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -1702,35 +2018,40 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::uintValue:
     {
-        return new UIntValue(sourcePos, moduleId, value);
+        return new UIntValue(GetSpan(), value);
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
-        return new ULongValue(sourcePos, moduleId, value);
+        return new ULongValue(GetSpan(), value);
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1740,7 +2061,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1748,7 +2074,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1758,7 +2084,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1766,7 +2097,7 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1776,7 +2107,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1788,7 +2124,12 @@ Value* UIntValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -1799,7 +2140,7 @@ TypeSymbol* UIntValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"uint");
 }
 
-LongValue::LongValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int64_t value_) : Value(sourcePos_, moduleId_, ValueType::longValue), value(value_)
+LongValue::LongValue(const soul::ast::Span& span_, int64_t value_) : Value(span_, ValueType::longValue), value(value_)
 {
 }
 
@@ -1818,7 +2159,7 @@ void LongValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadLong();
 }
 
-Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* LongValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -1826,7 +2167,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -1836,7 +2177,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1844,7 +2190,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -1854,7 +2200,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1862,7 +2213,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1872,7 +2223,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1880,7 +2236,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -1890,7 +2246,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1898,7 +2259,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -1908,7 +2269,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1916,7 +2282,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -1926,7 +2292,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -1934,7 +2305,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -1944,19 +2315,24 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::longValue:
     {
-        return new LongValue(sourcePos, moduleId, value);
+        return new LongValue(GetSpan(), value);
     }
     case ValueType::ulongValue:
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -1966,23 +2342,28 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -1992,7 +2373,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2000,7 +2386,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2010,7 +2396,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2018,7 +2409,7 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2028,7 +2419,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2040,7 +2436,12 @@ Value* LongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -2051,7 +2452,7 @@ TypeSymbol* LongValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"long");
 }
 
-ULongValue::ULongValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint64_t value_) : Value(sourcePos_, moduleId_, ValueType::ulongValue), value(value_)
+ULongValue::ULongValue(const soul::ast::Span& span_, uint64_t value_) : Value(span_, ValueType::ulongValue), value(value_)
 {
 }
 
@@ -2070,7 +2471,7 @@ void ULongValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadULong();
 }
 
-Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* ULongValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -2078,7 +2479,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -2088,7 +2489,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2096,7 +2502,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -2106,7 +2512,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2114,7 +2525,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2124,7 +2535,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2132,7 +2548,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -2142,7 +2558,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2150,7 +2571,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2160,7 +2581,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2168,7 +2594,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -2178,7 +2604,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2186,7 +2617,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2196,7 +2627,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2204,7 +2640,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -2214,27 +2650,32 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::ulongValue:
     {
-        return new ULongValue(sourcePos, moduleId, value);
+        return new ULongValue(GetSpan(), value);
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2244,7 +2685,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2252,7 +2698,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2262,7 +2708,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2270,7 +2721,7 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2280,7 +2731,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2292,7 +2748,12 @@ Value* ULongValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -2303,7 +2764,7 @@ TypeSymbol* ULongValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"ulong");
 }
 
-FloatValue::FloatValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, float value_) : Value(sourcePos_, moduleId_, ValueType::floatValue), value(value_)
+FloatValue::FloatValue(const soul::ast::Span& span_, float value_) : Value(span_, ValueType::floatValue), value(value_)
 {
 }
 
@@ -2322,7 +2783,7 @@ void FloatValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadFloat();
 }
 
-Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* FloatValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -2330,7 +2791,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -2340,7 +2801,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2348,7 +2814,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -2358,7 +2824,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2366,7 +2837,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2376,7 +2847,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2384,7 +2860,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -2394,7 +2870,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2402,7 +2883,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2412,7 +2893,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2420,7 +2906,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -2430,7 +2916,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2438,7 +2929,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2448,7 +2939,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2456,7 +2952,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -2466,7 +2962,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2474,7 +2975,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -2484,23 +2985,28 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::floatValue:
     {
-        return new FloatValue(sourcePos, moduleId, value);
+        return new FloatValue(GetSpan(), value);
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2510,7 +3016,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2518,7 +3029,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2528,7 +3039,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2536,7 +3052,7 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2546,7 +3062,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2558,7 +3079,12 @@ Value* FloatValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -2569,7 +3095,7 @@ TypeSymbol* FloatValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"float");
 }
 
-DoubleValue::DoubleValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, double value_) : Value(sourcePos_, moduleId_, ValueType::doubleValue), value(value_)
+DoubleValue::DoubleValue(const soul::ast::Span& span_, double value_) : Value(span_, ValueType::doubleValue), value(value_)
 {
 }
 
@@ -2588,7 +3114,7 @@ void DoubleValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadDouble();
 }
 
-Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* DoubleValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -2596,7 +3122,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -2606,7 +3132,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2614,7 +3145,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -2624,7 +3155,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2632,7 +3168,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2642,7 +3178,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2650,7 +3191,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -2660,7 +3201,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2668,7 +3214,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2678,7 +3224,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2686,7 +3237,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -2696,7 +3247,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2704,7 +3260,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2714,7 +3270,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2722,7 +3283,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -2732,7 +3293,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2740,7 +3306,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -2750,7 +3316,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2758,7 +3329,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new FloatValue(sourcePos, moduleId, static_cast<float>(value));
+            return new FloatValue(GetSpan(), static_cast<float>(value));
         }
         else
         {
@@ -2768,19 +3339,24 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::doubleValue:
     {
-        return new DoubleValue(sourcePos, moduleId, value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2790,7 +3366,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2798,7 +3379,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2808,7 +3389,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2816,7 +3402,7 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
     {
         if (cast)
         {
-            return new UCharValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UCharValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2826,7 +3412,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2838,7 +3429,12 @@ Value* DoubleValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -2849,7 +3445,7 @@ TypeSymbol* DoubleValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"double");
 }
 
-CharValue::CharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, unsigned char value_) : Value(sourcePos_, moduleId_, ValueType::charValue), value(value_)
+CharValue::CharValue(const soul::ast::Span& span_, unsigned char value_) : Value(span_, ValueType::charValue), value(value_)
 {
 }
 
@@ -2868,7 +3464,7 @@ void CharValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadChar();
 }
 
-Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* CharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -2876,7 +3472,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -2886,7 +3482,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2894,7 +3495,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -2904,7 +3505,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2912,7 +3518,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -2922,7 +3528,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2930,7 +3541,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -2940,7 +3551,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2948,7 +3564,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -2958,7 +3574,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2966,7 +3587,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -2976,7 +3597,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -2984,7 +3610,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -2994,7 +3620,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3002,7 +3633,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -3012,7 +3643,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3020,7 +3656,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -3030,7 +3666,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3038,7 +3679,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new FloatValue(sourcePos, moduleId, static_cast<float>(value));
+            return new FloatValue(GetSpan(), static_cast<float>(value));
         }
         else
         {
@@ -3048,7 +3689,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3056,7 +3702,7 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
     {
         if (cast)
         {
-            return new DoubleValue(sourcePos, moduleId, static_cast<double>(value));
+            return new DoubleValue(GetSpan(), static_cast<double>(value));
         }
         else
         {
@@ -3066,21 +3712,26 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::charValue:
     {
-        return new CharValue(sourcePos, moduleId, value);
+        return new CharValue(GetSpan(), value);
     }
     case ValueType::wcharValue:
     {
-        return new WCharValue(sourcePos, moduleId, value);
+        return new WCharValue(GetSpan(), value);
     }
     case ValueType::ucharValue:
     {
-        return new UCharValue(sourcePos, moduleId, value);
+        return new UCharValue(GetSpan(), value);
     }
     default:
     {
@@ -3090,7 +3741,12 @@ Value* CharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3101,7 +3757,7 @@ TypeSymbol* CharValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"char");
 }
 
-WCharValue::WCharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char16_t value_) : Value(sourcePos_, moduleId_, ValueType::wcharValue), value(value_)
+WCharValue::WCharValue(const soul::ast::Span& span_, char16_t value_) : Value(span_, ValueType::wcharValue), value(value_)
 {
 }
 
@@ -3120,7 +3776,7 @@ void WCharValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadWChar();
 }
 
-Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* WCharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -3128,7 +3784,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -3138,7 +3794,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3146,7 +3807,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -3156,7 +3817,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3164,7 +3830,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -3174,7 +3840,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3182,7 +3853,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -3192,7 +3863,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3200,7 +3876,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -3210,7 +3886,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3218,7 +3899,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -3228,7 +3909,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3236,7 +3922,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -3246,7 +3932,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3254,7 +3945,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -3264,7 +3955,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3272,7 +3968,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -3282,7 +3978,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3290,7 +3991,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new FloatValue(sourcePos, moduleId, static_cast<float>(value));
+            return new FloatValue(GetSpan(), static_cast<float>(value));
         }
         else
         {
@@ -3300,7 +4001,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3308,7 +4014,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new DoubleValue(sourcePos, moduleId, static_cast<double>(value));
+            return new DoubleValue(GetSpan(), static_cast<double>(value));
         }
         else
         {
@@ -3318,7 +4024,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3326,7 +4037,7 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -3336,17 +4047,22 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::wcharValue:
     {
-        return new WCharValue(sourcePos, moduleId, value);
+        return new WCharValue(GetSpan(), value);
     }
     case ValueType::ucharValue:
     {
-        return new UCharValue(sourcePos, moduleId, value);
+        return new UCharValue(GetSpan(), value);
     }
     default:
     {
@@ -3356,7 +4072,12 @@ Value* WCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3367,7 +4088,7 @@ TypeSymbol* WCharValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"wchar");
 }
 
-UCharValue::UCharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char32_t value_) : Value(sourcePos_, moduleId_, ValueType::ucharValue), value(value_)
+UCharValue::UCharValue(const soul::ast::Span& span_, char32_t value_) : Value(span_, ValueType::ucharValue), value(value_)
 {
 }
 
@@ -3386,7 +4107,7 @@ void UCharValue::Read(util::BinaryStreamReader& reader)
     value = reader.ReadUChar();
 }
 
-Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* UCharValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -3394,7 +4115,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new BoolValue(sourcePos, moduleId, static_cast<bool>(value));
+            return new BoolValue(GetSpan(), static_cast<bool>(value));
         }
         else
         {
@@ -3404,7 +4125,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3412,7 +4138,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new SByteValue(sourcePos, moduleId, static_cast<int8_t>(value));
+            return new SByteValue(GetSpan(), static_cast<int8_t>(value));
         }
         else
         {
@@ -3422,7 +4148,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3430,7 +4161,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ByteValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new ByteValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -3440,7 +4171,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3448,7 +4184,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ShortValue(sourcePos, moduleId, static_cast<int16_t>(value));
+            return new ShortValue(GetSpan(), static_cast<int16_t>(value));
         }
         else
         {
@@ -3458,7 +4194,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3466,7 +4207,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UShortValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new UShortValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -3476,7 +4217,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3484,7 +4230,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new IntValue(sourcePos, moduleId, static_cast<int32_t>(value));
+            return new IntValue(GetSpan(), static_cast<int32_t>(value));
         }
         else
         {
@@ -3494,7 +4240,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3502,7 +4253,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new UIntValue(sourcePos, moduleId, static_cast<uint32_t>(value));
+            return new UIntValue(GetSpan(), static_cast<uint32_t>(value));
         }
         else
         {
@@ -3512,7 +4263,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3520,7 +4276,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new LongValue(sourcePos, moduleId, static_cast<int64_t>(value));
+            return new LongValue(GetSpan(), static_cast<int64_t>(value));
         }
         else
         {
@@ -3530,7 +4286,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3538,7 +4299,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new ULongValue(sourcePos, moduleId, static_cast<uint64_t>(value));
+            return new ULongValue(GetSpan(), static_cast<uint64_t>(value));
         }
         else
         {
@@ -3548,7 +4309,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3556,7 +4322,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new FloatValue(sourcePos, moduleId, static_cast<float>(value));
+            return new FloatValue(GetSpan(), static_cast<float>(value));
         }
         else
         {
@@ -3566,7 +4332,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3574,7 +4345,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new DoubleValue(sourcePos, moduleId, static_cast<double>(value));
+            return new DoubleValue(GetSpan(), static_cast<double>(value));
         }
         else
         {
@@ -3584,7 +4355,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3592,7 +4368,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new CharValue(sourcePos, moduleId, static_cast<uint8_t>(value));
+            return new CharValue(GetSpan(), static_cast<uint8_t>(value));
         }
         else
         {
@@ -3602,7 +4378,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3610,7 +4391,7 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
     {
         if (cast)
         {
-            return new WCharValue(sourcePos, moduleId, static_cast<uint16_t>(value));
+            return new WCharValue(GetSpan(), static_cast<uint16_t>(value));
         }
         else
         {
@@ -3620,13 +4401,18 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
     case ValueType::ucharValue:
     {
-        return new UCharValue(sourcePos, moduleId, value);
+        return new UCharValue(GetSpan(), value);
     }
     default:
     {
@@ -3636,7 +4422,12 @@ Value* UCharValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3647,7 +4438,7 @@ TypeSymbol* UCharValue::GetType(SymbolTable* symbolTable)
     return symbolTable->GetTypeByName(U"uchar");
 }
 
-StringValue::StringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::string& str_) : Value(sourcePos_, moduleId_, ValueType::stringValue), stringId(stringId_), str(str_)
+StringValue::StringValue(const soul::ast::Span& span_, int stringId_, const std::string& str_) : Value(span_, ValueType::stringValue), stringId(stringId_), str(str_)
 {
 }
 
@@ -3670,13 +4461,13 @@ void StringValue::Read(util::BinaryStreamReader& reader)
     str = reader.ReadUtf8String();
 }
 
-Value* StringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* StringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::stringValue:
     {
-        return new StringValue(sourcePos, moduleId, stringId, str);
+        return new StringValue(GetSpan(), stringId, str);
     }
     default:
     {
@@ -3686,7 +4477,12 @@ Value* StringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3694,10 +4490,11 @@ Value* StringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sourc
 
 TypeSymbol* StringValue::GetType(SymbolTable* symbolTable)
 {
-    return symbolTable->GetTypeByName(U"char")->AddConst(GetSourcePos(), ModuleId())->AddPointer(GetSourcePos(), ModuleId());
+    return symbolTable->GetTypeByName(U"char")->AddConst()->AddPointer();
 }
 
-WStringValue::WStringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::u16string& str_) : Value(sourcePos_, moduleId_, ValueType::wstringValue), stringId(stringId_), str(str_)
+WStringValue::WStringValue(const soul::ast::Span& span_, int stringId_, const std::u16string& str_) : 
+    Value(span_, ValueType::wstringValue), stringId(stringId_), str(str_)
 {
 }
 
@@ -3720,13 +4517,13 @@ void WStringValue::Read(util::BinaryStreamReader& reader)
 {
 }
 
-Value* WStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* WStringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::wstringValue:
     {
-        return new WStringValue(sourcePos, moduleId, stringId, str);
+        return new WStringValue(GetSpan(), stringId, str);
     }
     default:
     {
@@ -3736,7 +4533,12 @@ Value* WStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3744,10 +4546,11 @@ Value* WStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
 
 TypeSymbol* WStringValue::GetType(SymbolTable* symbolTable)
 {
-    return symbolTable->GetTypeByName(U"wchar")->AddConst(GetSourcePos(), ModuleId())->AddPointer(GetSourcePos(), ModuleId());
+    return symbolTable->GetTypeByName(U"wchar")->AddConst()->AddPointer();
 }
 
-UStringValue::UStringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::u32string& str_) : Value(sourcePos_, moduleId_, ValueType::ustringValue), stringId(stringId_), str(str_)
+UStringValue::UStringValue(const soul::ast::Span& span_, int stringId_, const std::u32string& str_) : 
+    Value(span_, ValueType::ustringValue), stringId(stringId_), str(str_)
 {
 }
 
@@ -3770,13 +4573,13 @@ void UStringValue::Read(util::BinaryStreamReader& reader)
 {
 }
 
-Value* UStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* UStringValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::ustringValue:
     {
-        return new UStringValue(sourcePos, moduleId, stringId, str);
+        return new UStringValue(GetSpan(), stringId, str);
     }
     default:
     {
@@ -3786,7 +4589,12 @@ Value* UStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3794,10 +4602,10 @@ Value* UStringValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
 
 TypeSymbol* UStringValue::GetType(SymbolTable* symbolTable)
 {
-    return symbolTable->GetTypeByName(U"uchar")->AddConst(GetSourcePos(), ModuleId())->AddPointer(GetSourcePos(), ModuleId());
+    return symbolTable->GetTypeByName(U"uchar")->AddConst()->AddPointer();
 }
 
-NullValue::NullValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* nullPtrType_) : Value(sourcePos_, moduleId_, ValueType::nullValue), nullPtrType(nullPtrType_)
+NullValue::NullValue(const soul::ast::Span& span_, TypeSymbol* nullPtrType_) : Value(span_, ValueType::nullValue), nullPtrType(nullPtrType_)
 {
 }
 
@@ -3814,19 +4622,19 @@ void NullValue::Read(util::BinaryStreamReader& reader)
 {
 }
 
-Value* NullValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* NullValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::nullValue:
     {
-        return new NullValue(sourcePos, moduleId, nullPtrType);
+        return new NullValue(GetSpan(), nullPtrType);
     }
     case ValueType::pointerValue:
     {
         if (targetType->IsPointerType())
         {
-            return new PointerValue(sourcePos, moduleId, targetType, nullptr);
+            return new PointerValue(GetSpan(), targetType, nullptr);
         }
         else
         {
@@ -3836,7 +4644,12 @@ Value* NullValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
             }
             else
             {
-                throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
             }
         }
     }
@@ -3848,7 +4661,12 @@ Value* NullValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3859,7 +4677,7 @@ TypeSymbol* NullValue::GetType(SymbolTable* symbolTable)
     return nullPtrType;
 }
 
-PointerValue::PointerValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type_, const void* ptr_) : Value(sourcePos_, moduleId_, ValueType::pointerValue), type(type_), ptr(ptr_)
+PointerValue::PointerValue(const soul::ast::Span& span_, TypeSymbol* type_, const void* ptr_) : Value(span_, ValueType::pointerValue), type(type_), ptr(ptr_)
 {
 }
 
@@ -3884,7 +4702,7 @@ void PointerValue::Read(util::BinaryStreamReader& reader)
     ptr = nullptr;
 }
 
-Value* PointerValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* PointerValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
@@ -3892,7 +4710,7 @@ Value* PointerValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
     {
         if (cast)
         {
-            return new PointerValue(sourcePos, moduleId, targetType, ptr);
+            return new PointerValue(GetSpan(), targetType, ptr);
         }
         else
         {
@@ -3902,7 +4720,12 @@ Value* PointerValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
             }
             else
             {
-                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", sourcePos, moduleId);
+                soul::ast::FullSpan fullSpan;
+                if (node)
+                {
+                    fullSpan = node->GetFullSpan();
+                }
+                throw Exception("cannot convert " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " without a cast", fullSpan);
             }
         }
     }
@@ -3914,7 +4737,12 @@ Value* PointerValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Sour
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -3927,7 +4755,7 @@ TypeSymbol* PointerValue::GetType(SymbolTable* symbolTable)
 
 TypeSymbol* PointerValue::PointeeType() const
 {
-    return type->RemovePointer(GetSourcePos(), ModuleId());
+    return type->RemovePointer();
 }
 
 Value* PointerValue::Add(int64_t offset) const
@@ -3935,21 +4763,21 @@ Value* PointerValue::Add(int64_t offset) const
     ValueType pointeeValueType = PointeeType()->GetValueType();
     switch (pointeeValueType)
     {
-    case ValueType::boolValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const BoolValue::OperandType*>(ptr) + offset);
-    case ValueType::sbyteValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const SByteValue::OperandType*>(ptr) + offset);
-    case ValueType::byteValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ByteValue::OperandType*>(ptr) + offset);
-    case ValueType::shortValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ShortValue::OperandType*>(ptr) + offset);
-    case ValueType::ushortValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UShortValue::OperandType*>(ptr) + offset);
-    case ValueType::intValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const IntValue::OperandType*>(ptr) + offset);
-    case ValueType::uintValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UIntValue::OperandType*>(ptr) + offset);
-    case ValueType::longValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const LongValue::OperandType*>(ptr) + offset);
-    case ValueType::ulongValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ULongValue::OperandType*>(ptr) + offset);
-    case ValueType::floatValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const FloatValue::OperandType*>(ptr) + offset);
-    case ValueType::doubleValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const DoubleValue::OperandType*>(ptr) + offset);
-    case ValueType::charValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const CharValue::OperandType*>(ptr) + offset);
-    case ValueType::wcharValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const WCharValue::OperandType*>(ptr) + offset);
-    case ValueType::ucharValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UCharValue::OperandType*>(ptr) + offset);
-    case ValueType::pointerValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const PointerValue::OperandType*>(ptr) + offset);
+    case ValueType::boolValue: return new PointerValue(GetSpan(), type, static_cast<const BoolValue::OperandType*>(ptr) + offset);
+    case ValueType::sbyteValue: return new PointerValue(GetSpan(), type, static_cast<const SByteValue::OperandType*>(ptr) + offset);
+    case ValueType::byteValue: return new PointerValue(GetSpan(), type, static_cast<const ByteValue::OperandType*>(ptr) + offset);
+    case ValueType::shortValue: return new PointerValue(GetSpan(), type, static_cast<const ShortValue::OperandType*>(ptr) + offset);
+    case ValueType::ushortValue: return new PointerValue(GetSpan(), type, static_cast<const UShortValue::OperandType*>(ptr) + offset);
+    case ValueType::intValue: return new PointerValue(GetSpan(), type, static_cast<const IntValue::OperandType*>(ptr) + offset);
+    case ValueType::uintValue: return new PointerValue(GetSpan(), type, static_cast<const UIntValue::OperandType*>(ptr) + offset);
+    case ValueType::longValue: return new PointerValue(GetSpan(), type, static_cast<const LongValue::OperandType*>(ptr) + offset);
+    case ValueType::ulongValue: return new PointerValue(GetSpan(), type, static_cast<const ULongValue::OperandType*>(ptr) + offset);
+    case ValueType::floatValue: return new PointerValue(GetSpan(), type, static_cast<const FloatValue::OperandType*>(ptr) + offset);
+    case ValueType::doubleValue: return new PointerValue(GetSpan(), type, static_cast<const DoubleValue::OperandType*>(ptr) + offset);
+    case ValueType::charValue: return new PointerValue(GetSpan(), type, static_cast<const CharValue::OperandType*>(ptr) + offset);
+    case ValueType::wcharValue: return new PointerValue(GetSpan(), type, static_cast<const WCharValue::OperandType*>(ptr) + offset);
+    case ValueType::ucharValue: return new PointerValue(GetSpan(), type, static_cast<const UCharValue::OperandType*>(ptr) + offset);
+    case ValueType::pointerValue: return new PointerValue(GetSpan(), type, static_cast<const PointerValue::OperandType*>(ptr) + offset);
     }
     return nullptr;
 }
@@ -3959,21 +4787,21 @@ Value* PointerValue::Sub(int64_t offset) const
     ValueType pointeeValueType = PointeeType()->GetValueType();
     switch (pointeeValueType)
     {
-    case ValueType::boolValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const BoolValue::OperandType*>(ptr) - offset);
-    case ValueType::sbyteValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const SByteValue::OperandType*>(ptr) - offset);
-    case ValueType::byteValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ByteValue::OperandType*>(ptr) - offset);
-    case ValueType::shortValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ShortValue::OperandType*>(ptr) - offset);
-    case ValueType::ushortValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UShortValue::OperandType*>(ptr) - offset);
-    case ValueType::intValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const IntValue::OperandType*>(ptr) - offset);
-    case ValueType::uintValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UIntValue::OperandType*>(ptr) - offset);
-    case ValueType::longValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const LongValue::OperandType*>(ptr) - offset);
-    case ValueType::ulongValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const ULongValue::OperandType*>(ptr) - offset);
-    case ValueType::floatValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const FloatValue::OperandType*>(ptr) - offset);
-    case ValueType::doubleValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const DoubleValue::OperandType*>(ptr) - offset);
-    case ValueType::charValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const CharValue::OperandType*>(ptr) - offset);
-    case ValueType::wcharValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const WCharValue::OperandType*>(ptr) - offset);
-    case ValueType::ucharValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const UCharValue::OperandType*>(ptr) - offset);
-    case ValueType::pointerValue: return new PointerValue(GetSourcePos(), ModuleId(), type, static_cast<const PointerValue::OperandType*>(ptr) - offset);
+    case ValueType::boolValue: return new PointerValue(GetSpan(), type, static_cast<const BoolValue::OperandType*>(ptr) - offset);
+    case ValueType::sbyteValue: return new PointerValue(GetSpan(), type, static_cast<const SByteValue::OperandType*>(ptr) - offset);
+    case ValueType::byteValue: return new PointerValue(GetSpan(), type, static_cast<const ByteValue::OperandType*>(ptr) - offset);
+    case ValueType::shortValue: return new PointerValue(GetSpan(), type, static_cast<const ShortValue::OperandType*>(ptr) - offset);
+    case ValueType::ushortValue: return new PointerValue(GetSpan(), type, static_cast<const UShortValue::OperandType*>(ptr) - offset);
+    case ValueType::intValue: return new PointerValue(GetSpan(), type, static_cast<const IntValue::OperandType*>(ptr) - offset);
+    case ValueType::uintValue: return new PointerValue(GetSpan(), type, static_cast<const UIntValue::OperandType*>(ptr) - offset);
+    case ValueType::longValue: return new PointerValue(GetSpan(), type, static_cast<const LongValue::OperandType*>(ptr) - offset);
+    case ValueType::ulongValue: return new PointerValue(GetSpan(), type, static_cast<const ULongValue::OperandType*>(ptr) - offset);
+    case ValueType::floatValue: return new PointerValue(GetSpan(), type, static_cast<const FloatValue::OperandType*>(ptr) - offset);
+    case ValueType::doubleValue: return new PointerValue(GetSpan(), type, static_cast<const DoubleValue::OperandType*>(ptr) - offset);
+    case ValueType::charValue: return new PointerValue(GetSpan(), type, static_cast<const CharValue::OperandType*>(ptr) - offset);
+    case ValueType::wcharValue: return new PointerValue(GetSpan(), type, static_cast<const WCharValue::OperandType*>(ptr) - offset);
+    case ValueType::ucharValue: return new PointerValue(GetSpan(), type, static_cast<const UCharValue::OperandType*>(ptr) - offset);
+    case ValueType::pointerValue: return new PointerValue(GetSpan(), type, static_cast<const PointerValue::OperandType*>(ptr) - offset);
     }
     return nullptr;
 }
@@ -3983,20 +4811,20 @@ Value* PointerValue::Sub(const void* thatPtr) const
     ValueType pointeeValueType = PointeeType()->GetValueType();
     switch (pointeeValueType)
     {
-    case ValueType::boolValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const BoolValue::OperandType*>(ptr) - static_cast<const BoolValue::OperandType*>(thatPtr));
-    case ValueType::sbyteValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const SByteValue::OperandType*>(ptr) - static_cast<const SByteValue::OperandType*>(thatPtr));
-    case ValueType::byteValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const ByteValue::OperandType*>(ptr) - static_cast<const ByteValue::OperandType*>(thatPtr));
-    case ValueType::shortValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const ShortValue::OperandType*>(ptr) - static_cast<const ShortValue::OperandType*>(thatPtr));
-    case ValueType::ushortValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const UShortValue::OperandType*>(ptr) - static_cast<const UShortValue::OperandType*>(thatPtr));
-    case ValueType::intValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const IntValue::OperandType*>(ptr) - static_cast<const IntValue::OperandType*>(thatPtr));
-    case ValueType::uintValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const UIntValue::OperandType*>(ptr) - static_cast<const UIntValue::OperandType*>(thatPtr));
-    case ValueType::longValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const LongValue::OperandType*>(ptr) - static_cast<const LongValue::OperandType*>(thatPtr));
-    case ValueType::ulongValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const ULongValue::OperandType*>(ptr) - static_cast<const ULongValue::OperandType*>(thatPtr));
-    case ValueType::floatValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const FloatValue::OperandType*>(ptr) - static_cast<const FloatValue::OperandType*>(thatPtr));
-    case ValueType::doubleValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const DoubleValue::OperandType*>(ptr) - static_cast<const DoubleValue::OperandType*>(thatPtr));
-    case ValueType::charValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const CharValue::OperandType*>(ptr) - static_cast<const CharValue::OperandType*>(thatPtr));
-    case ValueType::wcharValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const WCharValue::OperandType*>(ptr) - static_cast<const WCharValue::OperandType*>(thatPtr));
-    case ValueType::ucharValue: return new LongValue(GetSourcePos(), ModuleId(), static_cast<const UCharValue::OperandType*>(ptr) - static_cast<const UCharValue::OperandType*>(thatPtr));
+    case ValueType::boolValue: return new LongValue(GetSpan(), static_cast<const BoolValue::OperandType*>(ptr) - static_cast<const BoolValue::OperandType*>(thatPtr));
+    case ValueType::sbyteValue: return new LongValue(GetSpan(), static_cast<const SByteValue::OperandType*>(ptr) - static_cast<const SByteValue::OperandType*>(thatPtr));
+    case ValueType::byteValue: return new LongValue(GetSpan(), static_cast<const ByteValue::OperandType*>(ptr) - static_cast<const ByteValue::OperandType*>(thatPtr));
+    case ValueType::shortValue: return new LongValue(GetSpan(), static_cast<const ShortValue::OperandType*>(ptr) - static_cast<const ShortValue::OperandType*>(thatPtr));
+    case ValueType::ushortValue: return new LongValue(GetSpan(), static_cast<const UShortValue::OperandType*>(ptr) - static_cast<const UShortValue::OperandType*>(thatPtr));
+    case ValueType::intValue: return new LongValue(GetSpan(), static_cast<const IntValue::OperandType*>(ptr) - static_cast<const IntValue::OperandType*>(thatPtr));
+    case ValueType::uintValue: return new LongValue(GetSpan(), static_cast<const UIntValue::OperandType*>(ptr) - static_cast<const UIntValue::OperandType*>(thatPtr));
+    case ValueType::longValue: return new LongValue(GetSpan(), static_cast<const LongValue::OperandType*>(ptr) - static_cast<const LongValue::OperandType*>(thatPtr));
+    case ValueType::ulongValue: return new LongValue(GetSpan(), static_cast<const ULongValue::OperandType*>(ptr) - static_cast<const ULongValue::OperandType*>(thatPtr));
+    case ValueType::floatValue: return new LongValue(GetSpan(), static_cast<const FloatValue::OperandType*>(ptr) - static_cast<const FloatValue::OperandType*>(thatPtr));
+    case ValueType::doubleValue: return new LongValue(GetSpan(), static_cast<const DoubleValue::OperandType*>(ptr) - static_cast<const DoubleValue::OperandType*>(thatPtr));
+    case ValueType::charValue: return new LongValue(GetSpan(), static_cast<const CharValue::OperandType*>(ptr) - static_cast<const CharValue::OperandType*>(thatPtr));
+    case ValueType::wcharValue: return new LongValue(GetSpan(), static_cast<const WCharValue::OperandType*>(ptr) - static_cast<const WCharValue::OperandType*>(thatPtr));
+    case ValueType::ucharValue: return new LongValue(GetSpan(), static_cast<const UCharValue::OperandType*>(ptr) - static_cast<const UCharValue::OperandType*>(thatPtr));
     }
     return nullptr;
 }
@@ -4006,26 +4834,26 @@ Value* PointerValue::Deref() const
     ValueType pointeeValueType = PointeeType()->GetValueType();
     switch (pointeeValueType)
     {
-    case ValueType::boolValue: return new BoolValue(GetSourcePos(), ModuleId(), *static_cast<const BoolValue::OperandType*>(ptr));
-    case ValueType::sbyteValue: return new SByteValue(GetSourcePos(), ModuleId(), *static_cast<const SByteValue::OperandType*>(ptr));
-    case ValueType::byteValue: return new ByteValue(GetSourcePos(), ModuleId(), *static_cast<const ByteValue::OperandType*>(ptr));
-    case ValueType::shortValue: return new ShortValue(GetSourcePos(), ModuleId(), *static_cast<const ShortValue::OperandType*>(ptr));
-    case ValueType::ushortValue: return new UShortValue(GetSourcePos(), ModuleId(), *static_cast<const UShortValue::OperandType*>(ptr));
-    case ValueType::intValue: return new IntValue(GetSourcePos(), ModuleId(), *static_cast<const IntValue::OperandType*>(ptr));
-    case ValueType::uintValue: return new UIntValue(GetSourcePos(), ModuleId(), *static_cast<const UIntValue::OperandType*>(ptr));
-    case ValueType::longValue: return new LongValue(GetSourcePos(), ModuleId(), *static_cast<const LongValue::OperandType*>(ptr));
-    case ValueType::ulongValue: return new ULongValue(GetSourcePos(), ModuleId(), *static_cast<const ULongValue::OperandType*>(ptr));
-    case ValueType::floatValue: return new FloatValue(GetSourcePos(), ModuleId(), *static_cast<const FloatValue::OperandType*>(ptr));
-    case ValueType::doubleValue: return new DoubleValue(GetSourcePos(), ModuleId(), *static_cast<const DoubleValue::OperandType*>(ptr));
-    case ValueType::charValue: return new CharValue(GetSourcePos(), ModuleId(), *static_cast<const CharValue::OperandType*>(ptr));
-    case ValueType::wcharValue: return new WCharValue(GetSourcePos(), ModuleId(), *static_cast<const WCharValue::OperandType*>(ptr));
-    case ValueType::ucharValue: return new UCharValue(GetSourcePos(), ModuleId(), *static_cast<const UCharValue::OperandType*>(ptr));
+    case ValueType::boolValue: return new BoolValue(GetSpan(), *static_cast<const BoolValue::OperandType*>(ptr));
+    case ValueType::sbyteValue: return new SByteValue(GetSpan(), *static_cast<const SByteValue::OperandType*>(ptr));
+    case ValueType::byteValue: return new ByteValue(GetSpan(), *static_cast<const ByteValue::OperandType*>(ptr));
+    case ValueType::shortValue: return new ShortValue(GetSpan(), *static_cast<const ShortValue::OperandType*>(ptr));
+    case ValueType::ushortValue: return new UShortValue(GetSpan(), *static_cast<const UShortValue::OperandType*>(ptr));
+    case ValueType::intValue: return new IntValue(GetSpan(), *static_cast<const IntValue::OperandType*>(ptr));
+    case ValueType::uintValue: return new UIntValue(GetSpan(), *static_cast<const UIntValue::OperandType*>(ptr));
+    case ValueType::longValue: return new LongValue(GetSpan(), *static_cast<const LongValue::OperandType*>(ptr));
+    case ValueType::ulongValue: return new ULongValue(GetSpan(), *static_cast<const ULongValue::OperandType*>(ptr));
+    case ValueType::floatValue: return new FloatValue(GetSpan(), *static_cast<const FloatValue::OperandType*>(ptr));
+    case ValueType::doubleValue: return new DoubleValue(GetSpan(), *static_cast<const DoubleValue::OperandType*>(ptr));
+    case ValueType::charValue: return new CharValue(GetSpan(), *static_cast<const CharValue::OperandType*>(ptr));
+    case ValueType::wcharValue: return new WCharValue(GetSpan(), *static_cast<const WCharValue::OperandType*>(ptr));
+    case ValueType::ucharValue: return new UCharValue(GetSpan(), *static_cast<const UCharValue::OperandType*>(ptr));
     }
     return nullptr;
 }
 
-ArrayValue::ArrayValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& elementValues_) :
-    Value(sourcePos_, moduleId_, ValueType::arrayValue), type(type_), elementValues(std::move(elementValues_))
+ArrayValue::ArrayValue(const soul::ast::Span& span_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& elementValues_) :
+    Value(span_, ValueType::arrayValue), type(type_), elementValues(std::move(elementValues_))
 {
 }
 
@@ -4037,7 +4865,7 @@ Value* ArrayValue::Clone() const
     {
         clonedElementValues.push_back(std::unique_ptr<Value>(elementValues[i]->Clone()));
     }
-    return new ArrayValue(GetSourcePos(), ModuleId(), type, std::move(clonedElementValues));
+    return new ArrayValue(GetSpan(), type, std::move(clonedElementValues));
 }
 
 void* ArrayValue::IrValue(cmajor::ir::Emitter& emitter)
@@ -4073,7 +4901,7 @@ void ArrayValue::Read(util::BinaryStreamReader& reader)
     }
 }
 
-Value* ArrayValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* ArrayValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     if (TypesEqual(targetType, type))
     {
@@ -4087,13 +4915,18 @@ Value* ArrayValue::As(TypeSymbol* targetType, bool cast, const soul::ast::Source
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
 }
 
-StructuredValue::StructuredValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& memberValues_) :
-    Value(sourcePos_, moduleId_, ValueType::structuredValue), type(type_), memberValues(std::move(memberValues_))
+StructuredValue::StructuredValue(const soul::ast::Span& span_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& memberValues_) :
+    Value(span_, ValueType::structuredValue), type(type_), memberValues(std::move(memberValues_))
 {
 }
 
@@ -4106,7 +4939,7 @@ Value* StructuredValue::Clone() const
         std::unique_ptr<Value> memberValue(memberValues[i]->Clone());
         clonedMemberValues.push_back(std::move(memberValue));
     }
-    return new StructuredValue(GetSourcePos(), ModuleId(), type, std::move(clonedMemberValues));
+    return new StructuredValue(GetSpan(), type, std::move(clonedMemberValues));
 }
 
 void* StructuredValue::IrValue(cmajor::ir::Emitter& emitter)
@@ -4152,7 +4985,7 @@ void StructuredValue::Read(util::BinaryStreamReader& reader)
     }
 }
 
-Value* StructuredValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* StructuredValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     if (TypesEqual(targetType, type))
     {
@@ -4166,12 +4999,17 @@ Value* StructuredValue::As(TypeSymbol* targetType, bool cast, const soul::ast::S
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
 }
 
-UuidValue::UuidValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int uuidId_) : Value(sourcePos_, moduleId_, ValueType::uuidValue), uuidId(uuidId_)
+UuidValue::UuidValue(const soul::ast::Span& span_, int uuidId_) : Value(span_, ValueType::uuidValue), uuidId(uuidId_)
 {
 }
 
@@ -4192,13 +5030,13 @@ void UuidValue::Read(util::BinaryStreamReader& reader)
     Assert(false, "read for uuid value not supported");
 }
 
-Value* UuidValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const
+Value* UuidValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const
 {
     switch (targetType->GetValueType())
     {
     case ValueType::uuidValue:
     {
-        return new UuidValue(sourcePos, moduleId, uuidId);
+        return new UuidValue(GetSpan(), uuidId);
     }
     default:
     {
@@ -4208,7 +5046,12 @@ Value* UuidValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
         }
         else
         {
-            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (node)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            throw Exception("conversion from " + ValueTypeStr(GetValueType()) + " to " + ValueTypeStr(targetType->GetValueType()) + " is not valid", fullSpan);
         }
     }
     }
@@ -4216,7 +5059,7 @@ Value* UuidValue::As(TypeSymbol* targetType, bool cast, const soul::ast::SourceP
 
 TypeSymbol* UuidValue::GetType(SymbolTable* symbolTable)
 {
-    return symbolTable->GetTypeByName(U"void")->AddPointer(GetSourcePos(), ModuleId());
+    return symbolTable->GetTypeByName(U"void")->AddPointer();
 }
 
 bool operator==(IntegralValue left, IntegralValue right)
@@ -4266,30 +5109,30 @@ void WriteValue(Value* value, util::BinaryStreamWriter& writer)
     value->Write(writer);
 }
 
-std::unique_ptr<Value> ReadValue(util::BinaryStreamReader& reader, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::unique_ptr<Value> ReadValue(util::BinaryStreamReader& reader)
 {
     ValueType valueType = static_cast<ValueType>(reader.ReadByte());
     std::unique_ptr<Value> value;
     switch (valueType)
     {
-    case ValueType::boolValue: value.reset(new BoolValue(soul::ast::SourcePos(), util::nil_uuid(), false)); break;
-    case ValueType::sbyteValue: value.reset(new SByteValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::byteValue: value.reset(new ByteValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::shortValue: value.reset(new ShortValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::ushortValue: value.reset(new UShortValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::intValue: value.reset(new IntValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::uintValue: value.reset(new UIntValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::longValue: value.reset(new LongValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::ulongValue: value.reset(new ULongValue(soul::ast::SourcePos(), util::nil_uuid(), 0)); break;
-    case ValueType::floatValue: value.reset(new FloatValue(soul::ast::SourcePos(), util::nil_uuid(), 0.0)); break;
-    case ValueType::doubleValue: value.reset(new DoubleValue(soul::ast::SourcePos(), util::nil_uuid(), 0.0)); break;
-    case ValueType::charValue: value.reset(new CharValue(soul::ast::SourcePos(), util::nil_uuid(), '\0')); break;
-    case ValueType::wcharValue: value.reset(new WCharValue(soul::ast::SourcePos(), util::nil_uuid(), '\0')); break;
-    case ValueType::ucharValue: value.reset(new UCharValue(soul::ast::SourcePos(), util::nil_uuid(), '\0')); break;
-    case ValueType::pointerValue: value.reset(new PointerValue(soul::ast::SourcePos(), util::nil_uuid(), nullptr, nullptr)); break;
-    case ValueType::stringValue: value.reset(new StringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, ""));
-    case ValueType::wstringValue: value.reset(new WStringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, u""));
-    case ValueType::ustringValue: value.reset(new UStringValue(soul::ast::SourcePos(), util::nil_uuid(), -1, U""));
+    case ValueType::boolValue: value.reset(new BoolValue(soul::ast::Span(), false)); break;
+    case ValueType::sbyteValue: value.reset(new SByteValue(soul::ast::Span(), 0)); break;
+    case ValueType::byteValue: value.reset(new ByteValue(soul::ast::Span(), 0)); break;
+    case ValueType::shortValue: value.reset(new ShortValue(soul::ast::Span(), 0)); break;
+    case ValueType::ushortValue: value.reset(new UShortValue(soul::ast::Span(), 0)); break;
+    case ValueType::intValue: value.reset(new IntValue(soul::ast::Span(), 0)); break;
+    case ValueType::uintValue: value.reset(new UIntValue(soul::ast::Span(), 0)); break;
+    case ValueType::longValue: value.reset(new LongValue(soul::ast::Span(), 0)); break;
+    case ValueType::ulongValue: value.reset(new ULongValue(soul::ast::Span(), 0)); break;
+    case ValueType::floatValue: value.reset(new FloatValue(soul::ast::Span(), 0.0)); break;
+    case ValueType::doubleValue: value.reset(new DoubleValue(soul::ast::Span(), 0.0)); break;
+    case ValueType::charValue: value.reset(new CharValue(soul::ast::Span(), '\0')); break;
+    case ValueType::wcharValue: value.reset(new WCharValue(soul::ast::Span(), '\0')); break;
+    case ValueType::ucharValue: value.reset(new UCharValue(soul::ast::Span(), '\0')); break;
+    case ValueType::pointerValue: value.reset(new PointerValue(soul::ast::Span(), nullptr, nullptr)); break;
+    case ValueType::stringValue: value.reset(new StringValue(soul::ast::Span(), -1, ""));
+    case ValueType::wstringValue: value.reset(new WStringValue(soul::ast::Span(), -1, u""));
+    case ValueType::ustringValue: value.reset(new UStringValue(soul::ast::Span(), -1, U""));
     }
     if (value)
     {
@@ -4298,7 +5141,7 @@ std::unique_ptr<Value> ReadValue(util::BinaryStreamReader& reader, const soul::a
     }
     else
     {
-        throw Exception("internal error: could not read value of type '" + ValueTypeStr(valueType) + "'", sourcePos, moduleId);
+        throw Exception("internal error: could not read value of type '" + ValueTypeStr(valueType) + "'", soul::ast::FullSpan());
     }
 }
 } // namespace cmajor::symbols

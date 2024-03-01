@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -53,7 +53,7 @@ soul::parser::Match ParseNamespaceImport(Context& context, Lexer& lexer)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::UsingKeywordNode> usingKeywordNode(
             new cmajor::fault::tolerant::ast::UsingKeywordNode(
-                lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::global));
+                lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::global));
         namespaceImport.reset(new cmajor::fault::tolerant::ast::NamespaceImportNode());
         namespaceImport->SetUsingKeyword(usingKeywordNode.release());
         ++lexer;
@@ -68,7 +68,7 @@ soul::parser::Match ParseNamespaceImport(Context& context, Lexer& lexer)
         namespaceImport->SetQualifiedId(static_cast<cmajor::fault::tolerant::ast::QualifiedIdNode*>(qidMatch.value));
         if (*lexer == SEMICOLON)
         {
-            namespaceImport->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            namespaceImport->SetSemicolon(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -92,7 +92,7 @@ soul::parser::Match ParseNamespaceDefinition(Context& context, Lexer& lexer)
     if (*lexer == NAMESPACE)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::NamespaceKeywordNode> namespaceNode(
-            new cmajor::fault::tolerant::ast::NamespaceKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            new cmajor::fault::tolerant::ast::NamespaceKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         namespaceDefinitionNode.reset(new cmajor::fault::tolerant::ast::NamespaceDefinitionNode(namespaceNode.release()));
         ++lexer;
     }
@@ -112,7 +112,7 @@ soul::parser::Match ParseNamespaceDefinition(Context& context, Lexer& lexer)
     }
     if (*lexer == LBRACE)
     {
-        namespaceDefinitionNode->SetLBrace(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        namespaceDefinitionNode->SetLBrace(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         if (!namespaceNameMatch.hit)
         {
@@ -139,7 +139,7 @@ soul::parser::Match ParseNamespaceDefinition(Context& context, Lexer& lexer)
     ParseNamespaceContent(context, lexer, namespaceDefinitionNode.get());
     if (*lexer == RBRACE)
     {
-        namespaceDefinitionNode->SetRBrace(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        namespaceDefinitionNode->SetRBrace(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

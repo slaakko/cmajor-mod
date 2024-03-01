@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,6 +11,7 @@ import cmajor.binder;
 import cmajor.symbols;
 import cmajor.ir;
 import cmajor.systemx.ir;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::systemx::backend {
@@ -107,11 +108,13 @@ public:
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
+    int GetLineNumber(const soul::ast::Span& span);
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;
+    int fileIndex;
     cmajor::systemx::ir::CompileUnit* nativeCompileUnit;
     void* function;
     void* entryBasicBlock;

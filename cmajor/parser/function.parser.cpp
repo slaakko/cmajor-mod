@@ -47,7 +47,7 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 1238071297129316353);
     std::unique_ptr<cmajor::ast::FunctionNode> functionNode = std::unique_ptr<cmajor::ast::FunctionNode>();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::AttributesNode> attributes;
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::Node> returnType;
@@ -88,7 +88,7 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                                             soul::parser::Match match(true);
                                             if (match.hit)
                                             {
-                                                s = lexer.GetSourcePos(pos);
+                                                s = lexer.GetSpan(pos);
                                             }
                                             *parentMatch9 = match;
                                         }
@@ -159,7 +159,7 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                                     functionGroupId.reset(static_cast<soul::parser::Value<std::u32string>*>(match.value));
                                     if (match.hit)
                                     {
-                                        functionNode.reset(new cmajor::ast::FunctionNode(s, context->ModuleId(), specifiers->value, returnType.release(), functionGroupId->value, attributes.release()));
+                                        functionNode.reset(new cmajor::ast::FunctionNode(s, specifiers->value, returnType.release(), functionGroupId->value, attributes.release()));
                                     }
                                     *parentMatch15 = match;
                                 }

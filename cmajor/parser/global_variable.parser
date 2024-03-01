@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.global.variable.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -25,10 +26,10 @@ parser GlobalVariableParser
     using IdentifierParser.Identifier;
     using ExpressionParser.Expression;
 
-    GlobalVariable(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::GlobalVariableNode*
+    GlobalVariable(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::GlobalVariableNode*
         ::= 
         (
-            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             TypeExpr(context):type
             Identifier(context):id
             (
@@ -38,7 +39,7 @@ parser GlobalVariableParser
             SEMICOLON
         )
         {
-            return new cmajor::ast::GlobalVariableNode(s, context->ModuleId(), specifiers, type, id, initializer, context->CompileUnitNode());
+            return new cmajor::ast::GlobalVariableNode(s, specifiers, type, id, initializer, context->CompileUnitNode());
         }
         ;
 }

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,7 +18,7 @@ soul::parser::Match ParseStringLiteral(Context& context, Lexer& lexer)
     if (*lexer == STRINGLIT)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::LiteralTokenNode> literalTokenNode(
-            new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none,
+            new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none,
                 lexer.GetToken(lexer.GetPos()).ToString()));
         cmajor::fault::tolerant::ast::StringLiteralPrefix prefix = cmajor::fault::tolerant::ast::StringLiteralPrefix::none;
         std::u16string value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(lexer.GetPos()), prefix);
@@ -41,7 +41,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case TRUE:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::KeywordNode> keywordNode(
-                new cmajor::fault::tolerant::ast::TrueKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                new cmajor::fault::tolerant::ast::TrueKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             literalNode.reset(new cmajor::fault::tolerant::ast::BooleanLiteralNode(keywordNode.release(), true));
             literalNode->Make();
             ++lexer;
@@ -50,7 +50,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case FALSE:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::KeywordNode> keywordNode(
-                new cmajor::fault::tolerant::ast::FalseKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                new cmajor::fault::tolerant::ast::FalseKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             literalNode.reset(new cmajor::fault::tolerant::ast::BooleanLiteralNode(keywordNode.release(), false));
             literalNode->Make();
             ++lexer;
@@ -59,7 +59,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case FLOATINGLIT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LiteralTokenNode> literalTokenNode(
-                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none,
+                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none,
                     lexer.GetToken(lexer.GetPos()).ToString()));
             bool isFloat = false;
             double value = ParseFloatingLiteral(lexer.FileName(), lexer.GetToken(lexer.GetPos()), isFloat);
@@ -70,7 +70,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case INTLIT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LiteralTokenNode> literalTokenNode(
-                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none,
+                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none,
                     lexer.GetToken(lexer.GetPos()).ToString()));
             bool isUnsigned = false;
             uint64_t value = ParseIntegerLiteral(lexer.FileName(), lexer.GetToken(lexer.GetPos()), isUnsigned);
@@ -81,7 +81,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case CHARLIT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LiteralTokenNode> literalTokenNode(
-                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none,
+                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none,
                     lexer.GetToken(lexer.GetPos()).ToString()));
             cmajor::fault::tolerant::ast::CharLiteralPrefix prefix = cmajor::fault::tolerant::ast::CharLiteralPrefix::none;
             char16_t value = ParseCharacterLiteral(lexer.FileName(), lexer.GetToken(lexer.GetPos()), prefix);
@@ -92,7 +92,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case STRINGLIT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LiteralTokenNode> literalTokenNode(
-                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none,
+                new cmajor::fault::tolerant::ast::LiteralTokenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none,
                     lexer.GetToken(lexer.GetPos()).ToString()));
             cmajor::fault::tolerant::ast::StringLiteralPrefix prefix = cmajor::fault::tolerant::ast::StringLiteralPrefix::none;
             std::u16string value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(lexer.GetPos()), prefix);
@@ -103,7 +103,7 @@ soul::parser::Match ParseSimpleLiteral(Context& context, Lexer& lexer)
         case NULLLIT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::KeywordNode> keywordNode(
-                new cmajor::fault::tolerant::ast::NullKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                new cmajor::fault::tolerant::ast::NullKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             literalNode.reset(new cmajor::fault::tolerant::ast::NullLiteralNode(keywordNode.release()));
             literalNode->Make();
@@ -123,7 +123,7 @@ soul::parser::Match ParseArrayLiteral(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::LBracketNode> lbracket;
     if (*lexer == LBRACKET)
     {
-        lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -140,7 +140,7 @@ soul::parser::Match ParseArrayLiteral(Context& context, Lexer& lexer)
             std::unique_ptr<cmajor::fault::tolerant::ast::CommaNode> comma;
             if (*lexer == COMMA)
             {
-                comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
             }
             else
@@ -168,7 +168,7 @@ soul::parser::Match ParseArrayLiteral(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::RBracketNode> rbracket;
     if (*lexer == RBRACKET)
     {
-        rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -187,7 +187,7 @@ soul::parser::Match ParseStructuredLiteral(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::LBraceNode> lbrace;
     if (*lexer == LBRACE)
     {
-        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -204,7 +204,7 @@ soul::parser::Match ParseStructuredLiteral(Context& context, Lexer& lexer)
             std::unique_ptr<cmajor::fault::tolerant::ast::CommaNode> comma;
             if (*lexer == COMMA)
             {
-                comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
             }
             else
@@ -232,7 +232,7 @@ soul::parser::Match ParseStructuredLiteral(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::RBraceNode> rbrace;
     if (*lexer == RBRACE)
     {
-        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

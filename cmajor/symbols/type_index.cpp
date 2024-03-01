@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -222,7 +222,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 DerivedTypeSymbol* derivedType = static_cast<DerivedTypeSymbol*>(typeSymbol);
                 if (derivedType->IsConstType())
                 {
-                    TypeSymbol* nonConstType = derivedType->RemoveConst(derivedType->GetSourcePos(), derivedType->SourceModuleId());
+                    TypeSymbol* nonConstType = derivedType->RemoveConst();
                     cmajor::debug::DIConstType* type = new cmajor::debug::DIConstType();
                     type->SetId(typeSymbol->TypeId());
                     type->SetName(util::ToUtf8(typeSymbol->FullName()));
@@ -234,7 +234,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 }
                 else if (derivedType->IsReferenceType())
                 {
-                    TypeSymbol* nonReferenceType = derivedType->RemoveReference(derivedType->GetSourcePos(), derivedType->SourceModuleId());
+                    TypeSymbol* nonReferenceType = derivedType->RemoveReference();
                     cmajor::debug::DIReferenceType* type = new cmajor::debug::DIReferenceType();
                     type->SetId(typeSymbol->TypeId());
                     type->SetName(util::ToUtf8(typeSymbol->FullName()));
@@ -246,7 +246,7 @@ void TypeIndex::AddType(const util::uuid& typeId, TypeSymbol* typeSymbol, cmajor
                 }
                 else if (derivedType->IsPointerType())
                 {
-                    TypeSymbol* pointedToType = derivedType->RemovePointer(derivedType->GetSourcePos(), derivedType->SourceModuleId());
+                    TypeSymbol* pointedToType = derivedType->RemovePointer();
                     cmajor::debug::DIPointerType* pointerType = new cmajor::debug::DIPointerType();
                     pointerType->SetPointedTypeId(pointedToType->TypeId());
                     pointerType->SetId(typeSymbol->TypeId());

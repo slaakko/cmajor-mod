@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -24,10 +24,8 @@ AstReader::AstReader(const std::string& fileName_) :
 Node* AstReader::ReadNode()
 {
     NodeType nodeType = static_cast<NodeType>(binaryStreamReader.ReadByte());
-    soul::ast::SourcePos sourcePos = ReadSourcePos();
-    util::uuid moduleId;
-    binaryStreamReader.ReadUuid(moduleId);
-    Node* node = NodeFactory::Instance().CreateNode(nodeType, sourcePos, moduleId);
+    soul::ast::Span span = ReadSpan();
+    Node* node = NodeFactory::Instance().CreateNode(nodeType, span);
     node->Read(*this);
     return node;
 }
@@ -234,6 +232,14 @@ Specifiers AstReader::ReadSpecifiers()
     return static_cast<Specifiers>(binaryStreamReader.ReadUInt());
 }
 
+soul::ast::Span AstReader::ReadSpan()
+{
+    int pos = binaryStreamReader.ReadInt();
+    int len = binaryStreamReader.ReadInt();
+    return soul::ast::Span(pos, len);
+}
+
+/*
 soul::ast::SourcePos AstReader::ReadSourcePos()
 {
     int32_t file = -1;  
@@ -246,5 +252,6 @@ soul::ast::SourcePos AstReader::ReadSourcePos()
     }
     return soul::ast::SourcePos(file, line, col);
 }
+*/
 
 } // namespace cmajor::ast

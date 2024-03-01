@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.templates.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -25,7 +26,7 @@ parser TemplateParser
     TemplateId(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::TemplateIdNode> templateId) : cmajor::ast::TemplateIdNode*
         ::= empty{ context->BeginParsingTemplateId(); }
             (
-                QualifiedId(context):primary{ templateId.reset(new cmajor::ast::TemplateIdNode(lexer.GetSourcePos(pos), context->ModuleId(), primary)); }
+                QualifiedId(context):primary{ templateId.reset(new cmajor::ast::TemplateIdNode(lexer.GetSpan(pos), primary)); }
                 LANGLE{ ++vars->leftAngleCount; }
                 (
                     (
@@ -72,17 +73,17 @@ parser TemplateParser
             )?
         )
         {
-            return new cmajor::ast::TemplateParameterNode(lexer.GetSourcePos(pos), context->ModuleId(), id, type);
+            return new cmajor::ast::TemplateParameterNode(lexer.GetSpan(pos), id, type);
         }
         ;
 
-    InstantiationRequest(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FullInstantiationRequestNode> requestNode, var soul::ast::SourcePos s) : 
+    InstantiationRequest(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FullInstantiationRequestNode> requestNode, var soul::ast::Span s) : 
         cmajor::ast::FullInstantiationRequestNode*
         ::= 
         (
-            NEW{ s = lexer.GetSourcePos(pos); }
+            NEW{ s = lexer.GetSpan(pos); }
             CLASS
-            TemplateId(context):templateId{ requestNode.reset(new cmajor::ast::FullInstantiationRequestNode(s, context->ModuleId(), templateId)); }
+            TemplateId(context):templateId{ requestNode.reset(new cmajor::ast::FullInstantiationRequestNode(s, templateId)); }
             SEMICOLON
         )
         {

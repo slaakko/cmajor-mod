@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,8 +18,8 @@ import util;
 
 namespace cmajor::symbols {
 
-ContainerSymbol::ContainerSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    Symbol(symbolType_, sourcePos_, sourceModuleId_, name_)
+ContainerSymbol::ContainerSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_) : 
+    Symbol(symbolType_, span_, name_)
 {
     containerScope.SetContainer(this);
 }
@@ -59,12 +59,12 @@ void ContainerSymbol::AddMember(Symbol* member)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (GetModule() && GetModule()->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), GetModule(), GetSourcePos(), member->GetSourcePos());
+        throw ModuleImmutableException(GetRootModuleForCurrentThread(), GetModule(), GetFullSpan(), member->GetFullSpan());
     }
 #endif
     if (IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), GetModule(), GetSourcePos(), member->GetSourcePos());
+        throw ModuleImmutableException(GetRootModuleForCurrentThread(), GetModule(), GetFullSpan(), member->GetFullSpan());
     }
     if (GetModule())
     {
@@ -76,26 +76,26 @@ void ContainerSymbol::AddMember(Symbol* member)
     if (member->IsFunctionSymbol())
     {
         FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(member);
-        FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSourcePos(), functionSymbol->SourceModuleId());
+        FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSpan());
         functionGroupSymbol->AddFunction(functionSymbol);
         functionIndexMap[functionSymbol->GetIndex()] = functionSymbol;
     }
     else if (member->GetSymbolType() == SymbolType::conceptSymbol)
     {
         ConceptSymbol* conceptSymbol = static_cast<ConceptSymbol*>(member);
-        ConceptGroupSymbol* conceptGroupSymbol = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->GetSourcePos(), conceptSymbol->SourceModuleId());
+        ConceptGroupSymbol* conceptGroupSymbol = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->GetSpan());
         conceptGroupSymbol->AddConcept(conceptSymbol);
     }
     else if (member->GetSymbolType() == SymbolType::classTypeSymbol || member->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
     {
         ClassTypeSymbol* classTypeSymbol = static_cast<ClassTypeSymbol*>(member);
-        ClassGroupTypeSymbol* classGroupTypeSymbol = MakeClassGroupTypeSymbol(classTypeSymbol->GroupName(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        ClassGroupTypeSymbol* classGroupTypeSymbol = MakeClassGroupTypeSymbol(classTypeSymbol->GroupName(), classTypeSymbol->GetSpan());
         classGroupTypeSymbol->AddClass(classTypeSymbol);
     }
     else if (member->GetSymbolType() == SymbolType::globalVariableSymbol)
     {
         GlobalVariableSymbol* globalVariableSymbol = static_cast<GlobalVariableSymbol*>(member);
-        GlobalVariableGroupSymbol* globalVariableGroupSymbol = MakeGlobalVariableGroupSymbol(globalVariableSymbol->GroupName(), globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId());
+        GlobalVariableGroupSymbol* globalVariableGroupSymbol = MakeGlobalVariableGroupSymbol(globalVariableSymbol->GroupName(), globalVariableSymbol->GetSpan());
         globalVariableGroupSymbol->AddGlobalVariable(globalVariableSymbol);
     }
     else
@@ -109,26 +109,26 @@ void ContainerSymbol::AddOwnedMember(Symbol* ownedMember)
     if (ownedMember->IsFunctionSymbol())
     {
         FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(ownedMember);
-        FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSourcePos(), functionSymbol->SourceModuleId());
+        FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSpan());
         functionGroupSymbol->AddFunction(functionSymbol);
         functionIndexMap[functionSymbol->GetIndex()] = functionSymbol;
     }
     else if (ownedMember->GetSymbolType() == SymbolType::conceptSymbol)
     {
         ConceptSymbol* conceptSymbol = static_cast<ConceptSymbol*>(ownedMember);
-        ConceptGroupSymbol* conceptGroupSymbol = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->GetSourcePos(), conceptSymbol->SourceModuleId());
+        ConceptGroupSymbol* conceptGroupSymbol = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->GetSpan());
         conceptGroupSymbol->AddConcept(conceptSymbol);
     }
     else if (ownedMember->GetSymbolType() == SymbolType::classTypeSymbol || ownedMember->GetSymbolType() == SymbolType::classTemplateSpecializationSymbol)
     {
         ClassTypeSymbol* classTypeSymbol = static_cast<ClassTypeSymbol*>(ownedMember);
-        ClassGroupTypeSymbol* classGroupTypeSymbol = MakeClassGroupTypeSymbol(classTypeSymbol->GroupName(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        ClassGroupTypeSymbol* classGroupTypeSymbol = MakeClassGroupTypeSymbol(classTypeSymbol->GroupName(), classTypeSymbol->GetSpan());
         classGroupTypeSymbol->AddClass(classTypeSymbol);
     }
     else if (ownedMember->GetSymbolType() == SymbolType::globalVariableSymbol)
     {
         GlobalVariableSymbol* globalVariableSymbol = static_cast<GlobalVariableSymbol*>(ownedMember);
-        GlobalVariableGroupSymbol* globalVariableGroupSymbol = MakeGlobalVariableGroupSymbol(globalVariableSymbol->GroupName(), globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId());
+        GlobalVariableGroupSymbol* globalVariableGroupSymbol = MakeGlobalVariableGroupSymbol(globalVariableSymbol->GroupName(), globalVariableSymbol->GetSpan());
         globalVariableGroupSymbol->AddGlobalVariable(globalVariableSymbol);
     }
     else
@@ -173,12 +173,12 @@ void ContainerSymbol::Clear()
     members.clear();
 }
 
-FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
+FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span)
 {
     Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
-        FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(sourcePos, sourceModuleId, groupName);
+        FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(span, groupName);
         AddMember(functionGroupSymbol);
         return functionGroupSymbol;
     }
@@ -188,16 +188,17 @@ FunctionGroupSymbol* ContainerSymbol::MakeFunctionGroupSymbol(const std::u32stri
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a function group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a function group '" + util::ToUtf8(groupName) + "'", 
+            symbol->GetFullSpan(), GetFullSpan());
     }
 }
 
-ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
+ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span)
 {
     Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
-        ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(sourcePos, sourceModuleId, groupName);
+        ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(span, groupName);
         AddMember(conceptGroupSymbol);
         return conceptGroupSymbol;
     }
@@ -207,16 +208,17 @@ ConceptGroupSymbol* ContainerSymbol::MakeConceptGroupSymbol(const std::u32string
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a concept group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a concept group '" + util::ToUtf8(groupName) + "'", 
+            symbol->GetFullSpan(), GetFullSpan());
     }
 }
 
-ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
+ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::Span& span)
 {
     Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
-        ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(sourcePos, sourceModuleId, groupName);
+        ClassGroupTypeSymbol* classGroupTypeSymbol = new ClassGroupTypeSymbol(span, groupName);
         GetRootModuleForCurrentThread()->GetSymbolTable().SetTypeIdFor(classGroupTypeSymbol);
         AddMember(classGroupTypeSymbol);
         return classGroupTypeSymbol;
@@ -227,16 +229,17 @@ ClassGroupTypeSymbol* ContainerSymbol::MakeClassGroupTypeSymbol(const std::u32st
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a class group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a class group '" + util::ToUtf8(groupName) + "'", 
+            symbol->GetFullSpan(), GetFullSpan());
     }
 }
 
-GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
+GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span)
 {
     Symbol* symbol = containerScope.Lookup(groupName);
     if (!symbol)
     {
-        GlobalVariableGroupSymbol* globalVariableGroupSymbol = new GlobalVariableGroupSymbol(sourcePos, sourceModuleId, groupName);
+        GlobalVariableGroupSymbol* globalVariableGroupSymbol = new GlobalVariableGroupSymbol(span, groupName);
         AddMember(globalVariableGroupSymbol);
         return globalVariableGroupSymbol;
     }
@@ -246,7 +249,8 @@ GlobalVariableGroupSymbol* ContainerSymbol::MakeGlobalVariableGroupSymbol(const 
     }
     else
     {
-        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + "' conflicts with a global variable group '" + util::ToUtf8(groupName) + "'", symbol->GetSourcePos(), symbol->SourceModuleId(), sourcePos, sourceModuleId);
+        throw Exception("name of symbol '" + util::ToUtf8(symbol->FullName()) + 
+            "' conflicts with a global variable group '" + util::ToUtf8(groupName) + "'", symbol->GetFullSpan(), GetFullSpan());
     }
 }
 
@@ -324,7 +328,7 @@ void ContainerSymbol::Check()
     {
         if (!p.second)
         {
-            throw SymbolCheckException("container symbol has no function", GetSourcePos(), SourceModuleId());
+            throw SymbolCheckException("container symbol has no function", GetFullSpan());
         }
     }
 }
@@ -340,7 +344,7 @@ void ContainerSymbol::CopyFrom(const Symbol* that)
     }
 }
 
-DeclarationBlock::DeclarationBlock(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : ContainerSymbol(SymbolType::declarationBlock, sourcePos_, sourceModuleId_, name_)
+DeclarationBlock::DeclarationBlock(const soul::ast::Span& span_, const std::u32string& name_) : ContainerSymbol(SymbolType::declarationBlock, span_, name_)
 {
 }
 

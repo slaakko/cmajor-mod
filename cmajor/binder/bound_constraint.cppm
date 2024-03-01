@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,13 +9,14 @@ import std.core;
 import cmajor.symbols;
 import cmajor.ir;
 import cmajor.binder.bound.node;
+import util;
 
 export namespace cmajor::binder {
 
 class BoundConstraint : public BoundNode
 {
 public:
-    BoundConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_);
+    BoundConstraint(const soul::ast::Span& span_, BoundNodeType boundNodeType_);
     virtual bool Subsume(BoundConstraint* that) const = 0;
     virtual BoundConstraint* Clone() const = 0;
     virtual bool IsBinaryConstraint() const { return false; }
@@ -26,7 +27,7 @@ public:
 class BoundAtomicConstraint : public BoundConstraint
 {
 public:
-    BoundAtomicConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool satisfied_);
+    BoundAtomicConstraint(const soul::ast::Span& span_, bool satisfied_);
     void Accept(BoundNodeVisitor& visitor) override;
     bool Subsume(BoundConstraint* that) const override;
     BoundConstraint* Clone() const override;
@@ -40,7 +41,7 @@ private:
 class BoundBinaryConstraint : public BoundConstraint
 {
 public:
-    BoundBinaryConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_, BoundConstraint* left_, BoundConstraint* right_);
+    BoundBinaryConstraint(const soul::ast::Span& span_, BoundNodeType boundNodeType_, BoundConstraint* left_, BoundConstraint* right_);
     BoundBinaryConstraint(const BoundBinaryConstraint& that);
     bool IsBinaryConstraint() const override { return true; }
     BoundConstraint* Left() const { return left.get(); }
@@ -53,7 +54,7 @@ private:
 class BoundDisjunctiveConstraint : public BoundBinaryConstraint
 {
 public:
-    BoundDisjunctiveConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundConstraint* left_, BoundConstraint* right_);
+    BoundDisjunctiveConstraint(const soul::ast::Span& span_, BoundConstraint* left_, BoundConstraint* right_);
     BoundDisjunctiveConstraint(const BoundDisjunctiveConstraint& that);
     bool Subsume(BoundConstraint* that) const override;
     void Accept(BoundNodeVisitor& visitor) override;
@@ -63,7 +64,7 @@ public:
 class BoundConjunctiveConstraint : public BoundBinaryConstraint
 {
 public:
-    BoundConjunctiveConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundConstraint* left_, BoundConstraint* right_);
+    BoundConjunctiveConstraint(const soul::ast::Span& span_, BoundConstraint* left_, BoundConstraint* right_);
     BoundConjunctiveConstraint(const BoundConjunctiveConstraint& that);
     bool Subsume(BoundConstraint* that) const override;
     void Accept(BoundNodeVisitor& visitor) override;
@@ -74,7 +75,7 @@ class BoundConcept : public BoundNode
 {
 public:
     BoundConcept(cmajor::symbols::ConceptSymbol* conceptSymbol_, const std::vector<cmajor::symbols::TypeSymbol*>& typeArguments_, 
-        const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+        const soul::ast::Span& span_);
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Accept(BoundNodeVisitor& visitor) override;

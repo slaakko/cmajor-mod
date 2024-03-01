@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -191,10 +191,6 @@ public:
     {
         current = tokens.begin() + static_cast<int32_t>(pos);
         line = static_cast<int32_t>(pos >> 32);
-    }
-    soul::ast::Span GetSpan() const override
-    {
-        return GetSpan(GetPos());
     }
     soul::ast::Span GetSpan(int64_t pos) const override
     {

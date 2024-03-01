@@ -79,7 +79,7 @@ soul::parser::Match TemplateParser<LexerT>::TemplateId(LexerT& lexer, cmajor::pa
                                 primary.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                                 if (match.hit)
                                 {
-                                    templateId.reset(new cmajor::ast::TemplateIdNode(lexer.GetSourcePos(pos), context->ModuleId(), primary.release()));
+                                    templateId.reset(new cmajor::ast::TemplateIdNode(lexer.GetSpan(pos), primary.release()));
                                 }
                                 *parentMatch7 = match;
                             }
@@ -521,7 +521,7 @@ soul::parser::Match TemplateParser<LexerT>::TemplateParameter(LexerT& lexer, cma
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "TemplateParameter");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::TemplateParameterNode(lexer.GetSourcePos(pos), context->ModuleId(), id.release(), type.release()));
+                return soul::parser::Match(true, new cmajor::ast::TemplateParameterNode(lexer.GetSpan(pos), id.release(), type.release()));
             }
         }
         *parentMatch0 = match;
@@ -554,7 +554,7 @@ soul::parser::Match TemplateParser<LexerT>::InstantiationRequest(LexerT& lexer, 
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 559183602110169092);
     std::unique_ptr<cmajor::ast::FullInstantiationRequestNode> requestNode = std::unique_ptr<cmajor::ast::FullInstantiationRequestNode>();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::TemplateIdNode> templateId;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -584,7 +584,7 @@ soul::parser::Match TemplateParser<LexerT>::InstantiationRequest(LexerT& lexer, 
                             }
                             if (match.hit)
                             {
-                                s = lexer.GetSourcePos(pos);
+                                s = lexer.GetSpan(pos);
                             }
                             *parentMatch5 = match;
                         }
@@ -620,7 +620,7 @@ soul::parser::Match TemplateParser<LexerT>::InstantiationRequest(LexerT& lexer, 
                             templateId.reset(static_cast<cmajor::ast::TemplateIdNode*>(match.value));
                             if (match.hit)
                             {
-                                requestNode.reset(new cmajor::ast::FullInstantiationRequestNode(s, context->ModuleId(), templateId.release()));
+                                requestNode.reset(new cmajor::ast::FullInstantiationRequestNode(s, templateId.release()));
                             }
                             *parentMatch8 = match;
                         }

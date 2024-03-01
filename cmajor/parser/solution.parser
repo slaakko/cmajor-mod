@@ -1,11 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.solutions.parser;
 
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.container.file.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.container.file.lexer;

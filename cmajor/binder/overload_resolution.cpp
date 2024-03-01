@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -109,9 +109,8 @@ bool BetterFunctionMatch::operator()(const FunctionMatch& left, const FunctionMa
     return false;
 }
 
-bool FindQualificationConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, BoundExpression* argument, cmajor::symbols::ConversionType conversionType, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
-    FunctionMatch& functionMatch, ArgumentMatch& argumentMatch)
+bool FindQualificationConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, BoundExpression* argument, 
+    cmajor::symbols::ConversionType conversionType, FunctionMatch& functionMatch, ArgumentMatch& argumentMatch)
 {
     int distance = 0;
     if (argumentMatch.conversionFun)
@@ -165,7 +164,8 @@ bool FindQualificationConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor
         ++functionMatch.numQualifyingConversions;
         return true;
     }
-    else if (!sourceType->IsReferenceType() && (targetType->IsReferenceType() || targetType->IsClassTypeSymbol() || targetType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol))
+    else if (!sourceType->IsReferenceType() && 
+        (targetType->IsReferenceType() || targetType->IsClassTypeSymbol() || targetType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol))
     {
         if (targetType->IsConstType() || targetType->IsClassTypeSymbol() || targetType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
         {
@@ -245,9 +245,9 @@ bool FindQualificationConversion(cmajor::symbols::TypeSymbol* sourceType, cmajor
     return false;
 }
 
-bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ConversionType conversionType, BoundExpression* argument,
-    BoundCompileUnit& boundCompileUnit, FunctionMatch& functionMatch, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, 
-    const util::uuid& moduleId)
+bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ConversionType conversionType, 
+    BoundExpression* argument, BoundCompileUnit& boundCompileUnit, FunctionMatch& functionMatch, cmajor::symbols::ContainerScope* containerScope, 
+    BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     if (targetType->BaseType()->GetSymbolType() != cmajor::symbols::SymbolType::templateParameterSymbol) return false;
     cmajor::symbols::TemplateParameterSymbol* templateParameter = static_cast<cmajor::symbols::TemplateParameterSymbol*>(targetType->BaseType());
@@ -255,7 +255,7 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
     auto it = functionMatch.templateParameterMap.find(templateParameter);
     if (it == functionMatch.templateParameterMap.cend())
     {
-        templateArgumentType = sourceType->RemoveDerivations(targetType->DerivationRec(), sourcePos, moduleId);
+        templateArgumentType = sourceType->RemoveDerivations(targetType->DerivationRec());
         if (templateArgumentType)
         {
             functionMatch.templateParameterMap[templateParameter] = templateArgumentType;
@@ -269,7 +269,7 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
     {
         templateArgumentType = it->second;
     }
-    targetType = targetType->Unify(templateArgumentType, sourcePos, moduleId);
+    targetType = targetType->Unify(templateArgumentType);
     if (!targetType)
     {
         return false;
@@ -283,9 +283,9 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
     {
         bool qualificationConversionMatch = false;
         ArgumentMatch argumentMatch;
-        if (cmajor::symbols::TypesEqual(sourceType->PlainType(sourcePos, moduleId), targetType->PlainType(sourcePos, moduleId)))
+        if (cmajor::symbols::TypesEqual(sourceType->PlainType(), targetType->PlainType()))
         {
-            qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch);
+            qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
         }
         if (qualificationConversionMatch)
         {
@@ -294,7 +294,7 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
         }
         else
         {
-            cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, sourcePos, moduleId, argumentMatch);
+            cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, argumentMatch, node);
             if (conversionFun)
             {
                 if (conversionFun->GetConversionType() == conversionType || conversionFun->GetConversionType() == cmajor::symbols::ConversionType::implicit_)
@@ -304,7 +304,7 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
                     //if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::none) bug???
                     if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::none)
                     {
-                        if (FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                        if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
                         {
                             functionMatch.argumentMatches.push_back(argumentMatch);
                             return true;
@@ -316,7 +316,7 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
                     }
                     else
                     {
-                        if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                        if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
                         {
                             functionMatch.argumentMatches.push_back(argumentMatch);
                             return true;
@@ -341,8 +341,9 @@ bool FindTemplateParameterMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor:
     return false;
 }
 
-bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ConversionType conversionType, BoundExpression* argument,
-    BoundCompileUnit& boundCompileUnit, FunctionMatch& functionMatch, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceType, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ConversionType conversionType, 
+    BoundExpression* argument, BoundCompileUnit& boundCompileUnit, FunctionMatch& functionMatch, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
+    cmajor::ast::Node* node)
 {
     if (targetType->BaseType()->GetSymbolType() != cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
@@ -360,11 +361,12 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
         {
             cmajor::symbols::TypeSymbol* sourceArgumentType = sourceClassTemplateSpecialization->TemplateArgumentTypes()[i];
             cmajor::symbols::TypeSymbol* targetArgumentType = targetClassTemplateSpecialization->TemplateArgumentTypes()[i];
-            if (FindTemplateParameterMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, sourcePos, moduleId))
+            if (FindTemplateParameterMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, node))
             {
                 continue;
             }
-            else if (FindClassTemplateSpecializationMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, sourcePos, moduleId))
+            else if (FindClassTemplateSpecializationMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, 
+                currentFunction, node))
             {
                 continue;
             }
@@ -379,7 +381,7 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
     for (int i = 0; i < n; ++i)
     {
         cmajor::symbols::TypeSymbol* templateArgumentType = targetClassTemplateSpecialization->TemplateArgumentTypes()[i]->BaseType()->UnifyTemplateArgumentType(
-            boundCompileUnit.GetSymbolTable(), functionMatch.templateParameterMap, sourcePos, moduleId);
+            boundCompileUnit.GetSymbolTable(), functionMatch.templateParameterMap);
         if (templateArgumentType)
         {
             targetTemplateArguments.push_back(templateArgumentType);
@@ -389,9 +391,9 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
             return false;
         }
     }
-    cmajor::symbols::TypeSymbol* plainTargetType = boundCompileUnit.GetSymbolTable().MakeClassTemplateSpecialization(targetClassTemplateSpecialization->GetClassTemplate(), targetTemplateArguments, sourcePos,
-        cmajor::symbols::GetRootModuleForCurrentThread()->Id());
-    targetType = boundCompileUnit.GetSymbolTable().MakeDerivedType(plainTargetType, targetType->DerivationRec(), sourcePos, moduleId);
+    cmajor::symbols::TypeSymbol* plainTargetType = boundCompileUnit.GetSymbolTable().MakeClassTemplateSpecialization(targetClassTemplateSpecialization->GetClassTemplate(), 
+        targetTemplateArguments);
+    targetType = boundCompileUnit.GetSymbolTable().MakeDerivedType(plainTargetType, targetType->DerivationRec());
     if (cmajor::symbols::TypesEqual(sourceType, targetType))
     {
         functionMatch.argumentMatches.push_back(ArgumentMatch());
@@ -401,9 +403,9 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
     {
         bool qualificationConversionMatch = false;
         ArgumentMatch argumentMatch;
-        if (cmajor::symbols::TypesEqual(sourceType->PlainType(sourcePos, moduleId), targetType->PlainType(sourcePos, moduleId)))
+        if (cmajor::symbols::TypesEqual(sourceType->PlainType(), targetType->PlainType()))
         {
-            qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch);
+            qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
         }
         if (qualificationConversionMatch)
         {
@@ -412,7 +414,7 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
         }
         else
         {
-            cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, sourcePos, moduleId, argumentMatch);
+            cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, argumentMatch, node);
             if (conversionFun)
             {
                 if (conversionFun->GetConversionType() == conversionType || conversionFun->GetConversionType() == cmajor::symbols::ConversionType::implicit_)
@@ -421,7 +423,7 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
                     ++functionMatch.numConversions;
                     if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::none)
                     {
-                        if (FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                        if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
                         {
                             functionMatch.argumentMatches.push_back(argumentMatch);
                             return true;
@@ -433,7 +435,7 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
                     }
                     else
                     {
-                        if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                        if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
                         {
                             functionMatch.argumentMatches.push_back(argumentMatch);
                             return true;
@@ -459,7 +461,7 @@ bool FindClassTemplateSpecializationMatch(cmajor::symbols::TypeSymbol* sourceTyp
 }
 
 bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::FunctionSymbol* function, std::vector<std::unique_ptr<BoundExpression>>& arguments, FunctionMatch& functionMatch,
-    cmajor::symbols::ConversionType conversionType, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    cmajor::symbols::ConversionType conversionType, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     if (!currentFunction)
     {
@@ -490,9 +492,9 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
     {
         BoundExpression* argument = arguments[i].get();
         cmajor::symbols::TypeSymbol* sourceType = argument->GetType();
-        if (sourceType->RemoveConst(sourcePos, moduleId)->IsBasicTypeSymbol())
+        if (sourceType->RemoveConst()->IsBasicTypeSymbol())
         {
-            sourceType = sourceType->RemoveConst(sourcePos, moduleId);
+            sourceType = sourceType->RemoveConst();
         }
         cmajor::symbols::ParameterSymbol* parameter = function->Parameters()[i];
         cmajor::symbols::TypeSymbol* targetType = parameter->GetType();
@@ -519,7 +521,8 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                     continue;
                 }
             }
-            else if (i == 1 && sourceType->IsReferenceType() && targetType->IsLvalueReferenceType() && cmajor::symbols::TypesEqual(sourceType->RemoveReference(sourcePos, moduleId)->RemoveConst(sourcePos, moduleId), targetType->RemoveReference(sourcePos, moduleId)))
+            else if (i == 1 && sourceType->IsReferenceType() && targetType->IsLvalueReferenceType() && 
+                cmajor::symbols::TypesEqual(sourceType->RemoveReference()->RemoveConst(), targetType->RemoveReference()))
             {
                 if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                 {
@@ -528,7 +531,8 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                     continue;
                 }
             }
-            else if (i == 1 && sourceType->IsReferenceType() && targetType->IsRvalueReferenceType() && cmajor::symbols::TypesEqual(sourceType->RemoveReference(sourcePos, moduleId), targetType->RemoveReference(sourcePos, moduleId)))
+            else if (i == 1 && sourceType->IsReferenceType() && targetType->IsRvalueReferenceType() && 
+                cmajor::symbols::TypesEqual(sourceType->RemoveReference(), targetType->RemoveReference()))
             {
                 if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                 {
@@ -536,7 +540,8 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                     continue;
                 }
             }
-            else if (i == 1 && !sourceType->IsReferenceType() && argument->IsLvalueExpression() && targetType->IsReferenceType() && cmajor::symbols::TypesEqual(sourceType, targetType->RemoveReference(sourcePos, moduleId)))
+            else if (i == 1 && !sourceType->IsReferenceType() && argument->IsLvalueExpression() && targetType->IsReferenceType() && 
+                cmajor::symbols::TypesEqual(sourceType, targetType->RemoveReference()))
             {
                 if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                 {
@@ -544,7 +549,7 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                     continue;
                 }
             }
-            else if (i == 1 && function->IsLvalueReferenceCopyAssignment() && cmajor::symbols::TypesEqual(sourceType, targetType->RemoveReference(sourcePos, moduleId)))
+            else if (i == 1 && function->IsLvalueReferenceCopyAssignment() && cmajor::symbols::TypesEqual(sourceType, targetType->RemoveReference()))
             {
                 functionMatch.argumentMatches.push_back(ArgumentMatch(cmajor::ir::OperationFlags::none, nullptr, cmajor::ir::OperationFlags::none, 0));
                 continue;
@@ -552,7 +557,8 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
             else if (i == 1 && function->IsLvalueReferenceCopyAssignment())
             {
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType->RemoveReference(sourcePos, moduleId), containerScope, currentFunction, sourcePos, moduleId, argumentMatch);
+                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType->RemoveReference(), containerScope, currentFunction, 
+                    argumentMatch, node);
                 if (conversionFun && (conversionFun->GetConversionType() == conversionType || conversionFun->GetConversionType() == cmajor::symbols::ConversionType::implicit_))
                 {
                     ++functionMatch.numConversions;
@@ -576,14 +582,14 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
             }
             bool qualificationConversionMatch = false;
             ArgumentMatch argumentMatch;
-            if (cmajor::symbols::TypesEqual(sourceType->PlainType(sourcePos, moduleId), targetType->PlainType(sourcePos, moduleId)))
+            if (cmajor::symbols::TypesEqual(sourceType->PlainType(), targetType->PlainType()))
             {
-                qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch);
+                qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
                 functionMatch.argumentMatches.push_back(argumentMatch);
             }
             if (!qualificationConversionMatch)
             {
-                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, sourcePos, moduleId, argumentMatch);
+                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(sourceType, targetType, containerScope, currentFunction, argumentMatch, node);
                 if (conversionFun)
                 {
                     if (conversionFun->GetConversionType() == conversionType || conversionFun->GetConversionType() == cmajor::symbols::ConversionType::implicit_)
@@ -592,7 +598,7 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                         ++functionMatch.numConversions;
                         if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::none)
                         {
-                            if (FindQualificationConversion(sourceType, targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                            if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
                             {
                                 functionMatch.argumentMatches.push_back(argumentMatch);
                                 continue;
@@ -604,7 +610,7 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                         }
                         else
                         {
-                            if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, sourcePos, moduleId, functionMatch, argumentMatch))
+                            if (FindQualificationConversion(conversionFun->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
                             {
                                 functionMatch.argumentMatches.push_back(argumentMatch);
                                 continue;
@@ -617,7 +623,8 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                     }
                     else
                     {
-                        if (arity == 2 && i == 1 && conversionType == cmajor::symbols::ConversionType::implicit_ && conversionFun->GetConversionType() == cmajor::symbols::ConversionType::explicit_)
+                        if (arity == 2 && i == 1 && conversionType == cmajor::symbols::ConversionType::implicit_ && 
+                            conversionFun->GetConversionType() == cmajor::symbols::ConversionType::explicit_)
                         {
                             functionMatch.castRequired = true;
                             functionMatch.sourceType = sourceType;
@@ -630,11 +637,12 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
                 {
                     if (function->IsFunctionTemplate())
                     {
-                        if (FindTemplateParameterMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, sourcePos, moduleId))
+                        if (FindTemplateParameterMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, node))
                         {
                             continue;
                         }
-                        if (FindClassTemplateSpecializationMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, sourcePos, moduleId))
+                        if (FindClassTemplateSpecializationMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope, currentFunction, 
+                            node))
                         {
                             continue;
                         }
@@ -647,7 +655,7 @@ bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::Functi
     return true;
 }
 
-std::string MakeOverloadName(const std::u32string& groupName, const std::vector<std::unique_ptr<BoundExpression>>& arguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::string MakeOverloadName(const std::u32string& groupName, const std::vector<std::unique_ptr<BoundExpression>>& arguments)
 {
     std::string overloadName = util::ToUtf8(groupName);
     overloadName.append(1, '(');
@@ -665,7 +673,7 @@ std::string MakeOverloadName(const std::u32string& groupName, const std::vector<
         }
         if (wasFirst && (groupName == U"@constructor" || groupName == U"operator="))
         {
-            overloadName.append(util::ToUtf8(argument->GetType()->RemovePointer(sourcePos, moduleId)->FullName()));
+            overloadName.append(util::ToUtf8(argument->GetType()->RemovePointer()->FullName()));
         }
         else
         {
@@ -677,22 +685,22 @@ std::string MakeOverloadName(const std::u32string& groupName, const std::vector<
 }
 
 std::unique_ptr<BoundFunctionCall> FailWithNoViableFunction(const std::u32string& groupName, const std::vector<std::unique_ptr<BoundExpression>>& arguments,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, OverloadResolutionFlags flags, std::unique_ptr<cmajor::symbols::Exception>& exception)
+    cmajor::ast::Node* node, OverloadResolutionFlags flags, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
-    std::string overloadName = MakeOverloadName(groupName, arguments, sourcePos, moduleId);
+    std::string overloadName = MakeOverloadName(groupName, arguments);
     int arity = arguments.size();
     if (groupName == U"@constructor" && arity == 1 && arguments[0]->GetType()->IsReferenceType())
     {
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
-            exception.reset(new cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", sourcePos, moduleId,
-                arguments[0]->GetSourcePos(), arguments[0]->ModuleId()));
+            exception.reset(new cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.",
+                node->GetFullSpan(), arguments[0]->GetFullSpan()));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
-            throw cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", sourcePos, moduleId,
-                arguments[0]->GetSourcePos(), arguments[0]->ModuleId());
+            throw cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", 
+                node->GetFullSpan(), arguments[0]->GetFullSpan());
         }
     }
     else
@@ -705,29 +713,29 @@ std::unique_ptr<BoundFunctionCall> FailWithNoViableFunction(const std::u32string
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
             exception.reset(new cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. " +
-                "No viable functions taking " + std::to_string(arity) + " arguments found in function group '" + util::ToUtf8(groupName) + "'" + note, sourcePos, moduleId));
+                "No viable functions taking " + std::to_string(arity) + " arguments found in function group '" + util::ToUtf8(groupName) + "'" + note, node->GetFullSpan()));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
             throw cmajor::symbols::NoViableFunctionException("overload resolution failed: '" + overloadName + "' not found. " +
-                "No viable functions taking " + std::to_string(arity) + " arguments found in function group '" + util::ToUtf8(groupName) + "'" + note, sourcePos, moduleId);
+                "No viable functions taking " + std::to_string(arity) + " arguments found in function group '" + util::ToUtf8(groupName) + "'" + note, node->GetFullSpan());
         }
     }
 }
 
 std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Module* module, const cmajor::symbols::ViableFunctionSet& viableFunctions, const std::u32string& groupName,
-    const std::vector<std::unique_ptr<BoundExpression>>& arguments, const std::vector<FunctionMatch>& failedFunctionMatches, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
-    OverloadResolutionFlags flags, std::unique_ptr<cmajor::symbols::Exception>& exception)
+    const std::vector<std::unique_ptr<BoundExpression>>& arguments, const std::vector<FunctionMatch>& failedFunctionMatches, cmajor::ast::Node* node, OverloadResolutionFlags flags, 
+    std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
-    std::string overloadName = MakeOverloadName(groupName, arguments, sourcePos, moduleId);
+    std::string overloadName = MakeOverloadName(groupName, arguments);
     bool referenceMustBeInitialized = false;
     bool castRequired = false;
     bool cannotBindConstArgToNonConstParam = false;
     bool cannotAssignToConstObject = false;
     cmajor::symbols::TypeSymbol* sourceType = nullptr;
     cmajor::symbols::TypeSymbol* targetType = nullptr;
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
+    std::vector<soul::ast::FullSpan> references;
     std::string note;
     if (exception)
     {
@@ -753,7 +761,7 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
                     castRequired = true;
                     sourceType = failedFunctionMatches[i].sourceType;
                     targetType = failedFunctionMatches[i].targetType;
-                    references.push_back(std::make_pair(failedFunctionMatches[i].fun->GetSourcePos(), failedFunctionMatches[i].fun->SourceModuleId()));
+                    references.push_back(failedFunctionMatches[i].fun->GetFullSpan());
                     break;
                 }
             }
@@ -767,7 +775,7 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
                     cannotBindConstArgToNonConstParam = true;
                     sourceType = failedFunctionMatches[i].sourceType;
                     targetType = failedFunctionMatches[i].targetType;
-                    references.push_back(std::make_pair(failedFunctionMatches[i].fun->GetSourcePos(), failedFunctionMatches[i].fun->SourceModuleId()));
+                    references.push_back(failedFunctionMatches[i].fun->GetFullSpan());
                     break;
                 }
             }
@@ -779,7 +787,7 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
                 if (failedFunctionMatches[i].cannotAssignToConstObject)
                 {
                     cannotAssignToConstObject = true;
-                    references.push_back(std::make_pair(failedFunctionMatches[i].fun->GetSourcePos(), failedFunctionMatches[i].fun->SourceModuleId()));
+                    references.push_back(failedFunctionMatches[i].fun->GetFullSpan());
                     break;
                 }
             }
@@ -805,14 +813,15 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
     {
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
-            references.push_back(std::make_pair(arguments[0]->GetSourcePos(), arguments[0]->ModuleId()));
-            exception.reset(new cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", sourcePos, moduleId, references));
+            references.push_back(arguments[0]->GetFullSpan());
+            exception.reset(new cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", 
+                node->GetFullSpan(), references));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
-            references.push_back(std::make_pair(arguments[0]->GetSourcePos(), arguments[0]->ModuleId()));
-            throw cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", sourcePos, moduleId, references);
+            references.push_back(arguments[0]->GetFullSpan());
+            throw cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.", node->GetFullSpan(), references);
         }
     }
     else if (castRequired)
@@ -821,16 +830,18 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
         Assert(targetType, "target type not set");
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
-            exception.reset(new cmajor::symbols::CastOverloadException("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
+            exception.reset(new cmajor::symbols::CastOverloadException("overload resolution failed: '" + overloadName + 
+                "' not found, or there are no acceptable conversions for all argument types. " +
                 std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot convert implicitly from '" +
-                util::ToUtf8(sourceType->FullName()) + "' to '" + util::ToUtf8(targetType->FullName()) + "' but explicit conversion (cast) exists.", sourcePos, moduleId, references));
+                util::ToUtf8(sourceType->FullName()) + "' to '" + util::ToUtf8(targetType->FullName()) + "' but explicit conversion (cast) exists.", 
+                node->GetFullSpan(), references));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
             throw cmajor::symbols::CastOverloadException("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
                 std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot convert implicitly from '" +
-                util::ToUtf8(sourceType->FullName()) + "' to '" + util::ToUtf8(targetType->FullName()) + "' but explicit conversion (cast) exists.", sourcePos, moduleId, references);
+                util::ToUtf8(sourceType->FullName()) + "' to '" + util::ToUtf8(targetType->FullName()) + "' but explicit conversion (cast) exists.", node->GetFullSpan(), references);
         }
     }
     else if (cannotBindConstArgToNonConstParam)
@@ -842,14 +853,15 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
             exception.reset(new cmajor::symbols::CannotBindConstToNonconstOverloadException("overload resolution failed: '" + overloadName +
                 "' not found, or there are no acceptable conversions for all argument types. " +
                 std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot bind constant '" + util::ToUtf8(sourceType->FullName()) + "' argument " +
-                " to nonconstant '" + util::ToUtf8(targetType->FullName()) + "' parameter", sourcePos, moduleId, references));
+                " to nonconstant '" + util::ToUtf8(targetType->FullName()) + "' parameter", node->GetFullSpan(), references));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
-            throw cmajor::symbols::CannotBindConstToNonconstOverloadException("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
+            throw cmajor::symbols::CannotBindConstToNonconstOverloadException("overload resolution failed: '" + overloadName + 
+                "' not found, or there are no acceptable conversions for all argument types. " +
                 std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot bind constant '" + util::ToUtf8(sourceType->FullName()) + "' argument " +
-                " to nonconstant '" + util::ToUtf8(targetType->FullName()) + "' parameter", sourcePos, moduleId, references);
+                " to nonconstant '" + util::ToUtf8(targetType->FullName()) + "' parameter", node->GetFullSpan(), references);
         }
     }
     else if (cannotAssignToConstObject)
@@ -858,35 +870,37 @@ std::unique_ptr<BoundFunctionCall> FailWithOverloadNotFound(cmajor::symbols::Mod
         {
             exception.reset(new cmajor::symbols::CannotAssignToConstOverloadException("overload resolution failed: '" + overloadName +
                 "' not found, or there are no acceptable conversions for all argument types. " +
-                std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot assign to const object.", sourcePos, moduleId, references));
+                std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot assign to const object.", node->GetFullSpan(), references));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
-            throw cmajor::symbols::CannotAssignToConstOverloadException("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
-                std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot assign to const object. ", sourcePos, moduleId, references);
+            throw cmajor::symbols::CannotAssignToConstOverloadException("overload resolution failed: '" + overloadName + 
+                "' not found, or there are no acceptable conversions for all argument types. " +
+                std::to_string(viableFunctions.Get().size()) + " viable functions examined. Note: cannot assign to const object. ", node->GetFullSpan(), references);
         }
     }
     else
     {
         if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
         {
-            exception.reset(new cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
-                std::to_string(viableFunctions.Get().size()) + " viable functions examined." + note, sourcePos, moduleId, references));
+            exception.reset(new cmajor::symbols::Exception("overload resolution failed: '" + overloadName + 
+                "' not found, or there are no acceptable conversions for all argument types. " +
+                std::to_string(viableFunctions.Get().size()) + " viable functions examined." + note, node->GetFullSpan(), references));
             return std::unique_ptr<BoundFunctionCall>();
         }
         else
         {
             throw cmajor::symbols::Exception("overload resolution failed: '" + overloadName + "' not found, or there are no acceptable conversions for all argument types. " +
-                std::to_string(viableFunctions.Get().size()) + " viable functions examined." + note, sourcePos, moduleId, references);
+                std::to_string(viableFunctions.Get().size()) + " viable functions examined." + note, node->GetFullSpan(), references);
         }
     }
 }
 
 std::unique_ptr<BoundFunctionCall> FailWithAmbiguousOverload(const std::u32string& groupName, std::vector<std::unique_ptr<BoundExpression>>& arguments,
-    std::vector<FunctionMatch>& functionMatches, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, OverloadResolutionFlags flags, std::unique_ptr<cmajor::symbols::Exception>& exception)
+    std::vector<FunctionMatch>& functionMatches, cmajor::ast::Node* node, OverloadResolutionFlags flags, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
-    std::string overloadName = MakeOverloadName(groupName, arguments, sourcePos, moduleId);
+    std::string overloadName = MakeOverloadName(groupName, arguments);
     std::string matchedFunctionNames;
     bool first = true;
     FunctionMatch equalMatch = std::move(functionMatches[0]);
@@ -901,7 +915,7 @@ std::unique_ptr<BoundFunctionCall> FailWithAmbiguousOverload(const std::u32strin
             equalMatches.push_back(std::move(match));
         }
     }
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
+    std::vector<soul::ast::FullSpan> references;
     for (const FunctionMatch& match : equalMatches)
     {
         if (first)
@@ -913,23 +927,25 @@ std::unique_ptr<BoundFunctionCall> FailWithAmbiguousOverload(const std::u32strin
             matchedFunctionNames.append(", or ");
         }
         matchedFunctionNames.append(util::ToUtf8(match.fun->FullName()));
-        references.push_back(std::make_pair(match.fun->GetSourcePos(), match.fun->SourceModuleId()));
+        references.push_back(match.fun->GetFullSpan());
     }
     if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
     {
-        exception.reset(new cmajor::symbols::Exception("overload resolution for overload name '" + overloadName + "' failed: call is ambiguous: \n" + matchedFunctionNames, sourcePos, moduleId, references));
+        exception.reset(new cmajor::symbols::Exception("overload resolution for overload name '" + overloadName + "' failed: call is ambiguous: \n" + matchedFunctionNames, 
+            node->GetFullSpan(), references));
         return std::unique_ptr<BoundFunctionCall>();
     }
     else
     {
-        throw cmajor::symbols::Exception("overload resolution for overload name '" + overloadName + "' failed: call is ambiguous: \n" + matchedFunctionNames, sourcePos, moduleId, references);
+        throw cmajor::symbols::Exception("overload resolution for overload name '" + overloadName + "' failed: call is ambiguous: \n" + matchedFunctionNames, 
+            node->GetFullSpan(), references);
     }
 }
 
 std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::FunctionSymbol* bestFun, std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit,
-    BoundFunction* boundFunction, const FunctionMatch& bestMatch, cmajor::symbols::ContainerScope* containerScope, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    BoundFunction* boundFunction, const FunctionMatch& bestMatch, cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node)
 {
-    std::unique_ptr<BoundFunctionCall> boundFunctionCall(new BoundFunctionCall(sourcePos, moduleId, bestFun));
+    std::unique_ptr<BoundFunctionCall> boundFunctionCall(new BoundFunctionCall(node->GetSpan(), bestFun));
     int arity = arguments.size();
     int n = std::min(arity, bestFun->Arity());
     for (int i = 0; i < n; ++i)
@@ -956,25 +972,25 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     BoundLocalVariable* backingStore = nullptr;
                     if (boundFunction)
                     {
-                        backingStore = new BoundLocalVariable(sourcePos, moduleId, boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), sourcePos, moduleId));
+                        backingStore = new BoundLocalVariable(node->GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), node->GetSpan()));
                     }
                     argument.reset(new BoundTemporary(std::move(argument), std::unique_ptr<BoundLocalVariable>(backingStore)));
                 }
                 cmajor::symbols::TypeSymbol* type = nullptr;
                 if (argument->GetType()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags::bindToRvalueReference))
                 {
-                    type = argument->GetType()->AddRvalueReference(sourcePos, moduleId);
+                    type = argument->GetType()->AddRvalueReference();
                 }
                 else
                 {
-                    type = argument->GetType()->AddLvalueReference(sourcePos, moduleId);
+                    type = argument->GetType()->AddLvalueReference();
                 }
                 BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(argument), type);
                 argument.reset(addressOfExpression);
             }
             else if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
             {
-                cmajor::symbols::TypeSymbol* type = argument->GetType()->RemoveReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = argument->GetType()->RemoveReference();
                 BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(argument), type);
                 argument.reset(dereferenceExpression);
             }
@@ -988,37 +1004,37 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 {
                     return std::unique_ptr<BoundFunctionCall>();
                 }
-                BoundFunctionCall* constructorCall = new BoundFunctionCall(sourcePos, moduleId, conversionFun);
+                BoundFunctionCall* constructorCall = new BoundFunctionCall(node->GetSpan(), conversionFun);
                 cmajor::symbols::TypeSymbol* conversionTargetType = conversionFun->ConversionTargetType();
                 if (conversionTargetType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
                 {
                     cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(conversionTargetType);
                     if (!specialization->IsBound())
                     {
-                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, node);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, sourcePos, moduleId);
-                constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)),
-                    conversionTargetType->AddPointer(sourcePos, moduleId))));
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
+                constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+                    new BoundLocalVariable(temporary->GetSpan(), temporary)), conversionTargetType->AddPointer())));
                 if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
                     {
-                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                         destructorCall->AddArgument(std::unique_ptr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
-                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, node);
                     }
                 }
                 constructorCall->AddArgument(std::move(argument));
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    constructorCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(sourcePos, moduleId, temporaryLocalVariable)));
+                    constructorCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
                 }
                 BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(std::unique_ptr<BoundExpression>(constructorCall),
-                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)));
+                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(temporary->GetSpan(), temporary)));
                 argument.reset(conversion);
             }
             else if (conversionFun->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol && conversionFun->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -1027,7 +1043,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 {
                     return std::unique_ptr<BoundFunctionCall>();
                 }
-                BoundFunctionCall* conversionFunctionCall = new BoundFunctionCall(sourcePos, moduleId, conversionFun);
+                BoundFunctionCall* conversionFunctionCall = new BoundFunctionCall(node->GetSpan(), conversionFun);
                 conversionFunctionCall->AddArgument(std::move(argument));
                 cmajor::symbols::TypeSymbol* conversionTargetType = conversionFun->ConversionTargetType();
                 if (conversionTargetType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
@@ -1035,27 +1051,27 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(conversionTargetType);
                     if (!specialization->IsBound())
                     {
-                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, node);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, sourcePos, moduleId);
-                conversionFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)),
-                    conversionTargetType->AddPointer(sourcePos, moduleId))));
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
+                conversionFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+                    new BoundLocalVariable(temporary->GetSpan(), temporary)), conversionTargetType->AddPointer())));
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(sourcePos, moduleId, temporaryLocalVariable)));
+                    conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
                 }
-                BoundLocalVariable* conversionResult = new BoundLocalVariable(sourcePos, moduleId, temporary);
+                BoundLocalVariable* conversionResult = new BoundLocalVariable(temporary->GetSpan(), temporary);
                 if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
                     {
-                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
-                        cmajor::symbols::TypeSymbol* type = conversionResult->GetType()->AddPointer(sourcePos, moduleId);
+                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
+                        cmajor::symbols::TypeSymbol* type = conversionResult->GetType()->AddPointer();
                         destructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(conversionResult->Clone()), type)));
-                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, node);
                     }
                 }
                 BoundClassOrClassDelegateConversionResult* conversion = new BoundClassOrClassDelegateConversionResult(std::unique_ptr<BoundExpression>(conversionResult),
@@ -1068,7 +1084,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    conversion->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(sourcePos, moduleId, temporaryLocalVariable)));
+                    conversion->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
                 }
                 argument.reset(conversion);
             }
@@ -1082,30 +1098,31 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     BoundLocalVariable* backingStore = nullptr;
                     if (boundFunction)
                     {
-                        backingStore = new BoundLocalVariable(sourcePos, moduleId, boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), sourcePos, moduleId));
+                        backingStore = new BoundLocalVariable(node->GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(argument->GetType(), node->GetSpan()));
                     }
                     argument.reset(new BoundTemporary(std::move(argument), std::unique_ptr<BoundLocalVariable>(backingStore)));
                 }
                 cmajor::symbols::TypeSymbol* type = nullptr;
                 if (argument->GetType()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags::bindToRvalueReference))
                 {
-                    type = argument->GetType()->AddRvalueReference(sourcePos, moduleId);
+                    type = argument->GetType()->AddRvalueReference();
                 }
                 else
                 {
-                    type = argument->GetType()->AddLvalueReference(sourcePos, moduleId);
+                    type = argument->GetType()->AddLvalueReference();
                 }
                 BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(argument), type);
                 argument.reset(addressOfExpression);
             }
             else if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
             {
-                cmajor::symbols::TypeSymbol* type = argument->GetType()->RemoveReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = argument->GetType()->RemoveReference();
                 BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(argument), type);
                 argument.reset(dereferenceExpression);
             }
         }
-        if (argument->GetType()->IsClassTypeSymbol() || argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol || argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
+        if (argument->GetType()->IsClassTypeSymbol() || argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol || 
+            argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
             if (argument->GetType()->IsClassTypeSymbol())
             {
@@ -1114,22 +1131,23 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 {
                     try
                     {
-                        boundCompileUnit.GenerateCopyConstructorFor(classType, containerScope, boundFunction, sourcePos, moduleId);
+                        boundCompileUnit.GenerateCopyConstructorFor(classType, containerScope, boundFunction, node);
                     }
                     catch (const cmajor::symbols::Exception& ex)
                     {
-                        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-                        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+                        std::vector<soul::ast::FullSpan> references;
+                        references.push_back(ex.Defined());
                         references.insert(references.end(), ex.References().begin(), ex.References().end());
-                        throw cmajor::symbols::Exception("cannot pass class '" + util::ToUtf8(classType->FullName()) + "' by value because: " + ex.Message(), argument->GetSourcePos(), argument->ModuleId(), references);
+                        throw cmajor::symbols::Exception("cannot pass class '" + util::ToUtf8(classType->FullName()) + "' by value because: " + ex.Message(), 
+                            node->GetFullSpan(), references);
                     }
                 }
-                cmajor::symbols::TypeSymbol* type = classType->AddConst(sourcePos, moduleId)->AddLvalueReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = classType->AddConst()->AddLvalueReference();
                 argument.reset(new BoundAddressOfExpression(std::move(argument), type));
             }
             else if (argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
             {
-                cmajor::symbols::TypeSymbol* type = argument->GetType()->AddConst(sourcePos, moduleId)->AddLvalueReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = argument->GetType()->AddConst()->AddLvalueReference();
                 argument.reset(new BoundAddressOfExpression(std::move(argument), type));
             }
             else if (argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
@@ -1137,9 +1155,9 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(argument->GetType());
                 if (!interfaceTypeSymbol->CopyConstructor())
                 {
-                    boundCompileUnit.GenerateCopyConstructorFor(interfaceTypeSymbol, containerScope, sourcePos, moduleId);
+                    boundCompileUnit.GenerateCopyConstructorFor(interfaceTypeSymbol, containerScope, node);
                 }
-                cmajor::symbols::TypeSymbol* type = argument->GetType()->AddConst(sourcePos, moduleId)->AddLvalueReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = argument->GetType()->AddConst()->AddLvalueReference();
                 argument.reset(new BoundAddressOfExpression(std::move(argument), type));
             }
         }
@@ -1155,7 +1173,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
         std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = bestFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
         for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
         {
-            boundFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(sourcePos, moduleId, temporaryLocalVariable)));
+            boundFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
         }
     }
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunctionCall->GetFunctionSymbol();
@@ -1171,7 +1189,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 {
                     boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                     std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                    GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, boundFunction, sourcePos, moduleId);
+                    GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, boundFunction, node);
                     boundCompileUnit.AddBoundNode(std::move(boundClass));
                 }
             }
@@ -1182,8 +1200,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
 
 std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::ViableFunctionSet& viableFunctions, const std::u32string& groupName,
     std::vector<std::unique_ptr<BoundExpression>>& arguments, cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit, BoundFunction* boundFunction,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
-    OverloadResolutionFlags flags, std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, std::unique_ptr<cmajor::symbols::Exception>& exception)
+    cmajor::ast::Node* node, OverloadResolutionFlags flags, std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
     cmajor::symbols::Module* module = &boundCompileUnit.GetModule();
     std::vector<FunctionMatch> functionMatches;
@@ -1234,7 +1251,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                 continue;
             }
         }
-        if (FindConversions(boundCompileUnit, viableFunction, arguments, functionMatch, cmajor::symbols::ConversionType::implicit_, containerScope, boundFunction, sourcePos, moduleId))
+        if (FindConversions(boundCompileUnit, viableFunction, arguments, functionMatch, cmajor::symbols::ConversionType::implicit_, containerScope, boundFunction, node))
         {
             if (viableFunction->IsFunctionTemplate())
             {
@@ -1272,7 +1289,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                         std::unique_ptr<cmajor::symbols::Exception> conceptCheckException;
                         std::unique_ptr<BoundConstraint> boundConstraint;
                         bool candidateFound = CheckConstraint(viableFunction->Constraint(), viableFunction->UsingNodes(), boundCompileUnit, containerScope, boundFunction,
-                            viableFunction->TemplateParameters(), functionMatch.templateParameterMap, boundConstraint, sourcePos, moduleId, viableFunction, conceptCheckException);
+                            viableFunction->TemplateParameters(), functionMatch.templateParameterMap, boundConstraint, node, viableFunction, conceptCheckException);
                         if (candidateFound)
                         {
                             functionMatch.boundConstraint = boundConstraint.get();
@@ -1310,10 +1327,10 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
     {
         if ((flags & OverloadResolutionFlags::includeSystemDefaultFunctions) == OverloadResolutionFlags::none)
         {
-            return SelectViableFunction(viableFunctions, groupName, arguments, containerScope, boundCompileUnit, boundFunction, sourcePos, moduleId,
+            return SelectViableFunction(viableFunctions, groupName, arguments, containerScope, boundCompileUnit, boundFunction, node, 
                 (flags | OverloadResolutionFlags::includeSystemDefaultFunctions), templateArgumentTypes, exception);
         }
-        return FailWithOverloadNotFound(module, viableFunctions, groupName, arguments, failedFunctionMatches, sourcePos, moduleId, flags, exception);
+        return FailWithOverloadNotFound(module, viableFunctions, groupName, arguments, failedFunctionMatches, node, flags, exception);
     }
     else if (functionMatches.size() > 1)
     {
@@ -1326,12 +1343,14 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
             {
                 if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
                 {
-                    exception.reset(new cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(bestFun->FullName()) + "'", sourcePos, moduleId, bestFun->GetSourcePos(), bestFun->SourceModuleId()));
+                    exception.reset(new cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(bestFun->FullName()) + "'",
+                        node->GetFullSpan(), bestFun->GetFullSpan()));
                     return std::unique_ptr<BoundFunctionCall>();
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(bestFun->FullName()) + "'", sourcePos, moduleId, bestFun->GetSourcePos(), bestFun->SourceModuleId());
+                    throw cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(bestFun->FullName()) + "'",
+                        node->GetFullSpan(), bestFun->GetFullSpan());
                 }
             }
             bool instantiate = (flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none;
@@ -1339,7 +1358,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
             {
                 if (instantiate)
                 {
-                    bestFun = boundCompileUnit.InstantiateFunctionTemplate(bestFun, bestMatch.templateParameterMap, sourcePos, moduleId);
+                    bestFun = boundCompileUnit.InstantiateFunctionTemplate(bestFun, bestMatch.templateParameterMap, node);
                 }
                 else
                 {
@@ -1366,21 +1385,21 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                         int index = bestFun->GetIndex();
                         bestFun = specialization->GetFunctionByIndex(index);
                     }
-                    bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, sourcePos, moduleId);
+                    bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
                     if (!firstTry)
                     {
                         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(bestFun->Parent());
                         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
                         cmajor::symbols::ClassTemplateSpecializationSymbol* copy = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(specialization);
                         boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(
-                            copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), sourcePos, moduleId);
+                            copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);
                         int index = bestFun->GetIndex();
                         bestFun = copy->GetFunctionByIndex(index);
-                        bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, sourcePos, moduleId);
+                        bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
                         if (!secondTry)
                         {
-                            throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" + util::ToUtf8(specialization->FullName()) + "'",
-                                specialization->GetSourcePos(), specialization->SourceModuleId());
+                            throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" +
+                                util::ToUtf8(specialization->FullName()) + "'", node->GetFullSpan(), specialization->GetFullSpan());
                         }
                     }
                 }
@@ -1400,44 +1419,48 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                             cmajor::symbols::TypeSymbol* templateArgumentType = bestFun->TemplateArgumentTypes()[i];
                             templateParameterMap[templateParameter] = templateArgumentType;
                         }
-                        bestFun = boundCompileUnit.InstantiateFunctionTemplate(functionTemplate, templateParameterMap, sourcePos, moduleId);
+                        bestFun = boundCompileUnit.InstantiateFunctionTemplate(functionTemplate, templateParameterMap, node);
                     }
                     else
                     {
-                        bestFun = boundCompileUnit.InstantiateInlineFunction(bestFun, containerScope, sourcePos, moduleId);
+                        bestFun = boundCompileUnit.InstantiateInlineFunction(bestFun, containerScope, node);
                     }
                 }
             }
             if (boundFunction && boundFunction->GetFunctionSymbol()->DontThrow() && !boundFunction->GetFunctionSymbol()->HasTry() && !bestFun->DontThrow())
             {
-                std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-                references.push_back(std::make_pair(boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId()));
-                references.push_back(std::make_pair(bestFun->GetSourcePos(), bestFun->SourceModuleId()));
+                std::vector<soul::ast::FullSpan> references;
+                references.push_back(boundFunction->GetFunctionSymbol()->GetFullSpan());
+                references.push_back(bestFun->GetFullSpan());
                 if (GetGlobalFlag(cmajor::symbols::GlobalFlags::strictNothrow))
                 {
                     if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
                     {
-                        exception.reset(new cmajor::symbols::Exception("a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", sourcePos, moduleId, references));
+                        exception.reset(new cmajor::symbols::Exception(
+                            "a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", 
+                            node->GetFullSpan(), references));
                         return std::unique_ptr<BoundFunctionCall>();
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", sourcePos, moduleId, references);
+                        throw cmajor::symbols::Exception(
+                            "a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", 
+                            node->GetFullSpan(), references);
                     }
                 }
                 else
                 {
                     cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
-                    warning.SetDefined(sourcePos, moduleId);
+                    warning.SetDefined(node->GetFullSpan());
                     warning.SetReferences(references);
                     module->WarningCollection().AddWarning(warning);
                 }
             }
-            return CreateBoundFunctionCall(bestFun, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, sourcePos, moduleId);
+            return CreateBoundFunctionCall(bestFun, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, node);
         }
         else
         {
-            return FailWithAmbiguousOverload(groupName, arguments, functionMatches, sourcePos, moduleId, flags, exception);
+            return FailWithAmbiguousOverload(groupName, arguments, functionMatches, node, flags, exception);
         }
     }
     else
@@ -1448,12 +1471,14 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
         {
             if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
             {
-                exception.reset(new cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(singleBest->FullName()) + "'", sourcePos, moduleId, singleBest->GetSourcePos(), singleBest->SourceModuleId()));
+                exception.reset(new cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(singleBest->FullName()) + "'",
+                    node->GetFullSpan(), singleBest->GetFullSpan()));
                 return std::unique_ptr<BoundFunctionCall>();
             }
             else
             {
-                throw cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(singleBest->FullName()) + "'", sourcePos, moduleId, singleBest->GetSourcePos(), singleBest->SourceModuleId());
+                throw cmajor::symbols::Exception("cannot call a suppressed member function '" + util::ToUtf8(singleBest->FullName()) + "'",
+                    node->GetFullSpan(), singleBest->GetFullSpan());
             }
         }
         bool instantiate = (flags & OverloadResolutionFlags::dontInstantiate) == OverloadResolutionFlags::none;
@@ -1461,7 +1486,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
         {
             if (instantiate)
             {
-                singleBest = boundCompileUnit.InstantiateFunctionTemplate(singleBest, bestMatch.templateParameterMap, sourcePos, moduleId);
+                singleBest = boundCompileUnit.InstantiateFunctionTemplate(singleBest, bestMatch.templateParameterMap, node);
             }
             else
             {
@@ -1488,19 +1513,19 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                     int index = singleBest->GetIndex();
                     singleBest = specialization->GetFunctionByIndex(index);
                 }
-                bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, sourcePos, moduleId);
+                bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
                 if (!firstTry)
                 {
                     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
                     cmajor::symbols::ClassTemplateSpecializationSymbol* copy = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(specialization);
-                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), sourcePos, moduleId);
+                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);
                     int index = singleBest->GetIndex();
                     singleBest = copy->GetFunctionByIndex(index);
-                    bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, sourcePos, moduleId);
+                    bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
                     if (!secondTry)
                     {
-                        throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" + util::ToUtf8(specialization->FullName()) + "'",
-                            specialization->GetSourcePos(), specialization->SourceModuleId());
+                        throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" +
+                            util::ToUtf8(specialization->FullName()) + "'", node->GetFullSpan(), specialization->GetFullSpan());
                     }
                 }
             }
@@ -1520,40 +1545,42 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                         cmajor::symbols::TypeSymbol* templateArgumentType = singleBest->TemplateArgumentTypes()[i];
                         templateParameterMap[templateParameter] = templateArgumentType;
                     }
-                    singleBest = boundCompileUnit.InstantiateFunctionTemplate(functionTemplate, templateParameterMap, sourcePos, moduleId);
+                    singleBest = boundCompileUnit.InstantiateFunctionTemplate(functionTemplate, templateParameterMap, node);
                 }
                 else
                 {
-                    singleBest = boundCompileUnit.InstantiateInlineFunction(singleBest, containerScope, sourcePos, moduleId);
+                    singleBest = boundCompileUnit.InstantiateInlineFunction(singleBest, containerScope, node);
                 }
             }
         }
         if (boundFunction && boundFunction->GetFunctionSymbol()->DontThrow() && !boundFunction->GetFunctionSymbol()->HasTry() && !singleBest->DontThrow())
         {
-            std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-            references.push_back(std::make_pair(boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId()));
-            references.push_back(std::make_pair(singleBest->GetSourcePos(), singleBest->SourceModuleId()));
+            std::vector<soul::ast::FullSpan> references;
+            references.push_back(boundFunction->GetFunctionSymbol()->GetFullSpan());
+            references.push_back(singleBest->GetFullSpan());
             if (GetGlobalFlag(cmajor::symbols::GlobalFlags::strictNothrow))
             {
                 if ((flags & OverloadResolutionFlags::dontThrow) != OverloadResolutionFlags::none)
                 {
-                    exception.reset(new cmajor::symbols::Exception("a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", sourcePos, moduleId, references));
+                    exception.reset(new cmajor::symbols::Exception(
+                        "a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", node->GetFullSpan(), references));
                     return std::unique_ptr<BoundFunctionCall>();
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", sourcePos, moduleId, references);
+                    throw cmajor::symbols::Exception(
+                        "a nothrow function cannot call a function that can throw unless it handles exceptions (compiled with --strict-nothrow)", node->GetFullSpan(), references);
                 }
             }
             else
             {
                 cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
-                warning.SetDefined(sourcePos, moduleId);
+                warning.SetDefined(node->GetFullSpan());
                 warning.SetReferences(references);
                 module->WarningCollection().AddWarning(warning);
             }
         }
-        return CreateBoundFunctionCall(singleBest, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, sourcePos, moduleId);
+        return CreateBoundFunctionCall(singleBest, arguments, boundCompileUnit, boundFunction, bestMatch, containerScope, node);
     }
 }
 
@@ -1581,16 +1608,16 @@ void CollectViableFunctionsFromSymbolTable(int arity, const std::u32string& grou
 }
 
 std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, const std::vector<FunctionScopeLookup>& functionScopeLookups,
-    std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     std::unique_ptr<cmajor::symbols::Exception> exception;
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
-    return ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
+    return ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, node,
         OverloadResolutionFlags::none, templateArgumentTypes, exception);
 }
 
 std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, const std::vector<FunctionScopeLookup>& functionScopeLookups,
-    std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, cmajor::ast::Node* node,
     OverloadResolutionFlags flags, std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {
     cmajor::symbols::Module* module = &boundCompileUnit.GetModule();
@@ -1603,7 +1630,7 @@ std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupNa
         {
             collectFlags = collectFlags | CollectFlags::noRvalueRef;
         }
-        boundCompileUnit.CollectViableFunctions(groupName, containerScope, arguments, currentFunction, viableFunctions, exception, sourcePos, moduleId, collectFlags);
+        boundCompileUnit.CollectViableFunctions(groupName, containerScope, arguments, currentFunction, viableFunctions, exception, node, collectFlags);
     }
     if (viableFunctions.Get().empty())
     {
@@ -1615,11 +1642,11 @@ std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupNa
     }
     if (viableFunctions.Get().empty())
     {
-        return FailWithNoViableFunction(groupName, arguments, sourcePos, moduleId, flags, exception);
+        return FailWithNoViableFunction(groupName, arguments, node, flags, exception);
     }
     else
     {
-        return SelectViableFunction(viableFunctions, groupName, arguments, containerScope, boundCompileUnit, currentFunction, sourcePos, moduleId, flags, templateArgumentTypes, exception);
+        return SelectViableFunction(viableFunctions, groupName, arguments, containerScope, boundCompileUnit, currentFunction, node, flags, templateArgumentTypes, exception);
     }
 }
 

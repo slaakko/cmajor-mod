@@ -1,10 +1,11 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module soul.ast.span;
 
+import util;
 import std.core;
 
 export namespace soul::ast {
@@ -21,6 +22,36 @@ struct Span
     int pos;
     int len;
 };
+
+constexpr bool operator==(const Span& left, const Span& right)
+{
+    return left.pos == right.pos && left.len == right.len;
+}
+
+constexpr bool operator!= (const Span& left, const Span& right)
+{
+    return !(left == right);
+}
+
+struct FullSpan
+{
+    FullSpan() : moduleId(util::nil_uuid()), fileIndex(-1), span() {}
+    FullSpan(const util::uuid& moduleId_, int fileIndex_, const Span& span_) : moduleId(moduleId_), fileIndex(fileIndex_), span(span_) {}
+    bool IsValid() const { return !moduleId.is_nil() && fileIndex != -1 && span.IsValid(); }
+    util::uuid moduleId;
+    int fileIndex;
+    Span span;
+};
+
+inline bool operator==(const FullSpan& left, const FullSpan& right)
+{
+    return left.moduleId == right.moduleId && left.fileIndex == right.fileIndex && left.span == right.span;
+}
+
+inline bool operator!= (const FullSpan& left, const FullSpan& right)
+{
+    return !(left == right);
+}
 
 struct LineColLen
 {

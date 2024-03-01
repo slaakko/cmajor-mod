@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,11 +15,11 @@ using Token = soul::lexer::Token<char32_t, char32_t>;
 class IdentifierNode : public Node
 {
 public:
-    IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_);
-    IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_);
-    IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, NodeType nodeType_, const std::u32string& identifier_);
-    IdentifierNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const Token& token);
+    IdentifierNode(const soul::ast::Span& span_);
+    IdentifierNode(const soul::ast::Span& span_, NodeType nodeType_);
+    IdentifierNode(const soul::ast::Span& span_, const std::u32string& identifier_);
+    IdentifierNode(const soul::ast::Span& span_, NodeType nodeType_, const std::u32string& identifier_);
+    IdentifierNode(const soul::ast::Span& span_, const Token& token);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -35,8 +35,8 @@ private:
 class CursorIdNode : public IdentifierNode
 {
 public:
-    CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    CursorIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& identifier_);
+    CursorIdNode(const soul::ast::Span& span_);
+    CursorIdNode(const soul::ast::Span& span_, const std::u32string& identifier_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

@@ -1,10 +1,11 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.binder.overload.resolution;
 
+import cmajor.ast;
 import std.core;
 import cmajor.symbols;
 import cmajor.ir;
@@ -101,17 +102,17 @@ struct BetterFunctionMatch
 
 bool FindConversions(BoundCompileUnit& boundCompileUnit, cmajor::symbols::FunctionSymbol* function, std::vector<std::unique_ptr<BoundExpression>>& arguments, 
     FunctionMatch& functionMatch, cmajor::symbols::ConversionType conversionType, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::ast::Node* node);
 
 std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, 
     const std::vector<FunctionScopeLookup>& functionScopeLookups,
     std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    cmajor::ast::Node* node);
 
 std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, 
     const std::vector<FunctionScopeLookup>& functionScopeLookups,
     std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    cmajor::ast::Node* node,
     OverloadResolutionFlags flags, std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, std::unique_ptr<cmajor::symbols::Exception>& exception);
 
 } // namespace cmajor::binder

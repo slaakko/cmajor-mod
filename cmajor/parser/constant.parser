@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.constant.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -25,10 +26,10 @@ parser ConstantParser
     using TypeExprParser.TypeExpr;
     using ExpressionParser.Expression;
 
-    Constant(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::Node*
+    Constant(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::Node*
         ::= 
         (
-            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             CONST
             TypeExpr(context):type
             Identifier(context):id
@@ -37,7 +38,7 @@ parser ConstantParser
             SEMICOLON
         )
         {
-            cmajor::ast::ConstantNode* node = new cmajor::ast::ConstantNode(s, context->ModuleId(), specifiers, type, id, expr);
+            cmajor::ast::ConstantNode* node = new cmajor::ast::ConstantNode(s, specifiers, type, id, expr);
             return node;
         }
         ;

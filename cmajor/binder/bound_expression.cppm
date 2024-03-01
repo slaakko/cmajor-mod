@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -39,7 +39,7 @@ class BoundFunction;
 class BoundExpression : public BoundNode
 {
 public:
-    BoundExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_, cmajor::symbols::TypeSymbol* type_);
+    BoundExpression(const soul::ast::Span& span_, BoundNodeType boundNodeType_, cmajor::symbols::TypeSymbol* type_);
     BoundExpression(const BoundExpression&) = delete;
     BoundExpression& operator=(const BoundExpression&) = delete;
     virtual BoundExpression* Clone() = 0;
@@ -65,7 +65,7 @@ private:
 class BoundParameter : public BoundExpression
 {
 public:
-    BoundParameter(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::ParameterSymbol* parameterSymbol_);
+    BoundParameter(const soul::ast::Span& span_, cmajor::symbols::ParameterSymbol* parameterSymbol_);
     BoundExpression* Clone() override;
     cmajor::symbols::ParameterSymbol* GetParameterSymbol() { return parameterSymbol; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -81,7 +81,7 @@ private:
 class BoundLocalVariable : public BoundExpression
 {
 public:
-    BoundLocalVariable(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::LocalVariableSymbol* localVariableSymbol_);
+    BoundLocalVariable(const soul::ast::Span& span_, cmajor::symbols::LocalVariableSymbol* localVariableSymbol_);
     BoundExpression* Clone() override;
     cmajor::symbols::LocalVariableSymbol* GetLocalVariableSymbol() { return localVariableSymbol; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -97,7 +97,7 @@ private:
 class BoundMemberVariable : public BoundExpression
 {
 public:
-    BoundMemberVariable(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::MemberVariableSymbol* memberVariableSymbol_);
+    BoundMemberVariable(const soul::ast::Span& span_, cmajor::symbols::MemberVariableSymbol* memberVariableSymbol_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -117,7 +117,7 @@ private:
 class BoundConstant : public BoundExpression
 {
 public:
-    BoundConstant(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::ConstantSymbol* constantSymbol_);
+    BoundConstant(const soul::ast::Span& span_, cmajor::symbols::ConstantSymbol* constantSymbol_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -136,7 +136,7 @@ private:
 class BoundEnumConstant : public BoundExpression
 {
 public:
-    BoundEnumConstant(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::EnumConstantSymbol* enumConstantSymbol_);
+    BoundEnumConstant(const soul::ast::Span& span_, cmajor::symbols::EnumConstantSymbol* enumConstantSymbol_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -171,7 +171,7 @@ private:
 class BoundGlobalVariable : public BoundExpression
 {
 public:
-    BoundGlobalVariable(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol_);
+    BoundGlobalVariable(const soul::ast::Span& span_, cmajor::symbols::GlobalVariableSymbol* globalVariableSymbol_);
     cmajor::symbols::GlobalVariableSymbol* GetGlobalVariableSymbol() const { return globalVariableSymbol; }
     BoundExpression* Clone() override;
     bool IsLvalueExpression() const override { return true; }
@@ -208,7 +208,7 @@ private:
 class BoundSizeOfExpression : public BoundExpression
 {
 public:
-    BoundSizeOfExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* pointerType_);
+    BoundSizeOfExpression(const soul::ast::Span& span_, cmajor::symbols::TypeSymbol* type_, cmajor::symbols::TypeSymbol* pointerType_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -269,7 +269,7 @@ private:
 class BoundFunctionCall : public BoundExpression
 {
 public:
-    BoundFunctionCall(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::FunctionSymbol* functionSymbol_);
+    BoundFunctionCall(const soul::ast::Span& span_, cmajor::symbols::FunctionSymbol* functionSymbol_);
     BoundFunctionCall(const BoundFunctionCall&) = delete;
     BoundFunctionCall& operator=(const BoundFunctionCall&) = delete;
     BoundExpression* Clone() override;
@@ -296,7 +296,7 @@ private:
 class BoundDelegateCall : public BoundExpression
 {
 public:
-    BoundDelegateCall(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::DelegateTypeSymbol* delegateType_);
+    BoundDelegateCall(const soul::ast::Span& span_, cmajor::symbols::DelegateTypeSymbol* delegateType_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -316,7 +316,7 @@ private:
 class BoundClassDelegateCall : public BoundExpression
 {
 public:
-    BoundClassDelegateCall(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::ClassDelegateTypeSymbol* classDelegateType_);
+    BoundClassDelegateCall(const soul::ast::Span& span_, cmajor::symbols::ClassDelegateTypeSymbol* classDelegateType_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -501,7 +501,7 @@ private:
 class BoundFunctionPtr : public BoundExpression
 {
 public:
-    BoundFunctionPtr(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::FunctionSymbol* function_, cmajor::symbols::TypeSymbol* type_);
+    BoundFunctionPtr(const soul::ast::Span& span_, cmajor::symbols::FunctionSymbol* function_, cmajor::symbols::TypeSymbol* type_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -515,7 +515,7 @@ private:
 class BoundDisjunction : public BoundExpression
 {
 public:
-    BoundDisjunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& left_, std::unique_ptr<BoundExpression>&& right_, cmajor::symbols::TypeSymbol* boolType_);
+    BoundDisjunction(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& left_, std::unique_ptr<BoundExpression>&& right_, cmajor::symbols::TypeSymbol* boolType_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -534,7 +534,7 @@ private:
 class BoundConjunction : public BoundExpression
 {
 public:
-    BoundConjunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& left_, std::unique_ptr<BoundExpression>&& right_, cmajor::symbols::TypeSymbol* boolType_);
+    BoundConjunction(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& left_, std::unique_ptr<BoundExpression>&& right_, cmajor::symbols::TypeSymbol* boolType_);
     BoundExpression* Clone() override;
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
     void Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -553,7 +553,7 @@ private:
 class BoundTypeExpression : public BoundExpression
 {
 public:
-    BoundTypeExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::TypeSymbol* type_);
+    BoundTypeExpression(const soul::ast::Span& span_, cmajor::symbols::TypeSymbol* type_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -565,7 +565,7 @@ public:
 class BoundNamespaceExpression : public BoundExpression
 {
 public:
-    BoundNamespaceExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::NamespaceSymbol* ns_);
+    BoundNamespaceExpression(const soul::ast::Span& span_, cmajor::symbols::NamespaceSymbol* ns_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -581,7 +581,7 @@ private:
 class BoundFunctionGroupExpression : public BoundExpression
 {
 public:
-    BoundFunctionGroupExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_);
+    BoundFunctionGroupExpression(const soul::ast::Span& span_, cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;
@@ -611,7 +611,7 @@ private:
 class BoundMemberExpression : public BoundExpression
 {
 public:
-    BoundMemberExpression(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, std::unique_ptr<BoundExpression>&& classPtr_, std::unique_ptr<BoundExpression>&& member_);
+    BoundMemberExpression(const soul::ast::Span& span_, std::unique_ptr<BoundExpression>&& classPtr_, std::unique_ptr<BoundExpression>&& member_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;

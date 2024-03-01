@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,7 +12,7 @@ import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.type.symbol;
 import cmajor.ast;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.xml.document;
 import std.core;
 import util.uuid;
@@ -102,10 +102,10 @@ public:
     void MapNs(NamespaceSymbol* fromNs, NamespaceSymbol* toNs);
     NamespaceSymbol* GetMappedNs(NamespaceSymbol* fromNs) const;
     NamespaceSymbol* BeginNamespace(cmajor::ast::NamespaceNode& namespaceNode);
-    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
+    NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex);
     void EndNamespace();
     void BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t functionIndex);
-    void EndFunction(bool addMember);
+    void EndFunction();
     void AddParameter(cmajor::ast::ParameterNode& parameterNode);
     void BeginClass(cmajor::ast::ClassNode& classNode);
     void EndClass();
@@ -116,15 +116,15 @@ public:
     void BeginInterface(cmajor::ast::InterfaceNode& interfaceNode);
     void EndInterface();
     void BeginStaticConstructor(cmajor::ast::StaticConstructorNode& staticConstructorNode, int32_t functionIndex);
-    void EndStaticConstructor(bool addMember);
+    void EndStaticConstructor();
     void BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex);
-    void EndConstructor(bool addMember);
+    void EndConstructor();
     void BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex);
-    void EndDestructor(bool addMember);
+    void EndDestructor();
     void BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex);
-    void EndMemberFunction(bool addMember);
+    void EndMemberFunction();
     void BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex);
-    void EndConversionFunction(bool addMember);
+    void EndConversionFunction();
     void AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode);
     void BeginDelegate(cmajor::ast::DelegateNode& delegateNode);
     void EndDelegate();
@@ -164,18 +164,17 @@ public:
     void ProcessTypeConceptAndFunctionRequests(const std::vector<TypeOrConceptRequest>& typeAndConceptRequests, const std::vector<FunctionRequest>& functionRequests);
     TypeSymbol* GetTypeByNameNoThrow(const std::u32string& typeName) const;
     TypeSymbol* GetTypeByName(const std::u32string& typeName) const;
-    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
-    ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<TypeSymbol*>& templateArgumentTypes,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    TypeSymbol* MakeDerivedType(TypeSymbol* baseType, const TypeDerivationRec& derivationRec);
+    ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const std::vector<TypeSymbol*>& templateArgumentTypes);
     ClassTemplateSpecializationSymbol* CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     ClassTemplateSpecializationSymbol* GetCurrentClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source);
     void AddClassTemplateSpecializationsToClassTemplateSpecializationMap(const std::vector<ClassTemplateSpecializationSymbol*>& classTemplateSpecializations);
-    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    ArrayTypeSymbol* MakeArrayType(TypeSymbol* elementType, int64_t size);
     const FunctionSymbol* MainFunctionSymbol() const { return mainFunctionSymbol; }
     FunctionSymbol* MainFunctionSymbol() { return mainFunctionSymbol; }
     void AddConversion(FunctionSymbol* conversion);
     void AddConversion(FunctionSymbol* conversion, Module* module);
-    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) const;
+    FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const;
     ConversionTable& GetConversionTable() { return conversionTable; }
     const ConversionTable& GetConversionTable() const { return conversionTable; }
     void AddPolymorphicClass(ClassTypeSymbol* polymorphicClass);
@@ -207,11 +206,7 @@ public:
     int NumSpecializationsNew() const { return numSpecializationsNew; }
     int NumSpecializationsCopied() const { return numSpecializationsCopied; }
     void Check();
-    FunctionSymbol* GetCreatedFunctionSymbol() { return createdFunctionSymbol; }
     void AddFunctionSymbol(std::unique_ptr<FunctionSymbol>&& functionSymbol);
-    void ResetCursorContainer() { cursorContainer = nullptr; }
-    ContainerSymbol* CursorContainer() const { return cursorContainer; }
-    void SetCursorContainer(const cmajor::ast::Node& node);
     int NextAxiomNumber() { return axiomNumber++; }
     void ResetAxiomNumber() { axiomNumber = 0; }
     void ResetAliasNodesAndNamespaceImports();
@@ -220,6 +215,12 @@ public:
     void AddAliasNode(cmajor::ast::AliasNode* aliasNode) { aliasNodes.push_back(aliasNode); }
     const std::vector<cmajor::ast::NamespaceImportNode*>& NamespaceImports() const { return namespaceImports; }
     void AddNamespaceImport(cmajor::ast::NamespaceImportNode* namespaceImport) { namespaceImports.push_back(namespaceImport); }
+    void PushInstantiatingTemplate();
+    void PushCurrentFileIndex(int32_t currentFileIndex_);
+    void PushCurrentModuleId(const util::uuid& currentModuleId_);
+    void PopInstantiatingTemplate();
+    void PopCurrentFileIndex();
+    void PopCurrentModuleId();
 private:
     Module* module;
     std::vector<util::uuid> derivationIds;
@@ -267,6 +268,12 @@ private:
     std::set<std::u32string> jsonClasses;
     int numSpecializationsCopied;
     int numSpecializationsNew;
+    bool instantiatingTemplate;
+    std::stack<bool> instantiatingTemplateStack;
+    int32_t currentFileIndex;
+    std::stack<int32_t> fileIndexStack;
+    util::uuid currentModuleId;
+    std::stack<util::uuid> moduleIdStack;
     int GetNextDeclarationBlockIndex() { return declarationBlockIndex++; }
     void ResetDeclarationBlockIndex() { declarationBlockIndex = 0; }
     void EmplaceTypeOrConceptRequest(SymbolReader& reader, Symbol* forSymbol, const util::uuid& typeId, int index);
@@ -274,7 +281,7 @@ private:
     void ReadSymbolDefinitionMap(SymbolReader& reader);
 };
 
-void InitCoreSymbolTable(SymbolTable& symbolTable);
+void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSpan, cmajor::ast::CompileUnitNode* rootCompileUnit);
 
 } // namespace cmajor::symbols
 

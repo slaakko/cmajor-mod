@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -27,7 +27,7 @@ enum class StringLiteralPrefix
 class LiteralNode : public Node
 {
 public:
-    LiteralNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    LiteralNode(NodeType nodeType_, const soul::ast::Span& span_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     void SetText(const std::u32string& text_);
@@ -36,16 +36,16 @@ private:
     std::u32string text;
 };
 
- LiteralNode* CreateIntegerLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t value, bool unsignedSuffix);
- LiteralNode* CreateFloatingLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, double value, bool float_);
- LiteralNode* CreateCharacterLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, char32_t value, CharLiteralPrefix prefix);
- LiteralNode* CreateStringLiteralNode(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, const std::u32string& value, StringLiteralPrefix prefix);
+ LiteralNode* CreateIntegerLiteralNode(const soul::ast::Span& span, uint64_t value, bool unsignedSuffix);
+ LiteralNode* CreateFloatingLiteralNode(const soul::ast::Span& span, double value, bool float_);
+ LiteralNode* CreateCharacterLiteralNode(const soul::ast::Span& span, char32_t value, CharLiteralPrefix prefix);
+ LiteralNode* CreateStringLiteralNode(const soul::ast::Span& span, const std::u32string& value, StringLiteralPrefix prefix);
 
 class BooleanLiteralNode : public LiteralNode
 {
 public:
-    BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    BooleanLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool value_);
+    BooleanLiteralNode(const soul::ast::Span& span_);
+    BooleanLiteralNode(const soul::ast::Span& span_, bool value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -59,8 +59,8 @@ private:
 class SByteLiteralNode : public LiteralNode
 {
 public:
-    SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    SByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int8_t value_);
+    SByteLiteralNode(const soul::ast::Span& span_);
+    SByteLiteralNode(const soul::ast::Span& span_, int8_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -74,8 +74,8 @@ private:
 class ByteLiteralNode : public LiteralNode
 {
 public:
-    ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ByteLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint8_t value_);
+    ByteLiteralNode(const soul::ast::Span& span_);
+    ByteLiteralNode(const soul::ast::Span& span_, uint8_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -89,8 +89,8 @@ private:
 class ShortLiteralNode : public LiteralNode
 {
 public:
-    ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int16_t value_);
+    ShortLiteralNode(const soul::ast::Span& span_);
+    ShortLiteralNode(const soul::ast::Span& span_, int16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -104,8 +104,8 @@ private:
 class UShortLiteralNode : public LiteralNode
 {
 public:
-    UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UShortLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint16_t value_);
+    UShortLiteralNode(const soul::ast::Span& span_);
+    UShortLiteralNode(const soul::ast::Span& span_, uint16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -119,8 +119,8 @@ private:
 class IntLiteralNode : public LiteralNode
 {
 public:
-    IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    IntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int32_t value_);
+    IntLiteralNode(const soul::ast::Span& span_);
+    IntLiteralNode(const soul::ast::Span& span_, int32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -135,8 +135,8 @@ private:
 class UIntLiteralNode : public LiteralNode
 {
 public:
-    UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UIntLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint32_t value_);
+    UIntLiteralNode(const soul::ast::Span& span_);
+    UIntLiteralNode(const soul::ast::Span& span_, uint32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -150,8 +150,8 @@ private:
 class LongLiteralNode : public LiteralNode
 {
 public:
-    LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    LongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int64_t value_);
+    LongLiteralNode(const soul::ast::Span& span_);
+    LongLiteralNode(const soul::ast::Span& span_, int64_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -165,8 +165,8 @@ private:
 class ULongLiteralNode : public LiteralNode
 {
 public:
-    ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    ULongLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint64_t value_);
+    ULongLiteralNode(const soul::ast::Span& span_);
+    ULongLiteralNode(const soul::ast::Span& span_, uint64_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -180,8 +180,8 @@ private:
 class FloatLiteralNode : public LiteralNode
 {
 public:
-    FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    FloatLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, float value_);
+    FloatLiteralNode(const soul::ast::Span& span_);
+    FloatLiteralNode(const soul::ast::Span& span_, float value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -195,8 +195,8 @@ private:
 class DoubleLiteralNode : public LiteralNode
 {
 public:
-    DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    DoubleLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, double value_);
+    DoubleLiteralNode(const soul::ast::Span& span_);
+    DoubleLiteralNode(const soul::ast::Span& span_, double value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -210,8 +210,8 @@ private:
 class CharLiteralNode : public LiteralNode
 {
 public:
-    CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    CharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char value_);
+    CharLiteralNode(const soul::ast::Span& span_);
+    CharLiteralNode(const soul::ast::Span& span_, char value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -225,8 +225,8 @@ private:
 class WCharLiteralNode : public LiteralNode
 {
 public:
-    WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    WCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char16_t value_);
+    WCharLiteralNode(const soul::ast::Span& span_);
+    WCharLiteralNode(const soul::ast::Span& span_, char16_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -240,8 +240,8 @@ private:
 class UCharLiteralNode : public LiteralNode
 {
 public:
-    UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UCharLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char32_t value_);
+    UCharLiteralNode(const soul::ast::Span& span_);
+    UCharLiteralNode(const soul::ast::Span& span_, char32_t value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -255,8 +255,8 @@ private:
 class StringLiteralNode : public LiteralNode
 {
 public:
-    StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    StringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::string& value_);
+    StringLiteralNode(const soul::ast::Span& span_);
+    StringLiteralNode(const soul::ast::Span& span_, const std::string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -270,8 +270,8 @@ private:
 class WStringLiteralNode : public LiteralNode
 {
 public:
-    WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    WStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u16string& value_);
+    WStringLiteralNode(const soul::ast::Span& span_);
+    WStringLiteralNode(const soul::ast::Span& span_, const std::u16string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -285,8 +285,8 @@ private:
 class UStringLiteralNode : public LiteralNode
 {
 public:
-    UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UStringLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const std::u32string& value_);
+    UStringLiteralNode(const soul::ast::Span& span_);
+    UStringLiteralNode(const soul::ast::Span& span_, const std::u32string& value_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -300,7 +300,7 @@ private:
 class NullLiteralNode : public LiteralNode
 {
 public:
-    NullLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    NullLiteralNode(const soul::ast::Span& span_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     std::string ToString() const override { return "null"; }
@@ -309,7 +309,7 @@ public:
 class ArrayLiteralNode : public LiteralNode
 {
 public:
-    ArrayLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    ArrayLiteralNode(const soul::ast::Span& span_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -325,7 +325,7 @@ private:
 class StructuredLiteralNode : public LiteralNode
 {
 public:
-    StructuredLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    StructuredLiteralNode(const soul::ast::Span& span_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -341,8 +341,8 @@ private:
 class UuidLiteralNode : public LiteralNode
 {
 public:
-    UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UuidLiteralNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, const util::uuid& uuid_);
+    UuidLiteralNode(const soul::ast::Span& span_);
+    UuidLiteralNode(const soul::ast::Span& span_, const util::uuid& uuid_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

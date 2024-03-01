@@ -1,11 +1,11 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.warning;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import std.core;
 import util.uuid;
 
@@ -19,17 +19,15 @@ public:
     Warning(const std::u32string& project_, const std::string& message_);
     const std::u32string& Project() const { return project; }
     const std::string& Message() const { return message; }
-    const soul::ast::SourcePos& Defined() const { return defined; }
-    void SetDefined(const soul::ast::SourcePos& defined_, const util::uuid& definedModuleId_) { defined = defined_; definedModuleId = definedModuleId_; }
-    const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& References() const { return references; }
-    void SetReferences(const std::vector<std::pair<soul::ast::SourcePos, util::uuid>>& references_);
-    //std::unique_ptr<JsonValue> ToJson() const;
+    const soul::ast::FullSpan& Defined() const { return defined; }
+    void SetDefined(const soul::ast::FullSpan& defined_) { defined = defined_; }
+    const std::vector<soul::ast::FullSpan>& References() const { return references; }
+    void SetReferences(const std::vector<soul::ast::FullSpan>& references_);
 private:
     std::u32string project;
     std::string message;
-    soul::ast::SourcePos defined;
-    util::uuid definedModuleId;
-    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
+    soul::ast::FullSpan defined;
+    std::vector<soul::ast::FullSpan> references;
 };
 
 class CompileWarningCollection

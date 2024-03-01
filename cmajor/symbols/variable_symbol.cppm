@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ export module cmajor.symbols.variable.symbol;
 import cmajor.ast.specifier;
 import cmajor.ast.parameter;
 import cmajor.ir.emitter;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.xml.element;
 import cmajor.symbols.symbol;
 import cmajor.symbols.value;
@@ -20,7 +20,7 @@ export namespace cmajor::symbols {
 class VariableSymbol : public Symbol
 {
 public:
-    VariableSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    VariableSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
     bool IsVariableSymbol() const override { return true; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
@@ -41,7 +41,7 @@ private:
 class ParameterSymbol : public VariableSymbol
 {
 public:
-    ParameterSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ParameterSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
@@ -63,7 +63,7 @@ private:
 class LocalVariableSymbol : public VariableSymbol
 {
 public:
-    LocalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    LocalVariableSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     bool IsExportSymbol() const override { return false; }
     std::unique_ptr<soul::xml::Element> CreateDomElement(TypeMap& typeMap) override;
@@ -76,7 +76,7 @@ public:
 class MemberVariableSymbol : public VariableSymbol
 {
 public:
-    MemberVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    MemberVariableSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;
@@ -102,7 +102,7 @@ class GlobalVariableSymbol;
 class GlobalVariableGroupSymbol : public Symbol
 {
 public:
-    GlobalVariableGroupSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    GlobalVariableGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsExportSymbol() const override { return false; }
     std::string TypeString() const override { return "global_variable_group"; }
     void ComputeMangledName() override;
@@ -124,9 +124,9 @@ private:
 class GlobalVariableSymbol : public VariableSymbol
 {
 public:
-    GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& groupName_, 
+    GlobalVariableSymbol(const soul::ast::Span& span_, const std::u32string& groupName_, 
        const std::string& compileUnitId, const std::string& compileUnitFilePath_);
-    GlobalVariableSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    GlobalVariableSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     bool IsExportSymbol() const override;

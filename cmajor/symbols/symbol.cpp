@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -169,18 +169,18 @@ bool operator<(const SymbolLocation& left, const SymbolLocation& right)
     if (left.moduleId > right.moduleId) return false;
     if (left.fileIndex < right.fileIndex) return true;
     if (left.fileIndex > right.fileIndex) return false;
-    if (left.line < right.line) return true;
-    if (left.line > right.line) return false;
-    return left.scol < right.scol;
+    if (left.span.pos < right.span.pos) return true;
+    if (left.span.pos > right.span.pos) return false;
+    return left.span.len < right.span.len;
 }
 
-SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module* module)
+SymbolLocation MakeSymbolLocation(const soul::ast::Span& span, Module* module, int fileIndex)
 {
-     return SymbolLocation(module->Id(), sourcePos.file, sourcePos.line, sourcePos.col);
+     return SymbolLocation(module->Id(), fileIndex, span);
 }
 
-Symbol::Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    symbolType(symbolType_), sourcePos(sourcePos_), sourceModuleId(sourceModuleId_), name(name_), 
+Symbol::Symbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_) :
+    symbolType(symbolType_), span(span_), fileIndex(-1), moduleId(util::nil_uuid()), name(name_), 
     flags(SymbolFlags::project), parent(nullptr), module(nullptr), compileUnit(nullptr), symbolIndex(-1)
 {
 }
@@ -192,6 +192,8 @@ Symbol::~Symbol()
 void Symbol::Write(SymbolWriter& writer)
 {
     SymbolFlags f = flags & ~(SymbolFlags::project | SymbolFlags::installed);
+    writer.GetBinaryStreamWriter().Write(fileIndex);
+    writer.GetBinaryStreamWriter().Write(moduleId);
     writer.GetBinaryStreamWriter().Write(static_cast<uint8_t>(f));
     writer.GetBinaryStreamWriter().Write(mangledName);
     bool hasAttributes = attributes != nullptr;
@@ -204,6 +206,8 @@ void Symbol::Write(SymbolWriter& writer)
 
 void Symbol::Read(SymbolReader& reader)
 {
+    fileIndex = reader.GetBinaryStreamReader().ReadInt();
+    reader.GetBinaryStreamReader().ReadUuid(moduleId);
     flags = static_cast<SymbolFlags>(reader.GetBinaryStreamReader().ReadByte());
     if (reader.SetProjectBit())
     {
@@ -308,8 +312,7 @@ std::string Symbol::Syntax() const
 void Symbol::CopyFrom(const Symbol* that)
 {
     symbolType = that->symbolType;
-    sourcePos = that->sourcePos;
-    sourceModuleId = that->sourceModuleId;
+    span = that->span;
     name = that->name;
     flags = that->flags;
     mangledName = that->mangledName;
@@ -366,7 +369,7 @@ void Symbol::SetAccess(cmajor::ast::Specifiers accessSpecifiers)
         }
         else
         {
-            throw Exception("only class members can have protected access", GetSourcePos(), SourceModuleId());
+            throw Exception("only class members can have protected access", GetFullSpan());
         }
     }
     else if (accessSpecifiers == cmajor::ast::Specifiers::internal_)
@@ -381,12 +384,12 @@ void Symbol::SetAccess(cmajor::ast::Specifiers accessSpecifiers)
         }
         else
         {
-            throw Exception("only class members and global variables can have private access", GetSourcePos(), SourceModuleId());
+            throw Exception("only class members and global variables can have private access", GetFullSpan());
         }
     }
     else if (accessSpecifiers != cmajor::ast::Specifiers::none)
     {
-        throw Exception("invalid combination of access specifiers: " + SpecifierStr(accessSpecifiers), GetSourcePos(), SourceModuleId());
+        throw Exception("invalid combination of access specifiers: " + SpecifierStr(accessSpecifiers), GetFullSpan());
     }
     SetAccess(access);
 }
@@ -438,7 +441,7 @@ const NamespaceSymbol* Symbol::Ns() const
         }
         else
         {
-            throw Exception("namespace symbol not found", GetSourcePos(), SourceModuleId());
+            throw Exception("namespace symbol not found", GetFullSpan());
         }
     }
 }
@@ -466,7 +469,7 @@ NamespaceSymbol* Symbol::Ns()
         }
         else
         {
-            throw Exception("namespace symbol not found", GetSourcePos(), SourceModuleId());
+            throw Exception("namespace symbol not found", GetFullSpan());
         }
     }
 }
@@ -758,7 +761,7 @@ const ClassTypeSymbol* Symbol::Class() const
     }
     else
     {
-        throw Exception("class type symbol not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class type symbol not found", GetFullSpan());
     }
 }
 
@@ -771,7 +774,7 @@ ClassTypeSymbol* Symbol::Class()
     }
     else
     {
-        throw Exception("class type symbol not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class type symbol not found", GetFullSpan());
     }
 }
 
@@ -908,7 +911,7 @@ const FunctionSymbol* Symbol::Function() const
     }
     else
     {
-        throw Exception("function symbol not found", GetSourcePos(), SourceModuleId());
+        throw Exception("function symbol not found", GetFullSpan());
     }
 }
 
@@ -921,7 +924,7 @@ FunctionSymbol* Symbol::Function()
     }
     else
     {
-        throw Exception("function symbol not found", GetSourcePos(), SourceModuleId());
+        throw Exception("function symbol not found", GetFullSpan());
     }
 }
 
@@ -958,7 +961,7 @@ const ContainerScope* Symbol::ClassOrNsScope() const
     }
     else
     {
-        throw Exception("class or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -971,7 +974,7 @@ ContainerScope* Symbol::ClassOrNsScope()
     }
     else
     {
-        throw Exception("class or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -984,7 +987,7 @@ const ContainerScope* Symbol::ClassInterfaceOrNsScope() const
     }
     else
     {
-        throw Exception("class, interface or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class, interface or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -997,7 +1000,7 @@ ContainerScope* Symbol::ClassInterfaceOrNsScope()
     }
     else
     {
-        throw Exception("class, interface or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class, interface or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -1010,7 +1013,7 @@ const ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope() const
     }
     else
     {
-        throw Exception("class, interface, enumeration, delegate, class delegate or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class, interface, enumeration, delegate, class delegate or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -1023,7 +1026,7 @@ ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope()
     }
     else
     {
-        throw Exception("class, interface, enumeration, delegate, class delegate or namespace scope not found", GetSourcePos(), SourceModuleId());
+        throw Exception("class, interface, enumeration, delegate, class delegate or namespace scope not found", GetFullSpan());
     }
 }
 
@@ -1079,10 +1082,53 @@ std::string Symbol::GetSymbolHelp() const
 
 bool Symbol::GetLocation(SymbolLocation& definitionLocation) const
 {
-    Module* sourceModule = GetModuleById(sourceModuleId);
+    Module* sourceModule = GetModuleById(ModuleId());
     if (!sourceModule) return false;
-    definitionLocation = SymbolLocation(sourceModule->Id(), sourcePos.file, sourcePos.line, sourcePos.col);
+    definitionLocation = SymbolLocation(sourceModule->Id(), FileIndex(), GetSpan());
     return true;
+}
+
+void Symbol::SetModuleId(const util::uuid& moduleId_)
+{
+    moduleId = moduleId_;
+}
+
+const util::uuid& Symbol::ModuleId() const
+{
+    if (!moduleId.is_nil())
+    {
+        return moduleId;
+    }
+    else if (parent)
+    {
+        return parent->ModuleId();
+    }
+    else
+    {
+        static util::uuid emptyId;
+        return emptyId;
+    }
+}
+
+int Symbol::FileIndex() const
+{
+    if (fileIndex != -1)
+    {
+        return fileIndex;
+    }
+    else if (parent)
+    {
+        return parent->FileIndex();
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+soul::ast::FullSpan Symbol::GetFullSpan() const
+{
+    return soul::ast::FullSpan(ModuleId(), FileIndex(), GetSpan());
 }
 
 std::unique_ptr<Symbol> Symbol::RemoveMember(int symbolIndex)
@@ -1104,9 +1150,9 @@ template<typename SymbolT>
 class ConcreteSymbolCreator : public SymbolCreator
 {
 public:
-    Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name) override
+    Symbol* CreateSymbol(const soul::ast::Span& span, const std::u32string& name) override
     {
-        return new SymbolT(sourcePos, sourceModuleId, name);
+        return new SymbolT(span, name);
     }
 };
 
@@ -1269,12 +1315,12 @@ SymbolFactory::SymbolFactory()
 #endif
 }
 
-Symbol* SymbolFactory::CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name)
+Symbol* SymbolFactory::CreateSymbol(SymbolType symbolType, const soul::ast::Span& span, const std::u32string& name)
 {
     const std::unique_ptr<SymbolCreator>& symbolCreator = symbolCreators[static_cast<uint8_t>(symbolType)];
     if (symbolCreator)
     {
-        Symbol* symbol = symbolCreator->CreateSymbol(sourcePos, sourceModuleId, name);
+        Symbol* symbol = symbolCreator->CreateSymbol(span, name);
         if (symbol)
         {
             return symbol;

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.enumeration.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -25,12 +26,12 @@ parser EnumerationParser
     using TypeExprParser.TypeExpr;
     using ExpressionParser.Expression;
 
-    EnumType(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode, var soul::ast::SourcePos s) : cmajor::ast::EnumTypeNode*
+    EnumType(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode, var soul::ast::Span s) : cmajor::ast::EnumTypeNode*
         ::= 
         (   
-            Specifiers:specifiers{ s = lexer.GetSourcePos(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             ENUM 
-            Identifier(context):enumTypeId{ enumTypeNode.reset(new cmajor::ast::EnumTypeNode(s, context->ModuleId(), specifiers, enumTypeId)); }
+            Identifier(context):enumTypeId{ enumTypeNode.reset(new cmajor::ast::EnumTypeNode(s, specifiers, enumTypeId)); }
             (
                 UnderlyingType(context):underlyingType{ enumTypeNode->SetUnderlyingType(underlyingType); }
             )?
@@ -61,19 +62,19 @@ parser EnumerationParser
         )
         ;
 
-    EnumConstant(cmajor::parser::context::Context* context, cmajor::ast::EnumTypeNode* enumType, var soul::ast::SourcePos s) : cmajor::ast::EnumConstantNode*
+    EnumConstant(cmajor::parser::context::Context* context, cmajor::ast::EnumTypeNode* enumType, var soul::ast::Span s) : cmajor::ast::EnumConstantNode*
         ::= 
-        (   Identifier(context):constantId{ s = lexer.GetSourcePos(pos); }
+        (   Identifier(context):constantId{ s = lexer.GetSpan(pos); }
             (
                 ASSIGN Expression(context):constantValue
                 { 
-                    cmajor::ast::EnumConstantNode* enumConstant = new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId, constantValue);
+                    cmajor::ast::EnumConstantNode* enumConstant = new cmajor::ast::EnumConstantNode(s, constantId, constantValue);
                     enumConstant->SetHasValue();
                     return enumConstant;
                 }
             |   empty
                 {
-                    return new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId, cmajor::ast::MakeNextEnumConstantValue(s, context->ModuleId(), enumType));
+                    return new cmajor::ast::EnumConstantNode(s, constantId, cmajor::ast::MakeNextEnumConstantValue(s, enumType));
                 }
             )
         )

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -549,13 +549,13 @@ void* CppEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t v
     return nullptr;
 }
 
-void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, const std::vector<void*>& enumConstantElements,
+void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
     uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     return nullptr;
 }
 
-void* CppEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* CppEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
 {
     return nullptr;
 }
@@ -565,7 +565,7 @@ uint64_t CppEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
     return uint64_t();
 }
 
-void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSpan, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
+void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
     const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
@@ -593,7 +593,7 @@ void CppEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVar
 {
 }
 
-void* CppEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* CppEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     return nullptr;
 }
@@ -637,7 +637,11 @@ uint64_t CppEmitter::GetAlignmentInBits(void* irType)
     return 0;
 }
 
-void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& span)
+void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+{
+}
+
+void CppEmitter::SetCurrentDebugLocation(const soul::ast::Span& span)
 {
 }
 
@@ -1185,7 +1189,7 @@ void* CppEmitter::CreateCall(void* functionType, void* callee, const std::vector
     return context->CreateCall(calleeValue, argInsts);
 }
 
-void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     for (void* arg : args)
@@ -1228,7 +1232,7 @@ void* CppEmitter::CreateInvoke(void* functionType, void* callee, void* normalBlo
 }
 
 void* CppEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, 
-    const std::vector<void*>& bundles, const soul::ast::SourcePos& span)
+    const std::vector<void*>& bundles)
 {
     return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }

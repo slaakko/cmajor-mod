@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -31,7 +31,7 @@ soul::parser::Match ParseConstant(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::ConstKeywordNode> constKeyword;
     if (*lexer == CONST)
     {
-        constKeyword.reset(new cmajor::fault::tolerant::ast::ConstKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        constKeyword.reset(new cmajor::fault::tolerant::ast::ConstKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -61,7 +61,7 @@ soul::parser::Match ParseConstant(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::AssignNode> assign;
     if (*lexer == ASSIGN)
     {
-        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -81,7 +81,7 @@ soul::parser::Match ParseConstant(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
     if (*lexer == SEMICOLON)
     {
-        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -32,7 +32,7 @@ struct NativeModule
 };
 
 CppCodeGenerator::CppCodeGenerator(cmajor::ir::Emitter* emitter_) :
-    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr),
+    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fileIndex(-1),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
@@ -76,6 +76,7 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.LLFilePath(), ".cpp");
     NativeModule nativeModule(emitter, intermediateFilePath);
     compileUnitId = boundCompileUnit.Id();
@@ -176,7 +177,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (functionSymbol->HasSource())
     {
         generateLineNumbers = true;
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundFunction.Body()->GetSourcePos()); 
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundFunction.Body()->GetSpan(), fileIndex); 
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     else
@@ -200,11 +201,9 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         void* comdat = emitter->GetOrInsertAnyFunctionComdat(util::ToUtf8(functionSymbol->MangledName()), function);
         emitter->SetFunctionLinkageToLinkOnceODRLinkage(function);
     }
-    int32_t fileIndex = -1;
     util::uuid functionId;
     if (functionSymbol->HasSource())
     {
-        fileIndex = functionSymbol->GetSourcePos().file;
         functionId = functionSymbol->FunctionId();
         module->GetFunctionIndex().AddFunction(functionId, functionSymbol);
         if (functionSymbol == module->GetSymbolTable().MainFunctionSymbol())
@@ -212,7 +211,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             module->GetFunctionIndex().SetMainFunctionId(functionId);
         }
     }
-    emitter->SetFunction(function, fileIndex, functionSymbol->SourceModuleId(), functionId);
+    emitter->SetFunction(function, fileIndex, functionSymbol->ModuleId(), functionId);
     emitter->SetFunctionName(util::ToUtf8(functionSymbol->FullName()));
     void* entryBlock = emitter->CreateBasicBlock("entry");
     if (functionSymbol->HasSource())
@@ -313,7 +312,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, boundFunction.Body()->GetSourcePos(), boundFunction.Body()->ModuleId());
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -325,12 +324,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
             cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+            paramValue.SetType(interfaceType->AddPointer());
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+            argumentValue.SetType(interfaceType->AddPointer());
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, boundFunction.Body()->GetSourcePos(), boundFunction.Body()->ModuleId());
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
         }
         else
         {
@@ -364,7 +363,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
             if (generateLineNumbers)
             {
-                cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), body->EndSourcePos());
+                cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), body->EndSpan(), fileIndex);
                 emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
             }
             int16_t functionScopeId = emitter->GetCurrentScopeId();
@@ -379,7 +378,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         {
             if (generateLineNumbers)
             {
-                cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), body->EndSourcePos());
+                cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), body->EndSpan(), fileIndex);
                 emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
             }
             int16_t functionScopeId = emitter->GetCurrentScopeId();
@@ -403,7 +402,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCompoundStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCompoundStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         emitter->BeginScope();
         scopeIdMap[&boundCompoundStatement] = emitter->GetCurrentScopeId();
@@ -430,7 +429,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
     currentBlock = &boundCompoundStatement;
     blockDestructionMap[currentBlock] = std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>>();
     blocks.push_back(currentBlock);
-    SetLineNumber(boundCompoundStatement.GetSourcePos().line);
+    //SetLineNumber(boundCompoundStatement.GetSourcePos().line); TODO
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
     {
@@ -440,7 +439,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
     if (generateLineNumbers)
     {
         emitter->BeginInstructionFlag(static_cast<int16_t>(cmajor::debug::InstructionFlags::endBrace));
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCompoundStatement.EndSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCompoundStatement.EndSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         int32_t nopNodeId = emitter->AddControlFlowGraphNode();
         emitter->CreateNop();
@@ -490,7 +489,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundReturnStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundReturnStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -513,7 +512,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
         if (generateLineNumbers)
         {
             emitter->BeginInstructionFlag(static_cast<int16_t>(cmajor::debug::InstructionFlags::endBrace));
-            cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), currentBlock->EndSourcePos());
+            cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), currentBlock->EndSpan(), fileIndex);
             emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
             retNodeId = emitter->AddControlFlowGraphNode();
         }
@@ -537,7 +536,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
         if (generateLineNumbers)
         {
             emitter->BeginInstructionFlag(static_cast<int16_t>(cmajor::debug::InstructionFlags::endBrace));
-            cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), currentBlock->EndSourcePos());
+            cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), currentBlock->EndSpan(), fileIndex);
             emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
             retNodeId = emitter->AddControlFlowGraphNode();
         }
@@ -572,7 +571,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCa
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoCaseStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoCaseStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -600,7 +599,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCa
     }
     else
     {
-        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetSourcePos(), boundGotoCaseStatement.ModuleId());
+        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetFullSpan());
     }
 }
 
@@ -608,7 +607,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGot
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoDefaultStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoDefaultStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -633,7 +632,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGot
     }
     else
     {
-        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetSourcePos(), boundGotoDefaultStatement.ModuleId());
+        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetFullSpan());
     }
 }
 
@@ -641,7 +640,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakStat
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundBreakStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundBreakStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -673,7 +672,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundContin
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundContinueStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundContinueStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -704,7 +703,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatem
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -731,7 +730,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatem
     }
     else
     {
-        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetSourcePos(), boundGotoStatement.ModuleId());
+        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetFullSpan());
     }
     void* nextBlock = emitter->CreateBasicBlock("next");
     emitter->SetCurrentBasicBlock(nextBlock);
@@ -762,7 +761,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
     if (generateLineNumbers)
     {
         condNodeId = emitter->AddControlFlowGraphNode();
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundIfStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundIfStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     boundIfStatement.Condition()->Accept(*this);
@@ -817,7 +816,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStat
     {
         condNodeId = emitter->AddControlFlowGraphNode();
         continueTargetNodeId = condNodeId;
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundWhileStatement.Condition()->GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundWhileStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     boundWhileStatement.Condition()->Accept(*this);
@@ -871,7 +870,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
     if (generateLineNumbers)
     {
         doNodeId = emitter->AddControlFlowGraphNode();
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDoStatement.Statement()->GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDoStatement.Statement()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         emitter->CreateNop();
         prevControlFlowGraphNodeId = doNodeId;
@@ -887,7 +886,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
     {
         condNodeId = emitter->AddControlFlowGraphNode();
         continueTargetNodeId = condNodeId;
-        cmajor::debug::SourceSpan condSpan = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDoStatement.Condition()->GetSourcePos());
+        cmajor::debug::SourceSpan condSpan = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDoStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(condSpan.line, condSpan.scol, condSpan.ecol);
     }
     boundDoStatement.Condition()->Accept(*this);
@@ -940,7 +939,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatemen
     if (generateLineNumbers)
     {
         condNodeId = emitter->AddControlFlowGraphNode();
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundForStatement.Condition()->GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundForStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     boundForStatement.Condition()->Accept(*this);
@@ -994,7 +993,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchSt
     if (generateLineNumbers)
     {
         condNodeId = emitter->AddControlFlowGraphNode();
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundSwitchStatement.Condition()->GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundSwitchStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     boundSwitchStatement.Condition()->Accept(*this);
@@ -1066,7 +1065,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatem
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCaseStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCaseStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1088,12 +1087,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatem
         }
         else
         {
-            throw cmajor::symbols::Exception("case not found", boundCaseStatement.GetSourcePos(), boundCaseStatement.ModuleId());
+            throw cmajor::symbols::Exception("case not found", boundCaseStatement.GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("no cases", boundCaseStatement.GetSourcePos(), boundCaseStatement.ModuleId());
+        throw cmajor::symbols::Exception("no cases", boundCaseStatement.GetFullSpan());
     }
 
 }
@@ -1102,7 +1101,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefault
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDefaultStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDefaultStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1119,7 +1118,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefault
     }
     else
     {
-        throw cmajor::symbols::Exception("no default destination", boundDefaultStatement.GetSourcePos(), boundDefaultStatement.ModuleId());
+        throw cmajor::symbols::Exception("no default destination", boundDefaultStatement.GetFullSpan());
     }
 }
 
@@ -1127,7 +1126,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundConstructionStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundConstructionStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         cmajor::symbols::LocalVariableSymbol* localVariable = boundConstructionStatement.GetLocalVariable();
         if (localVariable)
@@ -1161,7 +1160,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(boundConstructionStatement.GetSourcePos(), boundConstructionStatement.ModuleId())->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
@@ -1174,7 +1173,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
                         tryIndexMap[numTriesInCurrentBlock] = tryIndex;
                         tryIndexCleanupTryBlockMap[tryIndex] = cleanupTry;
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
-                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSourcePos(), currentBlock->ModuleId(), classType->Destructor()));
+                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), classType->Destructor()));
                         destructorCall->AddArgument(std::move(classPtrArgument));
                         GenerateCleanup(tryIndex, destructorCall.get());
                         Assert(currentBlock, "current block not set");
@@ -1201,7 +1200,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssi
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundAssignmentStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundAssignmentStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1233,7 +1232,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpr
 {
     if (generateLineNumbers && !boundExpressionStatement.IgnoreNode())
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundExpressionStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundExpressionStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1286,7 +1285,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStat
 {
     if (generateLineNumbers && !boundEmptyStatement.IgnoreNode())
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundEmptyStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundEmptyStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1340,7 +1339,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStat
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundThrowStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundThrowStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1369,7 +1368,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundTryStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundTryStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1410,7 +1409,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
         handleExceptionParamTypes.push_back(emitter->GetIrTypeForVoidPtrType());
         void* handleExceptionFunctionType = emitter->GetIrTypeForFunction(emitter->GetIrTypeForBool(), handleExceptionParamTypes);
         std::vector<void*> handleExceptionArgs;
-        cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSourcePos(), boundCatchStatement->ModuleId(), boundCatchStatement->CatchTypeUuidId());
+        cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
         void* catchTypeIdValue = uuidValue.IrValue(*emitter);
         handleExceptionArgs.push_back(catchTypeIdValue);
         void* handleException = emitter->GetOrInsertFunction("RtHandleException", handleExceptionFunctionType, true);
@@ -1460,7 +1459,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrow
 {
     if (generateLineNumbers)
     {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundRethrowStatement.GetSourcePos());
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundRethrowStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     destructorCallGenerated = false;
@@ -1708,7 +1707,7 @@ void CppCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStatemen
     }
     else
     {
-        throw cmajor::symbols::Exception("target for labeled statement not found", labeledStatement->GetSourcePos(), labeledStatement->ModuleId());
+        throw cmajor::symbols::Exception("target for labeled statement not found", labeledStatement->GetFullSpan());
     }
 }
 
@@ -1942,9 +1941,9 @@ void CppCodeGenerator::SetLineNumber(int32_t lineNumber)
     }
 }
 
-std::string CppCodeGenerator::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::string CppCodeGenerator::GetSourceFilePath(const util::uuid& moduleId)
 {
-    return cmajor::symbols::GetSourceFilePath(sourcePos.file, moduleId);
+    return cmajor::symbols::GetSourceFilePath(fileIndex, moduleId);
 }
 
 void CppCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
@@ -1992,28 +1991,25 @@ void CppCodeGenerator::GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompi
     emitter->SetCurrentBasicBlock(entryBlock);
     for (cmajor::symbols::FunctionSymbol* compileUnitFunction : compileUnitFunctions)
     {
-        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(), addCompileUnitFunctionSymbol));
+        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(
+            compileUnitFunction->GetSpan(), addCompileUnitFunctionSymbol));
         cmajor::binder::BoundBitCast* functionPtrAsVoidPtr = new cmajor::binder::BoundBitCast(std::unique_ptr<cmajor::binder::BoundExpression>(
-            new cmajor::binder::BoundFunctionPtr(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(), compileUnitFunction, 
-                symbolTable->GetTypeByName(U"void")->AddPointer(
-                compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()))),
-            symbolTable->GetTypeByName(U"void")->AddPointer(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
+            new cmajor::binder::BoundFunctionPtr(compileUnitFunction->GetSpan(), compileUnitFunction, 
+                symbolTable->GetTypeByName(U"void")->AddPointer())),
+            symbolTable->GetTypeByName(U"void")->AddPointer());
         boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(functionPtrAsVoidPtr));
         std::string functionName = util::ToUtf8(compileUnitFunction->FullName());
         int functionNameStringId = Install(functionName);
         cmajor::binder::BoundLiteral* boundFunctionNameLiteral = new cmajor::binder::BoundLiteral(
-            std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(),
+            std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(compileUnitFunction->GetSpan(),
             functionNameStringId, functionName)),
-            symbolTable->GetTypeByName(U"char")->AddConst(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId())->AddPointer(
-                compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
+            symbolTable->GetTypeByName(U"char")->AddConst()->AddPointer());
         boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundFunctionNameLiteral));
-        std::string sourceFilePath = GetSourceFilePath(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId());
+        std::string sourceFilePath = GetSourceFilePath(compileUnitFunction->ModuleId());
         int sourceFilePathStringId = Install(sourceFilePath);
         cmajor::binder::BoundLiteral* boundSourceFilePathLiteral = new cmajor::binder::BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
-            new cmajor::symbols::StringValue(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(),
-            sourceFilePathStringId, sourceFilePath)),
-            symbolTable->GetTypeByName(U"char")->AddConst(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId())->AddPointer(
-                compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
+            new cmajor::symbols::StringValue(compileUnitFunction->GetSpan(), sourceFilePathStringId, sourceFilePath)),
+            symbolTable->GetTypeByName(U"char")->AddConst()->AddPointer());
         boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundSourceFilePathLiteral));
         boundFunctionCall->Accept(*this);
     }
@@ -2026,8 +2022,8 @@ void CppCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundComp
     emitter->SetCurrentSourcePos(0, 0, 0);
     cmajor::symbols::FunctionSymbol* initCompileUnitFunctionSymbol = boundCompileUnit.GetInitCompileUnitFunctionSymbol();
     if (!initCompileUnitFunctionSymbol) return;
-    soul::ast::SourcePos sourcePos = initCompileUnitFunctionSymbol->GetSourcePos();
-    util::uuid moduleId = initCompileUnitFunctionSymbol->SourceModuleId();
+    soul::ast::Span span = initCompileUnitFunctionSymbol->GetSpan();
+    util::uuid moduleId = initCompileUnitFunctionSymbol->ModuleId();
     void* functionType = initCompileUnitFunctionSymbol->IrType(*emitter);
     void* function = emitter->GetOrInsertFunction(util::ToUtf8(initCompileUnitFunctionSymbol->MangledName()), functionType, true);
     emitter->SetFunction(function, -1, util::nil_uuid(), util::nil_uuid());
@@ -2043,13 +2039,12 @@ void CppCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundComp
     cmajor::symbols::FunctionSymbol* pushCompileUnitUnwindInfoInitFunctionSymbol = boundCompileUnit.GetPushCompileUnitUnwindInfoInitFunctionSymbol();
     cmajor::symbols::TypeSymbol* initUnwindInfoDelegateType = boundCompileUnit.GetInitUnwindInfoDelegateType();
     cmajor::symbols::GlobalVariableSymbol* compileUnitUnwindInfoVarSymbol = boundCompileUnit.GetCompileUnitUnwindInfoVarSymbol();
-    cmajor::binder::BoundGlobalVariable* boundCompileUnitUnwindInfoVar = new cmajor::binder::BoundGlobalVariable(sourcePos, moduleId, compileUnitUnwindInfoVarSymbol);
+    cmajor::binder::BoundGlobalVariable* boundCompileUnitUnwindInfoVar = new cmajor::binder::BoundGlobalVariable(span, compileUnitUnwindInfoVarSymbol);
     cmajor::binder::BoundAddressOfExpression* unwindInfoVarAddress = new cmajor::binder::BoundAddressOfExpression(std::unique_ptr<cmajor::binder::BoundExpression>(
-        boundCompileUnitUnwindInfoVar),
-        boundCompileUnitUnwindInfoVar->GetType()->AddPointer(sourcePos, moduleId));
-    cmajor::binder::BoundFunctionPtr* boundInitUnwindInfoFunction = new cmajor::binder::BoundFunctionPtr(sourcePos, moduleId, initUnwindInfoFunctionSymbol, 
+        boundCompileUnitUnwindInfoVar), boundCompileUnitUnwindInfoVar->GetType()->AddPointer());
+    cmajor::binder::BoundFunctionPtr* boundInitUnwindInfoFunction = new cmajor::binder::BoundFunctionPtr(span, initUnwindInfoFunctionSymbol, 
         initUnwindInfoDelegateType);
-    std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(sourcePos, moduleId, pushCompileUnitUnwindInfoInitFunctionSymbol));
+    std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(span, pushCompileUnitUnwindInfoInitFunctionSymbol));
     boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundInitUnwindInfoFunction));
     boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(unwindInfoVarAddress));
     boundFunctionCall->Accept(*this);
@@ -2062,8 +2057,8 @@ void CppCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUn
     emitter->SetCurrentSourcePos(0, 0, 0);
     cmajor::symbols::FunctionSymbol* globalInitFunctionSymbol = boundCompileUnit.GetGlobalInitializationFunctionSymbol();
     if (!globalInitFunctionSymbol) return;
-    soul::ast::SourcePos sourcePos = globalInitFunctionSymbol->GetSourcePos();
-    util::uuid moduleId = globalInitFunctionSymbol->SourceModuleId();
+    soul::ast::Span span = globalInitFunctionSymbol->GetSpan();
+    util::uuid moduleId = globalInitFunctionSymbol->ModuleId();
     void* functionType = globalInitFunctionSymbol->IrType(*emitter);
     void* function = emitter->GetOrInsertFunction(util::ToUtf8(globalInitFunctionSymbol->MangledName()), functionType, true);
     emitter->SetFunction(function, -1, util::nil_uuid(), util::nil_uuid());
@@ -2073,7 +2068,7 @@ void CppCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUn
     const std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>>& allCompileUnitInitFunctionSymbols = boundCompileUnit.AllCompileUnitInitFunctionSymbols();
     for (const std::unique_ptr<cmajor::symbols::FunctionSymbol>& initCompileUnitFunctionSymbol : allCompileUnitInitFunctionSymbols)
     {
-        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(sourcePos, moduleId, initCompileUnitFunctionSymbol.get()));
+        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(span, initCompileUnitFunctionSymbol.get()));
         boundFunctionCall->Accept(*this);
     }
     emitter->CreateRetVoid();

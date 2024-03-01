@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -100,6 +100,7 @@ std::u32string FileMap::GetFileLine(int32_t fileId, int line)
         ReadFile(fileId);
     }
     const std::pair<std::u32string, std::vector<int>>& contents = GetFileContent(fileId);
+    if (line < 1 || line >= contents.second.size()) return std::u32string();
     std::u32string::size_type lineStart = contents.second[line];
     std::u32string::size_type lineLength = std::u32string::npos;
     if (line < contents.second.size() - 1)
@@ -123,22 +124,17 @@ std::u32string FileMap::GetFileLine(int32_t fileId, int line)
 
 std::mutex tokenMapMutex;
 
-void FileMap::SetTokens(int32_t fileId, TokenVec&& tokens)
+const std::vector<int>* FileMap::LineStartIndeces(int32_t fileId) const
 {
-    std::lock_guard<std::mutex> lock(tokenMapMutex);
-    tokenMap[fileId] = std::move(tokens);
-}
-
-const TokenVec& FileMap::GetTokens(int32_t fileId) const
-{
-    std::lock_guard<std::mutex> lock(tokenMapMutex);
-    static TokenVec empty;
-    auto it = tokenMap.find(fileId);
-    if (it != tokenMap.cend())
+    auto it = fileContentsMap.find(fileId);
+    if (it != fileContentsMap.end())
     {
-        return it->second;
+        return &it->second.second;
     }
-    return empty;
+    else
+    {
+        return nullptr;
+    }
 }
 
 FileMap* globalFileMap = nullptr;

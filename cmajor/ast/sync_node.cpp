@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,13 +9,13 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-SyncNode::SyncNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::syncNode, sourcePos_, moduleId_)
+SyncNode::SyncNode(const soul::ast::Span& span_) : Node(NodeType::syncNode, span_)
 {
 }
 
 Node* SyncNode::Clone(CloneContext& cloneContext) const
 {
-    return new SyncNode(GetSourcePos(), ModuleId());
+    return new SyncNode(GetSpan());
 }
 
 void SyncNode::Accept(Visitor& visitor)

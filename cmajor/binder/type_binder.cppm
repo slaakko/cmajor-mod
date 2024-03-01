@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -83,8 +83,6 @@ public:
     void CreateMemberSymbols();
     BoundGlobalVariable* GetBoundGlobalVariable() const { return boundGlobalVariable; }
 
-    void SetEditMode() { editMode = true; }
-    std::vector<std::string> Errors() const { return errors; }
 private:
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
@@ -97,8 +95,6 @@ private:
     std::stack<bool> conditionalCompilationStack;
     TypeResolverFlags typeResolverFlags;
     BoundGlobalVariable* boundGlobalVariable;
-    bool editMode;
-    std::vector<std::string> errors;
 };
 
 void BindClass(cmajor::symbols::ClassTypeSymbol* classType, void* boundCompileUnit);

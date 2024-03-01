@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,7 +15,7 @@ import util;
 
 namespace cmajor::symbols {
 
-IntrinsicFunction::IntrinsicFunction()
+IntrinsicFunction::IntrinsicFunction(const soul::ast::Span& span_) : span(span_)
 {
 }
 
@@ -24,22 +24,22 @@ IntrinsicFunction::~IntrinsicFunction()
 }
 
 std::unique_ptr<Value> IntrinsicFunction::Evaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    cmajor::ast::Node* node)
 {
     if (arguments.size() != Arity())
     {
-        throw Exception("wrong number of parameters for intrinsic " + std::string(GroupName()), sourcePos, moduleId);
+        throw Exception("wrong number of parameters for intrinsic " + std::string(GroupName()), node->GetFullSpan());
     }
     if (templateArguments.size() != NumberOfTypeParameters())
     {
-        throw Exception("wrong number of template type arguments for intrinsic " + std::string(GroupName()), sourcePos, moduleId);
+        throw Exception("wrong number of template type arguments for intrinsic " + std::string(GroupName()), node->GetFullSpan());
     }
-    return DoEvaluate(arguments, templateArguments, sourcePos, moduleId);
+    return DoEvaluate(arguments, templateArguments, node);
 }
 
 FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbolTable, ContainerSymbol* parent)
 {
-    FunctionSymbol* fun = new FunctionSymbol(soul::ast::SourcePos(), util::nil_uuid(), util::ToUtf32(intrinsic->GroupName()));
+    FunctionSymbol* fun = new FunctionSymbol(intrinsic->GetSpan(), util::ToUtf32(intrinsic->GroupName()));
     fun->SetModule(symbolTable.GetModule());
     fun->SetGroupName(util::ToUtf32(intrinsic->GroupName()));
     fun->SetIntrinsic(intrinsic);
@@ -54,7 +54,7 @@ FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbo
         {
             p.append(util::ToUtf32(std::to_string(i)));
         }
-        TemplateParameterSymbol* s = new TemplateParameterSymbol(soul::ast::SourcePos(), util::nil_uuid(), p);
+        TemplateParameterSymbol* s = new TemplateParameterSymbol(soul::ast::Span(), p);
         symbolTable.SetTypeIdFor(s);
         s->SetModule(symbolTable.GetModule());
         fun->AddMember(s);
@@ -66,625 +66,625 @@ FunctionSymbol* CreateIntrinsic(IntrinsicFunction* intrinsic, SymbolTable& symbo
 class TypePredicate : public IntrinsicFunction
 {
 public:
-    TypePredicate();
+    TypePredicate(const soul::ast::Span& span_);
     int Arity() const override { return 0; }
     int NumberOfTypeParameters() const override { return 1; }
     TypeSymbol* ReturnType(SymbolTable& symbolTable) const override { return symbolTable.GetTypeByName(U"bool"); }
 };
 
-TypePredicate::TypePredicate() : IntrinsicFunction()
+TypePredicate::TypePredicate(const soul::ast::Span& span_) : IntrinsicFunction(span_)
 {
 }
 
 class IsIntegralTypePredicate : public TypePredicate
 {
 public:
-    IsIntegralTypePredicate();
+    IsIntegralTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsIntegralType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsIntegralType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsIntegralType()));
     }
 };
 
-IsIntegralTypePredicate::IsIntegralTypePredicate() : TypePredicate()
+IsIntegralTypePredicate::IsIntegralTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsSignedTypePredicate : public TypePredicate
 {
 public:
-    IsSignedTypePredicate();
+    IsSignedTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsSignedType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsIntegralType() && !type->IsUnsignedType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsIntegralType() && !type->IsUnsignedType()));
     }
 };
 
-IsSignedTypePredicate::IsSignedTypePredicate() : TypePredicate()
+IsSignedTypePredicate::IsSignedTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsUnsignedTypePredicate : public TypePredicate
 {
 public:
-    IsUnsignedTypePredicate();
+    IsUnsignedTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsUnsignedType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsUnsignedType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsUnsignedType()));
     }
 };
 
-IsUnsignedTypePredicate::IsUnsignedTypePredicate() : TypePredicate()
+IsUnsignedTypePredicate::IsUnsignedTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsFloatingPointTypePredicate : public TypePredicate
 {
 public:
-    IsFloatingPointTypePredicate();
+    IsFloatingPointTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsFloatingPointType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsFloatingPointType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsFloatingPointType()));
     }
 };
 
-IsFloatingPointTypePredicate::IsFloatingPointTypePredicate() : TypePredicate()
+IsFloatingPointTypePredicate::IsFloatingPointTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsBasicTypePredicate : public TypePredicate
 {
 public:
-    IsBasicTypePredicate();
+    IsBasicTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsBasicType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsBasicTypeSymbol()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsBasicTypeSymbol()));
     }
 };
 
-IsBasicTypePredicate::IsBasicTypePredicate() : TypePredicate()
+IsBasicTypePredicate::IsBasicTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsBoolTypePredicate : public TypePredicate
 {
 public:
-    IsBoolTypePredicate();
+    IsBoolTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsBoolType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::boolTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::boolTypeSymbol));
     }
 };
 
-IsBoolTypePredicate::IsBoolTypePredicate() : TypePredicate()
+IsBoolTypePredicate::IsBoolTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsSByteTypePredicate : public TypePredicate
 {
 public:
-    IsSByteTypePredicate();
+    IsSByteTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsSByteType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::sbyteTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::sbyteTypeSymbol));
     }
 };
 
-IsSByteTypePredicate::IsSByteTypePredicate() : TypePredicate()
+IsSByteTypePredicate::IsSByteTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsByteTypePredicate : public TypePredicate
 {
 public:
-    IsByteTypePredicate();
+    IsByteTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsByteType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::byteTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::byteTypeSymbol));
     }
 };
 
-IsByteTypePredicate::IsByteTypePredicate() : TypePredicate()
+IsByteTypePredicate::IsByteTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsShortTypePredicate : public TypePredicate
 {
 public:
-    IsShortTypePredicate();
+    IsShortTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsShortType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::shortTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::shortTypeSymbol));
     }
 };
 
-IsShortTypePredicate::IsShortTypePredicate() : TypePredicate()
+IsShortTypePredicate::IsShortTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsUShortTypePredicate : public TypePredicate
 {
 public:
-    IsUShortTypePredicate();
+    IsUShortTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsUShortType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::ushortTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::ushortTypeSymbol));
     }
 };
 
-IsUShortTypePredicate::IsUShortTypePredicate() : TypePredicate()
+IsUShortTypePredicate::IsUShortTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsIntTypePredicate : public TypePredicate
 {
 public:
-    IsIntTypePredicate();
+    IsIntTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsIntType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::intTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::intTypeSymbol));
     }
 };
 
-IsIntTypePredicate::IsIntTypePredicate() : TypePredicate()
+IsIntTypePredicate::IsIntTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsUIntTypePredicate : public TypePredicate
 {
 public:
-    IsUIntTypePredicate();
+    IsUIntTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsUIntType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::uintTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::uintTypeSymbol));
     }
 };
 
-IsUIntTypePredicate::IsUIntTypePredicate() : TypePredicate()
+IsUIntTypePredicate::IsUIntTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsLongTypePredicate : public TypePredicate
 {
 public:
-    IsLongTypePredicate();
+    IsLongTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsLongType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::longTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::longTypeSymbol));
     }
 };
 
-IsLongTypePredicate::IsLongTypePredicate() : TypePredicate()
+IsLongTypePredicate::IsLongTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsULongTypePredicate : public TypePredicate
 {
 public:
-    IsULongTypePredicate();
+    IsULongTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsULongType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::ulongTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::ulongTypeSymbol));
     }
 };
 
-IsULongTypePredicate::IsULongTypePredicate() : TypePredicate()
+IsULongTypePredicate::IsULongTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsFloatTypePredicate : public TypePredicate
 {
 public:
-    IsFloatTypePredicate();
+    IsFloatTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsFloatType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::floatTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::floatTypeSymbol));
     }
 };
 
-IsFloatTypePredicate::IsFloatTypePredicate() : TypePredicate()
+IsFloatTypePredicate::IsFloatTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsDoubleTypePredicate : public TypePredicate
 {
 public:
-    IsDoubleTypePredicate();
+    IsDoubleTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsDoubleType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::doubleTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::doubleTypeSymbol));
     }
 };
 
-IsDoubleTypePredicate::IsDoubleTypePredicate() : TypePredicate()
+IsDoubleTypePredicate::IsDoubleTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsCharTypePredicate : public TypePredicate
 {
 public:
-    IsCharTypePredicate();
+    IsCharTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsCharType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::charTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::charTypeSymbol));
     }
 };
 
-IsCharTypePredicate::IsCharTypePredicate() : TypePredicate()
+IsCharTypePredicate::IsCharTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsWCharTypePredicate : public TypePredicate
 {
 public:
-    IsWCharTypePredicate();
+    IsWCharTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsWCharType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::wcharTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::wcharTypeSymbol));
     }
 };
 
-IsWCharTypePredicate::IsWCharTypePredicate() : TypePredicate()
+IsWCharTypePredicate::IsWCharTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsUCharTypePredicate : public TypePredicate
 {
 public:
-    IsUCharTypePredicate();
+    IsUCharTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsUCharType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::ucharTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::ucharTypeSymbol));
     }
 };
 
-IsUCharTypePredicate::IsUCharTypePredicate() : TypePredicate()
+IsUCharTypePredicate::IsUCharTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsVoidTypePredicate : public TypePredicate
 {
 public:
-    IsVoidTypePredicate();
+    IsVoidTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsVoidType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::voidTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::voidTypeSymbol));
     }
 };
 
-IsVoidTypePredicate::IsVoidTypePredicate() : TypePredicate()
+IsVoidTypePredicate::IsVoidTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsClassTypePredicate : public TypePredicate
 {
 public:
-    IsClassTypePredicate();
+    IsClassTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsClassType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsClassTypeSymbol()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsClassTypeSymbol()));
     }
 };
 
-IsClassTypePredicate::IsClassTypePredicate() : TypePredicate()
+IsClassTypePredicate::IsClassTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsPolymorphicTypePredicate : public TypePredicate
 {
 public:
-    IsPolymorphicTypePredicate();
+    IsPolymorphicTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsPolymorphicType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsPolymorphicType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsPolymorphicType()));
     }
 };
 
-IsPolymorphicTypePredicate::IsPolymorphicTypePredicate() : TypePredicate()
+IsPolymorphicTypePredicate::IsPolymorphicTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsInterfaceTypePredicate : public TypePredicate
 {
 public:
-    IsInterfaceTypePredicate();
+    IsInterfaceTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsInterfaceType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->GetSymbolType() == SymbolType::interfaceTypeSymbol));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->GetSymbolType() == SymbolType::interfaceTypeSymbol));
     }
 };
 
-IsInterfaceTypePredicate::IsInterfaceTypePredicate() : TypePredicate()
+IsInterfaceTypePredicate::IsInterfaceTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsDelegateTypePredicate : public TypePredicate
 {
 public:
-    IsDelegateTypePredicate();
+    IsDelegateTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsDelegateType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsDelegateType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsDelegateType()));
     }
 };
 
-IsDelegateTypePredicate::IsDelegateTypePredicate() : TypePredicate()
+IsDelegateTypePredicate::IsDelegateTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsClassDelegateTypePredicate : public TypePredicate
 {
 public:
-    IsClassDelegateTypePredicate();
+    IsClassDelegateTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsClassDelegateType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsClassDelegateType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsClassDelegateType()));
     }
 };
 
-IsClassDelegateTypePredicate::IsClassDelegateTypePredicate() : TypePredicate()
+IsClassDelegateTypePredicate::IsClassDelegateTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsEnumeratedTypePredicate : public TypePredicate
 {
 public:
-    IsEnumeratedTypePredicate();
+    IsEnumeratedTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsEnumeratedType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsEnumeratedType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsEnumeratedType()));
     }
 };
 
-IsEnumeratedTypePredicate::IsEnumeratedTypePredicate() : TypePredicate()
+IsEnumeratedTypePredicate::IsEnumeratedTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsConstTypePredicate : public TypePredicate
 {
 public:
-    IsConstTypePredicate();
+    IsConstTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsConstType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsConstType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsConstType()));
     }
 };
 
-IsConstTypePredicate::IsConstTypePredicate() : TypePredicate()
+IsConstTypePredicate::IsConstTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsReferenceTypePredicate : public TypePredicate
 {
 public:
-    IsReferenceTypePredicate();
+    IsReferenceTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsReferenceType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsReferenceType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsReferenceType()));
     }
 };
 
-IsReferenceTypePredicate::IsReferenceTypePredicate() : TypePredicate()
+IsReferenceTypePredicate::IsReferenceTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsLvalueReferenceTypePredicate : public TypePredicate
 {
 public:
-    IsLvalueReferenceTypePredicate();
+    IsLvalueReferenceTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsLvalueReferenceType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsLvalueReferenceType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsLvalueReferenceType()));
     }
 };
 
-IsLvalueReferenceTypePredicate::IsLvalueReferenceTypePredicate() : TypePredicate()
+IsLvalueReferenceTypePredicate::IsLvalueReferenceTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsRvalueReferenceTypePredicate : public TypePredicate
 {
 public:
-    IsRvalueReferenceTypePredicate();
+    IsRvalueReferenceTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsRvalueReferenceType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsRvalueReferenceType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsRvalueReferenceType()));
     }
 };
 
-IsRvalueReferenceTypePredicate::IsRvalueReferenceTypePredicate() : TypePredicate()
+IsRvalueReferenceTypePredicate::IsRvalueReferenceTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsArrayTypePredicate : public TypePredicate
 {
 public:
-    IsArrayTypePredicate();
+    IsArrayTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsArrayType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsArrayType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsArrayType()));
     }
 };
 
-IsArrayTypePredicate::IsArrayTypePredicate() : TypePredicate()
+IsArrayTypePredicate::IsArrayTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsPointerTypePredicate : public TypePredicate
 {
 public:
-    IsPointerTypePredicate();
+    IsPointerTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsPointerType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsPointerType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsPointerType()));
     }
 };
 
-IsPointerTypePredicate::IsPointerTypePredicate() : TypePredicate()
+IsPointerTypePredicate::IsPointerTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class IsGenericPtrTypePredicate : public TypePredicate
 {
 public:
-    IsGenericPtrTypePredicate();
+    IsGenericPtrTypePredicate(const soul::ast::Span& span_);
     const char* GroupName() const override { return "IsGenericPtrType"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new BoolValue(sourcePos, moduleId, type->IsVoidPtrType()));
+        return std::unique_ptr<Value>(new BoolValue(node->GetSpan(), type->IsVoidPtrType()));
     }
 };
 
-IsGenericPtrTypePredicate::IsGenericPtrTypePredicate() : TypePredicate()
+IsGenericPtrTypePredicate::IsGenericPtrTypePredicate(const soul::ast::Span& span_) : TypePredicate(span_)
 {
 }
 
 class PointerCountIntrinsicFunction : public IntrinsicFunction
 {
 public:
-    PointerCountIntrinsicFunction();
+    PointerCountIntrinsicFunction(const soul::ast::Span& span_);
     int Arity() const override { return 0; }
     int NumberOfTypeParameters() const override { return 1; }
     TypeSymbol* ReturnType(SymbolTable& symbolTable) const override { return symbolTable.GetTypeByName(U"int"); }
     const char* GroupName() const override { return "PointerCount"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
-        return std::unique_ptr<Value>(new IntValue(sourcePos, moduleId, type->PointerCount()));
+        return std::unique_ptr<Value>(new IntValue(node->GetSpan(), type->PointerCount()));
     }
 };
 
-PointerCountIntrinsicFunction::PointerCountIntrinsicFunction() : IntrinsicFunction()
+PointerCountIntrinsicFunction::PointerCountIntrinsicFunction(const soul::ast::Span& span_) : IntrinsicFunction(span_)
 {
 }
 
 class ArrayLengthIntrinsicFunction : public IntrinsicFunction
 {
 public:
-    ArrayLengthIntrinsicFunction();
+    ArrayLengthIntrinsicFunction(const soul::ast::Span& span_);
     int Arity() const override { return 0; }
     int NumberOfTypeParameters() const override { return 1; }
     TypeSymbol* ReturnType(SymbolTable& symbolTable) const override { return symbolTable.GetTypeByName(U"long"); }
     const char* GroupName() const override { return "ArrayLength"; }
-    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override
+    std::unique_ptr<Value> DoEvaluate(const std::vector<std::unique_ptr<Value>>& arguments, const std::vector<TypeSymbol*>& templateArguments, cmajor::ast::Node* node) override
     {
         TypeSymbol* type = templateArguments.front();
         if (type->IsArrayType())
         {
             ArrayTypeSymbol* arrayType = static_cast<ArrayTypeSymbol*>(type);
-            return std::unique_ptr<Value>(new LongValue(sourcePos, moduleId, arrayType->Size()));
+            return std::unique_ptr<Value>(new LongValue(node->GetSpan(), arrayType->Size()));
         }
-        return std::unique_ptr<Value>(new LongValue(sourcePos, moduleId, 0));
+        return std::unique_ptr<Value>(new LongValue(node->GetSpan(), 0));
     }
 };
 
-ArrayLengthIntrinsicFunction::ArrayLengthIntrinsicFunction() : IntrinsicFunction()
+ArrayLengthIntrinsicFunction::ArrayLengthIntrinsicFunction(const soul::ast::Span& span_) : IntrinsicFunction(span_)
 {
 }
 
-void MetaInit(SymbolTable& symbolTable)
+void MetaInit(SymbolTable& symbolTable, const soul::ast::Span& rootSpan)
 {
-    symbolTable.BeginNamespace(U"System.Meta", soul::ast::SourcePos(), util::nil_uuid());
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntegralTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSignedTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUnsignedTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatingPointTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBasicTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBoolTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSByteTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsByteTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsShortTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUShortTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUIntTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLongTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsULongTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDoubleTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsCharTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsWCharTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUCharTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsVoidTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPolymorphicTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsInterfaceTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDelegateTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassDelegateTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsEnumeratedTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsConstTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsReferenceTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLvalueReferenceTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsRvalueReferenceTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsArrayTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPointerTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new IsGenericPtrTypePredicate(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new PointerCountIntrinsicFunction(), symbolTable, symbolTable.Container()));
-    symbolTable.Container()->AddMember(CreateIntrinsic(new ArrayLengthIntrinsicFunction(), symbolTable, symbolTable.Container()));
+    symbolTable.BeginNamespace(U"System.Meta", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex());
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntegralTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSignedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUnsignedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatingPointTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBasicTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsBoolTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsSByteTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsByteTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsShortTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUShortTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsIntTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUIntTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLongTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsULongTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsFloatTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDoubleTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsWCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsUCharTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsVoidTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPolymorphicTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsInterfaceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsClassDelegateTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsEnumeratedTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsConstTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsLvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsRvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsArrayTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsPointerTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new IsGenericPtrTypePredicate(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new PointerCountIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container()));
+    symbolTable.Container()->AddMember(CreateIntrinsic(new ArrayLengthIntrinsicFunction(rootSpan), symbolTable, symbolTable.Container()));
     symbolTable.EndNamespace();
 }
 

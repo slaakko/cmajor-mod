@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -29,7 +29,6 @@ public:
     virtual soul::lexer::Token<Char, Self>& CurrentToken() = 0;
     virtual const Lexeme<Char>& CurrentLexeme() const = 0;
     virtual Lexeme<Char>& CurrentLexeme() = 0;
-    virtual soul::ast::Span GetSpan() const = 0;
     virtual soul::ast::Span GetSpan(int64_t pos) const = 0;
     virtual const soul::lexer::Token<Char, Self>& GetToken(int64_t pos) const = 0;
     virtual const std::string& FileName() const = 0;

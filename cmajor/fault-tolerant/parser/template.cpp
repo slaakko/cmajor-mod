@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -55,7 +55,7 @@ soul::parser::Match ParseTemplateId(Context& context, Lexer& lexer)
     }
     if (*lexer == LANGLE)
     {
-        templateIdNode->SetLAngle(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        templateIdNode->SetLAngle(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         templateIdGuard.BeginLeftAngle();
     }
@@ -78,7 +78,7 @@ soul::parser::Match ParseTemplateId(Context& context, Lexer& lexer)
         int64_t save = lexer.GetPos();
         if (*lexer == COMMA)
         {
-            commaNode.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            commaNode.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -99,7 +99,7 @@ soul::parser::Match ParseTemplateId(Context& context, Lexer& lexer)
     }
     if (*lexer == RANGLE)
     {
-        templateIdNode->SetRAngle(new cmajor::fault::tolerant::ast::RAngleNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        templateIdNode->SetRAngle(new cmajor::fault::tolerant::ast::RAngleNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -128,7 +128,7 @@ soul::parser::Match ParseTemplateParameter(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::AssignNode> assign;
     if (*lexer == ASSIGN)
     {
-        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         templateParameter->SetAssign(assign.release());
         ++lexer;
     }
@@ -157,7 +157,7 @@ soul::parser::Match ParseTemplateParameterList(Context& context, Lexer& lexer, c
     std::unique_ptr<cmajor::fault::tolerant::ast::LAngleNode> langle;
     if (*lexer == LANGLE)
     {
-        langle.reset(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        langle.reset(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         templateParameterList->SetLAngle(langle.release());
         ++lexer;
     }
@@ -182,7 +182,7 @@ soul::parser::Match ParseTemplateParameterList(Context& context, Lexer& lexer, c
         int64_t save = lexer.GetPos();
         if (*lexer == COMMA)
         {
-            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -207,7 +207,7 @@ soul::parser::Match ParseTemplateParameterList(Context& context, Lexer& lexer, c
     if (*lexer == RANGLE)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::RAngleNode> rangle;
-        rangle.reset(new cmajor::fault::tolerant::ast::RAngleNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rangle.reset(new cmajor::fault::tolerant::ast::RAngleNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         templateParameterList->SetRAngle(rangle.release());
         ++lexer;
     }
@@ -223,7 +223,7 @@ soul::parser::Match ParseInstantiationRequest(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::NewKeywordNode> newKeyword;
     if (*lexer == NEW)
     {
-        newKeyword.reset(new cmajor::fault::tolerant::ast::NewKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        newKeyword.reset(new cmajor::fault::tolerant::ast::NewKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -233,7 +233,7 @@ soul::parser::Match ParseInstantiationRequest(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::ClassKeywordNode> classKeyword;
     if (*lexer == CLASS)
     {
-        classKeyword.reset(new cmajor::fault::tolerant::ast::ClassKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        classKeyword.reset(new cmajor::fault::tolerant::ast::ClassKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -253,7 +253,7 @@ soul::parser::Match ParseInstantiationRequest(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
     if (*lexer == SEMICOLON)
     {
-        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

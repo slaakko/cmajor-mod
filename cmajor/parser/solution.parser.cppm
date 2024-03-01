@@ -7,8 +7,10 @@ import std.core;
 import soul.lexer;
 import soul.parser;
 import cmajor.ast;
+import soul.ast.span;
 
 using namespace cmajor::ast;
+using namespace soul::ast::span;
 
 export namespace cmajor::solutions::parser {
 

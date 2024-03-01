@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -94,8 +94,7 @@ void ContainerScope::Install(Symbol* symbol)
         Symbol* prev = it->second;
         if (prev != symbol)
         {
-            throw Exception("symbol '" + util::ToUtf8(symbol->Name()) + "' already defined", symbol->GetSourcePos(), symbol->SourceModuleId(), prev->GetSourcePos(), 
-                prev->SourceModuleId());
+            throw Exception("symbol '" + util::ToUtf8(symbol->Name()) + "' already defined", symbol->GetFullSpan(), prev->GetFullSpan());
         }
     }
     else
@@ -682,7 +681,7 @@ void ContainerScope::Clear()
     symbolMap.clear();
 }
 
-NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId)
+NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex)
 {
     ContainerScope* scope = this;
     NamespaceSymbol* parentNs = scope->Ns();
@@ -699,12 +698,14 @@ NamespaceSymbol* ContainerScope::CreateNamespace(const std::u32string& qualified
             }
             else
             {
-                throw Exception("symbol '" + util::ToUtf8(s->Name()) + "' does not denote a namespace", s->GetSourcePos(), s->SourceModuleId());
+                throw Exception("symbol '" + util::ToUtf8(s->Name()) + "' does not denote a namespace", s->GetFullSpan());
             }
         }
         else
         {
-            NamespaceSymbol* newNs = new NamespaceSymbol(sourcePos, sourceModuleId, component);
+            NamespaceSymbol* newNs = new NamespaceSymbol(span, component);
+            newNs->SetModuleId(moduleId);
+            newNs->SetFileIndex(fileIndex);
             newNs->SetModule(container->GetModule());
             scope = newNs->GetContainerScope();
             parentNs->AddMember(newNs);
@@ -787,14 +788,12 @@ void FileScope::InstallNamespaceImport(ContainerScope* containerScope, cmajor::a
             }
             else
             {
-                throw Exception("'" + util::ToUtf8(namespaceImportNode->Ns()->Str()) + "' does not denote a namespace", namespaceImportNode->Ns()->GetSourcePos(), 
-                    namespaceImportNode->Ns()->ModuleId());
+                throw Exception("'" + util::ToUtf8(namespaceImportNode->Ns()->Str()) + "' does not denote a namespace", namespaceImportNode->Ns()->GetFullSpan());
             }
         }
         else
         {
-            throw Exception("referred namespace symbol '" + util::ToUtf8(namespaceImportNode->Ns()->Str()) + "' not found", namespaceImportNode->Ns()->GetSourcePos(), 
-                namespaceImportNode->Ns()->ModuleId());
+            throw Exception("referred namespace symbol '" + util::ToUtf8(namespaceImportNode->Ns()->Str()) + "' not found", namespaceImportNode->Ns()->GetFullSpan());
         }
     }
     catch (const Exception&)
@@ -840,15 +839,13 @@ Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
     {
         std::string message("reference to object '" + util::ToUtf8(name) + "' is ambiguous: ");
         bool first = true;
-        soul::ast::SourcePos sourcePos;
-        util::uuid moduleId;
+        soul::ast::FullSpan fullSpan;
         for (Symbol* symbol : foundSymbols)
         {
             if (first)
             {
                 first = false;
-                sourcePos = symbol->GetSourcePos();
-                moduleId = symbol->SourceModuleId();
+                fullSpan = symbol->GetFullSpan();
             }
             else
             {
@@ -856,7 +853,7 @@ Symbol* FileScope::Lookup(const std::u32string& name, ScopeLookup lookup) const
             }
             message.append(util::ToUtf8(symbol->FullName()));
         }
-        throw Exception(message, sourcePos, moduleId);
+        throw Exception(message, fullSpan);
     }
     else
     {

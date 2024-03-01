@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -65,7 +65,7 @@ soul::parser::Match ParseInterfaceMemberFunction(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
     if (*lexer == SEMICOLON)
     {
-        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -123,7 +123,7 @@ soul::parser::Match ParseInterface(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::InterfaceKeywordNode> interfaceKeyword;
     if (*lexer == INTERFACE)
     {
-        interfaceKeyword.reset(new cmajor::fault::tolerant::ast::InterfaceKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        interfaceKeyword.reset(new cmajor::fault::tolerant::ast::InterfaceKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -145,7 +145,7 @@ soul::parser::Match ParseInterface(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::LBraceNode> lbrace;
     if (*lexer == LBRACE)
     {
-        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lbrace.reset(new cmajor::fault::tolerant::ast::LBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else
@@ -164,7 +164,7 @@ soul::parser::Match ParseInterface(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::RBraceNode> rbrace;
     if (*lexer == RBRACE)
     {
-        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rbrace.reset(new cmajor::fault::tolerant::ast::RBraceNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
     }
     else

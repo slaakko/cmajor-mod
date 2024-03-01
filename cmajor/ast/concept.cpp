@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,22 +16,22 @@ import util;
 
 namespace cmajor::ast {
 
-ConstraintNode::ConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+ConstraintNode::ConstraintNode(NodeType nodeType_, const soul::ast::Span& span_) : Node(nodeType_, span_)
 {
 }
 
-ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(NodeType::parenthesizedConstraintNode, sourcePos_, moduleId_)
+ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::Span& span_) : ConstraintNode(NodeType::parenthesizedConstraintNode, span_)
 {
 }
 
-ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_) :
-    ConstraintNode(NodeType::parenthesizedConstraintNode, sourcePos_, moduleId_), constraint(constraint_)
+ParenthesizedConstraintNode::ParenthesizedConstraintNode(const soul::ast::Span& span_, ConstraintNode* constraint_) :
+    ConstraintNode(NodeType::parenthesizedConstraintNode, span_), constraint(constraint_)
 {
 }
 
 Node* ParenthesizedConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    ParenthesizedConstraintNode* clone = new ParenthesizedConstraintNode(GetSourcePos(), ModuleId(), static_cast<ConstraintNode*>(constraint->Clone(cloneContext)));
+    ParenthesizedConstraintNode* clone = new ParenthesizedConstraintNode(GetSpan(), static_cast<ConstraintNode*>(constraint->Clone(cloneContext)));
     return clone;
 }
 
@@ -57,12 +57,12 @@ std::string ParenthesizedConstraintNode::ToString() const
     return "(" + constraint->ToString() + ")";
 }
 
-BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConstraintNode(nodeType_, sourcePos_, moduleId_), left(), right()
+BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::Span& span_) : ConstraintNode(nodeType_, span_), left(), right()
 {
 }
 
-BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
-    ConstraintNode(nodeType_, sourcePos_, moduleId_), left(left_), right(right_)
+BinaryConstraintNode::BinaryConstraintNode(NodeType nodeType_, const soul::ast::Span& span_, ConstraintNode* left_, ConstraintNode* right_) :
+    ConstraintNode(nodeType_, span_), left(left_), right(right_)
 {
     left->SetParent(this);
     right->SetParent(this);
@@ -84,18 +84,18 @@ void BinaryConstraintNode::Read(AstReader& reader)
     right->SetParent(this);
 }
 
-DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryConstraintNode(NodeType::disjunctiveConstraintNode, sourcePos_, moduleId_)
+DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::Span& span_) : BinaryConstraintNode(NodeType::disjunctiveConstraintNode, span_)
 {
 }
 
-DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
-    BinaryConstraintNode(NodeType::disjunctiveConstraintNode, sourcePos_, moduleId_, left_, right_)
+DisjunctiveConstraintNode::DisjunctiveConstraintNode(const soul::ast::Span& span_, ConstraintNode* left_, ConstraintNode* right_) :
+    BinaryConstraintNode(NodeType::disjunctiveConstraintNode, span_, left_, right_)
 {
 }
 
 Node* DisjunctiveConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    DisjunctiveConstraintNode* clone = new DisjunctiveConstraintNode(GetSourcePos(), ModuleId(), static_cast<ConstraintNode*>(Left()->Clone(cloneContext)), static_cast<ConstraintNode*>(Right()->Clone(cloneContext)));
+    DisjunctiveConstraintNode* clone = new DisjunctiveConstraintNode(GetSpan(), static_cast<ConstraintNode*>(Left()->Clone(cloneContext)), static_cast<ConstraintNode*>(Right()->Clone(cloneContext)));
     return clone;
 }
 
@@ -109,18 +109,18 @@ std::string DisjunctiveConstraintNode::ToString() const
     return Left()->ToString() + " or " + Right()->ToString();
 }
 
-ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : BinaryConstraintNode(NodeType::conjunctiveConstraintNode, sourcePos_, moduleId_)
+ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::Span& span_) : BinaryConstraintNode(NodeType::conjunctiveConstraintNode, span_)
 {
 }
 
-ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* left_, ConstraintNode* right_) :
-    BinaryConstraintNode(NodeType::conjunctiveConstraintNode, sourcePos_, moduleId_, left_, right_)
+ConjunctiveConstraintNode::ConjunctiveConstraintNode(const soul::ast::Span& span_, ConstraintNode* left_, ConstraintNode* right_) :
+    BinaryConstraintNode(NodeType::conjunctiveConstraintNode, span_, left_, right_)
 {
 }
 
 Node* ConjunctiveConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    ConjunctiveConstraintNode* clone = new ConjunctiveConstraintNode(GetSourcePos(), ModuleId(), static_cast<ConstraintNode*>(Left()->Clone(cloneContext)), static_cast<ConstraintNode*>(Right()->Clone(cloneContext)));
+    ConjunctiveConstraintNode* clone = new ConjunctiveConstraintNode(GetSpan(), static_cast<ConstraintNode*>(Left()->Clone(cloneContext)), static_cast<ConstraintNode*>(Right()->Clone(cloneContext)));
     return clone;
 }
 
@@ -135,20 +135,20 @@ std::string ConjunctiveConstraintNode::ToString() const
 }
 
 
-WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConstraintNode(NodeType::whereConstraintNode, sourcePos_, moduleId_), constraint(), headerConstraint(false), semicolon(false)
+WhereConstraintNode::WhereConstraintNode(const soul::ast::Span& span_) :
+    ConstraintNode(NodeType::whereConstraintNode, span_), constraint(), headerConstraint(false), semicolon(false)
 {
 }
 
-WhereConstraintNode::WhereConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ConstraintNode* constraint_) :
-    ConstraintNode(NodeType::whereConstraintNode, sourcePos_, moduleId_), constraint(constraint_), headerConstraint(false), semicolon(false)
+WhereConstraintNode::WhereConstraintNode(const soul::ast::Span& span_, ConstraintNode* constraint_) :
+    ConstraintNode(NodeType::whereConstraintNode, span_), constraint(constraint_), headerConstraint(false), semicolon(false)
 {
     constraint->SetParent(this);
 }
 
 Node* WhereConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    WhereConstraintNode* clone = new WhereConstraintNode(GetSourcePos(), ModuleId(), static_cast<ConstraintNode*>(constraint->Clone(cloneContext)));
+    WhereConstraintNode* clone = new WhereConstraintNode(GetSpan(), static_cast<ConstraintNode*>(constraint->Clone(cloneContext)));
     if (headerConstraint)
     {
         clone->SetHeaderConstraint();
@@ -187,20 +187,20 @@ std::string WhereConstraintNode::ToString() const
     return "where " + constraint->ToString();
 }
 
-PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConstraintNode(NodeType::predicateConstraintNode, sourcePos_, moduleId_), invokeExpr()
+PredicateConstraintNode::PredicateConstraintNode(const soul::ast::Span& span_) :
+    ConstraintNode(NodeType::predicateConstraintNode, span_), invokeExpr()
 {
 }
 
-PredicateConstraintNode::PredicateConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* invokeExpr_) :
-    ConstraintNode(NodeType::predicateConstraintNode, sourcePos_, moduleId_), invokeExpr(invokeExpr_)
+PredicateConstraintNode::PredicateConstraintNode(const soul::ast::Span& span_, Node* invokeExpr_) :
+    ConstraintNode(NodeType::predicateConstraintNode, span_), invokeExpr(invokeExpr_)
 {
     invokeExpr->SetParent(this);
 }
 
 Node* PredicateConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    PredicateConstraintNode* clone = new PredicateConstraintNode(GetSourcePos(), ModuleId(), invokeExpr->Clone(cloneContext));
+    PredicateConstraintNode* clone = new PredicateConstraintNode(GetSpan(), invokeExpr->Clone(cloneContext));
     return clone;
 }
 
@@ -227,13 +227,13 @@ std::string PredicateConstraintNode::ToString() const
     return invokeExpr->ToString();
 }
 
-IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConstraintNode(NodeType::isConstraintNode, sourcePos_, moduleId_), typeExpr(), conceptOrTypeName()
+IsConstraintNode::IsConstraintNode(const soul::ast::Span& span_) :
+    ConstraintNode(NodeType::isConstraintNode, span_), typeExpr(), conceptOrTypeName()
 {
 }
 
-IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeExpr_, Node* conceptOrTypeName_) :
-    ConstraintNode(NodeType::isConstraintNode, sourcePos_, moduleId_), typeExpr(typeExpr_), conceptOrTypeName(conceptOrTypeName_)
+IsConstraintNode::IsConstraintNode(const soul::ast::Span& span_, Node* typeExpr_, Node* conceptOrTypeName_) :
+    ConstraintNode(NodeType::isConstraintNode, span_), typeExpr(typeExpr_), conceptOrTypeName(conceptOrTypeName_)
 {
     typeExpr->SetParent(this);
     conceptOrTypeName->SetParent(this);
@@ -241,7 +241,7 @@ IsConstraintNode::IsConstraintNode(const soul::ast::SourcePos& sourcePos_, const
 
 Node* IsConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    IsConstraintNode* clone = new IsConstraintNode(GetSourcePos(), ModuleId(), typeExpr->Clone(cloneContext), conceptOrTypeName->Clone(cloneContext));
+    IsConstraintNode* clone = new IsConstraintNode(GetSpan(), typeExpr->Clone(cloneContext), conceptOrTypeName->Clone(cloneContext));
     return clone;
 }
 
@@ -271,20 +271,20 @@ std::string IsConstraintNode::ToString() const
     return typeExpr->ToString() + " is " + conceptOrTypeName->ToString();
 }
 
-MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConstraintNode(NodeType::multiParamConstraintNode, sourcePos_, moduleId_), conceptId(), typeExprs()
+MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::Span& span_) :
+    ConstraintNode(NodeType::multiParamConstraintNode, span_), conceptId(), typeExprs()
 {
 }
 
-MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* conceptId_) :
-    ConstraintNode(NodeType::multiParamConstraintNode, sourcePos_, moduleId_), conceptId(conceptId_), typeExprs()
+MultiParamConstraintNode::MultiParamConstraintNode(const soul::ast::Span& span_, IdentifierNode* conceptId_) :
+    ConstraintNode(NodeType::multiParamConstraintNode, span_), conceptId(conceptId_), typeExprs()
 {
     conceptId->SetParent(this);
 }
 
 Node* MultiParamConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    MultiParamConstraintNode* clone = new MultiParamConstraintNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(conceptId->Clone(cloneContext)));
+    MultiParamConstraintNode* clone = new MultiParamConstraintNode(GetSpan(), static_cast<IdentifierNode*>(conceptId->Clone(cloneContext)));
     int n = typeExprs.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -337,20 +337,20 @@ std::string MultiParamConstraintNode::ToString() const
     return s;
 }
 
-TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConstraintNode(NodeType::typeNameConstraintNode, sourcePos_, moduleId_), typeId()
+TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::Span& span_) :
+    ConstraintNode(NodeType::typeNameConstraintNode, span_), typeId()
 {
 }
 
-TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* typeId_) :
-    ConstraintNode(NodeType::typeNameConstraintNode, sourcePos_, moduleId_), typeId(typeId_)
+TypeNameConstraintNode::TypeNameConstraintNode(const soul::ast::Span& span_, Node* typeId_) :
+    ConstraintNode(NodeType::typeNameConstraintNode, span_), typeId(typeId_)
 {
     typeId->SetParent(this);
 }
 
 Node* TypeNameConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    TypeNameConstraintNode* clone = new TypeNameConstraintNode(GetSourcePos(), ModuleId(), typeId->Clone(cloneContext));
+    TypeNameConstraintNode* clone = new TypeNameConstraintNode(GetSpan(), typeId->Clone(cloneContext));
     return clone;
 }
 
@@ -376,25 +376,25 @@ std::string TypeNameConstraintNode::ToString() const
     return "typename " + typeId->ToString();
 }
 
-SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    ConstraintNode(nodeType_, sourcePos_, moduleId_)
+SignatureConstraintNode::SignatureConstraintNode(NodeType nodeType_, const soul::ast::Span& span_) : 
+    ConstraintNode(nodeType_, span_)
 {
 }
 
-ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    SignatureConstraintNode(NodeType::constructorConstraintNode, sourcePos_, moduleId_), typeParamId(), parameters()
+ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::Span& span_) :
+    SignatureConstraintNode(NodeType::constructorConstraintNode, span_), typeParamId(), parameters()
 {
 }
 
-ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_) :
-    SignatureConstraintNode(NodeType::constructorConstraintNode, sourcePos_, moduleId_), typeParamId(typeParamId_), parameters()
+ConstructorConstraintNode::ConstructorConstraintNode(const soul::ast::Span& span_, IdentifierNode* typeParamId_) :
+    SignatureConstraintNode(NodeType::constructorConstraintNode, span_), typeParamId(typeParamId_), parameters()
 {
     typeParamId->SetParent(this);
 }
 
 Node* ConstructorConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    ConstructorConstraintNode* clone = new ConstructorConstraintNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
+    ConstructorConstraintNode* clone = new ConstructorConstraintNode(GetSpan(), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
     int n = parameters.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -448,20 +448,20 @@ void ConstructorConstraintNode::AddParameter(ParameterNode* parameter)
     parameters.Add(parameter);
 }
 
-DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    SignatureConstraintNode(NodeType::destructorConstraintNode, sourcePos_, moduleId_), typeParamId()
+DestructorConstraintNode::DestructorConstraintNode(const soul::ast::Span& span_) :
+    SignatureConstraintNode(NodeType::destructorConstraintNode, span_), typeParamId()
 {
 }
 
-DestructorConstraintNode::DestructorConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* typeParamId_) :
-    SignatureConstraintNode(NodeType::destructorConstraintNode, sourcePos_, moduleId_), typeParamId(typeParamId_)
+DestructorConstraintNode::DestructorConstraintNode(const soul::ast::Span& span_, IdentifierNode* typeParamId_) :
+    SignatureConstraintNode(NodeType::destructorConstraintNode, span_), typeParamId(typeParamId_)
 {
     typeParamId->SetParent(this);
 }
 
 Node* DestructorConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    DestructorConstraintNode* clone = new DestructorConstraintNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
+    DestructorConstraintNode* clone = new DestructorConstraintNode(GetSpan(), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
     return clone;
 }
 
@@ -490,13 +490,13 @@ std::string DestructorConstraintNode::ToString() const
     return s;
 }
 
-MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    SignatureConstraintNode(NodeType::memberFunctionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(), typeParamId(), groupId(), parameters()
+MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::Span& span_) :
+    SignatureConstraintNode(NodeType::memberFunctionConstraintNode, span_), returnTypeExpr(), typeParamId(), groupId(), parameters()
 {
 }
 
-MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_) :
-    SignatureConstraintNode(NodeType::memberFunctionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(returnTypeExpr_), typeParamId(typeParamId_), groupId(groupId_), parameters()
+MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::Span& span_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const std::u32string& groupId_) :
+    SignatureConstraintNode(NodeType::memberFunctionConstraintNode, span_), returnTypeExpr(returnTypeExpr_), typeParamId(typeParamId_), groupId(groupId_), parameters()
 {
     returnTypeExpr->SetParent(this);
     typeParamId->SetParent(this);
@@ -504,7 +504,7 @@ MemberFunctionConstraintNode::MemberFunctionConstraintNode(const soul::ast::Sour
 
 Node* MemberFunctionConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    MemberFunctionConstraintNode* clone = new MemberFunctionConstraintNode(GetSourcePos(), ModuleId(), returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)), groupId);
+    MemberFunctionConstraintNode* clone = new MemberFunctionConstraintNode(GetSpan(), returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(typeParamId->Clone(cloneContext)), groupId);
     int n = parameters.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -569,20 +569,20 @@ std::string MemberFunctionConstraintNode::ToString() const
     return s;
 }
 
-FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    SignatureConstraintNode(NodeType::functionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(), groupId(), parameters()
+FunctionConstraintNode::FunctionConstraintNode(const soul::ast::Span& span_) :
+    SignatureConstraintNode(NodeType::functionConstraintNode, span_), returnTypeExpr(), groupId(), parameters()
 {
 }
 
-FunctionConstraintNode::FunctionConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* returnTypeExpr_, const std::u32string& groupId_)
-    : SignatureConstraintNode(NodeType::functionConstraintNode, sourcePos_, moduleId_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), parameters()
+FunctionConstraintNode::FunctionConstraintNode(const soul::ast::Span& span_, Node* returnTypeExpr_, const std::u32string& groupId_)
+    : SignatureConstraintNode(NodeType::functionConstraintNode, span_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), parameters()
 {
     returnTypeExpr->SetParent(this);
 }
 
 Node* FunctionConstraintNode::Clone(CloneContext& cloneContext) const
 {
-    FunctionConstraintNode* clone = new FunctionConstraintNode(GetSourcePos(), ModuleId(), returnTypeExpr->Clone(cloneContext), groupId);
+    FunctionConstraintNode* clone = new FunctionConstraintNode(GetSpan(), returnTypeExpr->Clone(cloneContext), groupId);
     int n = parameters.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -643,19 +643,19 @@ std::string FunctionConstraintNode::ToString() const
     return s;
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression()
+AxiomStatementNode::AxiomStatementNode(const soul::ast::Span& span_) : Node(NodeType::axiomStatementNode, span_), expression()
 {
 }
 
-AxiomStatementNode::AxiomStatementNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* expression_) :
-    Node(NodeType::axiomStatementNode, sourcePos_, moduleId_), expression(expression_)
+AxiomStatementNode::AxiomStatementNode(const soul::ast::Span& span_, Node* expression_) :
+    Node(NodeType::axiomStatementNode, span_), expression(expression_)
 {
     expression->SetParent(this);
 }
 
 Node* AxiomStatementNode::Clone(CloneContext& cloneContext) const
 {
-    AxiomStatementNode* clone = new AxiomStatementNode(GetSourcePos(), ModuleId(), expression->Clone(cloneContext));
+    AxiomStatementNode* clone = new AxiomStatementNode(GetSpan(), expression->Clone(cloneContext));
     return clone;
 }
 
@@ -682,19 +682,19 @@ std::string AxiomStatementNode::ToString() const
     return expression->ToString();
 }
 
-AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::axiomNode, sourcePos_, moduleId_), id(), parameters(), statements()
+AxiomNode::AxiomNode(const soul::ast::Span& span_) : Node(NodeType::axiomNode, span_), id(), parameters(), statements()
 {
 }
 
-AxiomNode::AxiomNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) :
-    Node(NodeType::axiomNode, sourcePos_, moduleId_), id(id_), parameters(), statements()
+AxiomNode::AxiomNode(const soul::ast::Span& span_, IdentifierNode* id_) :
+    Node(NodeType::axiomNode, span_), id(id_), parameters(), statements()
 {
     id->SetParent(this);
 }
 
 Node* AxiomNode::Clone(CloneContext& cloneContext) const
 {
-    AxiomNode* clone = new AxiomNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    AxiomNode* clone = new AxiomNode(GetSpan(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int np = parameters.Count();
     for (int i = 0; i < np; ++i)
     {
@@ -744,18 +744,18 @@ void AxiomNode::AddStatement(AxiomStatementNode* statement)
     statements.Add(statement);
 }
 
-ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(), typeParameters()
+ConceptIdNode::ConceptIdNode(const soul::ast::Span& span_) : Node(NodeType::conceptIdNode, span_), id(), typeParameters()
 {
 }
 
-ConceptIdNode::ConceptIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : Node(NodeType::conceptIdNode, sourcePos_, moduleId_), id(id_), typeParameters()
+ConceptIdNode::ConceptIdNode(const soul::ast::Span& span_, IdentifierNode* id_) : Node(NodeType::conceptIdNode, span_), id(id_), typeParameters()
 {
     id->SetParent(this);
 }
 
 Node* ConceptIdNode::Clone(CloneContext& cloneContext) const
 {
-    ConceptIdNode* clone = new ConceptIdNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    ConceptIdNode* clone = new ConceptIdNode(GetSpan(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int n = typeParameters.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -808,29 +808,29 @@ std::string ConceptIdNode::ToString() const
     return s;
 }
 
-ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::conceptNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(const soul::ast::Span& span_) : Node(NodeType::conceptNode, span_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
 {
 }
 
-ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::Span& span_) : Node(nodeType_, span_), specifiers(Specifiers::none), id(), typeParameters(), refinement(), constraints(), axioms()
 {
 }
 
-ConceptNode::ConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
-    Node(NodeType::conceptNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_) :
+    Node(NodeType::conceptNode, span_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
 {
     id->SetParent(this);
 }
 
-ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_) :
-    Node(nodeType_, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
+ConceptNode::ConceptNode(NodeType nodeType_, const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_) :
+    Node(nodeType_, span_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
 {
     id->SetParent(this);
 }
 
 Node* ConceptNode::Clone(CloneContext& cloneContext) const
 {
-    ConceptNode* clone = new ConceptNode(GetSourcePos(), ModuleId(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    ConceptNode* clone = new ConceptNode(GetSpan(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int nt = typeParameters.Count();
     for (int i = 0; i < nt; ++i)
     {
@@ -918,7 +918,11 @@ void ConceptNode::AddAxiom(AxiomNode* axiom_)
     axioms.Add(axiom_);
 }
 
-IntrinsicConstraintNode::IntrinsicConstraintNode(NodeType nodeType_) : ConstraintNode(nodeType_, soul::ast::SourcePos(), util::nil_uuid())
+IntrinsicConstraintNode::IntrinsicConstraintNode(NodeType nodeType_) : ConstraintNode(nodeType_, soul::ast::Span())
+{
+}
+
+IntrinsicConstraintNode::IntrinsicConstraintNode(NodeType nodeType_, const soul::ast::Span& span_) : ConstraintNode(nodeType_, span_)
 {
 }
 
@@ -926,7 +930,7 @@ SameConstraintNode::SameConstraintNode() : IntrinsicConstraintNode(NodeType::sam
 {
 }
 
-SameConstraintNode::SameConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::sameConstraintNode)
+SameConstraintNode::SameConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::sameConstraintNode, span_)
 {
 }
 
@@ -944,7 +948,7 @@ DerivedConstraintNode::DerivedConstraintNode() : IntrinsicConstraintNode(NodeTyp
 {
 }
 
-DerivedConstraintNode::DerivedConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::derivedConstraintNode)
+DerivedConstraintNode::DerivedConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::derivedConstraintNode, span_)
 {
 }
 
@@ -962,7 +966,7 @@ ConvertibleConstraintNode::ConvertibleConstraintNode() : IntrinsicConstraintNode
 {
 }
 
-ConvertibleConstraintNode::ConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::convertibleConstraintNode)
+ConvertibleConstraintNode::ConvertibleConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::convertibleConstraintNode, span_)
 {
 }
 
@@ -980,7 +984,7 @@ ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode() : Int
 {
 }
 
-ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::explicitlyConvertibleConstraintNode)
+ExplicitlyConvertibleConstraintNode::ExplicitlyConvertibleConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::explicitlyConvertibleConstraintNode, span_)
 {
 }
 
@@ -998,7 +1002,7 @@ CommonConstraintNode::CommonConstraintNode() : IntrinsicConstraintNode(NodeType:
 {
 }
 
-CommonConstraintNode::CommonConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::commonConstraintNode)
+CommonConstraintNode::CommonConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::commonConstraintNode, span_)
 {
 }
 
@@ -1016,7 +1020,7 @@ NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode() : IntrinsicCons
 {
 }
 
-NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : IntrinsicConstraintNode(NodeType::nonreferenceTypeConstraintNode)
+NonreferenceTypeConstraintNode::NonreferenceTypeConstraintNode(const soul::ast::Span& span_) : IntrinsicConstraintNode(NodeType::nonreferenceTypeConstraintNode, span_)
 {
 }
 
@@ -1030,72 +1034,76 @@ Node* NonreferenceTypeConstraintNode::Clone(CloneContext& cloneContext) const
     return new NonreferenceTypeConstraintNode();
 }
 
-SameConceptNode::SameConceptNode() : ConceptNode(NodeType::sameConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Same"))
+SameConceptNode::SameConceptNode(const soul::ast::Span& rootSpan, bool init) : ConceptNode(NodeType::sameConceptNode, rootSpan, Specifiers::public_, 
+    new IdentifierNode(rootSpan, U"Same"))
 {
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"U"));
-    AddConstraint(new SameConstraintNode());
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddTypeParameter(new IdentifierNode(rootSpan, U"U"));
+    AddConstraint(new SameConstraintNode(rootSpan));
 }
 
-SameConceptNode::SameConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::sameConceptNode, sourcePos_, moduleId_)
-{
-}
-
-DerivedConceptNode::DerivedConceptNode() : ConceptNode(NodeType::derivedConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Derived"))
-{
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"U"));
-    AddConstraint(new DerivedConstraintNode());
-}
-
-DerivedConceptNode::DerivedConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::derivedConceptNode, sourcePos_, moduleId_)
+SameConceptNode::SameConceptNode(const soul::ast::Span& span_) : ConceptNode(NodeType::sameConceptNode, span_)
 {
 }
 
-ConvertibleConceptNode::ConvertibleConceptNode() : ConceptNode(NodeType::convertibleConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Convertible"))
+DerivedConceptNode::DerivedConceptNode(const soul::ast::Span& rootSpan, bool init) : ConceptNode(NodeType::derivedConceptNode, rootSpan, Specifiers::public_, 
+    new IdentifierNode(rootSpan, U"Derived"))
 {
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"U"));
-    AddConstraint(new ConvertibleConstraintNode());
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddTypeParameter(new IdentifierNode(rootSpan, U"U"));
+    AddConstraint(new DerivedConstraintNode(rootSpan));
 }
 
-ConvertibleConceptNode::ConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::convertibleConceptNode, sourcePos_, moduleId_)
-{
-}
-
-ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode() :
-    ConceptNode(NodeType::explicitlyConvertibleConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ExplicitlyConvertible"))
-{
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"U"));
-    AddConstraint(new ExplicitlyConvertibleConstraintNode());
-}
-
-ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    ConceptNode(NodeType::explicitlyConvertibleConceptNode, sourcePos_, moduleId_)
+DerivedConceptNode::DerivedConceptNode(const soul::ast::Span& span_) : ConceptNode(NodeType::derivedConceptNode, span_)
 {
 }
 
-CommonConceptNode::CommonConceptNode() :
-    ConceptNode(NodeType::commonConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Common"))
+ConvertibleConceptNode::ConvertibleConceptNode(const soul::ast::Span& rootSpan, bool init) : 
+    ConceptNode(NodeType::convertibleConceptNode, rootSpan, Specifiers::public_, new IdentifierNode(rootSpan, U"Convertible"))
 {
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"U"));
-    AddConstraint(new CommonConstraintNode());
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddTypeParameter(new IdentifierNode(rootSpan, U"U"));
+    AddConstraint(new ConvertibleConstraintNode(rootSpan));
 }
 
-CommonConceptNode::CommonConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::commonConceptNode, sourcePos_, moduleId_)
+ConvertibleConceptNode::ConvertibleConceptNode(const soul::ast::Span& span_) : ConceptNode(NodeType::convertibleConceptNode, span_)
 {
 }
 
-NonreferenceTypeConceptNode::NonreferenceTypeConceptNode() :
-    ConceptNode(NodeType::nonreferenceTypeConceptNode, soul::ast::SourcePos(), util::nil_uuid(), Specifiers::public_, new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"NonreferenceType"))
+ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode(const soul::ast::Span& rootSpan, bool init) :
+    ConceptNode(NodeType::explicitlyConvertibleConceptNode, rootSpan, Specifiers::public_, new IdentifierNode(rootSpan, U"ExplicitlyConvertible"))
 {
-    AddTypeParameter(new IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"T"));
-    AddConstraint(new NonreferenceTypeConstraintNode());
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddTypeParameter(new IdentifierNode(rootSpan, U"U"));
+    AddConstraint(new ExplicitlyConvertibleConstraintNode(rootSpan));
 }
 
-NonreferenceTypeConceptNode::NonreferenceTypeConceptNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : ConceptNode(NodeType::nonreferenceTypeConceptNode, sourcePos_, moduleId_)
+ExplicitlyConvertibleConceptNode::ExplicitlyConvertibleConceptNode(const soul::ast::Span& span_) :
+    ConceptNode(NodeType::explicitlyConvertibleConceptNode, span_)
 {
 }
+
+CommonConceptNode::CommonConceptNode(const soul::ast::Span& rootSpan, bool init) :
+    ConceptNode(NodeType::commonConceptNode, rootSpan, Specifiers::public_, new IdentifierNode(rootSpan, U"Common"))
+{
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddTypeParameter(new IdentifierNode(rootSpan, U"U"));
+    AddConstraint(new CommonConstraintNode(rootSpan));
+}
+
+CommonConceptNode::CommonConceptNode(const soul::ast::Span& span_) : ConceptNode(NodeType::commonConceptNode, span_)
+{
+}
+
+NonreferenceTypeConceptNode::NonreferenceTypeConceptNode(const soul::ast::Span& rootSpan, bool init) :
+    ConceptNode(NodeType::nonreferenceTypeConceptNode, rootSpan, Specifiers::public_, new IdentifierNode(rootSpan, U"NonreferenceType"))
+{
+    AddTypeParameter(new IdentifierNode(rootSpan, U"T"));
+    AddConstraint(new NonreferenceTypeConstraintNode(rootSpan));
+}
+
+NonreferenceTypeConceptNode::NonreferenceTypeConceptNode(const soul::ast::Span& span_) : ConceptNode(NodeType::nonreferenceTypeConceptNode, span_)
+{
+}
+
 } // namespace cmajor::ast

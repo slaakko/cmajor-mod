@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,7 +16,8 @@ import util;
 
 namespace cmajor::binder {
 
-NamespaceTypeSymbol::NamespaceTypeSymbol(cmajor::symbols::NamespaceSymbol* ns_) : cmajor::symbols::TypeSymbol(cmajor::symbols::SymbolType::namespaceTypeSymbol, ns_->GetSourcePos(), ns_->SourceModuleId(), ns_->Name()), ns(ns_)
+NamespaceTypeSymbol::NamespaceTypeSymbol(cmajor::symbols::NamespaceSymbol* ns_) : 
+    cmajor::symbols::TypeSymbol(cmajor::symbols::SymbolType::namespaceTypeSymbol, ns_->GetSpan(), ns_->Name()), ns(ns_)
 {
 }
 
@@ -163,7 +164,7 @@ void TypeResolver::Visit(cmajor::ast::LValueRefNode& lvalueRefNode)
     lvalueRefNode.Subject()->Accept(*this);
     if (HasReferenceDerivation(derivationRec.derivations))
     {
-        throw cmajor::symbols::Exception("cannot have reference to reference type", lvalueRefNode.GetSourcePos(), lvalueRefNode.ModuleId());
+        throw cmajor::symbols::Exception("cannot have reference to reference type", lvalueRefNode.GetFullSpan());
     }
     derivationRec.derivations.push_back(cmajor::symbols::Derivation::lvalueRefDerivation);
 }
@@ -173,7 +174,7 @@ void TypeResolver::Visit(cmajor::ast::RValueRefNode& rvalueRefNode)
     rvalueRefNode.Subject()->Accept(*this);
     if (HasReferenceDerivation(derivationRec.derivations))
     {
-        throw cmajor::symbols::Exception("cannot have reference to reference type", rvalueRefNode.GetSourcePos(), rvalueRefNode.ModuleId());
+        throw cmajor::symbols::Exception("cannot have reference to reference type", rvalueRefNode.GetFullSpan());
     }
     derivationRec.derivations.push_back(cmajor::symbols::Derivation::rvalueRefDerivation);
 }
@@ -183,7 +184,7 @@ void TypeResolver::Visit(cmajor::ast::PointerNode& pointerNode)
     pointerNode.Subject()->Accept(*this);
     if (HasReferenceDerivation(derivationRec.derivations))
     {
-        throw cmajor::symbols::Exception("cannot have pointer to reference type", pointerNode.GetSourcePos(), pointerNode.ModuleId());
+        throw cmajor::symbols::Exception("cannot have pointer to reference type", pointerNode.GetFullSpan());
     }
     derivationRec.derivations.push_back(cmajor::symbols::Derivation::pointerDerivation);
 }
@@ -193,13 +194,13 @@ void TypeResolver::Visit(cmajor::ast::ArrayNode& arrayNode)
     type = ResolveType(arrayNode.Subject(), boundCompileUnit, containerScope, currentClass);
     if (type->IsReferenceType())
     {
-        throw cmajor::symbols::Exception("cannot have array of reference type", arrayNode.GetSourcePos(), arrayNode.ModuleId());
+        throw cmajor::symbols::Exception("cannot have array of reference type", arrayNode.GetFullSpan());
     }
     int64_t size = -1;
     if (arrayNode.Size())
     {
-        std::unique_ptr<cmajor::symbols::Value> sizeValue = Evaluate(arrayNode.Size(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"long"), containerScope, boundCompileUnit, false, nullptr,
-            arrayNode.GetSourcePos(), arrayNode.ModuleId());
+        std::unique_ptr<cmajor::symbols::Value> sizeValue = Evaluate(arrayNode.Size(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"long"), containerScope, boundCompileUnit, 
+            false, nullptr);
         if (sizeValue->GetValueType() == cmajor::symbols::ValueType::longValue)
         {
             cmajor::symbols::LongValue* longSizeValue = static_cast<cmajor::symbols::LongValue*>(sizeValue.get());
@@ -207,10 +208,10 @@ void TypeResolver::Visit(cmajor::ast::ArrayNode& arrayNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("long type value expected ", arrayNode.Size()->GetSourcePos(), arrayNode.Size()->ModuleId());
+            throw cmajor::symbols::Exception("long type value expected ", arrayNode.Size()->GetFullSpan());
         }
     }
-    type = symbolTable.MakeArrayType(type, size, arrayNode.GetSourcePos(), arrayNode.ModuleId());
+    type = symbolTable.MakeArrayType(type, size);
 }
 
 void TypeResolver::ResolveSymbol(cmajor::ast::Node& node, cmajor::ast::IdentifierNode* idNode, cmajor::symbols::Symbol* symbol)
@@ -286,7 +287,7 @@ void TypeResolver::ResolveSymbol(cmajor::ast::Node& node, cmajor::ast::Identifie
         }
         default:
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(symbol->FullName()) + "' does not denote a type", node.GetSourcePos(), node.ModuleId(), symbol->GetSourcePos(), symbol->SourceModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(symbol->FullName()) + "' does not denote a type", node.GetFullSpan(), symbol->GetFullSpan());
         }
         }
     }
@@ -314,7 +315,7 @@ void TypeResolver::Visit(cmajor::ast::IdentifierNode& identifierNode)
     }
     else
     {
-        throw cmajor::symbols::Exception("type symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetSourcePos(), identifierNode.ModuleId());
+        throw cmajor::symbols::Exception("type symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetFullSpan());
     }
 }
 
@@ -334,17 +335,17 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("primary class template with arity '" + std::to_string(arity) + "' not found", classGroup->GetSourcePos(), classGroup->SourceModuleId());
+            throw cmajor::symbols::Exception("primary class template with arity '" + std::to_string(arity) + "' not found", templateIdNode.GetFullSpan(), classGroup->GetFullSpan());
         }
     }
     if (!primaryTemplateType->IsClassTypeSymbol())
     {
-        throw cmajor::symbols::Exception("class type symbol expected", templateIdNode.Primary()->GetSourcePos(), templateIdNode.Primary()->ModuleId());
+        throw cmajor::symbols::Exception("class type symbol expected", templateIdNode.GetFullSpan(), templateIdNode.Primary()->GetFullSpan());
     }
     cmajor::symbols::ClassTypeSymbol* classTemplate = static_cast<cmajor::symbols::ClassTypeSymbol*>(primaryTemplateType);
     if (!classTemplate->IsClassTemplate())
     {
-        throw cmajor::symbols::Exception("class template expected", templateIdNode.Primary()->GetSourcePos(), templateIdNode.Primary()->ModuleId());
+        throw cmajor::symbols::Exception("class template expected", templateIdNode.GetFullSpan(), templateIdNode.Primary()->GetFullSpan());
     }
     cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
     boundCompileUnit.SetLatestIdentifier(prevId);
@@ -387,10 +388,9 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     int m = classTemplate->TemplateParameters().size();
     if (n < m)
     {
-        classTemplateRepository.ResolveDefaultTemplateArguments(templateArgumentTypes, classTemplate, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+        classTemplateRepository.ResolveDefaultTemplateArguments(templateArgumentTypes, classTemplate, containerScope, &templateIdNode);
     }
-    cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(classTemplate, templateArgumentTypes,
-        templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+    cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(classTemplate, templateArgumentTypes);
     if (classTemplateSpecialization->GetModule()->IsImmutable())
     {
         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
@@ -398,7 +398,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     }
     if (!classTemplateSpecialization->IsBound())
     {
-        classTemplateRepository.BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+        classTemplateRepository.BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
     }
     type = classTemplateSpecialization;
 }
@@ -420,8 +420,8 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
         }
         if (!type)
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", dotNode.GetSourcePos(), dotNode.ModuleId(),
-                type->GetSourcePos(), type->SourceModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", 
+                dotNode.GetFullSpan(), type->GetFullSpan());
         }
     }
     if (type->GetSymbolType() == cmajor::symbols::SymbolType::namespaceTypeSymbol)
@@ -438,8 +438,8 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
     }
     else
     {
-        throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", dotNode.GetSourcePos(), dotNode.ModuleId(),
-            type->GetSourcePos(), type->SourceModuleId());
+        throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", 
+            dotNode.GetFullSpan(), type->GetFullSpan());
     }
     std::u32string name = dotNode.MemberId()->Str();
     cmajor::symbols::Symbol* symbol = scope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base);
@@ -451,7 +451,7 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
     {
         if ((flags & TypeResolverFlags::createMemberSymbols) != TypeResolverFlags::none && type->GetSymbolType() == cmajor::symbols::SymbolType::templateParameterSymbol)
         {
-            cmajor::symbols::TemplateParameterSymbol* templateParameterSymbol = new cmajor::symbols::TemplateParameterSymbol(dotNode.GetSourcePos(), dotNode.ModuleId(), name);
+            cmajor::symbols::TemplateParameterSymbol* templateParameterSymbol = new cmajor::symbols::TemplateParameterSymbol(dotNode.GetSpan(), name);
             templateParameterSymbol->SetModule(module);
             symbolTable.SetTypeIdFor(templateParameterSymbol);
             type->AddMember(templateParameterSymbol);
@@ -459,7 +459,7 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("type symbol '" + util::ToUtf8(name) + "' not found", dotNode.GetSourcePos(), dotNode.ModuleId());
+            throw cmajor::symbols::Exception("type symbol '" + util::ToUtf8(name) + "' not found", dotNode.GetFullSpan());
         }
     }
 }
@@ -480,8 +480,8 @@ void TypeResolver::Visit(cmajor::ast::AliasNode& aliasNode)
         }
         if (!type)
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", aliasNode.GetSourcePos(), aliasNode.ModuleId(),
-                type->GetSourcePos(), type->SourceModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", 
+                aliasNode.GetFullSpan(), type->GetFullSpan());
         }
     }
 }
@@ -526,12 +526,12 @@ cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundC
     }
     if (!type || type->IsInComplete())
     {
-        throw cmajor::symbols::Exception("incomplete type expression", typeExprNode->GetSourcePos(), typeExprNode->ModuleId());
+        throw cmajor::symbols::Exception("incomplete type expression", typeExprNode->GetFullSpan());
     }
     cmajor::symbols::TypeDerivationRec derivationRec = UnifyDerivations(typeResolver.DerivationRec(), type->DerivationRec());
     if (!derivationRec.derivations.empty())
     {
-        return boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), derivationRec, typeExprNode->GetSourcePos(), typeExprNode->ModuleId());
+        return boundCompileUnit.GetSymbolTable().MakeDerivedType(type->BaseType(), derivationRec);
     }
     return type;
 }

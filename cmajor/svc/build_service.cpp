@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -395,10 +395,18 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
             {
                 int32_t line = request.identifierLocation.line;
                 int32_t scol = request.identifierLocation.scol;
-                cmajor::symbols::SymbolLocation identifierLocation(module->Id(), fileIndex, line, scol);
-                cmajor::symbols::SymbolLocation definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
-                if (definitionLocation.IsValid())
+                soul::ast::LineColLen lineColLen(line, scol, 1);
+                const std::vector<int>* lineStarts = module->FileMap().LineStartIndeces(fileIndex);
+                if (!lineStarts)
                 {
+                    module->FileMap().ReadFile(fileIndex);
+                    lineStarts = module->FileMap().LineStartIndeces(fileIndex);
+                }
+                if (lineStarts)
+                {
+                    soul::ast::Span span(soul::ast::LineColLenToPos(lineColLen, *lineStarts), 1);
+                    cmajor::symbols::SymbolLocation identifierLocation(module->Id(), fileIndex, span);
+                    cmajor::symbols::SymbolLocation definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
                     std::string filePath = cmajor::symbols::GetSourceFilePath(definitionLocation.fileIndex, definitionLocation.moduleId);
                     if (filePath.empty())
                     {
@@ -411,9 +419,30 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                         throw std::runtime_error("file path for file index " + std::to_string(definitionLocation.fileIndex) + " not found from module '" + moduleName + "'");
                     }
                     reply.definitionLocation.file = filePath;
-                    reply.definitionLocation.line = definitionLocation.line;
-                    reply.definitionLocation.scol = definitionLocation.scol;
-                    reply.succeeded = true;
+                    const std::vector<int>* lineStarts = module->FileMap().LineStartIndeces(definitionLocation.fileIndex);
+                    if (!lineStarts)
+                    {
+                        module->FileMap().ReadFile(definitionLocation.fileIndex);
+                        lineStarts = module->FileMap().LineStartIndeces(definitionLocation.fileIndex);
+                    }
+                    if (lineStarts)
+                    {
+                        soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(definitionLocation.span, *lineStarts);
+                        if (lineColLen.IsValid())
+                        {
+                            reply.definitionLocation.line = lineColLen.line;
+                            reply.definitionLocation.scol = lineColLen.col;
+                            reply.succeeded = true;
+                        }
+                        else
+                        {
+                            throw std::runtime_error("definition location of identifier '" + request.identifier + "' not found");
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("definition location of identifier '" + request.identifier + "' not found");
+                    }
                 }
                 else
                 {

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -24,8 +24,7 @@ AttributeProcessor::~AttributeProcessor()
 void AttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
 {
     throw cmajor::symbols::Exception("attribute '" + util::ToUtf8(attribute->Name()) + "' for symbol type '" + symbol->TypeString() + "' not supported", 
-        attribute->GetSourcePos(), attribute->ModuleId(),
-        symbol->GetSourcePos(), symbol->SourceModuleId());
+        attribute->GetFullSpan(), symbol->GetFullSpan());
 }
 
 void AttributeProcessor::GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, 
@@ -70,7 +69,7 @@ void AttributeBinder::BindAttributes(cmajor::ast::AttributesNode* attrs, cmajor:
         }
         else
         {
-            throw cmajor::symbols::Exception("unknown attribute '" + util::ToUtf8(attrName) + "'", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("unknown attribute '" + util::ToUtf8(attrName) + "'", attribute->GetFullSpan());
         }
     }
     cmajor::ast::CloneContext cloneContext;
@@ -92,7 +91,7 @@ void AttributeBinder::GenerateImplementation(cmajor::ast::AttributesNode* attrs,
         }
         else
         {
-            throw cmajor::symbols::Exception("unknown attribute '" + util::ToUtf8(attrName) + "'", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("unknown attribute '" + util::ToUtf8(attrName) + "'", attribute->GetFullSpan());
         }
     }
 }

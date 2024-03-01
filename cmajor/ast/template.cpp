@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -13,19 +13,19 @@ import cmajor.ast.visitor;
 
 namespace cmajor::ast {
 
-TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::templateIdNode, sourcePos_, moduleId_)
+TemplateIdNode::TemplateIdNode(const soul::ast::Span& span_) : Node(NodeType::templateIdNode, span_)
 {
 }
 
-TemplateIdNode::TemplateIdNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* primary_) :
-    Node(NodeType::templateIdNode, sourcePos_, moduleId_), primary(primary_)
+TemplateIdNode::TemplateIdNode(const soul::ast::Span& span_, Node* primary_) :
+    Node(NodeType::templateIdNode, span_), primary(primary_)
 {
     primary->SetParent(this);
 }
 
 Node* TemplateIdNode::Clone(CloneContext& cloneContext) const
 {
-    TemplateIdNode* clone = new TemplateIdNode(GetSourcePos(), ModuleId(), primary->Clone(cloneContext));
+    TemplateIdNode* clone = new TemplateIdNode(GetSpan(), primary->Clone(cloneContext));
     int n = templateArguments.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -79,13 +79,13 @@ void TemplateIdNode::AddTemplateArgument(Node* templateArgument)
     templateArguments.Add(templateArgument);
 }
 
-TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id()
+TemplateParameterNode::TemplateParameterNode(const soul::ast::Span& span_) : 
+    Node(NodeType::templateParameterNode, span_), id()
 {
 }
 
-TemplateParameterNode::TemplateParameterNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
-    Node(NodeType::templateParameterNode, sourcePos_, moduleId_), id(id_), defaultTemplateArgument(defaultTemplateArgument_)
+TemplateParameterNode::TemplateParameterNode(const soul::ast::Span& span_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
+    Node(NodeType::templateParameterNode, span_), id(id_), defaultTemplateArgument(defaultTemplateArgument_)
 {
     id->SetParent(this);
     if (defaultTemplateArgument)
@@ -101,7 +101,7 @@ Node* TemplateParameterNode::Clone(CloneContext& cloneContext) const
     {
         clonedDefaultTemplateArgument = defaultTemplateArgument->Clone(cloneContext);
     }
-    TemplateParameterNode* clone = new TemplateParameterNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedDefaultTemplateArgument);
+    TemplateParameterNode* clone = new TemplateParameterNode(GetSpan(), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedDefaultTemplateArgument);
     return clone;
 }
 
@@ -135,19 +135,19 @@ void TemplateParameterNode::Read(AstReader& reader)
     }
 }
 
-FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId()
+FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::Span& span_) : 
+    Node(NodeType::fullInstantiationRequestNode, span_), templateId()
 {
 }
 
-FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TemplateIdNode* templateId_) :
-    Node(NodeType::fullInstantiationRequestNode, sourcePos_, moduleId_), templateId(templateId_)
+FullInstantiationRequestNode::FullInstantiationRequestNode(const soul::ast::Span& span_, TemplateIdNode* templateId_) :
+    Node(NodeType::fullInstantiationRequestNode, span_), templateId(templateId_)
 {
 }
 
 Node* FullInstantiationRequestNode::Clone(CloneContext& cloneContext) const
 {
-    return new FullInstantiationRequestNode(GetSourcePos(), ModuleId(), static_cast<TemplateIdNode*>(templateId->Clone(cloneContext)));
+    return new FullInstantiationRequestNode(GetSpan(), static_cast<TemplateIdNode*>(templateId->Clone(cloneContext)));
 }
 
 void FullInstantiationRequestNode::Accept(Visitor& visitor)

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -86,7 +86,7 @@ void AddResourcesInProjectToCurrentModule(cmajor::ast::Project* project, cmajor:
         {
             util::LogMessage(module->LogStreamId(), "> " + relativeResourceFilePath);
         }
-        std::unique_ptr<soul::xml::Document> resourceXmlDoc = soul::xml::ParseXmlFile(relativeResourceFilePath);
+        std::unique_ptr<soul::xml::Document> resourceXmlDoc = soul::xml::ParseXmlFile(resourceXmlFilePath);
         std::unique_ptr<soul::xml::xpath::NodeSet> nodeSet = soul::xml::xpath::EvaluateToNodeSet("/resources/resource", resourceXmlDoc.get());
         int n = nodeSet->Count();
         for (int i = 0; i < n; ++i)

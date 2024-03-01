@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ module;
 export module cmajor.symbols.symbol;
 
 import std.core;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.xml.dom;
 import cmajor.symbols.type.map;
 import cmajor.ir.emitter;
@@ -107,28 +107,27 @@ std::string SymbolFlagStr(SymbolFlags symbolFlags, bool noAccess);
 class SymbolLocation
 {
 public:
-    SymbolLocation() : moduleId(util::nil_uuid()), fileIndex(-1), line(0), scol(0)
+    SymbolLocation() : moduleId(util::nil_uuid()), fileIndex(-1), span()
     {
     }
-    SymbolLocation(const util::uuid& moduleId_, int32_t fileIndex_, int32_t line_, int32_t scol_) :
-        moduleId(moduleId_), fileIndex(fileIndex_), line(line_), scol(scol_)
+    SymbolLocation(const util::uuid& moduleId_, int32_t fileIndex_, const soul::ast::Span& span_) :
+        moduleId(moduleId_), fileIndex(fileIndex_), span(span_)
     {
     }
-    bool IsValid() const { return !moduleId.is_nil() && fileIndex != -1 && line != 0; }
+    bool IsValid() const { return !moduleId.is_nil() && fileIndex != -1 && span.IsValid(); }
     util::uuid moduleId;
     int32_t fileIndex;
-    int32_t line;
-    int32_t scol;
+    soul::ast::Span span;
 };
 
 bool operator<(const SymbolLocation& left, const SymbolLocation& right);
 
-SymbolLocation MakeSymbolLocation(const soul::ast::SourcePos& sourcePos, Module* module);
+SymbolLocation MakeSymbolLocation(const soul::ast::Span& span, Module* module, int fileIndex);
 
 class Symbol
 {
 public:
-    Symbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    Symbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
     virtual ~Symbol();
     virtual void Write(SymbolWriter& writer);
     virtual void Read(SymbolReader& reader);
@@ -166,14 +165,16 @@ public:
     virtual void CopyFrom(const Symbol* that);
     virtual void Check();
     bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
+    bool IsDeclarationBlock() const { return symbolType == SymbolType::declarationBlock; }
     void SetMangledName(const std::u32string& mangledName_);
     SymbolAccess Access() const { return SymbolAccess(flags & SymbolFlags::access); }
     void SetAccess(SymbolAccess access_) { flags = flags | SymbolFlags(access_); }
     void SetAccess(cmajor::ast::Specifiers accessSpecifiers);
     bool IsSameParentOrAncestorOf(const Symbol* that) const;
     SymbolType GetSymbolType() const { return symbolType; }
-    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
-    void SetSourcePos(const soul::ast::SourcePos& sourcePos_) { sourcePos = sourcePos_; }
+    const soul::ast::Span& GetSpan() const { return span; }
+    void SetSpan(const soul::ast::Span& span_) { span = span_; }
+    soul::ast::FullSpan GetFullSpan() const;
     const std::u32string& Name() const { return name; }
     void SetName(const std::u32string& name_) { name = name_; }
     SymbolFlags GetSymbolFlags() const { return flags; }
@@ -243,8 +244,11 @@ public:
     virtual void AppendChildElements(soul::xml::Element* element, TypeMap& typeMap) const {}
     virtual bool HasProjectMembers() const { return false; }
     virtual const char* ClassName() const { return "Symbol"; }
-    bool GetLocation(SymbolLocation& definitionLocation) const; 
-    const util::uuid& SourceModuleId() const { return sourceModuleId; }
+    void SetModuleId(const util::uuid& moduleId_);
+    virtual const util::uuid& ModuleId() const;
+    void SetFileIndex(int32_t fileIndex_) { fileIndex = fileIndex_; }
+    virtual int FileIndex() const;
+    bool GetLocation(SymbolLocation& definitionLocation) const;
     int SymbolIndex() const { return symbolIndex; }
     void SetSymbolIndex(int symbolIndex_) { symbolIndex = symbolIndex_; }
     virtual std::unique_ptr<Symbol> RemoveMember(int symbolIndex);
@@ -254,8 +258,9 @@ public:
     bool IsInstalled() const { return GetFlag(SymbolFlags::installed); }
 private:
     SymbolType symbolType;
-    soul::ast::SourcePos sourcePos;
-    util::uuid sourceModuleId;
+    soul::ast::Span span;
+    int32_t fileIndex;
+    util::uuid moduleId;
     std::u32string name;
     SymbolFlags flags;
     std::u32string mangledName;
@@ -270,14 +275,14 @@ class SymbolCreator
 {
 public:
     virtual ~SymbolCreator();
-    virtual Symbol* CreateSymbol(const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name) = 0;
+    virtual Symbol* CreateSymbol(const soul::ast::Span& span, const std::u32string& name) = 0;
 };
 
 class SymbolFactory
 {
 public:
     static SymbolFactory& Instance();
-    Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId, const std::u32string& name);
+    Symbol* CreateSymbol(SymbolType symbolType, const soul::ast::Span& span, const std::u32string& name);
     void Register(SymbolType symbolType, SymbolCreator* creator);
 private:
     static std::unique_ptr<SymbolFactory> instance;

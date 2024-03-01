@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ import cmajor.token;
 
 namespace cmajor::symbols {
 
-KeywordSymbol::KeywordSymbol(int64_t tokenId_, const std::u32string& name_) : Symbol(SymbolType::keywordSymbol, soul::ast::SourcePos(), util::uuid(), name_), tokenId(tokenId_)
+KeywordSymbol::KeywordSymbol(int64_t tokenId_, const std::u32string& name_) : Symbol(SymbolType::keywordSymbol, soul::ast::Span(), name_), tokenId(tokenId_)
 {
 }
 

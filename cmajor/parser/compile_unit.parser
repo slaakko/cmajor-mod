@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.compile.unit.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -46,11 +47,10 @@ parser CompileUnitParser
     CompileUnit(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::CompileUnitNode> compileUnitNode) : cmajor::ast::CompileUnitNode*
         ::= empty
         { 
-            compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.FileName())); 
+            compileUnitNode.reset(new cmajor::ast::CompileUnitNode(lexer.GetSpan(pos), lexer.FileName())); 
             context->SetCompileUnitNode(compileUnitNode.get());
         }
         (
-            
             NamespaceContent(context, compileUnitNode->GlobalNs()):content
         )
         {
@@ -66,14 +66,14 @@ parser CompileUnitParser
         )
         ;
 
-    UsingDirectives(cmajor::parser::context::Context* context, cmajor::ast::NamespaceNode* ns, var soul::ast::SourcePos s)
+    UsingDirectives(cmajor::parser::context::Context* context, cmajor::ast::NamespaceNode* ns, var soul::ast::Span s)
         ::= 
         (
-            USING{ s = lexer.GetSourcePos(pos); }
+            USING{ s = lexer.GetSpan(pos); }
             QualifiedId(context):usingNs
             SEMICOLON
             {
-                ns->AddMember(new cmajor::ast::NamespaceImportNode(s, context->ModuleId(), usingNs));
+                ns->AddMember(new cmajor::ast::NamespaceImportNode(s, usingNs));
             }
         )*
         ;
@@ -103,12 +103,12 @@ parser CompileUnitParser
         )
         ;
 
-    Namespace(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::NamespaceNode> namespaceNode, var soul::ast::SourcePos s) : cmajor::ast::NamespaceNode*
+    Namespace(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::NamespaceNode> namespaceNode, var soul::ast::Span s) : cmajor::ast::NamespaceNode*
         ::= 
         (
-            NAMESPACE{ s = lexer.GetSourcePos(pos); }
-            (   QualifiedId(context):nsName{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nsName)); }
-            |   empty{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, context->ModuleId(), nullptr)); }
+            NAMESPACE{ s = lexer.GetSpan(pos); }
+            (   QualifiedId(context):nsName{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, nsName)); }
+            |   empty{ namespaceNode.reset(new cmajor::ast::NamespaceNode(s, nullptr)); }
             )
             LBRACE
             NamespaceContent(context, namespaceNode.get()):namespaceContent

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,8 @@ export module cmajor.ast.reader;
 import std.core;
 import util;
 import cmajor.ast.specifier;
-import soul.ast.source.pos;
+//import soul.ast.source.pos;
+import soul.ast.span;
 
 export namespace cmajor::ast {
 
@@ -52,7 +53,8 @@ public:
     ConceptNode* ReadConceptNode();
     NamespaceNode* ReadNamespaceNode();
     Specifiers ReadSpecifiers();
-    soul::ast::SourcePos ReadSourcePos();
+    //soul::ast::SourcePos ReadSourcePos();
+    soul::ast::Span ReadSpan();
 private:
     std::string fileName;
     util::FileStream fileStream;

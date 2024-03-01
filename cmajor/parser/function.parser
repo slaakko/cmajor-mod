@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.function.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -33,16 +34,16 @@ parser FunctionParser
     using IdentifierParser.Identifier;
     using StatementParser.CompoundStatement;
 
-    Function(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FunctionNode> functionNode, var soul::ast::SourcePos s) : cmajor::ast::Node*
+    Function(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FunctionNode> functionNode, var soul::ast::Span s) : cmajor::ast::Node*
         ::= 
         (
-            empty{ s = lexer.GetSourcePos(pos); }
+            empty{ s = lexer.GetSpan(pos); }
             Attributes(context):attributes?
             Specifiers:specifiers
             TypeExpr(context):returnType
             FunctionGroupId(context):functionGroupId
             {
-                functionNode.reset(new cmajor::ast::FunctionNode(s, context->ModuleId(), specifiers, returnType, functionGroupId, attributes));
+                functionNode.reset(new cmajor::ast::FunctionNode(s, specifiers, returnType, functionGroupId, attributes));
             }
         )
         TemplateParameterList(context, functionNode.get()):templateParameterList? 

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,7 +11,7 @@ import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.writer;
 import cmajor.ast.node;
 import cmajor.ir.emitter;
-import soul.ast.source.pos;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::symbols {
@@ -44,8 +44,8 @@ std::u32string MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplat
 class ClassTemplateSpecializationSymbol : public ClassTypeSymbol
 {
 public:
-    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
-    ClassTemplateSpecializationSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_);
+    ClassTemplateSpecializationSymbol(const soul::ast::Span& span_, const std::u32string& name_);
+    ClassTemplateSpecializationSymbol(const soul::ast::Span& span_, std::u32string& name_, ClassTypeSymbol* classTemplate_, const std::vector<TypeSymbol*>& templateArgumentTypes_);
     ~ClassTemplateSpecializationSymbol();
     std::u32string SimpleName() const override;
     void Write(SymbolWriter& writer) override;
@@ -72,8 +72,7 @@ public:
     void SetFlag(ClassTemplateSpecializationFlags flag) { flags = flags | flag; }
     bool GetFlag(ClassTemplateSpecializationFlags flag) const { return (flags & flag) != ClassTemplateSpecializationFlags::none; }
     void ResetFlag(ClassTemplateSpecializationFlags flag) { flags = flags & ~flag; }
-    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap) override;
     std::u32string Id() const override;
     const char* ClassName() const override { return "ClassTemplateSpecializationSymbol"; }
     void Check() override;

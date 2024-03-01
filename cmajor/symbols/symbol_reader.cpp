@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -23,11 +23,9 @@ SymbolReader::SymbolReader(const std::string& fileName_) :
 Symbol* SymbolReader::ReadSymbol(Symbol* parent)
 {
     SymbolType symbolType = static_cast<SymbolType>(GetBinaryStreamReader().ReadByte());
-    soul::ast::SourcePos sourcePos = astReader.ReadSourcePos();
-    util::uuid sourceModuleId;
-    GetBinaryStreamReader().ReadUuid(sourceModuleId);
+    soul::ast::Span span = astReader.ReadSpan();
     std::u32string name = GetBinaryStreamReader().ReadUtf32String();
-    Symbol* symbol = SymbolFactory::Instance().CreateSymbol(symbolType, sourcePos, sourceModuleId, name);
+    Symbol* symbol = SymbolFactory::Instance().CreateSymbol(symbolType, span, name);
     symbol->SetModule(module);
     symbol->SetParent(parent);
     symbol->Read(*this);

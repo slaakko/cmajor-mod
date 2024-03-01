@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -331,11 +331,12 @@ void ModuleCache::MoveNonSystemModulesTo(ModuleCache* cache)
 
 std::recursive_mutex mtx;
 
-void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target)
+void PrepareModuleForCompilation(Module* rootModule, const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, 
+    int32_t rootFileIndex, cmajor::ast::CompileUnitNode* rootCompileUnit)
 {
     std::lock_guard<std::recursive_mutex> lock(mtx);
-    rootModule->PrepareForCompilation(references, target);
-    cmajor::symbols::MetaInit(rootModule->GetSymbolTable());
+    rootModule->PrepareForCompilation(references, target, rootSpan, rootFileIndex, rootCompileUnit);
+    cmajor::symbols::MetaInit(rootModule->GetSymbolTable(), rootSpan);
 #ifdef _WIN32
     if (GetBackEnd() == BackEnd::systemx && rootModule->Name() == U"System.Core")
     {

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,6 +16,7 @@ import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
 import cmajor.binder.bound.expression;
 import cmajor.binder.type.resolver;
+import cmajor.binder.instantiation_guard;
 import util;
 
 namespace cmajor::binder {
@@ -25,8 +26,10 @@ InlineFunctionRepository::InlineFunctionRepository(BoundCompileUnit& boundCompil
 }
 
 cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::symbols::FunctionSymbol* inlineFunction, cmajor::symbols::ContainerScope* containerScope, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    cmajor::ast::Node* node)
 {
+    throw std::runtime_error("inline functions not implemented");
+/*
     if (inlineFunction->GetCompileUnit() == boundCompileUnit.GetCompileUnitNode()) return inlineFunction;
     while (inlineFunction->Master())
     {
@@ -38,16 +41,17 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         return it->second;
     }
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(inlineFunction);
-    if (!node)
+    cmajor::ast::Node* inlineFunctionNode = symbolTable.GetNodeNoThrow(inlineFunction);
+    if (!inlineFunctionNode)
     {
-        node = inlineFunction->GetFunctionNode();
-        symbolTable.MapNode(node, inlineFunction);
-        Assert(node, "function node not read");
+        inlineFunctionNode = inlineFunction->GetFunctionNode();
+        symbolTable.MapNode(inlineFunctionNode, inlineFunction);
+        Assert(inlineFunctionNode, "function node not read");
     }
-    cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(node);
-    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
-        new cmajor::ast::IdentifierNode(functionNode->GetSourcePos(), functionNode->ModuleId(), U"")));
+    cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(inlineFunctionNode);
+    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSpan(), new cmajor::ast::IdentifierNode(functionNode->GetSpan(), U"")));
+    globalNs->SetFileIndex(functionNode->FileIndex());
+    globalNs->SetModuleId(functionNode->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateFunctionNode();
@@ -80,8 +84,9 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
-            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
-                new cmajor::ast::IdentifierNode(functionNode->GetSourcePos(), functionNode->ModuleId(), nsComponent));
+            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSpan(), new cmajor::ast::IdentifierNode(functionNode->GetSpan(), nsComponent));
+            nsNode->SetFileIndex(functionNode->FileIndex());
+            nsNode->SetModuleId(functionNode->ModuleId());
             currentNs->AddMember(nsNode);
             currentNs = nsNode;
         }
@@ -89,12 +94,13 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(functionNode->Clone(cloneContext));
     if (inlineFunction->IsDefault())
     {
-        functionInstanceNode->SetBody(new cmajor::ast::CompoundStatementNode(sourcePos, moduleId));
+        functionInstanceNode->SetBody(new cmajor::ast::CompoundStatementNode(node->GetSpan()));
         inlineFunction->SetHasArtificialBody();
     }
     currentNs->AddMember(functionInstanceNode);
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
+    InstantiationGuard instantiationGuard(symbolTable, functionNode->FileIndex(), functionNode->ModuleId());
     if (!inlineFunction->Parent()->IsClassTypeSymbol())
     {
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -212,6 +218,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         result->SetCopy();
         return result;
     }
+*/
 }
 
 } // namespace cmajor::binder

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,21 +18,21 @@ import cmajor.ast.identifier;
 
 namespace cmajor::ast {
 
-FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::functionNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
+FunctionNode::FunctionNode(const soul::ast::Span& span_) : 
+    Node(NodeType::functionNode, span_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
     parameters(), body(), bodySource(), programMain(false)
 {
 }
 
-FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(nodeType_, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
+FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::Span& span_) : 
+    Node(nodeType_, span_), specifiers(Specifiers::none), returnTypeExpr(), groupId(),
     parameters(), body(), bodySource(), programMain(false)
 {
 }
 
-FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, 
+FunctionNode::FunctionNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, 
     AttributesNode* attributes_) :
-    Node(NodeType::functionNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), 
+    Node(NodeType::functionNode, span_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), 
     bodySource(), attributes(attributes_), programMain(false)
 {
     if (returnTypeExpr)
@@ -41,9 +41,9 @@ FunctionNode::FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::u
     }
 }
 
-FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, 
+FunctionNode::FunctionNode(NodeType nodeType_, const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, 
     const std::u32string& groupId_, AttributesNode* attributes_) :
-    Node(nodeType_, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), 
+    Node(nodeType_, span_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), templateParameters(), parameters(), body(), 
     bodySource(), attributes(attributes_), programMain(false)
 {
     if (returnTypeExpr)
@@ -64,7 +64,7 @@ Node* FunctionNode::Clone(CloneContext& cloneContext) const
     {
         clonedReturnTypeExpr = returnTypeExpr->Clone(cloneContext);
     }
-    FunctionNode* clone = new FunctionNode(GetSourcePos(), ModuleId(), specifiers, clonedReturnTypeExpr, groupId, clonedAttributes);
+    FunctionNode* clone = new FunctionNode(GetSpan(), specifiers, clonedReturnTypeExpr, groupId, clonedAttributes);
     if (!cloneContext.InstantiateFunctionNode())
     {
         int nt = templateParameters.Count();
@@ -245,7 +245,7 @@ void FunctionNode::SwitchToBody()
 void FunctionNode::SetReturnTypeExpr(Node* returnTypeExpr_)
 {
     returnTypeExpr.reset(returnTypeExpr_);
-    returnTypeExpr->SetParent(returnTypeExpr_);
+    returnTypeExpr->SetParent(this);
 }
 
 void FunctionNode::SetSpecifiers(Specifiers specifiers_)
@@ -271,8 +271,8 @@ void FunctionNode::SetBodySource(CompoundStatementNode* bodySource_)
     bodySource->SetParent(this);
 }
 
-FunctionPtrNode::FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::functionPtrNode, sourcePos_, moduleId_), boundExpression(nullptr)
+FunctionPtrNode::FunctionPtrNode(const soul::ast::Span& span_) : 
+    Node(NodeType::functionPtrNode, span_), boundExpression(nullptr)
 {
 }
 

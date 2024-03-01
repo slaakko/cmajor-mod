@@ -1,12 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.ast.node;
 
 import std.core;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.lexer;
 import cmajor.ast.specifier;
 import cmajor.ast.clone;
@@ -58,7 +58,7 @@ class TemplateParameterNode;
 class Node
 {
 public:
-    Node(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    Node(NodeType nodeType_, const soul::ast::Span& span_);
     virtual ~Node();
     Node(const Node&) = delete;
     Node& operator=(const Node&) = delete;
@@ -81,19 +81,21 @@ public:
     bool IsNamespaceNode() const { return nodeType == NodeType::namespaceNode; }
     bool IsTypedefNode() const { return nodeType == NodeType::typedefNode; }
     bool IsAliasNode() const { return nodeType == NodeType::aliasNode; }
+    bool IsDotNode() const { return nodeType == NodeType::dotNode; }
     virtual Specifiers GetSpecifiers() const { return Specifiers::none; }
-    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
-    void SetSourcePos(const soul::ast::SourcePos& sourcePos_) { sourcePos = sourcePos_; }
+    const soul::ast::Span& GetSpan() const { return span; }
+    void SetSpan(const soul::ast::Span& span_) { span = span_; }
+    soul::ast::FullSpan GetFullSpan() const;
     const Node* Parent() const { return parent; }
     Node* Parent() { return parent; }
     void SetParent(Node* parent_);
-    const util::uuid& ModuleId() const { return moduleId; }
+    virtual const util::uuid& ModuleId() const;
+    virtual int FileIndex() const;
     void SetLexerFlags(soul::lexer::LexerFlags lexerFlags_) { lexerFlags = lexerFlags_; }
     soul::lexer::LexerFlags GetLexerFlags() const { return lexerFlags; }
 private:
     NodeType nodeType;
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId;
+    soul::ast::Span span;
     Node* parent;
     soul::lexer::LexerFlags lexerFlags;
 };
@@ -101,8 +103,8 @@ private:
 class UnaryNode : public Node
 {
 public:
-    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    UnaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* subject_);
+    UnaryNode(NodeType nodeType, const soul::ast::Span& span_);
+    UnaryNode(NodeType nodeType, const soul::ast::Span& span_, Node* subject_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const Node* Subject() const { return subject.get(); }
@@ -114,8 +116,8 @@ private:
 class BinaryNode : public Node
 {
 public:
-    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    BinaryNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Node* left_, Node* right_);
+    BinaryNode(NodeType nodeType, const soul::ast::Span& span_);
+    BinaryNode(NodeType nodeType, const soul::ast::Span& span_, Node* left_, Node* right_);
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
     const Node* Left() const { return left.get(); }
@@ -134,7 +136,7 @@ public:
     NodeCreator(const NodeCreator&) = delete;
     NodeCreator& operator=(const NodeCreator&) = delete;
     virtual ~NodeCreator();
-    virtual Node* CreateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId) = 0;
+    virtual Node* CreateNode(const soul::ast::Span& span_) = 0;
 };
 
 class NodeFactory
@@ -144,7 +146,7 @@ public:
     NodeFactory& operator=(const NodeFactory&) = delete;
     static NodeFactory& Instance();
     void Register(NodeType nodeType, NodeCreator* creator);
-    Node* CreateNode(NodeType nodeType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    Node* CreateNode(NodeType nodeType, const soul::ast::Span& span);
 private:
     static std::unique_ptr<NodeFactory> instance;
     std::vector<std::unique_ptr<NodeCreator>> creators;

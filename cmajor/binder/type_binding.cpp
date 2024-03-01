@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,11 +20,8 @@ std::vector<std::string> BindTypes(cmajor::symbols::Module* module, cmajor::ast:
         std::unique_ptr<BoundCompileUnit> boundCompileUnit(new BoundCompileUnit(*module, compileUnit, &attributeBinder));
         boundCompileUnit->PushBindingTypes();
         TypeBinder typeBinder(*boundCompileUnit);
-        typeBinder.SetEditMode();
         compileUnit->Accept(typeBinder);
         boundCompileUnit->PopBindingTypes();
-        std::vector<std::string> e = typeBinder.Errors();
-        errors.insert(errors.end(), e.cbegin(), e.cend());
     }
     catch (const cmajor::symbols::Exception& ex)
     {

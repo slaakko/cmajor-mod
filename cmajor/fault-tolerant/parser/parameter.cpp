@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -45,7 +45,7 @@ soul::parser::Match ParseParameterList(Context& context, Lexer& lexer, cmajor::f
     if (*lexer == LPAREN)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::LParenNode> lparen;
-        lparen.reset(new cmajor::fault::tolerant::ast::LParenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        lparen.reset(new cmajor::fault::tolerant::ast::LParenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         parameterList->SetLParen(lparen.release());
         ++lexer;
     }
@@ -73,7 +73,7 @@ soul::parser::Match ParseParameterList(Context& context, Lexer& lexer, cmajor::f
         std::unique_ptr<cmajor::fault::tolerant::ast::CommaNode> comma;
         if (*lexer == COMMA)
         {
-            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            comma.reset(new cmajor::fault::tolerant::ast::CommaNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
         }
         else
@@ -99,7 +99,7 @@ soul::parser::Match ParseParameterList(Context& context, Lexer& lexer, cmajor::f
     if (*lexer == RPAREN)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::RParenNode> rparen;
-        rparen.reset(new cmajor::fault::tolerant::ast::RParenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        rparen.reset(new cmajor::fault::tolerant::ast::RParenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         parameterList->SetRParen(rparen.release());
         ++lexer;
     }

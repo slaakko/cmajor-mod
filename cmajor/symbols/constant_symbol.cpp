@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ module;
 
 module cmajor.symbols.constant.symbol;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.exception;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.type.symbol;
@@ -23,8 +23,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
-ConstantSymbol::ConstantSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(SymbolType::constantSymbol, sourcePos_, sourceModuleId_, name_), type(), evaluating(false), sizeOfValue(0), valuePos(0)
+ConstantSymbol::ConstantSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    Symbol(SymbolType::constantSymbol, span_, name_), type(), evaluating(false), sizeOfValue(0), valuePos(0)
 {
 }
 
@@ -70,7 +70,7 @@ void ConstantSymbol::Read(SymbolReader& reader)
     }
     else
     {
-        value = ReadValue(reader.GetBinaryStreamReader(), GetSourcePos(), SourceModuleId());
+        value = ReadValue(reader.GetBinaryStreamReader());
     }
     strValue = reader.GetBinaryStreamReader().ReadUtf32String();
 }
@@ -81,7 +81,7 @@ Value* ConstantSymbol::GetValue()
     {
         if (filePathReadFrom.empty())
         {
-            throw Exception("internal error: could not read value: value file name not set", GetSourcePos(), SourceModuleId());
+            throw Exception("internal error: could not read value: value file name not set", GetFullSpan());
         }
         util::FileStream file(filePathReadFrom, util::OpenMode::read | util::OpenMode::binary);
         util::BinaryStreamReader reader(file);
@@ -89,7 +89,7 @@ Value* ConstantSymbol::GetValue()
         value.reset(type->MakeValue());
         if (!value)
         {
-            throw Exception("internal error: could not read value because could not create value of type '" + util::ToUtf8(type->FullName()) + "'", GetSourcePos(), SourceModuleId());
+            throw Exception("internal error: could not read value because could not create value of type '" + util::ToUtf8(type->FullName()) + "'", GetFullSpan());
         }
         value->Read(reader);
     }
@@ -125,67 +125,67 @@ void ConstantSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("constant cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("constant cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -229,15 +229,15 @@ void* ConstantSymbol::ArrayIrObject(cmajor::ir::Emitter& emitter, bool create)
 {
     if (!type->IsArrayType())
     {
-        throw Exception("internal error: array object expected", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: array object expected", GetFullSpan());
     }
     if (!value)
     {
-        throw Exception("internal error: array value missing", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: array value missing", GetFullSpan());
     }
     if (value->GetValueType() != ValueType::arrayValue)
     {
-        throw Exception("internal error: array value expected", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: array value expected", GetFullSpan());
     }
     ArrayValue* arrayValue = static_cast<ArrayValue*>(value.get());
     void* irArrayType = type->IrType(emitter);
@@ -254,15 +254,15 @@ void* ConstantSymbol::StructureIrObject(cmajor::ir::Emitter& emitter, bool creat
 {
     if (!type->IsClassTypeSymbol())
     {
-        throw Exception("internal error: class type object expected", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: class type object expected", GetFullSpan());
     }
     if (!value)
     {
-        throw Exception("internal error: structured value missing", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: structured value missing", GetFullSpan());
     }
     if (value->GetValueType() != ValueType::structuredValue)
     {
-        throw Exception("internal error: structured value expected", GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: structured value expected", GetFullSpan());
     }
     StructuredValue* structuredValue = static_cast<StructuredValue*>(value.get());
     void* irStructureType = type->IrType(emitter);
@@ -280,7 +280,7 @@ void ConstantSymbol::Check()
     Symbol::Check();
     if (!type)
     {
-        throw SymbolCheckException("constant symbol has no type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("constant symbol has no type", GetFullSpan());
     }
 }
 

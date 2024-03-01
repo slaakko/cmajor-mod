@@ -1,12 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.trap;
 
 import cmajor.symbols.function.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ir.emitter;
 
 import std.core;
@@ -19,9 +19,8 @@ class TrapFunction : public FunctionSymbol
 {
 public:
     TrapFunction(SymbolTable& symbolTable);
-    TrapFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
-    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TrapFunction(const soul::ast::Span& span_, const std::u32string& name_);
+    void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
 };
 
 void InitTrap(SymbolTable& symbolTable);

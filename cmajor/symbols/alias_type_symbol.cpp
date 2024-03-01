@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,14 +14,14 @@ import cmajor.symbols.symbol.reader;
 import cmajor.symbols.exception;
 import cmajor.symbols.type.symbol;
 import cmajor.symbols.symbol.collector;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
 import std.core;
 
 namespace cmajor::symbols {
 
-AliasTypeSymbol::AliasTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    Symbol(SymbolType::aliasTypeSymbol, sourcePos_, sourceModuleId_, name_), type()
+AliasTypeSymbol::AliasTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    Symbol(SymbolType::aliasTypeSymbol, span_, name_), type()
 {
 }
 
@@ -87,67 +87,67 @@ void AliasTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("alias type cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("alias type cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -169,7 +169,7 @@ void AliasTypeSymbol::Check()
     Symbol::Check();
     if (!type)
     {
-        throw SymbolCheckException("alias type symbol contains null type pointer", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("alias type symbol contains null type pointer", GetFullSpan());
     }
 }
 

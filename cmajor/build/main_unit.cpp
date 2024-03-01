@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,7 +8,7 @@ module cmajor.build.main.unit;
 import cmajor.binder;
 import cmajor.backend;
 import cmajor.ir.emitting.context;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
 import std.filesystem;
 
@@ -16,137 +16,136 @@ namespace cmajor::build {
 
 void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::SourcePos(), util::nil_uuid(), 
-        std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
-    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System")));
+    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
     mainCompileUnit.GlobalNs()->AddMember(cmajor::symbols::MakePolymorphicClassArray(rootModule->GetSymbolTable().PolymorphicClasses(), U"@polymorphicClassArray"));
     mainCompileUnit.GlobalNs()->AddMember(cmajor::symbols::MakeStaticClassArray(rootModule->GetSymbolTable().ClassesHavingStaticConstructor(), U"@staticClassArray"));
-    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), cmajor::ast::Specifiers::public_, 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"main", nullptr));
+    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::Span(), cmajor::ast::Specifiers::public_, 
+        new cmajor::ast::IntNode(soul::ast::Span()), U"main", nullptr));
 #ifndef _WIN32
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid()))), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::IntNode(soul::ast::Span()), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+        new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span()))), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv")));
 #endif
     mainFunction->SetProgramMain();
-    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(constructExitCode);
     cmajor::ast::ExpressionStatementNode* rtInitCall = nullptr;
     cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(
-        soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtInit"));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@polymorphicClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 4))); // 4 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@polymorphicClassArray"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@staticClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 2))); // 2 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@staticClassArray"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeRtInit);
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtInit"));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@polymorphicClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 4))); // 4 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@polymorphicClassArray"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@staticClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 2))); // 2 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@staticClassArray"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
 
     cmajor::ast::InvokeNode* invokeRtSetGlobalInitFunction = new cmajor::ast::InvokeNode(
-        soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtSetGlobalInitFunction"));
-    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"GlobalInitCompileUnits"));
-    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtSetGlobalInitFunction"));
+    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"GlobalInitCompileUnits"));
+    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
         invokeRtSetGlobalInitFunction);
     mainFunctionBody->AddStatement(rtSetGlobalInitFunctionCall);
 
 #ifdef _WIN32
-    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgc")));
+    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgc")));
     mainFunctionBody->AddStatement(argc);
-    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())))),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
-    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgv")));
+    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::ConstNode(soul::ast::Span(),
+        new cmajor::ast::PointerNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+            new cmajor::ast::CharNode(soul::ast::Span())))),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
+    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgv")));
     mainFunctionBody->AddStatement(argv);
 #endif
-    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
+    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
     if (!rootModule->GetSymbolTable().JsonClasses().empty())
     {
-        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RegisterJsonClasses")));
+        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(),
+            new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RegisterJsonClasses")));
         tryBlock->AddStatement(registerJsonClassesCall);
     }
     cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
-    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), userMain->GroupName()));
+    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
     }
     cmajor::ast::StatementNode* callMainStatement = nullptr;
     if (!userMain->ReturnType() || userMain->ReturnType()->IsVoidType())
     {
-        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeMain);
+        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeMain);
     }
     else
     {
-        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"), invokeMain);
+        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"), invokeMain);
     }
-    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Initialize"));
-    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeInitialize);
+    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Initialize"));
+    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeInitialize);
     tryBlock->AddStatement(callInitializeStatement);
     tryBlock->AddStatement(callMainStatement);
-    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::SourcePos(), util::nil_uuid(), tryBlock);
-    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Console"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Error")));
-    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), consoleError, 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WriteLine"));
-    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), writeLine);
-    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ToString")));
+    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::Span(), tryBlock);
+    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Console"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Error")));
+    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::Span(), consoleError, 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WriteLine"));
+    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::Span(), writeLine);
+    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::DotNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ToString")));
     printEx->AddArgument(exToString);
-    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), printEx);
+    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), printEx);
     catchBlock->AddStatement(printExStatement);
-    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"),
-        new cmajor::ast::IntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 1));
+    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"),
+        new cmajor::ast::IntLiteralNode(soul::ast::Span(), 1));
     catchBlock->AddStatement(assignExitCodeStatement);
-    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::LValueRefNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Exception"))), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"), catchBlock);
+    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::Span(), 
+        new cmajor::ast::ConstNode(soul::ast::Span(), new cmajor::ast::LValueRefNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Exception"))), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"), catchBlock);
     tryStatement->AddCatch(catchAll);
     mainFunctionBody->AddStatement(tryStatement);
     cmajor::ast::ExpressionStatementNode* rtDoneCall = nullptr;
-    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtDone")));
+    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtDone")));
     mainFunctionBody->AddStatement(rtDoneCall);
-    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtExit"));
-    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
-    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), exitCall);
+    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtExit"));
+    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
+    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), exitCall);
     mainFunctionBody->AddStatement(rtExitCall);
-    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
@@ -174,73 +173,73 @@ void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vecto
 
 void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::SourcePos(), util::nil_uuid(), std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
-    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System")));
-    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), cmajor::ast::Specifiers::public_, 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"main", nullptr));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid()))), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid()))), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"envp")));
+    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
+    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::Span(), cmajor::ast::Specifiers::public_, 
+        new cmajor::ast::IntNode(soul::ast::Span()), U"main", nullptr));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::IntNode(soul::ast::Span()), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+        new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span()))), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+        new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span()))), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"envp")));
     mainFunction->SetProgramMain();
-    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(constructExitCode);
-    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::InvokeNode* invokeSetupEnvironment = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"StartupSetupEnvironment"));
-    invokeSetupEnvironment->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"envp"));
-    cmajor::ast::StatementNode* callSetEnvironmentStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeSetupEnvironment);
+    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::InvokeNode* invokeSetupEnvironment = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"StartupSetupEnvironment"));
+    invokeSetupEnvironment->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"envp"));
+    cmajor::ast::StatementNode* callSetEnvironmentStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeSetupEnvironment);
     tryBlock->AddStatement(callSetEnvironmentStatement);
     cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
-    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), userMain->GroupName()));
+    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
     }
     cmajor::ast::StatementNode* callMainStatement = nullptr;
     if (!userMain->ReturnType() || userMain->ReturnType()->IsVoidType())
     {
-        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeMain);
+        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeMain);
     }
     else
     {
-        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"), invokeMain);
+        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"), invokeMain);
     }
     tryBlock->AddStatement(callMainStatement);
-    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::SourcePos(), util::nil_uuid(), tryBlock);
-    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Console"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Error")));
-    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), consoleError, new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WriteLine"));
-    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), writeLine);
-    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ToString")));
+    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::Span(), tryBlock);
+    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Console"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Error")));
+    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::Span(), consoleError, new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WriteLine"));
+    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::Span(), writeLine);
+    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ToString")));
     printEx->AddArgument(exToString);
-    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), printEx);
+    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), printEx);
     catchBlock->AddStatement(printExStatement);
-    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"),
-        new cmajor::ast::IntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 1));
+    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"),
+        new cmajor::ast::IntLiteralNode(soul::ast::Span(), 1));
     catchBlock->AddStatement(assignExitCodeStatement);
-    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::LValueRefNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Exception"))), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"), catchBlock);
+    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::Span(), new cmajor::ast::ConstNode(soul::ast::Span(), 
+        new cmajor::ast::LValueRefNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Exception"))), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"), catchBlock);
     tryStatement->AddCatch(catchAll);
     mainFunctionBody->AddStatement(tryStatement);
-    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
@@ -269,140 +268,140 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
 
 void GenerateMainUnitCppConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::SourcePos(), util::nil_uuid(), 
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), 
         std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
-    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System")));
+    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
     mainCompileUnit.GlobalNs()->AddMember(MakePolymorphicClassArray(rootModule->GetSymbolTable().PolymorphicClasses(), U"__polymorphicClassArray"));
     mainCompileUnit.GlobalNs()->AddMember(MakeStaticClassArray(rootModule->GetSymbolTable().ClassesHavingStaticConstructor(), U"__staticClassArray"));
     std::string platform = cmajor::ast::GetPlatform();
     cmajor::ast::FunctionNode* mainFunction = nullptr;
-    mainFunction = new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), cmajor::ast::Specifiers::public_,
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"main", nullptr);
+    mainFunction = new cmajor::ast::FunctionNode(soul::ast::Span(), cmajor::ast::Specifiers::public_,
+        new cmajor::ast::IntNode(soul::ast::Span()), U"main", nullptr);
     if (platform != "windows")
     {
-        mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc")));
-        mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid()))), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv")));
+        mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::IntNode(soul::ast::Span()),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc")));
+        mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+            new cmajor::ast::PointerNode(soul::ast::Span(), new cmajor::ast::CharNode(soul::ast::Span()))), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv")));
     }
     mainFunction->SetProgramMain();
-    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(constructExitCode);
     cmajor::ast::ExpressionStatementNode* rtInitCall = nullptr;
-    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtInit"));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__polymorphicClassArray"), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 4))); // 4 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__polymorphicClassArray"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__staticClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 2))); // 2 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__staticClassArray"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeRtInit);
+    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtInit"));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__polymorphicClassArray"), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 4))); // 4 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__polymorphicClassArray"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__staticClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 2))); // 2 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__staticClassArray"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
 
     cmajor::ast::InvokeNode* invokeRtSetGlobalInitFunction = new cmajor::ast::InvokeNode(
-        soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtSetGlobalInitFunction"));
-    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"GlobalInitCompileUnits"));
-    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(),
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtSetGlobalInitFunction"));
+    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"GlobalInitCompileUnits"));
+    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(),
         invokeRtSetGlobalInitFunction);
     mainFunctionBody->AddStatement(rtSetGlobalInitFunctionCall);
 
     if (platform == "windows")
     {
-        cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgc")));
+        cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+            new cmajor::ast::IntNode(soul::ast::Span()),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgc")));
         mainFunctionBody->AddStatement(argc);
-        cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-                new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())))),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
-        argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgv")));
+        cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+            new cmajor::ast::ConstNode(soul::ast::Span(),
+            new cmajor::ast::PointerNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+                new cmajor::ast::CharNode(soul::ast::Span())))),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
+        argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgv")));
         mainFunctionBody->AddStatement(argv);
     }
 
-    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
+    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
     if (!rootModule->GetSymbolTable().JsonClasses().empty())
     {
-        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RegisterJsonClasses")));
+        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(),
+            new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RegisterJsonClasses")));
         tryBlock->AddStatement(registerJsonClassesCall);
     }
     cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
-    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), userMain->GroupName()));
+    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
     }
     cmajor::ast::StatementNode* callMainStatement = nullptr;
     if (!userMain->ReturnType() || userMain->ReturnType()->IsVoidType())
     {
-        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeMain);
+        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeMain);
     }
     else
     {
-        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"), invokeMain);
+        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"), invokeMain);
     }
-    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Initialize"));
-    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeInitialize);
+    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Initialize"));
+    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeInitialize);
     tryBlock->AddStatement(callInitializeStatement);
     tryBlock->AddStatement(callMainStatement);
-    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::SourcePos(), util::nil_uuid(), tryBlock);
-    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Console"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Error")));
-    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), consoleError, 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WriteLine"));
-    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), writeLine);
-    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ToString")));
+    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::Span(), tryBlock);
+    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::InvokeNode* consoleError = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Console"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Error")));
+    cmajor::ast::DotNode* writeLine = new cmajor::ast::DotNode(soul::ast::Span(), consoleError, 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WriteLine"));
+    cmajor::ast::InvokeNode* printEx = new cmajor::ast::InvokeNode(soul::ast::Span(), writeLine);
+    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ToString")));
     printEx->AddArgument(exToString);
-    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), printEx);
+    cmajor::ast::ExpressionStatementNode* printExStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), printEx);
     catchBlock->AddStatement(printExStatement);
-    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"),
-        new cmajor::ast::IntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 1));
+    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"),
+        new cmajor::ast::IntLiteralNode(soul::ast::Span(), 1));
     catchBlock->AddStatement(assignExitCodeStatement);
-    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::LValueRefNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Exception"))), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"), catchBlock);
+    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::Span(), new cmajor::ast::ConstNode(soul::ast::Span(), 
+        new cmajor::ast::LValueRefNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Exception"))), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"), catchBlock);
     tryStatement->AddCatch(catchAll);
     mainFunctionBody->AddStatement(tryStatement);
     cmajor::ast::ExpressionStatementNode* rtDoneCall = nullptr;
-    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtDone")));
+    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtDone")));
     mainFunctionBody->AddStatement(rtDoneCall);
-    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtExit"));
-    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
-    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), exitCall);
+    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtExit"));
+    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
+    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), exitCall);
     mainFunctionBody->AddStatement(rtExitCall);
-    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
@@ -431,159 +430,159 @@ void GenerateMainUnitCppConsole(cmajor::symbols::Module* rootModule, std::vector
 
 void GenerateMainUnitLLvmWindowsGUI(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::SourcePos(), util::nil_uuid(),
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(),
         std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
-    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System")));
+    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
     mainCompileUnit.GlobalNs()->AddMember(MakePolymorphicClassArray(rootModule->GetSymbolTable().PolymorphicClasses(), U"@polymorphicClassArray"));
     mainCompileUnit.GlobalNs()->AddMember(MakeStaticClassArray(rootModule->GetSymbolTable().ClassesHavingStaticConstructor(), U"@staticClassArray"));
 
-    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), cmajor::ast::Specifiers::public_ | cmajor::ast::Specifiers::winapi,
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"WinMain", nullptr));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::VoidNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"instance")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::VoidNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"prevInstance")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"commandLine")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"cmdShow")));
+    cmajor::ast::FunctionNode* mainFunction(new cmajor::ast::FunctionNode(soul::ast::Span(), cmajor::ast::Specifiers::public_ | cmajor::ast::Specifiers::winapi,
+        new cmajor::ast::IntNode(soul::ast::Span()), U"WinMain", nullptr));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::VoidNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"instance")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::VoidNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"prevInstance")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"commandLine")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"cmdShow")));
     mainFunction->SetProgramMain();
 
-    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(constructExitCode);
     cmajor::ast::ExpressionStatementNode* rtInitCall = nullptr;
-    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtInit"));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@polymorphicClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 4))); // 4 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@polymorphicClassArray"), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@staticClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 2))); // 2 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"@staticClassArray"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeRtInit);
+    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtInit"));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@polymorphicClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 4))); // 4 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@polymorphicClassArray"), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@staticClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 2))); // 2 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@staticClassArray"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
 
     cmajor::ast::InvokeNode* invokeRtSetGlobalInitFunction = new cmajor::ast::InvokeNode(
-        soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtSetGlobalInitFunction"));
-    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"GlobalInitCompileUnits"));
-    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(),
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtSetGlobalInitFunction"));
+    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"GlobalInitCompileUnits"));
+    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(),
         invokeRtSetGlobalInitFunction);
     mainFunctionBody->AddStatement(rtSetGlobalInitFunctionCall);
 
-    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgc")));
+    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgc")));
     mainFunctionBody->AddStatement(argc);
-    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())))), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
-    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgv")));
+    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::ConstNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::PointerNode(soul::ast::Span(), new cmajor::ast::CharNode(soul::ast::Span())))), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
+    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgv")));
     mainFunctionBody->AddStatement(argv);
     if (!rootModule->GetSymbolTable().JsonClasses().empty())
     {
-        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RegisterJsonClasses")));
+        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
+            new cmajor::ast::InvokeNode(soul::ast::Span(),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RegisterJsonClasses")));
         mainFunctionBody->AddStatement(registerJsonClassesCall);
     }
 
-    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
+    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
     cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
-    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), userMain->GroupName()));
+    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
     }
     cmajor::ast::StatementNode* callMainStatement = nullptr;
     if (!userMain->ReturnType() || userMain->ReturnType()->IsVoidType())
     {
-        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeMain);
+        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeMain);
     }
     else
     {
-        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"), invokeMain);
+        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"), invokeMain);
     }
-    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Initialize"));
-    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeInitialize);
+    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Initialize"));
+    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeInitialize);
     tryBlock->AddStatement(callInitializeStatement);
-    cmajor::ast::InvokeNode* invokeSetInstance = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinSetInstance"));
-    cmajor::ast::ExpressionStatementNode* setInstanceStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeSetInstance);
+    cmajor::ast::InvokeNode* invokeSetInstance = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinSetInstance"));
+    cmajor::ast::ExpressionStatementNode* setInstanceStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeSetInstance);
     tryBlock->AddStatement(setInstanceStatement);
     tryBlock->AddStatement(callMainStatement);
-    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::SourcePos(), util::nil_uuid(), tryBlock);
-    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::LValueRefNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Exception"))), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"), catchBlock);
+    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::Span(), tryBlock);
+    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::Span(), new cmajor::ast::ConstNode(soul::ast::Span(), 
+        new cmajor::ast::LValueRefNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Exception"))), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"), catchBlock);
     tryStatement->AddCatch(catchAll);
-    cmajor::ast::InvokeNode* invokeWinShowMessageBox = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinShowMessageBoxWithType"));
-    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ToString")));
-    cmajor::ast::ConstructionStatementNode* constructExStr = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"string"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exStr"));
+    cmajor::ast::InvokeNode* invokeWinShowMessageBox = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinShowMessageBoxWithType"));
+    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ToString")));
+    cmajor::ast::ConstructionStatementNode* constructExStr = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"string"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exStr"));
     constructExStr->AddArgument(exToString);
     catchBlock->AddStatement(constructExStr);
-    cmajor::ast::ConstructionStatementNode* constructExCharPtr = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exCharPtr"));
+    cmajor::ast::ConstructionStatementNode* constructExCharPtr = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span())), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exCharPtr"));
     catchBlock->AddStatement(constructExCharPtr);
-    cmajor::ast::InvokeNode* invokeExChars = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exStr"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Chars")));
+    cmajor::ast::InvokeNode* invokeExChars = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exStr"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Chars")));
     constructExCharPtr->AddArgument(invokeExChars);
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exCharPtr"));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::SourcePos(), util::nil_uuid()));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::SourcePos(), util::nil_uuid()));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::UIntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 0x00000010 | 0x00000000)); // MB_ICONSTOP | MB_OK
-    cmajor::ast::ExpressionStatementNode* showMessageBoxStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeWinShowMessageBox);
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exCharPtr"));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::Span()));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::Span()));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::UIntLiteralNode(soul::ast::Span(), 0x00000010 | 0x00000000)); // MB_ICONSTOP | MB_OK
+    cmajor::ast::ExpressionStatementNode* showMessageBoxStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeWinShowMessageBox);
     catchBlock->AddStatement(showMessageBoxStatement);
-    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"),
-        new cmajor::ast::IntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 1));
+    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"),
+        new cmajor::ast::IntLiteralNode(soul::ast::Span(), 1));
     catchBlock->AddStatement(assignExitCodeStatement);
     mainFunctionBody->AddStatement(tryStatement);
-    cmajor::ast::ExpressionStatementNode* winDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinDone")));
+    cmajor::ast::ExpressionStatementNode* winDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::InvokeNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinDone")));
     mainFunctionBody->AddStatement(winDoneCall);
     cmajor::ast::ExpressionStatementNode* rtDoneCall = nullptr;
-    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtDone")));
+    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtDone")));
     mainFunctionBody->AddStatement(rtDoneCall);
-    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtExit"));
-    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
-    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), exitCall);
+    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtExit"));
+    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
+    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), exitCall);
     mainFunctionBody->AddStatement(rtExitCall);
-    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
@@ -612,162 +611,162 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::symbols::Module* rootModule, std::ve
 
 void GenerateMainUnitCppWindowsGUI(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
-    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::SourcePos(), util::nil_uuid(),
+    cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(),
         std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
     mainCompileUnit.SetSynthesizedUnit();
     mainCompileUnit.SetProgramMainUnit();
-    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System")));
+    mainCompileUnit.GlobalNs()->AddMember(new cmajor::ast::NamespaceImportNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System")));
     mainCompileUnit.GlobalNs()->AddMember(MakePolymorphicClassArray(rootModule->GetSymbolTable().PolymorphicClasses(), U"__polymorphicClassArray"));
     mainCompileUnit.GlobalNs()->AddMember(MakeStaticClassArray(rootModule->GetSymbolTable().ClassesHavingStaticConstructor(), U"__staticClassArray"));
     std::string platform = cmajor::ast::GetPlatform();
-    cmajor::ast::FunctionNode* mainFunction = new cmajor::ast::FunctionNode(soul::ast::SourcePos(), util::nil_uuid(), 
+    cmajor::ast::FunctionNode* mainFunction = new cmajor::ast::FunctionNode(soul::ast::Span(), 
         cmajor::ast::Specifiers::public_ | cmajor::ast::Specifiers::winapi,
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), U"WinMain", nullptr);
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::VoidNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"instance")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::VoidNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"prevInstance")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"commandLine")));
-    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"cmdShow")));
+        new cmajor::ast::IntNode(soul::ast::Span()), U"WinMain", nullptr);
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+        new cmajor::ast::VoidNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"instance")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::VoidNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"prevInstance")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(), 
+        new cmajor::ast::CharNode(soul::ast::Span())),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"commandLine")));
+    mainFunction->AddParameter(new cmajor::ast::ParameterNode(soul::ast::Span(), new cmajor::ast::IntNode(soul::ast::Span()), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"cmdShow")));
     mainFunction->SetProgramMain();
 
-    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::CompoundStatementNode* mainFunctionBody = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::ConstructionStatementNode* constructExitCode = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(constructExitCode);
     cmajor::ast::ExpressionStatementNode* rtInitCall = nullptr;
-    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtInit"));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__polymorphicClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 4))); // 4 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(),
-        U"__polymorphicClassArray"), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__staticClassArray"),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Length"))),
-        new cmajor::ast::LongLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 2))); // 2 64-bit integers per entry
-    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"__staticClassArray"), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"CBegin"))));
-    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeRtInit);
+    cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtInit"));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__polymorphicClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 4))); // 4 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(),
+        U"__polymorphicClassArray"), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
+        new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__staticClassArray"),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Length"))),
+        new cmajor::ast::LongLiteralNode(soul::ast::Span(), 2))); // 2 64-bit integers per entry
+    invokeRtInit->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"__staticClassArray"), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
+    rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
 
     cmajor::ast::InvokeNode* invokeRtSetGlobalInitFunction = new cmajor::ast::InvokeNode(
-        soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtSetGlobalInitFunction"));
-    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"GlobalInitCompileUnits"));
-    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(),
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtSetGlobalInitFunction"));
+    invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"GlobalInitCompileUnits"));
+    cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(),
         invokeRtSetGlobalInitFunction);
     mainFunctionBody->AddStatement(rtSetGlobalInitFunctionCall);
 
-    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IntNode(soul::ast::SourcePos(), util::nil_uuid()),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgc")));
+    cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IntNode(soul::ast::Span()),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+    argc->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgc")));
     mainFunctionBody->AddStatement(argc);
-    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())))), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
-    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtArgv")));
+    cmajor::ast::ConstructionStatementNode* argv = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::ConstNode(soul::ast::Span(), new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::PointerNode(soul::ast::Span(), new cmajor::ast::CharNode(soul::ast::Span())))), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
+    argv->AddArgument(new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtArgv")));
     mainFunctionBody->AddStatement(argv);
-    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
+    cmajor::ast::CompoundStatementNode* tryBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
     if (!rootModule->GetSymbolTable().JsonClasses().empty())
     {
-        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(),
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RegisterJsonClasses")));
+        cmajor::ast::ExpressionStatementNode* registerJsonClassesCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
+            new cmajor::ast::InvokeNode(soul::ast::Span(),
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RegisterJsonClasses")));
         tryBlock->AddStatement(registerJsonClassesCall);
     }
     cmajor::symbols::FunctionSymbol* userMain = rootModule->GetSymbolTable().MainFunctionSymbol();
-    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), userMain->GroupName()));
+    cmajor::ast::InvokeNode* invokeMain = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), userMain->GroupName()));
     if (!userMain->Parameters().empty())
     {
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argc"));
-        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"argv"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argc"));
+        invokeMain->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"argv"));
     }
     cmajor::ast::StatementNode* callMainStatement = nullptr;
     if (!userMain->ReturnType() || userMain->ReturnType()->IsVoidType())
     {
-        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeMain);
+        callMainStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeMain);
     }
     else
     {
-        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-            new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"), invokeMain);
+        callMainStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+            new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"), invokeMain);
     }
-    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Initialize"));
-    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeInitialize);
+    cmajor::ast::InvokeNode* invokeInitialize = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Initialize"));
+    cmajor::ast::StatementNode* callInitializeStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeInitialize);
     tryBlock->AddStatement(callInitializeStatement);
-    cmajor::ast::InvokeNode* invokeSetInstance = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinSetInstance"));
-    cmajor::ast::ExpressionStatementNode* setInstanceStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeSetInstance);
+    cmajor::ast::InvokeNode* invokeSetInstance = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinSetInstance"));
+    cmajor::ast::ExpressionStatementNode* setInstanceStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeSetInstance);
     tryBlock->AddStatement(setInstanceStatement);
     tryBlock->AddStatement(callMainStatement);
-    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::SourcePos(), util::nil_uuid(), tryBlock);
-    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::SourcePos(), util::nil_uuid());
-    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::ConstNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::LValueRefNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"System.Exception"))), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"), catchBlock);
+    cmajor::ast::TryStatementNode* tryStatement = new cmajor::ast::TryStatementNode(soul::ast::Span(), tryBlock);
+    cmajor::ast::CompoundStatementNode* catchBlock = new cmajor::ast::CompoundStatementNode(soul::ast::Span());
+    cmajor::ast::CatchNode* catchAll = new cmajor::ast::CatchNode(soul::ast::Span(), new cmajor::ast::ConstNode(soul::ast::Span(), 
+        new cmajor::ast::LValueRefNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"System.Exception"))), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"), catchBlock);
     tryStatement->AddCatch(catchAll);
-    cmajor::ast::InvokeNode* invokeWinShowMessageBox = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinShowMessageBoxWithType"));
-    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ex"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"ToString")));
-    cmajor::ast::ConstructionStatementNode* constructExStr = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"string"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exStr"));
+    cmajor::ast::InvokeNode* invokeWinShowMessageBox = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinShowMessageBoxWithType"));
+    cmajor::ast::InvokeNode* exToString = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::DotNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ex"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"ToString")));
+    cmajor::ast::ConstructionStatementNode* constructExStr = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"string"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exStr"));
     constructExStr->AddArgument(exToString);
     catchBlock->AddStatement(constructExStr);
-    cmajor::ast::ConstructionStatementNode* constructExCharPtr = new cmajor::ast::ConstructionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::PointerNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::CharNode(soul::ast::SourcePos(), util::nil_uuid())), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exCharPtr"));
+    cmajor::ast::ConstructionStatementNode* constructExCharPtr = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::PointerNode(soul::ast::Span(),
+        new cmajor::ast::CharNode(soul::ast::Span())), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exCharPtr"));
     catchBlock->AddStatement(constructExCharPtr);
-    cmajor::ast::InvokeNode* invokeExChars = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::DotNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exStr"),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"Chars")));
+    cmajor::ast::InvokeNode* invokeExChars = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::DotNode(soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exStr"),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"Chars")));
     constructExCharPtr->AddArgument(invokeExChars);
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exCharPtr"));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::SourcePos(), util::nil_uuid()));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::SourcePos(), util::nil_uuid()));
-    invokeWinShowMessageBox->AddArgument(new cmajor::ast::UIntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 0x00000010 | 0x00000000)); // MB_ICONSTOP | MB_OK
-    cmajor::ast::ExpressionStatementNode* showMessageBoxStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), invokeWinShowMessageBox);
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exCharPtr"));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::Span()));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::NullLiteralNode(soul::ast::Span()));
+    invokeWinShowMessageBox->AddArgument(new cmajor::ast::UIntLiteralNode(soul::ast::Span(), 0x00000010 | 0x00000000)); // MB_ICONSTOP | MB_OK
+    cmajor::ast::ExpressionStatementNode* showMessageBoxStatement = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeWinShowMessageBox);
     catchBlock->AddStatement(showMessageBoxStatement);
-    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"),
-        new cmajor::ast::IntLiteralNode(soul::ast::SourcePos(), util::nil_uuid(), 1));
+    cmajor::ast::AssignmentStatementNode* assignExitCodeStatement = new cmajor::ast::AssignmentStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"),
+        new cmajor::ast::IntLiteralNode(soul::ast::Span(), 1));
     catchBlock->AddStatement(assignExitCodeStatement);
     mainFunctionBody->AddStatement(tryStatement);
-    cmajor::ast::ExpressionStatementNode* winDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(),
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"WinDone")));
+    cmajor::ast::ExpressionStatementNode* winDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
+        new cmajor::ast::InvokeNode(soul::ast::Span(),
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"WinDone")));
     mainFunctionBody->AddStatement(winDoneCall);
     cmajor::ast::ExpressionStatementNode* rtDoneCall = nullptr;
-    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtDone")));
+    rtDoneCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtDone")));
     mainFunctionBody->AddStatement(rtDoneCall);
-    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"RtExit"));
-    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
-    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::SourcePos(), util::nil_uuid(), exitCall);
+    cmajor::ast::InvokeNode* exitCall = new cmajor::ast::InvokeNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtExit"));
+    exitCall->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
+    cmajor::ast::ExpressionStatementNode* rtExitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), exitCall);
     mainFunctionBody->AddStatement(rtExitCall);
-    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::SourcePos(), util::nil_uuid(), 
-        new cmajor::ast::IdentifierNode(soul::ast::SourcePos(), util::nil_uuid(), U"exitCode"));
+    cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(soul::ast::Span(), 
+        new cmajor::ast::IdentifierNode(soul::ast::Span(), U"exitCode"));
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);

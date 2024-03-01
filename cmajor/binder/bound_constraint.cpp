@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,22 +12,22 @@ import cmajor.binder.bound.node.visitor;
 
 namespace cmajor::binder {
 
-BoundConstraint::BoundConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_) : BoundNode(sourcePos_, moduleId_, boundNodeType_)
+BoundConstraint::BoundConstraint(const soul::ast::Span& span_, BoundNodeType boundNodeType_) : BoundNode(span_, boundNodeType_)
 {
 }
 
 void BoundConstraint::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load constraint", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot load constraint", GetFullSpan());
 }
 
 void BoundConstraint::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store constraint", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot store constraint", GetFullSpan());
 }
 
-BoundAtomicConstraint::BoundAtomicConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool satisfied_) :
-    BoundConstraint(sourcePos_, moduleId_, BoundNodeType::boundAtomicConstraint), satisfied(satisfied_), conceptSymbol(nullptr)
+BoundAtomicConstraint::BoundAtomicConstraint(const soul::ast::Span& span_, bool satisfied_) :
+    BoundConstraint(span_, BoundNodeType::boundAtomicConstraint), satisfied(satisfied_), conceptSymbol(nullptr)
 {
 }
 
@@ -117,8 +117,8 @@ BoundConstraint* BoundAtomicConstraint::Clone() const
     return new BoundAtomicConstraint(*this);
 }
 
-BoundBinaryConstraint::BoundBinaryConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundNodeType boundNodeType_, BoundConstraint* left_, BoundConstraint* right_) :
-    BoundConstraint(sourcePos_, moduleId_, boundNodeType_), left(left_), right(right_)
+BoundBinaryConstraint::BoundBinaryConstraint(const soul::ast::Span& span_, BoundNodeType boundNodeType_, BoundConstraint* left_, BoundConstraint* right_) :
+    BoundConstraint(span_, boundNodeType_), left(left_), right(right_)
 {
 }
 
@@ -126,8 +126,8 @@ BoundBinaryConstraint::BoundBinaryConstraint(const BoundBinaryConstraint& that) 
 {
 }
 
-BoundDisjunctiveConstraint::BoundDisjunctiveConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundConstraint* left_, BoundConstraint* right_) :
-    BoundBinaryConstraint(sourcePos_, moduleId_, BoundNodeType::boundDisjunctiveConstraint, left_, right_)
+BoundDisjunctiveConstraint::BoundDisjunctiveConstraint(const soul::ast::Span& span_, BoundConstraint* left_, BoundConstraint* right_) :
+    BoundBinaryConstraint(span_, BoundNodeType::boundDisjunctiveConstraint, left_, right_)
 {
 }
 
@@ -182,8 +182,8 @@ BoundConstraint* BoundDisjunctiveConstraint::Clone() const
     return new BoundDisjunctiveConstraint(*this);
 }
 
-BoundConjunctiveConstraint::BoundConjunctiveConstraint(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundConstraint* left_, BoundConstraint* right_) :
-    BoundBinaryConstraint(sourcePos_, moduleId_, BoundNodeType::boundConjunctiveConstraint, left_, right_)
+BoundConjunctiveConstraint::BoundConjunctiveConstraint(const soul::ast::Span& span_, BoundConstraint* left_, BoundConstraint* right_) :
+    BoundBinaryConstraint(span_, BoundNodeType::boundConjunctiveConstraint, left_, right_)
 {
 }
 
@@ -256,25 +256,25 @@ std::u32string MakeBoundConceptName(cmajor::symbols::ConceptSymbol* conceptSymbo
     return s;
 }
 
-BoundConcept::BoundConcept(cmajor::symbols::ConceptSymbol* conceptSymbol_, const std::vector<cmajor::symbols::TypeSymbol*>& typeArguments_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    BoundNode(sourcePos_, moduleId_, BoundNodeType::boundConcept), name(MakeBoundConceptName(conceptSymbol_, typeArguments_)), conceptSymbol(conceptSymbol_), typeArguments(typeArguments_),
+BoundConcept::BoundConcept(cmajor::symbols::ConceptSymbol* conceptSymbol_, const std::vector<cmajor::symbols::TypeSymbol*>& typeArguments_, const soul::ast::Span& span_) :
+    BoundNode(span_, BoundNodeType::boundConcept), name(MakeBoundConceptName(conceptSymbol_, typeArguments_)), conceptSymbol(conceptSymbol_), typeArguments(typeArguments_),
     commonType(nullptr)
 {
 }
 
 void BoundConcept::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load bound concept", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot load bound concept", GetFullSpan());
 }
 
 void BoundConcept::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store bound concept", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot store bound concept", GetFullSpan());
 }
 
 void BoundConcept::Accept(BoundNodeVisitor& visitor)
 {
-    throw cmajor::symbols::Exception("cannot visit bound concept", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot visit bound concept", GetFullSpan());
 }
 
 void BoundConcept::SetBoundConstraint(std::unique_ptr<BoundConstraint>&& boundConstraint_)

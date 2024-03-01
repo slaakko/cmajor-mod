@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,6 +8,7 @@ export module cmajor.binder.bound.function;
 import std.core;
 import cmajor.binder.bound.node;
 import cmajor.binder.bound.statement;
+import cmajor.ast;
 import cmajor.symbols;
 import cmajor.ir;
 
@@ -31,7 +32,7 @@ public:
     void SetHasGotos() { hasGotos = true; }
     bool HasGotos() const { return hasGotos; }
     void AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall>&& destructorCall, BoundFunction* currentFunction, cmajor::symbols::ContainerScope* currentContainerScope,
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
     void MoveTemporaryDestructorCallsTo(BoundExpression& expression);
     void AddLabeledStatement(BoundStatement* labeledStatement);
     const std::vector<BoundStatement*>& LabeledStatements() const { return labeledStatements; }

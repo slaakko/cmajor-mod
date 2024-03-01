@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -53,9 +53,9 @@ void JsonAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cm
                     {
                         cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "base class '" + util::ToUtf8(baseClass->FullName()) + "' of json-attributed class '" +
                             util::ToUtf8(classTypeSymbol->FullName()) + "' does not explicitly declare 'json' attribute value to \"true\" or \"false\"");
-                        warning.SetDefined(classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
-                        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-                        references.push_back(std::make_pair(baseClass->GetSourcePos(), baseClass->SourceModuleId()));
+                        warning.SetDefined(classTypeSymbol->GetFullSpan());
+                        std::vector<soul::ast::FullSpan> references;
+                        references.push_back(baseClass->GetFullSpan());
                         warning.SetReferences(references);
                         module->WarningCollection().AddWarning(warning);
                     }
@@ -65,7 +65,8 @@ void JsonAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cm
         }
         else
         {
-            throw cmajor::symbols::Exception("unknown attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" + util::ToUtf8(attribute->Name()) + "'", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("unknown attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" + util::ToUtf8(attribute->Name()) + "'",
+                attribute->GetFullSpan());
         }
     }
     }
@@ -122,18 +123,18 @@ void JsonAttributeProcessor::CheckMemberVariableJsonFieldNames(cmajor::symbols::
                 {
                     cmajor::ast::AttributeNode* prev = it->second;
                     throw cmajor::symbols::Exception("error in JSON field name generation: 'jsonFieldName' attribute not unique among member variable names of the current class and its base classes",
-                        jsonFieldNameAttribute->GetSourcePos(), jsonFieldNameAttribute->ModuleId(), prev->GetSourcePos(), prev->ModuleId());
+                        jsonFieldNameAttribute->GetFullSpan(), prev->GetFullSpan());
                 }
                 memberVariableFieldNames[jsonFieldNameAttribute->Value()] = jsonFieldNameAttribute;
             }
             else
             {
-                throw cmajor::symbols::Exception("internal error in JSON field name generation: 'jsonFieldName' attribute not found", memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId());
+                throw cmajor::symbols::Exception("internal error in JSON field name generation: 'jsonFieldName' attribute not found", memberVariableSymbol->GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error in JSON field name generation: attributes not found", memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId());
+            throw cmajor::symbols::Exception("internal error in JSON field name generation: attributes not found", memberVariableSymbol->GetFullSpan());
         }
     }
 }
@@ -162,19 +163,19 @@ void JsonAttributeProcessor::GenerateMemberVariableJsonFieldNames(cmajor::symbol
         }
         else
         {
-            memberVariableSymbol->SetAttributes(std::unique_ptr<cmajor::ast::AttributesNode>(new cmajor::ast::AttributesNode(classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId())));
+            memberVariableSymbol->SetAttributes(std::unique_ptr<cmajor::ast::AttributesNode>(new cmajor::ast::AttributesNode(classTypeSymbol->GetSpan())));
             attributes = memberVariableSymbol->GetAttributes();
         }
         if (!hasJsonFieldAttribute)
         {
-            attributes->AddAttribute(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), U"jsonFieldName", memberVariableSymbol->Name());
+            attributes->AddAttribute(memberVariableSymbol->GetSpan(), U"jsonFieldName", memberVariableSymbol->Name());
         }
     }
 }
 
 void JsonAttributeProcessor::GenerateJsonCreatorFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol)
 {
-    cmajor::symbols::MemberFunctionSymbol* jsonCreatorFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"Create");
+    cmajor::symbols::MemberFunctionSymbol* jsonCreatorFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"Create");
     jsonCreatorFunctionSymbol->SetGroupName(U"Create");
     jsonCreatorFunctionSymbol->SetModule(module);
     module->GetSymbolTable().SetFunctionIdFor(jsonCreatorFunctionSymbol);
@@ -183,18 +184,18 @@ void JsonAttributeProcessor::GenerateJsonCreatorFunctionSymbol(cmajor::ast::Attr
     cmajor::symbols::Symbol* jsonValue = classTypeSymbol->GetModule()->GetSymbolTable().GlobalNs().GetContainerScope()->Lookup(U"System.Json.JsonValue");
     if (!jsonValue || jsonValue->GetSymbolType() != cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
     cmajor::symbols::ClassGroupTypeSymbol* jsonValueGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(jsonValue);
     cmajor::symbols::ClassTypeSymbol* jsonValueClass = jsonValueGroup->GetClass(0);
     if (!jsonValueClass)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
-    cmajor::symbols::ParameterSymbol* jsonValueParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"@value");
-    jsonValueParam->SetType(jsonValueClass->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
+    cmajor::symbols::ParameterSymbol* jsonValueParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@value");
+    jsonValueParam->SetType(jsonValueClass->AddPointer());
     jsonCreatorFunctionSymbol->AddMember(jsonValueParam);
-    jsonCreatorFunctionSymbol->SetReturnType(module->GetSymbolTable().GetTypeByName(U"void")->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
+    jsonCreatorFunctionSymbol->SetReturnType(module->GetSymbolTable().GetTypeByName(U"void")->AddPointer());
     classTypeSymbol->AddMember(jsonCreatorFunctionSymbol);
     jsonCreatorFunctionSymbol->ComputeName();
     jsonCreatorMap[classTypeSymbol] = jsonCreatorFunctionSymbol;
@@ -202,24 +203,24 @@ void JsonAttributeProcessor::GenerateJsonCreatorFunctionSymbol(cmajor::ast::Attr
 
 void JsonAttributeProcessor::GenerateJsonConstructorSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol)
 {
-    cmajor::symbols::ConstructorSymbol* jsonConstructorSymbol = new cmajor::symbols::ConstructorSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"@constructor");
+    cmajor::symbols::ConstructorSymbol* jsonConstructorSymbol = new cmajor::symbols::ConstructorSymbol(attribute->GetSpan(), U"@constructor");
     jsonConstructorSymbol->SetModule(module);
     module->GetSymbolTable().SetFunctionIdFor(jsonConstructorSymbol);
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
-    cmajor::symbols::ParameterSymbol* jsonValueParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"@value");
+    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
+    thisParam->SetType(classTypeSymbol->AddPointer());
+    cmajor::symbols::ParameterSymbol* jsonValueParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@value");
     cmajor::symbols::Symbol* jsonValue = classTypeSymbol->GetModule()->GetSymbolTable().GlobalNs().GetContainerScope()->Lookup(U"System.Json.JsonValue");
     if (!jsonValue || jsonValue->GetSymbolType() != cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
     cmajor::symbols::ClassGroupTypeSymbol* jsonValueGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(jsonValue);
     cmajor::symbols::ClassTypeSymbol* jsonValueClass = jsonValueGroup->GetClass(0);
     if (!jsonValueClass)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonValue class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
-    jsonValueParam->SetType(jsonValueClass->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
+    jsonValueParam->SetType(jsonValueClass->AddPointer());
     jsonConstructorSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     jsonConstructorSymbol->SetExplicit();
     jsonConstructorSymbol->AddMember(thisParam);
@@ -231,7 +232,7 @@ void JsonAttributeProcessor::GenerateJsonConstructorSymbol(cmajor::ast::Attribut
 
 void JsonAttributeProcessor::GenerateToJsonJsonObjectSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol)
 {
-    cmajor::symbols::MemberFunctionSymbol* toJsonJsonObjectMemberFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"ToJson");
+    cmajor::symbols::MemberFunctionSymbol* toJsonJsonObjectMemberFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ToJson");
     toJsonJsonObjectMemberFunctionSymbol->SetModule(module);
     toJsonJsonObjectMemberFunctionSymbol->SetGroupName(U"ToJson");
     cmajor::symbols::ClassTypeSymbol* baseClass = classTypeSymbol->BaseClass();
@@ -260,21 +261,21 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectSymbol(cmajor::ast::Attribu
         toJsonJsonObjectMemberFunctionSymbol->SetOverride();
     }
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(toJsonJsonObjectMemberFunctionSymbol);
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
-    cmajor::symbols::ParameterSymbol* jsonObjectParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"@object");
+    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
+    thisParam->SetType(classTypeSymbol->AddPointer());
+    cmajor::symbols::ParameterSymbol* jsonObjectParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@object");
     cmajor::symbols::Symbol* jsonObject = cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().GlobalNs().GetContainerScope()->Lookup(U"System.Json.JsonObject");
     if (!jsonObject || jsonObject->GetSymbolType() != cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonObject class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonObject class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
     cmajor::symbols::ClassGroupTypeSymbol* jsonObjectGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(jsonObject);
     cmajor::symbols::ClassTypeSymbol* jsonObjectClass = jsonObjectGroup->GetClass(0);
     if (!jsonObjectClass)
     {
-        throw cmajor::symbols::Exception("System.Json.JsonObject class not found from the symbol table", attribute->GetSourcePos(), attribute->ModuleId(), classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId());
+        throw cmajor::symbols::Exception("System.Json.JsonObject class not found from the symbol table", attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
     }
-    jsonObjectParam->SetType(jsonObjectClass->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
+    jsonObjectParam->SetType(jsonObjectClass->AddPointer());
     toJsonJsonObjectMemberFunctionSymbol->SetReturnType(module->GetSymbolTable().GetTypeByName(U"void"));
     toJsonJsonObjectMemberFunctionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     toJsonJsonObjectMemberFunctionSymbol->AddMember(thisParam);
@@ -286,7 +287,7 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectSymbol(cmajor::ast::Attribu
 
 void JsonAttributeProcessor::GenerateToJsonSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
-    cmajor::symbols::MemberFunctionSymbol* toJsonMemberFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"ToJson");
+    cmajor::symbols::MemberFunctionSymbol* toJsonMemberFunctionSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ToJson");
     toJsonMemberFunctionSymbol->SetModule(module);
     toJsonMemberFunctionSymbol->SetGroupName(U"ToJson");
     cmajor::symbols::ClassTypeSymbol* baseClass = classTypeSymbol->BaseClass();
@@ -315,15 +316,15 @@ void JsonAttributeProcessor::GenerateToJsonSymbol(cmajor::ast::AttributeNode* at
         toJsonMemberFunctionSymbol->SetOverride();
     }
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(toJsonMemberFunctionSymbol);
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
-    cmajor::ast::TemplateIdNode templateId(attribute->GetSourcePos(), attribute->ModuleId(), new cmajor::ast::IdentifierNode(attribute->GetSourcePos(), attribute->ModuleId(), U"System.UniquePtr"));
-    templateId.AddTemplateArgument(new cmajor::ast::IdentifierNode(attribute->GetSourcePos(), attribute->ModuleId(), U"System.Json.JsonValue"));
+    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
+    thisParam->SetType(classTypeSymbol->AddPointer());
+    cmajor::ast::TemplateIdNode templateId(attribute->GetSpan(), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System.UniquePtr"));
+    templateId.AddTemplateArgument(new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System.Json.JsonValue"));
     cmajor::symbols::TypeSymbol* uniquePtrJsonValueType = ResolveType(&templateId, boundCompileUnit, containerScope);
     toJsonMemberFunctionSymbol->SetReturnType(uniquePtrJsonValueType);
-    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSourcePos(), attribute->ModuleId(), U"@return");
+    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
     returnParam->SetParent(toJsonMemberFunctionSymbol);
-    returnParam->SetType(uniquePtrJsonValueType->AddPointer(attribute->GetSourcePos(), attribute->ModuleId()));
+    returnParam->SetType(uniquePtrJsonValueType->AddPointer());
     toJsonMemberFunctionSymbol->SetReturnParam(returnParam);
     toJsonMemberFunctionSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     toJsonMemberFunctionSymbol->AddMember(thisParam);
@@ -345,7 +346,8 @@ void JsonAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* 
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: constructor symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: constructor symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found",
+                attribute->GetFullSpan());
         }
         auto it1 = jsonCreatorMap.find(symbol);
         if (it1 != jsonCreatorMap.cend())
@@ -355,7 +357,8 @@ void JsonAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* 
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: Creator function symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: Creator function symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found", 
+                attribute->GetFullSpan());
         }
         auto it2 = toJsonJsonObjectMemberFunctionSymbolMap.find(symbol);
         if (it2 != toJsonJsonObjectMemberFunctionSymbolMap.cend())
@@ -365,7 +368,9 @@ void JsonAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* 
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: member function 'ToJson' symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: member function 'ToJson' symbol for symbol '" + 
+                util::ToUtf8(symbol->FullName()) + "' not found", 
+                attribute->GetFullSpan());
         }
         auto it3 = toJsonObjectMemberFunctionSymbolMap.find(symbol);
         if (it3 != toJsonObjectMemberFunctionSymbolMap.cend())
@@ -375,7 +380,8 @@ void JsonAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* 
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: member function 'ToJson' symbol for symbol '" + util::ToUtf8(symbol->FullName()) + "' not found", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("internal error in JSON attribute implementation: member function 'ToJson' symbol for symbol '" + 
+                util::ToUtf8(symbol->FullName()) + "' not found", attribute->GetFullSpan());
         }
         cmajor::symbols::SymbolTable& symbolTable = module->GetSymbolTable();
         symbolTable.AddJsonClass(classTypeSymbol->FullName());
@@ -394,12 +400,11 @@ void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::Attr
         }
         statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
         std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), jsonCreatorFunctionSymbol));
-        soul::ast::SourcePos sourcePos = attribute->GetSourcePos();
-        util::uuid moduleId = attribute->ModuleId();
-        cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, classTypeSymbol->FullName()));
-        newNode->AddArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@value"));
-        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(sourcePos, moduleId, newNode);
+        soul::ast::Span span = attribute->GetSpan();
+        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
+        cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(span, new cmajor::ast::IdentifierNode(span, classTypeSymbol->FullName()));
+        newNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"@value"));
+        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, newNode);
         compoundStatementNode.AddStatement(returnStatementNode);
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(jsonCreatorFunctionSymbol);
@@ -426,11 +431,11 @@ void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::Attr
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
         throw cmajor::symbols::Exception("error in JSON attribute generation: could not create JSON Create() function for class '" + util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId(), references);
+            classTypeSymbol->GetFullSpan(), references);
     }
 }
 
@@ -446,10 +451,9 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
         }
         statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
         std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), jsonConstructorSymbol));
-        soul::ast::SourcePos sourcePos = attribute->GetSourcePos();
-        util::uuid moduleId = attribute->ModuleId();
-        cmajor::ast::ConstructorNode constructorNode(sourcePos, moduleId);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
+        soul::ast::Span span = attribute->GetSpan();
+        cmajor::ast::ConstructorNode constructorNode(span);
+        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
         cmajor::symbols::ClassTypeSymbol* baseClass = classTypeSymbol->BaseClass();
         if (baseClass)
         {
@@ -461,8 +465,8 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
                 {
                     if (jsonAttribute->Value() == U"true")
                     {
-                        cmajor::ast::BaseInitializerNode* baseInitializer = new cmajor::ast::BaseInitializerNode(sourcePos, moduleId);
-                        baseInitializer->AddArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@value"));
+                        cmajor::ast::BaseInitializerNode* baseInitializer = new cmajor::ast::BaseInitializerNode(span);
+                        baseInitializer->AddArgument(new cmajor::ast::IdentifierNode(span, U"@value"));
                         constructorNode.AddInitializer(baseInitializer);
                     }
                 }
@@ -488,11 +492,11 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
                     jsonFieldName = jsonFieldNameAttribute->Value();
                 }
             }
-            cmajor::ast::InvokeNode* invokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"FromJson"));
-            invokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), U"@value"));
-            invokeNode->AddArgument(new cmajor::ast::UStringLiteralNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), jsonFieldName));
-            invokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), memberVariableSymbol->Name()));
-            cmajor::ast::ExpressionStatementNode* fromJsonStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), invokeNode);
+            cmajor::ast::InvokeNode* invokeNode = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"FromJson"));
+            invokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"@value"));
+            invokeNode->AddArgument(new cmajor::ast::UStringLiteralNode(memberVariableSymbol->GetSpan(), jsonFieldName));
+            invokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), memberVariableSymbol->Name()));
+            cmajor::ast::ExpressionStatementNode* fromJsonStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), invokeNode);
             compoundStatementNode.AddStatement(fromJsonStatement);
         }
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
@@ -524,11 +528,11 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create JSON constructor for class '" + util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId(), references);
+        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create JSON constructor for class '" + 
+            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
     }
 }
 
@@ -544,9 +548,8 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
         }
         statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
         std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), toJsonJsonObjectMemberFunctionSymbol));
-        soul::ast::SourcePos sourcePos = attribute->GetSourcePos();
-        util::uuid moduleId = attribute->ModuleId();
-        cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
+        soul::ast::Span span = attribute->GetSpan();
+        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
         cmajor::symbols::ClassTypeSymbol* baseClass = classTypeSymbol->BaseClass();
         if (baseClass)
         {
@@ -558,11 +561,11 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
                 {
                     if (jsonAttribute->Value() == U"true")
                     {
-                        cmajor::ast::BaseNode* baseNode = new cmajor::ast::BaseNode(sourcePos, moduleId);
-                        cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(sourcePos, moduleId, baseNode, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ToJson"));
-                        cmajor::ast::InvokeNode* toJsonInvokeNode = new cmajor::ast::InvokeNode(sourcePos, moduleId, arrowNode);
-                        toJsonInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@object"));
-                        cmajor::ast::ExpressionStatementNode* toJsonStatement = new cmajor::ast::ExpressionStatementNode(sourcePos, moduleId, toJsonInvokeNode);
+                        cmajor::ast::BaseNode* baseNode = new cmajor::ast::BaseNode(span);
+                        cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, baseNode, new cmajor::ast::IdentifierNode(span, U"ToJson"));
+                        cmajor::ast::InvokeNode* toJsonInvokeNode = new cmajor::ast::InvokeNode(span, arrowNode);
+                        toJsonInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"@object"));
+                        cmajor::ast::ExpressionStatementNode* toJsonStatement = new cmajor::ast::ExpressionStatementNode(span, toJsonInvokeNode);
                         compoundStatementNode.AddStatement(toJsonStatement);
                     }
                 }
@@ -588,13 +591,14 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
                     jsonFieldName = jsonFieldNameAttribute->Value();
                 }
             }
-            cmajor::ast::InvokeNode* toJsonInvokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ToJson"));
-            toJsonInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), memberVariableSymbol->Name()));
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@object"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"AddField"));
-            cmajor::ast::InvokeNode* addFieldInvokeNode = new cmajor::ast::InvokeNode(sourcePos, moduleId, arrowNode);
-            addFieldInvokeNode->AddArgument(new cmajor::ast::UStringLiteralNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), jsonFieldName));
+            cmajor::ast::InvokeNode* toJsonInvokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSpan(), new cmajor::ast::IdentifierNode(span, U"ToJson"));
+            toJsonInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), memberVariableSymbol->Name()));
+            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"@object"), 
+                new cmajor::ast::IdentifierNode(span, U"AddField"));
+            cmajor::ast::InvokeNode* addFieldInvokeNode = new cmajor::ast::InvokeNode(span, arrowNode);
+            addFieldInvokeNode->AddArgument(new cmajor::ast::UStringLiteralNode(memberVariableSymbol->GetSpan(), jsonFieldName));
             addFieldInvokeNode->AddArgument(toJsonInvokeNode);
-            cmajor::ast::ExpressionStatementNode* addFieldStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSourcePos(), memberVariableSymbol->SourceModuleId(), addFieldInvokeNode);
+            cmajor::ast::ExpressionStatementNode* addFieldStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), addFieldInvokeNode);
             compoundStatementNode.AddStatement(addFieldStatement);
         }
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
@@ -622,11 +626,11 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create 'void ToJson(JsobObject*)' member function for class '" + util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId(), references);
+        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create 'void ToJson(JsobObject*)' member function for class '" + 
+            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
     }
 }
 
@@ -642,23 +646,25 @@ void JsonAttributeProcessor::GenerateToJsonImplementation(cmajor::ast::Attribute
         }
         statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
         std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), toJsonMemberFunctionSymbol));
-        soul::ast::SourcePos sourcePos = attribute->GetSourcePos();
-        util::uuid moduleId = attribute->ModuleId();
-        cmajor::ast::CompoundStatementNode compoundStatementNode(sourcePos, moduleId);
-        cmajor::ast::TemplateIdNode* uniquePtrJsonObject = new cmajor::ast::TemplateIdNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"UniquePtr"));
-        uniquePtrJsonObject->AddTemplateArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"JsonObject"));
-        cmajor::ast::ConstructionStatementNode* constructJsonObjectStatement = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, uniquePtrJsonObject, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@object"));
-        constructJsonObjectStatement->AddArgument(new cmajor::ast::NewNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"JsonObject")));
+        soul::ast::Span span = attribute->GetSpan();
+        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
+        cmajor::ast::TemplateIdNode* uniquePtrJsonObject = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"UniquePtr"));
+        uniquePtrJsonObject->AddTemplateArgument(new cmajor::ast::IdentifierNode(span, U"JsonObject"));
+        cmajor::ast::ConstructionStatementNode* constructJsonObjectStatement = new cmajor::ast::ConstructionStatementNode(span, uniquePtrJsonObject, 
+            new cmajor::ast::IdentifierNode(span, U"@object"));
+        constructJsonObjectStatement->AddArgument(new cmajor::ast::NewNode(span, new cmajor::ast::IdentifierNode(span, U"JsonObject")));
         compoundStatementNode.AddStatement(constructJsonObjectStatement);
-        cmajor::ast::InvokeNode* invokeToJson = new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ToJson"));
-        invokeToJson->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@object"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Get"))));
-        cmajor::ast::ExpressionStatementNode* callToJsonStatement = new cmajor::ast::ExpressionStatementNode(sourcePos, moduleId, invokeToJson);
+        cmajor::ast::InvokeNode* invokeToJson = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToJson"));
+        invokeToJson->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"@object"), 
+            new cmajor::ast::IdentifierNode(span, U"Get"))));
+        cmajor::ast::ExpressionStatementNode* callToJsonStatement = new cmajor::ast::ExpressionStatementNode(span, invokeToJson);
         compoundStatementNode.AddStatement(callToJsonStatement);
-        cmajor::ast::TemplateIdNode* uniquePtrJsonValue = new cmajor::ast::TemplateIdNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"UniquePtr"));
-        uniquePtrJsonValue->AddTemplateArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"JsonValue"));
-        cmajor::ast::InvokeNode* invokeJsonValue = new cmajor::ast::InvokeNode(sourcePos, moduleId, uniquePtrJsonValue);
-        invokeJsonValue->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@object"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Release"))));
-        cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(sourcePos, moduleId, invokeJsonValue);
+        cmajor::ast::TemplateIdNode* uniquePtrJsonValue = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"UniquePtr"));
+        uniquePtrJsonValue->AddTemplateArgument(new cmajor::ast::IdentifierNode(span, U"JsonValue"));
+        cmajor::ast::InvokeNode* invokeJsonValue = new cmajor::ast::InvokeNode(span, uniquePtrJsonValue);
+        invokeJsonValue->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"@object"), 
+            new cmajor::ast::IdentifierNode(span, U"Release"))));
+        cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(span, invokeJsonValue);
         compoundStatementNode.AddStatement(returnStatement);
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(toJsonMemberFunctionSymbol);
@@ -685,11 +691,11 @@ void JsonAttributeProcessor::GenerateToJsonImplementation(cmajor::ast::Attribute
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create 'UniquePtr<JsonValue> ToJson()' member function for class '" + util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetSourcePos(), classTypeSymbol->SourceModuleId(), references);
+        throw cmajor::symbols::Exception("error in JSON attribute generation: could not create 'UniquePtr<JsonValue> ToJson()' member function for class '" + 
+            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
     }
 }
 
@@ -703,7 +709,8 @@ void JsonFieldNameAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attr
     {
         if (attribute->Value().empty())
         {
-            throw cmajor::symbols::Exception("attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" + util::ToUtf8(attribute->Name()) + "' cannot be empty string", attribute->GetSourcePos(), attribute->ModuleId());
+            throw cmajor::symbols::Exception("attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" +
+                util::ToUtf8(attribute->Name()) + "' cannot be empty string", attribute->GetFullSpan());
         }
         return;
     }

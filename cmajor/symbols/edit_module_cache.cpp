@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -108,7 +108,7 @@ LoadEditModuleResult EditModuleCache::LoadEditModule(const std::string& projectF
     module->SetCurrentProjectName(project->Name());
     module->SetCurrentToolName(U"cmccs");
     module->SetFlag(cmajor::symbols::ModuleFlags::compiling);
-    PrepareModuleForCompilation(module.get(), project->References(), project->GetTarget());
+    PrepareModuleForCompilation(module.get(), project->References(), project->GetTarget(), soul::ast::Span(), -1, nullptr);
     // TODO module->SetSources(new Sources(project->SourceFilePaths()));
     ParseResult parseResult = module->ParseSources();
     result.ok = parseResult.ok;

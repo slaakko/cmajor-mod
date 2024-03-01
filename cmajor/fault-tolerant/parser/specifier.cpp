@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,7 +18,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
     {
         case PUBLIC:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::PublicKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -26,7 +26,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case PROTECTED:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::ProtectedKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -34,7 +34,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case PRIVATE:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::PrivateKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -42,7 +42,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case INTERNAL:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::InternalKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -50,7 +50,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case STATIC:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::StaticKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -58,7 +58,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case VIRTUAL:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::VirtualKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -66,7 +66,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case OVERRIDE:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::OverrideKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -74,7 +74,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case ABSTRACT:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::AbstractKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -82,7 +82,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case INLINE:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::InlineKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -90,7 +90,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case EXPLICIT:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::ExplicitKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -98,7 +98,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case EXTERN:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::ExternKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -106,7 +106,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case SUPPRESS:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::SuppressKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -114,7 +114,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case DEFAULT:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::DefaultKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -122,7 +122,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case CONSTEXPR:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::ConstExprKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -130,7 +130,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case CDECL:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::CDeclKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -138,7 +138,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case NOTHROW:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::NothrowKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -146,7 +146,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case THROW:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::ThrowKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -154,7 +154,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case NEW:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::NewKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -162,7 +162,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case UNIT_TEST:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::UnitTestKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),
@@ -170,7 +170,7 @@ soul::parser::Match ParseSpecifier(Context& context, Lexer& lexer)
         }
         case WINAPI:
         {
-            soul::ast::Span span(lexer.GetSpan());
+            soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
             ++lexer;
             return soul::parser::Match(true, new cmajor::fault::tolerant::ast::SpecifierNode(
                 new cmajor::fault::tolerant::ast::WinApiKeywordNode(span, cmajor::fault::tolerant::ast::CompletionContext::none),

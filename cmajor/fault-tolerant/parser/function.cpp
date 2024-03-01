@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -110,7 +110,7 @@ soul::parser::Match ParseFunction(Context& context, Lexer& lexer)
         if (*lexer == SEMICOLON)
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::SemicolonNode> semicolon;
-            semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            semicolon.reset(new cmajor::fault::tolerant::ast::SemicolonNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             function->SetSemicolon(semicolon.release());
         }
@@ -145,7 +145,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
     std::unique_ptr<cmajor::fault::tolerant::ast::OperatorKeywordNode> operatorKeyword;
     if (*lexer == OPERATOR)
     {
-        operatorKeyword.reset(new cmajor::fault::tolerant::ast::OperatorKeywordNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+        operatorKeyword.reset(new cmajor::fault::tolerant::ast::OperatorKeywordNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
         operatorFunctionGroupId->SetOperatorKeyword(operatorKeyword.release());
     }
@@ -157,7 +157,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
     if (*lexer == LANGLE)
     {
         std::unique_ptr<cmajor::fault::tolerant::ast::ShiftLeftNode> shiftLeft;
-        soul::ast::Span span(lexer.GetSpan());
+        soul::ast::Span span(lexer.GetSpan(lexer.GetPos()));
         ++span.len;
         shiftLeft.reset(new cmajor::fault::tolerant::ast::ShiftLeftNode(span, cmajor::fault::tolerant::ast::CompletionContext::none));
         ++lexer;
@@ -230,7 +230,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case SHIFTRIGHT:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::ShiftRightNode> shiftRight;
-            shiftRight.reset(new cmajor::fault::tolerant::ast::ShiftRightNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            shiftRight.reset(new cmajor::fault::tolerant::ast::ShiftRightNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(shiftRight.release());
             operatorFunctionGroupId->Make();
@@ -239,7 +239,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case EQ:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::EqualNode> eq;
-            eq.reset(new cmajor::fault::tolerant::ast::EqualNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            eq.reset(new cmajor::fault::tolerant::ast::EqualNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(eq.release());
             operatorFunctionGroupId->Make();
@@ -248,7 +248,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case ASSIGN:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::AssignNode> assign;
-            assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            assign.reset(new cmajor::fault::tolerant::ast::AssignNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(assign.release());
             operatorFunctionGroupId->Make();
@@ -257,7 +257,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case LANGLE:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LAngleNode> langle;
-            langle.reset(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            langle.reset(new cmajor::fault::tolerant::ast::LAngleNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(langle.release());
             operatorFunctionGroupId->Make();
@@ -266,7 +266,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case ARROW:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::ArrowNode> arrow;
-            arrow.reset(new cmajor::fault::tolerant::ast::ArrowNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            arrow.reset(new cmajor::fault::tolerant::ast::ArrowNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(arrow.release());
             operatorFunctionGroupId->Make();
@@ -275,7 +275,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case PLUSPLUS:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::IncrementNode> increment;
-            increment.reset(new cmajor::fault::tolerant::ast::IncrementNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            increment.reset(new cmajor::fault::tolerant::ast::IncrementNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(increment.release());
             operatorFunctionGroupId->Make();
@@ -284,7 +284,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case MINUSMINUS:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::DecrementNode> decrement;
-            decrement.reset(new cmajor::fault::tolerant::ast::DecrementNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            decrement.reset(new cmajor::fault::tolerant::ast::DecrementNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(decrement.release());
             operatorFunctionGroupId->Make();
@@ -293,7 +293,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case PLUS:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::PlusNode> plus;
-            plus.reset(new cmajor::fault::tolerant::ast::PlusNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            plus.reset(new cmajor::fault::tolerant::ast::PlusNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(plus.release());
             operatorFunctionGroupId->Make();
@@ -302,7 +302,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case MINUS:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::MinusNode> minus;
-            minus.reset(new cmajor::fault::tolerant::ast::MinusNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            minus.reset(new cmajor::fault::tolerant::ast::MinusNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(minus.release());
             operatorFunctionGroupId->Make();
@@ -311,7 +311,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case STAR:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::StarNode> star;
-            star.reset(new cmajor::fault::tolerant::ast::StarNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            star.reset(new cmajor::fault::tolerant::ast::StarNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(star.release());
             operatorFunctionGroupId->Make();
@@ -320,7 +320,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case DIV:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::DivNode> div;
-            div.reset(new cmajor::fault::tolerant::ast::DivNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            div.reset(new cmajor::fault::tolerant::ast::DivNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(div.release());
             operatorFunctionGroupId->Make();
@@ -329,7 +329,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case REM:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::RemNode> rem;
-            rem.reset(new cmajor::fault::tolerant::ast::RemNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            rem.reset(new cmajor::fault::tolerant::ast::RemNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(rem.release());
             operatorFunctionGroupId->Make();
@@ -338,7 +338,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case AMP:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::AmpNode> amp;
-            amp.reset(new cmajor::fault::tolerant::ast::AmpNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            amp.reset(new cmajor::fault::tolerant::ast::AmpNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(amp.release());
             operatorFunctionGroupId->Make();
@@ -347,7 +347,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case BITOR:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::BitOrNode> bitOr;
-            bitOr.reset(new cmajor::fault::tolerant::ast::BitOrNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            bitOr.reset(new cmajor::fault::tolerant::ast::BitOrNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(bitOr.release());
             operatorFunctionGroupId->Make();
@@ -356,7 +356,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case BITXOR:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::BitXorNode> bitXor;
-            bitXor.reset(new cmajor::fault::tolerant::ast::BitXorNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            bitXor.reset(new cmajor::fault::tolerant::ast::BitXorNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(bitXor.release());
             operatorFunctionGroupId->Make();
@@ -365,7 +365,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case EXCLAMATION:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::NotNode> notNode;
-            notNode.reset(new cmajor::fault::tolerant::ast::NotNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            notNode.reset(new cmajor::fault::tolerant::ast::NotNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(notNode.release());
             operatorFunctionGroupId->Make();
@@ -374,7 +374,7 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case CPL:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::ComplementNode> complement;
-            complement.reset(new cmajor::fault::tolerant::ast::ComplementNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            complement.reset(new cmajor::fault::tolerant::ast::ComplementNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             operatorFunctionGroupId->AddOperatorNode(complement.release());
             operatorFunctionGroupId->Make();
@@ -383,12 +383,12 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case LBRACKET:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LBracketNode> lbracket;
-            lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            lbracket.reset(new cmajor::fault::tolerant::ast::LBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             if (*lexer == RBRACKET)
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::RBracketNode> rbracket;
-                rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                rbracket.reset(new cmajor::fault::tolerant::ast::RBracketNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 operatorFunctionGroupId->AddOperatorNode(lbracket.release());
                 operatorFunctionGroupId->AddOperatorNode(rbracket.release());
@@ -404,12 +404,12 @@ soul::parser::Match ParseOperatorFunctionGroupId(Context& context, Lexer& lexer)
         case LPAREN:
         {
             std::unique_ptr<cmajor::fault::tolerant::ast::LParenNode> lparen;
-            lparen.reset(new cmajor::fault::tolerant::ast::LParenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+            lparen.reset(new cmajor::fault::tolerant::ast::LParenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
             ++lexer;
             if (*lexer == RPAREN)
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::RParenNode> rparen;
-                rparen.reset(new cmajor::fault::tolerant::ast::RParenNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                rparen.reset(new cmajor::fault::tolerant::ast::RParenNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 ++lexer;
                 operatorFunctionGroupId->AddOperatorNode(lparen.release());
                 operatorFunctionGroupId->AddOperatorNode(rparen.release());

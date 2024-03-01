@@ -1,16 +1,17 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.value;
 
-import soul.ast.source.pos;
+import cmajor.ast;
+import soul.ast.span;
 import cmajor.ir.emitter;
 import cmajor.symbols.type.symbol;
 import util;
 import soul.xml.element;
-import soul.ast.source.pos;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::symbols {
@@ -35,10 +36,10 @@ TypeSymbol* GetTypeFor(ValueType valueType, SymbolTable* symbolTable);
 class Value
 {
 public:
-    Value(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, ValueType valueType_);
+    Value(const soul::ast::Span& span_, ValueType valueType_);
     virtual ~Value();
     virtual Value* Clone() const = 0;
-    virtual Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const = 0;
+    virtual Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const = 0;
     virtual void* IrValue(cmajor::ir::Emitter& emitter) = 0;
     virtual void Write(util::BinaryStreamWriter& writer) = 0;
     virtual void Read(util::BinaryStreamReader& reader) = 0;
@@ -53,14 +54,12 @@ public:
     virtual std::string ToString() const { return std::string(); }
     virtual TypeSymbol* GetType(SymbolTable* symbolTable) = 0;
     virtual void SetType(TypeSymbol* type_) {}
-    const soul::ast::SourcePos& GetSourcePos() const { return sourcePos; }
-    const util::uuid& ModuleId() const { return moduleId; }
+    const soul::ast::Span& GetSpan() const { return span; }
     ValueType GetValueType() const { return valueType; }
     std::unique_ptr<soul::xml::Element> ToDomElement();
     virtual const char* ClassName() const { return "Value"; }
 private:
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId;
+    soul::ast::Span span;
     ValueType valueType;
 };
 
@@ -68,12 +67,12 @@ class BoolValue : public Value
 {
 public:
     typedef bool OperandType;
-    BoolValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, bool value_);
-    Value* Clone() const override { return new BoolValue(GetSourcePos(), ModuleId(), value); }
+    BoolValue(const soul::ast::Span& span_, bool value_);
+    Value* Clone() const override { return new BoolValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return value ? "true" : "false"; }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     bool GetValue() const { return value; }
@@ -86,12 +85,12 @@ class SByteValue : public Value
 {
 public:
     typedef int8_t OperandType;
-    SByteValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int8_t value_);
-    Value* Clone() const override { return new SByteValue(GetSourcePos(), ModuleId(), value); }
+    SByteValue(const soul::ast::Span& span_, int8_t value_);
+    Value* Clone() const override { return new SByteValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int8_t GetValue() const { return value; }
@@ -104,12 +103,12 @@ class ByteValue : public Value
 {
 public:
     typedef uint8_t OperandType;
-    ByteValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint8_t value_);
-    Value* Clone() const override { return new ByteValue(GetSourcePos(), ModuleId(), value); }
+    ByteValue(const soul::ast::Span& span_, uint8_t value_);
+    Value* Clone() const override { return new ByteValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     uint8_t GetValue() const { return value; }
@@ -122,12 +121,12 @@ class ShortValue : public Value
 {
 public:
     typedef int16_t OperandType;
-    ShortValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int16_t value_);
-    Value* Clone() const override { return new ShortValue(GetSourcePos(), ModuleId(), value); }
+    ShortValue(const soul::ast::Span& span_, int16_t value_);
+    Value* Clone() const override { return new ShortValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int16_t GetValue() const { return value; }
@@ -140,12 +139,12 @@ class UShortValue : public Value
 {
 public:
     typedef uint16_t OperandType;
-    UShortValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint16_t value_);
-    Value* Clone() const override { return new UShortValue(GetSourcePos(), ModuleId(), value); }
+    UShortValue(const soul::ast::Span& span_, uint16_t value_);
+    Value* Clone() const override { return new UShortValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     uint16_t GetValue() const { return value; }
@@ -158,12 +157,12 @@ class IntValue : public Value
 {
 public:
     typedef int32_t OperandType;
-    IntValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int32_t value_);
-    Value* Clone() const override { return new IntValue(GetSourcePos(), ModuleId(), value); }
+    IntValue(const soul::ast::Span& span_, int32_t value_);
+    Value* Clone() const override { return new IntValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int32_t GetValue() const { return value; }
@@ -176,12 +175,12 @@ class UIntValue : public Value
 {
 public:
     typedef uint32_t OperandType;
-    UIntValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint32_t value_);
-    Value* Clone() const override { return new UIntValue(GetSourcePos(), ModuleId(), value); }
+    UIntValue(const soul::ast::Span& span_, uint32_t value_);
+    Value* Clone() const override { return new UIntValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     uint32_t GetValue() const { return value; }
@@ -194,12 +193,12 @@ class LongValue : public Value
 {
 public:
     typedef int64_t OperandType;
-    LongValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int64_t value_);
-    Value* Clone() const override { return new LongValue(GetSourcePos(), ModuleId(), value); }
+    LongValue(const soul::ast::Span& span_, int64_t value_);
+    Value* Clone() const override { return new LongValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int64_t GetValue() const { return value; }
@@ -212,12 +211,12 @@ class ULongValue : public Value
 {
 public:
     typedef uint64_t OperandType;
-    ULongValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, uint64_t value_);
-    Value* Clone() const override { return new ULongValue(GetSourcePos(), ModuleId(), value); }
+    ULongValue(const soul::ast::Span& span_, uint64_t value_);
+    Value* Clone() const override { return new ULongValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     uint64_t GetValue() const { return value; }
@@ -230,12 +229,12 @@ class FloatValue : public Value
 {
 public:
     typedef float OperandType;
-    FloatValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, float value_);
-    Value* Clone() const override { return new FloatValue(GetSourcePos(), ModuleId(), value); }
+    FloatValue(const soul::ast::Span& span_, float value_);
+    Value* Clone() const override { return new FloatValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     float GetValue() const { return value; }
@@ -248,12 +247,12 @@ class DoubleValue : public Value
 {
 public:
     typedef double OperandType;
-    DoubleValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, double value_);
-    Value* Clone() const override { return new DoubleValue(GetSourcePos(), ModuleId(), value); }
+    DoubleValue(const soul::ast::Span& span_, double value_);
+    Value* Clone() const override { return new DoubleValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     double GetValue() const { return value; }
@@ -266,12 +265,12 @@ class CharValue : public Value
 {
 public:
     typedef unsigned char OperandType;
-    CharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, unsigned char value_);
-    Value* Clone() const override { return new CharValue(GetSourcePos(), ModuleId(), value); }
+    CharValue(const soul::ast::Span& span_, unsigned char value_);
+    Value* Clone() const override { return new CharValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     unsigned char GetValue() const { return value; }
@@ -284,12 +283,12 @@ class WCharValue : public Value
 {
 public:
     typedef char16_t OperandType;
-    WCharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char16_t value_);
-    Value* Clone() const override { return new WCharValue(GetSourcePos(), ModuleId(), value); }
+    WCharValue(const soul::ast::Span& span_, char16_t value_);
+    Value* Clone() const override { return new WCharValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     char16_t GetValue() const { return value; }
@@ -302,12 +301,12 @@ class UCharValue : public Value
 {
 public:
     typedef char32_t OperandType;
-    UCharValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, char32_t value_);
-    Value* Clone() const override { return new UCharValue(GetSourcePos(), ModuleId(), value); }
+    UCharValue(const soul::ast::Span& span_, char32_t value_);
+    Value* Clone() const override { return new UCharValue(GetSpan(), value); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return std::to_string(value); }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     char32_t GetValue() const { return value; }
@@ -319,12 +318,12 @@ private:
 class StringValue : public Value
 {
 public:
-    StringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::string& str_);
-    Value* Clone() const override { return new StringValue(GetSourcePos(), ModuleId(), stringId, str); }
+    StringValue(const soul::ast::Span& span_, int stringId_, const std::string& str_);
+    Value* Clone() const override { return new StringValue(GetSpan(), stringId, str); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int StringId() const { return stringId; }
     const std::string& Str() const { return str; }
@@ -337,12 +336,12 @@ private:
 class WStringValue : public Value
 {
 public:
-    WStringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::u16string& str_);
-    Value* Clone() const override { return new WStringValue(GetSourcePos(), ModuleId(), stringId, str); }
+    WStringValue(const soul::ast::Span& span_, int stringId_, const std::u16string& str_);
+    Value* Clone() const override { return new WStringValue(GetSpan(), stringId, str); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int StringId() const { return stringId; }
     const std::u16string& Str() const { return str; }
@@ -355,12 +354,12 @@ private:
 class UStringValue : public Value
 {
 public:
-    UStringValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int stringId_, const std::u32string& str_);
-    Value* Clone() const override { return new UStringValue(GetSourcePos(), ModuleId(), stringId, str); }
+    UStringValue(const soul::ast::Span& span_, int stringId_, const std::u32string& str_);
+    Value* Clone() const override { return new UStringValue(GetSpan(), stringId, str); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int StringId() const { return stringId; }
     const std::u32string& Str() const { return str; }
@@ -373,12 +372,12 @@ private:
 class NullValue : public Value
 {
 public:
-    NullValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* nullPtrType_);
-    Value* Clone() const override { return new NullValue(GetSourcePos(), ModuleId(), nullPtrType); }
+    NullValue(const soul::ast::Span& span_, TypeSymbol* nullPtrType_);
+    Value* Clone() const override { return new NullValue(GetSpan(), nullPtrType); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     std::string ToString() const override { return "null"; }
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     const char* ClassName() const override { return "NullValue"; }
@@ -390,12 +389,12 @@ class PointerValue : public Value
 {
 public:
     typedef const void* OperandType;
-    PointerValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type, const void* ptr_);
-    Value* Clone() const override { return new PointerValue(GetSourcePos(), ModuleId(), type, ptr); }
+    PointerValue(const soul::ast::Span& span_, TypeSymbol* type, const void* ptr_);
+    Value* Clone() const override { return new PointerValue(GetSpan(), type, ptr); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     void SetType(TypeSymbol* type_) override { type = type_; }
     TypeSymbol* PointeeType() const;
@@ -413,7 +412,7 @@ private:
 class ArrayValue : public Value
 {
 public:
-    ArrayValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& elementValues_);
+    ArrayValue(const soul::ast::Span& span_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& elementValues_);
     ArrayValue(const ArrayValue&) = delete;
     ArrayValue& operator=(const ArrayValue&) = delete;
     Value* Clone() const override;
@@ -421,7 +420,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     bool IsComplexValue() const override { return true; }
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override { return type; }
     void SetType(TypeSymbol* type_) override { type = type_; }
     const std::vector<std::unique_ptr<Value>>& Elements() const { return elementValues; }
@@ -435,7 +434,7 @@ private:
 class StructuredValue : public Value
 {
 public:
-    StructuredValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& memberValues_);
+    StructuredValue(const soul::ast::Span& span_, TypeSymbol* type_, std::vector<std::unique_ptr<Value>>&& memberValues_);
     StructuredValue(const StructuredValue&) = delete;
     StructuredValue& operator=(const StructuredValue&) = delete;
     Value* Clone() const override;
@@ -443,7 +442,7 @@ public:
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
     bool IsComplexValue() const override { return true; }
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     void SetType(TypeSymbol* type_) override { type = type_; }
     TypeSymbol* GetType(SymbolTable* symbolTable) override { return type; }
     const std::vector<std::unique_ptr<Value>>& Members() const { return memberValues; }
@@ -457,12 +456,12 @@ private:
 class UuidValue : public Value
 {
 public:
-    UuidValue(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, int uuidId_);
-    Value* Clone() const override { return new UuidValue(GetSourcePos(), ModuleId(), uuidId); }
+    UuidValue(const soul::ast::Span& span_, int uuidId_);
+    Value* Clone() const override { return new UuidValue(GetSpan(), uuidId); }
     void* IrValue(cmajor::ir::Emitter& emitter) override;
     void Write(util::BinaryStreamWriter& writer) override;
     void Read(util::BinaryStreamReader& reader) override;
-    Value* As(TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override;
+    Value* As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override;
     TypeSymbol* GetType(SymbolTable* symbolTable) override;
     int UuidId() const { return uuidId; }
     const char* ClassName() const override { return "UuidValue"; }
@@ -502,5 +501,6 @@ struct IntegralValueHash
 };
 
 void WriteValue(Value* value, util::BinaryStreamWriter& writer);
-std::unique_ptr<Value> ReadValue(util::BinaryStreamReader& reader, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+std::unique_ptr<Value> ReadValue(util::BinaryStreamReader& reader);
+
 } // namespace cmajor::symbols

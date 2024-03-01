@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -25,7 +25,7 @@ void SystemDefaultAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attr
         else if (attribute->Value() != U"false")
         {
             throw cmajor::symbols::Exception("unknown attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" +
-                util::ToUtf8(attribute->Name()) + "'", attribute->GetSourcePos(), attribute->ModuleId());
+                util::ToUtf8(attribute->Name()) + "'", attribute->GetFullSpan());
         }
     }
     else

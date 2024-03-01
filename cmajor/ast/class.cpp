@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,13 +18,13 @@ import util;
 
 namespace cmajor::ast {
 
-ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(Specifiers::none), id(), templateParameters(), baseClassOrInterfaces(), members()
+ClassNode::ClassNode(const soul::ast::Span& span_) :
+    Node(NodeType::classNode, span_), specifiers(Specifiers::none), id(), templateParameters(), baseClassOrInterfaces(), members()
 {
 }
 
-ClassNode::ClassNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
-    Node(NodeType::classNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), templateParameters(), baseClassOrInterfaces(), members(), attributes(attributes_)
+ClassNode::ClassNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+    Node(NodeType::classNode, span_), specifiers(specifiers_), id(id_), templateParameters(), baseClassOrInterfaces(), members(), attributes(attributes_)
 {
 }
 
@@ -35,7 +35,7 @@ Node* ClassNode::Clone(CloneContext& cloneContext) const
     {
         clonedAttributes = static_cast<AttributesNode*>(attributes->Clone(cloneContext));
     }
-    ClassNode* clone = new ClassNode(GetSourcePos(), ModuleId(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+    ClassNode* clone = new ClassNode(GetSpan(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
     if (!cloneContext.InstantiateClassNode())
     {
         int tn = templateParameters.Count();
@@ -218,7 +218,7 @@ int ClassNode::Level() const
     return level;
 }
 
-InitializerNode::InitializerNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(nodeType_, sourcePos_, moduleId_)
+InitializerNode::InitializerNode(NodeType nodeType_, const soul::ast::Span& span_) : Node(nodeType_, span_)
 {
 }
 
@@ -241,13 +241,13 @@ void InitializerNode::AddArgument(Node* argument)
     arguments.Add(argument);
 }
 
-ThisInitializerNode::ThisInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::thisInitializerNode, sourcePos_, moduleId_)
+ThisInitializerNode::ThisInitializerNode(const soul::ast::Span& span_) : InitializerNode(NodeType::thisInitializerNode, span_)
 {
 }
 
 Node* ThisInitializerNode::Clone(CloneContext& cloneContext) const
 {
-    ThisInitializerNode* clone = new ThisInitializerNode(GetSourcePos(), ModuleId());
+    ThisInitializerNode* clone = new ThisInitializerNode(GetSpan());
     int n = Arguments().Count();
     for (int i = 0; i < n; ++i)
     {
@@ -261,13 +261,13 @@ void ThisInitializerNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-BaseInitializerNode::BaseInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::baseInitializerNode, sourcePos_, moduleId_)
+BaseInitializerNode::BaseInitializerNode(const soul::ast::Span& span_) : InitializerNode(NodeType::baseInitializerNode, span_)
 {
 }
 
 Node* BaseInitializerNode::Clone(CloneContext& cloneContext) const
 {
-    BaseInitializerNode* clone = new BaseInitializerNode(GetSourcePos(), ModuleId());
+    BaseInitializerNode* clone = new BaseInitializerNode(GetSpan());
     int n = Arguments().Count();
     for (int i = 0; i < n; ++i)
     {
@@ -281,19 +281,19 @@ void BaseInitializerNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : InitializerNode(NodeType::memberInitializerNode, sourcePos_, moduleId_), memberId()
+MemberInitializerNode::MemberInitializerNode(const soul::ast::Span& span_) : InitializerNode(NodeType::memberInitializerNode, span_), memberId()
 {
 }
 
-MemberInitializerNode::MemberInitializerNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* memberId_) :
-    InitializerNode(NodeType::memberInitializerNode, sourcePos_, moduleId_), memberId(memberId_)
+MemberInitializerNode::MemberInitializerNode(const soul::ast::Span& span_, IdentifierNode* memberId_) :
+    InitializerNode(NodeType::memberInitializerNode, span_), memberId(memberId_)
 {
     memberId->SetParent(this);
 }
 
 Node* MemberInitializerNode::Clone(CloneContext& cloneContext) const
 {
-    MemberInitializerNode* clone = new MemberInitializerNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(memberId->Clone(cloneContext)));
+    MemberInitializerNode* clone = new MemberInitializerNode(GetSpan(), static_cast<IdentifierNode*>(memberId->Clone(cloneContext)));
     int n = Arguments().Count();
     for (int i = 0; i < n; ++i)
     {
@@ -320,19 +320,19 @@ void MemberInitializerNode::Read(AstReader& reader)
     memberId->SetParent(this);
 }
 
-StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@static_constructor", nullptr), initializers()
+StaticConstructorNode::StaticConstructorNode(const soul::ast::Span& span_) :
+    FunctionNode(NodeType::staticConstructorNode, span_, Specifiers::none, nullptr, U"@static_constructor", nullptr), initializers()
 {
 }
 
-StaticConstructorNode::StaticConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
-    FunctionNode(NodeType::staticConstructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@static_constructor", attributes_), initializers()
+StaticConstructorNode::StaticConstructorNode(const soul::ast::Span& span_, Specifiers specifiers_, AttributesNode* attributes_) :
+    FunctionNode(NodeType::staticConstructorNode, span_, specifiers_, nullptr, U"@static_constructor", attributes_), initializers()
 {
 }
 
 Node* StaticConstructorNode::Clone(CloneContext& cloneContext) const
 {
-    StaticConstructorNode* clone = new StaticConstructorNode(GetSourcePos(), ModuleId(), GetSpecifiers(), nullptr);
+    StaticConstructorNode* clone = new StaticConstructorNode(GetSpan(), GetSpecifiers(), nullptr);
     int n = initializers.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -369,17 +369,17 @@ void StaticConstructorNode::AddInitializer(InitializerNode* initializer)
     initializers.Add(initializer);
 }
 
-ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, Specifiers::none, nullptr, U"@constructor", nullptr), initializers()
+ConstructorNode::ConstructorNode(const soul::ast::Span& span_) : FunctionNode(NodeType::constructorNode, span_, Specifiers::none, nullptr, U"@constructor", nullptr), initializers()
 {
 }
 
-ConstructorNode::ConstructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) : FunctionNode(NodeType::constructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@constructor", attributes_), initializers()
+ConstructorNode::ConstructorNode(const soul::ast::Span& span_, Specifiers specifiers_, AttributesNode* attributes_) : FunctionNode(NodeType::constructorNode, span_, specifiers_, nullptr, U"@constructor", attributes_), initializers()
 {
 }
 
 Node* ConstructorNode::Clone(CloneContext& cloneContext) const
 {
-    ConstructorNode* clone = new ConstructorNode(GetSourcePos(), ModuleId(), GetSpecifiers(), nullptr);
+    ConstructorNode* clone = new ConstructorNode(GetSpan(), GetSpecifiers(), nullptr);
     int n = initializers.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -416,18 +416,18 @@ void ConstructorNode::AddInitializer(InitializerNode* initializer)
     initializers.Add(initializer);
 }
 
-DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::destructorNode, sourcePos_, moduleId_)
+DestructorNode::DestructorNode(const soul::ast::Span& span_) : FunctionNode(NodeType::destructorNode, span_)
 {
 }
 
-DestructorNode::DestructorNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, AttributesNode* attributes_) :
-    FunctionNode(NodeType::destructorNode, sourcePos_, moduleId_, specifiers_, nullptr, U"@destructor", attributes_)
+DestructorNode::DestructorNode(const soul::ast::Span& span_, Specifiers specifiers_, AttributesNode* attributes_) :
+    FunctionNode(NodeType::destructorNode, span_, specifiers_, nullptr, U"@destructor", attributes_)
 {
 }
 
 Node* DestructorNode::Clone(CloneContext& cloneContext) const
 {
-    DestructorNode* clone = new DestructorNode(GetSourcePos(), ModuleId(), GetSpecifiers(), nullptr);
+    DestructorNode* clone = new DestructorNode(GetSpan(), GetSpecifiers(), nullptr);
     clone->classId.reset(static_cast<IdentifierNode*>(classId->Clone(cloneContext)));
     CloneContent(clone, cloneContext);
     return clone;
@@ -450,18 +450,18 @@ void DestructorNode::Read(AstReader& reader)
     classId.reset(reader.ReadIdentifierNode());
 }
 
-MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::memberFunctionNode, sourcePos_, moduleId_)
+MemberFunctionNode::MemberFunctionNode(const soul::ast::Span& span_) : FunctionNode(NodeType::memberFunctionNode, span_)
 {
 }
 
-MemberFunctionNode::MemberFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
-    FunctionNode(NodeType::memberFunctionNode, sourcePos_, moduleId_, specifiers_, returnTypeExpr_, groupId_, attributes_)
+MemberFunctionNode::MemberFunctionNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_) :
+    FunctionNode(NodeType::memberFunctionNode, span_, specifiers_, returnTypeExpr_, groupId_, attributes_)
 {
 }
 
 Node* MemberFunctionNode::Clone(CloneContext& cloneContext) const
 {
-    MemberFunctionNode* clone = new MemberFunctionNode(GetSourcePos(), ModuleId());
+    MemberFunctionNode* clone = new MemberFunctionNode(GetSpan());
     CloneContent(clone, cloneContext);
     if (IsConst())
     {
@@ -475,18 +475,18 @@ void MemberFunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : FunctionNode(NodeType::conversionFunctionNode, sourcePos_, moduleId_)
+ConversionFunctionNode::ConversionFunctionNode(const soul::ast::Span& span_) : FunctionNode(NodeType::conversionFunctionNode, span_)
 {
 }
 
-ConversionFunctionNode::ConversionFunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_) :
-    FunctionNode(NodeType::conversionFunctionNode, sourcePos_, moduleId_, specifiers_, returnTypeExpr_, U"@operator_conv", attributes_)
+ConversionFunctionNode::ConversionFunctionNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_) :
+    FunctionNode(NodeType::conversionFunctionNode, span_, specifiers_, returnTypeExpr_, U"@operator_conv", attributes_)
 {
 }
 
 Node* ConversionFunctionNode::Clone(CloneContext& cloneContext) const
 {
-    ConversionFunctionNode* clone = new ConversionFunctionNode(GetSourcePos(), ModuleId());
+    ConversionFunctionNode* clone = new ConversionFunctionNode(GetSpan());
     CloneContent(clone, cloneContext);
     if (IsConst())
     {
@@ -500,12 +500,12 @@ void ConversionFunctionNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::memberVariableNode, sourcePos_, moduleId_), specifiers()
+MemberVariableNode::MemberVariableNode(const soul::ast::Span& span_) : Node(NodeType::memberVariableNode, span_), specifiers()
 {
 }
 
-MemberVariableNode::MemberVariableNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_) :
-    Node(NodeType::memberVariableNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), attributes(attributes_)
+MemberVariableNode::MemberVariableNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, AttributesNode* attributes_) :
+    Node(NodeType::memberVariableNode, span_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), attributes(attributes_)
 {
     typeExpr->SetParent(this);
     id->SetParent(this);
@@ -518,8 +518,8 @@ Node* MemberVariableNode::Clone(CloneContext& cloneContext) const
     {
         clonedAttributes = static_cast<AttributesNode*>(attributes->Clone(cloneContext));
     }
-    MemberVariableNode* clone = new MemberVariableNode(GetSourcePos(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
-    clone->SetSpecifierSourcePos(specifierSourcePos);
+    MemberVariableNode* clone = new MemberVariableNode(GetSpan(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+    //clone->SetSpecifierSourcePos(specifierSourcePos);
     return clone;
 }
 

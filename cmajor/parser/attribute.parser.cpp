@@ -5,7 +5,6 @@ module cmajor.attribute.parser;
 
 import util;
 import soul.ast.spg;
-import soul.ast.source.pos;
 import cmajor.token;
 import soul.lexer;
 import cmajor.lexer;
@@ -57,7 +56,7 @@ soul::parser::Match AttributeParser<LexerT>::Attributes(LexerT& lexer, cmajor::p
                         }
                         if (match.hit)
                         {
-                            attributesNode.reset(new cmajor::ast::AttributesNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                            attributesNode.reset(new cmajor::ast::AttributesNode(lexer.GetSpan(pos)));
                         }
                         *parentMatch4 = match;
                     }
@@ -204,7 +203,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 6767384061963927554);
     std::u32string value = std::u32string();
     std::u32string name = std::u32string();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -248,7 +247,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
                             }
                             if (match.hit)
                             {
-                                s = lexer.GetSourcePos(pos);
+                                s = lexer.GetSpan(pos);
                                 name = lexer.GetToken(pos).ToString();
                             }
                             *parentMatch6 = match;
@@ -327,7 +326,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
         }
         if (match.hit)
         {
-            attributes->AddAttribute(s, context->ModuleId(), name, value);
+            attributes->AddAttribute(s, name, value);
         }
         *parentMatch0 = match;
     }

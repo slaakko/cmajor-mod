@@ -39,7 +39,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2745111412182351873);
     std::unique_ptr<cmajor::ast::EnumTypeNode> enumTypeNode = std::unique_ptr<cmajor::ast::EnumTypeNode>();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::IdentifierNode> enumTypeId;
     std::unique_ptr<cmajor::ast::Node> underlyingType;
@@ -76,7 +76,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                                         specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
                                         if (match.hit)
                                         {
-                                            s = lexer.GetSourcePos(pos);
+                                            s = lexer.GetSpan(pos);
                                         }
                                         *parentMatch8 = match;
                                     }
@@ -112,7 +112,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                                         enumTypeId.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            enumTypeNode.reset(new cmajor::ast::EnumTypeNode(s, context->ModuleId(), specifiers->value, enumTypeId.release()));
+                                            enumTypeNode.reset(new cmajor::ast::EnumTypeNode(s, specifiers->value, enumTypeId.release()));
                                         }
                                         *parentMatch11 = match;
                                     }
@@ -427,7 +427,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2745111412182351876);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::IdentifierNode> constantId;
     std::unique_ptr<cmajor::ast::Node> constantValue;
     soul::parser::Match match(false);
@@ -444,7 +444,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
                 constantId.reset(static_cast<cmajor::ast::IdentifierNode*>(match.value));
                 if (match.hit)
                 {
-                    s = lexer.GetSourcePos(pos);
+                    s = lexer.GetSpan(pos);
                 }
                 *parentMatch2 = match;
             }
@@ -486,7 +486,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
                                     constantValue.reset(static_cast<cmajor::ast::Node*>(match.value));
                                     if (match.hit)
                                     {
-                                        cmajor::ast::EnumConstantNode *enumConstant = new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId.release(), constantValue.release());
+                                        cmajor::ast::EnumConstantNode *enumConstant = new cmajor::ast::EnumConstantNode(s, constantId.release(), constantValue.release());
                                         enumConstant->SetHasValue();
                                         {
                                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -519,7 +519,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
                                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "EnumConstant");
                                             #endif
-                                            return soul::parser::Match(true, new cmajor::ast::EnumConstantNode(s, context->ModuleId(), constantId.release(), cmajor::ast::MakeNextEnumConstantValue(s, context->ModuleId(), enumType)));
+                                            return soul::parser::Match(true, new cmajor::ast::EnumConstantNode(s, constantId.release(), cmajor::ast::MakeNextEnumConstantValue(s, enumType)));
                                         }
                                     }
                                     *parentMatch10 = match;

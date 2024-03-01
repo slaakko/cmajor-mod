@@ -1,11 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.binder.function_template_repository;
 
 import std.core;
+import cmajor.ast;
 import cmajor.symbols;
 import soul.ast.source.pos;
 import util;
@@ -47,7 +48,7 @@ public:
     FunctionTemplateRepository(BoundCompileUnit& boundCompileUnit_);
     cmajor::symbols::FunctionSymbol* Instantiate(cmajor::symbols::FunctionSymbol* functionTemplate, 
         const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_map<FunctionTemplateKey, cmajor::symbols::FunctionSymbol*, FunctionTemplateKeyHash> functionTemplateMap;

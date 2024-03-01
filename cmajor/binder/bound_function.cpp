@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,19 +15,19 @@ import util;
 namespace cmajor::binder {
 
 BoundFunction::BoundFunction(BoundCompileUnit* boundCompileUnit_, cmajor::symbols::FunctionSymbol* functionSymbol_) :
-    BoundNode(functionSymbol_->GetSourcePos(), functionSymbol_->SourceModuleId(), BoundNodeType::boundFunction), boundCompileUnit(boundCompileUnit_), 
+    BoundNode(functionSymbol_->GetSpan(), BoundNodeType::boundFunction), boundCompileUnit(boundCompileUnit_), 
     functionSymbol(functionSymbol_), hasGotos(false)
 {
 }
 
 void BoundFunction::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load from function", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot load from function", GetFullSpan());
 }
 
 void BoundFunction::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to function", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot store to function", GetFullSpan());
 }
 
 void BoundFunction::Accept(BoundNodeVisitor& visitor)
@@ -38,11 +38,12 @@ void BoundFunction::Accept(BoundNodeVisitor& visitor)
 void BoundFunction::SetBody(std::unique_ptr<BoundCompoundStatement>&& body_)
 {
     body = std::move(body_);
+    body->SetParent(this);
 }
 
 void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall>&& destructorCall,
     BoundFunction* currentFunction, cmajor::symbols::ContainerScope* currentContainerScope, 
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    cmajor::ast::Node* node)
 {
     cmajor::symbols::FunctionSymbol* functionSymbol = destructorCall->GetFunctionSymbol();
     if (functionSymbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol)
@@ -57,31 +58,32 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                 {
                     boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
                     std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                    GenerateDestructorImplementation(boundClass.get(), destructorSymbol, *boundCompileUnit, currentContainerScope, currentFunction, span, moduleId);
+                    GenerateDestructorImplementation(boundClass.get(), destructorSymbol, *boundCompileUnit, currentContainerScope, currentFunction, node);
                     boundCompileUnit->AddBoundNode(std::move(boundClass));
                 }
             }
         }
         else if (destructorSymbol->Parent()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
         {
-            bool firstTry = GetBoundCompileUnit()->GetClassTemplateRepository().Instantiate(destructorSymbol, currentContainerScope, currentFunction, span, moduleId);
+            bool firstTry = GetBoundCompileUnit()->GetClassTemplateRepository().Instantiate(destructorSymbol, currentContainerScope, currentFunction, node);
             if (!firstTry)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(destructorSymbol->Parent());
                 std::lock_guard<std::recursive_mutex> lock(GetBoundCompileUnit()->GetModule().GetLock());
                 cmajor::symbols::ClassTemplateSpecializationSymbol* copy = GetBoundCompileUnit()->GetSymbolTable().CopyClassTemplateSpecialization(specialization);
-                GetBoundCompileUnit()->GetClassTemplateRepository().BindClassTemplateSpecialization(copy, currentContainerScope, span, moduleId);
+                GetBoundCompileUnit()->GetClassTemplateRepository().BindClassTemplateSpecialization(copy, currentContainerScope, node);
                 int index = destructorSymbol->GetIndex();
                 cmajor::symbols::FunctionSymbol* functionSymbol = copy->GetFunctionByIndex(index);
-                bool secondTry = GetBoundCompileUnit()->InstantiateClassTemplateMemberFunction(functionSymbol, currentContainerScope, currentFunction, span, moduleId);
+                bool secondTry = GetBoundCompileUnit()->InstantiateClassTemplateMemberFunction(functionSymbol, currentContainerScope, currentFunction, node);
                 if (!secondTry)
                 {
                     throw cmajor::symbols::Exception("internal error: could not instantiate destructor of a class template specialization '" + util::ToUtf8(specialization->FullName()) + "'",
-                        specialization->GetSourcePos(), specialization->SourceModuleId());
+                        specialization->GetFullSpan());
                 }
             }
         }
     }
+    destructorCall->SetParent(this);
     temporaryDestructorCalls.push_back(std::move(destructorCall));
 }
 

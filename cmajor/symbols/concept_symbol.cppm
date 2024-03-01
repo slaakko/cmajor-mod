@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ import cmajor.ast.concepts;
 import cmajor.ast.parameter;
 import cmajor.symbols.symbol;
 import cmajor.symbols.container.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.xml.element;
 import util.code.formatter;
 import std.core;
@@ -23,7 +23,7 @@ class TemplateParameterSymbol;
 class ConceptGroupSymbol : public Symbol
 {
 public:
-    ConceptGroupSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ConceptGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     std::string TypeString() const override { return "concept_group"; }
     bool IsExportSymbol() const override { return false; }
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
@@ -47,7 +47,7 @@ private:
 class ConceptSymbol : public ContainerSymbol
 {
 public:
-    ConceptSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ConceptSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     bool IsParentSymbol() const override { return true; }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
@@ -92,7 +92,7 @@ private:
 class AxiomSymbol : public ContainerSymbol
 {
 public:
-    AxiomSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_);
+    AxiomSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     bool IsExportSymbol() const override { return false; }
     std::u32string Info() const override { return Name(); }

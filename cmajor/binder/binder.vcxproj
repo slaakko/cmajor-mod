@@ -199,6 +199,8 @@
     <ClCompile Include="function_template_repository.cpp" />
     <ClCompile Include="inline_function_repository.cpp" />
     <ClCompile Include="inline_function_repository.cppm" />
+    <ClCompile Include="instantiation_guard.cpp" />
+    <ClCompile Include="instantiation_guard.cppm" />
     <ClCompile Include="json_attribute_processor.cpp" />
     <ClCompile Include="json_attribute_processor.cppm" />
     <ClCompile Include="operation_repository.cpp" />

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.literal.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -26,35 +27,35 @@ parser LiteralParser
 
 
     SimpleLiteral(cmajor::parser::context::Context* context) : cmajor::ast::Node*
-        ::= TRUE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), true); }
-        |   FALSE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), false); }
+        ::= TRUE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSpan(pos), true); }
+        |   FALSE{ return new cmajor::ast::BooleanLiteralNode(lexer.GetSpan(pos), false); }
         |   FLOATINGLIT
             { 
                 bool floatLiteral = false;
                 double value = ParseFloatingLiteral(lexer.FileName(), lexer.GetToken(pos), floatLiteral);
-                return cmajor::ast::CreateFloatingLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, floatLiteral);
+                return cmajor::ast::CreateFloatingLiteralNode(lexer.GetSpan(pos), value, floatLiteral);
             }
         |   INTLIT
             {
                 bool isUnsigned = false;
                 uint64_t value = ParseIntegerLiteral(lexer.FileName(), lexer.GetToken(pos), isUnsigned);
-                return cmajor::ast::CreateIntegerLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, isUnsigned);
+                return cmajor::ast::CreateIntegerLiteralNode(lexer.GetSpan(pos), value, isUnsigned);
             }
         |   CHARLIT
             {
                 cmajor::ast::CharLiteralPrefix prefix = cmajor::ast::CharLiteralPrefix::none;
                 char32_t value = ParseCharacterLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
-                return cmajor::ast::CreateCharacterLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix);
+                return cmajor::ast::CreateCharacterLiteralNode(lexer.GetSpan(pos), value, prefix);
             }
         |   STRINGLIT
             {
                 cmajor::ast::StringLiteralPrefix prefix = cmajor::ast::StringLiteralPrefix::none;
                 std::u32string value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
-                return cmajor::ast::CreateStringLiteralNode(lexer.GetSourcePos(pos), context->ModuleId(), value, prefix);
+                return cmajor::ast::CreateStringLiteralNode(lexer.GetSpan(pos), value, prefix);
             }
         |   NULLLIT
             {
-                return new cmajor::ast::NullLiteralNode(lexer.GetSourcePos(pos), context->ModuleId());
+                return new cmajor::ast::NullLiteralNode(lexer.GetSpan(pos));
             }
         ;
 
@@ -66,7 +67,7 @@ parser LiteralParser
     ArrayLiteral(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ArrayLiteralNode> literalNode) : cmajor::ast::Node*
         ::= 
         (
-            LBRACKET{ literalNode.reset(new cmajor::ast::ArrayLiteralNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            LBRACKET{ literalNode.reset(new cmajor::ast::ArrayLiteralNode(lexer.GetSpan(pos))); }
             (
                 Expression(context):expr{ literalNode->AddValue(expr); } % COMMA
             )?
@@ -80,7 +81,7 @@ parser LiteralParser
     StructuredLiteral(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::StructuredLiteralNode> literalNode) : cmajor::ast::Node*
         ::= 
         (
-            LBRACE{ literalNode.reset(new cmajor::ast::StructuredLiteralNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            LBRACE{ literalNode.reset(new cmajor::ast::StructuredLiteralNode(lexer.GetSpan(pos))); }
             (
                 Expression(context):expr{ literalNode->AddMember(expr); } % COMMA
             )?

@@ -120,7 +120,7 @@ soul::parser::Match TypeExprParser<LexerT>::PrefixTypeExpr(LexerT& lexer, cmajor
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5719700173915947010);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> constTypeExpr;
     std::unique_ptr<cmajor::ast::Node> postfixTypeExpr;
     soul::parser::Match match(false);
@@ -142,7 +142,7 @@ soul::parser::Match TypeExprParser<LexerT>::PrefixTypeExpr(LexerT& lexer, cmajor
                 }
                 if (match.hit)
                 {
-                    s = lexer.GetSourcePos(pos);
+                    s = lexer.GetSpan(pos);
                 }
                 *parentMatch2 = match;
             }
@@ -165,7 +165,7 @@ soul::parser::Match TypeExprParser<LexerT>::PrefixTypeExpr(LexerT& lexer, cmajor
                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "PrefixTypeExpr");
                             #endif
-                            return soul::parser::Match(true, new cmajor::ast::ConstNode(s, context->ModuleId(), constTypeExpr.release()));
+                            return soul::parser::Match(true, new cmajor::ast::ConstNode(s, constTypeExpr.release()));
                         }
                     }
                     *parentMatch4 = match;
@@ -231,7 +231,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5719700173915947011);
     std::unique_ptr<cmajor::ast::Node> typeExpr = std::unique_ptr<cmajor::ast::Node>();
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<cmajor::ast::Node> primaryTypeExpr;
     std::unique_ptr<cmajor::ast::Node> size;
     soul::parser::Match match(false);
@@ -252,7 +252,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                     primaryTypeExpr.reset(static_cast<cmajor::ast::Node*>(match.value));
                     if (match.hit)
                     {
-                        s = lexer.GetSourcePos(pos);
+                        s = lexer.GetSpan(pos);
                         typeExpr.reset(primaryTypeExpr.release());
                     }
                     *parentMatch3 = match;
@@ -308,7 +308,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                                                         }
                                                         if (match.hit)
                                                         {
-                                                            typeExpr.reset(new cmajor::ast::DotNode(s, context->ModuleId(), typeExpr.release(), new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString())));
+                                                            typeExpr.reset(new cmajor::ast::DotNode(s, typeExpr.release(), new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString())));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -336,7 +336,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    typeExpr.reset(new cmajor::ast::PointerNode(s, context->ModuleId(), typeExpr.release()));
+                                                    typeExpr.reset(new cmajor::ast::PointerNode(s, typeExpr.release()));
                                                 }
                                                 *parentMatch11 = match;
                                             }
@@ -360,7 +360,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    typeExpr.reset(new cmajor::ast::RValueRefNode(s, context->ModuleId(), typeExpr.release()));
+                                                    typeExpr.reset(new cmajor::ast::RValueRefNode(s, typeExpr.release()));
                                                 }
                                                 *parentMatch12 = match;
                                             }
@@ -384,7 +384,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    typeExpr.reset(new cmajor::ast::LValueRefNode(s, context->ModuleId(), typeExpr.release()));
+                                                    typeExpr.reset(new cmajor::ast::LValueRefNode(s, typeExpr.release()));
                                                 }
                                                 *parentMatch13 = match;
                                             }
@@ -453,7 +453,7 @@ soul::parser::Match TypeExprParser<LexerT>::PostfixTypeExpr(LexerT& lexer, cmajo
                                                         }
                                                         if (match.hit)
                                                         {
-                                                            typeExpr.reset(new cmajor::ast::ArrayNode(s, context->ModuleId(), typeExpr.release(), size.release()));
+                                                            typeExpr.reset(new cmajor::ast::ArrayNode(s, typeExpr.release(), size.release()));
                                                         }
                                                         *parentMatch19 = match;
                                                     }
@@ -605,7 +605,7 @@ soul::parser::Match TypeExprParser<LexerT>::PrimaryTypeExpr(LexerT& lexer, cmajo
                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "PrimaryTypeExpr");
                             #endif
-                            return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()));
+                            return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()));
                         }
                     }
                     *parentMatch6 = match;

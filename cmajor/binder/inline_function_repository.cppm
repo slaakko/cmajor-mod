@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.binder.inline_function_repository;
 
 import std.core;
 import cmajor.symbols;
+import cmajor.ast;
 import soul.ast.source.pos;
 import util;
 
@@ -19,7 +20,7 @@ class InlineFunctionRepository
 public:
     InlineFunctionRepository(BoundCompileUnit& boundCompileUnit_);
     cmajor::symbols::FunctionSymbol* Instantiate(cmajor::symbols::FunctionSymbol* inlineFunction, cmajor::symbols::ContainerScope* containerScope, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+        cmajor::ast::Node* node);
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_map<cmajor::symbols::FunctionSymbol*, cmajor::symbols::FunctionSymbol*> inlineFunctionMap;

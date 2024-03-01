@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -17,7 +17,7 @@ soul::parser::Match ParseIdentifier(Context& context, Lexer& lexer, cmajor::faul
     if (*lexer == ID)
     {
         const auto& token = lexer.GetToken(lexer.GetPos());
-        identifierNode.reset(new cmajor::fault::tolerant::ast::IdentifierNode(lexer.GetSpan(), completionContext, token.ToString()));
+        identifierNode.reset(new cmajor::fault::tolerant::ast::IdentifierNode(lexer.GetSpan(lexer.GetPos()), completionContext, token.ToString()));
         ++lexer;
     }
     else
@@ -42,7 +42,7 @@ soul::parser::Match ParseQualifiedId(Context& context, Lexer& lexer)
             if (*lexer == DOT)
             {
                 std::unique_ptr<cmajor::fault::tolerant::ast::DotNode> dotNode(
-                    new cmajor::fault::tolerant::ast::DotNode(lexer.GetSpan(), cmajor::fault::tolerant::ast::CompletionContext::none));
+                    new cmajor::fault::tolerant::ast::DotNode(lexer.GetSpan(lexer.GetPos()), cmajor::fault::tolerant::ast::CompletionContext::none));
                 qualifiedIdNode->AddDotNode(dotNode.release());
                 ++lexer;
             }

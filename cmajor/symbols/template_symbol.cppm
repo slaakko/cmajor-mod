@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,7 +9,7 @@ module;
 export module cmajor.symbols.templates;
 
 import cmajor.symbols.type.symbol;
-import soul.ast.source.pos;
+import soul.ast.span;
 import soul.xml.element; 
 import cmajor.ir.emitter;
 import std.core;
@@ -19,7 +19,7 @@ export namespace cmajor::symbols {
 class TemplateParameterSymbol : public TypeSymbol
 {
 public:
-    TemplateParameterSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    TemplateParameterSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     std::u32string FullName() const override { return Name(); }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
@@ -34,14 +34,13 @@ public:
         Assert(false, "tried to create defualt ir value of template parameter"); 
         return nullptr; 
     }
-    TypeSymbol* Unify(TypeSymbol* type, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* Unify(TypeSymbol* type) override;
     bool ContainsTemplateParameter() const override { return true; }
     bool HasDefault() const { return hasDefault; }
     void SetHasDefault() { hasDefault = true; }
     void SetDefaultType(TypeSymbol* defaultType_) { defaultType = defaultType_; }
     TypeSymbol* DefaultType() { return defaultType; }
-    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, 
-        const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* UnifyTemplateArgumentType(SymbolTable& symbolTable, const std::map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap) override;
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "TemplateParameterSymbol"; }
     std::string GetSymbolCategoryStr() const override { return "TP"; }
@@ -54,7 +53,7 @@ private:
 class BoundTemplateParameterSymbol : public Symbol
 {
 public:
-    BoundTemplateParameterSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    BoundTemplateParameterSymbol(const soul::ast::Span& span_, const std::u32string& name_);
     std::u32string FullName() const override { return Name(); }
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;

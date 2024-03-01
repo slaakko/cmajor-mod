@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -8,6 +8,7 @@ export module cmajor.ast.project;
 import std.core;
 import std.filesystem;
 import util.code.formatter;
+import soul.ast.span;
 
 export namespace cmajor::ast {
 
@@ -203,6 +204,9 @@ public:
     const std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() const { return compileUnits; }
     std::vector<std::unique_ptr<CompileUnitNode>>& CompileUnits() { return compileUnits; }
     BackEnd GetBackEnd() const { return backend; }
+    soul::ast::Span RootSpan() const;
+    int32_t RootFileIndex() const;
+    CompileUnitNode* RootCompileUnit() const;
 private:
     BackEnd backend;
     std::u32string name;

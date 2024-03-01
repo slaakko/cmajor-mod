@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,8 +16,8 @@ class IdentifierNode;
 class AliasNode : public Node
 {
 public:
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    AliasNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, Node* typeExpr_);
+    AliasNode(const soul::ast::Span& span_);
+    AliasNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_, Node* typeExpr_);
     Specifiers GetSpecifiers() const override { return specifiers; }
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
@@ -34,8 +34,8 @@ private:
 class TypedefNode : public Node
 {
 public:
-    TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    TypedefNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_);
+    TypedefNode(const soul::ast::Span& span_);
+    TypedefNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;

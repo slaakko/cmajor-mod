@@ -1,11 +1,11 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 module cmajor.symbols.conversion.table;
 
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.modules;
 import cmajor.symbols.function.symbol;
 import util;
@@ -40,7 +40,7 @@ void ConversionTable::AddConversion(FunctionSymbol* conversion)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::SourcePos(), soul::ast::SourcePos());
+        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
@@ -56,7 +56,7 @@ void ConversionTable::Add(const ConversionTable& that)
 #ifdef IMMUTABLE_MODULE_CHECK
     if (module && module->IsImmutable())
     {
-        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::SourcePos(), soul::ast::SourcePos());
+        throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, soul::ast::Span(), soul::ast::Span());
     }
 #endif
     for (const auto& p : that.conversionMap)
@@ -78,10 +78,10 @@ void ConversionTable::Check()
     }
 }
 
-FunctionSymbol* ConversionTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) const
+FunctionSymbol* ConversionTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const
 {
-    TypeSymbol* sourcePlainType = sourceType->PlainType(sourcePos, moduleId);
-    TypeSymbol* targetPlainType = targetType->PlainType(sourcePos, moduleId);
+    TypeSymbol* sourcePlainType = sourceType->PlainType();
+    TypeSymbol* targetPlainType = targetType->PlainType();
     ConversionTableEntry entry(sourcePlainType, targetPlainType);
     auto it = conversionMap.find(entry);
     if (it != conversionMap.cend())

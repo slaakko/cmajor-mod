@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,12 +14,12 @@ import util;
 
 namespace cmajor::ast {
 
-ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : Node(NodeType::constantNode, sourcePos_, moduleId_), specifiers(Specifiers::none)
+ConstantNode::ConstantNode(const soul::ast::Span& span_) : Node(NodeType::constantNode, span_), specifiers(Specifiers::none)
 {
 }
 
-ConstantNode::ConstantNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_) :
-    Node(NodeType::constantNode, sourcePos_, moduleId_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), value(value_)
+ConstantNode::ConstantNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_) :
+    Node(NodeType::constantNode, span_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), value(value_)
 {
     typeExpr->SetParent(this);
     id->SetParent(this);
@@ -36,7 +36,7 @@ Node* ConstantNode::Clone(CloneContext& cloneContext) const
     {
         clonedValue = value->Clone(cloneContext);
     }
-    ConstantNode* clone = new ConstantNode(GetSourcePos(), ModuleId(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedValue);
+    ConstantNode* clone = new ConstantNode(GetSpan(), specifiers, typeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedValue);
     return clone;
 }
 

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -16,7 +16,7 @@ import cmajor.binder.statement.binder;
 import cmajor.binder.type.resolver;
 import cmajor.binder.evaluator;
 import cmajor.binder.access;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
 
 namespace cmajor::binder {
@@ -24,7 +24,7 @@ namespace cmajor::binder {
 class ExpressionBinder : public cmajor::ast::Visitor
 {
 public:
-    ExpressionBinder(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundCompileUnit& boundCompileUnit_, BoundFunction* boundFunction_, 
+    ExpressionBinder(BoundCompileUnit& boundCompileUnit_, BoundFunction* boundFunction_, 
         cmajor::symbols::ContainerScope* containerScope_, StatementBinder* statementBinder_, bool lvalue_);
     std::unique_ptr<BoundExpression> GetExpression() { return std::move(expression); }
 
@@ -114,8 +114,6 @@ public:
     void Visit(cmajor::ast::FunctionPtrNode& functionPtrNode) override;
     void BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& node, const std::u32string& groupName);
 private:
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId;
     BoundCompileUnit& boundCompileUnit;
     cmajor::symbols::SymbolTable& symbolTable;
     cmajor::symbols::Module* module;
@@ -132,10 +130,11 @@ private:
     void BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::IdentifierNode* idNode);
 };
 
-ExpressionBinder::ExpressionBinder(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, BoundCompileUnit& boundCompileUnit_, BoundFunction* boundFunction_, 
+ExpressionBinder::ExpressionBinder(BoundCompileUnit& boundCompileUnit_, BoundFunction* boundFunction_, 
     cmajor::symbols::ContainerScope* containerScope_,
     StatementBinder* statementBinder_, bool lvalue_) :
-    sourcePos(sourcePos_), moduleId(moduleId_), boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
+    boundCompileUnit(boundCompileUnit_), 
+    symbolTable(boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
     boundFunction(boundFunction_), containerScope(containerScope_), statementBinder(statementBinder_), lvalue(lvalue_), inhibitCompile(false)
 {
 }
@@ -150,23 +149,23 @@ void ExpressionBinder::BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& 
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     std::unique_ptr<cmajor::symbols::Exception> exception;
-    std::unique_ptr<BoundFunctionCall> operatorFunCall = ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, node.GetSourcePos(), node.ModuleId(),
-        OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
+    std::unique_ptr<BoundFunctionCall> operatorFunCall = ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, 
+        &node, OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
     if (!operatorFunCall)
     {
-        if (arguments[0]->GetType()->PlainType(node.GetSourcePos(), node.ModuleId())->IsClassTypeSymbol())
+        if (arguments[0]->GetType()->PlainType()->IsClassTypeSymbol())
         {
             if (arguments[0]->GetType()->IsReferenceType())
             {
-                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->RemoveReference(node.GetSourcePos(), node.ModuleId())->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->RemoveReference()->AddPointer();
                 arguments[0].reset(new BoundReferenceToPointerExpression(std::move(arguments[0]), type));
             }
             else
             {
-                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->PlainType(node.GetSourcePos(), node.ModuleId())->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->PlainType()->AddPointer();
                 arguments[0].reset(new BoundAddressOfExpression(std::move(arguments[0]), type));
             }
-            operatorFunCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, node.GetSourcePos(), node.ModuleId()));
+            operatorFunCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, &node));
         }
         else
         {
@@ -183,27 +182,28 @@ void ExpressionBinder::BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& 
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
             if (!specialization->IsBound())
             {
-                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &node);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSourcePos(), node.ModuleId());
-        operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary)),
-            type->AddPointer(node.GetSourcePos(), node.ModuleId()))));
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan());
+        operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+            new BoundLocalVariable(node.GetSpan(), temporary)), type->AddPointer())));
         if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
             {
-                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                 destructorCall->AddArgument(std::unique_ptr<BoundExpression>(operatorFunCall->Arguments().back()->Clone()));
-                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &node);
             }
         }
     }
     expression.reset(operatorFunCall.release());
     if (temporary)
     {
-        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary))));
+        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(
+            new BoundLocalVariable(node.GetSpan(), temporary))));
         expression->SetFlag(BoundExpressionFlags::bindToRvalueReference);
     }
 }
@@ -236,23 +236,23 @@ void ExpressionBinder::BindBinaryOp(BoundExpression* left, BoundExpression* righ
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     std::unique_ptr<cmajor::symbols::Exception> exception;
-    std::unique_ptr<BoundFunctionCall> operatorFunCall = ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, node.GetSourcePos(), node.ModuleId(),
-        OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
+    std::unique_ptr<BoundFunctionCall> operatorFunCall = ResolveOverload(
+        groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, &node, OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
     if (!operatorFunCall)
     {
-        if (arguments[0]->GetType()->PlainType(node.GetSourcePos(), node.ModuleId())->IsClassTypeSymbol())
+        if (arguments[0]->GetType()->PlainType()->IsClassTypeSymbol())
         {
             if (arguments[0]->GetType()->IsReferenceType())
             {
-                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->RemoveReference(node.GetSourcePos(), node.ModuleId())->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->RemoveReference()->AddPointer();
                 arguments[0].reset(new BoundReferenceToPointerExpression(std::move(arguments[0]), type));
             }
             else
             {
-                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->PlainType(node.GetSourcePos(), node.ModuleId())->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = arguments[0]->GetType()->PlainType()->AddPointer();
                 arguments[0].reset(new BoundAddressOfExpression(std::move(arguments[0]), type));
             }
-            operatorFunCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, node.GetSourcePos(), node.ModuleId()));
+            operatorFunCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, &node));
         }
         else
         {
@@ -269,50 +269,48 @@ void ExpressionBinder::BindBinaryOp(BoundExpression* left, BoundExpression* righ
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
             if (!specialization->IsBound())
             {
-                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &node);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSourcePos(), node.ModuleId());
-        operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary)),
-            type->AddPointer(node.GetSourcePos(), node.ModuleId()))));
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan());
+        operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSpan(), temporary)),
+            type->AddPointer())));
         if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
             {
-                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                 destructorCall->AddArgument(std::unique_ptr<BoundExpression>(operatorFunCall->Arguments().back()->Clone()));
-                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &node);
             }
         }
     }
     expression.reset(operatorFunCall.release());
     if (temporary)
     {
-        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary))));
+        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSpan(), temporary))));
         expression->SetFlag(BoundExpressionFlags::bindToRvalueReference);
     }
 }
 
 void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::IdentifierNode* idNode)
 {
-    soul::ast::SourcePos spn = sourcePos;
-    util::uuid mid = moduleId;
+    soul::ast::Span spn = symbol->GetSpan();
     if (idNode)
     {
-        spn = idNode->GetSourcePos();
-        mid = idNode->ModuleId();
+        spn = idNode->GetSpan();
     }
     switch (symbol->GetSymbolType())
     {
     case cmajor::symbols::SymbolType::functionGroupSymbol:
     {
         cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol = static_cast<cmajor::symbols::FunctionGroupSymbol*>(symbol);
-        BoundFunctionGroupExpression* boundFunctionGroupExpression = new BoundFunctionGroupExpression(sourcePos, moduleId, functionGroupSymbol);
+        BoundFunctionGroupExpression* boundFunctionGroupExpression = new BoundFunctionGroupExpression(symbol->GetSpan(), functionGroupSymbol);
         cmajor::symbols::ParameterSymbol* thisParam = boundFunction->GetFunctionSymbol()->GetThisParam();
         if (thisParam)
         {
-            boundFunctionGroupExpression->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(spn, mid, thisParam)));
+            boundFunctionGroupExpression->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(spn, thisParam)));
         }
         expression.reset(boundFunctionGroupExpression);
         break;
@@ -321,7 +319,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), classTypeSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, classTypeSymbol));
+        expression.reset(new BoundTypeExpression(classTypeSymbol->GetSpan(), classTypeSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, classTypeSymbol);
@@ -335,7 +333,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::classGroupTypeSymbol:
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroupTypeSymbol = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(symbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, classGroupTypeSymbol));
+        expression.reset(new BoundTypeExpression(symbol->GetSpan(), classGroupTypeSymbol));
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = classGroupTypeSymbol->GetClass(0);
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && classTypeSymbol)
         {
@@ -350,7 +348,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::interfaceTypeSymbol:
     {
         cmajor::symbols::InterfaceTypeSymbol* interfaceTypeSymbol = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(symbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, interfaceTypeSymbol));
+        expression.reset(new BoundTypeExpression(interfaceTypeSymbol->GetSpan(), interfaceTypeSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, interfaceTypeSymbol);
@@ -365,7 +363,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::DelegateTypeSymbol* delegateTypeSymbol = static_cast<cmajor::symbols::DelegateTypeSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), delegateTypeSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, delegateTypeSymbol));
+        expression.reset(new BoundTypeExpression(delegateTypeSymbol->GetSpan(), delegateTypeSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, delegateTypeSymbol);
@@ -380,7 +378,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::ClassDelegateTypeSymbol* classDelegateTypeSymbol = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), classDelegateTypeSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, classDelegateTypeSymbol));
+        expression.reset(new BoundTypeExpression(classDelegateTypeSymbol->GetSpan(), classDelegateTypeSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, classDelegateTypeSymbol);
@@ -395,7 +393,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), aliasTypeSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, aliasTypeSymbol->GetType()));
+        expression.reset(new BoundTypeExpression(aliasTypeSymbol->GetSpan(), aliasTypeSymbol->GetType()));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, aliasTypeSymbol);
@@ -409,14 +407,14 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::boundTemplateParameterSymbol:
     {
         cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameterSymbol = static_cast<cmajor::symbols::BoundTemplateParameterSymbol*>(symbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, boundTemplateParameterSymbol->GetType()));
+        expression.reset(new BoundTypeExpression(boundTemplateParameterSymbol->GetSpan(), boundTemplateParameterSymbol->GetType()));
         break;
     }
     case cmajor::symbols::SymbolType::parameterSymbol:
     {
         cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), parameterSymbol);
-        expression.reset(new BoundParameter(spn, mid, parameterSymbol));
+        expression.reset(new BoundParameter(parameterSymbol->GetSpan(), parameterSymbol));
         if (idNode)
         {
             cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, parameterSymbol);
@@ -427,7 +425,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), localVariableSymbol);
-        expression.reset(new BoundLocalVariable(spn, mid, localVariableSymbol));
+        expression.reset(new BoundLocalVariable(localVariableSymbol->GetSpan(), localVariableSymbol));
         if (idNode)
         {
             cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, localVariableSymbol);
@@ -447,7 +445,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
         }
         cmajor::symbols::FunctionSymbol* currentFuctionSymbol = boundFunction->GetFunctionSymbol();
         CheckAccess(currentFuctionSymbol, memberVariableSymbol);
-        BoundMemberVariable* bmv = new BoundMemberVariable(spn, mid, memberVariableSymbol);
+        BoundMemberVariable* bmv = new BoundMemberVariable(memberVariableSymbol->GetSpan(), memberVariableSymbol);
         bool accessFromOwnScope = false;
         cmajor::symbols::ClassTypeSymbol* currentClass = currentFuctionSymbol->ContainingClassNoThrow();
         if (currentClass)
@@ -473,12 +471,12 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
             {
                 if (thisParam)
                 {
-                    cmajor::symbols::TypeSymbol* thisPointerType = thisParam->GetType()->BaseType()->AddPointer(sourcePos, moduleId);
+                    cmajor::symbols::TypeSymbol* thisPointerType = thisParam->GetType()->BaseType()->AddPointer();
                     if (thisParam->GetType()->IsConstType())
                     {
-                        thisPointerType = thisPointerType->AddConst(sourcePos, moduleId);
+                        thisPointerType = thisPointerType->AddConst();
                     }
-                    bmv->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(spn, mid, thisParam)));
+                    bmv->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(thisParam->GetSpan(), thisParam)));
                 }
                 else
                 {
@@ -488,19 +486,19 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
             else if (thisParam)
             {
                 cmajor::symbols::ClassTypeSymbol* containingClass = memberVariableSymbol->ContainingClassNoThrow();
-                cmajor::symbols::TypeSymbol* containingClassPointerType = containingClass->AddPointer(sourcePos, moduleId);
-                cmajor::symbols::TypeSymbol* thisPointerType = thisParam->GetType()->BaseType()->AddPointer(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* containingClassPointerType = containingClass->AddPointer();
+                cmajor::symbols::TypeSymbol* thisPointerType = thisParam->GetType()->BaseType()->AddPointer();
                 if (thisParam->GetType()->IsConstType())
                 {
-                    thisPointerType = thisPointerType->AddConst(sourcePos, moduleId);
-                    containingClassPointerType->AddConst(sourcePos, moduleId);
+                    thisPointerType = thisPointerType->AddConst();
+                    containingClassPointerType->AddConst();
                 }
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(thisPointerType, containingClassPointerType, containerScope, boundFunction, sourcePos, moduleId, argumentMatch);
+                cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(
+                    thisPointerType, containingClassPointerType, containerScope, boundFunction, argumentMatch, idNode);
                 if (conversionFun)
                 {
-                    bmv->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(
-                        spn, mid, thisParam)), conversionFun)));
+                    bmv->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(spn, thisParam)), conversionFun)));
                 }
             }
         }
@@ -511,7 +509,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::ConstantSymbol* constantSymbol = static_cast<cmajor::symbols::ConstantSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), constantSymbol);
-        expression.reset(new BoundConstant(spn, mid, constantSymbol));
+        expression.reset(new BoundConstant(constantSymbol->GetSpan(), constantSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, constantSymbol);
@@ -526,7 +524,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     {
         cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = static_cast<cmajor::symbols::EnumTypeSymbol*>(symbol);
         CheckAccess(boundFunction->GetFunctionSymbol(), enumTypeSymbol);
-        expression.reset(new BoundTypeExpression(sourcePos, moduleId, enumTypeSymbol));
+        expression.reset(new BoundTypeExpression(enumTypeSymbol->GetSpan(), enumTypeSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, enumTypeSymbol);
@@ -540,7 +538,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::enumConstantSymbol:
     {
         cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
-        expression.reset(new BoundEnumConstant(spn, mid, enumConstantSymbol));
+        expression.reset(new BoundEnumConstant(enumConstantSymbol->GetSpan(), enumConstantSymbol));
         if (idNode && GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
             symbolTable.MapSymbol(idNode, enumConstantSymbol);
@@ -554,7 +552,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::namespaceSymbol:
     {
         cmajor::symbols::NamespaceSymbol* ns = static_cast<cmajor::symbols::NamespaceSymbol*>(symbol);
-        expression.reset(new BoundNamespaceExpression(sourcePos, moduleId, ns));
+        expression.reset(new BoundNamespaceExpression(ns->GetSpan(), ns));
         if (idNode)
         {
             cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, ns);
@@ -569,20 +567,31 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
         globalVariableGroup->CollectGlobalVariables(boundCompileUnit.GetCompileUnitNode()->FilePath(), globalVariables);
         if (globalVariables.empty())
         {
-            throw cmajor::symbols::Exception("global variable group '" + util::ToUtf8(globalVariableGroup->Name()) + "' contains no relevant public or internal global variables", sourcePos, moduleId);
+            soul::ast::FullSpan fullSpan;
+            if (idNode)
+            {
+                fullSpan = idNode->GetFullSpan();
+            }
+            throw cmajor::symbols::Exception("global variable group '" + util::ToUtf8(globalVariableGroup->Name()) + "' contains no relevant public or internal global variables", 
+                fullSpan);
         }
         else if (globalVariables.size() == 1)
         {
             globalVariableSymbol = globalVariables.front();
             if (globalVariableSymbol->Access() == cmajor::symbols::SymbolAccess::private_ && globalVariableSymbol->CompileUnitFilePath() != boundCompileUnit.GetCompileUnitNode()->FilePath())
             {
+                soul::ast::FullSpan fullSpan;
+                if (idNode)
+                {
+                    fullSpan = idNode->GetFullSpan();
+                }
                 throw cmajor::symbols::Exception("global variable group '" + util::ToUtf8(globalVariableGroup->Name()) +
                     "' does not contain a public or internal global variable with the given name but do contain a private global variable defined in the compile unit " +
-                    globalVariableSymbol->CompileUnitFilePath(), sourcePos, moduleId, globalVariableSymbol->GetSourcePos(), globalVariableSymbol->SourceModuleId());
+                    globalVariableSymbol->CompileUnitFilePath(), fullSpan, globalVariableSymbol->GetFullSpan());
             }
             else
             {
-                expression.reset(new BoundGlobalVariable(spn, mid, globalVariableSymbol));
+                expression.reset(new BoundGlobalVariable(globalVariableSymbol->GetSpan(), globalVariableSymbol));
             }
         }
         else
@@ -601,9 +610,14 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
                 }
                 compileUnits.append(globalVariableSymbol->CompileUnitFilePath());
             }
+            soul::ast::FullSpan fullSpan;
+            if (idNode)
+            {
+                fullSpan = idNode->GetFullSpan();
+            }
             throw cmajor::symbols::Exception("global variable group '" + util::ToUtf8(globalVariableGroup->Name()) +
                 "' does not contain a public or internal global variable with the given name but do contain private global variables defined in the following compile units: " + compileUnits,
-                sourcePos, moduleId);
+                fullSpan);
         }
         if (idNode)
         {
@@ -616,205 +630,202 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     }
     default:
     {
-        throw cmajor::symbols::Exception("could not bind '" + util::ToUtf8(symbol->FullName()) + "'", sourcePos, moduleId, symbol->GetSourcePos(), symbol->SourceModuleId());
+        throw cmajor::symbols::Exception("could not bind '" + util::ToUtf8(symbol->FullName()) + "'", symbol->GetFullSpan());
     }
     }
 }
 
 void ExpressionBinder::Visit(cmajor::ast::BoolNode& boolNode)
 {
-    expression.reset(new BoundTypeExpression(boolNode.GetSourcePos(), boolNode.ModuleId(), symbolTable.GetTypeByName(U"bool")));
+    expression.reset(new BoundTypeExpression(boolNode.GetSpan(), symbolTable.GetTypeByName(U"bool")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::SByteNode& sbyteNode)
 {
-    expression.reset(new BoundTypeExpression(sbyteNode.GetSourcePos(), sbyteNode.ModuleId(), symbolTable.GetTypeByName(U"sbyte")));
+    expression.reset(new BoundTypeExpression(sbyteNode.GetSpan(), symbolTable.GetTypeByName(U"sbyte")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ByteNode& byteNode)
 {
-    expression.reset(new BoundTypeExpression(byteNode.GetSourcePos(), byteNode.ModuleId(), symbolTable.GetTypeByName(U"byte")));
+    expression.reset(new BoundTypeExpression(byteNode.GetSpan(), symbolTable.GetTypeByName(U"byte")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ShortNode& shortNode)
 {
-    expression.reset(new BoundTypeExpression(shortNode.GetSourcePos(), shortNode.ModuleId(), symbolTable.GetTypeByName(U"short")));
+    expression.reset(new BoundTypeExpression(shortNode.GetSpan(), symbolTable.GetTypeByName(U"short")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UShortNode& ushortNode)
 {
-    expression.reset(new BoundTypeExpression(ushortNode.GetSourcePos(), ushortNode.ModuleId(), symbolTable.GetTypeByName(U"ushort")));
+    expression.reset(new BoundTypeExpression(ushortNode.GetSpan(), symbolTable.GetTypeByName(U"ushort")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::IntNode& intNode)
 {
-    expression.reset(new BoundTypeExpression(intNode.GetSourcePos(), intNode.ModuleId(), symbolTable.GetTypeByName(U"int")));
+    expression.reset(new BoundTypeExpression(intNode.GetSpan(), symbolTable.GetTypeByName(U"int")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UIntNode& uintNode)
 {
-    expression.reset(new BoundTypeExpression(uintNode.GetSourcePos(), uintNode.ModuleId(), symbolTable.GetTypeByName(U"uint")));
+    expression.reset(new BoundTypeExpression(uintNode.GetSpan(), symbolTable.GetTypeByName(U"uint")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::LongNode& longNode)
 {
-    expression.reset(new BoundTypeExpression(longNode.GetSourcePos(), longNode.ModuleId(), symbolTable.GetTypeByName(U"long")));
+    expression.reset(new BoundTypeExpression(longNode.GetSpan(), symbolTable.GetTypeByName(U"long")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ULongNode& ulongNode)
 {
-    expression.reset(new BoundTypeExpression(ulongNode.GetSourcePos(), ulongNode.ModuleId(), symbolTable.GetTypeByName(U"ulong")));
+    expression.reset(new BoundTypeExpression(ulongNode.GetSpan(), symbolTable.GetTypeByName(U"ulong")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::FloatNode& floatNode)
 {
-    expression.reset(new BoundTypeExpression(floatNode.GetSourcePos(), floatNode.ModuleId(), symbolTable.GetTypeByName(U"float")));
+    expression.reset(new BoundTypeExpression(floatNode.GetSpan(), symbolTable.GetTypeByName(U"float")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::DoubleNode& doubleNode)
 {
-    expression.reset(new BoundTypeExpression(doubleNode.GetSourcePos(), doubleNode.ModuleId(), symbolTable.GetTypeByName(U"double")));
+    expression.reset(new BoundTypeExpression(doubleNode.GetSpan(), symbolTable.GetTypeByName(U"double")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::CharNode& charNode)
 {
-    expression.reset(new BoundTypeExpression(charNode.GetSourcePos(), charNode.ModuleId(), symbolTable.GetTypeByName(U"char")));
+    expression.reset(new BoundTypeExpression(charNode.GetSpan(), symbolTable.GetTypeByName(U"char")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::WCharNode& wcharNode)
 {
-    expression.reset(new BoundTypeExpression(wcharNode.GetSourcePos(), wcharNode.ModuleId(), symbolTable.GetTypeByName(U"wchar")));
+    expression.reset(new BoundTypeExpression(wcharNode.GetSpan(), symbolTable.GetTypeByName(U"wchar")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UCharNode& ucharNode)
 {
-    expression.reset(new BoundTypeExpression(ucharNode.GetSourcePos(), ucharNode.ModuleId(), symbolTable.GetTypeByName(U"uchar")));
+    expression.reset(new BoundTypeExpression(ucharNode.GetSpan(), symbolTable.GetTypeByName(U"uchar")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::VoidNode& voidNode)
 {
-    expression.reset(new BoundTypeExpression(voidNode.GetSourcePos(), voidNode.ModuleId(), symbolTable.GetTypeByName(U"void")));
+    expression.reset(new BoundTypeExpression(voidNode.GetSpan(), symbolTable.GetTypeByName(U"void")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::BooleanLiteralNode& booleanLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::BoolValue(booleanLiteralNode.GetSourcePos(), booleanLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::BoolValue(booleanLiteralNode.GetSpan(),
         booleanLiteralNode.Value())), symbolTable.GetTypeByName(U"bool")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::SByteLiteralNode& sbyteLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::SByteValue(sbyteLiteralNode.GetSourcePos(), sbyteLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::SByteValue(sbyteLiteralNode.GetSpan(),
         sbyteLiteralNode.Value())), symbolTable.GetTypeByName(U"sbyte")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ByteLiteralNode& byteLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ByteValue(byteLiteralNode.GetSourcePos(), byteLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ByteValue(byteLiteralNode.GetSpan(),
         byteLiteralNode.Value())), symbolTable.GetTypeByName(U"byte")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ShortLiteralNode& shortLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ShortValue(shortLiteralNode.GetSourcePos(), shortLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ShortValue(shortLiteralNode.GetSpan(),
         shortLiteralNode.Value())), symbolTable.GetTypeByName(U"short")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UShortLiteralNode& ushortLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UShortValue(ushortLiteralNode.GetSourcePos(), ushortLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UShortValue(ushortLiteralNode.GetSpan(),
         ushortLiteralNode.Value())), symbolTable.GetTypeByName(U"ushort")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::IntLiteralNode& intLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::IntValue(intLiteralNode.GetSourcePos(), intLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::IntValue(intLiteralNode.GetSpan(),
         intLiteralNode.Value())), symbolTable.GetTypeByName(U"int")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UIntLiteralNode& uintLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UIntValue(uintLiteralNode.GetSourcePos(), uintLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UIntValue(uintLiteralNode.GetSpan(),
         uintLiteralNode.Value())), symbolTable.GetTypeByName(U"uint")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::LongLiteralNode& longLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::LongValue(longLiteralNode.GetSourcePos(), longLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::LongValue(longLiteralNode.GetSpan(),
         longLiteralNode.Value())), symbolTable.GetTypeByName(U"long")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::ULongLiteralNode& ulongLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ULongValue(ulongLiteralNode.GetSourcePos(), ulongLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::ULongValue(ulongLiteralNode.GetSpan(),
         ulongLiteralNode.Value())), symbolTable.GetTypeByName(U"ulong")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::FloatLiteralNode& floatLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::FloatValue(floatLiteralNode.GetSourcePos(), floatLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::FloatValue(floatLiteralNode.GetSpan(),
         floatLiteralNode.Value())), symbolTable.GetTypeByName(U"float")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::DoubleLiteralNode& doubleLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::DoubleValue(doubleLiteralNode.GetSourcePos(), doubleLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::DoubleValue(doubleLiteralNode.GetSpan(),
         doubleLiteralNode.Value())), symbolTable.GetTypeByName(U"double")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::CharLiteralNode& charLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::CharValue(charLiteralNode.GetSourcePos(), charLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::CharValue(charLiteralNode.GetSpan(),
         charLiteralNode.Value())), symbolTable.GetTypeByName(U"char")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::WCharLiteralNode& wcharLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::WCharValue(wcharLiteralNode.GetSourcePos(), wcharLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::WCharValue(wcharLiteralNode.GetSpan(),
         wcharLiteralNode.Value())), symbolTable.GetTypeByName(U"wchar")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UCharLiteralNode& ucharLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UCharValue(ucharLiteralNode.GetSourcePos(), ucharLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UCharValue(ucharLiteralNode.GetSpan(),
         ucharLiteralNode.Value())), symbolTable.GetTypeByName(U"uchar")));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::StringLiteralNode& stringLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(stringLiteralNode.GetSourcePos(), stringLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(stringLiteralNode.GetSpan(),
         boundCompileUnit.Install(stringLiteralNode.Value()), stringLiteralNode.Value())),
-        symbolTable.GetTypeByName(U"char")->AddConst(stringLiteralNode.GetSourcePos(), stringLiteralNode.ModuleId())->AddPointer(stringLiteralNode.GetSourcePos(), 
-            stringLiteralNode.ModuleId())));
+        symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer()));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::WStringLiteralNode& wstringLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::WStringValue(wstringLiteralNode.GetSourcePos(), wstringLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::WStringValue(wstringLiteralNode.GetSpan(),
         boundCompileUnit.Install(wstringLiteralNode.Value()), wstringLiteralNode.Value())),
-        symbolTable.GetTypeByName(U"wchar")->AddConst(wstringLiteralNode.GetSourcePos(), wstringLiteralNode.ModuleId())->AddPointer(wstringLiteralNode.GetSourcePos(), 
-            wstringLiteralNode.ModuleId())));
+        symbolTable.GetTypeByName(U"wchar")->AddConst()->AddPointer()));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UStringLiteralNode& ustringLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UStringValue(ustringLiteralNode.GetSourcePos(), ustringLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UStringValue(ustringLiteralNode.GetSpan(),
         boundCompileUnit.Install(ustringLiteralNode.Value()), ustringLiteralNode.Value())),
-        symbolTable.GetTypeByName(U"uchar")->AddConst(ustringLiteralNode.GetSourcePos(), ustringLiteralNode.ModuleId())->AddPointer(ustringLiteralNode.GetSourcePos(), 
-            ustringLiteralNode.ModuleId())));
+        symbolTable.GetTypeByName(U"uchar")->AddConst()->AddPointer()));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::NullLiteralNode& nullLiteralNode)
 {
     cmajor::symbols::TypeSymbol* nullPtrType = symbolTable.GetTypeByName(U"@nullptr_type");
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::NullValue(nullLiteralNode.GetSourcePos(), nullLiteralNode.ModuleId(), 
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::NullValue(nullLiteralNode.GetSpan(),
         nullPtrType)), nullPtrType));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::UuidLiteralNode& uuidLiteralNode)
 {
-    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UuidValue(uuidLiteralNode.GetSourcePos(), uuidLiteralNode.ModuleId(), 
-        boundCompileUnit.Install(uuidLiteralNode.GetUuid()))), symbolTable.GetTypeByName(U"void")->AddPointer(uuidLiteralNode.GetSourcePos(), uuidLiteralNode.ModuleId())));
+    expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UuidValue(uuidLiteralNode.GetSpan(),
+        boundCompileUnit.Install(uuidLiteralNode.GetUuid()))), symbolTable.GetTypeByName(U"void")->AddPointer()));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::IdentifierNode& identifierNode)
@@ -839,7 +850,7 @@ void ExpressionBinder::Visit(cmajor::ast::IdentifierNode& identifierNode)
     }
     else
     {
-        throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetSourcePos(), identifierNode.ModuleId());
+        throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetFullSpan());
     }
 }
 
@@ -858,7 +869,7 @@ void ExpressionBinder::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
             {
                 cmajor::symbols::MapIdentifierToSymbolDefinition(static_cast<cmajor::ast::IdentifierNode*>(templateIdNode.Primary()), typeSymbol);
             }
-            expression.reset(new BoundTypeExpression(sourcePos, moduleId, typeSymbol));
+            expression.reset(new BoundTypeExpression(typeSymbol->GetSpan(), typeSymbol));
         }
     }
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
@@ -893,21 +904,21 @@ void ExpressionBinder::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
                     int m = classTypeSymbol->TemplateParameters().size();
                     if (n < m)
                     {
-                        boundCompileUnit.GetClassTemplateRepository().ResolveDefaultTemplateArguments(templateArgumentTypes, classTypeSymbol, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                        boundCompileUnit.GetClassTemplateRepository().ResolveDefaultTemplateArguments(templateArgumentTypes, classTypeSymbol, containerScope, &templateIdNode);
                     }
-                    cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes,
-                        templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                    cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(
+                        classTypeSymbol, templateArgumentTypes);
                     if (!classTemplateSpecialization->IsBound())
                     {
-                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
                     }
-                    expression.reset(new BoundTypeExpression(sourcePos, moduleId, classTemplateSpecialization));
+                    expression.reset(new BoundTypeExpression(classTemplateSpecialization->GetSpan(), classTemplateSpecialization));
                 }
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("function group or class group expected", templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+            throw cmajor::symbols::Exception("function group or class group expected", templateIdNode.GetFullSpan());
         }
     }
     else if (expression->GetBoundNodeType() == BoundNodeType::boundTypeExpression)
@@ -921,20 +932,20 @@ void ExpressionBinder::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
                 int m = classTypeSymbol->TemplateParameters().size();
                 if (n < m)
                 {
-                    boundCompileUnit.GetClassTemplateRepository().ResolveDefaultTemplateArguments(templateArgumentTypes, classTypeSymbol, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                    boundCompileUnit.GetClassTemplateRepository().ResolveDefaultTemplateArguments(templateArgumentTypes, classTypeSymbol, containerScope, &templateIdNode);
                 }
-                cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable.MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes);
                 if (!classTemplateSpecialization->IsBound())
                 {
-                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
                 }
-                expression.reset(new BoundTypeExpression(sourcePos, moduleId, classTemplateSpecialization));
+                expression.reset(new BoundTypeExpression(classTemplateSpecialization->GetSpan(), classTemplateSpecialization));
             }
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("function group or class group expected", templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+        throw cmajor::symbols::Exception("function group or class group expected", templateIdNode.GetFullSpan());
     }
 }
 
@@ -942,7 +953,7 @@ void ExpressionBinder::Visit(cmajor::ast::ParameterNode& parameterNode)
 {
     if (!parameterNode.Id())
     {
-        throw cmajor::symbols::Exception("parameter not named", parameterNode.GetSourcePos(), parameterNode.ModuleId());
+        throw cmajor::symbols::Exception("parameter not named", parameterNode.GetFullSpan());
     }
     std::u32string name = parameterNode.Id()->Str();
     cmajor::symbols::Symbol* symbol = containerScope->Lookup(name, cmajor::symbols::ScopeLookup::this_and_base_and_parent);
@@ -962,16 +973,16 @@ void ExpressionBinder::Visit(cmajor::ast::ParameterNode& parameterNode)
         if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::parameterSymbol)
         {
             cmajor::symbols::ParameterSymbol* parameterSymbol = static_cast<cmajor::symbols::ParameterSymbol*>(symbol);
-            expression.reset(new BoundParameter(parameterNode.GetSourcePos(), parameterNode.ModuleId(), parameterSymbol));
+            expression.reset(new BoundParameter(parameterSymbol->GetSpan(), parameterSymbol));
         }
         else
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a parameter", parameterNode.GetSourcePos(), parameterNode.ModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a parameter", parameterNode.GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("parameter symbol '" + util::ToUtf8(name) + "' not found", parameterNode.GetSourcePos(), parameterNode.ModuleId());
+        throw cmajor::symbols::Exception("parameter symbol '" + util::ToUtf8(name) + "' not found", parameterNode.GetFullSpan());
     }
 }
 
@@ -995,11 +1006,12 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
             cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, typeSymbol);
             if (!typeSymbol)
             {
-                throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroupTypeSymbol->FullName()) + "'", sourcePos, moduleId, classGroupTypeSymbol->GetSourcePos(), classGroupTypeSymbol->SourceModuleId());
+                throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroupTypeSymbol->FullName()) + "'", dotNode.GetFullSpan(),
+                    classGroupTypeSymbol->GetFullSpan());
             }
             else
             {
-                expression.reset(new BoundTypeExpression(sourcePos, moduleId, typeSymbol));
+                expression.reset(new BoundTypeExpression(typeSymbol->GetSpan(), typeSymbol));
             }
         }
     }
@@ -1021,12 +1033,13 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from namespace '" + util::ToUtf8(bns->Ns()->FullName()) + "'", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from namespace '" + util::ToUtf8(bns->Ns()->FullName()) + "'", 
+                dotNode.MemberId()->GetFullSpan());
         }
     }
     else
     {
-        cmajor::symbols::TypeSymbol* type = expression->GetType()->PlainType(dotNode.GetSourcePos(), dotNode.ModuleId());
+        cmajor::symbols::TypeSymbol* type = expression->GetType()->PlainType();
         if (type->IsClassDelegateType())
         {
             cmajor::symbols::ClassDelegateTypeSymbol* classDelegateType = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(type);
@@ -1044,12 +1057,12 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                 BoundExpression* plainClassPtr = expression.get();
                 if (expression->GetType()->IsClassTypeSymbol())
                 {
-                    cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer(dotNode.GetSourcePos(), dotNode.ModuleId());
+                    cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer();
                     classPtr.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(expression.release()), type));
                 }
                 else if (expression->GetType()->IsReferenceType())
                 {
-                    cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference(dotNode.GetSourcePos(), dotNode.ModuleId())->AddPointer(dotNode.GetSourcePos(), dotNode.ModuleId());
+                    cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference()->AddPointer();
                     classPtr.reset(new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(expression.release()), type));
                 }
                 else
@@ -1072,13 +1085,14 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), owner->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), containerScope, boundFunction, dotNode.GetSourcePos(), dotNode.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddConst()->AddPointer(), owner->AddConst()->AddPointer(), 
+                                        containerScope, boundFunction, argumentMatch, &dotNode)));
                             }
                             else
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddPointer(sourcePos, moduleId), owner->AddPointer(sourcePos, moduleId), containerScope, boundFunction, dotNode.GetSourcePos(), dotNode.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddPointer(), owner->AddPointer(), containerScope, boundFunction, argumentMatch, &dotNode)));
                             }
                         }
                     }
@@ -1088,7 +1102,7 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                         bfg->SetScopeQualified();
                         bfg->SetQualifiedScope(bte->GetType()->GetContainerScope());
                     }
-                    BoundMemberExpression* bme = new BoundMemberExpression(dotNode.GetSourcePos(), dotNode.ModuleId(), std::unique_ptr<BoundExpression>(classPtr.release()), std::move(expression));
+                    BoundMemberExpression* bme = new BoundMemberExpression(dotNode.GetSpan(), std::unique_ptr<BoundExpression>(classPtr.release()), std::move(expression));
                     expression.reset(bme);
                 }
                 else if (expression->GetBoundNodeType() == BoundNodeType::boundMemberVariable)
@@ -1106,13 +1120,14 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), owner->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), containerScope, boundFunction, dotNode.GetSourcePos(), dotNode.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddConst()->AddPointer(), owner->AddConst()->AddPointer(), 
+                                        containerScope, boundFunction, argumentMatch, &dotNode)));
                             }
                             else
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddPointer(sourcePos, moduleId), owner->AddPointer(sourcePos, moduleId), containerScope, boundFunction, dotNode.GetSourcePos(), dotNode.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddPointer(), owner->AddPointer(), containerScope, boundFunction, argumentMatch, &dotNode)));
                             }
                         }
                         bmv->SetClassPtr(std::unique_ptr<BoundExpression>(classPtr.release()));
@@ -1120,12 +1135,14 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                 }
                 else if (expression->GetBoundNodeType() != BoundNodeType::boundTypeExpression && expression->GetBoundNodeType() != BoundNodeType::boundConstant)
                 {
-                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group, member variable, or type", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group, member variable, or type", 
+                        dotNode.MemberId()->GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from class '" + util::ToUtf8(classType->FullName()) + "'", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from class '" + util::ToUtf8(classType->FullName()) + "'", 
+                    dotNode.MemberId()->GetFullSpan());
             }
         }
         else if (type->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
@@ -1142,17 +1159,18 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
                 if (expression->GetBoundNodeType() == BoundNodeType::boundFunctionGroupExpression)
                 {
                     BoundFunctionGroupExpression* bfg = static_cast<BoundFunctionGroupExpression*>(expression.get());
-                    BoundMemberExpression* bme = new BoundMemberExpression(dotNode.GetSourcePos(), dotNode.ModuleId(), std::unique_ptr<BoundExpression>(interfacePtr.release()), std::move(expression));
+                    BoundMemberExpression* bme = new BoundMemberExpression(dotNode.GetSpan(), std::unique_ptr<BoundExpression>(interfacePtr.release()), std::move(expression));
                     expression.reset(bme);
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group", dotNode.MemberId()->GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from interface '" + util::ToUtf8(interfaceType->FullName()) + "'", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from interface '" + util::ToUtf8(interfaceType->FullName()) + "'",
+                    dotNode.MemberId()->GetFullSpan());
             }
         }
         else if (type->GetSymbolType() == cmajor::symbols::SymbolType::enumTypeSymbol)
@@ -1167,7 +1185,8 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from enumerated type '" + util::ToUtf8(enumType->FullName()) + "'", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from enumerated type '" + util::ToUtf8(enumType->FullName()) + "'",
+                    dotNode.MemberId()->GetFullSpan());
             }
         }
         else if (type->GetSymbolType() == cmajor::symbols::SymbolType::arrayTypeSymbol)
@@ -1190,7 +1209,8 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from array type '" + util::ToUtf8(arrayType->FullName()) + "'", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from array type '" + util::ToUtf8(arrayType->FullName()) + "'",
+                    dotNode.MemberId()->GetFullSpan());
             }
         }
         else if (type->IsCharacterPointerType() && expression->GetBoundNodeType() == BoundNodeType::boundLiteral)
@@ -1213,12 +1233,14 @@ void ExpressionBinder::Visit(cmajor::ast::DotNode& dotNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from string functions", dotNode.MemberId()->GetSourcePos(), dotNode.MemberId()->ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from string functions", 
+                    dotNode.MemberId()->GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("expression must denote a namespace, class type, interface type, array type or an enumerated type type object", dotNode.GetSourcePos(), dotNode.ModuleId());
+            throw cmajor::symbols::Exception("expression must denote a namespace, class type, interface type, array type or an enumerated type type object",
+                dotNode.GetFullSpan());
         }
     }
     containerScope = prevContainerScope;
@@ -1252,17 +1274,18 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), owner->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), containerScope, boundFunction, node.GetSourcePos(), node.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddConst()->AddPointer(), owner->AddConst()->AddPointer(), containerScope, 
+                                        boundFunction, argumentMatch, &node)));
                             }
                             else
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddPointer(sourcePos, moduleId), owner->AddPointer(sourcePos, moduleId), containerScope, boundFunction, node.GetSourcePos(), node.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddPointer(), owner->AddPointer(), containerScope, boundFunction, argumentMatch, &node)));
                             }
                         }
                     }
-                    BoundMemberExpression* bme = new BoundMemberExpression(node.GetSourcePos(), node.ModuleId(), std::unique_ptr<BoundExpression>(classPtr.release()), std::move(expression));
+                    BoundMemberExpression* bme = new BoundMemberExpression(node.GetSpan(), std::unique_ptr<BoundExpression>(classPtr.release()), std::move(expression));
                     expression.reset(bme);
                 }
                 else if (expression->GetBoundNodeType() == BoundNodeType::boundMemberVariable)
@@ -1280,35 +1303,36 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), owner->AddConst(sourcePos, moduleId)->AddPointer(sourcePos, moduleId), containerScope, boundFunction, node.GetSourcePos(), node.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddConst()->AddPointer(), owner->AddConst()->AddPointer(), 
+                                        containerScope, boundFunction, argumentMatch, &node)));
                             }
                             else
                             {
                                 ArgumentMatch argumentMatch;
                                 classPtr.reset(new BoundConversion(std::unique_ptr<BoundExpression>(classPtr.release()),
-                                    boundCompileUnit.GetConversion(classType->AddPointer(sourcePos, moduleId), owner->AddPointer(sourcePos, moduleId), containerScope, boundFunction, node.GetSourcePos(), node.ModuleId(), argumentMatch)));
+                                    boundCompileUnit.GetConversion(classType->AddPointer(), owner->AddPointer(), containerScope, boundFunction, argumentMatch, &node)));
                             }
                         }
                         bmv->SetClassPtr(std::unique_ptr<BoundExpression>(classPtr.release()));
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("member variable '" + util::ToUtf8(bmv->GetMemberVariableSymbol()->FullName()) + +"' is static", node.GetSourcePos(), node.ModuleId());
+                        throw cmajor::symbols::Exception("member variable '" + util::ToUtf8(bmv->GetMemberVariableSymbol()->FullName()) + +"' is static", node.GetFullSpan());
                     }
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group or a member variable", node.GetSourcePos(), node.ModuleId());
+                    throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' does not denote a function group or a member variable", node.GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from class '" + util::ToUtf8(classType->FullName()) + "'", node.GetSourcePos(), node.ModuleId());
+                throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found from class '" + util::ToUtf8(classType->FullName()) + "'", node.GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("type of arrow expression subject must be pointer to class type", node.GetSourcePos(), node.ModuleId());
+            throw cmajor::symbols::Exception("type of arrow expression subject must be pointer to class type", node.GetFullSpan());
         }
     }
     else if (expression->GetType()->IsClassTypeSymbol())
@@ -1319,32 +1343,34 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
             if (!specialization->IsBound())
             {
-                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &node);
             }
         }
-        cmajor::symbols::TypeSymbol* pointerType = type->AddPointer(node.GetSourcePos(), node.ModuleId());
-        cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSourcePos(), node.ModuleId());
+        cmajor::symbols::TypeSymbol* pointerType = type->AddPointer();
+        cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan());
         Assert(expression->GetBoundNodeType() == BoundNodeType::boundFunctionCall, "function call expected");
         BoundFunctionCall* boundFunctionCall = static_cast<BoundFunctionCall*>(expression.get());
-        boundFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSourcePos(), node.ModuleId(), temporary)), pointerType)));
+        boundFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+            new BoundLocalVariable(node.GetSpan(), temporary)), pointerType)));
         if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
             {
-                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                 destructorCall->AddArgument(std::unique_ptr<BoundExpression>(boundFunctionCall->Arguments().back()->Clone()));
-                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &node);
             }
         }
         expression.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
-            new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)))), pointerType));
+            new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(temporary->GetSpan(), temporary)))), 
+            pointerType));
         BindUnaryOp(expression.release(), node, U"operator->");
         BindArrow(node, name);
     }
     else
     {
-        throw cmajor::symbols::Exception("arrow operator member function must return a class type object or a pointer to a class type object", node.GetSourcePos(), node.ModuleId());
+        throw cmajor::symbols::Exception("arrow operator member function must return a class type object or a pointer to a class type object", node.GetFullSpan());
     }
 }
 
@@ -1352,19 +1378,19 @@ void ExpressionBinder::Visit(cmajor::ast::ArrowNode& arrowNode)
 {
     arrowNode.Subject()->Accept(*this);
     bool argIsExplicitThisOrBasePtr = expression->GetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr);
-    if (expression->GetType()->IsReferenceType() && expression->GetType()->PlainType(arrowNode.GetSourcePos(), arrowNode.ModuleId())->IsClassTypeSymbol())
+    if (expression->GetType()->IsReferenceType() && expression->GetType()->PlainType()->IsClassTypeSymbol())
     {
-        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference(arrowNode.GetSourcePos(), arrowNode.ModuleId())->AddPointer(arrowNode.GetSourcePos(), arrowNode.ModuleId());
+        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference()->AddPointer();
         expression.reset(new BoundReferenceToPointerExpression(std::move(expression), type));
     }
     else if (expression->GetType()->IsReferenceType())
     {
-        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference(arrowNode.GetSourcePos(), arrowNode.ModuleId())->AddPointer(arrowNode.GetSourcePos(), arrowNode.ModuleId());
-        expression.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundDereferenceExpression(std::move(expression), type)), type->AddPointer(arrowNode.GetSourcePos(), arrowNode.ModuleId())));
+        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference()->AddPointer();
+        expression.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundDereferenceExpression(std::move(expression), type)), type->AddPointer()));
     }
     else
     {
-        cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer(arrowNode.GetSourcePos(), arrowNode.ModuleId());
+        cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer();
         expression.reset(new BoundAddressOfExpression(std::move(expression), type));
     }
     BindUnaryOp(expression.release(), arrowNode, U"operator->");
@@ -1384,9 +1410,9 @@ void ExpressionBinder::Visit(cmajor::ast::DisjunctionNode& disjunctionNode)
 {
     std::unique_ptr<BoundExpression> left = BindExpression(disjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     std::unique_ptr<BoundExpression> right = BindExpression(disjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
-    BoundDisjunction* boundDisjunction = new BoundDisjunction(disjunctionNode.GetSourcePos(), disjunctionNode.ModuleId(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
-    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), disjunctionNode.GetSourcePos(), disjunctionNode.ModuleId());
-    boundDisjunction->SetTemporary(new BoundLocalVariable(disjunctionNode.GetSourcePos(), disjunctionNode.ModuleId(), temporary));
+    BoundDisjunction* boundDisjunction = new BoundDisjunction(disjunctionNode.GetSpan(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
+    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), disjunctionNode.GetSpan());
+    boundDisjunction->SetTemporary(new BoundLocalVariable(disjunctionNode.GetSpan(), temporary));
     expression.reset(boundDisjunction);
 }
 
@@ -1394,9 +1420,9 @@ void ExpressionBinder::Visit(cmajor::ast::ConjunctionNode& conjunctionNode)
 {
     std::unique_ptr<BoundExpression> left = BindExpression(conjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
     std::unique_ptr<BoundExpression> right = BindExpression(conjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
-    BoundConjunction* boundConjunction = new BoundConjunction(conjunctionNode.GetSourcePos(), conjunctionNode.ModuleId(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
-    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), conjunctionNode.GetSourcePos(), conjunctionNode.ModuleId());
-    boundConjunction->SetTemporary(new BoundLocalVariable(conjunctionNode.GetSourcePos(), conjunctionNode.ModuleId(), temporary));
+    BoundConjunction* boundConjunction = new BoundConjunction(conjunctionNode.GetSpan(), std::move(left), std::move(right), symbolTable.GetTypeByName(U"bool"));
+    cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"bool"), conjunctionNode.GetSpan());
+    boundConjunction->SetTemporary(new BoundLocalVariable(conjunctionNode.GetSpan(), temporary));
     expression.reset(boundConjunction);
 }
 
@@ -1510,10 +1536,10 @@ void ExpressionBinder::Visit(cmajor::ast::PrefixIncrementNode& prefixIncrementNo
 {
     if (statementBinder->CompilingThrow())
     {
-        throw cmajor::symbols::Exception("prefix increment in throw expression no allowed", prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId());
+        throw cmajor::symbols::Exception("prefix increment in throw expression no allowed", prefixIncrementNode.GetFullSpan());
     }
     prefixIncrementNode.Subject()->Accept(*this);
-    if (expression->GetType()->PlainType(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId())->IsClassTypeSymbol())
+    if (expression->GetType()->PlainType()->IsClassTypeSymbol())
     {
         BindUnaryOp(prefixIncrementNode, U"operator++");
     }
@@ -1524,17 +1550,17 @@ void ExpressionBinder::Visit(cmajor::ast::PrefixIncrementNode& prefixIncrementNo
             if (expression->GetType()->IsUnsignedType())
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::AddNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::ByteLiteralNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), 1u)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::AddNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::ByteLiteralNode(prefixIncrementNode.GetSpan(), 1u)));
                 statementBinder->CompileStatement(&assignmentStatement, false);
             }
             else
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::AddNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::SByteLiteralNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), 1)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::AddNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::SByteLiteralNode(prefixIncrementNode.GetSpan(), 1)));
                 statementBinder->CompileStatement(&assignmentStatement, false);
             }
         }
@@ -1549,10 +1575,10 @@ void ExpressionBinder::Visit(cmajor::ast::PrefixDecrementNode& prefixDecrementNo
 {
     if (statementBinder->CompilingThrow())
     {
-        throw cmajor::symbols::Exception("prefix decrement in throw expression no allowed", prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId());
+        throw cmajor::symbols::Exception("prefix decrement in throw expression no allowed", prefixDecrementNode.GetFullSpan());
     }
     prefixDecrementNode.Subject()->Accept(*this);
-    if (expression->GetType()->PlainType(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId())->IsClassTypeSymbol())
+    if (expression->GetType()->PlainType()->IsClassTypeSymbol())
     {
         BindUnaryOp(prefixDecrementNode, U"operator--");
     }
@@ -1563,17 +1589,17 @@ void ExpressionBinder::Visit(cmajor::ast::PrefixDecrementNode& prefixDecrementNo
             if (expression->GetType()->IsUnsignedType())
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::SubNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::ByteLiteralNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), 1u)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::SubNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::ByteLiteralNode(prefixDecrementNode.GetSpan(), 1u)));
                 statementBinder->CompileStatement(&assignmentStatement, false);
             }
             else
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::SubNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::SByteLiteralNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), 1)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::SubNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::SByteLiteralNode(prefixDecrementNode.GetSpan(), 1)));
                 statementBinder->CompileStatement(&assignmentStatement, false);
             }
         }
@@ -1588,29 +1614,29 @@ void ExpressionBinder::BindDerefExpr(cmajor::ast::Node& node)
 {
     if (expression->GetType()->IsPointerType())
     {
-        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemovePointer(node.GetSourcePos(), node.ModuleId());
+        cmajor::symbols::TypeSymbol* type = expression->GetType()->RemovePointer();
         expression.reset(new BoundDereferenceExpression(std::unique_ptr<BoundExpression>(expression.release()), type));
     }
     else
     {
-        cmajor::symbols::TypeSymbol* plainSubjectType = expression->GetType()->PlainType(node.GetSourcePos(), node.ModuleId());
+        cmajor::symbols::TypeSymbol* plainSubjectType = expression->GetType()->PlainType();
         if (plainSubjectType->IsClassTypeSymbol())
         {
             if (expression->GetType()->IsReferenceType())
             {
-                cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference(node.GetSourcePos(), node.ModuleId())->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference()->AddPointer();
                 expression.reset(new BoundReferenceToPointerExpression(std::move(expression), type));
             }
             else if (expression->GetType()->IsClassTypeSymbol())
             {
-                cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer(node.GetSourcePos(), node.ModuleId());
+                cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer();
                 expression.reset(new BoundAddressOfExpression(std::move(expression), type));
             }
             BindUnaryOp(expression.release(), node, U"operator*");
         }
         else
         {
-            throw cmajor::symbols::Exception("dereference needs pointer or class type argument", node.GetSourcePos(), node.ModuleId());
+            throw cmajor::symbols::Exception("dereference needs pointer or class type argument", node.GetFullSpan());
         }
     }
 }
@@ -1628,18 +1654,18 @@ void ExpressionBinder::Visit(cmajor::ast::AddrOfNode& addrOfNode)
     {
         if (expression->GetType()->IsReferenceType())
         {
-            cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference(addrOfNode.GetSourcePos(), addrOfNode.ModuleId())->AddPointer(addrOfNode.GetSourcePos(), addrOfNode.ModuleId());
+            cmajor::symbols::TypeSymbol* type = expression->GetType()->RemoveReference()->AddPointer();
             expression.reset(new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(expression.release()), type));
         }
         else
         {
-            cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer(addrOfNode.GetSourcePos(), addrOfNode.ModuleId());
+            cmajor::symbols::TypeSymbol* type = expression->GetType()->AddPointer();
             expression.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(expression.release()), type));
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("cannot take address of " + expression->TypeString(), addrOfNode.GetSourcePos(), addrOfNode.ModuleId());
+        throw cmajor::symbols::Exception("cannot take address of " + expression->TypeString(), addrOfNode.GetFullSpan());
     }
 }
 
@@ -1653,7 +1679,7 @@ void ExpressionBinder::Visit(cmajor::ast::IsNode& isNode)
     cmajor::symbols::TypeSymbol* rightType = ResolveType(isNode.TargetTypeExpr(), boundCompileUnit, containerScope);
     if (rightType->IsPointerType())
     {
-        cmajor::symbols::TypeSymbol* rightBaseType = rightType->RemovePointer(sourcePos, moduleId);
+        cmajor::symbols::TypeSymbol* rightBaseType = rightType->RemovePointer();
         if (rightBaseType->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* rightClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(rightBaseType);
@@ -1663,47 +1689,53 @@ void ExpressionBinder::Visit(cmajor::ast::IsNode& isNode)
                 cmajor::symbols::TypeSymbol* leftType = boundExpr->GetType();
                 if (leftType->IsPointerType())
                 {
-                    cmajor::symbols::TypeSymbol* leftBaseType = leftType->RemovePointer(sourcePos, moduleId);
+                    cmajor::symbols::TypeSymbol* leftBaseType = leftType->RemovePointer();
                     if (leftBaseType->IsClassTypeSymbol())
                     {
                         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftBaseType);
                         if (leftClassType->IsPolymorphic())
                         {
-                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(isNode.GetSourcePos(), isNode.ModuleId(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSourcePos(), isNode.ModuleId())));
-                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(isNode.GetSourcePos(), isNode.ModuleId(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSourcePos(), isNode.ModuleId())));
+                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(isNode.GetSpan(),
+                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan())));
+                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(isNode.GetSpan(),
+                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), isNode.GetSpan())));
                             expression.reset(new BoundIsExpression(std::move(boundExpr), rightClassType, symbolTable.GetTypeByName(U"bool"),
                                 std::move(leftClassIdVar), std::move(rightClassIdVar)));
                         }
                         else
                         {
-                            throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type", isNode.Expr()->GetSourcePos(), isNode.Expr()->ModuleId());
+                            throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type",
+                                isNode.Expr()->GetFullSpan());
                         }
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type", isNode.Expr()->GetSourcePos(), isNode.Expr()->ModuleId());
+                        throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type", 
+                            isNode.Expr()->GetFullSpan());
                     }
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type", isNode.Expr()->GetSourcePos(), isNode.Expr()->ModuleId());
+                    throw cmajor::symbols::Exception("left type in 'is' expression must be pointer to polymorphic class type", 
+                        isNode.Expr()->GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("right type in 'is' expression must be pointer to polymorphic class type", isNode.TargetTypeExpr()->GetSourcePos(), isNode.TargetTypeExpr()->ModuleId());
+                throw cmajor::symbols::Exception("right type in 'is' expression must be pointer to polymorphic class type",
+                    isNode.TargetTypeExpr()->GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("right type in 'is' expression must be be pointer to polymorphic class type", isNode.TargetTypeExpr()->GetSourcePos(), isNode.TargetTypeExpr()->ModuleId());
+            throw cmajor::symbols::Exception("right type in 'is' expression must be be pointer to polymorphic class type", 
+                isNode.TargetTypeExpr()->GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("right type in 'is' expression must be be pointer to polymorphic class type", isNode.TargetTypeExpr()->GetSourcePos(), isNode.TargetTypeExpr()->ModuleId());
+        throw cmajor::symbols::Exception("right type in 'is' expression must be be pointer to polymorphic class type", 
+            isNode.TargetTypeExpr()->GetFullSpan());
     }
 }
 
@@ -1712,7 +1744,7 @@ void ExpressionBinder::Visit(cmajor::ast::AsNode& asNode)
     cmajor::symbols::TypeSymbol* rightType = ResolveType(asNode.TargetTypeExpr(), boundCompileUnit, containerScope);
     if (rightType->IsPointerType())
     {
-        cmajor::symbols::TypeSymbol* rightBaseType = rightType->RemovePointer(sourcePos, moduleId);
+        cmajor::symbols::TypeSymbol* rightBaseType = rightType->RemovePointer();
         if (rightBaseType->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* rightClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(rightBaseType);
@@ -1722,49 +1754,55 @@ void ExpressionBinder::Visit(cmajor::ast::AsNode& asNode)
                 cmajor::symbols::TypeSymbol* leftType = boundExpr->GetType();
                 if (leftType->IsPointerType())
                 {
-                    cmajor::symbols::TypeSymbol* leftBaseType = leftType->RemovePointer(sourcePos, moduleId);
+                    cmajor::symbols::TypeSymbol* leftBaseType = leftType->RemovePointer();
                     if (leftBaseType->IsClassTypeSymbol())
                     {
                         cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftBaseType);
                         if (leftClassType->IsPolymorphic())
                         {
-                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(asNode.GetSourcePos(), asNode.ModuleId(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSourcePos(), asNode.ModuleId())));
-                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(asNode.GetSourcePos(), asNode.ModuleId(),
-                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSourcePos(), asNode.ModuleId())));
+                            std::unique_ptr<BoundLocalVariable> leftClassIdVar(new BoundLocalVariable(asNode.GetSpan(),
+                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan())));
+                            std::unique_ptr<BoundLocalVariable> rightClassIdVar(new BoundLocalVariable(asNode.GetSpan(),
+                                boundFunction->GetFunctionSymbol()->CreateTemporary(symbolTable.GetTypeByName(U"ulong"), asNode.GetSpan())));
                             expression.reset(new BoundAsExpression(std::move(boundExpr), rightClassType,
-                                std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(asNode.GetSourcePos(), asNode.ModuleId(), boundFunction->GetFunctionSymbol()->CreateTemporary(
-                                    rightClassType->AddPointer(asNode.GetSourcePos(), asNode.ModuleId()), asNode.GetSourcePos(), asNode.ModuleId()))),
+                                std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(asNode.GetSpan(), boundFunction->GetFunctionSymbol()->CreateTemporary(
+                                    rightClassType->AddPointer(), asNode.GetSpan()))),
                                 std::move(leftClassIdVar), std::move(rightClassIdVar)));
                         }
                         else
                         {
-                            throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type", asNode.Expr()->GetSourcePos(), asNode.Expr()->ModuleId());
+                            throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type",
+                                asNode.Expr()->GetFullSpan());
                         }
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type", asNode.Expr()->GetSourcePos(), asNode.Expr()->ModuleId());
+                        throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type", 
+                            asNode.Expr()->GetFullSpan());
                     }
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type", asNode.Expr()->GetSourcePos(), asNode.Expr()->ModuleId());
+                    throw cmajor::symbols::Exception("left type in 'as' expression must be pointer to polymorphic class type", 
+                        asNode.Expr()->GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("right type in 'as' expression must be pointer to polymorphic class type", asNode.TargetTypeExpr()->GetSourcePos(), asNode.TargetTypeExpr()->ModuleId());
+                throw cmajor::symbols::Exception("right type in 'as' expression must be pointer to polymorphic class type", 
+                    asNode.TargetTypeExpr()->GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("right type in 'as' expression must be be pointer to polymorphic class type", asNode.TargetTypeExpr()->GetSourcePos(), asNode.TargetTypeExpr()->ModuleId());
+            throw cmajor::symbols::Exception("right type in 'as' expression must be be pointer to polymorphic class type", 
+                asNode.TargetTypeExpr()->GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("right type in 'as' expression must be be pointer to polymorphic class type", asNode.TargetTypeExpr()->GetSourcePos(), asNode.TargetTypeExpr()->ModuleId());
+        throw cmajor::symbols::Exception("right type in 'as' expression must be be pointer to polymorphic class type", 
+            asNode.TargetTypeExpr()->GetFullSpan());
     }
 }
 
@@ -1774,7 +1812,7 @@ void ExpressionBinder::Visit(cmajor::ast::IndexingNode& indexingNode)
     std::unique_ptr<BoundExpression> subject = std::move(expression);
     indexingNode.Index()->Accept(*this);
     std::unique_ptr<BoundExpression> index = std::move(expression);
-    cmajor::symbols::TypeSymbol* plainSubjectType = subject->GetType()->PlainType(indexingNode.GetSourcePos(), indexingNode.ModuleId());
+    cmajor::symbols::TypeSymbol* plainSubjectType = subject->GetType()->PlainType();
     if (plainSubjectType->IsClassTypeSymbol())
     {
         BindBinaryOp(subject.release(), index.release(), indexingNode, U"operator[]");
@@ -1786,8 +1824,8 @@ void ExpressionBinder::Visit(cmajor::ast::IndexingNode& indexingNode)
     }
     else if (plainSubjectType->IsArrayType())
     {
-        std::unique_ptr<cmajor::symbols::Value> value = Evaluate(&indexingNode, static_cast<cmajor::symbols::ArrayTypeSymbol*>(plainSubjectType)->ElementType(), containerScope, boundCompileUnit, true, boundFunction,
-            indexingNode.GetSourcePos(), indexingNode.ModuleId());
+        std::unique_ptr<cmajor::symbols::Value> value = Evaluate(
+            &indexingNode, static_cast<cmajor::symbols::ArrayTypeSymbol*>(plainSubjectType)->ElementType(), containerScope, boundCompileUnit, true, boundFunction);
         if (value)
         {
             expression.reset(new BoundLiteral(std::move(value), value->GetType(&symbolTable)));
@@ -1799,7 +1837,7 @@ void ExpressionBinder::Visit(cmajor::ast::IndexingNode& indexingNode)
     }
     else
     {
-        throw cmajor::symbols::Exception("subscript operator can be applied only to pointer, array or class type subject", indexingNode.GetSourcePos(), indexingNode.ModuleId());
+        throw cmajor::symbols::Exception("subscript operator can be applied only to pointer, array or class type subject", indexingNode.GetFullSpan());
     }
 }
 
@@ -1856,23 +1894,24 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base, bme->ClassPtr()->GetType()->BaseType()->ClassInterfaceOrNsScope()));
             }
             arguments.push_back(std::unique_ptr<BoundExpression>(bme->ReleaseClassPtr()));
-            if (arguments.front()->GetType()->PlainType(sourcePos, moduleId)->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
+            if (arguments.front()->GetType()->PlainType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
             {
                 if (arguments.front()->GetType()->IsReferenceType())
                 {
-                    cmajor::symbols::TypeSymbol* type = arguments.front()->GetType()->RemoveReference(sourcePos, moduleId)->AddPointer(sourcePos, moduleId);
+                    cmajor::symbols::TypeSymbol* type = arguments.front()->GetType()->RemoveReference()->AddPointer();
                     arguments[0].reset(new BoundReferenceToPointerExpression(std::move(arguments[0]), type));
                 }
                 else
                 {
-                    cmajor::symbols::TypeSymbol* type = arguments.front()->GetType()->AddPointer(sourcePos, moduleId);
+                    cmajor::symbols::TypeSymbol* type = arguments.front()->GetType()->AddPointer();
                     arguments[0].reset(new BoundAddressOfExpression(std::move(arguments[0]), type));
                 }
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("invoke cannot be applied to this type of expression", invokeNode.Subject()->GetSourcePos(), invokeNode.Subject()->ModuleId());
+            throw cmajor::symbols::Exception("invoke cannot be applied to this type of expression", 
+                invokeNode.GetFullSpan());
         }
     }
     else if (expression->GetBoundNodeType() == BoundNodeType::boundTypeExpression)
@@ -1884,9 +1923,10 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::ClassTypeSymbol* classTypeSymbol = classGroup->GetClass(0);
             if (!classTypeSymbol)
             {
-                throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'", sourcePos, moduleId, classGroup->GetSourcePos(), classGroup->SourceModuleId());
+                throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'",
+                    invokeNode.GetFullSpan(), classGroup->GetFullSpan());
             }
-            expression.reset(new BoundTypeExpression(sourcePos, moduleId, classTypeSymbol));
+            expression.reset(new BoundTypeExpression(classTypeSymbol->GetSpan(), classTypeSymbol));
             type = classTypeSymbol;
         }
         if (!scopeQualified)
@@ -1898,11 +1938,12 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
             if (!specialization->IsBound())
             {
-                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSourcePos(), invokeNode.ModuleId());
-        std::unique_ptr<BoundExpression> addrOfTemporary(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(invokeNode.GetSourcePos(), invokeNode.ModuleId(), temporary)), type->AddPointer(invokeNode.GetSourcePos(), invokeNode.ModuleId())));
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
+        std::unique_ptr<BoundExpression> addrOfTemporary(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
+            temporary->GetSpan(), temporary)), type->AddPointer()));
         arguments.push_back(std::move(addrOfTemporary));
         groupName = U"@constructor";
         if (type->IsClassTypeSymbol())
@@ -1910,34 +1951,34 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
             {
-                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                 destructorCall->AddArgument(std::unique_ptr<BoundExpression>(arguments.back()->Clone()));
-                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &invokeNode);
             }
         }
     }
-    else if (expression->GetType()->PlainType(sourcePos, moduleId)->IsClassTypeSymbol())
+    else if (expression->GetType()->PlainType()->IsClassTypeSymbol())
     {
         cmajor::symbols::TypeSymbol* type = expression->GetType();
-        cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->PlainType(sourcePos, moduleId));
+        cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->PlainType());
         groupName = U"operator()";
         functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, classType->GetContainerScope()));
         if (type->IsReferenceType())
         {
-            expression.reset(new BoundReferenceToPointerExpression(std::move(expression), type->RemoveReference(sourcePos, moduleId)->AddPointer(sourcePos, moduleId)));
+            expression.reset(new BoundReferenceToPointerExpression(std::move(expression), type->RemoveReference()->AddPointer()));
         }
         else
         {
-            expression.reset(new BoundAddressOfExpression(std::move(expression), type->AddPointer(sourcePos, moduleId)));
+            expression.reset(new BoundAddressOfExpression(std::move(expression), type->AddPointer()));
         }
         arguments.push_back(std::unique_ptr<BoundExpression>(expression.release()));
     }
-    else if (expression->GetType()->PlainType(sourcePos, moduleId)->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol)
+    else if (expression->GetType()->PlainType()->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol)
     {
         cmajor::symbols::TypeSymbol* type = expression->GetType();
         if (type->IsReferenceType())
         {
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundDereferenceExpression(std::move(expression), type->RemoveReference(sourcePos, moduleId))));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundDereferenceExpression(std::move(expression), type->RemoveReference())));
         }
         else
         {
@@ -1947,7 +1988,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         int n = invokeNode.Arguments().Count();
         if (n != delegateTypeSymbol->Arity())
         {
-            throw cmajor::symbols::Exception("wrong number of arguments for calling delegate type '" + util::ToUtf8(delegateTypeSymbol->FullName()) + "'", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("wrong number of arguments for calling delegate type '" + util::ToUtf8(delegateTypeSymbol->FullName()) + "'", invokeNode.GetFullSpan());
         }
         for (int i = 0; i < n; ++i)
         {
@@ -1957,17 +1998,17 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::TypeSymbol* argumentType = expression->GetType();
             if (!TypesEqual(argumentType, delegateParameterType))
             {
-                if (TypesEqual(argumentType->PlainType(sourcePos, moduleId), delegateParameterType->PlainType(sourcePos, moduleId)))
+                if (TypesEqual(argumentType->PlainType(), delegateParameterType->PlainType()))
                 {
                     if (argumentType->IsReferenceType() && !delegateParameterType->IsReferenceType())
                     {
-                        cmajor::symbols::TypeSymbol* type = argumentType->RemoveReference(sourcePos, moduleId);
+                        cmajor::symbols::TypeSymbol* type = argumentType->RemoveReference();
                         BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(expression), type);
                         expression.reset(dereferenceExpression);
                     }
                     else if (!argumentType->IsReferenceType() && (delegateParameterType->IsReferenceType() || delegateParameterType->IsClassTypeSymbol()))
                     {
-                        cmajor::symbols::TypeSymbol* type = argumentType->AddLvalueReference(sourcePos, moduleId);
+                        cmajor::symbols::TypeSymbol* type = argumentType->AddLvalueReference();
                         BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(expression), type);
                         expression.reset(addressOfExpression);
                     }
@@ -1975,7 +2016,8 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 else
                 {
                     ArgumentMatch argumentMatch;
-                    cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(argumentType, delegateParameterType, containerScope, boundFunction, sourcePos, moduleId, argumentMatch);
+                    cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(argumentType, delegateParameterType, containerScope, boundFunction, 
+                        argumentMatch, &invokeNode);
                     if (conversionFun)
                     {
                         BoundConversion* conversion = new BoundConversion(std::move(expression), conversionFun);
@@ -1983,14 +2025,15 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("cannot convert '" + util::ToUtf8(argumentType->FullName()) + "' type argument to '" + util::ToUtf8(delegateParameterType->FullName()) + "' type parameter",
-                            argument->GetSourcePos(), argument->ModuleId(), sourcePos, moduleId);
+                        throw cmajor::symbols::Exception("cannot convert '" + util::ToUtf8(argumentType->FullName()) + "' type argument to '" + 
+                            util::ToUtf8(delegateParameterType->FullName()) + "' type parameter",
+                            argument->GetFullSpan(), invokeNode.GetFullSpan());
                     }
                 }
             }
             arguments.push_back(std::unique_ptr<BoundExpression>(expression.release()));
         }
-        BoundDelegateCall* delegateCall = new BoundDelegateCall(sourcePos, moduleId, delegateTypeSymbol);
+        BoundDelegateCall* delegateCall = new BoundDelegateCall(delegateTypeSymbol->GetSpan(), delegateTypeSymbol);
         for (std::unique_ptr<BoundExpression>& argument : arguments)
         {
             delegateCall->AddArgument(std::move(argument));
@@ -2004,47 +2047,49 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
                 if (!specialization->IsBound())
                 {
-                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
                 }
             }
-            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSourcePos(), invokeNode.ModuleId());
-            delegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)),
-                type->AddPointer(invokeNode.GetSourcePos(), invokeNode.ModuleId()))));
+            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
+            delegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
+                temporary->GetSpan(), temporary)),
+                type->AddPointer())));
             if (type->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
                 if (classType->Destructor())
                 {
-                    std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                    std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                     destructorCall->AddArgument(std::unique_ptr<BoundExpression>(delegateCall->Arguments().back()->Clone()));
-                    boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                    boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &invokeNode);
                 }
             }
         }
         expression.reset(delegateCall);
         if (temporary)
         {
-            expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary))));
+            expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(
+                new BoundLocalVariable(temporary->GetSpan(), temporary))));
             expression->SetFlag(BoundExpressionFlags::bindToRvalueReference);
         }
         return;
     }
-    else if (expression->GetType()->PlainType(sourcePos, moduleId)->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
+    else if (expression->GetType()->PlainType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
     {
         cmajor::symbols::TypeSymbol* type = expression->GetType();
         if (type->IsReferenceType())
         {
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundReferenceToPointerExpression(std::move(expression), type->RemoveReference(sourcePos, moduleId)->AddPointer(sourcePos, moduleId))));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundReferenceToPointerExpression(std::move(expression), type->RemoveReference()->AddPointer())));
         }
         else
         {
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::move(expression), type->AddPointer(sourcePos, moduleId))));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::move(expression), type->AddPointer())));
         }
         cmajor::symbols::ClassDelegateTypeSymbol* classDelegateTypeSymbol = static_cast<cmajor::symbols::ClassDelegateTypeSymbol*>(type->BaseType());
         int n = invokeNode.Arguments().Count();
         if (n != classDelegateTypeSymbol->Arity())
         {
-            throw cmajor::symbols::Exception("wrong number of arguments for calling delegate type '" + util::ToUtf8(classDelegateTypeSymbol->FullName()) + "'", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("wrong number of arguments for calling delegate type '" + util::ToUtf8(classDelegateTypeSymbol->FullName()) + "'", invokeNode.GetFullSpan());
         }
         for (int i = 0; i < n; ++i)
         {
@@ -2054,17 +2099,17 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::TypeSymbol* argumentType = expression->GetType();
             if (!TypesEqual(argumentType, classDelegateParameterType))
             {
-                if (TypesEqual(argumentType->PlainType(sourcePos, moduleId), classDelegateParameterType->PlainType(sourcePos, moduleId)))
+                if (TypesEqual(argumentType->PlainType(), classDelegateParameterType->PlainType()))
                 {
                     if (argumentType->IsReferenceType() && !classDelegateParameterType->IsReferenceType())
                     {
-                        cmajor::symbols::TypeSymbol* type = argumentType->RemoveReference(sourcePos, moduleId);
+                        cmajor::symbols::TypeSymbol* type = argumentType->RemoveReference();
                         BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(expression), type);
                         expression.reset(dereferenceExpression);
                     }
                     else if (!argumentType->IsReferenceType() && (classDelegateParameterType->IsReferenceType() || classDelegateParameterType->IsClassTypeSymbol()))
                     {
-                        cmajor::symbols::TypeSymbol* type = argumentType->AddLvalueReference(sourcePos, moduleId);
+                        cmajor::symbols::TypeSymbol* type = argumentType->AddLvalueReference();
                         BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(expression), type);
                         expression.reset(addressOfExpression);
                     }
@@ -2072,7 +2117,8 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 else
                 {
                     ArgumentMatch argumentMatch;
-                    cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(argumentType, classDelegateParameterType, containerScope, boundFunction, sourcePos, moduleId, argumentMatch);
+                    cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(argumentType, classDelegateParameterType, containerScope, boundFunction, 
+                        argumentMatch, &invokeNode);
                     if (conversionFun)
                     {
                         BoundConversion* conversion = new BoundConversion(std::move(expression), conversionFun);
@@ -2080,14 +2126,15 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("cannot convert '" + util::ToUtf8(argumentType->FullName()) + "' type argument to '" + util::ToUtf8(classDelegateParameterType->FullName()) + "' type parameter",
-                            argument->GetSourcePos(), argument->ModuleId(), sourcePos, moduleId);
+                        throw cmajor::symbols::Exception("cannot convert '" + util::ToUtf8(argumentType->FullName()) + "' type argument to '" + 
+                            util::ToUtf8(classDelegateParameterType->FullName()) + "' type parameter",
+                            argument->GetFullSpan(), invokeNode.GetFullSpan());
                     }
                 }
             }
             arguments.push_back(std::unique_ptr<BoundExpression>(expression.release()));
         }
-        BoundClassDelegateCall* classDelegateCall = new BoundClassDelegateCall(sourcePos, moduleId, classDelegateTypeSymbol);
+        BoundClassDelegateCall* classDelegateCall = new BoundClassDelegateCall(classDelegateTypeSymbol->GetSpan(), classDelegateTypeSymbol);
         for (std::unique_ptr<BoundExpression>& argument : arguments)
         {
             classDelegateCall->AddArgument(std::move(argument));
@@ -2101,34 +2148,35 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
                 if (!specialization->IsBound())
                 {
-                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                    boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
                 }
             }
-            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSourcePos(), invokeNode.ModuleId());
-            classDelegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)),
-                type->AddPointer(invokeNode.GetSourcePos(), invokeNode.ModuleId()))));
+            temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
+            classDelegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
+                temporary->GetSpan(), temporary)), type->AddPointer())));
             if (type->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
                 if (classType->Destructor())
                 {
-                    std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                    std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                     destructorCall->AddArgument(std::unique_ptr<BoundExpression>(classDelegateCall->Arguments().back()->Clone()));
-                    boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                    boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &invokeNode);
                 }
             }
         }
         expression.reset(classDelegateCall);
         if (temporary)
         {
-            expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary))));
+            expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(
+                new BoundLocalVariable(temporary->GetSpan(), temporary))));
             expression->SetFlag(BoundExpressionFlags::bindToRvalueReference);
         }
         return;
     }
     else
     {
-        throw cmajor::symbols::Exception("invoke cannot be applied to this type of expression", invokeNode.Subject()->GetSourcePos(), invokeNode.Subject()->ModuleId());
+        throw cmajor::symbols::Exception("invoke cannot be applied to this type of expression", invokeNode.Subject()->GetFullSpan());
     }
     int n = invokeNode.Arguments().Count();
     for (int i = 0; i < n; ++i)
@@ -2153,19 +2201,19 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         argIsExplicitThisOrBasePtr = true;
     }
     std::unique_ptr<BoundFunctionCall> functionCall = ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction,
-        invokeNode.GetSourcePos(), invokeNode.ModuleId(), OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
+        &invokeNode, OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
     if (!functionCall)
     {
         cmajor::symbols::ParameterSymbol* thisParam = boundFunction->GetFunctionSymbol()->GetThisParam();
         bool thisParamInserted = false;
         if (thisParam)
         {
-            BoundParameter* boundThisParam = new BoundParameter(invokeNode.GetSourcePos(), invokeNode.ModuleId(), thisParam);
+            BoundParameter* boundThisParam = new BoundParameter(thisParam->GetSpan(), thisParam);
             arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(boundThisParam));
             thisParamInserted = true;
             functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base, thisParam->GetType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
-            functionCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, invokeNode.GetSourcePos(), invokeNode.ModuleId(),
-                OverloadResolutionFlags::dontThrow, templateArgumentTypes, thisEx));
+            functionCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, 
+                &invokeNode, OverloadResolutionFlags::dontThrow, templateArgumentTypes, thisEx));
         }
         if (!functionCall)
         {
@@ -2177,8 +2225,8 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             {
                 arguments.erase(arguments.begin());
             }
-            functionCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, invokeNode.GetSourcePos(), invokeNode.ModuleId(),
-                OverloadResolutionFlags::dontThrow, templateArgumentTypes, nsEx));
+            functionCall = std::move(ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, 
+                &invokeNode, OverloadResolutionFlags::dontThrow, templateArgumentTypes, nsEx));
         }
     }
     if (!functionCall)
@@ -2234,7 +2282,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("overload resolution failed: overload not found", invokeNode.GetSourcePos(), invokeNode.ModuleId());
+            throw cmajor::symbols::Exception("overload resolution failed: overload not found", invokeNode.GetFullSpan());
         }
     }
     CheckAccess(boundFunction->GetFunctionSymbol(), functionCall->GetFunctionSymbol());
@@ -2245,7 +2293,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         {
             if (functionSymbol->IsAbstract())
             {
-                throw cmajor::symbols::Exception("cannot call abstract member function", sourcePos, moduleId, functionSymbol->GetSourcePos(), functionSymbol->SourceModuleId());
+                throw cmajor::symbols::Exception("cannot call abstract member function", invokeNode.GetFullSpan(), functionSymbol->GetFullSpan());
             }
         }
         else
@@ -2261,27 +2309,28 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
             if (!specialization->IsBound())
             {
-                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &invokeNode);
             }
         }
-        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSourcePos(), invokeNode.ModuleId());
-        functionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(invokeNode.GetSourcePos(), invokeNode.ModuleId(), temporary)),
-            type->AddPointer(invokeNode.GetSourcePos(), invokeNode.ModuleId()))));
+        temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
+        functionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+            new BoundLocalVariable(temporary->GetSpan(), temporary)), type->AddPointer())));
         if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
             {
-                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                 destructorCall->AddArgument(std::unique_ptr<BoundExpression>(functionCall->Arguments().back()->Clone()));
-                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &invokeNode);
             }
         }
     }
     expression.reset(functionCall.release());
     if (temporary)
     {
-        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary))));
+        expression.reset(new BoundConstructAndReturnTemporaryExpression(std::move(expression), std::unique_ptr<BoundExpression>(
+            new BoundLocalVariable(temporary->GetSpan(), temporary))));
         expression->SetFlag(BoundExpressionFlags::bindToRvalueReference);
     }
     if (functionSymbol->IsConstExpr())
@@ -2289,7 +2338,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         cmajor::symbols::TypeSymbol* returnType = functionSymbol->ReturnType();
         if (returnType && !returnType->IsVoidType())
         {
-            std::unique_ptr<cmajor::symbols::Value> value = Evaluate(&invokeNode, returnType, containerScope, boundCompileUnit, true, boundFunction, sourcePos, moduleId);
+            std::unique_ptr<cmajor::symbols::Value> value = Evaluate(&invokeNode, returnType, containerScope, boundCompileUnit, true, boundFunction);
             if (value)
             {
                 cmajor::symbols::TypeSymbol* type = value->GetType(&symbolTable);
@@ -2303,7 +2352,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         cmajor::symbols::TypeSymbol* returnType = functionSymbol->ReturnType();
         if (returnType && !returnType->IsVoidType())
         {
-            std::unique_ptr<cmajor::symbols::Value> value = Evaluate(&invokeNode, returnType, containerScope, boundCompileUnit, true, boundFunction, sourcePos, moduleId);
+            std::unique_ptr<cmajor::symbols::Value> value = Evaluate(&invokeNode, returnType, containerScope, boundCompileUnit, true, boundFunction);
             if (value)
             {
                 cmajor::symbols::TypeSymbol* type = value->GetType(&symbolTable);
@@ -2316,7 +2365,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
     {
         if (!statementBinder->InsideCatch())
         {
-            throw cmajor::symbols::Exception("System.CaptureCurrentException() can only be called from inside a catch block", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("System.CaptureCurrentException() can only be called from inside a catch block", invokeNode.GetFullSpan());
         }
         else
         {
@@ -2337,7 +2386,7 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrement
 {
     if (statementBinder->CompilingThrow())
     {
-        throw cmajor::symbols::Exception("postfix increment in throw expression no allowed", postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId());
+        throw cmajor::symbols::Exception("postfix increment in throw expression no allowed", postfixIncrementNode.GetFullSpan());
     }
     bool prevInhibitCompile = inhibitCompile;
     inhibitCompile = true;
@@ -2345,12 +2394,11 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrement
     inhibitCompile = prevInhibitCompile;
     if (!inhibitCompile)
     {
-        if (expression->GetType()->PlainType(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId())->IsClassTypeSymbol())
+        if (expression->GetType()->PlainType()->IsClassTypeSymbol())
         {
             cmajor::ast::CloneContext cloneContext;
-            cmajor::ast::ExpressionStatementNode prefixIncrementExpression(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 
-                new cmajor::ast::PrefixIncrementNode(postfixIncrementNode.GetSourcePos(),
-                postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext)));
+            cmajor::ast::ExpressionStatementNode prefixIncrementExpression(postfixIncrementNode.GetSpan(),
+                new cmajor::ast::PrefixIncrementNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext)));
             statementBinder->CompileStatement(&prefixIncrementExpression, true);
         }
         else
@@ -2358,19 +2406,19 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrement
             if (expression->GetType()->IsUnsignedType())
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 
+                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixIncrementNode.GetSpan(),
                     postfixIncrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::AddNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::ByteLiteralNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 1u)));
+                    new cmajor::ast::AddNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::ByteLiteralNode(postfixIncrementNode.GetSpan(), 1u)));
                 statementBinder->CompileStatement(&assignmentStatement, true);
             }
             else
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 
+                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixIncrementNode.GetSpan(),
                     postfixIncrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::AddNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::SByteLiteralNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 1)));
+                    new cmajor::ast::AddNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::SByteLiteralNode(postfixIncrementNode.GetSpan(), 1)));
                 statementBinder->CompileStatement(&assignmentStatement, true);
             }
         }
@@ -2382,7 +2430,7 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrement
 {
     if (statementBinder->CompilingThrow())
     {
-        throw cmajor::symbols::Exception("postfix decrement in throw expression no allowed", postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId());
+        throw cmajor::symbols::Exception("postfix decrement in throw expression no allowed", postfixDecrementNode.GetFullSpan());
     }
     bool prevInhibitCompile = inhibitCompile;
     inhibitCompile = true;
@@ -2390,12 +2438,11 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrement
     inhibitCompile = prevInhibitCompile;
     if (!inhibitCompile)
     {
-        if (expression->GetType()->PlainType(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId())->IsClassTypeSymbol())
+        if (expression->GetType()->PlainType()->IsClassTypeSymbol())
         {
             cmajor::ast::CloneContext cloneContext;
-            cmajor::ast::ExpressionStatementNode prefixDecrementExpression(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), 
-                new cmajor::ast::PrefixDecrementNode(postfixDecrementNode.GetSourcePos(),
-                postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext)));
+            cmajor::ast::ExpressionStatementNode prefixDecrementExpression(postfixDecrementNode.GetSpan(), 
+                new cmajor::ast::PrefixDecrementNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext)));
             statementBinder->CompileStatement(&prefixDecrementExpression, true);
         }
         else
@@ -2403,17 +2450,17 @@ void ExpressionBinder::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrement
             if (expression->GetType()->IsUnsignedType())
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::SubNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::ByteLiteralNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), 1u)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::SubNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::ByteLiteralNode(postfixDecrementNode.GetSpan(), 1u)));
                 statementBinder->CompileStatement(&assignmentStatement, true);
             }
             else
             {
                 cmajor::ast::CloneContext cloneContext;
-                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                    new cmajor::ast::SubNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                        new cmajor::ast::SByteLiteralNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), 1)));
+                cmajor::ast::AssignmentStatementNode assignmentStatement(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                    new cmajor::ast::SubNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                        new cmajor::ast::SByteLiteralNode(postfixDecrementNode.GetSpan(), 1)));
                 statementBinder->CompileStatement(&assignmentStatement, true);
             }
         }
@@ -2430,14 +2477,15 @@ void ExpressionBinder::Visit(cmajor::ast::SizeOfNode& sizeOfNode)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = classGroup->GetClass(0);
         if (classTypeSymbol)
         {
-            expression.reset(new BoundTypeExpression(sourcePos, moduleId, classTypeSymbol));
+            expression.reset(new BoundTypeExpression(classTypeSymbol->GetSpan(), classTypeSymbol));
         }
         else
         {
-            throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'", sourcePos, moduleId, classGroup->GetSourcePos(), classGroup->SourceModuleId());
+            throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'",
+                sizeOfNode.GetFullSpan(), classGroup->GetFullSpan());
         }
     }
-    expression.reset(new BoundSizeOfExpression(sizeOfNode.GetSourcePos(), sizeOfNode.ModuleId(), symbolTable.GetTypeByName(U"long"), expression->GetType()->AddPointer(sizeOfNode.GetSourcePos(), sizeOfNode.ModuleId())));
+    expression.reset(new BoundSizeOfExpression(sizeOfNode.GetSpan(), symbolTable.GetTypeByName(U"long"), expression->GetType()->AddPointer()));
 }
 
 void ExpressionBinder::Visit(cmajor::ast::TypeNameNode& typeNameNode)
@@ -2451,13 +2499,14 @@ void ExpressionBinder::Visit(cmajor::ast::TypeNameNode& typeNameNode)
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = classGroup->GetClass(0);
         if (!classTypeSymbol)
         {
-            throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'", sourcePos, moduleId, classGroup->GetSourcePos(), classGroup->SourceModuleId());
+            throw cmajor::symbols::Exception("ordinary class not found from class group '" + util::ToUtf8(classGroup->FullName()) + "'",
+                typeNameNode.GetFullSpan(), classGroup->GetFullSpan());
         }
-        expr.reset(new BoundTypeExpression(sourcePos, moduleId, classTypeSymbol));
+        expr.reset(new BoundTypeExpression(classTypeSymbol->GetSpan(), classTypeSymbol));
         type = classTypeSymbol;
         staticTypeName = true;
     }
-    if (expr->GetType()->PlainType(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())->IsClassTypeSymbol())
+    if (expr->GetType()->PlainType()->IsClassTypeSymbol())
     {
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(expr->GetType()->BaseType());
         if (!staticTypeName && classType->IsPolymorphic())
@@ -2469,22 +2518,22 @@ void ExpressionBinder::Visit(cmajor::ast::TypeNameNode& typeNameNode)
             }
             else
             {
-                cmajor::symbols::TypeSymbol* ptrType = expr->GetType()->AddPointer(typeNameNode.GetSourcePos(), typeNameNode.ModuleId());
+                cmajor::symbols::TypeSymbol* ptrType = expr->GetType()->AddPointer();
                 expr.reset(new BoundAddressOfExpression(std::move(expr), ptrType));
             }
-            expression.reset(new BoundTypeNameExpression(std::move(expr), symbolTable.GetTypeByName(U"char")->AddConst(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())->AddPointer(
-                typeNameNode.GetSourcePos(), typeNameNode.ModuleId())));
+            expression.reset(new BoundTypeNameExpression(std::move(expr), symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer()));
         }
         else
         {
-            expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(typeNameNode.GetSourcePos(), typeNameNode.ModuleId(), boundCompileUnit.Install(util::ToUtf8(classType->FullName())),
-                util::ToUtf8(classType->FullName()))), symbolTable.GetTypeByName(U"char")->AddConst(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())->AddPointer(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())));
+            expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(typeNameNode.GetSpan(), boundCompileUnit.Install(
+                util::ToUtf8(classType->FullName())), util::ToUtf8(classType->FullName()))), symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer()));
         }
     }
     else
     {
-        expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(typeNameNode.GetSourcePos(), typeNameNode.ModuleId(), boundCompileUnit.Install(util::ToUtf8(expr->GetType()->FullName())),
-            util::ToUtf8(expr->GetType()->FullName()))), symbolTable.GetTypeByName(U"char")->AddConst(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())->AddPointer(typeNameNode.GetSourcePos(), typeNameNode.ModuleId())));
+        expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(typeNameNode.GetSpan(), 
+            boundCompileUnit.Install(util::ToUtf8(expr->GetType()->FullName())), util::ToUtf8(expr->GetType()->FullName()))), 
+            symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer()));
     }
 }
 
@@ -2493,7 +2542,7 @@ void ExpressionBinder::Visit(cmajor::ast::TypeIdNode& typeIdNode)
     std::unique_ptr<BoundExpression> expr = BindExpression(typeIdNode.Expression(), boundCompileUnit, boundFunction, containerScope, statementBinder, false, false, true, false);
     if (expr->GetType()->IsPointerType())
     {
-        cmajor::symbols::TypeSymbol* exprBaseType = expr->GetType()->RemovePointer(sourcePos, moduleId);
+        cmajor::symbols::TypeSymbol* exprBaseType = expr->GetType()->RemovePointer();
         if (exprBaseType->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* exprClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(exprBaseType);
@@ -2504,19 +2553,19 @@ void ExpressionBinder::Visit(cmajor::ast::TypeIdNode& typeIdNode)
             else
             {
                 throw cmajor::symbols::Exception("typeid can be applied to a pointer to a polymorphic class type expression",
-                    typeIdNode.GetSourcePos(), typeIdNode.ModuleId(), boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId());
+                    typeIdNode.GetFullSpan(), boundFunction->GetFunctionSymbol()->GetFullSpan());
             }
         }
         else
         {
             throw cmajor::symbols::Exception("typeid can be applied to a pointer to a polymorphic class type expression",
-                typeIdNode.GetSourcePos(), typeIdNode.ModuleId(), boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId());
+                typeIdNode.GetFullSpan(), boundFunction->GetFunctionSymbol()->GetFullSpan());
         }
     }
     else
     {
         throw cmajor::symbols::Exception("typeid can be applied to a pointer to a polymorphic class type expression",
-            typeIdNode.GetSourcePos(), typeIdNode.ModuleId(), boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId());
+            typeIdNode.GetFullSpan(), boundFunction->GetFunctionSymbol()->GetFullSpan());
     }
 }
 
@@ -2525,19 +2574,17 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
     cmajor::symbols::TypeSymbol* targetType = ResolveType(castNode.TargetTypeExpr(), boundCompileUnit, containerScope);
     castNode.SourceExpr()->Accept(*this);
     std::vector<std::unique_ptr<BoundExpression>> targetExprArgs;
-    targetExprArgs.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(castNode.GetSourcePos(), castNode.ModuleId(), targetType)));
+    targetExprArgs.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(targetType->GetSpan(), targetType)));
     std::vector<FunctionScopeLookup> functionScopeLookups;
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, targetType->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-    std::unique_ptr<BoundFunctionCall> castFunctionCall = ResolveOverload(U"@return", containerScope, functionScopeLookups, targetExprArgs, boundCompileUnit, boundFunction, castNode.GetSourcePos(),
-        castNode.ModuleId());
+    std::unique_ptr<BoundFunctionCall> castFunctionCall = ResolveOverload(U"@return", containerScope, functionScopeLookups, targetExprArgs, boundCompileUnit, boundFunction, &castNode);
     std::vector<std::unique_ptr<BoundExpression>> castArguments;
     castArguments.push_back(std::move(expression));
     FunctionMatch functionMatch(castFunctionCall->GetFunctionSymbol());
     bool conversionFound = FindConversions(boundCompileUnit, castFunctionCall->GetFunctionSymbol(), castArguments, functionMatch, 
-        cmajor::symbols::ConversionType::explicit_, containerScope, boundFunction,
-        castNode.GetSourcePos(), castNode.ModuleId());
+        cmajor::symbols::ConversionType::explicit_, containerScope, boundFunction, &castNode);
     if (conversionFound)
     {
         Assert(!functionMatch.argumentMatches.empty(), "argument match expected");
@@ -2546,13 +2593,13 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
         {
             if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
             {
-                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->AddLvalueReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->AddLvalueReference();
                 BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(castArguments[0]), type);
                 castArguments[0].reset(addressOfExpression);
             }
             else if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
             {
-                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->RemoveReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->RemoveReference();
                 BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(castArguments[0]), type);
                 castArguments[0].reset(dereferenceExpression);
             }
@@ -2562,32 +2609,33 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
         {
             if (conversionFun->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol)
             {
-                BoundFunctionCall* constructorCall = new BoundFunctionCall(sourcePos, moduleId, conversionFun);
+                BoundFunctionCall* constructorCall = new BoundFunctionCall(conversionFun->GetSpan(), conversionFun);
                 if (conversionFun->ConversionTargetType()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
                 {
                     cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(conversionFun->ConversionTargetType());
                     if (!specialization->IsBound())
                     {
-                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, sourcePos, moduleId);
+                        boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(specialization, containerScope, &castNode);
                     }
                 }
-                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(), sourcePos, moduleId);
-                constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)),
-                    conversionFun->ConversionTargetType()->AddPointer(sourcePos, moduleId))));
+                cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(), conversionFun->GetSpan());
+                constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+                    new BoundLocalVariable(temporary->GetSpan(), temporary)),
+                    conversionFun->ConversionTargetType()->AddPointer())));
                 cmajor::symbols::TypeSymbol* conversionTargetType = conversionFun->ConversionTargetType();
                 if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
                     {
-                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(sourcePos, moduleId, classType->Destructor()));
+                        std::unique_ptr<BoundFunctionCall> destructorCall(new BoundFunctionCall(classType->GetSpan(), classType->Destructor()));
                         destructorCall->AddArgument(std::unique_ptr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
-                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, sourcePos, moduleId);
+                        boundFunction->AddTemporaryDestructorCall(std::move(destructorCall), boundFunction, containerScope, &castNode);
                     }
                 }
                 constructorCall->AddArgument(std::move(castArguments[0]));
                 BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(std::unique_ptr<BoundExpression>(constructorCall),
-                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(sourcePos, moduleId, temporary)));
+                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(temporary->GetSpan(), temporary)));
                 castArguments[0].reset(conversion);
             }
             else
@@ -2599,13 +2647,13 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
         {
             if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
             {
-                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->AddLvalueReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->AddLvalueReference();
                 BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(castArguments[0]), type);
                 castArguments[0].reset(addressOfExpression);
             }
             else if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
             {
-                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->RemoveReference(sourcePos, moduleId);
+                cmajor::symbols::TypeSymbol* type = castArguments[0]->GetType()->RemoveReference();
                 BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(castArguments[0]), type);
                 castArguments[0].reset(dereferenceExpression);
             }
@@ -2614,8 +2662,8 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
     }
     else
     {
-        throw cmajor::symbols::Exception("no explicit conversion from '" + util::ToUtf8(castArguments[0]->GetType()->FullName()) + "' to '" + util::ToUtf8(targetType->FullName()) + "' exists",
-            castNode.GetSourcePos(), castNode.ModuleId(), boundFunction->GetFunctionSymbol()->GetSourcePos(), boundFunction->GetFunctionSymbol()->SourceModuleId());
+        throw cmajor::symbols::Exception("no explicit conversion from '" + util::ToUtf8(castArguments[0]->GetType()->FullName()) + "' to '" + 
+            util::ToUtf8(targetType->FullName()) + "' exists", castNode.GetFullSpan(), boundFunction->GetFunctionSymbol()->GetFullSpan());
     }
     CheckAccess(boundFunction->GetFunctionSymbol(), castFunctionCall->GetFunctionSymbol());
     expression.reset(castFunctionCall.release());
@@ -2627,7 +2675,7 @@ void ExpressionBinder::Visit(cmajor::ast::ConstructNode& constructNode)
     int n = constructNode.Arguments().Count();
     if (n == 0)
     {
-        throw cmajor::symbols::Exception("must supply at least one argument to construct expression", constructNode.GetSourcePos(), constructNode.ModuleId());
+        throw cmajor::symbols::Exception("must supply at least one argument to construct expression", constructNode.GetFullSpan());
     }
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     for (int i = 0; i < n; ++i)
@@ -2636,15 +2684,15 @@ void ExpressionBinder::Visit(cmajor::ast::ConstructNode& constructNode)
         if (i == 0)
         {
             cmajor::ast::CloneContext cloneContext;
-            cmajor::ast::CastNode castNode(constructNode.GetSourcePos(), constructNode.ModuleId(), new cmajor::ast::PointerNode(constructNode.GetSourcePos(), constructNode.ModuleId(),
+            cmajor::ast::CastNode castNode(constructNode.GetSpan(), new cmajor::ast::PointerNode(constructNode.GetSpan(),
                 constructNode.TypeExpr()->Clone(cloneContext)), argumentNode->Clone(cloneContext));
             castNode.Accept(*this);
             resultType = expression->GetType();
             if (!resultType->IsPointerType())
             {
-                throw cmajor::symbols::Exception("first argument of a construct expression must be of a pointer type", argumentNode->GetSourcePos(), argumentNode->ModuleId());
+                throw cmajor::symbols::Exception("first argument of a construct expression must be of a pointer type", argumentNode->GetFullSpan());
             }
-            if (!resultType->RemovePointer(constructNode.GetSourcePos(), constructNode.ModuleId())->IsClassTypeSymbol())
+            if (!resultType->RemovePointer()->IsClassTypeSymbol())
             {
                 expression->SetFlag(BoundExpressionFlags::deref);
             }
@@ -2658,9 +2706,9 @@ void ExpressionBinder::Visit(cmajor::ast::ConstructNode& constructNode)
     std::vector<FunctionScopeLookup> functionScopeLookups;
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent,
-        resultType->RemovePointer(constructNode.GetSourcePos(), constructNode.ModuleId())->ClassInterfaceEnumDelegateOrNsScope()));
+        resultType->RemovePointer()->ClassInterfaceEnumDelegateOrNsScope()));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-    expression = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, constructNode.GetSourcePos(), constructNode.ModuleId());
+    expression = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, &constructNode);
     expression.reset(new BoundConstructExpression(std::move(expression), resultType));
 }
 
@@ -2673,31 +2721,31 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
     {
         if (memDebug)
         {
-            invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"RtMemAllocInfo"));
+            invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"RtMemAllocInfo"));
         }
         else
         {
-            invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"RtMemAlloc"));
+            invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"RtMemAlloc"));
         }
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
-        invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::DotNode(newNode.GetSourcePos(), newNode.ModuleId(),
-            new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"System"), 
-            new cmajor::ast::IdentifierNode(newNode.GetSourcePos(), newNode.ModuleId(), U"MemAlloc")));
+        invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::DotNode(newNode.GetSpan(),
+            new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"System"), 
+            new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"MemAlloc")));
     }
-    invokeMemAlloc->AddArgument(new cmajor::ast::SizeOfNode(newNode.GetSourcePos(), newNode.ModuleId(), newNode.TypeExpr()->Clone(cloneContext)));
+    invokeMemAlloc->AddArgument(new cmajor::ast::SizeOfNode(newNode.GetSpan(), newNode.TypeExpr()->Clone(cloneContext)));
     if (memDebug)
     {
-        cmajor::ast::TypeNameNode* typeNameNode = new cmajor::ast::TypeNameNode(newNode.GetSourcePos(), newNode.ModuleId(), newNode.TypeExpr()->Clone(cloneContext));
+        cmajor::ast::TypeNameNode* typeNameNode = new cmajor::ast::TypeNameNode(newNode.GetSpan(), newNode.TypeExpr()->Clone(cloneContext));
         typeNameNode->SetStatic();
         invokeMemAlloc->AddArgument(typeNameNode);
     }
-    cmajor::ast::CastNode castNode(newNode.GetSourcePos(), newNode.ModuleId(), new cmajor::ast::PointerNode(newNode.GetSourcePos(), newNode.ModuleId(), newNode.TypeExpr()->Clone(cloneContext)), invokeMemAlloc);
+    cmajor::ast::CastNode castNode(newNode.GetSpan(), new cmajor::ast::PointerNode(newNode.GetSpan(), newNode.TypeExpr()->Clone(cloneContext)), invokeMemAlloc);
     castNode.Accept(*this);
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     cmajor::symbols::TypeSymbol* resultType = expression->GetType();
-    if (!resultType->RemovePointer(newNode.GetSourcePos(), newNode.ModuleId())->IsClassTypeSymbol())
+    if (!resultType->RemovePointer()->IsClassTypeSymbol())
     {
         expression->SetFlag(BoundExpressionFlags::deref);
     }
@@ -2710,9 +2758,9 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
     }
     std::vector<FunctionScopeLookup> functionScopeLookups;
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, resultType->RemovePointer(newNode.GetSourcePos(), newNode.ModuleId())->ClassInterfaceEnumDelegateOrNsScope()));
+    functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, resultType->RemovePointer()->ClassInterfaceEnumDelegateOrNsScope()));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-    expression = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, newNode.GetSourcePos(), newNode.ModuleId());
+    expression = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction, &newNode);
     expression.reset(new BoundConstructExpression(std::move(expression), resultType));
 }
 
@@ -2721,12 +2769,12 @@ void ExpressionBinder::Visit(cmajor::ast::ThisNode& thisNode)
     cmajor::symbols::ParameterSymbol* thisParam = boundFunction->GetFunctionSymbol()->GetThisParam();
     if (thisParam)
     {
-        expression.reset(new BoundParameter(thisNode.GetSourcePos(), thisNode.ModuleId(), thisParam));
+        expression.reset(new BoundParameter(thisParam->GetSpan(), thisParam));
         expression->SetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr);
     }
     else
     {
-        throw cmajor::symbols::Exception("'this' can only be used in member function context", thisNode.GetSourcePos(), thisNode.ModuleId());
+        throw cmajor::symbols::Exception("'this' can only be used in member function context", thisNode.GetFullSpan());
     }
 }
 
@@ -2741,36 +2789,40 @@ void ExpressionBinder::Visit(cmajor::ast::BaseNode& baseNode)
             cmajor::symbols::ClassTypeSymbol* thisClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(thisType);
             if (thisClassType->BaseClass())
             {
-                cmajor::symbols::TypeSymbol* basePointerType = thisClassType->BaseClass()->AddPointer(baseNode.GetSourcePos(), baseNode.ModuleId());
+                cmajor::symbols::TypeSymbol* basePointerType = thisClassType->BaseClass()->AddPointer();
                 if (thisParam->GetType()->IsConstType())
                 {
-                    basePointerType = basePointerType->AddConst(baseNode.GetSourcePos(), baseNode.ModuleId());
+                    basePointerType = basePointerType->AddConst();
                 }
                 ArgumentMatch argumentMatch;
-                cmajor::symbols::FunctionSymbol* thisAsBaseConversionFunction = boundCompileUnit.GetConversion(thisParam->GetType(), basePointerType, containerScope, boundFunction, baseNode.GetSourcePos(), baseNode.ModuleId(), argumentMatch);
+                cmajor::symbols::FunctionSymbol* thisAsBaseConversionFunction = boundCompileUnit.GetConversion(
+                    thisParam->GetType(), basePointerType, containerScope, boundFunction, argumentMatch, &baseNode);
                 if (thisAsBaseConversionFunction)
                 {
-                    expression.reset(new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(baseNode.GetSourcePos(), baseNode.ModuleId(), thisParam)), thisAsBaseConversionFunction));
+                    expression.reset(new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(
+                        thisParam->GetSpan(), thisParam)), thisAsBaseConversionFunction));
                     expression->SetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr);
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("cannot convert from '" + util::ToUtf8(thisParam->GetType()->FullName()) + "' to '" + util::ToUtf8(basePointerType->FullName()) + "'", baseNode.GetSourcePos(), baseNode.ModuleId());
+                    throw cmajor::symbols::Exception("cannot convert from '" + util::ToUtf8(thisParam->GetType()->FullName()) + "' to '" +
+                        util::ToUtf8(basePointerType->FullName()) + "'", baseNode.GetFullSpan());
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("class '" + util::ToUtf8(thisClassType->FullName()) + "' does not have a base class", baseNode.GetSourcePos(), baseNode.ModuleId());
+                throw cmajor::symbols::Exception("class '" + util::ToUtf8(thisClassType->FullName()) + "' does not have a base class",
+                    baseNode.GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("'base' can only be used in member function context", baseNode.GetSourcePos(), baseNode.ModuleId());
+            throw cmajor::symbols::Exception("'base' can only be used in member function context", baseNode.GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("'base' can only be used in member function context", baseNode.GetSourcePos(), baseNode.ModuleId());
+        throw cmajor::symbols::Exception("'base' can only be used in member function context", baseNode.GetFullSpan());
     }
 }
 
@@ -2813,12 +2865,12 @@ std::unique_ptr<BoundExpression> BindExpression(cmajor::ast::Node* node, BoundCo
     cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder, bool lvalue, bool acceptFunctionGroupOrMemberExpression, bool acceptIncomplete, 
     bool moveTemporaryDestructorCalls)
 {
-    ExpressionBinder expressionBinder(node->GetSourcePos(), node->ModuleId(), boundCompileUnit, boundFunction, containerScope, statementBinder, lvalue);
+    ExpressionBinder expressionBinder(boundCompileUnit, boundFunction, containerScope, statementBinder, lvalue);
     node->Accept(expressionBinder);
     std::unique_ptr<BoundExpression> expression = expressionBinder.GetExpression();
     if (!expression)
     {
-        throw cmajor::symbols::Exception("could not bind expression", node->GetSourcePos(), node->ModuleId());
+        throw cmajor::symbols::Exception("could not bind expression", node->GetFullSpan());
     }
     if (moveTemporaryDestructorCalls)
     {
@@ -2832,12 +2884,12 @@ std::unique_ptr<BoundExpression> BindExpression(cmajor::ast::Node* node, BoundCo
     {
         if (!expression->IsComplete())
         {
-            throw cmajor::symbols::Exception("incomplete expression", node->GetSourcePos(), node->ModuleId());
+            throw cmajor::symbols::Exception("incomplete expression", node->GetFullSpan());
         }
     }
     if (lvalue && !expression->IsLvalueExpression())
     {
-        throw cmajor::symbols::Exception("not an lvalue expression", node->GetSourcePos(), node->ModuleId());
+        throw cmajor::symbols::Exception("not an lvalue expression", node->GetFullSpan());
     }
     return expression;
 }
@@ -2845,12 +2897,12 @@ std::unique_ptr<BoundExpression> BindExpression(cmajor::ast::Node* node, BoundCo
 std::unique_ptr<BoundExpression> BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& node, const std::u32string& groupName,
     BoundCompileUnit& boundCompileUnit, BoundFunction* boundFunction, cmajor::symbols::ContainerScope* containerScope, StatementBinder* statementBinder)
 {
-    ExpressionBinder expressionBinder(node.GetSourcePos(), node.ModuleId(), boundCompileUnit, boundFunction, containerScope, statementBinder, false);
+    ExpressionBinder expressionBinder(boundCompileUnit, boundFunction, containerScope, statementBinder, false);
     expressionBinder.BindUnaryOp(operand, node, groupName);
     std::unique_ptr<BoundExpression> expression = expressionBinder.GetExpression();
     if (!expression)
     {
-        throw cmajor::symbols::Exception("cound not bind expression", node.GetSourcePos(), node.ModuleId());
+        throw cmajor::symbols::Exception("cound not bind expression", node.GetFullSpan());
     }
     return expression;
 }

@@ -44,7 +44,7 @@ soul::parser::Match IdentifierParser<LexerT>::Identifier(LexerT& lexer, cmajor::
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Identifier");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()));
+                return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()));
             }
         }
         *parentMatch0 = match;
@@ -182,7 +182,7 @@ soul::parser::Match IdentifierParser<LexerT>::QualifiedId(LexerT& lexer, cmajor:
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "QualifiedId");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSourcePos(pos), context->ModuleId(), value));
+                return soul::parser::Match(true, new cmajor::ast::IdentifierNode(lexer.GetSpan(pos), value));
             }
         }
         *parentMatch0 = match;

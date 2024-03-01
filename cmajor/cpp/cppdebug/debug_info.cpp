@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -28,20 +28,12 @@ std::string SourceSpan::ToString() const
     return s;
 }
 
-SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::SourcePos& sourcePos)
+SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::Span& span, int32_t fileIdex)
 {
-    SourceSpan sourceSpan(sourcePos.line, sourcePos.col, sourcePos.col + 1);
-    if (sourcePos.pos != -1)
-    {
-        const soul::lexer::TokenVec& tokens = fileMap.GetTokens(sourcePos.file);
-        int32_t tokenIndex = static_cast<int32_t>(sourcePos.pos);
-        if (!tokens.empty() && tokenIndex >= 0 && tokenIndex < static_cast<int32_t>(tokens.size()))
-        {
-            const soul::lexer::Token<char32_t, soul::lexer::LexerBase<char32_t>>& token = tokens[tokenIndex];
-            int16_t tokenLength = static_cast<int16_t>(token.match.end - token.match.begin);
-            sourceSpan.ecol = sourceSpan.scol + tokenLength;
-        }
-    }
+    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIdex);
+    if (!lineStartIndeces) return SourceSpan();
+    soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(span, *lineStartIndeces);
+    SourceSpan sourceSpan(lineColLen.line, lineColLen.col, lineColLen.col + lineColLen.len);
     return sourceSpan;
 }
 

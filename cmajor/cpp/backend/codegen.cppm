@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -107,7 +107,7 @@ public:
     int Install(const std::u32string& str) override;
     void Compile(const std::string& intermediateCodeFile);
     void SetLineNumber(int32_t lineNumber) override;
-    std::string GetSourceFilePath(const soul::ast::SourcePos& span, const util::uuid& moduleId) override;
+    std::string GetSourceFilePath(const util::uuid& moduleId) override;
     void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     void GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     void GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
@@ -119,6 +119,7 @@ private:
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* module;
     cmajor::binder::BoundCompileUnit* compileUnit;
+    int32_t fileIndex;
     cmajor::cpp::ir::CompileUnit* nativeCompileUnit;
     void* function;
     void* entryBasicBlock;

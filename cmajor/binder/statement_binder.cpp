@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -33,7 +33,7 @@ namespace cmajor::binder {
 
 bool IsAlwaysTrue(cmajor::ast::Node* node, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
-    std::unique_ptr<cmajor::symbols::Value> value = Evaluate(node, boundCompileUnit.GetSymbolTable().GetTypeByName(U"bool"), containerScope, boundCompileUnit, true, nullptr, node->GetSourcePos(), node->ModuleId());
+    std::unique_ptr<cmajor::symbols::Value> value = Evaluate(node, boundCompileUnit.GetSymbolTable().GetTypeByName(U"bool"), containerScope, boundCompileUnit, true, nullptr);
     if (value)
     {
         if (value->GetValueType() == cmajor::symbols::ValueType::boolValue)
@@ -178,15 +178,16 @@ bool TerminatesDefault(cmajor::ast::StatementNode* statementNode)
     return false;
 }
 
-void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, cmajor::ast::Node* node,
     cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit);
 
-void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::FunctionNode& functionNode, cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit)
+void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::FunctionNode& functionNode, cmajor::symbols::ContainerScope* containerScope, 
+    BoundCompileUnit& boundCompileUnit)
 {
-    CheckFunctionReturnPaths(functionSymbol, functionNode.Body(), functionNode.GetSourcePos(), functionNode.ModuleId(), containerScope, boundCompileUnit);
+    CheckFunctionReturnPaths(functionSymbol, functionNode.Body(), &functionNode, containerScope, boundCompileUnit);
 }
 
-void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, cmajor::ast::Node* node,
     cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit)
 {
     cmajor::symbols::TypeSymbol* returnType = functionSymbol->ReturnType();
@@ -202,7 +203,7 @@ void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, c
             cmajor::ast::StatementNode* statement = body->Statements()[i];
             if (TerminatesFunction(statement, false, containerScope, boundCompileUnit)) return;
         }
-        throw cmajor::symbols::Exception("not all control paths terminate in return or throw statement", sourcePos, moduleId);
+        throw cmajor::symbols::Exception("not all control paths terminate in return or throw statement", node->GetFullSpan());
     }
 }
 
@@ -236,7 +237,7 @@ void StatementBinder::Visit(cmajor::ast::CompileUnitNode& compileUnitNode)
     cmajor::symbols::FunctionSymbol* initCompileUnitSymbol = boundCompileUnit.GetInitCompileUnitFunctionSymbol();
     if (initCompileUnitSymbol == nullptr)
     {
-        boundCompileUnit.GenerateCompileUnitInitialization();
+        boundCompileUnit.GenerateCompileUnitInitialization(compileUnitNode.GetSpan());
     }
 }
 
@@ -310,7 +311,7 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
         if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
         {
             boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
-            GenerateDestructorImplementation(currentClass, destructorSymbol, boundCompileUnit, containerScope, currentFunction, classNode.GetSourcePos(), classNode.ModuleId());
+            GenerateDestructorImplementation(currentClass, destructorSymbol, boundCompileUnit, containerScope, currentFunction, &classNode);
         }
     }
     currentClass = prevClass;
@@ -333,7 +334,7 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, memberVariableNode.GetSourcePos(), memberVariableNode.ModuleId());
+                GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, &memberVariableNode);
                 boundCompileUnit.AddBoundNode(std::move(boundClass));
             }
         }
@@ -380,13 +381,12 @@ void StatementBinder::Visit(cmajor::ast::FullInstantiationRequestNode& fullInsta
     cmajor::symbols::TypeSymbol* type = ResolveType(fullInstantiationRequestNode.TemplateId(), boundCompileUnit, containerScope);
     if (type->GetSymbolType() != cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
     {
-        throw cmajor::symbols::Exception("full instantiation request expects subject template identifier to be a class template specialization",
-            fullInstantiationRequestNode.GetSourcePos(),
-            fullInstantiationRequestNode.ModuleId());
+        throw cmajor::symbols::Exception("full instantiation request expects subject template identifier to be a class template specialization", 
+            fullInstantiationRequestNode.GetFullSpan());
     }
     cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(type);
     util::LogMessage(module->LogStreamId(), "generating full instantation of '" + util::ToUtf8(specialization->FullName()) + "'");
-    GetBoundCompileUnit().GetClassTemplateRepository().InstantiateAll(specialization, containerScope, currentFunction, fullInstantiationRequestNode.GetSourcePos(), fullInstantiationRequestNode.ModuleId());
+    GetBoundCompileUnit().GetClassTemplateRepository().InstantiateAll(specialization, containerScope, currentFunction, &fullInstantiationRequestNode);
     specialization->SetHasFullInstantiation();
 }
 
@@ -430,80 +430,80 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId = util::nil_uuid();
+    soul::ast::Span span = boundFunction->GetSpan();
     if (boundFunction->GetFunctionSymbol()->DontThrow()) return;
     cmajor::symbols::TypeSymbol* systemRuntimeUnwindInfoSymbol = boundCompileUnit.GetSystemRuntimeUnwindInfoSymbol();
     if (systemRuntimeUnwindInfoSymbol == nullptr)
     {
-        cmajor::ast::IdentifierNode systemRuntimeUnwindInfoNode(sourcePos, moduleId, U"System.Runtime.UnwindInfo");
+        cmajor::ast::IdentifierNode systemRuntimeUnwindInfoNode(span, U"System.Runtime.UnwindInfo");
         systemRuntimeUnwindInfoSymbol = ResolveType(&systemRuntimeUnwindInfoNode, boundCompileUnit, containerScope);
         boundCompileUnit.SetSystemRuntimeUnwindInfoSymbol(systemRuntimeUnwindInfoSymbol);
     }
     cmajor::symbols::FunctionSymbol* initUnwindSymbol = boundCompileUnit.GetInitUnwindInfoFunctionSymbol();
     if (initUnwindSymbol == nullptr)
     {
-        boundCompileUnit.GenerateInitUnwindInfoFunctionSymbol();
+        boundCompileUnit.GenerateInitUnwindInfoFunctionSymbol(span);
     }
-    cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(sourcePos, moduleId, U"@prevUnwindInfo");
+    cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@prevUnwindInfo");
     containerScope->Install(prevUnwindInfoVariableSymbol);
-    prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer(sourcePos, moduleId));
+    prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer());
     boundFunction->GetFunctionSymbol()->SetPrevUnwindInfoVar(prevUnwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode1 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@prevUnwindInfo");
+    cmajor::ast::IdentifierNode* prevUnwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
     symbolTable.MapSymbol(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
     symbolTable.MapNode(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
-    cmajor::ast::InvokeNode* pushUnwindInfo = new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtPushUnwindInfo"));
-    cmajor::symbols::LocalVariableSymbol* unwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::InvokeNode* pushUnwindInfo = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPushUnwindInfo"));
+    cmajor::symbols::LocalVariableSymbol* unwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@unwindInfo");
     containerScope->Install(unwindInfoVariableSymbol);
     unwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol);
     boundFunction->GetFunctionSymbol()->SetUnwindInfoVar(unwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* unwindInfoNode1 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::IdentifierNode* unwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
     symbolTable.MapSymbol(unwindInfoNode1, unwindInfoVariableSymbol);
     symbolTable.MapNode(unwindInfoNode1, unwindInfoVariableSymbol);
-    pushUnwindInfo->AddArgument(new cmajor::ast::CastNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::VoidNode(sourcePos, moduleId)), 
-        new cmajor::ast::AddrOfNode(sourcePos, moduleId, unwindInfoNode1)));
-    cmajor::ast::AssignmentStatementNode assignUnwindInfo(sourcePos, moduleId, prevUnwindInfoNode1,
-        new cmajor::ast::CastNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"System.Runtime.UnwindInfo")), pushUnwindInfo));
+    pushUnwindInfo->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), 
+        new cmajor::ast::AddrOfNode(span, unwindInfoNode1)));
+    cmajor::ast::AssignmentStatementNode assignUnwindInfo(span, prevUnwindInfoNode1,
+        new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Runtime.UnwindInfo")), pushUnwindInfo));
     assignUnwindInfo.Accept(*this);
     std::unique_ptr<BoundStatement> pushUnwindInfoStatement(statement.release());
 
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode2 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@prevUnwindInfo");
+    cmajor::ast::IdentifierNode* prevUnwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
     symbolTable.MapSymbol(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
     symbolTable.MapNode(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* unwindInfoNode2 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::IdentifierNode* unwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
     symbolTable.MapSymbol(unwindInfoNode2, unwindInfoVariableSymbol);
     symbolTable.MapNode(unwindInfoNode2, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode assignUnwindInfoNext(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, unwindInfoNode2, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"next")), prevUnwindInfoNode2);
+    cmajor::ast::AssignmentStatementNode assignUnwindInfoNext(span, new cmajor::ast::DotNode(span, unwindInfoNode2, new cmajor::ast::IdentifierNode(span, U"next")), 
+        prevUnwindInfoNode2);
     assignUnwindInfoNext.Accept(*this);
     std::unique_ptr<BoundStatement> assignUnwindInfoNextStatement(statement.release());
 
-    cmajor::ast::IdentifierNode* unwindInfoNode3 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::IdentifierNode* unwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
     symbolTable.MapSymbol(unwindInfoNode3, unwindInfoVariableSymbol);
     symbolTable.MapNode(unwindInfoNode3, unwindInfoVariableSymbol);
-    cmajor::ast::FunctionPtrNode* functionPtrNode = new cmajor::ast::FunctionPtrNode(sourcePos, moduleId);
-    BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(sourcePos, moduleId, boundFunction->GetFunctionSymbol(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(sourcePos, moduleId));
-    BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer(sourcePos, moduleId));
+    cmajor::ast::FunctionPtrNode* functionPtrNode = new cmajor::ast::FunctionPtrNode(span);
+    BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(span, boundFunction->GetFunctionSymbol(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
+    BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
     std::unique_ptr<BoundExpression> boundFunctionPtrAsVoidPtr(boundBitCast);
     functionPtrNode->SetBoundExpression(boundFunctionPtrAsVoidPtr.get());
-    cmajor::ast::AssignmentStatementNode assignFunctionPtr(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, unwindInfoNode3, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"function")),
-        new cmajor::ast::CastNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::VoidNode(sourcePos, moduleId)), functionPtrNode));
+    cmajor::ast::AssignmentStatementNode assignFunctionPtr(span, new cmajor::ast::DotNode(span, unwindInfoNode3, new cmajor::ast::IdentifierNode(span, U"function")),
+        new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), functionPtrNode));
     assignFunctionPtr.Accept(*this);
     std::unique_ptr<BoundStatement> assignFunctionPtrStatement(statement.release());
 
-    cmajor::ast::IdentifierNode* unwindInfoNode4 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::IdentifierNode* unwindInfoNode4 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
     symbolTable.MapSymbol(unwindInfoNode4, unwindInfoVariableSymbol);
     symbolTable.MapNode(unwindInfoNode4, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode assignUnwindInfoLine(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, unwindInfoNode4, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"line")),
-        new cmajor::ast::IntLiteralNode(sourcePos, moduleId, 0));
+    cmajor::ast::AssignmentStatementNode assignUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode4, new cmajor::ast::IdentifierNode(span, U"line")),
+        new cmajor::ast::IntLiteralNode(span, 0));
     assignUnwindInfoLine.Accept(*this);
     std::unique_ptr<BoundStatement> assignUnwindInfoLineStatement(statement.release());
 
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode3 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@prevUnwindInfo");
+    cmajor::ast::IdentifierNode* prevUnwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
     symbolTable.MapSymbol(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
     symbolTable.MapNode(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
-    cmajor::ast::InvokeNode* setPrevUnwindInfoListPtr = new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtPopUnwindInfo"));
-    setPrevUnwindInfoListPtr->AddArgument(new cmajor::ast::CastNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::VoidNode(sourcePos, moduleId)), prevUnwindInfoNode3));
-    cmajor::ast::ExpressionStatementNode setPrevUnwindInfoList(sourcePos, moduleId, setPrevUnwindInfoListPtr);
+    cmajor::ast::InvokeNode* setPrevUnwindInfoListPtr = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPopUnwindInfo"));
+    setPrevUnwindInfoListPtr->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), prevUnwindInfoNode3));
+    cmajor::ast::ExpressionStatementNode setPrevUnwindInfoList(span, setPrevUnwindInfoListPtr);
     setPrevUnwindInfoList.Accept(*this);
     std::unique_ptr<BoundStatement> setPrevUnwindInfoListStatement(statement.release());
 
@@ -515,10 +515,10 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
     boundFunction->SetEnterCode(std::move(enterCode));
 
     std::unique_ptr<BoundStatement> setLineCode;
-    cmajor::ast::IdentifierNode* unwindInfoNode5 = new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@unwindInfo");
+    cmajor::ast::IdentifierNode* unwindInfoNode5 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
     symbolTable.MapSymbol(unwindInfoNode5, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode setUnwindInfoLine(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, unwindInfoNode5, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"line")),
-        new cmajor::ast::IntLiteralNode(sourcePos, moduleId, 0));
+    cmajor::ast::AssignmentStatementNode setUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode5, new cmajor::ast::IdentifierNode(span, U"line")),
+        new cmajor::ast::IntLiteralNode(span, 0));
     setUnwindInfoLine.Accept(*this);
     std::unique_ptr<BoundStatement> setLineStatement(statement.release());
     boundFunction->SetLineCode(std::move(setLineStatement));
@@ -561,9 +561,9 @@ void StatementBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
     {
         cmajor::ast::ConstructorNode* prevConstructorNode = currentConstructorNode;
         currentConstructorNode = &constructorNode;
-        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(constructorNode.GetSourcePos(), constructorNode.ModuleId()));
+        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(constructorNode.GetSpan()));
         GenerateClassInitialization(currentConstructorSymbol, currentConstructorNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this, true,
-            constructorNode.GetSourcePos(), constructorNode.ModuleId());
+            &constructorNode);
         currentConstructorNode = prevConstructorNode;
         boundFunction->SetBody(std::move(boundCompoundStatement));
     }
@@ -611,9 +611,9 @@ void StatementBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
     {
         cmajor::ast::DestructorNode* prevDestructorNode = currentDestructorNode;
         currentDestructorNode = &destructorNode;
-        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(destructorNode.GetSourcePos(), destructorNode.ModuleId()));
+        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(destructorNode.GetSpan()));
         GenerateClassTermination(currentDestructorSymbol, currentDestructorNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this,
-            currentDestructorNode->GetSourcePos(), currentDestructorNode->ModuleId());
+            currentDestructorNode);
         currentDestructorNode = prevDestructorNode;
         boundFunction->SetBody(std::move(boundCompoundStatement));
     }
@@ -662,9 +662,9 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         Assert(memberFunctionSymbol->GroupName() == U"operator=", "operator= expected");
         cmajor::ast::MemberFunctionNode* prevMemberFunctionNode = currentMemberFunctionNode;
         currentMemberFunctionNode = &memberFunctionNode;
-        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId()));
+        std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(memberFunctionNode.GetSpan()));
         GenerateClassAssignment(currentMemberFunctionSymbol, currentMemberFunctionNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this, true,
-            memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId());
+            &memberFunctionNode);
         currentMemberFunctionNode = prevMemberFunctionNode;
         boundFunction->SetBody(std::move(boundCompoundStatement));
     }
@@ -717,8 +717,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
     cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
     containerScope = declarationBlock->GetContainerScope();
-    std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(compoundStatementNode.GetSourcePos(), compoundStatementNode.EndSourcePos(), 
-        compoundStatementNode.ModuleId()));
+    std::unique_ptr<BoundCompoundStatement> boundCompoundStatement(new BoundCompoundStatement(compoundStatementNode.GetSpan(), compoundStatementNode.EndSpan()));
     if (compoundLevel == 0)
     {
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::profile))
@@ -736,10 +735,10 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
             {
                 util::uuid functionId = currentFunction->GetFunctionSymbol()->FunctionId();
                 symbolTable.MapProfiledFunction(functionId, currentFunction->GetFunctionSymbol()->FullName());
-                cmajor::ast::ConstructionStatementNode constructFunctionProfiler(compoundStatementNode.GetSourcePos(), compoundStatementNode.ModuleId(),
-                    new cmajor::ast::IdentifierNode(compoundStatementNode.GetSourcePos(), compoundStatementNode.ModuleId(), U"System.Runtime.FunctionProfiler"),
-                    new cmajor::ast::IdentifierNode(compoundStatementNode.GetSourcePos(), compoundStatementNode.ModuleId(), U"@functionProfiler"));
-                constructFunctionProfiler.AddArgument(new cmajor::ast::UuidLiteralNode(compoundStatementNode.GetSourcePos(), functionId));
+                cmajor::ast::ConstructionStatementNode constructFunctionProfiler(compoundStatementNode.GetSpan(),
+                    new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"System.Runtime.FunctionProfiler"),
+                    new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"@functionProfiler"));
+                constructFunctionProfiler.AddArgument(new cmajor::ast::UuidLiteralNode(compoundStatementNode.GetSpan(), functionId));
                 symbolTable.SetCurrentFunctionSymbol(currentFunction->GetFunctionSymbol());
                 symbolTable.BeginContainer(containerScope->Container());
                 cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -755,25 +754,25 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
         }
         if (currentStaticConstructorSymbol && currentStaticConstructorNode)
         {
-            GenerateStaticClassInitialization(currentStaticConstructorSymbol, currentStaticConstructorNode, boundCompileUnit, boundCompoundStatement.get(), currentFunction, containerScope, this,
-                boundCompoundStatement->GetSourcePos(), boundCompoundStatement->ModuleId());
+            GenerateStaticClassInitialization(currentStaticConstructorSymbol, currentStaticConstructorNode, boundCompileUnit, boundCompoundStatement.get(), 
+                currentFunction, containerScope, this, &compoundStatementNode);
         }
         else if (currentConstructorSymbol && currentConstructorNode)
         {
             GenerateClassInitialization(currentConstructorSymbol, currentConstructorNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this, false,
-                boundCompoundStatement->GetSourcePos(), boundCompoundStatement->ModuleId());
+                &compoundStatementNode);
         }
         else if (currentMemberFunctionSymbol && currentMemberFunctionSymbol->GroupName() == U"operator=" && currentMemberFunctionNode)
         {
             GenerateClassAssignment(currentMemberFunctionSymbol, currentMemberFunctionNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this, false,
-                boundCompoundStatement->GetSourcePos(), boundCompoundStatement->ModuleId());
+                &compoundStatementNode);
         }
         else if (currentMemberFunctionSymbol && currentMemberFunctionSymbol->IsStatic() && currentMemberFunctionNode)
         {
             if (currentClass->GetClassTypeSymbol()->StaticConstructor())
             {
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::unique_ptr<BoundExpression>(
-                    new BoundFunctionCall(boundCompoundStatement->GetSourcePos(), boundCompoundStatement->ModuleId(), currentClass->GetClassTypeSymbol()->StaticConstructor())))));
+                    new BoundFunctionCall(boundCompoundStatement->GetSpan(), currentClass->GetClassTypeSymbol()->StaticConstructor())))));
             }
         }
     }
@@ -789,7 +788,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
     if (compoundLevel == 0 && currentDestructorSymbol && currentDestructorNode)
     {
         GenerateClassTermination(currentDestructorSymbol, currentDestructorNode, boundCompoundStatement.get(), currentFunction, boundCompileUnit, containerScope, this,
-            boundCompoundStatement->EndSourcePos(), boundCompoundStatement->ModuleId());
+            &compoundStatementNode);
     }
     AddStatement(boundCompoundStatement.release());
     containerScope = prevContainerScope;
@@ -812,11 +811,11 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
             classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, currentFunction->GetFunctionSymbol()->ReturnType()->ClassInterfaceEnumDelegateOrNsScope()));
             classReturnLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> classReturnArgs;
-            classReturnArgs.push_back(std::unique_ptr<BoundExpression>(new BoundParameter(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), currentFunction->GetFunctionSymbol()->ReturnParam())));
+            classReturnArgs.push_back(std::unique_ptr<BoundExpression>(new BoundParameter(returnStatementNode.GetSpan(), currentFunction->GetFunctionSymbol()->ReturnParam())));
             cmajor::symbols::TypeSymbol* returnType = currentFunction->GetFunctionSymbol()->ReturnType();
             bool returnClassDelegateType = returnType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
-            std::unique_ptr<BoundExpression> expression = BindExpression(returnStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this, false, returnClassDelegateType,
-                returnClassDelegateType);
+            std::unique_ptr<BoundExpression> expression = BindExpression(returnStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this, false, 
+                returnClassDelegateType, returnClassDelegateType);
             bool exceptionCapture = false;
             if (insideCatch && expression->ContainsExceptionCapture())
             {
@@ -833,23 +832,23 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     cmajor::symbols::TypeSymbol* exprType = expression->GetType();
                     ArgumentMatch argumentMatch;
                     expression.reset(new BoundConversion(std::move(expression),
-                        boundCompileUnit.GetConversion(exprType, returnType, containerScope, currentFunction, returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), argumentMatch)));
+                        boundCompileUnit.GetConversion(exprType, returnType, containerScope, currentFunction, argumentMatch, &returnStatementNode)));
                 }
                 rvalueArguments.push_back(std::move(expression));
                 std::unique_ptr<BoundExpression> rvalueExpr = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, boundCompileUnit, currentFunction,
-                    returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                    &returnStatementNode);
                 expression = std::move(rvalueExpr);
             }
             classReturnArgs.push_back(std::move(expression));
             std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, classReturnLookups, classReturnArgs, boundCompileUnit, currentFunction,
-                returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                &returnStatementNode);
             std::unique_ptr<BoundStatement> constructStatement(new BoundInitializationStatement(std::move(constructorCall)));
             AddStatement(constructStatement.release());
             std::unique_ptr<BoundFunctionCall> returnFunctionCall;
-            std::unique_ptr<BoundStatement> returnStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId()));
+            std::unique_ptr<BoundStatement> returnStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSpan()));
             if (exceptionCapture)
             {
-                AddReleaseExceptionStatement(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                AddReleaseExceptionStatement(&returnStatementNode);
             }
             AddStatement(returnStatement.release());
         }
@@ -867,14 +866,15 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
             if (returnType && returnType->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol)
             {
                 std::vector<std::unique_ptr<BoundExpression>> returnTypeArgs;
-                BoundTypeExpression* boundTypeExpression = new BoundTypeExpression(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), returnType);
+                BoundTypeExpression* boundTypeExpression = new BoundTypeExpression(returnStatementNode.GetSpan(), returnType);
                 returnTypeArgs.push_back(std::unique_ptr<BoundTypeExpression>(boundTypeExpression));
                 std::vector<FunctionScopeLookup> functionScopeLookups;
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-                functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, returnType->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
+                functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, 
+                    returnType->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-                std::unique_ptr<BoundFunctionCall> returnFunctionCall = ResolveOverload(U"@return", containerScope, functionScopeLookups, returnTypeArgs, boundCompileUnit, currentFunction,
-                    returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                std::unique_ptr<BoundFunctionCall> returnFunctionCall = ResolveOverload(U"@return", containerScope, functionScopeLookups, returnTypeArgs, boundCompileUnit, 
+                    currentFunction, &returnStatementNode);
                 std::unique_ptr<BoundExpression> expression = BindExpression(returnStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this, false,
                     returnDelegateType || returnClassDelegateType, returnClassDelegateType);
                 if (insideCatch && expression->ContainsExceptionCapture())
@@ -884,8 +884,8 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                 std::vector<std::unique_ptr<BoundExpression>> returnValueArguments;
                 returnValueArguments.push_back(std::move(expression));
                 FunctionMatch functionMatch(returnFunctionCall->GetFunctionSymbol());
-                bool conversionFound = FindConversions(boundCompileUnit, returnFunctionCall->GetFunctionSymbol(), returnValueArguments, functionMatch, cmajor::symbols::ConversionType::implicit_,
-                    containerScope, currentFunction, returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                bool conversionFound = FindConversions(boundCompileUnit, returnFunctionCall->GetFunctionSymbol(), returnValueArguments, functionMatch, 
+                    cmajor::symbols::ConversionType::implicit_, containerScope, currentFunction, &returnStatementNode);
                 if (conversionFound)
                 {
                     Assert(!functionMatch.argumentMatches.empty(), "argument match expected");
@@ -894,13 +894,13 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     {
                         if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference();
                             BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(addressOfExpression);
                         }
                         else if (argumentMatch.preReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference();
                             BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(dereferenceExpression);
                         }
@@ -910,14 +910,15 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     {
                         if (conversionFun->GetSymbolType() == cmajor::symbols::SymbolType::constructorSymbol)
                         {
-                            BoundFunctionCall* constructorCall = new BoundFunctionCall(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), conversionFun);
+                            BoundFunctionCall* constructorCall = new BoundFunctionCall(returnStatementNode.GetSpan(), conversionFun);
                             cmajor::symbols::LocalVariableSymbol* temporary = currentFunction->GetFunctionSymbol()->CreateTemporary(conversionFun->ConversionTargetType(),
-                                returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
-                            constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), temporary)),
-                                conversionFun->ConversionTargetType()->AddPointer(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId()))));
+                                returnStatementNode.GetSpan());
+                            constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
+                                new BoundLocalVariable(returnStatementNode.GetSpan(), temporary)),
+                                conversionFun->ConversionTargetType()->AddPointer())));
                             constructorCall->AddArgument(std::move(returnValueArguments[0]));
                             BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(std::unique_ptr<BoundExpression>(constructorCall),
-                                std::unique_ptr<BoundExpression>(new BoundLocalVariable(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), temporary)));
+                                std::unique_ptr<BoundExpression>(new BoundLocalVariable(returnStatementNode.GetSpan(), temporary)));
                             returnValueArguments[0].reset(conversion);
                         }
                         else
@@ -930,13 +931,13 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                     {
                         if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::addr)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->AddLvalueReference();
                             BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(addressOfExpression);
                         }
                         else if (argumentMatch.postReferenceConversionFlags == cmajor::ir::OperationFlags::deref)
                         {
-                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                            cmajor::symbols::TypeSymbol* type = returnValueArguments[0]->GetType()->RemoveReference();
                             BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(std::move(returnValueArguments[0]), type);
                             returnValueArguments[0].reset(dereferenceExpression);
                         }
@@ -945,27 +946,28 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("no implicit conversion from '" + util::ToUtf8(returnValueArguments[0]->GetType()->FullName()) + "' to '" + util::ToUtf8(returnType->FullName()) + "' exists",
-                        returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(), currentFunction->GetFunctionSymbol()->GetSourcePos(), currentFunction->GetFunctionSymbol()->SourceModuleId());
+                    throw cmajor::symbols::Exception("no implicit conversion from '" + util::ToUtf8(returnValueArguments[0]->GetType()->FullName()) + "' to '" +
+                        util::ToUtf8(returnType->FullName()) + "' exists",
+                        returnStatementNode.GetFullSpan(), currentFunction->GetFunctionSymbol()->GetFullSpan());
                 }
                 CheckAccess(currentFunction->GetFunctionSymbol(), returnFunctionCall->GetFunctionSymbol());
                 if (exceptionCapture)
                 {
-                    AddReleaseExceptionStatement(returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId());
+                    AddReleaseExceptionStatement(&returnStatementNode);
                 }
-                AddStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId()));
+                AddStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSpan()));
             }
             else
             {
                 if (returnType)
                 {
-                    throw cmajor::symbols::Exception("void function cannot return a value", returnStatementNode.Expression()->GetSourcePos(), returnStatementNode.Expression()->ModuleId(),
-                        currentFunction->GetFunctionSymbol()->GetSourcePos(), currentFunction->GetFunctionSymbol()->SourceModuleId());
+                    throw cmajor::symbols::Exception("void function cannot return a value",
+                        returnStatementNode.GetFullSpan(), currentFunction->GetFunctionSymbol()->GetFullSpan());
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("constructor or assignment function cannot return a value", returnStatementNode.Expression()->GetSourcePos(), returnStatementNode.Expression()->ModuleId(),
-                        currentFunction->GetFunctionSymbol()->GetSourcePos(), currentFunction->GetFunctionSymbol()->SourceModuleId());
+                    throw cmajor::symbols::Exception("constructor or assignment function cannot return a value", 
+                        returnStatementNode.GetFullSpan(), currentFunction->GetFunctionSymbol()->GetFullSpan());
                 }
             }
         }
@@ -976,12 +978,12 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
         if (!returnType || returnType->GetSymbolType() == cmajor::symbols::SymbolType::voidTypeSymbol)
         {
             std::unique_ptr<BoundFunctionCall> returnFunctionCall;
-            AddStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId()));
+            AddStatement(new BoundReturnStatement(std::move(returnFunctionCall), returnStatementNode.GetSpan()));
         }
         else
         {
-            throw cmajor::symbols::Exception("nonvoid function must return a value", returnStatementNode.GetSourcePos(), returnStatementNode.ModuleId(),
-                currentFunction->GetFunctionSymbol()->GetSourcePos(), currentFunction->GetFunctionSymbol()->SourceModuleId());
+            throw cmajor::symbols::Exception("nonvoid function must return a value", returnStatementNode.GetFullSpan(),
+                currentFunction->GetFunctionSymbol()->GetFullSpan());
         }
     }
 }
@@ -994,9 +996,9 @@ void StatementBinder::Visit(cmajor::ast::IfStatementNode& ifStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(ifStatementNode.GetSourcePos(), ifStatementNode.ModuleId())))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
     {
-        throw cmajor::symbols::Exception("condition of an if statement must be a Boolean expression", ifStatementNode.Condition()->GetSourcePos(), ifStatementNode.Condition()->ModuleId());
+        throw cmajor::symbols::Exception("condition of an if statement must be a Boolean expression", ifStatementNode.Condition()->GetFullSpan());
     }
     if (condition->GetType()->IsReferenceType())
     {
@@ -1022,9 +1024,9 @@ void StatementBinder::Visit(cmajor::ast::IfStatementNode& ifStatementNode)
     }
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(ifStatementNode.GetSourcePos(), ifStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&ifStatementNode);
     }
-    AddStatement(new BoundIfStatement(ifStatementNode.GetSourcePos(), ifStatementNode.ModuleId(), std::move(condition), std::unique_ptr<BoundStatement>(thenS), std::unique_ptr<BoundStatement>(elseS)));
+    AddStatement(new BoundIfStatement(ifStatementNode.GetSpan(), std::move(condition), std::unique_ptr<BoundStatement>(thenS), std::unique_ptr<BoundStatement>(elseS)));
 }
 
 void StatementBinder::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
@@ -1035,9 +1037,9 @@ void StatementBinder::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(whileStatementNode.GetSourcePos(), whileStatementNode.ModuleId())))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
     {
-        throw cmajor::symbols::Exception("condition of a while statement must be a Boolean expression", whileStatementNode.Condition()->GetSourcePos(), whileStatementNode.Condition()->ModuleId());
+        throw cmajor::symbols::Exception("condition of a while statement must be a Boolean expression", whileStatementNode.Condition()->GetFullSpan());
     }
     if (condition->GetType()->IsReferenceType())
     {
@@ -1057,9 +1059,9 @@ void StatementBinder::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
     }
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(whileStatementNode.GetSourcePos(), whileStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&whileStatementNode);
     }
-    AddStatement(new BoundWhileStatement(whileStatementNode.GetSourcePos(), whileStatementNode.ModuleId(), std::move(condition), std::unique_ptr<BoundStatement>(stmt)));
+    AddStatement(new BoundWhileStatement(whileStatementNode.GetSpan(), std::move(condition), std::unique_ptr<BoundStatement>(stmt)));
 }
 
 void StatementBinder::Visit(cmajor::ast::DoStatementNode& doStatementNode)
@@ -1070,9 +1072,9 @@ void StatementBinder::Visit(cmajor::ast::DoStatementNode& doStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(doStatementNode.GetSourcePos(), doStatementNode.ModuleId())))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
     {
-        throw cmajor::symbols::Exception("condition of a do statement must be a Boolean expression", doStatementNode.Condition()->GetSourcePos(), doStatementNode.Condition()->ModuleId());
+        throw cmajor::symbols::Exception("condition of a do statement must be a Boolean expression", doStatementNode.Condition()->GetFullSpan());
     }
     if (condition->GetType()->IsReferenceType())
     {
@@ -1092,9 +1094,9 @@ void StatementBinder::Visit(cmajor::ast::DoStatementNode& doStatementNode)
     }
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(doStatementNode.GetSourcePos(), doStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&doStatementNode);
     }
-    AddStatement(new BoundDoStatement(doStatementNode.GetSourcePos(), doStatementNode.ModuleId(), std::unique_ptr<BoundStatement>(stmt), std::move(condition)));
+    AddStatement(new BoundDoStatement(doStatementNode.GetSpan(), std::unique_ptr<BoundStatement>(stmt), std::move(condition)));
 }
 
 void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
@@ -1111,7 +1113,7 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     }
     else
     {
-        cmajor::ast::BooleanLiteralNode trueNode(forStatementNode.GetSourcePos(), forStatementNode.ModuleId(), true);
+        cmajor::ast::BooleanLiteralNode trueNode(forStatementNode.GetSpan(), true);
         condition = BindExpression(&trueNode, boundCompileUnit, currentFunction, containerScope, this);
     }
     bool exceptionCapture = false;
@@ -1119,9 +1121,9 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     {
         exceptionCapture = true;
     }
-    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType(forStatementNode.GetSourcePos(), forStatementNode.ModuleId())))
+    if (!TypesEqual(symbolTable.GetTypeByName(U"bool"), condition->GetType()->PlainType()))
     {
-        throw cmajor::symbols::Exception("condition of a for statement must be a Boolean expression", forStatementNode.Condition()->GetSourcePos(), forStatementNode.Condition()->ModuleId());
+        throw cmajor::symbols::Exception("condition of a for statement must be a Boolean expression", forStatementNode.Condition()->GetFullSpan());
     }
     if (condition->GetType()->IsReferenceType())
     {
@@ -1146,9 +1148,9 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     }
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(forStatementNode.GetSourcePos(), forStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&forStatementNode);
     }
-    AddStatement(new BoundForStatement(forStatementNode.GetSourcePos(), forStatementNode.ModuleId(), std::unique_ptr<BoundStatement>(initS), std::move(condition), std::unique_ptr<BoundStatement>(loopS),
+    AddStatement(new BoundForStatement(forStatementNode.GetSpan(), std::unique_ptr<BoundStatement>(initS), std::move(condition), std::unique_ptr<BoundStatement>(loopS),
         std::unique_ptr<BoundStatement>(actionS)));
     containerScope = prevContainerScope;
 }
@@ -1175,9 +1177,9 @@ void StatementBinder::Visit(cmajor::ast::BreakStatementNode& breakStatementNode)
     }
     if (!parentStatement)
     {
-        throw cmajor::symbols::Exception("break statement must be enclosed in a while, do, for or switch statement", breakStatementNode.GetSourcePos(), breakStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("break statement must be enclosed in a while, do, for or switch statement", breakStatementNode.GetFullSpan());
     }
-    AddStatement(new BoundBreakStatement(breakStatementNode.GetSourcePos(), breakStatementNode.ModuleId()));
+    AddStatement(new BoundBreakStatement(breakStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::ContinueStatementNode& continueStatementNode)
@@ -1202,16 +1204,16 @@ void StatementBinder::Visit(cmajor::ast::ContinueStatementNode& continueStatemen
     }
     if (!parentStatement)
     {
-        throw cmajor::symbols::Exception("continue statement must be enclosed in a while, do or for statement", continueStatementNode.GetSourcePos(), continueStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("continue statement must be enclosed in a while, do or for statement", continueStatementNode.GetFullSpan());
     }
-    AddStatement(new BoundContinueStatement(continueStatementNode.GetSourcePos(), continueStatementNode.ModuleId()));
+    AddStatement(new BoundContinueStatement(continueStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::GotoStatementNode& gotoStatementNode)
 {
     currentFunction->SetHasGotos();
     boundCompileUnit.SetHasGotos();
-    AddStatement(new BoundGotoStatement(gotoStatementNode.GetSourcePos(), gotoStatementNode.ModuleId(), gotoStatementNode.Target()));
+    AddStatement(new BoundGotoStatement(gotoStatementNode.GetSpan(), gotoStatementNode.Target()));
 }
 
 void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
@@ -1227,7 +1229,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
         int n = constructionStatementNode.Arguments().Count();
         if (n != 1)
         {
-            throw cmajor::symbols::Exception("'auto' needs an initializer", constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("'auto' needs an initializer", constructionStatementNode.GetFullSpan());
         }
         cmajor::ast::Node* argumentNode = constructionStatementNode.Arguments()[0];
         std::unique_ptr<BoundExpression> argument = BindExpression(argumentNode, boundCompileUnit, currentFunction, containerScope, this, false, constructDelegateOrClassDelegateType);
@@ -1239,15 +1241,14 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
         }
         else
         {
-            initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations,
-                constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations);
             localVariableSymbol->SetType(initializerType);
         }
     }
     std::vector<std::unique_ptr<BoundExpression>> arguments;
-    BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId(), localVariableSymbol);
+    BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSpan(), localVariableSymbol);
     arguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(localVariable),
-        localVariable->GetType()->AddPointer(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId()))));
+        localVariable->GetType()->AddPointer())));
     std::vector<FunctionScopeLookup> functionScopeLookups;
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, localVariableSymbol->GetType()->ClassInterfaceEnumDelegateOrNsScope()));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -1265,12 +1266,12 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
         arguments.push_back(std::move(argument));
     }
     std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction,
-        constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+        &constructionStatementNode);
     cmajor::symbols::FunctionSymbol* functionSymbol = constructorCall->GetFunctionSymbol();
     CheckAccess(currentFunction->GetFunctionSymbol(), functionSymbol);
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&constructionStatementNode);
     }
     if (functionSymbol->Parent()->IsClassTypeSymbol())
     {
@@ -1281,25 +1282,22 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(classType->Destructor());
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                GenerateDestructorImplementation(boundClass.get(), classType->Destructor(), boundCompileUnit, containerScope, currentFunction,
-                    constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+                GenerateDestructorImplementation(boundClass.get(), classType->Destructor(), boundCompileUnit, containerScope, currentFunction, &constructionStatementNode);
                 boundCompileUnit.AddBoundNode(std::move(boundClass));
             }
         }
     }
-    BoundConstructionStatement* boundConstructionStatement = new BoundConstructionStatement(std::move(constructorCall), constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+    BoundConstructionStatement* boundConstructionStatement = new BoundConstructionStatement(std::move(constructorCall), constructionStatementNode.GetSpan());
     boundConstructionStatement->SetLocalVariable(localVariableSymbol);
     AddStatement(boundConstructionStatement);
 }
 
 void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNode)
 {
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId = util::nil_uuid();
+    soul::ast::Span span;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        sourcePos = deleteStatementNode.GetSourcePos();
-        moduleId = deleteStatementNode.ModuleId();
+        span = deleteStatementNode.GetSpan();
     }
     bool exceptionCapture = false;
     std::unique_ptr<BoundExpression> ptr = BindExpression(deleteStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this);
@@ -1316,9 +1314,9 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
             arguments.push_back(std::move(std::unique_ptr<BoundExpression>(ptr->Clone())));
-            std::unique_ptr<BoundFunctionCall> disposeCall = ResolveOverload(U"RtDispose", containerScope, lookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId);
+            std::unique_ptr<BoundFunctionCall> disposeCall = ResolveOverload(U"RtDispose", containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
             CheckAccess(currentFunction->GetFunctionSymbol(), disposeCall->GetFunctionSymbol());
-            AddStatement(new BoundExpressionStatement(std::move(disposeCall), sourcePos, moduleId));
+            AddStatement(new BoundExpressionStatement(std::move(disposeCall), span));
         }
     }
     std::unique_ptr<BoundExpression> memFreePtr;
@@ -1334,13 +1332,13 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
         lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
         std::vector<std::unique_ptr<BoundExpression>> arguments;
         arguments.push_back(std::move(ptr));
-        std::unique_ptr<BoundFunctionCall> destructorCall = ResolveOverload(U"@destructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId);
+        std::unique_ptr<BoundFunctionCall> destructorCall = ResolveOverload(U"@destructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
         CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol());
         if (destructorCall->GetFunctionSymbol()->IsVirtualAbstractOrOverride())
         {
             destructorCall->SetFlag(BoundExpressionFlags::virtualCall);
         }
-        AddStatement(new BoundExpressionStatement(std::move(destructorCall), sourcePos, moduleId));
+        AddStatement(new BoundExpressionStatement(std::move(destructorCall), span));
         memFreePtr = BindExpression(deleteStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this);
         if (insideCatch && memFreePtr->ContainsExceptionCapture())
         {
@@ -1365,13 +1363,13 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         memFreeFunctionName = U"MemFree";
     }
-    std::unique_ptr<BoundFunctionCall> memFreeCall = ResolveOverload(memFreeFunctionName, containerScope, lookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId);
+    std::unique_ptr<BoundFunctionCall> memFreeCall = ResolveOverload(memFreeFunctionName, containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
     CheckAccess(currentFunction->GetFunctionSymbol(), memFreeCall->GetFunctionSymbol());
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(deleteStatementNode.GetSourcePos(), deleteStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&deleteStatementNode);
     }
-    AddStatement(new BoundExpressionStatement(std::move(memFreeCall), deleteStatementNode.GetSourcePos(), deleteStatementNode.ModuleId()));
+    AddStatement(new BoundExpressionStatement(std::move(memFreeCall), deleteStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementNode)
@@ -1384,9 +1382,9 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
     }
     if (!ptr->GetType()->IsPointerType())
     {
-        throw cmajor::symbols::Exception("destroy statement needs pointer type operand", destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("destroy statement needs pointer type operand", destroyStatementNode.GetFullSpan());
     }
-    cmajor::symbols::TypeSymbol* pointeeType = ptr->GetType()->RemovePointer(destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
+    cmajor::symbols::TypeSymbol* pointeeType = ptr->GetType()->RemovePointer();
     if (pointeeType->HasNontrivialDestructor())
     {
         Assert(pointeeType->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
@@ -1399,7 +1397,7 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
         std::vector<std::unique_ptr<BoundExpression>> arguments;
         arguments.push_back(std::move(ptr));
         std::unique_ptr<BoundFunctionCall> destructorCall = ResolveOverload(U"@destructor", containerScope, lookups, arguments, boundCompileUnit, currentFunction,
-            destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
+            &destroyStatementNode);
         CheckAccess(currentFunction->GetFunctionSymbol(), destructorCall->GetFunctionSymbol());
         if (destructorCall->GetFunctionSymbol()->IsVirtualAbstractOrOverride())
         {
@@ -1407,13 +1405,13 @@ void StatementBinder::Visit(cmajor::ast::DestroyStatementNode& destroyStatementN
         }
         if (exceptionCapture)
         {
-            AddReleaseExceptionStatement(destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
+            AddReleaseExceptionStatement(&destroyStatementNode);
         }
-        AddStatement(new BoundExpressionStatement(std::move(destructorCall), destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId()));
+        AddStatement(new BoundExpressionStatement(std::move(destructorCall), destroyStatementNode.GetSpan()));
     }
     else
     {
-        AddStatement(new BoundEmptyStatement(destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId()));
+        AddStatement(new BoundEmptyStatement(destroyStatementNode.GetSpan()));
     }
 }
 
@@ -1425,27 +1423,28 @@ void StatementBinder::Visit(cmajor::ast::AssignmentStatementNode& assignmentStat
     {
         exceptionCapture = true;
     }
-    cmajor::symbols::TypeSymbol* targetPlainType = target->GetType()->PlainType(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+    cmajor::symbols::TypeSymbol* targetPlainType = target->GetType()->PlainType();
     if ((targetPlainType->IsClassTypeSymbol() || targetPlainType->IsArrayType()) && target->GetType()->IsReferenceType())
     {
-        cmajor::symbols::TypeSymbol* type = target->GetType()->RemoveReference(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId())->AddPointer(
-            assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+        cmajor::symbols::TypeSymbol* type = target->GetType()->RemoveReference()->AddPointer();
         target.reset(new BoundReferenceToPointerExpression(std::unique_ptr<BoundExpression>(target.release()), type));
     }
     else if (targetPlainType->IsPointerType() && target->GetType()->IsReferenceType())
     {
-        cmajor::symbols::TypeSymbol* derefType = target->GetType()->RemoveReference(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
-        cmajor::symbols::TypeSymbol* addrOfType = derefType->AddPointer(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+        cmajor::symbols::TypeSymbol* derefType = target->GetType()->RemoveReference();
+        cmajor::symbols::TypeSymbol* addrOfType = derefType->AddPointer();
         target.reset(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundDereferenceExpression(std::unique_ptr<BoundExpression>(target.release()), derefType)), addrOfType));
     }
     else
     {
-        target.reset(new BoundAddressOfExpression(std::move(target), target->GetType()->AddPointer(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId())));
+        target.reset(new BoundAddressOfExpression(std::move(target), target->GetType()->AddPointer()));
     }
     cmajor::symbols::TypeSymbol* targetType = target->GetType()->BaseType();
-    bool assignDelegateOrClassDelegateType = targetType->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol || targetType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
-    std::unique_ptr<BoundExpression> source = BindExpression(assignmentStatementNode.SourceExpr(), boundCompileUnit, currentFunction, containerScope, this, false, assignDelegateOrClassDelegateType);
+    bool assignDelegateOrClassDelegateType = targetType->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol || 
+        targetType->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
+    std::unique_ptr<BoundExpression> source = BindExpression(assignmentStatementNode.SourceExpr(), boundCompileUnit, currentFunction, containerScope, this, false, 
+        assignDelegateOrClassDelegateType);
     if (insideCatch && source->ContainsExceptionCapture())
     {
         exceptionCapture = true;
@@ -1458,14 +1457,14 @@ void StatementBinder::Visit(cmajor::ast::AssignmentStatementNode& assignmentStat
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     std::unique_ptr<BoundFunctionCall> assignmentCall = ResolveOverload(U"operator=", containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction,
-        assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+        &assignmentStatementNode);
     CheckAccess(currentFunction->GetFunctionSymbol(), assignmentCall->GetFunctionSymbol());
     currentFunction->MoveTemporaryDestructorCallsTo(*assignmentCall);
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&assignmentStatementNode);
     }
-    AddStatement(new BoundAssignmentStatement(std::move(assignmentCall), assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId()));
+    AddStatement(new BoundAssignmentStatement(std::move(assignmentCall), assignmentStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::ExpressionStatementNode& expressionStatementNode)
@@ -1478,36 +1477,34 @@ void StatementBinder::Visit(cmajor::ast::ExpressionStatementNode& expressionStat
     }
     if (exceptionCapture)
     {
-        AddReleaseExceptionStatement(expressionStatementNode.GetSourcePos(), expressionStatementNode.ModuleId());
+        AddReleaseExceptionStatement(&expressionStatementNode);
     }
-    AddStatement(new BoundExpressionStatement(std::move(expression), expressionStatementNode.GetSourcePos(), expressionStatementNode.ModuleId()));
+    AddStatement(new BoundExpressionStatement(std::move(expression), expressionStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::EmptyStatementNode& emptyStatementNode)
 {
-    AddStatement(new BoundEmptyStatement(emptyStatementNode.GetSourcePos(), emptyStatementNode.ModuleId()));
+    AddStatement(new BoundEmptyStatement(emptyStatementNode.GetSpan()));
 }
 
 void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatementNode)
 {
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId = util::nil_uuid();
+    soul::ast::Span span;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        sourcePos = rangeForStatementNode.GetSourcePos();
-        moduleId = rangeForStatementNode.ModuleId();
+        span = rangeForStatementNode.GetSpan();
     }
     if (rangeForStatementNode.Action()->GetNodeType() == cmajor::ast::NodeType::compoundStatementNode)
     {
         cmajor::ast::CompoundStatementNode* action = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Action());
     }
-    soul::ast::SourcePos initSourcePos = rangeForStatementNode.TypeExpr()->GetSourcePos();
-    soul::ast::SourcePos containerSpan = rangeForStatementNode.Container()->GetSourcePos();
+    soul::ast::Span initSpan = rangeForStatementNode.TypeExpr()->GetSpan();
+    soul::ast::Span containerSpan = rangeForStatementNode.Container()->GetSpan();
     std::unique_ptr<BoundExpression> container = BindExpression(rangeForStatementNode.Container(), boundCompileUnit, currentFunction, containerScope, this);
-    cmajor::symbols::TypeSymbol* plainContainerType = container->GetType()->PlainType(sourcePos, moduleId);
+    cmajor::symbols::TypeSymbol* plainContainerType = container->GetType()->PlainType();
     std::u32string plainContainerTypeFullName = plainContainerType->FullName();
     cmajor::parser::context::Context parsingContext;
-    parsingContext.SetModuleId(moduleId);
+    parsingContext.SetModuleId(module->Id());
     std::u32string content = plainContainerTypeFullName + U"\n";
     auto cmajorLexer = cmajor::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), "");
     // cmajorLexer.SetSeparatorChar('\n'); TODO
@@ -1516,53 +1513,56 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
     std::unique_ptr<cmajor::ast::IdentifierNode> iteratorTypeNode = nullptr;
     if (container->GetType()->IsConstType())
     {
-        iteratorTypeNode.reset(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"ConstIterator"));
+        iteratorTypeNode.reset(new cmajor::ast::IdentifierNode(span, U"ConstIterator"));
     }
     else
     {
-        iteratorTypeNode.reset(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Iterator"));
+        iteratorTypeNode.reset(new cmajor::ast::IdentifierNode(span, U"Iterator"));
     }
     cmajor::ast::CloneContext cloneContext;
-    std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode(new cmajor::ast::CompoundStatementNode(sourcePos, moduleId));
+    std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode(new cmajor::ast::CompoundStatementNode(span));
     if (rangeForStatementNode.Action()->GetNodeType() == cmajor::ast::NodeType::compoundStatementNode)
     {
         cmajor::ast::CompoundStatementNode* action = static_cast<cmajor::ast::CompoundStatementNode*>(rangeForStatementNode.Action());
     }
     compoundStatementNode->SetParent(rangeForStatementNode.Parent());
-    cmajor::ast::ConstructionStatementNode* constructEndIteratorStatement = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId,
-        new cmajor::ast::DotNode(sourcePos, moduleId, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@end"));
+    cmajor::ast::ConstructionStatementNode* constructEndIteratorStatement = new cmajor::ast::ConstructionStatementNode(span,
+        new cmajor::ast::DotNode(span, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), 
+        new cmajor::ast::IdentifierNode(span, U"@end"));
     if (container->GetType()->IsConstType())
     {
-        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"CEnd"))));
+        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(span, U"CEnd"))));
     }
     else
     {
-        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"End"))));
+        constructEndIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(span, U"End"))));
     }
     compoundStatementNode->AddStatement(constructEndIteratorStatement);
-    cmajor::ast::ConstructionStatementNode* constructIteratorStatement = new cmajor::ast::ConstructionStatementNode(initSourcePos, moduleId,
-        new cmajor::ast::DotNode(sourcePos, moduleId, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@it"));
+    cmajor::ast::ConstructionStatementNode* constructIteratorStatement = new cmajor::ast::ConstructionStatementNode(initSpan,
+        new cmajor::ast::DotNode(span, containerTypeNode->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(iteratorTypeNode->Clone(cloneContext))), 
+        new cmajor::ast::IdentifierNode(span, U"@it"));
     if (container->GetType()->IsConstType())
     {
-        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"CBegin"))));
+        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(span, U"CBegin"))));
     }
     else
     {
-        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, rangeForStatementNode.Container()->Clone(cloneContext),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Begin"))));
+        constructIteratorStatement->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::DotNode(span, rangeForStatementNode.Container()->Clone(cloneContext),
+            new cmajor::ast::IdentifierNode(span, U"Begin"))));
     }
-    cmajor::ast::Node* itNotEndCond = new cmajor::ast::NotEqualNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@it"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@end"));
-    cmajor::ast::StatementNode* incrementItStatement = new cmajor::ast::ExpressionStatementNode(containerSpan, moduleId, new cmajor::ast::PrefixIncrementNode(containerSpan, moduleId, new cmajor::ast::IdentifierNode(containerSpan, moduleId, U"@it")));
-    cmajor::ast::CompoundStatementNode* actionStatement = new cmajor::ast::CompoundStatementNode(sourcePos, moduleId);
-    cmajor::ast::ConstructionStatementNode* constructLoopVarStatement = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId,
+    cmajor::ast::Node* itNotEndCond = new cmajor::ast::NotEqualNode(span, new cmajor::ast::IdentifierNode(span, U"@it"), new cmajor::ast::IdentifierNode(span, U"@end"));
+    cmajor::ast::StatementNode* incrementItStatement = new cmajor::ast::ExpressionStatementNode(containerSpan, new cmajor::ast::PrefixIncrementNode(containerSpan, 
+        new cmajor::ast::IdentifierNode(containerSpan, U"@it")));
+    cmajor::ast::CompoundStatementNode* actionStatement = new cmajor::ast::CompoundStatementNode(span);
+    cmajor::ast::ConstructionStatementNode* constructLoopVarStatement = new cmajor::ast::ConstructionStatementNode(span,
         rangeForStatementNode.TypeExpr()->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(rangeForStatementNode.Id()->Clone(cloneContext)));
-    constructLoopVarStatement->AddArgument(new cmajor::ast::DerefNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@it")));
+    constructLoopVarStatement->AddArgument(new cmajor::ast::DerefNode(span, new cmajor::ast::IdentifierNode(span, U"@it")));
     actionStatement->AddStatement(constructLoopVarStatement);
     actionStatement->AddStatement(static_cast<cmajor::ast::StatementNode*>(rangeForStatementNode.Action()->Clone(cloneContext)));
-    cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(sourcePos, moduleId, constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
+    cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(span, constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
     compoundStatementNode->AddStatement(forStatement);
 
     symbolTable.BeginContainer(containerScope->Container());
@@ -1603,7 +1603,7 @@ void StatementBinder::Visit(cmajor::ast::SwitchStatementNode& switchStatementNod
         std::vector<BoundGotoDefaultStatement*>* prevGotoDefaultStatements = currentGotoDefaultStatements;
         std::vector<BoundGotoDefaultStatement*> gotoDefaultStatements;
         currentGotoDefaultStatements = &gotoDefaultStatements;
-        std::unique_ptr<BoundSwitchStatement> boundSwitchStatement(new BoundSwitchStatement(switchStatementNode.GetSourcePos(), switchStatementNode.ModuleId(), std::move(condition)));
+        std::unique_ptr<BoundSwitchStatement> boundSwitchStatement(new BoundSwitchStatement(switchStatementNode.GetSpan(), std::move(condition)));
         int n = switchStatementNode.Cases().Count();
         for (int i = 0; i < n; ++i)
         {
@@ -1625,32 +1625,32 @@ void StatementBinder::Visit(cmajor::ast::SwitchStatementNode& switchStatementNod
             auto it = caseValueMap.find(integralCaseValue);
             if (it == caseValueMap.cend())
             {
-                throw cmajor::symbols::Exception("case not found", gotoCaseStatement->GetSourcePos(), gotoCaseStatement->ModuleId());
+                throw cmajor::symbols::Exception("case not found", switchStatementNode.GetFullSpan(), gotoCaseStatement->GetFullSpan());
             }
         }
         if (!gotoDefaultStatements.empty() && !switchStatementNode.Default())
         {
-            throw cmajor::symbols::Exception("switch does not have a default statement", gotoDefaultStatements.front()->GetSourcePos(), gotoDefaultStatements.front()->ModuleId());
+            throw cmajor::symbols::Exception("switch does not have a default statement", switchStatementNode.GetFullSpan(), gotoDefaultStatements.front()->GetFullSpan());
         }
         currentGotoCaseStatements = prevGotoCaseStatements;
         currentGotoDefaultStatements = prevGotoDefaultStatements;
         currentCaseValueMap = prevCaseValueMap;
         if (exceptionCapture)
         {
-            AddReleaseExceptionStatement(switchStatementNode.GetSourcePos(), switchStatementNode.ModuleId());
+            AddReleaseExceptionStatement(&switchStatementNode);
         }
         AddStatement(boundSwitchStatement.release());
         switchConditionType = prevSwitchConditionType;
     }
     else
     {
-        throw cmajor::symbols::Exception("switch statement condition must be of integer, character, enumerated or Boolean type", switchStatementNode.Condition()->GetSourcePos(), switchStatementNode.Condition()->ModuleId());
+        throw cmajor::symbols::Exception("switch statement condition must be of integer, character, enumerated or Boolean type", switchStatementNode.Condition()->GetFullSpan());
     }
 }
 
 void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
 {
-    std::unique_ptr<BoundCaseStatement> boundCaseStatement(new BoundCaseStatement(caseStatementNode.GetSourcePos(), caseStatementNode.ModuleId()));
+    std::unique_ptr<BoundCaseStatement> boundCaseStatement(new BoundCaseStatement(caseStatementNode.GetSpan()));
     bool terminated = false;
     int n = caseStatementNode.Statements().Count();
     for (int i = 0; i < n; ++i)
@@ -1665,19 +1665,19 @@ void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
     }
     if (!terminated)
     {
-        throw cmajor::symbols::Exception("case must end in break, continue, return, throw, goto, goto case or goto default statement", caseStatementNode.GetSourcePos(), caseStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("case must end in break, continue, return, throw, goto, goto case or goto default statement", caseStatementNode.GetFullSpan());
     }
     int ne = caseStatementNode.CaseExprs().Count();
     for (int i = 0; i < ne; ++i)
     {
         cmajor::ast::Node* caseExprNode = caseStatementNode.CaseExprs()[i];
-        std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction, caseExprNode->GetSourcePos(), caseExprNode->ModuleId());
+        std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction);
         cmajor::symbols::IntegralValue integralCaseValue(caseValue.get());
         Assert(currentCaseValueMap, "current case value map not set"); 
         auto it = currentCaseValueMap->find(integralCaseValue);
         if (it != currentCaseValueMap->cend())
         {
-            throw cmajor::symbols::Exception("case value already used", caseExprNode->GetSourcePos(), caseExprNode->ModuleId());
+            throw cmajor::symbols::Exception("case value already used", caseStatementNode.GetFullSpan(), caseExprNode->GetFullSpan());
         }
         (*currentCaseValueMap)[integralCaseValue] = &caseStatementNode;
         boundCaseStatement->AddCaseValue(std::move(caseValue));
@@ -1687,7 +1687,7 @@ void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::DefaultStatementNode& defaultStatementNode)
 {
-    std::unique_ptr<BoundDefaultStatement> boundDefaultStatement(new BoundDefaultStatement(defaultStatementNode.GetSourcePos(), defaultStatementNode.ModuleId()));
+    std::unique_ptr<BoundDefaultStatement> boundDefaultStatement(new BoundDefaultStatement(defaultStatementNode.GetSpan()));
     bool terminated = false;
     int n = defaultStatementNode.Statements().Count();
     for (int i = 0; i < n; ++i)
@@ -1702,7 +1702,7 @@ void StatementBinder::Visit(cmajor::ast::DefaultStatementNode& defaultStatementN
     }
     if (!terminated)
     {
-        throw cmajor::symbols::Exception("default must end in break, continue, return, throw, goto, or goto case statement", defaultStatementNode.GetSourcePos(), defaultStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("default must end in break, continue, return, throw, goto, or goto case statement", defaultStatementNode.GetFullSpan());
     }
     AddStatement(boundDefaultStatement.release());
 }
@@ -1716,12 +1716,12 @@ void StatementBinder::Visit(cmajor::ast::GotoCaseStatementNode& gotoCaseStatemen
     }
     if (!parent)
     {
-        throw cmajor::symbols::Exception("goto case statement must be enclosed in a case or default statement", gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("goto case statement must be enclosed in a case or default statement", gotoCaseStatementNode.GetFullSpan());
     }
     cmajor::ast::Node* caseExprNode = gotoCaseStatementNode.CaseExpr();
-    std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction, gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId());
+    std::unique_ptr<cmajor::symbols::Value> caseValue = Evaluate(caseExprNode, switchConditionType, containerScope, boundCompileUnit, false, currentFunction);
     cmajor::symbols::Value* caseValuePtr = caseValue.get();
-    BoundGotoCaseStatement* boundGotoCaseStatement = new BoundGotoCaseStatement(gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId(), std::move(caseValue));
+    BoundGotoCaseStatement* boundGotoCaseStatement = new BoundGotoCaseStatement(gotoCaseStatementNode.GetSpan(), std::move(caseValue));
     Assert(currentGotoCaseStatements, "current goto case statement vector not set");
     currentGotoCaseStatements->push_back(std::make_pair(boundGotoCaseStatement, cmajor::symbols::IntegralValue(caseValuePtr)));
     AddStatement(boundGotoCaseStatement);
@@ -1736,9 +1736,9 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
     }
     if (!parent)
     {
-        throw cmajor::symbols::Exception("goto default statement must be enclosed in a case statement", gotoDefaultStatementNode.GetSourcePos(), gotoDefaultStatementNode.ModuleId());
+        throw cmajor::symbols::Exception("goto default statement must be enclosed in a case statement", gotoDefaultStatementNode.GetFullSpan());
     }
-    BoundGotoDefaultStatement* boundGotoDefaultStatement = new BoundGotoDefaultStatement(gotoDefaultStatementNode.GetSourcePos(), gotoDefaultStatementNode.ModuleId());
+    BoundGotoDefaultStatement* boundGotoDefaultStatement = new BoundGotoDefaultStatement(gotoDefaultStatementNode.GetSpan());
     Assert(currentGotoDefaultStatements, "current goto default statement vector not set"); 
     currentGotoDefaultStatements->push_back(boundGotoDefaultStatement);
     AddStatement(boundGotoDefaultStatement);
@@ -1751,63 +1751,64 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
     if (currentFunction->GetFunctionSymbol()->DontThrow() && !currentFunction->GetFunctionSymbol()->HasTry())
     {
         throw cmajor::symbols::Exception("a nothrow function cannot contain a throw statement unless it handles exceptions",
-            throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId(), currentFunction->GetFunctionSymbol()->GetSourcePos(), currentFunction->GetFunctionSymbol()->SourceModuleId());
+            throwStatementNode.GetFullSpan(), currentFunction->GetFunctionSymbol()->GetFullSpan());
     }
-    soul::ast::SourcePos sourcePos = throwStatementNode.GetSourcePos();
-    util::uuid moduleId = throwStatementNode.ModuleId();
+    soul::ast::Span span = throwStatementNode.GetSpan();
     cmajor::ast::Node* exceptionExprNode = throwStatementNode.Expression();
     if (exceptionExprNode)
     {
         std::unique_ptr<BoundExpression> boundExceptionExpr = BindExpression(exceptionExprNode, boundCompileUnit, currentFunction, containerScope, this);
-        if (boundExceptionExpr->GetType()->PlainType(sourcePos, moduleId)->IsClassTypeSymbol())
+        if (boundExceptionExpr->GetType()->PlainType()->IsClassTypeSymbol())
         {
-            cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType(sourcePos, moduleId));
-            cmajor::ast::IdentifierNode systemExceptionNode(sourcePos, moduleId, U"System.Exception");
+            cmajor::symbols::ClassTypeSymbol* exceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(boundExceptionExpr->GetType()->PlainType());
+            cmajor::ast::IdentifierNode systemExceptionNode(span, U"System.Exception");
             cmajor::symbols::TypeSymbol* systemExceptionType = ResolveType(&systemExceptionNode, boundCompileUnit, containerScope);
             Assert(systemExceptionType->IsClassTypeSymbol(), "System.Exception not of class type");
             cmajor::symbols::ClassTypeSymbol* systemExceptionClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(systemExceptionType);
             if (exceptionClassType == systemExceptionClassType || exceptionClassType->HasBaseClass(systemExceptionClassType))
             {
-                cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, exceptionClassType->FullName()));
+                cmajor::ast::NewNode* newNode = new cmajor::ast::NewNode(span, new cmajor::ast::IdentifierNode(span, exceptionClassType->FullName()));
                 cmajor::ast::CloneContext cloneContext;
                 newNode->AddArgument(throwStatementNode.Expression()->Clone(cloneContext));
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    cmajor::ast::InvokeNode invokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtThrowException"));
+                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtThrowException"));
                     invokeNode.AddArgument(newNode);
-                    invokeNode.AddArgument(new cmajor::ast::UuidLiteralNode(sourcePos, moduleId, exceptionClassType->TypeId()));
+                    invokeNode.AddArgument(new cmajor::ast::UuidLiteralNode(span, exceptionClassType->TypeId()));
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
-                    AddStatement(new BoundThrowStatement(sourcePos, moduleId, std::move(throwCallExpr)));
+                    AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
                 }
                 else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
                 {
-                    cmajor::ast::InvokeNode invokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"System"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Throw")));
+                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"System"), 
+                        new cmajor::ast::IdentifierNode(span, U"Throw")));
                     invokeNode.AddArgument(newNode);
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
-                    AddStatement(new BoundThrowStatement(sourcePos, moduleId, std::move(throwCallExpr)));
+                    AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
                 }
             }
             else
             {
-                throw cmajor::symbols::Exception("exception class must be derived from System.Exception class", throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
+                throw cmajor::symbols::Exception("exception class must be derived from System.Exception class", throwStatementNode.GetFullSpan());
             }
         }
         else
         {
-            throw cmajor::symbols::Exception("exception not of class type", throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("exception not of class type", throwStatementNode.GetFullSpan());
         }
     }
     else
     {
         if (insideCatch)
         {
-            cmajor::ast::InvokeNode invokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exPtr"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Release")));
+            cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"@exPtr"), 
+                new cmajor::ast::IdentifierNode(span, U"Release")));
             std::unique_ptr<BoundExpression> releaseCall = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
-            AddStatement(new BoundRethrowStatement(sourcePos, moduleId, std::move(releaseCall)));
+            AddStatement(new BoundRethrowStatement(span, std::move(releaseCall)));
         }
         else
         {
-            throw cmajor::symbols::Exception("rethrow must occur inside a catch clause", throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("rethrow must occur inside a catch clause", throwStatementNode.GetFullSpan());
         }
     }
     compilingThrow = prevCompilingThrow;
@@ -1815,7 +1816,7 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
-    BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSourcePos(), tryStatementNode.ModuleId());
+    BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSpan());
     tryStatementNode.TryBlock()->Accept(*this);
     boundTryStatement->SetTryBlock(std::move(statement));
     int n = tryStatementNode.Catches().Count();
@@ -1835,14 +1836,12 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
     bool prevInsideCatch = insideCatch;
     insideCatch = true;
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId = util::nil_uuid();
+    soul::ast::Span span;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        sourcePos = catchNode.GetSourcePos();
-        moduleId = catchNode.ModuleId();
+        span = catchNode.GetSpan();
     }
-    std::unique_ptr<BoundCatchStatement> boundCatchStatement(new BoundCatchStatement(sourcePos, moduleId));
+    std::unique_ptr<BoundCatchStatement> boundCatchStatement(new BoundCatchStatement(span));
     cmajor::symbols::TypeSymbol* caughtType = ResolveType(catchNode.TypeExpr(), boundCompileUnit, containerScope);
     boundCatchStatement->SetCaughtType(caughtType);
     boundCatchStatement->SetCatchTypeUuidId(boundCompileUnit.Install(caughtType->BaseType()->TypeId()));
@@ -1855,37 +1854,41 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
         boundCatchStatement->SetCatchVar(catchVar);
         currentFunction->GetFunctionSymbol()->AddLocalVariable(catchVar);
     }
-    cmajor::ast::CompoundStatementNode handlerBlock(catchNode.CatchBlock()->GetSourcePos(), moduleId);
+    cmajor::ast::CompoundStatementNode handlerBlock(span);
     handlerBlock.SetParent(catchNode.Parent());
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
-        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"void")),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionAddr"));
-        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"RtGetException")));
+        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span, 
+            new cmajor::ast::IdentifierNode(span, U"void")),
+            new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
+        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtGetException")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
-        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, new cmajor::ast::PointerNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"void")),
-            new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionAddr"));
-        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"do_catch")));
+        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span, 
+            new cmajor::ast::IdentifierNode(span, U"void")),
+            new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
+        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"do_catch")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
-    cmajor::ast::PointerNode exceptionPtrTypeNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, caughtType->BaseType()->FullName()));
+    cmajor::ast::PointerNode exceptionPtrTypeNode(span, new cmajor::ast::IdentifierNode(span, caughtType->BaseType()->FullName()));
     cmajor::ast::CloneContext cloneContext;
-    cmajor::ast::ConstructionStatementNode* constructExceptionPtr = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, exceptionPtrTypeNode.Clone(cloneContext),
-        new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionPtr"));
-    constructExceptionPtr->AddArgument(new cmajor::ast::CastNode(sourcePos, moduleId, exceptionPtrTypeNode.Clone(cloneContext), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionAddr")));
+    cmajor::ast::ConstructionStatementNode* constructExceptionPtr = new cmajor::ast::ConstructionStatementNode(span, exceptionPtrTypeNode.Clone(cloneContext),
+        new cmajor::ast::IdentifierNode(span, U"@exceptionPtr"));
+    constructExceptionPtr->AddArgument(new cmajor::ast::CastNode(span, exceptionPtrTypeNode.Clone(cloneContext), new cmajor::ast::IdentifierNode(span, U"@exceptionAddr")));
     handlerBlock.AddStatement(constructExceptionPtr);
-    cmajor::ast::TemplateIdNode* uniquePtrNode = new cmajor::ast::TemplateIdNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"UniquePtr"));
-    uniquePtrNode->AddTemplateArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, caughtType->BaseType()->FullName()));
-    cmajor::ast::ConstructionStatementNode* constructUniquePtrException = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, uniquePtrNode, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exPtr"));
-    constructUniquePtrException->AddArgument(new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exceptionPtr"));
+    cmajor::ast::TemplateIdNode* uniquePtrNode = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"UniquePtr"));
+    uniquePtrNode->AddTemplateArgument(new cmajor::ast::IdentifierNode(span, caughtType->BaseType()->FullName()));
+    cmajor::ast::ConstructionStatementNode* constructUniquePtrException = new cmajor::ast::ConstructionStatementNode(span, uniquePtrNode, 
+        new cmajor::ast::IdentifierNode(span, U"@exPtr"));
+    constructUniquePtrException->AddArgument(new cmajor::ast::IdentifierNode(span, U"@exceptionPtr"));
     handlerBlock.AddStatement(constructUniquePtrException);
     if (catchVar)
     {
-        cmajor::ast::ConstructionStatementNode* setExceptionVar = new cmajor::ast::ConstructionStatementNode(sourcePos, moduleId, catchNode.TypeExpr()->Clone(cloneContext), static_cast<cmajor::ast::IdentifierNode*>(catchNode.Id()->Clone(cloneContext)));
-        setExceptionVar->AddArgument(new cmajor::ast::DerefNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exPtr")));
+        cmajor::ast::ConstructionStatementNode* setExceptionVar = new cmajor::ast::ConstructionStatementNode(span, catchNode.TypeExpr()->Clone(cloneContext), 
+            static_cast<cmajor::ast::IdentifierNode*>(catchNode.Id()->Clone(cloneContext)));
+        setExceptionVar->AddArgument(new cmajor::ast::DerefNode(span, new cmajor::ast::IdentifierNode(span, U"@exPtr")));
         handlerBlock.AddStatement(setExceptionVar);
     }
     handlerBlock.AddStatement(static_cast<cmajor::ast::StatementNode*>(catchNode.CatchBlock()->Clone(cloneContext)));
@@ -1929,16 +1932,16 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
     }
     if (unitTestAssertion)
     {
-        int32_t assertionLineNumber = assertStatementNode.GetSourcePos().line;
+        int32_t assertionLineNumber = cmajor::symbols::GetLineNumber(assertStatementNode.GetFullSpan());
         int32_t assertionIndex = cmajor::symbols::GetNextUnitTestAssertionNumber();
         cmajor::symbols::AddAssertionLineNumber(assertionLineNumber);
-        cmajor::ast::InvokeNode* invokeSetUnitTestAssertionResult = new cmajor::ast::InvokeNode(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(),
-            new cmajor::ast::IdentifierNode(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(), U"RtSetUnitTestAssertionResult"));
-        invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(), assertionIndex));
+        cmajor::ast::InvokeNode* invokeSetUnitTestAssertionResult = new cmajor::ast::InvokeNode(assertStatementNode.GetSpan(),
+            new cmajor::ast::IdentifierNode(assertStatementNode.GetSpan(), U"RtSetUnitTestAssertionResult"));
+        invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSpan(), assertionIndex));
         cmajor::ast::CloneContext cloneContext;
         invokeSetUnitTestAssertionResult->AddArgument(assertStatementNode.AssertExpr()->Clone(cloneContext));
-        invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(), assertionLineNumber));
-        cmajor::ast::ExpressionStatementNode setUnitTestAssertionResult(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(), invokeSetUnitTestAssertionResult);
+        invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSpan(), assertionLineNumber));
+        cmajor::ast::ExpressionStatementNode setUnitTestAssertionResult(assertStatementNode.GetSpan(), invokeSetUnitTestAssertionResult);
         symbolTable.BeginContainer(containerScope->Container());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
         setUnitTestAssertionResult.Accept(symbolCreatorVisitor);
@@ -1953,23 +1956,25 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
     {
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
         {
-            AddStatement(new BoundEmptyStatement(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId()));
+            AddStatement(new BoundEmptyStatement(assertStatementNode.GetSpan()));
         }
         else
         {
+            soul::ast::FullSpan fullSpan = assertStatementNode.GetFullSpan();
+            int lineNumber = cmajor::symbols::GetLineNumber(fullSpan);
+            std::string sourceFilePath = cmajor::symbols::GetSourceFilePath(fullSpan.fileIndex, fullSpan.moduleId);
             std::vector<FunctionScopeLookup> lookups;
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, symbolTable.GlobalNs().GetContainerScope()));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
-            cmajor::symbols::TypeSymbol* constCharPtrType = symbolTable.GetTypeByName(U"char")->AddConst(soul::ast::SourcePos(), util::nil_uuid())->AddPointer(soul::ast::SourcePos(), util::nil_uuid());
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(soul::ast::SourcePos(), util::nil_uuid(),
+            cmajor::symbols::TypeSymbol* constCharPtrType = symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer();
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
                 boundCompileUnit.Install(assertStatementNode.AssertExpr()->ToString()), assertStatementNode.AssertExpr()->ToString())), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(soul::ast::SourcePos(), util::nil_uuid(),
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
                 boundCompileUnit.Install(util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName())), util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName()))), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(soul::ast::SourcePos(), util::nil_uuid(),
-                boundCompileUnit.Install(cmajor::symbols::GetSourceFilePath(assertStatementNode.GetSourcePos().file, assertStatementNode.ModuleId())),
-                cmajor::symbols::GetSourceFilePath(assertStatementNode.GetSourcePos().file, assertStatementNode.ModuleId()))), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::IntValue(soul::ast::SourcePos(), util::nil_uuid(),
-                assertStatementNode.GetSourcePos().line)), symbolTable.GetTypeByName(U"int"))));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
+                boundCompileUnit.Install(sourceFilePath), sourceFilePath)), constCharPtrType)));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::IntValue(assertStatementNode.GetSpan(),
+                lineNumber)), symbolTable.GetTypeByName(U"int"))));
             std::unique_ptr<BoundExpression> assertExpression = BindExpression(assertStatementNode.AssertExpr(), boundCompileUnit, currentFunction, containerScope, this);
             const char32_t* failAssertionFunctionName = U"";
             if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
@@ -1980,13 +1985,13 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             {
                 failAssertionFunctionName = U"System.FailAssertion";
             }
-            std::unique_ptr<BoundStatement> emptyStatement(new BoundEmptyStatement(soul::ast::SourcePos(), util::nil_uuid()));
+            std::unique_ptr<BoundStatement> emptyStatement(new BoundEmptyStatement(assertStatementNode.GetSpan()));
             emptyStatement->SetIgnoreNode();
             std::unique_ptr<BoundStatement> failAssertionStatement(
                 new BoundExpressionStatement(ResolveOverload(failAssertionFunctionName, containerScope, lookups, arguments,
-                    boundCompileUnit, currentFunction, soul::ast::SourcePos(), util::nil_uuid()), soul::ast::SourcePos(), util::nil_uuid()));
+                    boundCompileUnit, currentFunction, &assertStatementNode), assertStatementNode.GetSpan()));
             failAssertionStatement->SetIgnoreNode();
-            std::unique_ptr<BoundStatement> ifStatement(new BoundIfStatement(assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId(), std::move(assertExpression),
+            std::unique_ptr<BoundStatement> ifStatement(new BoundIfStatement(assertStatementNode.GetSpan(), std::move(assertExpression),
                 std::unique_ptr<BoundStatement>(emptyStatement.release()),
                 std::unique_ptr<BoundStatement>(failAssertionStatement.release())));
             ifStatement->SetAssertNode();
@@ -2054,7 +2059,7 @@ void StatementBinder::Visit(cmajor::ast::ConditionalCompilationStatementNode& co
         }
         else
         {
-            AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSourcePos(), conditionalCompilationStatementNode.ModuleId()));
+            AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSpan()));
         }
     }
     else
@@ -2080,7 +2085,7 @@ void StatementBinder::Visit(cmajor::ast::ConditionalCompilationStatementNode& co
                 }
                 else
                 {
-                    AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSourcePos(), conditionalCompilationStatementNode.ModuleId()));
+                    AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSpan()));
                 }
                 executed = true;
                 break;
@@ -2102,12 +2107,12 @@ void StatementBinder::Visit(cmajor::ast::ConditionalCompilationStatementNode& co
                 }
                 else
                 {
-                    AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSourcePos(), conditionalCompilationStatementNode.ModuleId()));
+                    AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSpan()));
                 }
             }
             else
             {
-                AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSourcePos(), conditionalCompilationStatementNode.ModuleId()));
+                AddStatement(new BoundEmptyStatement(conditionalCompilationStatementNode.GetSpan()));
             }
         }
     }
@@ -2139,13 +2144,14 @@ void StatementBinder::SetCurrentMemberFunction(cmajor::symbols::MemberFunctionSy
     currentMemberFunctionNode = currentMemberFunctionNode_;
 }
 
-void StatementBinder::AddReleaseExceptionStatement(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void StatementBinder::AddReleaseExceptionStatement(cmajor::ast::Node* node)
 {
     if (insideCatch && !compilingReleaseExceptionStatement)
     {
         compilingReleaseExceptionStatement = true;
-        cmajor::ast::InvokeNode* invokeNode(new cmajor::ast::InvokeNode(sourcePos, moduleId, new cmajor::ast::DotNode(sourcePos, moduleId, new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"@exPtr"), new cmajor::ast::IdentifierNode(sourcePos, moduleId, U"Release"))));
-        cmajor::ast::ExpressionStatementNode releaseExceptionStatement(sourcePos, moduleId, invokeNode);
+        cmajor::ast::InvokeNode* invokeNode(new cmajor::ast::InvokeNode(node->GetSpan(), new cmajor::ast::DotNode(node->GetSpan(), 
+            new cmajor::ast::IdentifierNode(node->GetSpan(), U"@exPtr"), new cmajor::ast::IdentifierNode(node->GetSpan(), U"Release"))));
+        cmajor::ast::ExpressionStatementNode releaseExceptionStatement(invokeNode->GetSpan(), invokeNode);
         CompileStatement(&releaseExceptionStatement, true);
         compilingReleaseExceptionStatement = false;
     }
@@ -2161,12 +2167,12 @@ void StatementBinder::AddStatement(BoundStatement* boundStatement)
     {
         if (statement->Postfix())
         {
-            BoundSequenceStatement* sequenceStatement = new BoundSequenceStatement(boundStatement->GetSourcePos(), boundStatement->ModuleId(), std::unique_ptr<BoundStatement>(boundStatement), std::move(statement));
+            BoundSequenceStatement* sequenceStatement = new BoundSequenceStatement(boundStatement->GetSpan(), std::unique_ptr<BoundStatement>(boundStatement), std::move(statement));
             boundStatement = sequenceStatement;
         }
         else
         {
-            BoundSequenceStatement* sequenceStatement = new BoundSequenceStatement(boundStatement->GetSourcePos(), boundStatement->ModuleId(), std::move(statement), std::unique_ptr<BoundStatement>(boundStatement));
+            BoundSequenceStatement* sequenceStatement = new BoundSequenceStatement(boundStatement->GetSpan(), std::move(statement), std::unique_ptr<BoundStatement>(boundStatement));
             boundStatement = sequenceStatement;
         }
         if (postfix)

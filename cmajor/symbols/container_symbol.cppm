@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,7 +19,7 @@ class GlobalVariableGroupSymbol;
 class ContainerSymbol : public Symbol
 {
 public:
-    ContainerSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    ContainerSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_);
     void Write(SymbolWriter& writer) override;
     void Read(SymbolReader& reader) override;
     virtual void AddMember(Symbol* member);
@@ -44,16 +44,16 @@ private:
     std::vector<std::unique_ptr<Symbol>> members;
     ContainerScope containerScope;
     std::unordered_map<int32_t, FunctionSymbol*> functionIndexMap;
-    FunctionGroupSymbol* MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
-    ConceptGroupSymbol* MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
-    ClassGroupTypeSymbol* MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
-    GlobalVariableGroupSymbol* MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::SourcePos& sourcePos, const util::uuid& sourceModuleId);
+    FunctionGroupSymbol* MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span);
+    ConceptGroupSymbol* MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span);
+    ClassGroupTypeSymbol* MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::Span& span);
+    GlobalVariableGroupSymbol* MakeGlobalVariableGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span);
 };
 
 class DeclarationBlock : public ContainerSymbol
 {
 public:
-    DeclarationBlock(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    DeclarationBlock(const soul::ast::Span& span_, const std::u32string& name_);
     void AddMember(Symbol* member) override;
     const char* ClassName() const override { return "DeclarationBlock"; }
 };

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ module cmajor.symbols.array.type.symbol;
 
 import cmajor.ast.reader;
 import cmajor.ast.writer;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
@@ -25,13 +25,13 @@ import std.core;
 
 namespace cmajor::symbols {
 
-ArrayTypeSymbol::ArrayTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::arrayTypeSymbol, sourcePos_, sourceModuleId_, name_), elementType(nullptr), size(-1)
+ArrayTypeSymbol::ArrayTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::arrayTypeSymbol, span_, name_), elementType(nullptr), size(-1)
 {
 }
 
-ArrayTypeSymbol::ArrayTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* elementType_, int64_t size_) :
-    TypeSymbol(SymbolType::arrayTypeSymbol, sourcePos_, sourceModuleId_, name_), elementType(elementType_), size(size_)
+ArrayTypeSymbol::ArrayTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* elementType_, int64_t size_) :
+    TypeSymbol(SymbolType::arrayTypeSymbol, span_, name_), elementType(elementType_), size(size_)
 {
 }
 
@@ -60,7 +60,7 @@ void ArrayTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
     else
     {
-        throw Exception("internal error: invalid array emplace type index " + std::to_string(index), GetSourcePos(), SourceModuleId());
+        throw Exception("internal error: invalid array emplace type index " + std::to_string(index), GetFullSpan());
     }
 }
 
@@ -68,7 +68,7 @@ void* ArrayTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
 {
     if (size == -1)
     {
-        throw Exception("array '" + util::ToUtf8(FullName()) + "' size not defined", GetSourcePos(), SourceModuleId());
+        throw Exception("array '" + util::ToUtf8(FullName()) + "' size not defined", GetFullSpan());
     }
     void* localIrType = emitter.GetIrTypeByTypeId(TypeId());
     if (!localIrType)
@@ -83,7 +83,7 @@ void* ArrayTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 {
     if (size == -1)
     {
-        throw Exception("array '" + util::ToUtf8(FullName()) + "' size not defined", GetSourcePos(), SourceModuleId());
+        throw Exception("array '" + util::ToUtf8(FullName()) + "' size not defined", GetFullSpan());
     }
     void* irType = IrType(emitter);
     std::vector<void*> arrayOfDefaults;
@@ -109,7 +109,7 @@ ValueType ArrayTypeSymbol::GetValueType() const
 Value* ArrayTypeSymbol::MakeValue() const
 {
     std::vector<std::unique_ptr<Value>> elementValues;
-    return new ArrayValue(GetSourcePos(), SourceModuleId(), const_cast<TypeSymbol*>(static_cast<const TypeSymbol*>(this)), std::move(elementValues));
+    return new ArrayValue(GetSpan(), const_cast<TypeSymbol*>(static_cast<const TypeSymbol*>(this)), std::move(elementValues));
 }
 
 void ArrayTypeSymbol::Check()
@@ -117,21 +117,21 @@ void ArrayTypeSymbol::Check()
     TypeSymbol::Check();
     if (!elementType)
     {
-        throw SymbolCheckException("array type has no element type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array type has no element type", GetFullSpan());
     }
 }
 
-ArrayLengthFunction::ArrayLengthFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::arrayLengthFunctionSymbol, sourcePos_, sourceModuleId_, name_), arrayType(nullptr)
+ArrayLengthFunction::ArrayLengthFunction(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::arrayLengthFunctionSymbol, span_, name_), arrayType(nullptr)
 {
 }
 
 ArrayLengthFunction::ArrayLengthFunction(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(SymbolType::arrayLengthFunctionSymbol, arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"Length"), arrayType(arrayType_)
+    FunctionSymbol(SymbolType::arrayLengthFunctionSymbol, arrayType_->GetSpan(), U"Length"), arrayType(arrayType_)
 {
     SetGroupName(U"Length");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
     TypeSymbol* longType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"long");
@@ -166,17 +166,17 @@ void ArrayLengthFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ArrayLengthFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayLengthFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
-    emitter.SetCurrentDebugLocation(sourcePos);
     Assert(genObjects.size() == 1, "array length needs one object");
     void* size = emitter.CreateIrValueForLong(arrayType->Size());
     emitter.Stack().Push(size);
 }
 
-std::unique_ptr<Value> ArrayLengthFunction::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, Value* receiver) const
+std::unique_ptr<Value> ArrayLengthFunction::ConstructValue(const std::vector<std::unique_ptr<Value>>& argumentValues, 
+    const soul::ast::Span& span, Value* receiver) const
 {
-    return std::unique_ptr<Value>(new LongValue(sourcePos, moduleId, arrayType->Size()));
+    return std::unique_ptr<Value>(new LongValue(span, arrayType->Size()));
 }
 
 void ArrayLengthFunction::Check()
@@ -184,24 +184,24 @@ void ArrayLengthFunction::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array length function has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array length function has no array type", GetFullSpan());
     }
 }
 
-ArrayBeginFunction::ArrayBeginFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::arrayBeginFunctionSymbol, sourcePos_, sourceModuleId_, name_), arrayType(nullptr)
+ArrayBeginFunction::ArrayBeginFunction(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::arrayBeginFunctionSymbol, span_, name_), arrayType(nullptr)
 {
 }
 
 ArrayBeginFunction::ArrayBeginFunction(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(SymbolType::arrayBeginFunctionSymbol, arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayBegin"), arrayType(arrayType_)
+    FunctionSymbol(SymbolType::arrayBeginFunctionSymbol, arrayType_->GetSpan(), U"@arrayBegin"), arrayType(arrayType_)
 {
     SetGroupName(U"Begin");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
-    TypeSymbol* returnType = arrayType->ElementType()->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId());
+    TypeSymbol* returnType = arrayType->ElementType()->AddPointer();
     SetReturnType(returnType);
     ComputeName();
 }
@@ -233,11 +233,10 @@ void ArrayBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ArrayBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "array begin needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
     void* type = arrayType->IrType(emitter);
     void* beginPtr = emitter.GetArrayBeginAddress(type, arrayPtr);
@@ -249,24 +248,24 @@ void ArrayBeginFunction::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array begin function has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array begin function has no array type", GetFullSpan());
     }
 }
 
-ArrayEndFunction::ArrayEndFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::arrayEndFunctionSymbol, sourcePos_, sourceModuleId_, name_), arrayType(nullptr)
+ArrayEndFunction::ArrayEndFunction(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::arrayEndFunctionSymbol, span_, name_), arrayType(nullptr)
 {
 }
 
 ArrayEndFunction::ArrayEndFunction(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(SymbolType::arrayEndFunctionSymbol, arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayEnd"), arrayType(arrayType_)
+    FunctionSymbol(SymbolType::arrayEndFunctionSymbol, arrayType_->GetSpan(), U"@arrayEnd"), arrayType(arrayType_)
 {
     SetGroupName(U"End");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
-    TypeSymbol* returnType = arrayType->ElementType()->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId());
+    TypeSymbol* returnType = arrayType->ElementType()->AddPointer();
     SetReturnType(returnType);
     ComputeName();
 }
@@ -298,11 +297,10 @@ void ArrayEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ArrayEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "array end needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayIrType = arrayType->IrType(emitter);
     void* arrayPtr = emitter.Stack().Pop();
     void* endPtr = emitter.GetArrayEndAddress(arrayIrType, arrayPtr, arrayType->Size());
@@ -314,24 +312,24 @@ void ArrayEndFunction::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array end function has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array end function has no array type", GetFullSpan());
     }
 }
 
-ArrayCBeginFunction::ArrayCBeginFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::arrayCBeginFunctionSymbol, sourcePos_, sourceModuleId_, name_), arrayType(nullptr)
+ArrayCBeginFunction::ArrayCBeginFunction(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::arrayCBeginFunctionSymbol, span_, name_), arrayType(nullptr)
 {
 }
 
 ArrayCBeginFunction::ArrayCBeginFunction(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(SymbolType::arrayCBeginFunctionSymbol, arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayCBegin"), arrayType(arrayType_)
+    FunctionSymbol(SymbolType::arrayCBeginFunctionSymbol, arrayType_->GetSpan(), U"@arrayCBegin"), arrayType(arrayType_)
 {
     SetGroupName(U"CBegin");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
-    TypeSymbol* returnType = arrayType->ElementType()->AddConst(arrayType->GetSourcePos(), arrayType->SourceModuleId())->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId());
+    TypeSymbol* returnType = arrayType->ElementType()->AddConst()->AddPointer();
     SetReturnType(returnType);
     ComputeName();
 }
@@ -363,11 +361,10 @@ void ArrayCBeginFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ArrayCBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayCBeginFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "array cbegin needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayPtr = emitter.Stack().Pop();
     void* type = arrayType->IrType(emitter);
     void* beginPtr = emitter.GetArrayBeginAddress(type, arrayPtr);
@@ -379,24 +376,24 @@ void ArrayCBeginFunction::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array cbegin function has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array cbegin function has no array type", GetFullSpan());
     }
 }
 
-ArrayCEndFunction::ArrayCEndFunction(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::arrayCEndFunctionSymbol, sourcePos_, sourceModuleId_, name_), arrayType(nullptr)
+ArrayCEndFunction::ArrayCEndFunction(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::arrayCEndFunctionSymbol, span_, name_), arrayType(nullptr)
 {
 }
 
 ArrayCEndFunction::ArrayCEndFunction(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(SymbolType::arrayCEndFunctionSymbol, arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayCEnd"), arrayType(arrayType_)
+    FunctionSymbol(SymbolType::arrayCEndFunctionSymbol, arrayType_->GetSpan(), U"@arrayCEnd"), arrayType(arrayType_)
 {
     SetGroupName(U"CEnd");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
-    TypeSymbol* returnType = arrayType->ElementType()->AddConst(arrayType->GetSourcePos(), arrayType->SourceModuleId())->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId());
+    TypeSymbol* returnType = arrayType->ElementType()->AddConst()->AddPointer();
     SetReturnType(returnType);
     ComputeName();
 }
@@ -428,11 +425,10 @@ void ArrayCEndFunction::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void ArrayCEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayCEndFunction::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 1, "array cend needs one object");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* arrayIrType = arrayType->IrType(emitter);
     void* arrayPtr = emitter.Stack().Pop();
     void* endPtr = emitter.GetArrayEndAddress(arrayIrType, arrayPtr, arrayType->Size());
@@ -444,17 +440,17 @@ void ArrayCEndFunction::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array cend function has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array cend function has no array type", GetFullSpan());
     }
 }
 
 ArrayTypeDefaultConstructor::ArrayTypeDefaultConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeDefaultConstructor_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayDefaultCtor"), arrayType(arrayType_), elementTypeDefaultConstructor(elementTypeDefaultConstructor_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayDefaultCtor"), arrayType(arrayType_), elementTypeDefaultConstructor(elementTypeDefaultConstructor_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"this");
-    thisParam->SetType(arrayType->AddPointer(arrayType_->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(arrayType_->GetSpan(), U"this");
+    thisParam->SetType(arrayType->AddPointer());
     AddMember(thisParam);
     ComputeName();
 }
@@ -462,7 +458,7 @@ ArrayTypeDefaultConstructor::ArrayTypeDefaultConstructor(ArrayTypeSymbol* arrayT
 std::vector<LocalVariableSymbol*> ArrayTypeDefaultConstructor::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSpan()));
     return temporaries;
 }
 
@@ -471,7 +467,7 @@ void ArrayTypeDefaultConstructor::SetTemporariesForElementTypeDefaultCtor(std::v
     temporariesForElementTypeDefaultCtor = std::move(temporaries);
 }
 
-void ArrayTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "array type default constructor needs two objects: one array type object and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
@@ -502,7 +498,7 @@ void ArrayTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std
     {
         elementGenObjects.push_back(temp.get());
     }
-    elementTypeDefaultConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none, sourcePos, moduleId);
+    elementTypeDefaultConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none);
     void* nextI = emitter.CreateAdd(index2, emitter.CreateIrValueForLong(1));
     emitter.Stack().Push(nextI);
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -515,24 +511,24 @@ void ArrayTypeDefaultConstructor::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array default constructor has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array default constructor has no array type", GetFullSpan());
     }
     if (!elementTypeDefaultConstructor)
     {
-        throw SymbolCheckException("array default constructor has no element type default constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array default constructor has no element type default constructor", GetFullSpan());
     }
 }
 
 ArrayTypeCopyConstructor::ArrayTypeCopyConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyConstructor_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayCopyCtor"), arrayType(arrayType_), elementTypeCopyConstructor(elementTypeCopyConstructor_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayCopyCtor"), arrayType(arrayType_), elementTypeCopyConstructor(elementTypeCopyConstructor_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"this");
-    thisParam->SetType(arrayType->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSpan(), U"this");
+    thisParam->SetType(arrayType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"that");
-    thatParam->SetType(arrayType->AddConst(arrayType->GetSourcePos(), arrayType->SourceModuleId())->AddLvalueReference(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSpan(), U"that");
+    thatParam->SetType(arrayType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -540,7 +536,7 @@ ArrayTypeCopyConstructor::ArrayTypeCopyConstructor(ArrayTypeSymbol* arrayType_, 
 std::vector<LocalVariableSymbol*> ArrayTypeCopyConstructor::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSpan()));
     return temporaries;
 }
 
@@ -549,7 +545,7 @@ void ArrayTypeCopyConstructor::SetTemporariesForElementTypeCopyCtor(std::vector<
     temporariesForElementTypeCopyConstructor = std::move(temporaries);
 }
 
-void ArrayTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 3, "copy constructor needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
@@ -591,7 +587,7 @@ void ArrayTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::v
     {
         elementGenObjects.push_back(temp.get());
     }
-    elementTypeCopyConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none, sourcePos, moduleId);
+    elementTypeCopyConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none);
     void* nextI = emitter.CreateAdd(index2, emitter.CreateIrValueForLong(1));
     emitter.Stack().Push(nextI);
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -604,24 +600,24 @@ void ArrayTypeCopyConstructor::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array copy constructor has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array copy constructor has no array type", GetFullSpan());
     }
     if (!elementTypeCopyConstructor)
     {
-        throw SymbolCheckException("array copy constructor has no element type copy constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array copy constructor has no element type copy constructor", GetFullSpan());
     }
 }
 
 ArrayTypeMoveConstructor::ArrayTypeMoveConstructor(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveConstructor_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayMoveCtor"), arrayType(arrayType_), elementTypeMoveConstructor(elementTypeMoveConstructor_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayMoveCtor"), arrayType(arrayType_), elementTypeMoveConstructor(elementTypeMoveConstructor_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"this");
-    thisParam->SetType(arrayType->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSpan(), U"this");
+    thisParam->SetType(arrayType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"that");
-    thatParam->SetType(arrayType->AddRvalueReference(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSpan(), U"that");
+    thatParam->SetType(arrayType->AddRvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -629,7 +625,7 @@ ArrayTypeMoveConstructor::ArrayTypeMoveConstructor(ArrayTypeSymbol* arrayType_, 
 std::vector<LocalVariableSymbol*> ArrayTypeMoveConstructor::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSpan()));
     return temporaries;
 }
 
@@ -638,7 +634,7 @@ void ArrayTypeMoveConstructor::SetTemporariesForElementTypeMoveCtor(std::vector<
     temporariesForElementTypeMoveConstructor = std::move(temporaries);
 }
 
-void ArrayTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 3, "move constructor needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
@@ -674,7 +670,7 @@ void ArrayTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::v
     {
         elementGenObjects.push_back(temp.get());
     }
-    elementTypeMoveConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none, sourcePos, moduleId);
+    elementTypeMoveConstructor->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none);
     void* nextI = emitter.CreateAdd(index2, emitter.CreateIrValueForLong(1));
     emitter.Stack().Push(nextI);
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -687,24 +683,24 @@ void ArrayTypeMoveConstructor::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array move constructor has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array move constructor has no array type", GetFullSpan());
     }
     if (!elementTypeMoveConstructor)
     {
-        throw SymbolCheckException("array move constructor has no element type move constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array move constructor has no element type move constructor", GetFullSpan());
     }
 }
 
 ArrayTypeCopyAssignment::ArrayTypeCopyAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyAssignment_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayCopyAssignment"), arrayType(arrayType_), elementTypeCopyAssignment(elementTypeCopyAssignment_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayCopyAssignment"), arrayType(arrayType_), elementTypeCopyAssignment(elementTypeCopyAssignment_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"this");
-    thisParam->SetType(arrayType->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSpan(), U"this");
+    thisParam->SetType(arrayType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"that");
-    thatParam->SetType(arrayType->AddConst(arrayType->GetSourcePos(), arrayType->SourceModuleId())->AddLvalueReference(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSpan(), U"that");
+    thatParam->SetType(arrayType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     TypeSymbol* voidType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void");
     SetReturnType(voidType);
@@ -714,7 +710,7 @@ ArrayTypeCopyAssignment::ArrayTypeCopyAssignment(ArrayTypeSymbol* arrayType_, Fu
 std::vector<LocalVariableSymbol*> ArrayTypeCopyAssignment::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSpan()));
     return temporaries;
 }
 
@@ -723,7 +719,7 @@ void ArrayTypeCopyAssignment::SetTemporariesForElementTypeCopyAssignment(std::ve
     temporariesForElementTypeCopyAssignment = std::move(temporaries);
 }
 
-void ArrayTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 3, "copy assignment needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
@@ -765,7 +761,7 @@ void ArrayTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     {
         elementGenObjects.push_back(temp.get());
     }
-    elementTypeCopyAssignment->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none, sourcePos, moduleId);
+    elementTypeCopyAssignment->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none);
     void* nextI = emitter.CreateAdd(index2, emitter.CreateIrValueForLong(1));
     emitter.Stack().Push(nextI);
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -778,24 +774,24 @@ void ArrayTypeCopyAssignment::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array copy assignment has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array copy assignment has no array type", GetFullSpan());
     }
     if (!elementTypeCopyAssignment)
     {
-        throw SymbolCheckException("array copy assignmet has no element type copy assignment", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array copy assignmet has no element type copy assignment", GetFullSpan());
     }
 }
 
 ArrayTypeMoveAssignment::ArrayTypeMoveAssignment(ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveAssignment_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayMoveAssignment"), arrayType(arrayType_), elementTypeMoveAssignment(elementTypeMoveAssignment_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayMoveAssignment"), arrayType(arrayType_), elementTypeMoveAssignment(elementTypeMoveAssignment_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"this");
-    thisParam->SetType(arrayType->AddPointer(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(arrayType->GetSpan(), U"this");
+    thisParam->SetType(arrayType->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"that");
-    thatParam->SetType(arrayType->AddRvalueReference(arrayType->GetSourcePos(), arrayType->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(arrayType->GetSpan(), U"that");
+    thatParam->SetType(arrayType->AddRvalueReference());
     AddMember(thatParam);
     TypeSymbol* voidType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void");
     SetReturnType(voidType);
@@ -805,7 +801,7 @@ ArrayTypeMoveAssignment::ArrayTypeMoveAssignment(ArrayTypeSymbol* arrayType_, Fu
 std::vector<LocalVariableSymbol*> ArrayTypeMoveAssignment::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(GetModule()->GetSymbolTable().GetTypeByName(U"long"), GetSpan()));
     return temporaries;
 }
 
@@ -814,7 +810,7 @@ void ArrayTypeMoveAssignment::SetTemporariesForElementTypeMoveAssignment(std::ve
     temporariesForElementTypeMoveAssignment = std::move(temporaries);
 }
 
-void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 3, "move assignment needs three objects: two array type objects and one loop variable temporary");
     emitter.Stack().Push(emitter.CreateIrValueForLong(0));
@@ -833,7 +829,7 @@ void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     emitter.SetCurrentBasicBlock(init);
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* ptrPtr = emitter.Stack().Pop();
-    void* ptr = emitter.CreateLoad(arrayType->AddPointer(sourcePos, moduleId)->IrType(emitter), ptrPtr); // TODO
+    void* ptr = emitter.CreateLoad(arrayType->AddPointer()->IrType(emitter), ptrPtr); // TODO
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
     void* sourcePtr = emitter.Stack().Pop();
     loopVar->Load(emitter, cmajor::ir::OperationFlags::none);
@@ -852,7 +848,7 @@ void ArrayTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::ve
     {
         elementGenObjects.push_back(temp.get());
     }
-    elementTypeMoveAssignment->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none, sourcePos, moduleId);
+    elementTypeMoveAssignment->GenerateCall(emitter, elementGenObjects, cmajor::ir::OperationFlags::none);
     void* nextI = emitter.CreateAdd(index2, emitter.CreateIrValueForLong(1));
     emitter.Stack().Push(nextI);
     loopVar->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -865,47 +861,47 @@ void ArrayTypeMoveAssignment::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array move assignment has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array move assignment has no array type", GetFullSpan());
     }
     if (!elementTypeMoveAssignment)
     {
-        throw SymbolCheckException("array move assignmet has no element type move assignment", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array move assignmet has no element type move assignment", GetFullSpan());
     }
 }
 
 ArrayTypeElementAccess::ArrayTypeElementAccess(ArrayTypeSymbol* arrayType_) :
-    FunctionSymbol(arrayType_->GetSourcePos(), arrayType_->SourceModuleId(), U"@arrayElementAccess"), arrayType(arrayType_)
+    FunctionSymbol(arrayType_->GetSpan(), U"@arrayElementAccess"), arrayType(arrayType_)
 {
     SetGroupName(U"operator[]");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"array");
+    ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->GetSpan(), U"array");
     arrayParam->SetType(arrayType);
     AddMember(arrayParam);
-    ParameterSymbol* indexParam = new ParameterSymbol(arrayType->GetSourcePos(), arrayType->SourceModuleId(), U"index");
+    ParameterSymbol* indexParam = new ParameterSymbol(arrayType->GetSpan(), U"index");
     indexParam->SetType(GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"long"));
     AddMember(indexParam);
     TypeSymbol* returnType = arrayType->ElementType();
     if (!returnType->IsBasicTypeSymbol() && !returnType->IsPointerType() && returnType->GetSymbolType() != SymbolType::delegateTypeSymbol)
     {
-        returnType = returnType->AddLvalueReference(arrayType->GetSourcePos(), arrayType->SourceModuleId());
+        returnType = returnType->AddLvalueReference();
     }
     SetReturnType(returnType);
     ComputeName();
 }
 
-void ArrayTypeElementAccess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ArrayTypeElementAccess::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     Assert(genObjects.size() == 2, "element access needs two objects");
     genObjects[0]->Load(emitter, cmajor::ir::OperationFlags::addr);
     void* ptr = emitter.Stack().Pop();
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
-    emitter.SetCurrentDebugLocation(sourcePos);
     void* indexValue = emitter.Stack().Pop();
     void* elemType = arrayType->ElementType()->IrType(emitter);
     void* type = arrayType->IrType(emitter);
     void* elementPtr = emitter.CreateArrayIndexAddress(type, ptr, elemType, indexValue);
     TypeSymbol* elementType = arrayType->ElementType();
-    if ((flags & cmajor::ir::OperationFlags::addr) == cmajor::ir::OperationFlags::none && (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->GetSymbolType() == SymbolType::delegateTypeSymbol))
+    if ((flags & cmajor::ir::OperationFlags::addr) == cmajor::ir::OperationFlags::none && (elementType->IsBasicTypeSymbol() || 
+        elementType->IsPointerType() || elementType->GetSymbolType() == SymbolType::delegateTypeSymbol))
     {
         void* elementValue = emitter.CreateLoad(elemType, elementPtr); // TODO
         emitter.Stack().Push(elementValue);
@@ -921,7 +917,7 @@ void ArrayTypeElementAccess::Check()
     FunctionSymbol::Check();
     if (!arrayType)
     {
-        throw SymbolCheckException("array type element access has no array type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("array type element access has no array type", GetFullSpan());
     }
 }
 } // namespace cmajor::symbols

@@ -36,7 +36,7 @@ soul::parser::Match AliasParser<LexerT>::UsingAlias(LexerT& lexer, cmajor::parse
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7445274796289425409);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::IdentifierNode> id;
     std::unique_ptr<cmajor::ast::Node> typeExpr;
@@ -70,7 +70,7 @@ soul::parser::Match AliasParser<LexerT>::UsingAlias(LexerT& lexer, cmajor::parse
                                     specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
                                     if (match.hit)
                                     {
-                                        s = lexer.GetSourcePos(pos);
+                                        s = lexer.GetSpan(pos);
                                     }
                                     *parentMatch7 = match;
                                 }
@@ -159,7 +159,7 @@ soul::parser::Match AliasParser<LexerT>::UsingAlias(LexerT& lexer, cmajor::parse
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UsingAlias");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::AliasNode(s, context->ModuleId(), specifiers->value, id.release(), typeExpr.release()));
+                return soul::parser::Match(true, new cmajor::ast::AliasNode(s, specifiers->value, id.release(), typeExpr.release()));
             }
         }
         *parentMatch0 = match;
@@ -191,7 +191,7 @@ soul::parser::Match AliasParser<LexerT>::Typedef(LexerT& lexer, cmajor::parser::
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 7445274796289425410);
-    soul::ast::SourcePos s = soul::ast::SourcePos();
+    soul::ast::Span s = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::Node> typeExpr;
     std::unique_ptr<cmajor::ast::IdentifierNode> id;
@@ -222,7 +222,7 @@ soul::parser::Match AliasParser<LexerT>::Typedef(LexerT& lexer, cmajor::parser::
                                 specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
                                 if (match.hit)
                                 {
-                                    s = lexer.GetSourcePos(pos);
+                                    s = lexer.GetSpan(pos);
                                 }
                                 *parentMatch6 = match;
                             }
@@ -294,7 +294,7 @@ soul::parser::Match AliasParser<LexerT>::Typedef(LexerT& lexer, cmajor::parser::
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Typedef");
                 #endif
-                return soul::parser::Match(true, new cmajor::ast::TypedefNode(s, context->ModuleId(), specifiers->value, typeExpr.release(), id.release()));
+                return soul::parser::Match(true, new cmajor::ast::TypedefNode(s, specifiers->value, typeExpr.release(), id.release()));
             }
         }
         *parentMatch0 = match;

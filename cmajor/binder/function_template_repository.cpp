@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -12,6 +12,7 @@ import cmajor.binder.bound.compile.unit;
 import cmajor.binder.type.binder;
 import cmajor.binder.statement.binder;
 import cmajor.binder.bound.statement;
+import cmajor.binder.instantiation_guard;
 import util;
 
 namespace cmajor::binder{
@@ -38,7 +39,7 @@ FunctionTemplateRepository::FunctionTemplateRepository(BoundCompileUnit& boundCo
 }
 
 cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* functionTemplate, const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping,
-    const soul::ast::SourcePos& span, const util::uuid& moduleId)
+    cmajor::ast::Node* node)
 {
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
     for (cmajor::symbols::TemplateParameterSymbol* templateParameter : functionTemplate->TemplateParameters())
@@ -51,7 +52,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         }
         else
         {
-            throw cmajor::symbols::Exception("template parameter type not found", span, moduleId);
+            throw cmajor::symbols::Exception("template parameter type not found", node->GetFullSpan());
         }
     }
     FunctionTemplateKey key(functionTemplate, templateArgumentTypes);
@@ -61,17 +62,18 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         return it->second;
     }
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(functionTemplate);
-    if (!node)
+    cmajor::ast::Node* functionTemplateNode = symbolTable.GetNodeNoThrow(functionTemplate);
+    if (!functionTemplateNode)
     {
-        node = functionTemplate->GetFunctionNode();
-        symbolTable.MapNode(node, functionTemplate);
-        Assert(node, "function node not read"); 
+        functionTemplateNode = functionTemplate->GetFunctionNode();
+        symbolTable.MapNode(functionTemplateNode, functionTemplate);
+        Assert(functionTemplateNode, "function node not read");
     }
-    Assert(node->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected");
-    cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(node);
-    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
-        new cmajor::ast::IdentifierNode(functionNode->GetSourcePos(), functionNode->ModuleId(), U"")));
+    Assert(functionTemplateNode->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected");
+    cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(functionTemplateNode);
+    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSpan(), new cmajor::ast::IdentifierNode(functionNode->GetSpan(), U"")));
+    globalNs->SetFileIndex(functionNode->FileIndex());
+    globalNs->SetModuleId(functionNode->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateFunctionNode();
@@ -92,8 +94,10 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
-            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSourcePos(), functionNode->ModuleId(), 
-                new cmajor::ast::IdentifierNode(functionNode->GetSourcePos(), functionNode->ModuleId(), nsComponent));
+            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSpan(), 
+                new cmajor::ast::IdentifierNode(functionNode->GetSpan(), nsComponent));
+            nsNode->SetFileIndex(functionNode->FileIndex());
+            nsNode->SetModuleId(functionNode->ModuleId());
             currentNs->AddMember(nsNode);
             currentNs = nsNode;
         }
@@ -101,8 +105,8 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(functionNode->Clone(cloneContext));
     currentNs->AddMember(functionInstanceNode);
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
+    InstantiationGuard instantiationGuard(symbolTable, functionNode->FileIndex(), functionNode->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
-    symbolCreatorVisitor.InsertTracer(functionInstanceNode->Body());
     globalNs->Accept(symbolCreatorVisitor);
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
@@ -118,13 +122,14 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         if (it != templateParameterMapping.cend())
         {
             cmajor::symbols::TypeSymbol* boundType = it->second;
-            cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(span, moduleId, templateParameter->Name());
+            cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(templateParameter->GetSpan(), 
+                templateParameter->Name());
             boundTemplateParameter->SetType(boundType);
             functionSymbol->AddMember(boundTemplateParameter);
         }
         else
         {
-            throw cmajor::symbols::Exception("template parameter type not found", span, moduleId);
+            throw cmajor::symbols::Exception("template parameter type not found", node->GetFullSpan());
         }
     }
     TypeBinder typeBinder(boundCompileUnit);

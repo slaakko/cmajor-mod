@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,7 +11,7 @@ import cmajor.binder.bound.node.visitor;
 namespace cmajor::binder {
 
 BoundClass::BoundClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol_) :
-    BoundNode(classTypeSymbol_->GetSourcePos(), classTypeSymbol_->SourceModuleId(), BoundNodeType::boundClass), classTypeSymbol(classTypeSymbol_), inlineFunctionContainer(false)
+    BoundNode(classTypeSymbol_->GetSpan(), BoundNodeType::boundClass), classTypeSymbol(classTypeSymbol_), inlineFunctionContainer(false)
 {
 }
 
@@ -22,16 +22,17 @@ void BoundClass::Accept(BoundNodeVisitor& visitor)
 
 void BoundClass::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load from class", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot load from class", GetFullSpan());
 }
 
 void BoundClass::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to class", GetSourcePos(), ModuleId());
+    throw cmajor::symbols::Exception("cannot store to class", GetFullSpan());
 }
 
 void BoundClass::AddMember(std::unique_ptr<BoundNode>&& member)
 {
+    member->SetParent(this);
     members.push_back(std::move(member));
 }
 

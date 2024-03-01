@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -9,6 +9,7 @@ import cmajor.binder.bound.node;
 import cmajor.binder.bound.expression;
 import cmajor.symbols;
 import cmajor.ir;
+import std.core;
 
 export namespace cmajor::binder {
 

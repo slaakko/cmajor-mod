@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -25,14 +25,12 @@ public:
     void ReadFile(int32_t fileId);
     const std::pair<std::u32string, std::vector<int>>& GetFileContent(int32_t file) const;
     std::u32string GetFileLine(int32_t fileId, int line);
-    void SetTokens(int32_t fileId, TokenVec&& tokens);
-    const TokenVec& GetTokens(int32_t fileId) const;
     int32_t NextFileId() const { return nextFileId; }
+    const std::vector<int>* LineStartIndeces(int32_t fileId) const;
 private:
     int32_t nextFileId;
     std::map<int32_t, std::string> filePathMap;
     std::map<int32_t, std::pair<std::u32string, std::vector<int>>> fileContentsMap;
-    std::map<int32_t, TokenVec> tokenMap;
 };
 
 FileMap* GetGlobalFileMap();

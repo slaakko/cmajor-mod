@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -111,20 +111,18 @@ public:
     void* CreateDITypeForVoid() override;
     void* CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements) override;
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
-    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, 
-        const std::vector<void*>& enumConstantElements,
+    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
-    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, 
-        const util::uuid& moduleId) override;
+    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, 
-        const util::uuid& moduleId, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) override;
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass, 
+        const std::string& mangledName, void* baseClassDIType) override;
     void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) override;
     void* GetDITypeByTypeId(const util::uuid& typeId) const override;
     void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) override;
     void* GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId) override;
     void SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType) override;
-    void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
+    void* CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
     void* CreateConstDIType(void* diType) override;
     void* CreateLValueRefDIType(void* diType) override;
     void* CreateRValueRefDIType(void* diType) override;
@@ -134,6 +132,7 @@ public:
     uint64_t GetSizeInBits(void* irType) override;
     uint64_t GetAlignmentInBits(void* irType) override;
     void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) override;
+    void SetCurrentDebugLocation(const soul::ast::Span& span) override;
     void* GetArrayBeginAddress(void* arrayType, void* arrayPtr) override;
     void* GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size) override;
     void* CreateBasicBlock(const std::string& name) override;
@@ -228,11 +227,10 @@ public:
     void* CreateCatchPad(void* parentPad, const std::vector<void*>& args) override;
     void* CreateClassDIType(void* classPtr) override;
     void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) override;
-    void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
     void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) override;
     void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
-    void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles, 
-        const soul::ast::SourcePos& sourcePos) override;
+    void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
     void* DIBuilder() override;
     void SetCurrentDIBuilder(void* diBuilder_) override;
     void* GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr) override;

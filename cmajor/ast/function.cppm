@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,10 +20,10 @@ export namespace cmajor::ast {
 class FunctionNode : public Node
 {
 public:
-    FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
-    FunctionNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
-    FunctionNode(NodeType nodeType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
+    FunctionNode(const soul::ast::Span& span_);
+    FunctionNode(NodeType nodeType_, const soul::ast::Span& span_);
+    FunctionNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
+    FunctionNode(NodeType nodeType_, const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, const std::u32string& groupId_, AttributesNode* attributes_);
     FunctionNode(const FunctionNode&) = delete;
     FunctionNode& operator=(const FunctionNode&) = delete;
     Node* Clone(CloneContext& cloneContext) const override;
@@ -70,7 +70,7 @@ private:
 class FunctionPtrNode : public Node
 {
 public:
-    FunctionPtrNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_);
+    FunctionPtrNode(const soul::ast::Span& span_);
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void SetBoundExpression(void* boundExpression_) { boundExpression = boundExpression_; }

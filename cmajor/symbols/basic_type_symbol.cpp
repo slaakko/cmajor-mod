@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -10,7 +10,7 @@ module cmajor.symbols.basic.type.symbol;
 
 import cmajor.ast.reader;
 import cmajor.ast.writer;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.symbols.symbol.writer;
 import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
@@ -26,8 +26,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
-BasicTypeSymbol::BasicTypeSymbol(SymbolType symbolType_, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(symbolType_, sourcePos_, sourceModuleId_, name_),
+BasicTypeSymbol::BasicTypeSymbol(SymbolType symbolType_, const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(symbolType_, span_, name_),
     defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr), moveAssignment(nullptr), returnFun(nullptr), equalityOp(nullptr)
 {
 }
@@ -163,51 +163,51 @@ void BasicTypeSymbol::Check()
     TypeSymbol::Check();
     if (!defaultConstructor && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no default constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no default constructor", GetFullSpan());
     }
     if (!copyConstructor && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no copy constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no copy constructor", GetFullSpan());
     }
     if (!moveConstructor && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no move constructor", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no move constructor", GetFullSpan());
     }
     if (!copyAssignment && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no copy assignment", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no copy assignment", GetFullSpan());
     }
     if (!moveAssignment && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no move assignment", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no move assignment", GetFullSpan());
     }
     if (!returnFun && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no return function", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no return function", GetFullSpan());
     }
     if (!equalityOp && !IsVoidType())
     {
-        throw SymbolCheckException("basic type symbol has no equality comparison operation", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("basic type symbol has no equality comparison operation", GetFullSpan());
     }
 }
 
-AutoTypeSymbol::AutoTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    BasicTypeSymbol(SymbolType::autoTypeSymbol, sourcePos_, sourceModuleId_, name_)
+AutoTypeSymbol::AutoTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::autoTypeSymbol, span_, name_)
 {
 }
 
 void* AutoTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
 {
-    throw Exception("'auto' type has no IR type", GetSourcePos(), SourceModuleId());
+    throw Exception("'auto' type has no IR type", GetFullSpan());
 }
 
 void* AutoTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 {
-    throw Exception("'auto' type: cannot create IR value", GetSourcePos(), SourceModuleId());
+    throw Exception("'auto' type: cannot create IR value", GetFullSpan());
 }
 
-BoolTypeSymbol::BoolTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    BasicTypeSymbol(SymbolType::boolTypeSymbol, sourcePos_, sourceModuleId_, name_)
+BoolTypeSymbol::BoolTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::boolTypeSymbol, span_, name_)
 {
 }
 
@@ -218,7 +218,7 @@ ValueType BoolTypeSymbol::GetValueType() const
 
 Value* BoolTypeSymbol::MakeValue() const
 {
-    return new BoolValue(GetSourcePos(), SourceModuleId(), false);
+    return new BoolValue(GetSpan(), false);
 }
 
 void* BoolTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -226,7 +226,7 @@ void* BoolTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForBool();
 }
 
-SByteTypeSymbol::SByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::sbyteTypeSymbol, sourcePos_, sourceModuleId_, name_)
+SByteTypeSymbol::SByteTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::sbyteTypeSymbol, span_, name_)
 {
 }
 
@@ -237,7 +237,7 @@ ValueType SByteTypeSymbol::GetValueType() const
 
 Value* SByteTypeSymbol::MakeValue() const
 {
-    return new SByteValue(GetSourcePos(), SourceModuleId(), 0);
+    return new SByteValue(GetSpan(), 0);
 }
 
 void* SByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -245,7 +245,7 @@ void* SByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForSByte();
 }
 
-ByteTypeSymbol::ByteTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::byteTypeSymbol, sourcePos_, sourceModuleId_, name_)
+ByteTypeSymbol::ByteTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::byteTypeSymbol, span_, name_)
 {
 }
 
@@ -256,7 +256,7 @@ ValueType ByteTypeSymbol::GetValueType() const
 
 Value* ByteTypeSymbol::MakeValue() const
 {
-    return new ByteValue(GetSourcePos(), SourceModuleId(), 0);
+    return new ByteValue(GetSpan(), 0);
 }
 
 void* ByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -264,7 +264,7 @@ void* ByteTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForByte();
 }
 
-ShortTypeSymbol::ShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::shortTypeSymbol, sourcePos_, sourceModuleId_, name_)
+ShortTypeSymbol::ShortTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::shortTypeSymbol, span_, name_)
 {
 }
 
@@ -275,7 +275,7 @@ ValueType ShortTypeSymbol::GetValueType() const
 
 Value* ShortTypeSymbol::MakeValue() const
 {
-    return new ShortValue(GetSourcePos(), SourceModuleId(), 0);
+    return new ShortValue(GetSpan(), 0);
 }
 
 void* ShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -283,7 +283,7 @@ void* ShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForShort();
 }
 
-UShortTypeSymbol::UShortTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::ushortTypeSymbol, sourcePos_, sourceModuleId_, name_)
+UShortTypeSymbol::UShortTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::ushortTypeSymbol, span_, name_)
 {
 }
 
@@ -294,7 +294,7 @@ ValueType UShortTypeSymbol::GetValueType() const
 
 Value* UShortTypeSymbol::MakeValue() const
 {
-    return new UShortValue(GetSourcePos(), SourceModuleId(), 0);
+    return new UShortValue(GetSpan(), 0);
 }
 
 void* UShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -302,7 +302,7 @@ void* UShortTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForUShort();
 }
 
-IntTypeSymbol::IntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::intTypeSymbol, sourcePos_, sourceModuleId_, name_)
+IntTypeSymbol::IntTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::intTypeSymbol, span_, name_)
 {
 }
 
@@ -313,7 +313,7 @@ ValueType IntTypeSymbol::GetValueType() const
 
 Value* IntTypeSymbol::MakeValue() const
 {
-    return new IntValue(GetSourcePos(), SourceModuleId(), 0);
+    return new IntValue(GetSpan(), 0);
 }
 
 void* IntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -321,7 +321,7 @@ void* IntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForInt();
 }
 
-UIntTypeSymbol::UIntTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::uintTypeSymbol, sourcePos_, sourceModuleId_, name_)
+UIntTypeSymbol::UIntTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::uintTypeSymbol, span_, name_)
 {
 }
 
@@ -332,7 +332,7 @@ ValueType UIntTypeSymbol::GetValueType() const
 
 Value* UIntTypeSymbol::MakeValue() const
 {
-    return new UIntValue(GetSourcePos(), SourceModuleId(), 0);
+    return new UIntValue(GetSpan(), 0);
 }
 
 void* UIntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -340,7 +340,7 @@ void* UIntTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForUInt();
 }
 
-LongTypeSymbol::LongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::longTypeSymbol, sourcePos_, sourceModuleId_, name_)
+LongTypeSymbol::LongTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::longTypeSymbol, span_, name_)
 {
 }
 
@@ -351,7 +351,7 @@ ValueType LongTypeSymbol::GetValueType() const
 
 Value* LongTypeSymbol::MakeValue() const
 {
-    return new LongValue(GetSourcePos(), SourceModuleId(), 0);
+    return new LongValue(GetSpan(), 0);
 }
 
 void* LongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -359,7 +359,7 @@ void* LongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForLong();
 }
 
-ULongTypeSymbol::ULongTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::ulongTypeSymbol, sourcePos_, sourceModuleId_, name_)
+ULongTypeSymbol::ULongTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::ulongTypeSymbol, span_, name_)
 {
 }
 
@@ -370,7 +370,7 @@ ValueType ULongTypeSymbol::GetValueType() const
 
 Value* ULongTypeSymbol::MakeValue() const
 {
-    return new ULongValue(GetSourcePos(), SourceModuleId(), 0);
+    return new ULongValue(GetSpan(), 0);
 }
 
 void* ULongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -378,7 +378,7 @@ void* ULongTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForULong();
 }
 
-FloatTypeSymbol::FloatTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::floatTypeSymbol, sourcePos_, sourceModuleId_, name_)
+FloatTypeSymbol::FloatTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::floatTypeSymbol, span_, name_)
 {
 }
 
@@ -389,7 +389,7 @@ ValueType FloatTypeSymbol::GetValueType() const
 
 Value* FloatTypeSymbol::MakeValue() const
 {
-    return new FloatValue(GetSourcePos(), SourceModuleId(), 0.0);
+    return new FloatValue(GetSpan(), 0.0);
 }
 
 void* FloatTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -397,7 +397,7 @@ void* FloatTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForFloat();
 }
 
-DoubleTypeSymbol::DoubleTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::doubleTypeSymbol, sourcePos_, sourceModuleId_, name_)
+DoubleTypeSymbol::DoubleTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::doubleTypeSymbol, span_, name_)
 {
 }
 
@@ -408,7 +408,7 @@ ValueType DoubleTypeSymbol::GetValueType() const
 
 Value* DoubleTypeSymbol::MakeValue() const
 {
-    return new DoubleValue(GetSourcePos(), SourceModuleId(), 0.0);
+    return new DoubleValue(GetSpan(), 0.0);
 }
 
 void* DoubleTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -416,8 +416,8 @@ void* DoubleTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForDouble();
 }
 
-CharTypeSymbol::CharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    BasicTypeSymbol(SymbolType::charTypeSymbol, sourcePos_, sourceModuleId_, name_)
+CharTypeSymbol::CharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::charTypeSymbol, span_, name_)
 {
 }
 
@@ -428,7 +428,7 @@ ValueType CharTypeSymbol::GetValueType() const
 
 Value* CharTypeSymbol::MakeValue() const
 {
-    return new CharValue(GetSourcePos(), SourceModuleId(), '\0');
+    return new CharValue(GetSpan(), '\0');
 }
 
 void* CharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -436,8 +436,8 @@ void* CharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForChar();
 }
 
-WCharTypeSymbol::WCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    BasicTypeSymbol(SymbolType::wcharTypeSymbol, sourcePos_, sourceModuleId_, name_)
+WCharTypeSymbol::WCharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::wcharTypeSymbol, span_, name_)
 {
 }
 
@@ -448,7 +448,7 @@ ValueType WCharTypeSymbol::GetValueType() const
 
 Value* WCharTypeSymbol::MakeValue() const
 {
-    return new WCharValue(GetSourcePos(), SourceModuleId(), '\0');
+    return new WCharValue(GetSpan(), '\0');
 }
 
 void* WCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -456,8 +456,8 @@ void* WCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForWChar();
 }
 
-UCharTypeSymbol::UCharTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    BasicTypeSymbol(SymbolType::ucharTypeSymbol, sourcePos_, sourceModuleId_, name_)
+UCharTypeSymbol::UCharTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    BasicTypeSymbol(SymbolType::ucharTypeSymbol, span_, name_)
 {
 }
 
@@ -468,7 +468,7 @@ ValueType UCharTypeSymbol::GetValueType() const
 
 Value* UCharTypeSymbol::MakeValue() const
 {
-    return new UCharValue(GetSourcePos(), SourceModuleId(), '\0');
+    return new UCharValue(GetSpan(), '\0');
 }
 
 void* UCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
@@ -476,7 +476,7 @@ void* UCharTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
     return emitter.CreateDITypeForUChar();
 }
 
-VoidTypeSymbol::VoidTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::voidTypeSymbol, sourcePos_, sourceModuleId_, name_)
+VoidTypeSymbol::VoidTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) : BasicTypeSymbol(SymbolType::voidTypeSymbol, span_, name_)
 {
 }
 
@@ -484,4 +484,5 @@ void* VoidTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
 {
     return emitter.CreateDITypeForVoid();
 }
+
 } // namespace cmajor::symbols

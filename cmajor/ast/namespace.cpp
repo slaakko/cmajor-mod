@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,13 +18,13 @@ import util;
 
 namespace cmajor::ast {
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(), flags()
+NamespaceNode::NamespaceNode(const soul::ast::Span& span_) : 
+    Node(NodeType::namespaceNode, span_), id(), flags(), fileIndex(-1), moduleId(util::nil_uuid())
 {
 }
 
-NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* id_) : 
-    Node(NodeType::namespaceNode, sourcePos_, moduleId_), id(id_), flags()
+NamespaceNode::NamespaceNode(const soul::ast::Span& span_, IdentifierNode* id_) : 
+    Node(NodeType::namespaceNode, span_), id(id_), flags(), fileIndex(-1), moduleId(util::nil_uuid())
 {
     if (id == nullptr)
     {
@@ -35,7 +35,7 @@ NamespaceNode::NamespaceNode(const soul::ast::SourcePos& sourcePos_, const util:
         {
             sha1.Process(x);
         }
-        id.reset(new IdentifierNode(sourcePos_, moduleId_, U"unnamed_ns_" + util::ToUtf32(sha1.GetDigest())));
+        id.reset(new IdentifierNode(span_, U"unnamed_ns_" + util::ToUtf32(sha1.GetDigest())));
     }
     id->SetParent(this);
 }
@@ -45,18 +45,58 @@ IdentifierNode* NamespaceNode::Id() const
     return id.get();
 }
 
+int32_t NamespaceNode::FileIndex() const
+{
+    if (fileIndex != -1)
+    {
+        return fileIndex;
+    }
+    else if (Parent())
+    {
+        return Parent()->FileIndex();
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+void NamespaceNode::SetModuleId(const util::uuid& moduleId_)
+{
+    moduleId = moduleId_;
+}
+
+const util::uuid& NamespaceNode::ModuleId() const
+{
+    if (!moduleId.is_nil())
+    {
+        return moduleId;
+    }
+    else if (Parent())
+    {
+        return Parent()->ModuleId();
+    }
+    else
+    {
+        static util::uuid emptyId;
+        return emptyId;
+    }
+}
+
 Node* NamespaceNode::Clone(CloneContext& cloneContext) const
 {
     NamespaceNode* clone = nullptr;
     if (IsUnnamedNs())
     {
-        clone = new NamespaceNode(GetSourcePos(), ModuleId(), nullptr);
+        clone = new NamespaceNode(GetSpan(), nullptr);
     }
     else
     {
-        clone = new NamespaceNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+        clone = new NamespaceNode(GetSpan(), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     }
     clone->flags = flags;
+    clone->fileIndex = fileIndex;
+    clone->moduleId = moduleId;
     int n = members.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -86,6 +126,8 @@ void NamespaceNode::Write(AstWriter& writer)
     Node::Write(writer);
     writer.Write(id.get());
     writer.GetBinaryStreamWriter().Write(static_cast<int8_t>(flags));
+    writer.GetBinaryStreamWriter().Write(fileIndex);
+    writer.GetBinaryStreamWriter().Write(moduleId);
     members.Write(writer);
 }
 
@@ -95,6 +137,8 @@ void NamespaceNode::Read(AstReader& reader)
     id.reset(reader.ReadIdentifierNode());
     id->SetParent(this);
     flags = static_cast<NsFlags>(reader.GetBinaryStreamReader().ReadSByte());
+    fileIndex = reader.GetBinaryStreamReader().ReadInt();
+    reader.GetBinaryStreamReader().ReadUuid(moduleId);
     members.Read(reader);
     members.SetParent(this);
 }
@@ -113,20 +157,20 @@ void NamespaceNode::AddMember(Node* member)
     }
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns()
+NamespaceImportNode::NamespaceImportNode(const soul::ast::Span& span_) : 
+    Node(NodeType::namespaceImportNode, span_), ns()
 {
 }
 
-NamespaceImportNode::NamespaceImportNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, IdentifierNode* ns_) : 
-    Node(NodeType::namespaceImportNode, sourcePos_, moduleId_), ns(ns_)
+NamespaceImportNode::NamespaceImportNode(const soul::ast::Span& span_, IdentifierNode* ns_) : 
+    Node(NodeType::namespaceImportNode, span_), ns(ns_)
 {
     ns->SetParent(this);
 }
 
 Node* NamespaceImportNode::Clone(CloneContext& cloneContext) const
 {
-    NamespaceImportNode* clone = new NamespaceImportNode(GetSourcePos(), ModuleId(), static_cast<IdentifierNode*>(ns->Clone(cloneContext)));
+    NamespaceImportNode* clone = new NamespaceImportNode(GetSpan(), static_cast<IdentifierNode*>(ns->Clone(cloneContext)));
     return clone;
 }
 

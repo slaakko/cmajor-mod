@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,13 +14,13 @@ import cmajor.ast.reader;
 
 namespace cmajor::ast {
 
-DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
+DelegateNode::DelegateNode(const soul::ast::Span& span_) : 
+    Node(NodeType::delegateNode, span_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
 {
 }
 
-DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
-    Node(NodeType::delegateNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
+DelegateNode::DelegateNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+    Node(NodeType::delegateNode, span_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
 {
     returnTypeExpr->SetParent(this);
     id->SetParent(this);
@@ -28,7 +28,7 @@ DelegateNode::DelegateNode(const soul::ast::SourcePos& sourcePos_, const util::u
 
 Node* DelegateNode::Clone(CloneContext& cloneContext) const
 {
-    DelegateNode* clone = new DelegateNode(GetSourcePos(), ModuleId(), specifiers, returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    DelegateNode* clone = new DelegateNode(GetSpan(), specifiers, returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int n = parameters.Count();
     for (int i = 0; i < n; ++i)
     {
@@ -69,13 +69,13 @@ void DelegateNode::AddParameter(ParameterNode* parameter)
     parameters.Add(parameter);
 }
 
-ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) : 
-    Node(NodeType::classDelegateNode, sourcePos_, moduleId_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
+ClassDelegateNode::ClassDelegateNode(const soul::ast::Span& span_) : 
+    Node(NodeType::classDelegateNode, span_), specifiers(Specifiers::none), returnTypeExpr(), id(), parameters()
 {
 }
 
-ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
-    Node(NodeType::classDelegateNode, sourcePos_, moduleId_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
+ClassDelegateNode::ClassDelegateNode(const soul::ast::Span& span_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+    Node(NodeType::classDelegateNode, span_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
 {
     returnTypeExpr->SetParent(this);
     id->SetParent(this);
@@ -83,7 +83,7 @@ ClassDelegateNode::ClassDelegateNode(const soul::ast::SourcePos& sourcePos_, con
 
 Node* ClassDelegateNode::Clone(CloneContext& cloneContext) const
 {
-    ClassDelegateNode* clone = new ClassDelegateNode(GetSourcePos(), ModuleId(), specifiers, returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
+    ClassDelegateNode* clone = new ClassDelegateNode(GetSpan(), specifiers, returnTypeExpr->Clone(cloneContext), static_cast<IdentifierNode*>(id->Clone(cloneContext)));
     int n = parameters.Count();
     for (int i = 0; i < n; ++i)
     {

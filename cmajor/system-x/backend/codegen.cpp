@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -30,7 +30,7 @@ struct NativeModule
 };
 
 SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) : 
-    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr),
+    emitter(emitter_), symbolTable(nullptr), module(nullptr), compileUnit(nullptr), fileIndex(-1),
     nativeCompileUnit(nullptr), function(nullptr), entryBasicBlock(nullptr), lastInstructionWasRet(false), destructorCallGenerated(false), genJumpingBoolCode(false),
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
@@ -42,6 +42,7 @@ SystemXCodeGenerator::SystemXCodeGenerator(cmajor::ir::Emitter* emitter_) :
 
 void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
 {
+    fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
     NativeModule nativeModule(emitter, intermediateFilePath);
     compileUnitId = boundCompileUnit.Id();
@@ -132,7 +133,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (functionSymbol->HasSource())
     {
         generateLineNumbers = true;
-        emitter->SetCurrentSourcePos(boundFunction.Body()->GetSourcePos().line, 0, 0); 
+        emitter->SetCurrentSourcePos(GetLineNumber(boundFunction.Body()->GetSpan()), 0, 0); 
     }
     else
     {
@@ -145,7 +146,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         void* mdStruct = emitter->CreateMDStruct();
         emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(funcInfoNodeType));
         emitter->AddMDItem(mdStruct, "fullName", emitter->CreateMDString(util::ToUtf8(functionSymbol->FullName())));
-        void* mdFile = emitter->GetMDStructRefForSourceFile(module->GetFilePath(functionSymbol->GetSourcePos().file));
+        void* mdFile = emitter->GetMDStructRefForSourceFile(module->GetFilePath(fileIndex));
         emitter->AddMDItem(mdStruct, "sourceFile", mdFile);
         int mdId = emitter->GetMDStructId(mdStruct);
         emitter->SetFunctionMdId(function, mdId);
@@ -165,14 +166,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         void* comdat = emitter->GetOrInsertAnyFunctionComdat(util::ToUtf8(functionSymbol->MangledName()), function);
         emitter->SetFunctionLinkageToLinkOnceODRLinkage(function);
     }
-    int32_t fileIndex = -1;
     util::uuid functionId;
     if (functionSymbol->HasSource())
     {
-        fileIndex = functionSymbol->GetSourcePos().file;
         functionId = functionSymbol->FunctionId();
     }
-    emitter->SetFunction(function, fileIndex, functionSymbol->SourceModuleId(), functionId);
+    emitter->SetFunction(function, fileIndex, functionSymbol->ModuleId(), functionId);
     void* entryBlock = emitter->CreateBasicBlock("entry");
     entryBasicBlock = entryBlock;
     emitter->SetCurrentBasicBlock(entryBlock);
@@ -243,7 +242,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, boundFunction.Body()->GetSourcePos(), boundFunction.Body()->ModuleId());
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -255,12 +254,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             }
             std::vector<cmajor::ir::GenObject*> copyCtorArgs;
             cmajor::ir::NativeValue paramValue(parameter->IrObject(*emitter));
-            paramValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+            paramValue.SetType(interfaceType->AddPointer());
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
-            argumentValue.SetType(interfaceType->AddPointer(soul::ast::SourcePos(), util::nil_uuid()));
+            argumentValue.SetType(interfaceType->AddPointer());
             copyCtorArgs.push_back(&argumentValue);
-            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none, boundFunction.Body()->GetSourcePos(), boundFunction.Body()->ModuleId());
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::ir::OperationFlags::none);
         }
         else
         {
@@ -307,7 +306,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCo
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundCompoundStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundCompoundStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -348,7 +347,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundRetu
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundReturnStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundReturnStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -393,7 +392,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundGotoCaseStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoCaseStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -410,7 +409,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
     }
     else
     {
-        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetSourcePos(), boundGotoCaseStatement.ModuleId());
+        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetFullSpan());
     }
 }
 
@@ -418,7 +417,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundGotoDefaultStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoDefaultStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -432,7 +431,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
     }
     else
     {
-        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetSourcePos(), boundGotoDefaultStatement.ModuleId());
+        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetFullSpan());
     }
 }
 
@@ -440,7 +439,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreak
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundBreakStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundBreakStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -461,7 +460,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundCo
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundContinueStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundContinueStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -480,7 +479,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundGotoStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -496,7 +495,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
     }
     else
     {
-        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetSourcePos(), boundGotoStatement.ModuleId());
+        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetFullSpan());
     }
     void* nextBlock = emitter->CreateBasicBlock("next");
     emitter->SetCurrentBasicBlock(nextBlock);
@@ -507,7 +506,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatem
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundIfStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundIfStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -548,7 +547,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhile
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundWhileStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundWhileStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -589,7 +588,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatem
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundDoStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundDoStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -632,7 +631,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStat
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundForStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundForStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -680,7 +679,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwit
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundSwitchStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundSwitchStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -751,7 +750,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseSt
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundCaseStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundCaseStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -772,12 +771,12 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseSt
         }
         else
         {
-            throw cmajor::symbols::Exception("case not found", boundCaseStatement.GetSourcePos(), boundCaseStatement.ModuleId());
+            throw cmajor::symbols::Exception("case not found", boundCaseStatement.GetFullSpan());
         }
     }
     else
     {
-        throw cmajor::symbols::Exception("no cases", boundCaseStatement.GetSourcePos(), boundCaseStatement.ModuleId());
+        throw cmajor::symbols::Exception("no cases", boundCaseStatement.GetFullSpan());
     }
 
 }
@@ -786,7 +785,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDef
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundDefaultStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundDefaultStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -802,7 +801,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDef
     }
     else
     {
-        throw cmajor::symbols::Exception("no default destination", boundDefaultStatement.GetSourcePos(), boundDefaultStatement.ModuleId());
+        throw cmajor::symbols::Exception("no default destination", boundDefaultStatement.GetFullSpan());
     }
 }
 
@@ -810,7 +809,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& bou
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundConstructionStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundConstructionStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -826,14 +825,14 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& bou
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
-                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer(boundConstructionStatement.GetSourcePos(), boundConstructionStatement.ModuleId())->IsClassTypeSymbol())
+                if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
                     {
                         newCleanupNeeded = true;
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
-                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSourcePos(), currentBlock->ModuleId(), classType->Destructor()));
+                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), classType->Destructor()));
                         destructorCall->AddArgument(std::move(classPtrArgument));
                         Assert(currentBlock, "current block not set");
                         auto it = blockDestructionMap.find(currentBlock);
@@ -857,7 +856,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& bound
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundAssignmentStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundAssignmentStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -870,7 +869,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& bound
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundExpressionStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundExpressionStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -887,7 +886,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& b
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundInitializationStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundInitializationStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -904,7 +903,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmpty
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundEmptyStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundEmptyStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -936,7 +935,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrow
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundThrowStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundThrowStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -949,7 +948,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundTryStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundTryStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1000,7 +999,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatch
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundCatchStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundCatchStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1028,7 +1027,7 @@ void SystemXCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
 {
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(boundRethrowStatement.GetSourcePos().line, 0, 0);
+        emitter->SetCurrentSourcePos(GetLineNumber(boundRethrowStatement.GetSpan()), 0, 0);
     }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1250,7 +1249,7 @@ void SystemXCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStat
     }
     else
     {
-        throw cmajor::symbols::Exception("target for labeled statement not found", labeledStatement->GetSourcePos(), labeledStatement->ModuleId());
+        throw cmajor::symbols::Exception("target for labeled statement not found", labeledStatement->GetFullSpan());
     }
 }
 
@@ -1458,10 +1457,10 @@ void SystemXCodeGenerator::CreateCleanup()
 {
     cleanupBlock = emitter->CreateBasicBlock("cleanup");
     cmajor::binder::BoundCompoundStatement* targetBlock = nullptr;
-    cmajor::binder::BoundStatement* parent = currentBlock->Parent();
+    cmajor::binder::BoundStatement* parent = currentBlock->StatementParent();
     while (parent && parent->GetBoundNodeType() != cmajor::binder::BoundNodeType::boundTryStatement)
     {
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     if (parent)
     {
@@ -1520,6 +1519,12 @@ void SystemXCodeGenerator::GenerateCodeForCleanups()
             lastInstructionWasRet = true;
         }
     }
+}
+
+int SystemXCodeGenerator::GetLineNumber(const soul::ast::Span& span)
+{
+    soul::ast::LineColLen lineColLen = module->GetLineColLen(span, fileIndex);
+    return lineColLen.line;
 }
 
 } // namespace cmajor::systemx::backend

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -19,8 +19,8 @@ import cmajor.ir.emitter;
 
 namespace cmajor::symbols {
 
-InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    TypeSymbol(SymbolType::interfaceTypeSymbol, sourcePos_, sourceModuleId_, name_), copyConstructor(nullptr)
+InterfaceTypeSymbol::InterfaceTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    TypeSymbol(SymbolType::interfaceTypeSymbol, span_, name_), copyConstructor(nullptr)
 {
 }
 
@@ -49,67 +49,67 @@ void InterfaceTypeSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be cdecl", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be cdecl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("interface cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("interface cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -137,7 +137,7 @@ void* InterfaceTypeSymbol::CreateDefaultIrValue(cmajor::ir::Emitter& emitter)
 }
 
 void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    MemberFunctionSymbol* interfaceMemberFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+    MemberFunctionSymbol* interfaceMemberFunction)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -158,7 +158,6 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
         cmajor::ir::GenObject* genObject = genObjects[i];
         genObject->Load(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
     }
-    emitter.SetCurrentDebugLocation(sourcePos);
     std::vector<void*> args;
     int n = interfaceMemberFunction->Parameters().size();
     if (interfaceMemberFunction->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -193,7 +192,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos));
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles));
             }
         }
         else
@@ -222,7 +221,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos));
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -242,7 +241,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles, sourcePos);
+                emitter.CreateCallInst(functionType, callee, args, bundles);
             }
         }
         else
@@ -267,7 +266,7 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, sourcePos);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
             }
             emitter.SetCurrentBasicBlock(nextBlock);
         }
@@ -281,23 +280,23 @@ void InterfaceTypeSymbol::Check()
     {
         if (!memberFunction)
         {
-            throw SymbolCheckException("interface type symbol contains null member function", GetSourcePos(), SourceModuleId());
+            throw SymbolCheckException("interface type symbol contains null member function", GetFullSpan());
         }
     }
 }
 
-InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, sourcePos_, sourceModuleId_, U"@interfaceDefaultCtor"), interfaceType(nullptr)
+InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, span_, U"@interfaceDefaultCtor"), interfaceType(nullptr)
 {
 }
 
 InterfaceTypeDefaultConstructor::InterfaceTypeDefaultConstructor(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"@constructor"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::interfaceTypeDefaultCtor, interfaceType_->GetSpan(), U"@constructor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->GetSourcePos(), interfaceType->SourceModuleId(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType->GetSourcePos(), interfaceType->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType->GetSpan(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
     ComputeName();
 }
@@ -329,8 +328,7 @@ void InterfaceTypeDefaultConstructor::EmplaceType(TypeSymbol* typeSymbol, int in
     }
 }
 
-void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -349,21 +347,21 @@ void InterfaceTypeDefaultConstructor::GenerateCall(cmajor::ir::Emitter& emitter,
     emitter.CreateStore(emitter.CreateDefaultIrValueForVoidPtrType(), interfacePtrPtr);
 }
 
-InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, sourcePos_, sourceModuleId_, U"@interfaceCopyCtor"), interfaceType(nullptr)
+InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, span_, U"@interfaceCopyCtor"), interfaceType(nullptr)
 {
 }
 
 InterfaceTypeCopyConstructor::InterfaceTypeCopyConstructor(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"@interfaceCopyCtor"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::interfaceTypeCopyCtor, interfaceType_->GetSpan(), U"@interfaceCopyCtor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"that");
-    thatParam->SetType(interfaceType_->AddConst(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId())->AddLvalueReference(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
+    thatParam->SetType(interfaceType_->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -395,8 +393,7 @@ void InterfaceTypeCopyConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
     }
 }
 
-void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -421,21 +418,21 @@ void InterfaceTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, sourcePos_, sourceModuleId_, U"@interfaceMoveCtor"), interfaceType(nullptr)
+InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, span_, U"@interfaceMoveCtor"), interfaceType(nullptr)
 {
 }
 
 InterfaceTypeMoveConstructor::InterfaceTypeMoveConstructor(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"@interfaceMoveCtor"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::interfaceTypeMoveCtor, interfaceType_->GetSpan(), U"@interfaceMoveCtor"), interfaceType(interfaceType_)
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"that");
-    thatParam->SetType(interfaceType_->AddConst(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId())->AddRvalueReference(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
+    thatParam->SetType(interfaceType_->AddConst()->AddRvalueReference());
     AddMember(thatParam);
     ComputeName();
 }
@@ -467,8 +464,7 @@ void InterfaceTypeMoveConstructor::EmplaceType(TypeSymbol* typeSymbol, int index
     }
 }
 
-void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -493,21 +489,21 @@ void InterfaceTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, st
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, sourcePos_, sourceModuleId_, U"@interfaceCopyAssignment"), interfaceType(nullptr)
+InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, span_, U"@interfaceCopyAssignment"), interfaceType(nullptr)
 {
 }
 
 InterfaceTypeCopyAssignment::InterfaceTypeCopyAssignment(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"@interfaceCopyAssignment"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::interfaceTypeCopyAssignment, interfaceType_->GetSpan(), U"@interfaceCopyAssignment"), interfaceType(interfaceType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"that");
-    thatParam->SetType(interfaceType_->AddConst(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId())->AddLvalueReference(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
+    thatParam->SetType(interfaceType_->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     TypeSymbol* voidType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void");
     SetReturnType(voidType);
@@ -541,8 +537,7 @@ void InterfaceTypeCopyAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -567,21 +562,21 @@ void InterfaceTypeCopyAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, sourcePos_, sourceModuleId_, U"@interfaceMoveAssignment"), interfaceType(nullptr)
+InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, span_, U"@interfaceMoveAssignment"), interfaceType(nullptr)
 {
 }
 
 InterfaceTypeMoveAssignment::InterfaceTypeMoveAssignment(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"@interfaceMoveAssignment"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::interfaceTypeMoveAssignment, interfaceType_->GetSpan(), U"@interfaceMoveAssignment"), interfaceType(interfaceType_)
 {
     SetGroupName(U"operator=");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(interfaceType_->GetSpan(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
-    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"that");
-    thatParam->SetType(interfaceType_->AddRvalueReference(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thatParam = new ParameterSymbol(interfaceType_->GetSpan(), U"that");
+    thatParam->SetType(interfaceType_->AddRvalueReference());
     AddMember(thatParam);
     TypeSymbol* voidType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void");
     SetReturnType(voidType);
@@ -615,8 +610,7 @@ void InterfaceTypeMoveAssignment::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)
@@ -641,19 +635,19 @@ void InterfaceTypeMoveAssignment::GenerateCall(cmajor::ir::Emitter& emitter, std
     emitter.CreateStore(thatInterfacePtr, interfacePtrPtr);
 }
 
-ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::classToInterfaceConversion, sourcePos_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(nullptr), targetInterfaceType(nullptr), interfaceIndex(0)
+ClassToInterfaceConversion::ClassToInterfaceConversion(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::classToInterfaceConversion, span_, U"@classToInterfaceConversion"), sourceClassType(nullptr), targetInterfaceType(nullptr), interfaceIndex(0)
 {
 }
 
 ClassToInterfaceConversion::ClassToInterfaceConversion(ClassTypeSymbol* sourceClassType_, InterfaceTypeSymbol* targetInterfaceType_, int32_t interfaceIndex_,
-    const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_) :
-    FunctionSymbol(SymbolType::classToInterfaceConversion, sourcePos_, sourceModuleId_, U"@classToInterfaceConversion"), sourceClassType(sourceClassType_),
+    const soul::ast::Span& span_) :
+    FunctionSymbol(SymbolType::classToInterfaceConversion, span_, U"@classToInterfaceConversion"), sourceClassType(sourceClassType_),
     targetInterfaceType(targetInterfaceType_), interfaceIndex(interfaceIndex_)
 {
     SetConversion();
-    SetConversionSourceType(sourceClassType->PlainType(GetSourcePos(), SourceModuleId()));
-    SetConversionTargetType(targetInterfaceType->PlainType(GetSourcePos(), SourceModuleId()));
+    SetConversionSourceType(sourceClassType->PlainType());
+    SetConversionTargetType(targetInterfaceType->PlainType());
 }
 
 void ClassToInterfaceConversion::Write(SymbolWriter& writer)
@@ -695,12 +689,11 @@ void ClassToInterfaceConversion::EmplaceType(TypeSymbol* typeSymbol, int index)
 std::vector<LocalVariableSymbol*> ClassToInterfaceConversion::CreateTemporariesTo(FunctionSymbol* currentFunction)
 {
     std::vector<LocalVariableSymbol*> temporaries;
-    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSourcePos(), SourceModuleId()));
+    temporaries.push_back(currentFunction->CreateTemporary(targetInterfaceType, GetSpan()));
     return temporaries;
 }
 
-void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     void* classPtr = emitter.Stack().Pop();
     void* classPtrAsVoidPtr = emitter.CreateBitCast(classPtr, emitter.GetIrTypeForVoidPtrType());
@@ -722,28 +715,28 @@ void ClassToInterfaceConversion::Check()
     FunctionSymbol::Check();
     if (!sourceClassType)
     {
-        throw SymbolCheckException("class to interface conversion has no source class type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class to interface conversion has no source class type", GetFullSpan());
     }
     if (!targetInterfaceType)
     {
-        throw SymbolCheckException("class to interface conversion has no target interface type", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("class to interface conversion has no target interface type", GetFullSpan());
     }
 }
 
-GetObjectPtrFromInterface::GetObjectPtrFromInterface(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, sourcePos_, sourceModuleId_, name_), interfaceType(nullptr)
+GetObjectPtrFromInterface::GetObjectPtrFromInterface(const soul::ast::Span& span_, const std::u32string& name_) :
+    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, span_, name_), interfaceType(nullptr)
 {
 }
 
 GetObjectPtrFromInterface::GetObjectPtrFromInterface(InterfaceTypeSymbol* interfaceType_) :
-    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId(), U"GetObjectPtrFromInterface"), interfaceType(interfaceType_)
+    FunctionSymbol(SymbolType::getObjectPtrFromInterfaceSymbol, interfaceType_->GetSpan(), U"GetObjectPtrFromInterface"), interfaceType(interfaceType_)
 {
     SetGroupName(U"GetObjectPtrFromInterface");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(soul::ast::SourcePos(), util::nil_uuid(), U"this");
-    thisParam->SetType(interfaceType_->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId()));
+    ParameterSymbol* thisParam = new ParameterSymbol(soul::ast::Span(), U"this");
+    thisParam->SetType(interfaceType_->AddPointer());
     AddMember(thisParam);
-    TypeSymbol* voidPtrType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void")->AddPointer(interfaceType_->GetSourcePos(), interfaceType_->SourceModuleId());
+    TypeSymbol* voidPtrType = GetRootModuleForCurrentThread()->GetSymbolTable().GetTypeByName(U"void")->AddPointer();
     SetReturnType(voidPtrType);
     ComputeName();
 }
@@ -775,8 +768,7 @@ void GetObjectPtrFromInterface::EmplaceType(TypeSymbol* typeSymbol, int index)
     }
 }
 
-void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags, 
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void GetObjectPtrFromInterface::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags)
 {
     TypeSymbol* type = static_cast<TypeSymbol*>(genObjects[0]->GetType());
     if (type->GetSymbolType() == SymbolType::interfaceTypeSymbol)

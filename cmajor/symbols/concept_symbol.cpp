@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -20,8 +20,8 @@ import util;
 
 namespace cmajor::symbols {
 
-ConceptGroupSymbol::ConceptGroupSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) : 
-    Symbol(SymbolType::conceptGroupSymbol, sourcePos_, sourceModuleId_, name_)
+ConceptGroupSymbol::ConceptGroupSymbol(const soul::ast::Span& span_, const std::u32string& name_) : 
+    Symbol(SymbolType::conceptGroupSymbol, span_, name_)
 {
 }
 
@@ -32,7 +32,7 @@ void ConceptGroupSymbol::AddConcept(ConceptSymbol* conceptSymbol)
     auto it = arityConceptMap.find(arity);
     if (it != arityConceptMap.cend())
     {
-        throw Exception("concept group '" + util::ToUtf8(FullName()) + "' already has concept with arity " + std::to_string(arity), GetSourcePos(), SourceModuleId());
+        throw Exception("concept group '" + util::ToUtf8(FullName()) + "' already has concept with arity " + std::to_string(arity), GetFullSpan());
     }
     arityConceptMap[arity] = conceptSymbol;
     conceptSymbol->SetConceptGroup(this);
@@ -58,7 +58,7 @@ ConceptSymbol* ConceptGroupSymbol::GetConcept(int arity)
     }
     else
     {
-        throw Exception("concept with arity " + std::to_string(arity) + " not found from concept group '" + util::ToUtf8(FullName()) + "'", GetSourcePos(), SourceModuleId());
+        throw Exception("concept with arity " + std::to_string(arity) + " not found from concept group '" + util::ToUtf8(FullName()) + "'", GetFullSpan());
     }
 }
 
@@ -95,7 +95,7 @@ void ConceptGroupSymbol::Check()
     {
         if (!p.second)
         {
-            throw SymbolCheckException("concept group symbol has no concept symbol", GetSourcePos(), SourceModuleId());
+            throw SymbolCheckException("concept group symbol has no concept symbol", GetFullSpan());
         }
     }
 }
@@ -124,8 +124,8 @@ std::vector<Symbol*> ConceptGroupSymbol::GetParamHelpSymbols() const
     return paramHelpSymbols;
 }
 
-ConceptSymbol::ConceptSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_) :
-    ContainerSymbol(SymbolType::conceptSymbol, sourcePos_, sourceModuleId_, name_), refinedConcept(nullptr), typeId(util::nil_uuid()), hasSource(false), conceptGroup(nullptr)
+ConceptSymbol::ConceptSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    ContainerSymbol(SymbolType::conceptSymbol, span_, name_), refinedConcept(nullptr), typeId(util::nil_uuid()), hasSource(false), conceptGroup(nullptr)
 {
 }
 
@@ -195,12 +195,12 @@ void ConceptSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
         }
         else
         {
-            throw Exception("invalid emplace type", GetSourcePos(), SourceModuleId());
+            throw Exception("invalid emplace type", GetFullSpan());
         }
     }
     else
     {
-        throw Exception("invalid emplace type index", GetSourcePos(), SourceModuleId());
+        throw Exception("invalid emplace type index", GetFullSpan());
     }
 }
 
@@ -262,67 +262,67 @@ void ConceptSymbol::SetSpecifiers(cmajor::ast::Specifiers specifiers)
     SetAccess(accessSpecifiers);
     if ((specifiers & cmajor::ast::Specifiers::static_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be static", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be static", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::virtual_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be virtual", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be virtual", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::override_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be override", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be override", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::abstract_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be abstract", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be abstract", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::inline_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be inline", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be inline", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::explicit_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be explicit", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be explicit", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::external_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be external", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be external", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::suppress_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be suppressed", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be suppressed", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::default_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be default", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be default", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::constexpr_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be constexpr", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be constexpr", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::cdecl_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be decl", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be decl", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::nothrow_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be nothrow", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be nothrow", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::throw_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be throw", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be throw", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::new_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be new", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be new", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::const_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be const", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be const", GetFullSpan());
     }
     if ((specifiers & cmajor::ast::Specifiers::unit_test_) != cmajor::ast::Specifiers::none)
     {
-        throw Exception("concept symbol cannot be unit_test", GetSourcePos(), SourceModuleId());
+        throw Exception("concept symbol cannot be unit_test", GetFullSpan());
     }
 }
 
@@ -331,17 +331,17 @@ void ConceptSymbol::Check()
     ContainerSymbol::Check();
     if (typeId.is_nil())
     {
-        throw SymbolCheckException("concept symbol has empty type id", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("concept symbol has empty type id", GetFullSpan());
     }
     if (groupName.empty())
     {
-        throw SymbolCheckException("concept symbol has empty group name", GetSourcePos(), SourceModuleId());
+        throw SymbolCheckException("concept symbol has empty group name", GetFullSpan());
     }
     for (TemplateParameterSymbol* templateParameter : templateParameters)
     {
         if (!templateParameter)
         {
-            throw SymbolCheckException("concept symbol has no template parameter", GetSourcePos(), SourceModuleId());
+            throw SymbolCheckException("concept symbol has no template parameter", GetFullSpan());
         }
     }
 }
@@ -360,8 +360,8 @@ std::unique_ptr<Symbol> ConceptSymbol::RemoveFromParent()
     return symbol;
 }
 
-AxiomSymbol::AxiomSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId, const std::u32string& name_) :
-    ContainerSymbol(SymbolType::axiomSymbol, sourcePos_, sourceModuleId, name_)
+AxiomSymbol::AxiomSymbol(const soul::ast::Span& span_, const std::u32string& name_) :
+    ContainerSymbol(SymbolType::axiomSymbol, span_, name_)
 {
 }
 

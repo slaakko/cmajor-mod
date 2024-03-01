@@ -1,12 +1,12 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
 export module cmajor.symbols.scope;
 
 import std.core;
-import soul.ast.source.pos;
+import soul.ast.span;
 import cmajor.ast.namespaces;
 import cmajor.ast.alias;
 import util.uuid;
@@ -101,7 +101,7 @@ public:
     const NamespaceSymbol* Ns() const;
     NamespaceSymbol* Ns();
     void Clear();
-    NamespaceSymbol* CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId);
+    NamespaceSymbol* CreateNamespace(const std::u32string& qualifiedNsName, const soul::ast::Span& span_, const util::uuid& moduleId, int32_t fileIndex);
     void CollectViableFunctions(int arity, const std::u32string& groupName, std::unordered_set<ContainerScope*>& scopesLookedUp, ScopeLookup scopeLookup,
         ViableFunctionSet& viableFunctions, Module* module);
     const std::map<std::u32string, Symbol*>& SymbolMap() const { return symbolMap; }

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -118,7 +118,7 @@ private:
     bool dontCheckDuplicateFunctionSymbols;
     std::stack<bool> conditionalCompilationStack;
     void AddStatement(BoundStatement* boundStatement);
-    void AddReleaseExceptionStatement(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    void AddReleaseExceptionStatement(cmajor::ast::Node* node);
 };
 
 } // namespace cmajor::binder

@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -56,8 +56,8 @@ TypeDerivationRec UnifyDerivations(const TypeDerivationRec& left, const TypeDeri
 class DerivedTypeSymbol : public TypeSymbol
 {
 public:
-    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
-    DerivedTypeSymbol(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_);
+    DerivedTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_);
+    DerivedTypeSymbol(const soul::ast::Span& span_, const std::u32string& name_, TypeSymbol* baseType_, const TypeDerivationRec& derivationRec_);
     ~DerivedTypeSymbol();
     std::string TypeString() const override { return "derived_type"; }
     std::u32string SimpleName() const override;
@@ -67,15 +67,15 @@ public:
     void ComputeTypeId();
     const TypeSymbol* BaseType() const override { return baseType; }
     TypeSymbol* BaseType() override { return baseType; }
-    TypeSymbol* PlainType(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* RemoveReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* RemovePointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* RemovePtrOrRef(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* RemoveConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* AddConst(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* AddLvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* AddRvalueReference(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* AddPointer(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* PlainType() override;
+    TypeSymbol* RemoveReference() override;
+    TypeSymbol* RemovePointer() override;
+    TypeSymbol* RemovePtrOrRef() override;
+    TypeSymbol* RemoveConst() override;
+    TypeSymbol* AddConst() override;
+    TypeSymbol* AddLvalueReference() override;
+    TypeSymbol* AddRvalueReference() override;
+    TypeSymbol* AddPointer() override;
     void* IrType(cmajor::ir::Emitter& emitter) override;
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override;
     void* CreateDIType(cmajor::ir::Emitter& emitter) override;
@@ -91,8 +91,8 @@ public:
     ContainerScope* GetArrowScope() override;
     bool ContainsTemplateParameter() const override { return baseType->ContainsTemplateParameter(); }
     const TypeDerivationRec& DerivationRec() const override { return derivationRec; }
-    TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
-    TypeSymbol* Unify(TypeSymbol* sourceType, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    TypeSymbol* RemoveDerivations(const TypeDerivationRec& sourceDerivationRec) override;
+    TypeSymbol* Unify(TypeSymbol* sourceType) override;
     bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested) override;
     ValueType GetValueType() const override;
     Value* MakeValue() const override;
@@ -107,7 +107,7 @@ private:
 class NullPtrType : public TypeSymbol
 {
 public:
-    NullPtrType(const soul::ast::SourcePos& sourcePos_, const util::uuid& sourceModuleId_, const std::u32string& name_);
+    NullPtrType(const soul::ast::Span& span_, const std::u32string& name_);
     std::string TypeString() const override { return "nullptr_type"; }
     bool IsPointerType() const override { return true; }
     bool IsNullPtrType() const override { return true; }

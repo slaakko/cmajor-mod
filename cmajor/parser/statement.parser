@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.statement.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -41,26 +42,26 @@ parser StatementParser
         )
         ;
 
-    Label(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::u32string label) : cmajor::ast::LabelNode*
+    Label(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::u32string label) : cmajor::ast::LabelNode*
         ::= 
         (
-            ID{ s = lexer.GetSourcePos(pos); label = lexer.GetToken(pos).ToString(); }
+            ID{ s = lexer.GetSpan(pos); label = lexer.GetToken(pos).ToString(); }
             COLON
         )
         {
-            return new cmajor::ast::LabelNode(s, context->ModuleId(), label);
+            return new cmajor::ast::LabelNode(s, label);
         }
         ;
 
-    LabeledStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::LabeledStatementNode> statementNode) : 
+    LabeledStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::LabeledStatementNode> statementNode) : 
         cmajor::ast::StatementNode*
         ::= 
         (
-            Label(context):lbl{ s = lexer.GetSourcePos(pos); }
+            Label(context):lbl{ s = lexer.GetSpan(pos); }
             Statement(context):stmt
         )
         {
-            statementNode.reset(new cmajor::ast::LabeledStatementNode(s, context->ModuleId(), stmt));
+            statementNode.reset(new cmajor::ast::LabeledStatementNode(s, stmt));
             statementNode->SetLabelNode(lbl);
             return statementNode.release();
         }
@@ -84,21 +85,21 @@ parser StatementParser
         )
         ;
 
-    CompoundStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode) : 
+    CompoundStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::CompoundStatementNode> compoundStatementNode) : 
         cmajor::ast::CompoundStatementNode*
         ::= 
         (  
             LBRACE
             { 
-                s = lexer.GetSourcePos(pos); 
-                compoundStatementNode.reset(new cmajor::ast::CompoundStatementNode(s, context->ModuleId())); 
+                s = lexer.GetSpan(pos); 
+                compoundStatementNode.reset(new cmajor::ast::CompoundStatementNode(s)); 
             }
             (
                 Statement(context):stmt{ compoundStatementNode->AddStatement(stmt); }
             )*
             RBRACE
             {
-                compoundStatementNode->SetEndSourcePos(lexer.GetSourcePos(pos));
+                compoundStatementNode->SetEndSpan(lexer.GetSpan(pos));
             }
         )
         {
@@ -106,22 +107,22 @@ parser StatementParser
         }
         ;
 
-    ReturnStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    ReturnStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            RETURN{ s = lexer.GetSourcePos(pos); }
+            RETURN{ s = lexer.GetSpan(pos); }
             Expression(context):expr?
             SEMICOLON
         )
         {
-            return new cmajor::ast::ReturnStatementNode(s, context->ModuleId(), expr);
+            return new cmajor::ast::ReturnStatementNode(s, expr);
         }
         ;
 
-    IfStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    IfStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            IF{ s = lexer.GetSourcePos(pos); }
+            IF{ s = lexer.GetSpan(pos); }
             LPAREN
             Expression(context):cond
             RPAREN
@@ -131,28 +132,28 @@ parser StatementParser
             )?
         )
         {
-            return new cmajor::ast::IfStatementNode(s, context->ModuleId(), cond, thenS, elseS);
+            return new cmajor::ast::IfStatementNode(s, cond, thenS, elseS);
         }
         ;
 
-    WhileStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    WhileStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            WHILE{ s = lexer.GetSourcePos(pos); }
+            WHILE{ s = lexer.GetSpan(pos); }
             LPAREN
             Expression(context):cond
             RPAREN
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::WhileStatementNode(s, context->ModuleId(), cond, stmt);
+            return new cmajor::ast::WhileStatementNode(s, cond, stmt);
         }
         ;
 
-    DoStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    DoStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            DO{ s = lexer.GetSourcePos(pos); }
+            DO{ s = lexer.GetSpan(pos); }
             Statement(context):stmt
             WHILE
             LPAREN
@@ -161,14 +162,14 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cmajor::ast::DoStatementNode(s, context->ModuleId(), stmt, cond);
+            return new cmajor::ast::DoStatementNode(s, stmt, cond);
         }
         ;
 
-    RangeForStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    RangeForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            FOR{ s = lexer.GetSourcePos(pos); }
+            FOR{ s = lexer.GetSpan(pos); }
             LPAREN
             TypeExpr(context):type
             Identifier(context):id
@@ -178,14 +179,14 @@ parser StatementParser
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::RangeForStatementNode(s, context->ModuleId(), type, id, container, stmt);
+            return new cmajor::ast::RangeForStatementNode(s, type, id, container, stmt);
         }
         ;
 
-    ForStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    ForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            FOR{ s = lexer.GetSourcePos(pos); }
+            FOR{ s = lexer.GetSpan(pos); }
             LPAREN
             ForInitStatement(context):init
             Expression(context):cond?
@@ -195,7 +196,7 @@ parser StatementParser
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::ForStatementNode(s, context->ModuleId(), init, cond, loop, stmt);
+            return new cmajor::ast::ForStatementNode(s, init, cond, loop, stmt);
         }
         ;
 
@@ -210,55 +211,55 @@ parser StatementParser
     ForLoopStatementExpr(cmajor::parser::context::Context* context) : cmajor::ast::StatementNode*
         ::= 
         (   AssignmentStatementExpr(context):assignmentStatementExpr{ return assignmentStatementExpr; }
-        |   Expression(context):expr{ return new cmajor::ast::ExpressionStatementNode(lexer.GetSourcePos(pos), context->ModuleId(), expr); }
-        |   empty{ return new cmajor::ast::EmptyStatementNode(lexer.GetSourcePos(pos), context->ModuleId()); }
+        |   Expression(context):expr{ return new cmajor::ast::ExpressionStatementNode(lexer.GetSpan(pos), expr); }
+        |   empty{ return new cmajor::ast::EmptyStatementNode(lexer.GetSpan(pos)); }
         )
         ;
 
-    BreakStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    BreakStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            BREAK{ s = lexer.GetSourcePos(pos); }
+            BREAK{ s = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
-            return new cmajor::ast::BreakStatementNode(s, context->ModuleId());
+            return new cmajor::ast::BreakStatementNode(s);
         }
         ;
 
-    ContinueStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    ContinueStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   
-            CONTINUE{ s = lexer.GetSourcePos(pos); }
+            CONTINUE{ s = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
-            return new cmajor::ast::ContinueStatementNode(s, context->ModuleId());
+            return new cmajor::ast::ContinueStatementNode(s);
         }
         ;
 
-    GotoStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::u32string target) : cmajor::ast::StatementNode*
+    GotoStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::u32string target) : cmajor::ast::StatementNode*
         ::= 
         (   
-            GOTO{ s = lexer.GetSourcePos(pos); }
+            GOTO{ s = lexer.GetSpan(pos); }
             ID{ target = lexer.GetToken(pos).ToString(); }
             SEMICOLON
         )
         {
-            return new cmajor::ast::GotoStatementNode(s, context->ModuleId(), target);
+            return new cmajor::ast::GotoStatementNode(s, target);
         }
         ;
 
-    SwitchStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::SwitchStatementNode> switchStatementNode) : 
+    SwitchStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::SwitchStatementNode> switchStatementNode) : 
         cmajor::ast::StatementNode*
         ::= 
         (   
-            SWITCH{ s = lexer.GetSourcePos(pos); }
+            SWITCH{ s = lexer.GetSpan(pos); }
             LPAREN
             Expression(context):cond
             RPAREN
             {
-                switchStatementNode.reset(new cmajor::ast::SwitchStatementNode(s, context->ModuleId(), cond));
+                switchStatementNode.reset(new cmajor::ast::SwitchStatementNode(s, cond));
             }
             LBRACE
             (   CaseStatement(context):caseStatement{ switchStatementNode->AddCase(caseStatement); }
@@ -274,7 +275,7 @@ parser StatementParser
     CaseStatement(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::CaseStatementNode> caseStatementNode) : cmajor::ast::CaseStatementNode*
         ::= 
         (   
-            empty{ caseStatementNode.reset(new cmajor::ast::CaseStatementNode(lexer.GetSourcePos(pos), context->ModuleId())); }
+            empty{ caseStatementNode.reset(new cmajor::ast::CaseStatementNode(lexer.GetSpan(pos))); }
             (   CASE
                 Expression(context):caseExpr{ caseStatementNode->AddCaseExpr(caseExpr); }
                 COLON
@@ -288,12 +289,12 @@ parser StatementParser
         }
         ;
 
-    DefaultStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::DefaultStatementNode> defaultStatementNode) : 
+    DefaultStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::DefaultStatementNode> defaultStatementNode) : 
         cmajor::ast::DefaultStatementNode* 
         ::= 
         (   
-            DEFAULT{ s = lexer.GetSourcePos(pos); }
-            COLON{ defaultStatementNode.reset(new cmajor::ast::DefaultStatementNode(s, context->ModuleId())); }
+            DEFAULT{ s = lexer.GetSpan(pos); }
+            COLON{ defaultStatementNode.reset(new cmajor::ast::DefaultStatementNode(s)); }
             (   
                 Statement(context):stmt{ defaultStatementNode->AddStatement(stmt); }
             )*
@@ -304,41 +305,41 @@ parser StatementParser
         }
         ;
 
-    GotoCaseStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    GotoCaseStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            GOTO{ s = lexer.GetSourcePos(pos); }
+            GOTO{ s = lexer.GetSpan(pos); }
             CASE 
             Expression(context):caseExpr
             SEMICOLON
         )
         {
-            return new cmajor::ast::GotoCaseStatementNode(s, context->ModuleId(), caseExpr);
+            return new cmajor::ast::GotoCaseStatementNode(s, caseExpr);
         }
         ;
 
-    GotoDefaultStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    GotoDefaultStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            GOTO{ s = lexer.GetSourcePos(pos); }
+            GOTO{ s = lexer.GetSpan(pos); }
             DEFAULT
             SEMICOLON
         )
         {
-            return new cmajor::ast::GotoDefaultStatementNode(s, context->ModuleId()); 
+            return new cmajor::ast::GotoDefaultStatementNode(s); 
         }
         ;
 
-    ExpressionStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    ExpressionStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
             empty{ context->PushParsingExpressionStatement(true); }
-            Expression(context):expr{ s = lexer.GetSourcePos(pos); }
+            Expression(context):expr{ s = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
             context->PopParsingExpressionStatement();
-            return new cmajor::ast::ExpressionStatementNode(s, context->ModuleId(), expr);
+            return new cmajor::ast::ExpressionStatementNode(s, expr);
         }
         /
         {
@@ -356,26 +357,26 @@ parser StatementParser
         }
         ;
 
-    AssignmentStatementExpr(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    AssignmentStatementExpr(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (   empty{ context->PushParsingLvalue(true); }
-            Expression(context):target{ s = lexer.GetSourcePos(pos); context->PopParsingLvalue(); } / { context->PopParsingLvalue(); }
+            Expression(context):target{ s = lexer.GetSpan(pos); context->PopParsingLvalue(); } / { context->PopParsingLvalue(); }
             ASSIGN
             Expression(context):source
         )
         {
-            return new cmajor::ast::AssignmentStatementNode(s, context->ModuleId(), target, source);
+            return new cmajor::ast::AssignmentStatementNode(s, target, source);
         }
         ;
 
-    ConstructionStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, 
+    ConstructionStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, 
         var std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructionStatementNode) : cmajor::ast::StatementNode*
         ::= 
         (
-            TypeExpr(context):type{ s = lexer.GetSourcePos(pos); }
+            TypeExpr(context):type{ s = lexer.GetSpan(pos); }
             Identifier(context):id
             {
-                constructionStatementNode.reset(new cmajor::ast::ConstructionStatementNode(s, context->ModuleId(), type, id));
+                constructionStatementNode.reset(new cmajor::ast::ConstructionStatementNode(s, type, id));
             }
             (   ASSIGN Expression(context):value{ constructionStatementNode->AddArgument(value); constructionStatementNode->SetAssignment(); }
             |   LPAREN ArgumentList(context, constructionStatementNode.get()):args RPAREN
@@ -388,57 +389,57 @@ parser StatementParser
         }
         ;
 
-    DeleteStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    DeleteStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            DELETE{ s = lexer.GetSourcePos(pos); }
+            DELETE{ s = lexer.GetSpan(pos); }
             Expression(context):ptr
             SEMICOLON
         )
         {
-            return new cmajor::ast::DeleteStatementNode(s, context->ModuleId(), ptr);
+            return new cmajor::ast::DeleteStatementNode(s, ptr);
         }
         ;
 
-    DestroyStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    DestroyStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            DESTROY{ s = lexer.GetSourcePos(pos); }
+            DESTROY{ s = lexer.GetSpan(pos); }
             Expression(context):ptr
             SEMICOLON
         )
         {
-            return new cmajor::ast::DestroyStatementNode(s, context->ModuleId(), ptr);
+            return new cmajor::ast::DestroyStatementNode(s, ptr);
         }
         ;
 
-    EmptyStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    EmptyStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            SEMICOLON{ s = lexer.GetSourcePos(pos); }
+            SEMICOLON{ s = lexer.GetSpan(pos); }
         )
         {
-            return new cmajor::ast::EmptyStatementNode(s, context->ModuleId());
+            return new cmajor::ast::EmptyStatementNode(s);
         }
         ;
 
-    ThrowStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    ThrowStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            THROW{ s = lexer.GetSourcePos(pos); }
+            THROW{ s = lexer.GetSpan(pos); }
             Expression(context):exception?
             SEMICOLON
         )
         {
-            return new cmajor::ast::ThrowStatementNode(s, context->ModuleId(), exception);
+            return new cmajor::ast::ThrowStatementNode(s, exception);
         }
         ;
 
-    TryStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var std::unique_ptr<cmajor::ast::TryStatementNode> tryStatementNode) : cmajor::ast::StatementNode*
+    TryStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::TryStatementNode> tryStatementNode) : cmajor::ast::StatementNode*
         ::= 
         (
-            TRY{ s = lexer.GetSourcePos(pos); }
-            CompoundStatement(context):tryBlock{ tryStatementNode.reset(new cmajor::ast::TryStatementNode(s, context->ModuleId(), tryBlock)); }
+            TRY{ s = lexer.GetSpan(pos); }
+            CompoundStatement(context):tryBlock{ tryStatementNode.reset(new cmajor::ast::TryStatementNode(s, tryBlock)); }
             (
                 Catch(context):handler{ tryStatementNode->AddCatch(handler); }
             )+
@@ -448,10 +449,10 @@ parser StatementParser
         }
         ;
 
-    Catch(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::CatchNode*
+    Catch(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::CatchNode*
         ::= 
         (
-            CATCH{ s = lexer.GetSourcePos(pos); }
+            CATCH{ s = lexer.GetSpan(pos); }
             LPAREN
             TypeExpr(context):catchType
             Identifier(context):catchId?
@@ -459,50 +460,50 @@ parser StatementParser
             CompoundStatement(context):catchBlock
         )
         {
-            return new cmajor::ast::CatchNode(s, context->ModuleId(), catchType, catchId, catchBlock);
+            return new cmajor::ast::CatchNode(s, catchType, catchId, catchBlock);
         }
         ;
 
-    AssertStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::StatementNode*
+    AssertStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
         ::= 
         (
-            HASH{ s = lexer.GetSourcePos(pos); } 
+            HASH{ s = lexer.GetSpan(pos); } 
             ASSERT
             Expression(context):expr
             SEMICOLON
         )
         {
-            return new cmajor::ast::AssertStatementNode(s, context->ModuleId(), expr);
+            return new cmajor::ast::AssertStatementNode(s, expr);
         }
         ;
 
-    ConditionalCompilationStatement(cmajor::parser::context::Context* context, var soul::ast::SourcePos s, var soul::ast::SourcePos elifPos, var soul::ast::SourcePos elsePos,
+    ConditionalCompilationStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span elifSpan, var soul::ast::Span elseSpan,
         var std::unique_ptr<cmajor::ast::ConditionalCompilationStatementNode> condCompStmt) : cmajor::ast::StatementNode*
         ::= 
         (   
-            HASH{ s = lexer.GetSourcePos(pos); }
+            HASH{ s = lexer.GetSpan(pos); }
             IF
             LPAREN
-            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.reset(new cmajor::ast::ConditionalCompilationStatementNode(s, context->ModuleId(), ifExpr)); }
+            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.reset(new cmajor::ast::ConditionalCompilationStatementNode(s, ifExpr)); }
             RPAREN
             (
                 Statement(context):ifs{ condCompStmt->AddIfStatement(ifs); }
             )*
             (
-                HASH{ elifPos = lexer.GetSourcePos(pos); } 
+                HASH{ elifSpan = lexer.GetSpan(pos); } 
                 ELIF
                 LPAREN
-                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifPos, context->ModuleId(), elifExpr); }
+                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifSpan, elifExpr); }
                 RPAREN
                 (
                     Statement(context):elifs{ condCompStmt->AddElifStatement(elifs); }
                 )*
             )*
             (
-                HASH{ elsePos = lexer.GetSourcePos(pos); }
+                HASH{ elseSpan = lexer.GetSpan(pos); }
                 ELSE
                 (
-                    Statement(context):elses{ condCompStmt->AddElseStatement(elsePos, context->ModuleId(), elses); }
+                    Statement(context):elses{ condCompStmt->AddElseStatement(elseSpan, elses); }
                 )*
             )?
             (
@@ -525,14 +526,14 @@ parser StatementParser
         }
         ;
 
-    ConditionalCompilationDisjunction(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+    ConditionalCompilationDisjunction(cmajor::parser::context::Context* context, var soul::ast::Span s,
         var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
         ::=
         (
-            ConditionalCompilationConjunction(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            ConditionalCompilationConjunction(context):left{ s = lexer.GetSpan(pos); expr.reset(left); }
             (
                 DISJUNCTION 
-                ConditionalCompilationConjunction(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationDisjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+                ConditionalCompilationConjunction(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationDisjunctionNode(s, expr.release(), right)); }
             )*
         )
         {
@@ -540,14 +541,14 @@ parser StatementParser
         }
         ;
 
-    ConditionalCompilationConjunction(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+    ConditionalCompilationConjunction(cmajor::parser::context::Context* context, var soul::ast::Span s,
         var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
         ::=
         (
-            ConditionalCompilationPrefix(context):left{ s = lexer.GetSourcePos(pos); expr.reset(left); }
+            ConditionalCompilationPrefix(context):left{ s = lexer.GetSpan(pos); expr.reset(left); }
             (
                 AMPAMP
-                ConditionalCompilationPrefix(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, context->ModuleId(), expr.release(), right)); }
+                ConditionalCompilationPrefix(context):right{ expr.reset(new cmajor::ast::ConditionalCompilationConjunctionNode(s, expr.release(), right)); }
             )*
         )
         {
@@ -555,12 +556,12 @@ parser StatementParser
         }
         ;
 
-    ConditionalCompilationPrefix(cmajor::parser::context::Context* context, var soul::ast::SourcePos s,
+    ConditionalCompilationPrefix(cmajor::parser::context::Context* context, var soul::ast::Span s,
         var std::unique_ptr<cmajor::ast::ConditionalCompilationExpressionNode> expr) : cmajor::ast::ConditionalCompilationExpressionNode*
         ::=
         (
-            (   EXCLAMATION{ s = lexer.GetSourcePos(pos); } 
-                ConditionalCompilationPrefix(context):prefix{ expr.reset(new cmajor::ast::ConditionalCompilationNotNode(s, context->ModuleId(), prefix)); }
+            (   EXCLAMATION{ s = lexer.GetSpan(pos); } 
+                ConditionalCompilationPrefix(context):prefix{ expr.reset(new cmajor::ast::ConditionalCompilationNotNode(s, prefix)); }
             |   ConditionalCompilationPrimary(context):primary{ expr.reset(primary); }
             )
         )
@@ -569,12 +570,12 @@ parser StatementParser
         }
         ;
 
-    ConditionalCompilationPrimary(cmajor::parser::context::Context* context, var soul::ast::SourcePos s) : cmajor::ast::ConditionalCompilationExpressionNode*
+    ConditionalCompilationPrimary(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::ConditionalCompilationExpressionNode*
         ::= 
-        (   ID{ return new cmajor::ast::ConditionalCompilationPrimaryNode(lexer.GetSourcePos(pos), context->ModuleId(), lexer.GetToken(pos).ToString()); }
-        |   LPAREN{ s = lexer.GetSourcePos(pos); }
+        (   ID{ return new cmajor::ast::ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()); }
+        |   LPAREN{ s = lexer.GetSpan(pos); }
             ConditionalCompilationExpression(context):expr
-            RPAREN{ return new cmajor::ast::ParenthesizedConditionalCompilationExpressionNode(s, context->ModuleId(), expr); }
+            RPAREN{ return new cmajor::ast::ParenthesizedConditionalCompilationExpressionNode(s, expr); }
         )
         ;
 }

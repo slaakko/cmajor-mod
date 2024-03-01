@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -18,23 +18,23 @@ import util;
 
 namespace cmajor::binder {
 
-void ThrowCannotEvaluateStatically(const soul::ast::SourcePos& defined, const util::uuid& moduleId)
+void ThrowCannotEvaluateStatically(cmajor::ast::Node* node)
 {
-    throw cmajor::symbols::Exception("cannot evaluate statically", defined, moduleId);
+    throw cmajor::symbols::Exception("cannot evaluate statically", node->GetFullSpan());
 }
 
-void ThrowCannotEvaluateStatically(const soul::ast::SourcePos& defined, const util::uuid& moduleId, const soul::ast::SourcePos& referenced, const util::uuid& referencedModuleId)
+void ThrowCannotEvaluateStatically(cmajor::ast::Node* node, const soul::ast::FullSpan& ref)
 {
-    throw cmajor::symbols::Exception("cannot evaluate statically", defined, moduleId, referenced, referencedModuleId);
+    throw cmajor::symbols::Exception("cannot evaluate statically", node->GetFullSpan(), ref);
 }
 
-typedef cmajor::symbols::Value* (*BinaryOperatorFun)(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow);
-typedef cmajor::symbols::Value* (*UnaryOperatorFun)(cmajor::symbols::Value* operand, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow);
+typedef cmajor::symbols::Value* (*BinaryOperatorFun)(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow);
+typedef cmajor::symbols::Value* (*UnaryOperatorFun)(cmajor::symbols::Value* operand, cmajor::ast::Node* node, bool dontThrow);
 
 class ScopedValue : public cmajor::symbols::Value
 {
 public:
-    ScopedValue(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, cmajor::symbols::ContainerSymbol* containerSymbol_);
+    ScopedValue(const soul::ast::Span& span_, cmajor::symbols::ContainerSymbol* containerSymbol_);
     bool IsComplete() const override { return false; }
     bool IsScopedValue() const override { return true; }
     const cmajor::symbols::ContainerSymbol* GetContainerSymbol() const { return containerSymbol; }
@@ -46,7 +46,7 @@ public:
     }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
-    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow) const override 
+    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override 
     { 
         Assert(false, "scoped value cannot be converted");
         return nullptr; 
@@ -66,8 +66,8 @@ private:
     std::unique_ptr<cmajor::symbols::Value> subject;
 };
 
-ScopedValue::ScopedValue(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, cmajor::symbols::ContainerSymbol* containerSymbol_) :
-    cmajor::symbols::Value(span_, moduleId_, cmajor::symbols::ValueType::none), containerSymbol(containerSymbol_), type(nullptr)
+ScopedValue::ScopedValue(const soul::ast::Span& span_, cmajor::symbols::ContainerSymbol* containerSymbol_) :
+    cmajor::symbols::Value(span_, cmajor::symbols::ValueType::none), containerSymbol(containerSymbol_), type(nullptr)
 {
 }
 
@@ -84,7 +84,7 @@ public:
     }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
-    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
+    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override 
     { 
         Assert(false, "function group value cannot be converted"); 
         return nullptr; 
@@ -108,7 +108,8 @@ private:
     std::unique_ptr<cmajor::symbols::Value> receiver;
 };
 
-FunctionGroupValue::FunctionGroupValue(cmajor::symbols::FunctionGroupSymbol* functionGroup_, cmajor::symbols::ContainerScope* qualifiedScope_) : cmajor::symbols::Value(soul::ast::SourcePos(), util::nil_uuid(), cmajor::symbols::ValueType::none), functionGroup(functionGroup_), qualifiedScope(qualifiedScope_)
+FunctionGroupValue::FunctionGroupValue(cmajor::symbols::FunctionGroupSymbol* functionGroup_, cmajor::symbols::ContainerScope* qualifiedScope_) : 
+    cmajor::symbols::Value(soul::ast::Span(), cmajor::symbols::ValueType::none), functionGroup(functionGroup_), qualifiedScope(qualifiedScope_)
 {
 }
 
@@ -120,7 +121,7 @@ public:
     cmajor::symbols::Value* Clone() const override { return new ArrayReferenceValue(arrayValue); }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
-    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
+    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override 
     {
         Assert(false, "array reference value cannot be converted");
         return nullptr; 
@@ -136,7 +137,8 @@ private:
     cmajor::symbols::ArrayValue* arrayValue;
 };
 
-ArrayReferenceValue::ArrayReferenceValue(cmajor::symbols::ArrayValue* arrayValue_) : cmajor::symbols::Value(arrayValue_->GetSourcePos(), arrayValue_->ModuleId(), cmajor::symbols::ValueType::none), arrayValue(arrayValue_)
+ArrayReferenceValue::ArrayReferenceValue(cmajor::symbols::ArrayValue* arrayValue_) : 
+    cmajor::symbols::Value(arrayValue_->GetSpan(), cmajor::symbols::ValueType::none), arrayValue(arrayValue_)
 {
 }
 
@@ -148,7 +150,7 @@ public:
     cmajor::symbols::Value* Clone() const override { return new StructuredReferenceValue(structuredValue); }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
-    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
+    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override 
     {
         Assert(false, "structured reference value cannot be converted");
         return nullptr; 
@@ -164,7 +166,8 @@ private:
     cmajor::symbols::StructuredValue* structuredValue;
 };
 
-StructuredReferenceValue::StructuredReferenceValue(cmajor::symbols::StructuredValue* structuredValue_) : cmajor::symbols::Value(structuredValue_->GetSourcePos(), structuredValue_->ModuleId(), cmajor::symbols::ValueType::none), structuredValue(structuredValue_)
+StructuredReferenceValue::StructuredReferenceValue(cmajor::symbols::StructuredValue* structuredValue_) : 
+    cmajor::symbols::Value(structuredValue_->GetSpan(), cmajor::symbols::ValueType::none), structuredValue(structuredValue_)
 {
 }
 
@@ -176,7 +179,7 @@ public:
     cmajor::symbols::Value* Clone() const override { return new StringReferenceValue(stringValue); }
     void Write(util::BinaryStreamWriter& writer) override {}
     void Read(util::BinaryStreamReader& reader) override {}
-    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId_, bool dontThrow) const override 
+    cmajor::symbols::Value* As(cmajor::symbols::TypeSymbol* targetType, bool cast, cmajor::ast::Node* node, bool dontThrow) const override 
     { 
         Assert(false, "string reference value cannot be converted");
         return nullptr; 
@@ -188,14 +191,15 @@ private:
     cmajor::symbols::Value* stringValue;
 };
 
-StringReferenceValue::StringReferenceValue(cmajor::symbols::Value* stringValue_) : cmajor::symbols::Value(stringValue_->GetSourcePos(), stringValue_->ModuleId(), cmajor::symbols::ValueType::none), stringValue(stringValue_)
+StringReferenceValue::StringReferenceValue(cmajor::symbols::Value* stringValue_) : 
+    cmajor::symbols::Value(stringValue_->GetSpan(), cmajor::symbols::ValueType::none), stringValue(stringValue_)
 {
 }
 
 class VariableValueSymbol : public cmajor::symbols::VariableSymbol
 {
 public:
-    VariableValueSymbol(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, const std::u32string& name_, std::unique_ptr<cmajor::symbols::Value>&& value_);
+    VariableValueSymbol(const soul::ast::Span& span_, const std::u32string& name_, std::unique_ptr<cmajor::symbols::Value>&& value_);
     cmajor::symbols::Value* GetValue() { return value.get(); }
     void SetValue(cmajor::symbols::Value* value_) { value.reset(value_); }
     const char* ClassName() const override { return "VariableValueSymbol"; }
@@ -203,8 +207,8 @@ private:
     std::unique_ptr<cmajor::symbols::Value> value;
 };
 
-VariableValueSymbol::VariableValueSymbol(const soul::ast::SourcePos& span_, const util::uuid& moduleId_, const std::u32string& name_, std::unique_ptr<cmajor::symbols::Value>&& value_) :
-    cmajor::symbols::VariableSymbol(cmajor::symbols::SymbolType::variableValueSymbol, span_, moduleId_, name_), value(std::move(value_))
+VariableValueSymbol::VariableValueSymbol(const soul::ast::Span& span_, const std::u32string& name_, std::unique_ptr<cmajor::symbols::Value>&& value_) :
+    cmajor::symbols::VariableSymbol(cmajor::symbols::SymbolType::variableValueSymbol, span_, name_), value(std::move(value_))
 {
 }
 
@@ -257,50 +261,50 @@ std::vector<std::unique_ptr<cmajor::symbols::Value>> ArgumentsToValues(const std
 }
 
 template <typename ValueT, typename Op>
-cmajor::symbols::Value* BinaryEvaluate(cmajor::symbols::Value* left, cmajor::symbols::Value* right, Op op, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+cmajor::symbols::Value* BinaryEvaluate(cmajor::symbols::Value* left, cmajor::symbols::Value* right, Op op, cmajor::ast::Node* node)
 {
     ValueT* leftCasted = static_cast<ValueT*>(left);
     ValueT* rightCasted = static_cast<ValueT*>(right);
-    return new ValueT(sourcePos, moduleId, op(leftCasted->GetValue(), rightCasted->GetValue()));
+    return new ValueT(node->GetSpan(), op(leftCasted->GetValue(), rightCasted->GetValue()));
 }
 
 template <typename ValueT, typename Op>
-cmajor::symbols::Value* BinaryPredEvaluate(cmajor::symbols::Value* left, cmajor::symbols::Value* right, Op op, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+cmajor::symbols::Value* BinaryPredEvaluate(cmajor::symbols::Value* left, cmajor::symbols::Value* right, Op op, cmajor::ast::Node* node)
 {
     ValueT* leftCasted = static_cast<ValueT*>(left);
     ValueT* rightCasted = static_cast<ValueT*>(right);
-    return new cmajor::symbols::BoolValue(sourcePos, moduleId, op(leftCasted->GetValue(), rightCasted->GetValue()));
+    return new cmajor::symbols::BoolValue(node->GetSpan(), op(leftCasted->GetValue(), rightCasted->GetValue()));
 }
 
 template<typename ValueT, typename Op>
-cmajor::symbols::Value* UnaryEvaluate(cmajor::symbols::Value* subject, Op op, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+cmajor::symbols::Value* UnaryEvaluate(cmajor::symbols::Value* subject, Op op, cmajor::ast::Node* node)
 {
     ValueT* subjectCasted = static_cast<ValueT*>(subject);
-    return new ValueT(sourcePos, moduleId, op(subjectCasted->GetValue()));
+    return new ValueT(node->GetSpan(), op(subjectCasted->GetValue()));
 }
 
-cmajor::symbols::Value* NotSupported(cmajor::symbols::Value* subject, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* NotSupported(cmajor::symbols::Value* subject, cmajor::ast::Node* node, bool dontThrow)
 {
     if (dontThrow)
     {
         return nullptr;
     }
-    throw cmajor::symbols::Exception("operation not supported for type " + ValueTypeStr(subject->GetValueType()), sourcePos, moduleId);
+    throw cmajor::symbols::Exception("operation not supported for type " + ValueTypeStr(subject->GetValueType()), node->GetFullSpan());
 }
 
-cmajor::symbols::Value* NotSupported(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* NotSupported(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
     if (dontThrow)
     {
         return nullptr;
     }
-    throw cmajor::symbols::Exception("operation not supported for types " + ValueTypeStr(left->GetValueType()) + " and " + ValueTypeStr(right->GetValueType()), sourcePos, moduleId);
+    throw cmajor::symbols::Exception("operation not supported for types " + ValueTypeStr(left->GetValueType()) + " and " + ValueTypeStr(right->GetValueType()), node->GetFullSpan());
 }
 
 template<typename ValueT>
-cmajor::symbols::Value* Disjunction(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Disjunction(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::logical_or<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::logical_or<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun disjunction[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -311,9 +315,9 @@ BinaryOperatorFun disjunction[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Conjunction(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Conjunction(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::logical_and<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::logical_and<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun conjunction[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -324,9 +328,9 @@ BinaryOperatorFun conjunction[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* BitOr(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* BitOr(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::bit_or<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::bit_or<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun bitOr[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -337,9 +341,9 @@ BinaryOperatorFun bitOr[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* BitXor(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* BitXor(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::bit_xor<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::bit_xor<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun bitXor[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -350,9 +354,9 @@ BinaryOperatorFun bitXor[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* BitAnd(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* BitAnd(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::bit_and<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::bit_and<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun bitAnd[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -363,9 +367,9 @@ BinaryOperatorFun bitAnd[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Equal(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Equal(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::equal_to<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::equal_to<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun equal[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -376,9 +380,9 @@ BinaryOperatorFun equal[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* NotEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* NotEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::not_equal_to<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::not_equal_to<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun notEqual[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -389,9 +393,9 @@ BinaryOperatorFun notEqual[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Less(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Less(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::less<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::less<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun less[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -402,9 +406,9 @@ BinaryOperatorFun less[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Greater(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Greater(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::greater<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::greater<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun greater[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -415,9 +419,9 @@ BinaryOperatorFun greater[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* LessEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* LessEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::less_equal<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::less_equal<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun lessEqual[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -428,9 +432,9 @@ BinaryOperatorFun lessEqual[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* GreaterEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* GreaterEqual(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryPredEvaluate<ValueT>(left, right, std::greater_equal<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryPredEvaluate<ValueT>(left, right, std::greater_equal<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun greaterEqual[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -450,9 +454,9 @@ struct shiftLeftFun
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* ShiftLeft(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* ShiftLeft(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, shiftLeftFun<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, shiftLeftFun<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun shiftLeft[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -472,9 +476,9 @@ struct shiftRightFun
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* ShiftRight(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* ShiftRight(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, shiftRightFun<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, shiftRightFun<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun shiftRight[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -485,9 +489,9 @@ BinaryOperatorFun shiftRight[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Add(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Add(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::plus<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::plus<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun add[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -498,9 +502,9 @@ BinaryOperatorFun add[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Sub(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Sub(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::minus<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::minus<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun sub[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -511,9 +515,9 @@ BinaryOperatorFun sub[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Mul(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Mul(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::multiplies<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::multiplies<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun mul[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -524,9 +528,9 @@ BinaryOperatorFun mul[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Div(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Div(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::divides<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::divides<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun div[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -537,9 +541,9 @@ BinaryOperatorFun div[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Rem(cmajor::symbols::Value* left, cmajor::symbols::Value* right, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Rem(cmajor::symbols::Value* left, cmajor::symbols::Value* right, cmajor::ast::Node* node, bool dontThrow)
 {
-    return BinaryEvaluate<ValueT>(left, right, std::modulus<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return BinaryEvaluate<ValueT>(left, right, std::modulus<typename ValueT::OperandType>(), node);
 }
 
 BinaryOperatorFun rem[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -550,9 +554,9 @@ BinaryOperatorFun rem[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Not(cmajor::symbols::Value* subject, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Not(cmajor::symbols::Value* subject, cmajor::ast::Node* node, bool dontThrow)
 {
-    return UnaryEvaluate<ValueT>(subject, std::logical_not<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return UnaryEvaluate<ValueT>(subject, std::logical_not<typename ValueT::OperandType>(), node);
 }
 
 UnaryOperatorFun logicalNot[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -572,9 +576,9 @@ struct Identity
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* UnaryPlus(cmajor::symbols::Value* subject, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* UnaryPlus(cmajor::symbols::Value* subject, cmajor::ast::Node* node, bool dontThrow)
 {
-    return UnaryEvaluate<ValueT>(subject, Identity<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return UnaryEvaluate<ValueT>(subject, Identity<typename ValueT::OperandType>(), node);
 }
 
 UnaryOperatorFun unaryPlus[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -585,9 +589,9 @@ UnaryOperatorFun unaryPlus[uint8_t(cmajor::symbols::ValueType::maxValue)] =
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* UnaryMinus(cmajor::symbols::Value* subject, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* UnaryMinus(cmajor::symbols::Value* subject, cmajor::ast::Node* node, bool dontThrow)
 {
-    return UnaryEvaluate<ValueT>(subject, std::negate<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return UnaryEvaluate<ValueT>(subject, std::negate<typename ValueT::OperandType>(), node);
 }
 
 UnaryOperatorFun unaryMinus[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -607,9 +611,9 @@ struct BitNot
 };
 
 template<typename ValueT>
-cmajor::symbols::Value* Complement(cmajor::symbols::Value* subject, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, bool dontThrow)
+cmajor::symbols::Value* Complement(cmajor::symbols::Value* subject, cmajor::ast::Node* node, bool dontThrow)
 {
-    return UnaryEvaluate<ValueT>(subject, BitNot<typename ValueT::OperandType>(), sourcePos, moduleId);
+    return UnaryEvaluate<ValueT>(subject, BitNot<typename ValueT::OperandType>(), node);
 }
 
 UnaryOperatorFun complement[uint8_t(cmajor::symbols::ValueType::maxValue)] =
@@ -627,8 +631,8 @@ enum class Operator
 class Evaluator : public cmajor::ast::Visitor
 {
 public:
-    Evaluator(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, cmajor::symbols::TypeSymbol* targetType_, cmajor::symbols::ValueType targetValueType_, bool cast_, bool dontThrow_, BoundFunction* currentFunction_, const soul::ast::SourcePos& span_,
-        const util::uuid& moduleId_);
+    Evaluator(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, cmajor::symbols::TypeSymbol* targetType_, 
+        cmajor::symbols::ValueType targetValueType_, bool cast_, bool dontThrow_, BoundFunction* currentFunction_);
     bool Error() const { return error; }
     std::unique_ptr<cmajor::symbols::Value> GetValue();
 
@@ -781,8 +785,6 @@ private:
     bool broke;
     bool continued;
     bool lvalue;
-    soul::ast::SourcePos sourcePos;
-    util::uuid moduleId;
     std::unique_ptr<cmajor::symbols::Value> value;
     cmajor::symbols::TypeSymbol* targetType;
     cmajor::symbols::ValueType targetValueType;
@@ -792,19 +794,20 @@ private:
     std::vector<cmajor::symbols::TypeSymbol*> templateTypeArguments;
     void EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* fun);
     void EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* fun, Operator op);
-    void EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos, Operator op, const std::unique_ptr<cmajor::symbols::Value>& left, const std::unique_ptr<cmajor::symbols::Value>& right);
+    void EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, const std::unique_ptr<cmajor::symbols::Value>& left, const std::unique_ptr<cmajor::symbols::Value>& right);
     void EvaluateUnaryOp(cmajor::ast::UnaryNode& node, UnaryOperatorFun* fun);
-    void EvaluateSymbol(cmajor::symbols::Symbol* symbol, const soul::ast::SourcePos& sourcePos);
-    void EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constantSymbol, const soul::ast::SourcePos& sourcePos);
-    void EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* enumConstantSymbol, const soul::ast::SourcePos& sourcePos);
+    void EvaluateSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::Node* node);
+    void EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constantSymbol, cmajor::ast::Node* node);
+    void EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* enumConstantSymbol, cmajor::ast::Node* node);
 };
 
-Evaluator::Evaluator(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, cmajor::symbols::TypeSymbol* targetType_, cmajor::symbols::ValueType targetValueType_, bool cast_, bool dontThrow_, BoundFunction* currentFunction_,
-    const soul::ast::SourcePos& span_, const util::uuid& moduleId_) :
+Evaluator::Evaluator(BoundCompileUnit& boundCompileUnit_, cmajor::symbols::ContainerScope* containerScope_, cmajor::symbols::TypeSymbol* targetType_, 
+    cmajor::symbols::ValueType targetValueType_, bool cast_, bool dontThrow_, BoundFunction* currentFunction_) :
     boundCompileUnit(boundCompileUnit_), symbolTable(&boundCompileUnit.GetSymbolTable()), module(&boundCompileUnit.GetModule()),
     containerScope(containerScope_), qualifiedScope(nullptr), cast(cast_), dontThrow(dontThrow_), error(false),
-    returned(false), broke(false), continued(false), lvalue(false), currentFunction(currentFunction_), currentDeclarationBlock(nullptr), currentFileScope(nullptr), currentClassType(nullptr),
-    sourcePos(span_), moduleId(moduleId_), value(), targetType(targetType_), targetValueType(targetValueType_), targetValueSymbol(nullptr)
+    returned(false), broke(false), continued(false), lvalue(false), currentFunction(currentFunction_), currentDeclarationBlock(nullptr), 
+    currentFileScope(nullptr), currentClassType(nullptr),
+    value(), targetType(targetType_), targetValueType(targetValueType_), targetValueSymbol(nullptr)
 {
 }
 
@@ -829,7 +832,7 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, node.GetSourcePos(), node.ModuleId());
+            ThrowCannotEvaluateStatically(&node);
         }
     }
     std::unique_ptr<cmajor::symbols::Value> left(value.release());
@@ -847,13 +850,13 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, node.GetSourcePos(), node.ModuleId());
+            ThrowCannotEvaluateStatically(&node);
         }
     }
     std::unique_ptr<cmajor::symbols::Value> right(value.release());
     if ((op == Operator::add || op == Operator::sub) && (left->GetValueType() == cmajor::symbols::ValueType::pointerValue || right->GetValueType() == cmajor::symbols::ValueType::pointerValue))
     {
-        EvaluateAdditivePointerOp(node.GetSourcePos(), op, left, right);
+        EvaluateAdditivePointerOp(&node, op, left, right);
         return;
     }
     if (op == Operator::comparison && left->GetValueType() == cmajor::symbols::ValueType::pointerValue && right->GetValueType() == cmajor::symbols::ValueType::pointerValue)
@@ -869,7 +872,7 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
             }
             else
             {
-                throw cmajor::symbols::Exception("incompatible pointer types for comparison", node.GetSourcePos(), node.ModuleId());
+                throw cmajor::symbols::Exception("incompatible pointer types for comparison", node.GetFullSpan());
             }
         }
     }
@@ -891,11 +894,11 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
         }
         else
         {
-            throw cmajor::symbols::Exception("conversion from " + ValueTypeStr(leftType) + " to " + ValueTypeStr(operationType) + " is not valid", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("conversion from " + ValueTypeStr(leftType) + " to " + ValueTypeStr(operationType) + " is not valid", node.GetFullSpan());
         }
     }
-    std::unique_ptr<cmajor::symbols::Value> leftConverted(left->As(type, cast, node.GetSourcePos(), node.ModuleId(), dontThrow));
-    std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(type, cast, node.GetSourcePos(), node.ModuleId(), dontThrow));
+    std::unique_ptr<cmajor::symbols::Value> leftConverted(left->As(type, cast, &node, dontThrow));
+    std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(type, cast, &node, dontThrow));
     if (dontThrow)
     {
         if (!leftConverted || !rightConverted)
@@ -905,16 +908,16 @@ void Evaluator::EvaluateBinOp(cmajor::ast::BinaryNode& node, BinaryOperatorFun* 
         }
     }
     BinaryOperatorFun operation = fun[uint8_t(operationType)];
-    value.reset(operation(leftConverted.get(), rightConverted.get(), node.GetSourcePos(), node.ModuleId(), dontThrow));
+    value.reset(operation(leftConverted.get(), rightConverted.get(), &node, dontThrow));
 }
 
-void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos, Operator op, const std::unique_ptr<cmajor::symbols::Value>& left, const std::unique_ptr<cmajor::symbols::Value>& right)
+void Evaluator::EvaluateAdditivePointerOp(cmajor::ast::Node* node, Operator op, const std::unique_ptr<cmajor::symbols::Value>& left, const std::unique_ptr<cmajor::symbols::Value>& right)
 {
     if (op == Operator::add)
     {
         if (left->GetValueType() == cmajor::symbols::ValueType::pointerValue)
         {
-            std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, sourcePos, moduleId, dontThrow));
+            std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, node, dontThrow));
             if (dontThrow)
             {
                 if (!rightConverted)
@@ -935,13 +938,13 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
                 }
             }
         }
         else if (right->GetValueType() == cmajor::symbols::ValueType::pointerValue)
         {
-            std::unique_ptr<cmajor::symbols::Value> leftConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, sourcePos, moduleId, dontThrow));
+            std::unique_ptr<cmajor::symbols::Value> leftConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, node, dontThrow));
             if (dontThrow)
             {
                 if (!leftConverted)
@@ -962,7 +965,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
                 }
             }
         }
@@ -975,7 +978,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
             }
             else
             {
-                throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
             }
         }
     }
@@ -983,7 +986,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
     {
         if (left->GetValueType() == cmajor::symbols::ValueType::pointerValue && right->GetValueType() != cmajor::symbols::ValueType::pointerValue)
         {
-            std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, sourcePos, moduleId, dontThrow));
+            std::unique_ptr<cmajor::symbols::Value> rightConverted(right->As(symbolTable->GetTypeByName(U"long"), cast, node, dontThrow));
             if (dontThrow)
             {
                 if (!rightConverted)
@@ -1004,7 +1007,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
                 }
             }
         }
@@ -1021,7 +1024,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("incompatible pointer operands", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("incompatible pointer operands", node->GetFullSpan());
                 }
             }
             value.reset(leftPointerValue->Sub(rightPointerValue->GetValue()));
@@ -1034,7 +1037,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
                 }
             }
         }
@@ -1047,7 +1050,7 @@ void Evaluator::EvaluateAdditivePointerOp(const soul::ast::SourcePos& sourcePos,
             }
             else
             {
-                throw cmajor::symbols::Exception("invalid pointer operands", sourcePos, moduleId);
+                throw cmajor::symbols::Exception("invalid pointer operands", node->GetFullSpan());
             }
         }
     }
@@ -1069,7 +1072,7 @@ void Evaluator::EvaluateUnaryOp(cmajor::ast::UnaryNode& node, UnaryOperatorFun* 
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, node.GetSourcePos(), node.ModuleId());
+            ThrowCannotEvaluateStatically(&node);
         }
     }
     std::unique_ptr<cmajor::symbols::Value> subject(value.release());
@@ -1089,10 +1092,10 @@ void Evaluator::EvaluateUnaryOp(cmajor::ast::UnaryNode& node, UnaryOperatorFun* 
         }
         else
         {
-            throw cmajor::symbols::Exception("conversion from " + ValueTypeStr(subjectType) + " to " + ValueTypeStr(operationType) + " is not valid", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("conversion from " + ValueTypeStr(subjectType) + " to " + ValueTypeStr(operationType) + " is not valid", node.GetFullSpan());
         }
     }
-    std::unique_ptr<cmajor::symbols::Value> subjectConverted(subject->As(type, cast, node.GetSourcePos(), node.ModuleId(), dontThrow));
+    std::unique_ptr<cmajor::symbols::Value> subjectConverted(subject->As(type, cast, &node, dontThrow));
     if (dontThrow)
     {
         if (!subjectConverted)
@@ -1102,7 +1105,7 @@ void Evaluator::EvaluateUnaryOp(cmajor::ast::UnaryNode& node, UnaryOperatorFun* 
         }
     }
     UnaryOperatorFun operation = fun[uint8_t(operationType)];
-    value.reset(operation(subjectConverted.get(), node.GetSourcePos(), node.ModuleId(), dontThrow));
+    value.reset(operation(subjectConverted.get(), &node, dontThrow));
 }
 
 std::unique_ptr<cmajor::symbols::Value> Evaluator::GetValue()
@@ -1139,7 +1142,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
     }
     bool prevReturned = returned;
     cmajor::symbols::DeclarationBlock* prevDeclarationBlock = currentDeclarationBlock;
-    cmajor::symbols::DeclarationBlock declarationBlock(sourcePos, moduleId, U"functionBlock");
+    cmajor::symbols::DeclarationBlock declarationBlock(functionNode.GetSpan(), U"functionBlock");
     currentDeclarationBlock = &declarationBlock;
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     containerScope = symbol->GetContainerScope();
@@ -1158,14 +1161,15 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("wrong number of function template type arguments", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("wrong number of function template type arguments", functionNode.GetFullSpan());
         }
     }
     for (int i = 0; i < nt; ++i)
     {
         cmajor::ast::TemplateParameterNode* templateParameterNode = functionNode.TemplateParameters()[i];
         cmajor::symbols::TypeSymbol* templateTypeArgument = templateTypeArguments[i];
-        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(sourcePos, moduleId, templateParameterNode->Id()->Str());
+        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(
+            templateParameterNode->GetSpan(), templateParameterNode->Id()->Str());
         boundTemplateParameter->SetType(templateTypeArgument);
         declarationBlock.AddMember(boundTemplateParameter);
     }
@@ -1182,7 +1186,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("wrong number of function arguments", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("wrong number of function arguments", functionNode.GetFullSpan());
         }
     }
     for (int i = 0; i < n; ++i)
@@ -1190,7 +1194,7 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
         cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
         cmajor::ast::ParameterNode* parameterNode = functionNode.Parameters()[i];
-        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSourcePos(), parameterNode->ModuleId(), parameterNode->Id()->Str(), std::move(argumentValue));
+        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
         declarationBlock.AddMember(variableValueSymbol);
     }
@@ -1232,7 +1236,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
     }
     bool prevReturned = returned;
     cmajor::symbols::DeclarationBlock* prevDeclarationBlock = currentDeclarationBlock;
-    cmajor::symbols::DeclarationBlock declarationBlock(sourcePos, moduleId, U"constructorBlock");
+    cmajor::symbols::DeclarationBlock declarationBlock(constructorNode.GetSpan(), U"constructorBlock");
     currentDeclarationBlock = &declarationBlock;
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     containerScope = symbol->GetContainerScope();
@@ -1252,7 +1256,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("wrong number of constructor arguments", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("wrong number of constructor arguments", constructorNode.GetFullSpan());
         }
     }
     for (int i = 0; i < n; ++i)
@@ -1260,7 +1264,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
         cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
         cmajor::ast::ParameterNode* parameterNode = constructorNode.Parameters()[i];
-        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSourcePos(), parameterNode->ModuleId(), parameterNode->Id()->Str(), std::move(argumentValue));
+        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
         declarationBlock.AddMember(variableValueSymbol);
     }
@@ -1282,7 +1286,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("this and base initializers not supported for a constexpr constructor", constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                throw cmajor::symbols::Exception("this and base initializers not supported for a constexpr constructor", constructorNode.GetFullSpan());
             }
         }
         else
@@ -1303,8 +1307,8 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("already has initializer for member variable '" + util::ToUtf8(memberName) + "'", initializer->GetSourcePos(), 
-                        initializer->ModuleId());
+                    throw cmajor::symbols::Exception("already has initializer for member variable '" + util::ToUtf8(memberName) + "'", initializer->GetFullSpan(), 
+                        constructorNode.GetFullSpan());
                 }
             }
             memberInitializerMap[memberName] = memberInitializer;
@@ -1340,7 +1344,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
                     }
                     else
                     {
-                        ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                        ThrowCannotEvaluateStatically(&constructorNode);
                     }
                 }
                 initializerArgumentValues.push_back(std::move(value));
@@ -1363,10 +1367,11 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructorNode);
             }
         }
-        initializerArguments.insert(initializerArguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, memberVariableSymbol->GetType()->AddPointer(sourcePos, moduleId))));
+        initializerArguments.insert(initializerArguments.begin(), std::unique_ptr<BoundExpression>(
+            new BoundTypeExpression(memberVariableSymbol->GetSpan(), memberVariableSymbol->GetType()->AddPointer())));
         OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
         if (dontThrow)
         {
@@ -1375,7 +1380,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
         std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
         std::unique_ptr<cmajor::symbols::Exception> exception;
         std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, initializerArguments, boundCompileUnit, currentFunction,
-            constructorNode.GetSourcePos(), constructorNode.ModuleId(), flags, templateArgumentTypes, exception);
+            &constructorNode, flags, templateArgumentTypes, exception);
         if (!constructorCall)
         {
             if (dontThrow)
@@ -1389,7 +1394,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructorNode);
             }
         }
         argumentValues = ArgumentsToValues(constructorCall->Arguments(), error, true, boundCompileUnit);
@@ -1401,13 +1406,13 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructorNode);
             }
         }
         cmajor::symbols::FunctionSymbol* constructorSymbol = constructorCall->GetFunctionSymbol();
         if (constructorSymbol->IsCompileTimePrimitiveFunction())
         {
-            value = constructorSymbol->ConstructValue(argumentValues, sourcePos, moduleId, nullptr);
+            value = constructorSymbol->ConstructValue(argumentValues, constructorNode.GetSpan(), nullptr);
             if (!value)
             {
                 if (dontThrow)
@@ -1421,7 +1426,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&constructorNode);
                 }
             }
         }
@@ -1442,7 +1447,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, ctorNode->GetSourcePos(), ctorNode->ModuleId());
+                    ThrowCannotEvaluateStatically(ctorNode, constructorNode.GetFullSpan());
                 }
             }
         }
@@ -1459,13 +1464,13 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructorNode.GetSourcePos(), constructorNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructorNode);
             }
         }
         memberValues.push_back(std::move(value));
     }
     constructorNode.Body()->Accept(*this);
-    value.reset(new cmajor::symbols::StructuredValue(sourcePos, moduleId, classType, std::move(memberValues)));
+    value.reset(new cmajor::symbols::StructuredValue(constructorNode.GetSpan(), classType, std::move(memberValues)));
     containerScope = prevContainerScope;
     currentDeclarationBlock = prevDeclarationBlock;
     returned = prevReturned;
@@ -1501,7 +1506,7 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
     }
     bool prevReturned = returned;
     cmajor::symbols::DeclarationBlock* prevDeclarationBlock = currentDeclarationBlock;
-    cmajor::symbols::DeclarationBlock declarationBlock(sourcePos, moduleId, U"functionBlock");
+    cmajor::symbols::DeclarationBlock declarationBlock(memberFunctionNode.GetSpan(), U"functionBlock");
     currentDeclarationBlock = &declarationBlock;
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     containerScope = symbol->GetContainerScope();
@@ -1520,7 +1525,7 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("wrong number of function arguments", memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId());
+            throw cmajor::symbols::Exception("wrong number of function arguments", memberFunctionNode.GetFullSpan());
         }
     }
     for (int i = 0; i < n; ++i)
@@ -1528,7 +1533,7 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
         cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
         cmajor::ast::ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
-        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSourcePos(), parameterNode->ModuleId(), parameterNode->Id()->Str(), std::move(argumentValue));
+        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
         declarationBlock.AddMember(variableValueSymbol);
     }
@@ -1551,7 +1556,7 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("structured reference value expected", memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId());
+                throw cmajor::symbols::Exception("structured reference value expected", memberFunctionNode.GetFullSpan());
             }
         }
         int n = currentClassType->MemberVariables().size();
@@ -1567,14 +1572,14 @@ void Evaluator::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("wrong number of structured value members", memberFunctionNode.GetSourcePos(), memberFunctionNode.ModuleId());
+                throw cmajor::symbols::Exception("wrong number of structured value members", memberFunctionNode.GetFullSpan());
             }
         }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = currentClassType->MemberVariables()[i];
             cmajor::symbols::Value* memberValue = structuredValue->Members()[i].get();
-            cmajor::symbols::ConstantSymbol* constantSymbol = new cmajor::symbols::ConstantSymbol(sourcePos, moduleId, memberVariableSymbol->Name());
+            cmajor::symbols::ConstantSymbol* constantSymbol = new cmajor::symbols::ConstantSymbol(memberVariableSymbol->GetSpan(), memberVariableSymbol->Name());
             constantSymbol->SetModule(module);
             constantSymbol->SetType(memberVariableSymbol->GetType());
             if (memberValue->GetValueType() == cmajor::symbols::ValueType::arrayValue)
@@ -1611,7 +1616,7 @@ void Evaluator::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNod
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conversionFunctionNode.GetSourcePos(), conversionFunctionNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conversionFunctionNode);
     }
 }
 
@@ -1629,7 +1634,7 @@ void Evaluator::Visit(cmajor::ast::AliasNode& aliasNode)
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::aliasTypeSymbol, "alias type symbol expected");
     cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
     cmajor::symbols::TypeSymbol* type = aliasTypeSymbol->GetType();
-    EvaluateSymbol(type, aliasNode.GetSourcePos());
+    EvaluateSymbol(type, &aliasNode);
     if (currentFileScope)
     {
         currentFileScope->InstallAlias(&aliasNode, type); 
@@ -1645,7 +1650,7 @@ void Evaluator::Visit(cmajor::ast::ClassNode& classNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, classNode.GetSourcePos(), classNode.ModuleId());
+        ThrowCannotEvaluateStatically(&classNode);
     }
 }
 
@@ -1658,7 +1663,7 @@ void Evaluator::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, staticConstructorNode.GetSourcePos(), staticConstructorNode.ModuleId());
+        ThrowCannotEvaluateStatically(&staticConstructorNode);
     }
 }
 
@@ -1671,7 +1676,7 @@ void Evaluator::Visit(cmajor::ast::DestructorNode& destructorNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, destructorNode.GetSourcePos(), destructorNode.ModuleId());
+        ThrowCannotEvaluateStatically(&destructorNode);
     }
 }
 
@@ -1689,7 +1694,7 @@ void Evaluator::Visit(cmajor::ast::InterfaceNode& interfaceNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, interfaceNode.GetSourcePos(), interfaceNode.ModuleId());
+        ThrowCannotEvaluateStatically(&interfaceNode);
     }
 }
 
@@ -1702,7 +1707,7 @@ void Evaluator::Visit(cmajor::ast::DelegateNode& delegateNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, delegateNode.GetSourcePos(), delegateNode.ModuleId());
+        ThrowCannotEvaluateStatically(&delegateNode);
     }
 }
 
@@ -1715,14 +1720,14 @@ void Evaluator::Visit(cmajor::ast::ClassDelegateNode& classDelegateNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, classDelegateNode.GetSourcePos(), classDelegateNode.ModuleId());
+        ThrowCannotEvaluateStatically(&classDelegateNode);
     }
 }
 
 void Evaluator::Visit(cmajor::ast::CompoundStatementNode& compoundStatementNode)
 {
     cmajor::symbols::DeclarationBlock* prevDeclarationBlock = currentDeclarationBlock;
-    cmajor::symbols::DeclarationBlock declarationBlock(sourcePos, moduleId, U"block");
+    cmajor::symbols::DeclarationBlock declarationBlock(compoundStatementNode.GetSpan(), U"block");
     currentDeclarationBlock = &declarationBlock;
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     declarationBlock.GetContainerScope()->SetParentScope(containerScope);
@@ -1782,7 +1787,7 @@ void Evaluator::Visit(cmajor::ast::IfStatementNode& ifStatementNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("Boolean expression expected", ifStatementNode.GetSourcePos(), ifStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("Boolean expression expected", ifStatementNode.GetFullSpan());
         }
     }
 }
@@ -1840,7 +1845,7 @@ void Evaluator::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("Boolean expression expected", whileStatementNode.GetSourcePos(), whileStatementNode.ModuleId());
+                    throw cmajor::symbols::Exception("Boolean expression expected", whileStatementNode.GetFullSpan());
                 }
             }
         }
@@ -1853,7 +1858,7 @@ void Evaluator::Visit(cmajor::ast::WhileStatementNode& whileStatementNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("Boolean expression expected", whileStatementNode.GetSourcePos(), whileStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("Boolean expression expected", whileStatementNode.GetFullSpan());
         }
     }
     broke = prevBroke;
@@ -1905,7 +1910,7 @@ void Evaluator::Visit(cmajor::ast::DoStatementNode& doStatementNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("Boolean expression expected", doStatementNode.GetSourcePos(), doStatementNode.ModuleId());
+                throw cmajor::symbols::Exception("Boolean expression expected", doStatementNode.GetFullSpan());
             }
         }
     }
@@ -1918,7 +1923,7 @@ void Evaluator::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     bool prevBroke = broke;
     bool prevContinued = continued;
     cmajor::symbols::DeclarationBlock* prevDeclarationBlock = currentDeclarationBlock;
-    cmajor::symbols::DeclarationBlock declarationBlock(sourcePos, moduleId, U"forBlock");
+    cmajor::symbols::DeclarationBlock declarationBlock(forStatementNode.GetSpan(), U"forBlock");
     currentDeclarationBlock = &declarationBlock;
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     declarationBlock.GetContainerScope()->SetParentScope(containerScope);
@@ -2000,7 +2005,7 @@ void Evaluator::Visit(cmajor::ast::ForStatementNode& forStatementNode)
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("Boolean expression expected", forStatementNode.GetSourcePos(), forStatementNode.ModuleId());
+                    throw cmajor::symbols::Exception("Boolean expression expected", forStatementNode.GetFullSpan());
                 }
             }
         }
@@ -2018,7 +2023,7 @@ void Evaluator::Visit(cmajor::ast::ForStatementNode& forStatementNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("Boolean expression expected", forStatementNode.GetSourcePos(), forStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("Boolean expression expected", forStatementNode.GetFullSpan());
         }
     }
     containerScope = prevContainerScope;
@@ -2046,7 +2051,7 @@ void Evaluator::Visit(cmajor::ast::GotoStatementNode& gotoStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, gotoStatementNode.GetSourcePos(), gotoStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&gotoStatementNode);
     }
 }
 
@@ -2061,7 +2066,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         else
         {
-            throw cmajor::symbols::Exception("internal error: current declaration block not set", constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("internal error: current declaration block not set", constructionStatementNode.GetFullSpan());
         }
     }
     cmajor::symbols::TypeSymbol* type = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope);
@@ -2081,7 +2086,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructionStatementNode);
             }
         }
         values.push_back(std::move(value));
@@ -2095,10 +2100,10 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, type->AddPointer(sourcePos, moduleId))));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(type->GetSpan(), type->AddPointer())));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2109,8 +2114,8 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         flags = flags | OverloadResolutionFlags::dontThrow;
     }
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
-    std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
-        flags, templateArgumentTypes, exception);
+    std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(
+        U"@constructor", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, &constructionStatementNode, flags, templateArgumentTypes, exception);
     if (!constructorCall)
     {
         if (dontThrow)
@@ -2120,7 +2125,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
     argumentValues = ArgumentsToValues(constructorCall->Arguments(), error, true, boundCompileUnit);
@@ -2132,13 +2137,13 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
     cmajor::symbols::FunctionSymbol* constructorSymbol = constructorCall->GetFunctionSymbol();
     if (constructorSymbol->IsCompileTimePrimitiveFunction())
     {
-        value = constructorSymbol->ConstructValue(argumentValues, sourcePos, moduleId, nullptr);
+        value = constructorSymbol->ConstructValue(argumentValues, constructionStatementNode.GetSpan(), nullptr);
         if (!value)
         {
             if (dontThrow)
@@ -2148,7 +2153,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+                ThrowCannotEvaluateStatically(&constructionStatementNode);
             }
         }
     }
@@ -2165,7 +2170,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, ctorNode->GetSourcePos(), ctorNode->ModuleId());
+                ThrowCannotEvaluateStatically(ctorNode, constructionStatementNode.GetFullSpan());
             }
         }
     }
@@ -2178,10 +2183,10 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, constructionStatementNode.GetSourcePos(), constructionStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
-    VariableValueSymbol* variableValue = new VariableValueSymbol(sourcePos, moduleId, constructionStatementNode.Id()->Str(), std::move(value));
+    VariableValueSymbol* variableValue = new VariableValueSymbol(constructionStatementNode.GetSpan(), constructionStatementNode.Id()->Str(), std::move(value));
     variableValue->SetType(type);
     currentDeclarationBlock->AddMember(variableValue);
 }
@@ -2195,7 +2200,7 @@ void Evaluator::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, deleteStatementNode.GetSourcePos(), deleteStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&deleteStatementNode);
     }
 }
 
@@ -2208,7 +2213,7 @@ void Evaluator::Visit(cmajor::ast::DestroyStatementNode& destroyStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, destroyStatementNode.GetSourcePos(), destroyStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&destroyStatementNode);
     }
 }
 
@@ -2233,10 +2238,10 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&assignmentStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, target->GetType()->AddPointer(sourcePos, moduleId))));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(target->GetType()->GetSpan(), target->GetType()->AddPointer())));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2247,8 +2252,8 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
         flags = flags | OverloadResolutionFlags::dontThrow;
     }
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
-    std::unique_ptr<BoundFunctionCall> assignmentCall = ResolveOverload(U"operator=", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
-        flags, templateArgumentTypes, exception);
+    std::unique_ptr<BoundFunctionCall> assignmentCall = ResolveOverload(
+        U"operator=", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, &assignmentStatementNode, flags, templateArgumentTypes, exception);
     if (!assignmentCall)
     {
         if (dontThrow)
@@ -2258,7 +2263,7 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&assignmentStatementNode);
         }
     }
     argumentValues = ArgumentsToValues(assignmentCall->Arguments(), error, true, boundCompileUnit);
@@ -2270,7 +2275,7 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, assignmentStatementNode.GetSourcePos(), assignmentStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&assignmentStatementNode);
         }
     }
     target->SetValue(argumentValues.front().release());
@@ -2295,7 +2300,7 @@ void Evaluator::Visit(cmajor::ast::RangeForStatementNode& rangeForStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, rangeForStatementNode.GetSourcePos(), rangeForStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&rangeForStatementNode);
     }
 }
 
@@ -2309,7 +2314,7 @@ void Evaluator::Visit(cmajor::ast::SwitchStatementNode& switchStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, switchStatementNode.GetSourcePos(), switchStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&switchStatementNode);
     }
 }
 
@@ -2323,7 +2328,7 @@ void Evaluator::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, caseStatementNode.GetSourcePos(), caseStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&caseStatementNode);
     }
 }
 
@@ -2337,7 +2342,7 @@ void Evaluator::Visit(cmajor::ast::DefaultStatementNode& defaultStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, defaultStatementNode.GetSourcePos(), defaultStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&defaultStatementNode);
     }
 }
 
@@ -2350,7 +2355,7 @@ void Evaluator::Visit(cmajor::ast::GotoCaseStatementNode& gotoCaseStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, gotoCaseStatementNode.GetSourcePos(), gotoCaseStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&gotoCaseStatementNode);
     }
 }
 
@@ -2363,7 +2368,7 @@ void Evaluator::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultStatemen
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, gotoDefaultStatementNode.GetSourcePos(), gotoDefaultStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&gotoDefaultStatementNode);
     }
 }
 
@@ -2376,7 +2381,7 @@ void Evaluator::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, throwStatementNode.GetSourcePos(), throwStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&throwStatementNode);
     }
 }
 
@@ -2389,7 +2394,7 @@ void Evaluator::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, tryStatementNode.GetSourcePos(), tryStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&tryStatementNode);
     }
 }
 
@@ -2402,7 +2407,7 @@ void Evaluator::Visit(cmajor::ast::CatchNode& catchNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, catchNode.GetSourcePos(), catchNode.ModuleId());
+        ThrowCannotEvaluateStatically(&catchNode);
     }
 }
 
@@ -2419,7 +2424,7 @@ void Evaluator::Visit(cmajor::ast::AssertStatementNode& assertStatementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&assertStatementNode);
         }
     }
     if (value->GetValueType() == cmajor::symbols::ValueType::boolValue)
@@ -2434,7 +2439,7 @@ void Evaluator::Visit(cmajor::ast::AssertStatementNode& assertStatementNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("assertion '" + assertStatementNode.AssertExpr()->ToString() + "' failed", sourcePos, moduleId, assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId());
+                throw cmajor::symbols::Exception("assertion '" + assertStatementNode.AssertExpr()->ToString() + "' failed", assertStatementNode.GetFullSpan());
             }
         }
     }
@@ -2447,7 +2452,7 @@ void Evaluator::Visit(cmajor::ast::AssertStatementNode& assertStatementNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("assertion expression is not a Boolean-valued expression", sourcePos, moduleId, assertStatementNode.GetSourcePos(), assertStatementNode.ModuleId());
+            throw cmajor::symbols::Exception("assertion expression is not a Boolean-valued expression", assertStatementNode.GetFullSpan());
         }
     }
 }
@@ -2461,7 +2466,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationPartNode& conditionalCo
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationPartNode.GetSourcePos(), conditionalCompilationPartNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationPartNode);
     }
 }
 
@@ -2474,7 +2479,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationDisjunctionNode& condit
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationDisjunctionNode.GetSourcePos(), conditionalCompilationDisjunctionNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationDisjunctionNode);
     }
 }
 
@@ -2487,7 +2492,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationConjunctionNode& condit
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationConjunctionNode.GetSourcePos(), conditionalCompilationConjunctionNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationConjunctionNode);
     }
 }
 
@@ -2500,7 +2505,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationNotNode& conditionalCom
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationNotNode.GetSourcePos(), conditionalCompilationNotNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationNotNode);
     }
 }
 
@@ -2513,7 +2518,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationPrimaryNode& conditiona
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationPrimaryNode.GetSourcePos(), conditionalCompilationPrimaryNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationPrimaryNode);
     }
 }
 
@@ -2526,7 +2531,7 @@ void Evaluator::Visit(cmajor::ast::ConditionalCompilationStatementNode& conditio
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, conditionalCompilationStatementNode.GetSourcePos(), conditionalCompilationStatementNode.ModuleId());
+        ThrowCannotEvaluateStatically(&conditionalCompilationStatementNode);
     }
 }
 
@@ -2538,7 +2543,7 @@ void Evaluator::Visit(cmajor::ast::BoolNode& boolNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, boolNode.GetSourcePos(), boolNode.ModuleId());
+        ThrowCannotEvaluateStatically(&boolNode);
     }
 }
 
@@ -2550,7 +2555,7 @@ void Evaluator::Visit(cmajor::ast::SByteNode& sbyteNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, sbyteNode.GetSourcePos(), sbyteNode.ModuleId());
+        ThrowCannotEvaluateStatically(&sbyteNode);
     }
 }
 
@@ -2562,7 +2567,7 @@ void Evaluator::Visit(cmajor::ast::ByteNode& byteNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, byteNode.GetSourcePos(), byteNode.ModuleId());
+        ThrowCannotEvaluateStatically(&byteNode);
     }
 }
 
@@ -2574,7 +2579,7 @@ void Evaluator::Visit(cmajor::ast::ShortNode& shortNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, shortNode.GetSourcePos(), shortNode.ModuleId());
+        ThrowCannotEvaluateStatically(&shortNode);
     }
 }
 
@@ -2586,7 +2591,7 @@ void Evaluator::Visit(cmajor::ast::UShortNode& ushortNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, ushortNode.GetSourcePos(), ushortNode.ModuleId());
+        ThrowCannotEvaluateStatically(&ushortNode);
     }
 }
 
@@ -2598,7 +2603,7 @@ void Evaluator::Visit(cmajor::ast::IntNode& intNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, intNode.GetSourcePos(), intNode.ModuleId());
+        ThrowCannotEvaluateStatically(&intNode);
     }
 }
 
@@ -2610,7 +2615,7 @@ void Evaluator::Visit(cmajor::ast::UIntNode& uintNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, uintNode.GetSourcePos(), uintNode.ModuleId());
+        ThrowCannotEvaluateStatically(&uintNode);
     }
 }
 
@@ -2622,7 +2627,7 @@ void Evaluator::Visit(cmajor::ast::LongNode& longNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, longNode.GetSourcePos(), longNode.ModuleId());
+        ThrowCannotEvaluateStatically(&longNode);
     }
 }
 
@@ -2634,7 +2639,7 @@ void Evaluator::Visit(cmajor::ast::ULongNode& ulongNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, ulongNode.GetSourcePos(), ulongNode.ModuleId());
+        ThrowCannotEvaluateStatically(&ulongNode);
     }
 }
 
@@ -2646,7 +2651,7 @@ void Evaluator::Visit(cmajor::ast::FloatNode& floatNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, floatNode.GetSourcePos(), floatNode.ModuleId());
+        ThrowCannotEvaluateStatically(&floatNode);
     }
 }
 
@@ -2658,7 +2663,7 @@ void Evaluator::Visit(cmajor::ast::DoubleNode& doubleNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, doubleNode.GetSourcePos(), doubleNode.ModuleId());
+        ThrowCannotEvaluateStatically(&doubleNode);
     }
 }
 
@@ -2670,7 +2675,7 @@ void Evaluator::Visit(cmajor::ast::CharNode& charNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, charNode.GetSourcePos(), charNode.ModuleId());
+        ThrowCannotEvaluateStatically(&charNode);
     }
 }
 
@@ -2682,7 +2687,7 @@ void Evaluator::Visit(cmajor::ast::WCharNode& wcharNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, wcharNode.GetSourcePos(), wcharNode.ModuleId());
+        ThrowCannotEvaluateStatically(&wcharNode);
     }
 }
 
@@ -2694,7 +2699,7 @@ void Evaluator::Visit(cmajor::ast::UCharNode& ucharNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, ucharNode.GetSourcePos(), ucharNode.ModuleId());
+        ThrowCannotEvaluateStatically(&ucharNode);
     }
 }
 
@@ -2706,98 +2711,98 @@ void Evaluator::Visit(cmajor::ast::VoidNode& voidNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, voidNode.GetSourcePos(), voidNode.ModuleId());
+        ThrowCannotEvaluateStatically(&voidNode);
     }
 }
 
 void Evaluator::Visit(cmajor::ast::BooleanLiteralNode& booleanLiteralNode)
 {
-    value.reset(new cmajor::symbols::BoolValue(booleanLiteralNode.GetSourcePos(), booleanLiteralNode.ModuleId(), booleanLiteralNode.Value()));
+    value.reset(new cmajor::symbols::BoolValue(booleanLiteralNode.GetSpan(), booleanLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::SByteLiteralNode& sbyteLiteralNode)
 {
-    value.reset(new cmajor::symbols::SByteValue(sbyteLiteralNode.GetSourcePos(), sbyteLiteralNode.ModuleId(), sbyteLiteralNode.Value()));
+    value.reset(new cmajor::symbols::SByteValue(sbyteLiteralNode.GetSpan(), sbyteLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::ByteLiteralNode& byteLiteralNode)
 {
-    value.reset(new cmajor::symbols::ByteValue(byteLiteralNode.GetSourcePos(), byteLiteralNode.ModuleId(), byteLiteralNode.Value()));
+    value.reset(new cmajor::symbols::ByteValue(byteLiteralNode.GetSpan(), byteLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::ShortLiteralNode& shortLiteralNode)
 {
-    value.reset(new cmajor::symbols::ShortValue(shortLiteralNode.GetSourcePos(), shortLiteralNode.ModuleId(), shortLiteralNode.Value()));
+    value.reset(new cmajor::symbols::ShortValue(shortLiteralNode.GetSpan(), shortLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::UShortLiteralNode& ushortLiteralNode)
 {
-    value.reset(new cmajor::symbols::UShortValue(ushortLiteralNode.GetSourcePos(), ushortLiteralNode.ModuleId(), ushortLiteralNode.Value()));
+    value.reset(new cmajor::symbols::UShortValue(ushortLiteralNode.GetSpan(), ushortLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::IntLiteralNode& intLiteralNode)
 {
-    value.reset(new cmajor::symbols::IntValue(intLiteralNode.GetSourcePos(), intLiteralNode.ModuleId(), intLiteralNode.Value()));
+    value.reset(new cmajor::symbols::IntValue(intLiteralNode.GetSpan(), intLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::UIntLiteralNode& uintLiteralNode)
 {
-    value.reset(new cmajor::symbols::UIntValue(uintLiteralNode.GetSourcePos(), uintLiteralNode.ModuleId(), uintLiteralNode.Value()));
+    value.reset(new cmajor::symbols::UIntValue(uintLiteralNode.GetSpan(), uintLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::LongLiteralNode& longLiteralNode)
 {
-    value.reset(new cmajor::symbols::LongValue(longLiteralNode.GetSourcePos(), longLiteralNode.ModuleId(), longLiteralNode.Value()));
+    value.reset(new cmajor::symbols::LongValue(longLiteralNode.GetSpan(), longLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::ULongLiteralNode& ulongLiteralNode)
 {
-    value.reset(new cmajor::symbols::ULongValue(ulongLiteralNode.GetSourcePos(), ulongLiteralNode.ModuleId(), ulongLiteralNode.Value()));
+    value.reset(new cmajor::symbols::ULongValue(ulongLiteralNode.GetSpan(), ulongLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::FloatLiteralNode& floatLiteralNode)
 {
-    value.reset(new cmajor::symbols::FloatValue(floatLiteralNode.GetSourcePos(), floatLiteralNode.ModuleId(), floatLiteralNode.Value()));
+    value.reset(new cmajor::symbols::FloatValue(floatLiteralNode.GetSpan(), floatLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::DoubleLiteralNode& doubleLiteralNode)
 {
-    value.reset(new cmajor::symbols::DoubleValue(doubleLiteralNode.GetSourcePos(), doubleLiteralNode.ModuleId(), doubleLiteralNode.Value()));
+    value.reset(new cmajor::symbols::DoubleValue(doubleLiteralNode.GetSpan(), doubleLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::CharLiteralNode& charLiteralNode)
 {
-    value.reset(new cmajor::symbols::CharValue(charLiteralNode.GetSourcePos(), charLiteralNode.ModuleId(), charLiteralNode.Value()));
+    value.reset(new cmajor::symbols::CharValue(charLiteralNode.GetSpan(), charLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::WCharLiteralNode& wcharLiteralNode)
 {
-    value.reset(new cmajor::symbols::WCharValue(wcharLiteralNode.GetSourcePos(), wcharLiteralNode.ModuleId(), wcharLiteralNode.Value()));
+    value.reset(new cmajor::symbols::WCharValue(wcharLiteralNode.GetSpan(), wcharLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::UCharLiteralNode& ucharLiteralNode)
 {
-    value.reset(new cmajor::symbols::UCharValue(ucharLiteralNode.GetSourcePos(), ucharLiteralNode.ModuleId(), ucharLiteralNode.Value()));
+    value.reset(new cmajor::symbols::UCharValue(ucharLiteralNode.GetSpan(), ucharLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::StringLiteralNode& stringLiteralNode)
 {
-    value.reset(new cmajor::symbols::StringValue(stringLiteralNode.GetSourcePos(), stringLiteralNode.ModuleId(), boundCompileUnit.Install(stringLiteralNode.Value()), stringLiteralNode.Value()));
+    value.reset(new cmajor::symbols::StringValue(stringLiteralNode.GetSpan(), boundCompileUnit.Install(stringLiteralNode.Value()), stringLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::WStringLiteralNode& wstringLiteralNode)
 {
-    value.reset(new cmajor::symbols::WStringValue(wstringLiteralNode.GetSourcePos(), wstringLiteralNode.ModuleId(), boundCompileUnit.Install(wstringLiteralNode.Value()), wstringLiteralNode.Value()));
+    value.reset(new cmajor::symbols::WStringValue(wstringLiteralNode.GetSpan(), boundCompileUnit.Install(wstringLiteralNode.Value()), wstringLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::UStringLiteralNode& ustringLiteralNode)
 {
-    value.reset(new cmajor::symbols::UStringValue(ustringLiteralNode.GetSourcePos(), ustringLiteralNode.ModuleId(), boundCompileUnit.Install(ustringLiteralNode.Value()), ustringLiteralNode.Value()));
+    value.reset(new cmajor::symbols::UStringValue(ustringLiteralNode.GetSpan(), boundCompileUnit.Install(ustringLiteralNode.Value()), ustringLiteralNode.Value()));
 }
 
 void Evaluator::Visit(cmajor::ast::NullLiteralNode& nullLiteralNode)
 {
-    value.reset(new cmajor::symbols::NullValue(nullLiteralNode.GetSourcePos(), nullLiteralNode.ModuleId(), symbolTable->GetTypeByName(U"@nullptr_type")));
+    value.reset(new cmajor::symbols::NullValue(nullLiteralNode.GetSpan(), symbolTable->GetTypeByName(U"@nullptr_type")));
 }
 
 void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
@@ -2811,7 +2816,7 @@ void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("array type expected", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("array type expected", arrayLiteralNode.GetFullSpan());
         }
     }
     cmajor::symbols::ArrayTypeSymbol* arrayType = static_cast<cmajor::symbols::ArrayTypeSymbol*>(targetType);
@@ -2827,12 +2832,13 @@ void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("invalid length for array literal of type '" + util::ToUtf8(arrayType->FullName()) + "'", arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId());
+            throw cmajor::symbols::Exception("invalid length for array literal of type '" + util::ToUtf8(arrayType->FullName()) + "'", 
+                arrayLiteralNode.GetFullSpan());
         }
     }
     for (int i = 0; i < n; ++i)
     {
-        value = Evaluate(arrayLiteralNode.Values()[i], elementType, containerScope, boundCompileUnit, dontThrow, currentFunction, arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId());
+        value = Evaluate(arrayLiteralNode.Values()[i], elementType, containerScope, boundCompileUnit, dontThrow, currentFunction);
         if (error)
         {
             if (dontThrow)
@@ -2841,7 +2847,7 @@ void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&arrayLiteralNode);
             }
         }
         if (!value)
@@ -2853,16 +2859,16 @@ void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&arrayLiteralNode);
             }
         }
         elementValues.push_back(std::move(value));
     }
     if (arrayType->Size() == -1)
     {
-        arrayType = symbolTable->MakeArrayType(arrayType->ElementType(), n, arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId());
+        arrayType = symbolTable->MakeArrayType(arrayType->ElementType(), n);
     }
-    value.reset(new cmajor::symbols::ArrayValue(arrayLiteralNode.GetSourcePos(), arrayLiteralNode.ModuleId(), arrayType, std::move(elementValues)));
+    value.reset(new cmajor::symbols::ArrayValue(arrayLiteralNode.GetSpan(), arrayType, std::move(elementValues)));
 }
 
 void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
@@ -2876,7 +2882,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("class type expected", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("class type expected", structuredLiteralNode.GetFullSpan());
         }
     }
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(targetType);
@@ -2906,13 +2912,14 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("wrong number of members variables for class literal of type '" + util::ToUtf8(classType->FullName()) + "'", structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                throw cmajor::symbols::Exception("wrong number of members variables for class literal of type '" + util::ToUtf8(classType->FullName()) + "'", 
+                    structuredLiteralNode.GetFullSpan());
             }
         }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::TypeSymbol* memberType = classType->MemberVariables()[i]->GetType();
-            value = Evaluate(structuredLiteralNode.Members()[i], memberType, containerScope, boundCompileUnit, dontThrow, currentFunction, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+            value = Evaluate(structuredLiteralNode.Members()[i], memberType, containerScope, boundCompileUnit, dontThrow, currentFunction);
             if (error)
             {
                 if (dontThrow)
@@ -2921,7 +2928,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&structuredLiteralNode);
                 }
             }
             if (!value)
@@ -2933,7 +2940,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&structuredLiteralNode);
                 }
             }
             memberValues.push_back(std::move(value));
@@ -2947,10 +2954,10 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
-        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, classType->AddPointer(sourcePos, moduleId))));
+        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(classType->GetSpan(), classType->AddPointer())));
         std::vector<FunctionScopeLookup> scopeLookups;
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, classType->ClassOrNsScope()));
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -2962,8 +2969,8 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             flags = flags | OverloadResolutionFlags::dontThrow;
         }
         std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
-        std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
-            flags, templateArgumentTypes, exception);
+        std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, scopeLookups, arguments, boundCompileUnit, currentFunction, 
+            &structuredLiteralNode, flags, templateArgumentTypes, exception);
         if (!constructorCall)
         {
             if (dontThrow)
@@ -2973,7 +2980,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
         argumentValues = ArgumentsToValues(constructorCall->Arguments(), error, true, boundCompileUnit);
@@ -2985,7 +2992,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
         cmajor::symbols::FunctionSymbol* constructorSymbol = constructorCall->GetFunctionSymbol();
@@ -3003,7 +3010,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+                ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
     }
@@ -3016,7 +3023,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("class '" + util::ToUtf8(classType->FullName()) + "' is not a literal class ", structuredLiteralNode.GetSourcePos(), structuredLiteralNode.ModuleId());
+            throw cmajor::symbols::Exception("class '" + util::ToUtf8(classType->FullName()) + "' is not a literal class ", structuredLiteralNode.GetFullSpan());
         }
     }
 }
@@ -3040,7 +3047,7 @@ void Evaluator::Visit(cmajor::ast::IdentifierNode& identifierNode)
         {
             qualifiedScope = symbol->Parent()->GetContainerScope();
         }
-        EvaluateSymbol(symbol, identifierNode.GetSourcePos());
+        EvaluateSymbol(symbol, &identifierNode);
         if (error)
         {
             return;
@@ -3055,7 +3062,7 @@ void Evaluator::Visit(cmajor::ast::IdentifierNode& identifierNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetSourcePos(), identifierNode.ModuleId());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(name) + "' not found", identifierNode.GetFullSpan());
         }
     }
 }
@@ -3086,32 +3093,32 @@ void Evaluator::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, templateIdNode.GetSourcePos(), templateIdNode.ModuleId());
+            ThrowCannotEvaluateStatically(&templateIdNode);
         }
     }
 }
 
-void Evaluator::EvaluateSymbol(cmajor::symbols::Symbol* symbol, const soul::ast::SourcePos& sourcePos)
+void Evaluator::EvaluateSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::Node* node)
 {
     if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::constantSymbol)
     {
         cmajor::symbols::ConstantSymbol* constantSymbol = static_cast<cmajor::symbols::ConstantSymbol*>(symbol);
-        EvaluateConstantSymbol(constantSymbol, sourcePos);
+        EvaluateConstantSymbol(constantSymbol, node);
     }
     else if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumConstantSymbol)
     {
         cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
-        EvaluateEnumConstantSymbol(enumConstantSymbol, sourcePos);
+        EvaluateEnumConstantSymbol(enumConstantSymbol, node);
     }
     else if (symbol->IsAliasTypeSymbol())
     {
         cmajor::symbols::AliasTypeSymbol* aliasTypeSymbol = static_cast<cmajor::symbols::AliasTypeSymbol*>(symbol);
-        EvaluateSymbol(aliasTypeSymbol->GetType(), sourcePos);
+        EvaluateSymbol(aliasTypeSymbol->GetType(), node);
     }
     else if (symbol->IsContainerSymbol())
     {
         cmajor::symbols::ContainerSymbol* containerSymbol = static_cast<cmajor::symbols::ContainerSymbol*>(symbol);
-        value.reset(new ScopedValue(sourcePos, moduleId, containerSymbol));
+        value.reset(new ScopedValue(node->GetSpan(), containerSymbol));
     }
     else if (symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupSymbol)
     {
@@ -3138,12 +3145,12 @@ void Evaluator::EvaluateSymbol(cmajor::symbols::Symbol* symbol, const soul::ast:
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId);
+            ThrowCannotEvaluateStatically(node);
         }
     }
 }
 
-void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constantSymbol, const soul::ast::SourcePos& sourcePos)
+void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constantSymbol, cmajor::ast::Node* node)
 {
     if (constantSymbol->Evaluating())
     {
@@ -3152,7 +3159,7 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
             error = true;
             return;
         }
-        throw cmajor::symbols::Exception("cyclic depenency detected", sourcePos, moduleId);
+        throw cmajor::symbols::Exception("cyclic depenency detected", node->GetFullSpan());
     }
     cmajor::symbols::Value* constantValue = constantSymbol->GetValue();
     if (constantValue)
@@ -3191,7 +3198,7 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
                 error = true;
                 return;
             }
-            throw cmajor::symbols::Exception("node for constant symbol '" + util::ToUtf8(constantSymbol->FullName()) + "' not found from symbol table", sourcePos, moduleId);
+            throw cmajor::symbols::Exception("node for constant symbol '" + util::ToUtf8(constantSymbol->FullName()) + "' not found from symbol table", node->GetFullSpan());
         }
         Assert(node->GetNodeType() == cmajor::ast::NodeType::constantNode, "constant node expected");
         cmajor::ast::ConstantNode* constantNode = static_cast<cmajor::ast::ConstantNode*>(node);
@@ -3206,7 +3213,7 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
     }
 }
 
-void Evaluator::EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* enumConstantSymbol, const soul::ast::SourcePos& sourcePos)
+void Evaluator::EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* enumConstantSymbol, cmajor::ast::Node* node)
 {
     if (enumConstantSymbol->Evaluating())
     {
@@ -3215,7 +3222,7 @@ void Evaluator::EvaluateEnumConstantSymbol(cmajor::symbols::EnumConstantSymbol* 
             error = true;
             return;
         }
-        throw cmajor::symbols::Exception("cyclic depenency detected", sourcePos, moduleId);
+        throw cmajor::symbols::Exception("cyclic depenency detected", node->GetFullSpan());
     }
     cmajor::symbols::Value* enumConstantValue = enumConstantSymbol->GetValue();
     if (enumConstantValue)
@@ -3252,22 +3259,22 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
         if (value->IsArrayReferenceValue())
         {
             cmajor::symbols::TypeSymbol* type = static_cast<ArrayReferenceValue*>(value.get())->GetArrayValue()->GetType(symbolTable);
-            ScopedValue* scopedValue = new ScopedValue(sourcePos, moduleId, type);
+            ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
             scopedValue->SetType(type);
             value.reset(scopedValue);
         }
         else if (value->IsStructuredReferenceValue())
         {
             cmajor::symbols::TypeSymbol* type = static_cast<StructuredReferenceValue*>(value.get())->GetStructuredValue()->GetType(symbolTable);
-            ScopedValue* scopedValue = new ScopedValue(sourcePos, moduleId, type);
-            scopedValue->SetType(type->AddPointer(sourcePos, moduleId));
+            ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
+            scopedValue->SetType(type->AddPointer());
             scopedValue->SetSubject(value.release());
             value.reset(scopedValue);
         }
         else if (value->IsStringReferenceValue())
         {
             cmajor::symbols::TypeSymbol* type = symbolTable->GetTypeByName(U"@string_functions");
-            ScopedValue* scopedValue = new ScopedValue(sourcePos, moduleId, type);
+            ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
             scopedValue->SetType(type);
             scopedValue->SetSubject(value.release());
             value.reset(scopedValue);
@@ -3275,7 +3282,7 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
         else if (value->GetValueType() == cmajor::symbols::ValueType::structuredValue)
         {
             cmajor::symbols::TypeSymbol* type = static_cast<cmajor::symbols::StructuredValue*>(value.get())->GetType(symbolTable);
-            ScopedValue* scopedValue = new ScopedValue(sourcePos, moduleId, type);
+            ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
             scopedValue->SetType(type);
             value.reset(scopedValue);
         }
@@ -3301,7 +3308,7 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
             {
                 receiver = std::move(value);
             }
-            EvaluateSymbol(symbol, dotNode.GetSourcePos());
+            EvaluateSymbol(symbol, &dotNode);
             if (error) return;
             if (receiver && value->IsFunctionGroupValue())
             {
@@ -3319,7 +3326,7 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
             else
             {
                 throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(containerSymbol->FullName()) + "' does not have member '" + util::ToUtf8(memberName) + "'", 
-                    dotNode.GetSourcePos(), dotNode.ModuleId());
+                    dotNode.GetFullSpan());
             }
         }
     }
@@ -3332,7 +3339,7 @@ void Evaluator::Visit(cmajor::ast::DotNode& dotNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("expression '" + dotNode.Subject()->ToString() + "' must denote a namespace, class type or enumerated type", dotNode.Subject()->GetSourcePos(), dotNode.Subject()->ModuleId());
+            throw cmajor::symbols::Exception("expression '" + dotNode.Subject()->ToString() + "' must denote a namespace, class type or enumerated type", dotNode.Subject()->GetFullSpan());
         }
     }
 }
@@ -3345,7 +3352,7 @@ void Evaluator::Visit(cmajor::ast::ArrowNode& arrowNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, arrowNode.GetSourcePos(), arrowNode.ModuleId());
+        ThrowCannotEvaluateStatically(&arrowNode);
     }
 }
 
@@ -3357,7 +3364,7 @@ void Evaluator::Visit(cmajor::ast::EquivalenceNode& equivalenceNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, equivalenceNode.GetSourcePos(), equivalenceNode.ModuleId());
+        ThrowCannotEvaluateStatically(&equivalenceNode);
     }
 }
 
@@ -3369,7 +3376,7 @@ void Evaluator::Visit(cmajor::ast::ImplicationNode& implicationNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, implicationNode.GetSourcePos(), implicationNode.ModuleId());
+        ThrowCannotEvaluateStatically(&implicationNode);
     }
 }
 
@@ -3494,23 +3501,23 @@ void Evaluator::Visit(cmajor::ast::PrefixIncrementNode& prefixIncrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&prefixIncrementNode);
         }
     }
     bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::AddNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::ByteLiteralNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::AddNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::ByteLiteralNode(prefixIncrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     else
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::AddNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), prefixIncrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::SByteLiteralNode(prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::AddNode(prefixIncrementNode.GetSpan(), prefixIncrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::SByteLiteralNode(prefixIncrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     prefixIncrementNode.Subject()->Accept(*this);
@@ -3527,7 +3534,7 @@ void Evaluator::Visit(cmajor::ast::PrefixIncrementNode& prefixIncrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, prefixIncrementNode.GetSourcePos(), prefixIncrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&prefixIncrementNode);
         }
     }
 }
@@ -3548,23 +3555,23 @@ void Evaluator::Visit(cmajor::ast::PrefixDecrementNode& prefixDecrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&prefixDecrementNode);
         }
     }
     bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::SubNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::ByteLiteralNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::SubNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::ByteLiteralNode(prefixDecrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     else
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::SubNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), prefixDecrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::SByteLiteralNode(prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::SubNode(prefixDecrementNode.GetSpan(), prefixDecrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::SByteLiteralNode(prefixDecrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     prefixDecrementNode.Subject()->Accept(*this);
@@ -3577,7 +3584,7 @@ void Evaluator::Visit(cmajor::ast::PrefixDecrementNode& prefixDecrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, prefixDecrementNode.GetSourcePos(), prefixDecrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&prefixDecrementNode);
         }
     }
 }
@@ -3597,7 +3604,7 @@ void Evaluator::Visit(cmajor::ast::DerefNode& derefNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("unsupported pointer value", derefNode.GetSourcePos(), derefNode.ModuleId());
+                throw cmajor::symbols::Exception("unsupported pointer value", derefNode.GetFullSpan());
             }
         }
     }
@@ -3609,7 +3616,7 @@ void Evaluator::Visit(cmajor::ast::DerefNode& derefNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("pointer value expected", derefNode.GetSourcePos(), derefNode.ModuleId());
+            throw cmajor::symbols::Exception("pointer value expected", derefNode.GetFullSpan());
         }
     }
 }
@@ -3622,7 +3629,7 @@ void Evaluator::Visit(cmajor::ast::AddrOfNode& addrOfNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, addrOfNode.GetSourcePos(), addrOfNode.ModuleId());
+        ThrowCannotEvaluateStatically(&addrOfNode);
     }
 }
 
@@ -3639,7 +3646,7 @@ void Evaluator::Visit(cmajor::ast::IsNode& isNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, isNode.GetSourcePos(), isNode.ModuleId());
+        ThrowCannotEvaluateStatically(&isNode);
     }
 }
 
@@ -3651,7 +3658,7 @@ void Evaluator::Visit(cmajor::ast::AsNode& asNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, asNode.GetSourcePos(), asNode.ModuleId());
+        ThrowCannotEvaluateStatically(&asNode);
     }
 }
 
@@ -3661,7 +3668,7 @@ void Evaluator::Visit(cmajor::ast::IndexingNode& indexingNode)
     if (value && value->IsArrayReferenceValue())
     {
         cmajor::symbols::ArrayValue* arrayValue = static_cast<ArrayReferenceValue*>(value.get())->GetArrayValue();
-        value = Evaluate(indexingNode.Index(), symbolTable->GetTypeByName(U"long"), containerScope, boundCompileUnit, dontThrow, currentFunction, indexingNode.GetSourcePos(), indexingNode.ModuleId());
+        value = Evaluate(indexingNode.Index(), symbolTable->GetTypeByName(U"long"), containerScope, boundCompileUnit, dontThrow, currentFunction);
         if (!value)
         {
             if (dontThrow)
@@ -3671,7 +3678,7 @@ void Evaluator::Visit(cmajor::ast::IndexingNode& indexingNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, indexingNode.GetSourcePos(), indexingNode.ModuleId());
+                ThrowCannotEvaluateStatically(&indexingNode);
             }
         }
         cmajor::symbols::LongValue* indexValue = static_cast<cmajor::symbols::LongValue*>(value.get());
@@ -3685,7 +3692,7 @@ void Evaluator::Visit(cmajor::ast::IndexingNode& indexingNode)
             }
             else
             {
-                throw cmajor::symbols::Exception("array index out of range", indexingNode.GetSourcePos(), indexingNode.ModuleId());
+                throw cmajor::symbols::Exception("array index out of range", indexingNode.GetFullSpan());
             }
         }
         cmajor::symbols::Value* elementValue = arrayValue->Elements()[index].get();
@@ -3716,7 +3723,7 @@ void Evaluator::Visit(cmajor::ast::IndexingNode& indexingNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, indexingNode.GetSourcePos(), indexingNode.ModuleId());
+            ThrowCannotEvaluateStatically(&indexingNode);
         }
     }
 }
@@ -3740,7 +3747,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                ThrowCannotEvaluateStatically(&invokeNode);
             }
         }
         values.push_back(std::move(value));
@@ -3771,7 +3778,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             }
             else
             {
-                ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                ThrowCannotEvaluateStatically(&invokeNode);
             }
         }
         if (functionGroupValue->Receiver() && functionGroupValue->Receiver()->IsScopedValue())
@@ -3779,21 +3786,21 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::TypeSymbol* type = static_cast<ScopedValue*>(functionGroupValue->Receiver())->GetType(symbolTable);
             if (type)
             {
-                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, type)));
+                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(type->GetSpan(), type)));
             }
         }
         templateTypeArguments = std::move(functionGroupValue->TemplateTypeArguments());
         std::unique_ptr<cmajor::symbols::Exception> exception;
         OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
         flags = flags | OverloadResolutionFlags::dontThrow;
-        std::unique_ptr<BoundFunctionCall> functionCall = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
-            flags, templateTypeArguments, exception);
+        std::unique_ptr<BoundFunctionCall> functionCall = ResolveOverload(
+            functionGroup->Name(), containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, &invokeNode, flags, templateTypeArguments, exception);
         bool memberFunctionCall = false;
         if (!functionCall)
         {
             if (currentClassType)
             {
-                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(sourcePos, moduleId, currentClassType->AddPointer(sourcePos, moduleId))));
+                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(currentClassType->GetSpan(), currentClassType->AddPointer())));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, currentClassType->GetContainerScope()));
                 OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
                 if (dontThrow)
@@ -3801,7 +3808,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                     flags = flags | OverloadResolutionFlags::dontThrow;
                 }
                 std::unique_ptr<cmajor::symbols::Exception> exception;
-                functionCall = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, sourcePos, moduleId,
+                functionCall = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, &invokeNode,
                     flags, templateTypeArguments, exception);
                 if (functionCall)
                 {
@@ -3817,7 +3824,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&invokeNode);
                 }
             }
         }
@@ -3835,10 +3842,10 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&invokeNode);
                 }
             }
-            value = functionSymbol->ConstructValue(argumentValues, invokeNode.GetSourcePos(), invokeNode.ModuleId(), receiver);
+            value = functionSymbol->ConstructValue(argumentValues, invokeNode.GetSpan(), receiver);
             if (!value)
             {
                 if (dontThrow)
@@ -3848,7 +3855,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&invokeNode);
                 }
             }
         }
@@ -3866,7 +3873,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&invokeNode);
                 }
             }
             cmajor::symbols::ClassTypeSymbol* prevClassType = currentClassType;
@@ -3896,10 +3903,10 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                     }
                     else
                     {
-                        ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                        ThrowCannotEvaluateStatically(&invokeNode);
                     }
                 }
-                value = intrinsic->Evaluate(argumentValues, templateTypeArguments, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                value = intrinsic->Evaluate(argumentValues, templateTypeArguments, &invokeNode);
                 if (!value)
                 {
                     if (dontThrow)
@@ -3909,7 +3916,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                     }
                     else
                     {
-                        ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                        ThrowCannotEvaluateStatically(&invokeNode);
                     }
                 }
             }
@@ -3922,7 +3929,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
                 }
                 else
                 {
-                    ThrowCannotEvaluateStatically(sourcePos, moduleId, invokeNode.GetSourcePos(), invokeNode.ModuleId());
+                    ThrowCannotEvaluateStatically(&invokeNode);
                 }
             }
         }
@@ -3935,7 +3942,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
         }
         else
         {
-            throw cmajor::symbols::Exception("function group expected", invokeNode.GetSourcePos(), invokeNode.ModuleId());
+            throw cmajor::symbols::Exception("function group expected", invokeNode.GetFullSpan());
         }
     }
 }
@@ -3953,7 +3960,7 @@ void Evaluator::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&postfixIncrementNode);
         }
     }
     bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
@@ -3961,14 +3968,16 @@ void Evaluator::Visit(cmajor::ast::PostfixIncrementNode& postfixIncrementNode)
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::AddNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext), new cmajor::ast::ByteLiteralNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::AddNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext), 
+                new cmajor::ast::ByteLiteralNode(postfixIncrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     else
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::AddNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), postfixIncrementNode.Subject()->Clone(cloneContext), new cmajor::ast::SByteLiteralNode(postfixIncrementNode.GetSourcePos(), postfixIncrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::AddNode(postfixIncrementNode.GetSpan(), postfixIncrementNode.Subject()->Clone(cloneContext), 
+                new cmajor::ast::SByteLiteralNode(postfixIncrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     value = std::move(result);
@@ -3987,7 +3996,7 @@ void Evaluator::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrementNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId());
+            ThrowCannotEvaluateStatically(&postfixDecrementNode);
         }
     }
     bool unsignedType = value->GetType(symbolTable)->IsUnsignedType();
@@ -3995,16 +4004,16 @@ void Evaluator::Visit(cmajor::ast::PostfixDecrementNode& postfixDecrementNode)
     cmajor::ast::CloneContext cloneContext;
     if (unsignedType)
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::SubNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::ByteLiteralNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::SubNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::ByteLiteralNode(postfixDecrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     else
     {
-        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-            new cmajor::ast::SubNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), postfixDecrementNode.Subject()->Clone(cloneContext),
-                new cmajor::ast::SByteLiteralNode(postfixDecrementNode.GetSourcePos(), postfixDecrementNode.ModuleId(), 1)));
+        cmajor::ast::AssignmentStatementNode assignmentStatementNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+            new cmajor::ast::SubNode(postfixDecrementNode.GetSpan(), postfixDecrementNode.Subject()->Clone(cloneContext),
+                new cmajor::ast::SByteLiteralNode(postfixDecrementNode.GetSpan(), 1)));
         assignmentStatementNode.Accept(*this);
     }
     value = std::move(result);
@@ -4018,7 +4027,7 @@ void Evaluator::Visit(cmajor::ast::SizeOfNode& sizeOfNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, sizeOfNode.GetSourcePos(), sizeOfNode.ModuleId());
+        ThrowCannotEvaluateStatically(&sizeOfNode);
     }
 }
 
@@ -4030,7 +4039,7 @@ void Evaluator::Visit(cmajor::ast::TypeNameNode& typeNameNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, typeNameNode.GetSourcePos(), typeNameNode.ModuleId());
+        ThrowCannotEvaluateStatically(&typeNameNode);
     }
 }
 
@@ -4042,7 +4051,7 @@ void Evaluator::Visit(cmajor::ast::TypeIdNode& typeIdNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, typeIdNode.GetSourcePos(), typeIdNode.ModuleId());
+        ThrowCannotEvaluateStatically(&typeIdNode);
     }
 }
 
@@ -4062,10 +4071,10 @@ void Evaluator::Visit(cmajor::ast::CastNode& castNode)
         }
         else
         {
-            ThrowCannotEvaluateStatically(sourcePos, moduleId, castNode.GetSourcePos(), castNode.ModuleId());
+            ThrowCannotEvaluateStatically(&castNode);
         }
     }
-    value.reset(value->As(type, true, castNode.GetSourcePos(), castNode.ModuleId(), dontThrow));
+    value.reset(value->As(type, true, &castNode, dontThrow));
     cast = prevCast;
 }
 
@@ -4077,7 +4086,7 @@ void Evaluator::Visit(cmajor::ast::ConstructNode& constructNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, constructNode.GetSourcePos(), constructNode.ModuleId());
+        ThrowCannotEvaluateStatically(&constructNode);
     }
 }
 
@@ -4089,7 +4098,7 @@ void Evaluator::Visit(cmajor::ast::NewNode& newNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, newNode.GetSourcePos(), newNode.ModuleId());
+        ThrowCannotEvaluateStatically(&newNode);
     }
 }
 
@@ -4101,7 +4110,7 @@ void Evaluator::Visit(cmajor::ast::ThisNode& thisNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, thisNode.GetSourcePos(), thisNode.ModuleId());
+        ThrowCannotEvaluateStatically(&thisNode);
     }
 }
 
@@ -4113,7 +4122,7 @@ void Evaluator::Visit(cmajor::ast::BaseNode& baseNode)
     }
     else
     {
-        ThrowCannotEvaluateStatically(sourcePos, moduleId, baseNode.GetSourcePos(), baseNode.ModuleId());
+        ThrowCannotEvaluateStatically(&baseNode);
     }
 }
 
@@ -4122,11 +4131,11 @@ void Evaluator::Visit(cmajor::ast::ParenthesizedExpressionNode& parenthesizedExp
     parenthesizedExpressionNode.Subject()->Accept(*this);
 }
 
-std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit, bool dontThrow, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos,
-    const util::uuid& moduleId)
+std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor::symbols::TypeSymbol* targetType, cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit, bool dontThrow, 
+    BoundFunction* currentFunction)
 {
     cmajor::symbols::ValueType targetValueType = targetType->GetValueType();
-    Evaluator evaluator(boundCompileUnit, containerScope, targetType, targetValueType, false, dontThrow, currentFunction, sourcePos, moduleId);
+    Evaluator evaluator(boundCompileUnit, containerScope, targetType, targetValueType, false, dontThrow, currentFunction);
     node->Accept(evaluator);
     if (evaluator.Error())
     {
@@ -4137,7 +4146,7 @@ std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor
         std::unique_ptr<cmajor::symbols::Value> value = evaluator.GetValue();
         if (value && value->IsComplete())
         {
-            if (!TypesEqual(targetType->PlainType(sourcePos, moduleId), value->GetType(&boundCompileUnit.GetSymbolTable())))
+            if (!TypesEqual(targetType->PlainType(), value->GetType(&boundCompileUnit.GetSymbolTable())))
             {
                 if (targetType->IsArrayType() && static_cast<cmajor::symbols::ArrayTypeSymbol*>(targetType)->Size() == -1)
                 {
@@ -4147,7 +4156,7 @@ std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor
                 {
                     return std::move(value);
                 }
-                value.reset(value->As(targetType->PlainType(sourcePos, moduleId), false, node->GetSourcePos(), node->ModuleId(), dontThrow));
+                value.reset(value->As(targetType->PlainType(), false, node, dontThrow));
             }
             return std::move(value);
         }
@@ -4159,7 +4168,7 @@ std::unique_ptr<cmajor::symbols::Value> Evaluate(cmajor::ast::Node* node, cmajor
             }
             else
             {
-                throw cmajor::symbols::Exception("value not complete", node->GetSourcePos(), node->ModuleId());
+                throw cmajor::symbols::Exception("value not complete", node->GetFullSpan());
             }
         }
     }

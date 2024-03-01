@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -192,7 +192,8 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 bool prevPreparing = rootModule->Preparing();
                 rootModule->SetPreparing(true);
-                cmajor::symbols::PrepareModuleForCompilation(rootModule.get(), project->References(), project->GetTarget());
+                cmajor::symbols::PrepareModuleForCompilation(rootModule.get(), project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
+                    project->RootCompileUnit());
                 Preprocess(project);
                 CreateSymbols(rootModule->GetSymbolTable(), project, stop);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))

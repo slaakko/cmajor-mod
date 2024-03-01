@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -11,13 +11,13 @@ import cmajor.ast.attribute;
 
 namespace cmajor::ast {
 
-InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_) :
-    Node(NodeType::interfaceNode, sourcePos_, moduleId_), specifiers(), id(), members()
+InterfaceNode::InterfaceNode(const soul::ast::Span& span_) :
+    Node(NodeType::interfaceNode, span_), specifiers(), id(), members()
 {
 }
 
-InterfaceNode::InterfaceNode(const soul::ast::SourcePos& sourcePos_, const util::uuid& moduleId_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
-    Node(NodeType::interfaceNode, sourcePos_, moduleId_), specifiers(specifiers_), id(id_), members(), attributes(attributes_)
+InterfaceNode::InterfaceNode(const soul::ast::Span& span_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+    Node(NodeType::interfaceNode, span_), specifiers(specifiers_), id(id_), members(), attributes(attributes_)
 {
     id->SetParent(this);
 }
@@ -29,7 +29,7 @@ Node* InterfaceNode::Clone(CloneContext& cloneContext) const
     {
         clonedAttributes = static_cast<AttributesNode*>(attributes->Clone(cloneContext));
     }
-    InterfaceNode* clone = new InterfaceNode(GetSourcePos(), ModuleId(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+    InterfaceNode* clone = new InterfaceNode(GetSpan(), specifiers, static_cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
     int n = members.Count();
     for (int i = 0; i < n; ++i)
     {

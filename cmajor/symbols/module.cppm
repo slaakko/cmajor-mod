@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -14,7 +14,7 @@ import cmajor.symbols.sources;
 import cmajor.ast.project;
 import soul.lexer.file.map;
 import soul.lexer.base;
-import soul.ast.source.pos;
+import soul.ast.span;
 import util;
 import std.core;
 
@@ -57,7 +57,8 @@ const uint8_t moduleFormat_16 = uint8_t('G');
 const uint8_t moduleFormat_17 = uint8_t('H');
 const uint8_t moduleFormat_18 = uint8_t('I');
 const uint8_t moduleFormat_19 = uint8_t('J');
-const uint8_t currentModuleFormat = moduleFormat_19;
+const uint8_t moduleFormat_20 = uint8_t('K');
+const uint8_t currentModuleFormat = moduleFormat_20;
 
 enum class ModuleFlags : uint8_t
 {
@@ -142,7 +143,8 @@ public:
     const std::string& ResourceFilePath() const { return resourceFilePath; }
     void SetResourceFilePath(const std::string& resourceFilePath_);
     const std::vector<Module*> AllReferencedModules() const { return allRefModules; }
-    void PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target);
+    void PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
+        cmajor::ast::CompileUnitNode* rootCompileUnit);
     SymbolTable& GetSymbolTable() { return *symbolTable; }
     bool HasSymbolTable() const { return symbolTable != nullptr; }
     void CreateSymbolTable();
@@ -230,7 +232,8 @@ public:
     std::string GetParamHelpList(const std::string& sourceFilePath, int symbolIndex);
     soul::lexer::FileMap& FileMap() { return fileMap; }
     void MakeFileMapFromFileTable();
-    std::string GetErrorLines(const soul::ast::SourcePos& sourcePos);
+    std::string GetErrorLines(const soul::ast::Span& span, int fileIndex, soul::ast::LineColLen& lineColLen);
+    soul::ast::LineColLen GetLineColLen(const soul::ast::Span& span, int fileIndex);
 private:
     uint8_t format;
     ModuleFlags flags;
@@ -289,6 +292,7 @@ private:
 };
 
 std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId);
+int GetLineNumber(const soul::ast::FullSpan& fullSpan);
 bool HasRootModuleForCurrentThread();
 Module* GetRootModuleForCurrentThread();
 void SetRootModuleForCurrentThread(Module* rootModule_);

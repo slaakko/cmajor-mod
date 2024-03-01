@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -782,6 +782,42 @@ void Project::Save()
 void Project::AddCompileUnit(CompileUnitNode* compileUnit)
 {
     compileUnits.push_back(std::unique_ptr<CompileUnitNode>(compileUnit));
+}
+
+soul::ast::Span Project::RootSpan() const
+{
+    if (!compileUnits.empty())
+    {
+        return compileUnits.front()->GlobalNsSpan();
+    }
+    else
+    {
+        return soul::ast::Span();
+    }
+}
+
+int32_t Project::RootFileIndex() const
+{
+    if (!compileUnits.empty())
+    {
+        return compileUnits.front()->FileIndex();
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+CompileUnitNode* Project::RootCompileUnit() const
+{
+    if (!compileUnits.empty())
+    {
+        return compileUnits.front().get();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 } // namespace cmajor::ast

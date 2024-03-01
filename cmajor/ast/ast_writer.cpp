@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -15,8 +15,7 @@ AstWriter::AstWriter(const std::string& fileName_) :
 void AstWriter::Write(Node* node)
 {
     binaryStreamWriter.Write(static_cast<uint8_t>(node->GetNodeType()));
-    Write(node->GetSourcePos());
-    binaryStreamWriter.Write(node->ModuleId());
+    Write(node->GetSpan());
     node->Write(*this);
 }
 
@@ -25,18 +24,23 @@ void AstWriter::Write(Specifiers specifiers)
     binaryStreamWriter.Write(static_cast<uint32_t>(specifiers));
 }
 
-void AstWriter::Write(const soul::ast::SourcePos& sourcePos)
+void AstWriter::Write(const soul::ast::Span& span)
 {
-    if (sourcePos.line)
+    binaryStreamWriter.Write(static_cast<int32_t>(span.pos));
+    binaryStreamWriter.Write(static_cast<int32_t>(span.len));
+
+/*
+    if (span.line)
     {
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(sourcePos.line));
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(sourcePos.file));
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(sourcePos.col));
+        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.line));
+        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.file));
+        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.col));
     }
     else
     {
         binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(0));
     }
+*/
 }
 
 } // namespace cmajor::ast

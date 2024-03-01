@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -7,6 +7,7 @@ export module cmajor.attribute.parser;
 
 [interface]import cmajor.parser.context;
 [interface]import cmajor.ast;
+[interface]import soul.ast.span;
 [implementation]import cmajor.token;
 [implementation]import soul.lexer;
 [implementation]import cmajor.lexer;
@@ -21,7 +22,7 @@ parser AttributeParser
         (
             LBRACKET
             {
-                attributesNode.reset(new cmajor::ast::AttributesNode(lexer.GetSourcePos(pos), context->ModuleId()));
+                attributesNode.reset(new cmajor::ast::AttributesNode(lexer.GetSpan(pos)));
             }
             (
                 Attribute(context, attributesNode.get()):attribute % COMMA
@@ -33,11 +34,11 @@ parser AttributeParser
         }
         ;
 
-    Attribute(cmajor::parser::context::Context* context, cmajor::ast::AttributesNode* attributes, var std::u32string value, var std::u32string name, var soul::ast::SourcePos s)
+    Attribute(cmajor::parser::context::Context* context, cmajor::ast::AttributesNode* attributes, var std::u32string value, var std::u32string name, var soul::ast::Span s)
         ::= 
         (
             empty{ value = U"true"; }
-            ID{ s = lexer.GetSourcePos(pos); name = lexer.GetToken(pos).ToString(); }
+            ID{ s = lexer.GetSpan(pos); name = lexer.GetToken(pos).ToString(); }
             (
                 ASSIGN STRINGLIT
                 {
@@ -48,7 +49,7 @@ parser AttributeParser
 
         )
         {
-            attributes->AddAttribute(s, context->ModuleId(), name, value);
+            attributes->AddAttribute(s, name, value);
         }
         ;
 }

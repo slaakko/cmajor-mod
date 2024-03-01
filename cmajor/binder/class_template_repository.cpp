@@ -1,5 +1,5 @@
 // =================================
-// Copyright (c) 2023 Seppo Laakko
+// Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
 
@@ -17,6 +17,7 @@ import cmajor.binder.bound.function;
 import cmajor.binder.bound.statement;
 import cmajor.binder.bound.expression;
 import cmajor.binder.concepts;
+import cmajor.binder.instantiation_guard;
 
 namespace cmajor::binder {
 
@@ -29,21 +30,21 @@ ClassTemplateRepository::ClassTemplateRepository(BoundCompileUnit& boundCompileU
 {
 }
 
-void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, cmajor::symbols::ClassTypeSymbol* classTemplate, cmajor::symbols::ContainerScope* containerScope,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, cmajor::symbols::ClassTypeSymbol* classTemplate, 
+    cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node)
 {
     int n = classTemplate->TemplateParameters().size();
     int m = templateArgumentTypes.size();
     if (m == n) return;
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(classTemplate);
-    if (!node)
+    cmajor::ast::Node* classTemplateNode = symbolTable.GetNodeNoThrow(classTemplate);
+    if (!classTemplateNode)
     {
-        node = classTemplate->GetClassNode();
-        Assert(node, "class node not read"); 
+        classTemplateNode = classTemplate->GetClassNode();
+        Assert(classTemplateNode, "class node not read");
     }
-    Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected"); 
-    cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(node);
+    Assert(classTemplateNode->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
+    cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(classTemplateNode);
     int numFileScopeAdded = 0;
     int nu = classTemplate->UsingNodes().Count();
     if (nu > 0)
@@ -79,7 +80,8 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
     for (int i = 0; i < n; ++i)
     {
         cmajor::symbols::TemplateParameterSymbol* templateParameterSymbol = classTemplate->TemplateParameters()[i];
-        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(sourcePos, moduleId, templateParameterSymbol->Name());
+        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(
+            templateParameterSymbol->GetSpan(), templateParameterSymbol->Name());
         boundTemplateParameters.push_back(std::unique_ptr<cmajor::symbols::BoundTemplateParameterSymbol>(boundTemplateParameter));
         if (i < m)
         {
@@ -90,12 +92,12 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
         {
             if (i >= classNode->TemplateParameters().Count())
             {
-                throw cmajor::symbols::Exception("too few template arguments", sourcePos, moduleId);
+                throw cmajor::symbols::Exception("too few template arguments", node->GetFullSpan());
             }
             cmajor::ast::Node* defaultTemplateArgumentNode = classNode->TemplateParameters()[i]->DefaultTemplateArgument();
             if (!defaultTemplateArgumentNode)
             {
-                throw cmajor::symbols::Exception("too few template arguments", sourcePos, moduleId);
+                throw cmajor::symbols::Exception("too few template arguments", node->GetFullSpan());
             }
             cmajor::symbols::TypeSymbol* templateArgumentType = ResolveType(defaultTemplateArgumentNode, boundCompileUnit, &resolveScope);
             templateArgumentTypes.push_back(templateArgumentType);
@@ -107,21 +109,23 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
     }
 }
 
-void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, 
+    cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node)
 {
     if (classTemplateSpecialization->IsBound()) return;
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::symbols::ClassTypeSymbol* classTemplate = classTemplateSpecialization->GetClassTemplate();
-    cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(classTemplate);
-    if (!node)
+    cmajor::ast::Node* classTemplateNode = symbolTable.GetNodeNoThrow(classTemplate);
+    if (!classTemplateNode)
     {
-        node = classTemplate->GetClassNode();
-        Assert(node, "class node not read"); 
+        classTemplateNode = classTemplate->GetClassNode();
+        Assert(classTemplateNode, "class node not read");
     }
-    Assert(node->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
-    cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(node);
-    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(classNode->GetSourcePos(), classNode->ModuleId(), new cmajor::ast::IdentifierNode(classNode->GetSourcePos(), classNode->ModuleId(), U"")));
+    Assert(classTemplateNode->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
+    cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(classTemplateNode);
+    std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(classNode->GetSpan(), new cmajor::ast::IdentifierNode(classNode->GetSpan(), U"")));
+    globalNs->SetFileIndex(classNode->FileIndex());
+    globalNs->SetModuleId(classNode->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateClassNode();
@@ -142,7 +146,9 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
-            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(classNode->GetSourcePos(), classNode->ModuleId(), new cmajor::ast::IdentifierNode(classNode->GetSourcePos(), classNode->ModuleId(), nsComponent));
+            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(classNode->GetSpan(), new cmajor::ast::IdentifierNode(classNode->GetSpan(), nsComponent));
+            nsNode->SetFileIndex(classNode->FileIndex());
+            nsNode->SetModuleId(classNode->ModuleId());
             currentNs->AddMember(nsNode);
             currentNs = nsNode;
         }
@@ -153,7 +159,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     int m = classTemplateSpecialization->TemplateArgumentTypes().size();
     if (n != m)
     {
-        throw cmajor::symbols::Exception("wrong number of template arguments", sourcePos, moduleId);
+        throw cmajor::symbols::Exception("wrong number of template arguments", node->GetFullSpan());
     }
     bool templateParameterBinding = false;
     cmajor::symbols::ContainerScope resolveScope;
@@ -161,7 +167,8 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     for (int i = 0; i < n; ++i)
     {
         cmajor::symbols::TemplateParameterSymbol* templateParameter = classTemplate->TemplateParameters()[i];
-        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(sourcePos, moduleId, templateParameter->Name());
+        cmajor::symbols::BoundTemplateParameterSymbol* boundTemplateParameter = new cmajor::symbols::BoundTemplateParameterSymbol(
+            templateParameter->GetSpan(), templateParameter->Name());
         boundTemplateParameter->SetParent(classTemplateSpecialization);
         cmajor::symbols::TypeSymbol* templateArgumentType = classTemplateSpecialization->TemplateArgumentTypes()[i];
         boundTemplateParameter->SetType(templateArgumentType);
@@ -186,6 +193,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         classTemplateSpecialization->AddMember(boundTemplateParameter);
     }
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
+    InstantiationGuard instantiationGuard(symbolTable, currentNs->FileIndex(), currentNs->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
     symbolCreatorVisitor.SetClassInstanceNode(classInstanceNode);
     symbolCreatorVisitor.SetClassTemplateSpecialization(classTemplateSpecialization);
@@ -227,7 +235,8 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     }
 }
 
-bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
+    cmajor::ast::Node* node)
 {
     if (instantiatedMemberFunctions.find(memberFunction) != instantiatedMemberFunctions.cend()) return true;
     instantiatedMemberFunctions.insert(memberFunction);
@@ -246,8 +255,8 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             return true;
         }
         Assert(classTemplateSpecialization->IsBound(), "class template specialization not bound"); 
-        cmajor::ast::Node* node = symbolTable.GetNodeNoThrow(memberFunction);
-        if (!node)
+        cmajor::ast::Node* memberFunctionNode = symbolTable.GetNodeNoThrow(memberFunction);
+        if (!memberFunctionNode)
         {
             return false;
         }
@@ -269,16 +278,18 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
                 std::unique_ptr<BoundConstraint> boundConstraint;
                 std::unique_ptr<cmajor::symbols::Exception> conceptCheckException;
                 if (!CheckConstraint(classTemplate->Constraint(), classTemplate->UsingNodes(), boundCompileUnit, containerScope, currentFunction, classTemplate->TemplateParameters(),
-                    templateParameterMap, boundConstraint, sourcePos, moduleId, memberFunction, conceptCheckException))
+                    templateParameterMap, boundConstraint, node, memberFunction, conceptCheckException))
                 {
                     if (conceptCheckException)
                     {
-                        throw cmajor::symbols::Exception("concept check of class template specialization '" + util::ToUtf8(classTemplateSpecialization->FullName()) + "' failed: " + conceptCheckException->Message(), sourcePos,
-                            moduleId, conceptCheckException->References());
+                        throw cmajor::symbols::Exception("concept check of class template specialization '" + 
+                            util::ToUtf8(classTemplateSpecialization->FullName()) + "' failed: " + conceptCheckException->Message(), node->GetFullSpan(), 
+                            conceptCheckException->References());
                     }
                     else
                     {
-                        throw cmajor::symbols::Exception("concept check of class template specialization '" + util::ToUtf8(classTemplateSpecialization->FullName()) + "' failed.", sourcePos, moduleId);
+                        throw cmajor::symbols::Exception("concept check of class template specialization '" + 
+                            util::ToUtf8(classTemplateSpecialization->FullName()) + "' failed.", node->GetFullSpan());
                     }
                 }
             }
@@ -305,11 +316,11 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             fileScope->AddContainerScope(classTemplate->Ns()->GetContainerScope());
         }
         boundCompileUnit.AddFileScope(fileScope);
-        Assert(node->IsFunctionNode(), "function node expected");
-        cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(node);
+        Assert(memberFunctionNode->IsFunctionNode(), "function node expected");
+        cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(memberFunctionNode);
         if (memberFunction->IsDefault())
         {
-            functionInstanceNode->SetBodySource(new cmajor::ast::CompoundStatementNode(sourcePos, moduleId));
+            functionInstanceNode->SetBodySource(new cmajor::ast::CompoundStatementNode(memberFunctionNode->GetSpan()));
         }
         Assert(functionInstanceNode->BodySource(), "body source expected"); 
         cmajor::ast::CloneContext cloneContext;
@@ -321,20 +332,22 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
             cmajor::symbols::FileScope* classTemplateScope = new cmajor::symbols::FileScope();
             classTemplateScope->AddContainerScope(classTemplateSpecialization->GetContainerScope());
             boundCompileUnit.AddFileScope(classTemplateScope);
-            if (!CheckConstraint(functionInstanceNode->WhereConstraint(), classTemplate->UsingNodes(), boundCompileUnit, containerScope, currentFunction, classTemplate->TemplateParameters(),
-                templateParameterMap, boundConstraint, sourcePos, moduleId, memberFunction, conceptCheckException))
+            if (!CheckConstraint(functionInstanceNode->WhereConstraint(), classTemplate->UsingNodes(), boundCompileUnit, containerScope, currentFunction, 
+                classTemplate->TemplateParameters(), templateParameterMap, boundConstraint, node, memberFunction, conceptCheckException))
             {
                 boundCompileUnit.RemoveLastFileScope();
                 if (conceptCheckException)
                 {
-                    std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-                    references.push_back(std::make_pair(conceptCheckException->Defined(), conceptCheckException->DefinedModuleId()));
+                    std::vector<soul::ast::FullSpan> references;
+                    references.push_back(conceptCheckException->Defined());
                     references.insert(references.end(), conceptCheckException->References().begin(), conceptCheckException->References().end());
-                    throw cmajor::symbols::Exception("concept check of class template member function '" + util::ToUtf8(memberFunction->FullName()) + "' failed: " + conceptCheckException->Message(), sourcePos, moduleId, references);
+                    throw cmajor::symbols::Exception("concept check of class template member function '" + util::ToUtf8(memberFunction->FullName()) + "' failed: " + 
+                        conceptCheckException->Message(), node->GetFullSpan(), references);
                 }
                 else
                 {
-                    throw cmajor::symbols::Exception("concept check of class template template member function '" + util::ToUtf8(memberFunction->FullName()) + "' failed.", sourcePos, moduleId);
+                    throw cmajor::symbols::Exception("concept check of class template template member function '" + util::ToUtf8(memberFunction->FullName()) + "' failed.", 
+                        node->GetFullSpan());
                 }
             }
             else
@@ -349,10 +362,10 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(memberFunction));
         master->SetImmutable();
         symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
+        InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
         symbolTable.BeginContainer(memberFunction);
         symbolTable.MapNode(functionInstanceNode, memberFunction);
-        symbolCreatorVisitor.InsertTracer(functionInstanceNode->Body());
         functionInstanceNode->Body()->Accept(symbolCreatorVisitor);
         symbolTable.EndContainer();
         TypeBinder typeBinder(boundCompileUnit);
@@ -399,26 +412,27 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);
         boundCompileUnit.AddBoundNode(std::move(boundClass));
         boundCompileUnit.RemoveLastFileScope();
-        return InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, sourcePos, moduleId);
+        return InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, node);
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(memberFunction->GetSourcePos(), memberFunction->SourceModuleId()));
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(memberFunction->GetFullSpan());
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("could not instantiate member function '" + util::ToUtf8(memberFunction->FullName()) + "'. Reason: " + ex.Message(), sourcePos, moduleId, references);
+        throw cmajor::symbols::Exception("could not instantiate member function '" + util::ToUtf8(memberFunction->FullName()) + "'. Reason: " + ex.Message(), 
+            node->GetFullSpan(), references);
     }
 }
 
-bool ClassTemplateRepository::InstantiateDestructorAndVirtualFunctions(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction,
-    const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+bool ClassTemplateRepository::InstantiateDestructorAndVirtualFunctions(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, 
+    cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     for (cmajor::symbols::FunctionSymbol* virtualMemberFunction : classTemplateSpecialization->Vmt())
     {
         if (virtualMemberFunction->Parent() == classTemplateSpecialization && !virtualMemberFunction->IsGeneratedFunction())
         {
-            if (!Instantiate(virtualMemberFunction, containerScope, currentFunction, sourcePos, moduleId))
+            if (!Instantiate(virtualMemberFunction, containerScope, currentFunction, node))
             {
                 return false;
             }
@@ -428,7 +442,7 @@ bool ClassTemplateRepository::InstantiateDestructorAndVirtualFunctions(cmajor::s
     {
         if (!classTemplateSpecialization->Destructor()->IsGeneratedFunction())
         {
-            if (!Instantiate(classTemplateSpecialization->Destructor(), containerScope, currentFunction, sourcePos, moduleId))
+            if (!Instantiate(classTemplateSpecialization->Destructor(), containerScope, currentFunction, node))
             {
                 return false;
             }
@@ -437,27 +451,27 @@ bool ClassTemplateRepository::InstantiateDestructorAndVirtualFunctions(cmajor::s
     return true;
 }
 
-void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, const soul::ast::SourcePos& sourcePos,
-    const util::uuid& moduleId)
+void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
+    BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     try
     {
-        BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, sourcePos, moduleId);
+        BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
         for (cmajor::symbols::MemberFunctionSymbol* memberFunction : classTemplateSpecialization->MemberFunctions())
         {
-            if (!Instantiate(memberFunction, containerScope, currentFunction, sourcePos, moduleId))
+            if (!Instantiate(memberFunction, containerScope, currentFunction, node))
             {
-                throw cmajor::symbols::Exception("instantation of member function '" + util::ToUtf8(memberFunction->Name()) + "' failed", memberFunction->GetSourcePos(), memberFunction->SourceModuleId());
+                throw cmajor::symbols::Exception("instantation of member function '" + util::ToUtf8(memberFunction->Name()) + "' failed", memberFunction->GetFullSpan());
             }
         }
     }
     catch (const cmajor::symbols::Exception& ex)
     {
-        std::vector<std::pair<soul::ast::SourcePos, util::uuid>> references;
-        references.push_back(std::make_pair(ex.Defined(), ex.DefinedModuleId()));
+        std::vector<soul::ast::FullSpan> references;
+        references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("full instantiation request for class template specialization '" + util::ToUtf8(classTemplateSpecialization->FullName()) + "' failed. Reason: " + ex.Message(),
-            sourcePos, moduleId, references);
+        throw cmajor::symbols::Exception("full instantiation request for class template specialization '" + util::ToUtf8(classTemplateSpecialization->FullName()) + 
+            "' failed. Reason: " + ex.Message(), node->GetFullSpan(), references);
     }
 }
 
