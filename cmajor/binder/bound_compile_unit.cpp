@@ -276,6 +276,7 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         std::filesystem::path optbcfp = (directory / fileName).replace_extension(".opt.bc");
         std::filesystem::path optllfp = (directory / fileName).replace_extension(".opt.ll");
         std::filesystem::path objfp;
+        std::filesystem::path asmfp;
 #ifdef _WIN32
         if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
         {
@@ -289,6 +290,11 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         {
             objfp = (objectFileDirectory / fileName).replace_extension(".o");
         }
+        else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            objfp = (objectFileDirectory / fileName).replace_extension(".obj");
+            asmfp = (objectFileDirectory / fileName).replace_extension(".asm");
+        }
 #else
         objfp = (objectFileDirectory / fileName).replace_extension(".o");
 #endif
@@ -298,6 +304,7 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
         optBCFilePath = util::GetFullPath(util::ToUtf8(optbcfp.generic_u32string()));
         optLLFilePath = util::GetFullPath(util::ToUtf8(optllfp.generic_u32string()));
         objectFilePath = util::GetFullPath(util::ToUtf8(objfp.generic_u32string()));
+        asmFilePath = util::GetFullPath(util::ToUtf8(asmfp.generic_u32string()));
     }
 }
 
@@ -574,7 +581,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                                     return nullptr;
                                 }
                             }
-                            std::unique_ptr<cmajor::symbols::FunctionSymbol> functionToDelegateConversion(new cmajor::symbols::FunctionToDelegateConversion(sourceType, delegateTypeSymbol, viableFunction));
+                            std::unique_ptr<cmajor::symbols::FunctionSymbol> functionToDelegateConversion(new cmajor::symbols::FunctionToDelegateConversion(
+                                sourceType, delegateTypeSymbol, viableFunction));
                             functionToDelegateConversion->SetParent(&symbolTable.GlobalNs());
                             conversion = functionToDelegateConversion.get();
                             conversionTable.AddConversion(conversion);
@@ -907,6 +915,7 @@ void BoundCompileUnit::SetSystemRuntimeUnwindInfoSymbol(cmajor::symbols::TypeSym
 void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Span& span)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitUnwindInfo_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
@@ -925,6 +934,7 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
 {
     if (module.IsCore()) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitCompileUnit_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
@@ -984,6 +994,7 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
 void BoundCompileUnit::GenerateGlobalInitializationFunction(const soul::ast::Span& span)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
     std::u32string groupName = U"GlobalInitCompileUnits";
     globalInitFunctionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
     globalInitFunctionSymbol->SetParent(&symbolTable.GlobalNs());

@@ -2,14 +2,14 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Runtime/Win.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Graphics.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/Algorithm.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/FileByteStream.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/Path.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/system/System.Windows/Graphics.cm"/>
-    <currentCursorLine value="1"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/system/System.Base/FileByteStream.cm"/>
+    <currentCursorLine value="45"/>
     <breakpoints/>
     <expandedProjects>
-        <item value="System.Runtime"/>
-        <item value="System.Windows"/>
+        <item value="System.Base"/>
     </expandedProjects>
 </solutionSettings>

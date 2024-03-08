@@ -1,0 +1,11 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+public extern cdecl nothrow void RtmInit();
+public extern cdecl nothrow void RtmDone();
+public extern cdecl nothrow void* RtmMemAlloc(long size);
+public extern cdecl nothrow void RtmMemFree(void* ptr);
+public extern cdecl nothrow void RtmPrint(long x);
+

@@ -1,0 +1,643 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.masm.intermediate.parser;
+
+[interface]import cmajor.masm.intermediate.context;
+[interface]import cmajor.masm.intermediate.types;
+[interface]import cmajor.masm.intermediate.code;
+[implementation]import cmajor.masm.intermediate.error;
+[implementation]import cmajor.masm.intermediate.token;
+[implementation]import cmajor.masm.intermediate.lexer;
+
+parser IntermediateParser
+{
+    lexer cmajor::masm::intermediate::lexer::IntermediateLexer<char32_t>;
+    main;
+
+    IntermediateFile(cmajor::masm::intermediate::Context* context)
+        ::= empty{ context->SetFilePath(lexer.FileName()); }
+            TypeDeclarations(context):types?
+            DataDefinitions(context):data?
+            FunctionDefinitions(context):functions?
+        ;
+
+    TypeDeclarations(cmajor::masm::intermediate::Context* context)
+        ::= TYPES LBRACE TypeDeclaration(context):typeDeclaration* RBRACE
+        {
+            context->ResolveTypes();
+        }
+        ;
+
+    TypeDeclaration(cmajor::masm::intermediate::Context* context, var int32_t tid)
+        ::= TypeId:typeId{ tid = typeId;} ASSIGN TYPE
+        (   StructureType(context, tid):structureType
+        |   ArrayType(context, tid):arrayType
+        |   FunctionType(context, tid):functionType
+        )
+        ;
+
+    TypeId : int32_t
+        ::= 
+        (
+            TYPEID{ return cmajor::masm::intermediate::MakeUserTypeId(util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        )
+        ;
+
+    FundamentalTypeId : int32_t
+        ::= VOID{ return cmajor::masm::intermediate::voidTypeId; }
+        |   BOOL{ return cmajor::masm::intermediate::boolTypeId; }
+        |   SBYTE{ return cmajor::masm::intermediate::sbyteTypeId; }
+        |   BYTE{ return cmajor::masm::intermediate::byteTypeId; }
+        |   SHORT{ return cmajor::masm::intermediate::shortTypeId; }
+        |   USHORT{ return cmajor::masm::intermediate::ushortTypeId; }
+        |   INT{ return cmajor::masm::intermediate::intTypeId; }
+        |   UINT{ return cmajor::masm::intermediate::uintTypeId; }
+        |   LONG{ return cmajor::masm::intermediate::longTypeId; }
+        |   ULONG{ return cmajor::masm::intermediate::ulongTypeId; }
+        |   FLOAT{ return cmajor::masm::intermediate::floatTypeId; }
+        |   DOUBLE{ return cmajor::masm::intermediate::doubleTypeId; }
+        ;
+
+    TypeRef(var soul::ast::Span span, var int32_t baseTypeId, var int8_t pointerCount) : cmajor::masm::intermediate::TypeRef
+        ::= 
+        (
+            (   TypeId:typeId{ span = lexer.GetSpan(pos); baseTypeId = typeId; }
+            |   FundamentalTypeId:fundamentalTypeId{ span = lexer.GetSpan(pos); baseTypeId = fundamentalTypeId; }
+            )   
+            (AST{ ++pointerCount; })*
+        )
+        {
+            return cmajor::masm::intermediate::MakeTypeRef(span, baseTypeId, pointerCount); 
+        }
+        ;
+
+    StructureType(cmajor::masm::intermediate::Context* context, int32_t typeId, var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::TypeRef> fieldTypeRefs)
+        ::= LBRACE{ span = lexer.GetSpan(pos); } 
+            (TypeRef:first{ fieldTypeRefs.push_back(first); } 
+            (COMMA TypeRef:next{ fieldTypeRefs.push_back(next); })*)? 
+            RBRACE
+        {
+            context->AddStructureType(span, typeId, fieldTypeRefs);
+        }
+        ;
+
+    ArrayType(cmajor::masm::intermediate::Context* context, int32_t typeId, var soul::ast::Span span, var int64_t size)
+        ::= LBRACKET { span = lexer.GetSpan(pos); } 
+            NUMBER{ size = lexer.GetToken(pos).ToLong(); } 
+            ID{ pass = util::ToUtf8(lexer.GetToken(pos).ToString()) == "x"; } 
+            TypeRef:elementTypeRef
+            RBRACKET
+        {
+            context->AddArrayType(span, typeId, size, elementTypeRef);
+        }
+        ;
+
+    FunctionType(cmajor::masm::intermediate::Context* context, int32_t typeId, var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::TypeRef> paramTypeRefs)
+        ::= FUNCTION{ span = lexer.GetSpan(pos); } 
+            TypeRef:returnTypeRef 
+            LPAREN 
+            (TypeRef:first{ paramTypeRefs.push_back(first); } 
+            (COMMA TypeRef:next{ paramTypeRefs.push_back(next); })*)? 
+            RPAREN
+        {
+            context->AddFunctionType(span, typeId, returnTypeRef, paramTypeRefs);
+        }
+        ;
+
+    DataDefinitions(cmajor::masm::intermediate::Context* context) 
+        ::= DATA LBRACE DataDefinition(context):dataDefinition* RBRACE{ context->ValidateData(); }
+        ;
+
+    DataDefinition(cmajor::masm::intermediate::Context* context, 
+        var cmajor::masm::intermediate::TypeRef tref, var soul::ast::Span span, var std::string variableName) 
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); }  
+            ID{ span = lexer.GetSpan(pos); variableName = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+        (   SEMICOLON{ context->AddGlobalVariable(span, tref.GetType(), variableName, nullptr); }
+        |   ASSIGN Constant(context):initializer{ context->AddGlobalVariable(span, tref.GetType(), variableName, initializer); }
+        )
+        ;
+
+    Constant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= BoolConstant(context):boolConstant{ return boolConstant; }
+        |   SByteConstant(context):sbyteConstant{ return sbyteConstant; }
+        |   ByteConstant(context):byteConstant{ return byteConstant; }
+        |   ShortConstant(context):shortConstant{ return shortConstant; }
+        |   UShortConstant(context):ushortConstant{ return ushortConstant; }
+        |   IntConstant(context):intConstant{ return intConstant; }
+        |   UIntConstant(context):uintConstant{ return uintConstant; }
+        |   LongConstant(context):longConstant{ return longConstant; }
+        |   ULongConstant(context):ulongConstant{ return ulongConstant; }
+        |   FloatConstant(context):floatConstant{ return floatConstant; }
+        |   DoubleConstant(context):doubleConstant{ return doubleConstant; }
+        |   AddressConstant(context):addressConstant{ return addressConstant; }
+        |   ArrayConstant(context):arrayConstant{ return arrayConstant; }
+        |   StructureConstant(context):structureConstant{ return structureConstant; }
+        |   StringConstant(context):stringConstant{ return stringConstant; }
+        |   StringArrayConstant(context):stringArrayConstant{ return stringArrayConstant; }
+        |   ConversionConstant(context):conversionConstant{ return conversionConstant; }
+        |   ClsIdConstant(context):clsidConstant{ return clsidConstant; }
+        |   SymbolConstant(context):symbolConstant{ return symbolConstant; }
+        ;
+
+    BoolConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= BOOL
+        (   TRUE{ return context->GetTrueValue(); }
+        |   FALSE{ return context->GetFalseValue(); }
+        )
+        ;
+
+    SByteConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= SBYTE NUMBER{ return context->GetSByteValue(lexer.GetToken(pos).ToSByte()); }
+        ;
+
+    ByteConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= BYTE NUMBER{ return context->GetByteValue(lexer.GetToken(pos).ToByte()); }
+        ;
+
+    ShortConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= SHORT NUMBER{ return context->GetShortValue(lexer.GetToken(pos).ToShort()); }
+        ;
+
+    UShortConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= USHORT NUMBER{ return context->GetUShortValue(lexer.GetToken(pos).ToUShort()); }
+        ;
+
+    IntConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= INT NUMBER{ return context->GetIntValue(lexer.GetToken(pos).ToInt()); }
+        ;
+
+    UIntConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= UINT NUMBER{ return context->GetUIntValue(lexer.GetToken(pos).ToUInt()); }
+        ;
+
+    LongConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= LONG NUMBER{ return context->GetLongValue(lexer.GetToken(pos).ToLong()); }
+        ;
+
+    ULongConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= ULONG NUMBER{ return context->GetULongValue(lexer.GetToken(pos).ToULong()); }
+        ;
+
+    FloatConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= FLOAT NUMBER{ return context->GetFloatValue(lexer.GetToken(pos).ToFloat()); }
+        ;
+
+    DoubleConstant(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Value*
+        ::= DOUBLE NUMBER{ return context->GetDoubleValue(lexer.GetToken(pos).ToDouble()); }
+        ;
+
+    AddressConstant(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Value*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } 
+        (   NULL_TOKEN
+            {
+                return context->GetNullValue(lexer.GetSpan(pos), tref.GetType());
+            }
+        |   ID
+            { 
+                return context->MakeAddressLiteral(lexer.GetSpan(pos), tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString())); 
+            }
+        )
+        ;
+
+    ArrayConstant(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::Value*> elements) : cmajor::masm::intermediate::Value*
+        ::= LBRACKET{ span = lexer.GetSpan(pos); } 
+            (Constant(context):first{ elements.push_back(first); } 
+            (COMMA Constant(context):next{ elements.push_back(next); })*)? 
+            RBRACKET
+        {
+            return context->MakeArrayValue(span, elements);
+        }
+        ;
+
+    StructureConstant(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::Value*> fieldValues) : cmajor::masm::intermediate::Value*
+        ::= LBRACE{ span = lexer.GetSpan(pos); }
+            (Constant(context):first{ fieldValues.push_back(first); }
+            (COMMA Constant(context):next{ fieldValues.push_back(next); })*)?
+            RBRACE
+        {
+            return context->MakeStructureValue(span, fieldValues);
+        }
+        ;
+
+    StringConstant(cmajor::masm::intermediate::Context* context, var soul::ast::Span span) : cmajor::masm::intermediate::Value*
+        ::= STRING{ return context->MakeStringValue(lexer.GetSpan(pos), util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    StringArrayConstant(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var std::vector<cmajor::masm::intermediate::Value*> strings) : cmajor::masm::intermediate::Value*
+        ::= StringArrayPrefix:prefix{ span = lexer.GetSpan(pos); } 
+            LBRACKET 
+            (Constant(context):first{ strings.push_back(first); } 
+            (COMMA Constant(context):next{ strings.push_back(next); })*)? 
+            RBRACKET
+        {
+            return context->MakeStringArrayValue(span, prefix, strings);
+        }
+        ;
+
+    StringArrayPrefix : char
+        ::= ID{ std::string p = util::ToUtf8(lexer.GetToken(pos).ToString()); pass = p == "u" || p == "w" || p == "b"; if (pass) { return p[0]; } }
+        ;
+
+    ConversionConstant(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref, var soul::ast::Span span) : cmajor::masm::intermediate::Value*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); span = lexer.GetSpan(pos); } CONV LPAREN Constant(context):from RPAREN
+        {
+            return context->MakeConversionValue(span, tref.GetType(), from);
+        }
+        ;
+
+    ClsIdConstant(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref, var soul::ast::Span span) : cmajor::masm::intermediate::Value*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); span = lexer.GetSpan(pos); } CLSID 
+        {
+            return context->MakeClsIdValue(span, tref.GetType(), util::ToUtf8(lexer.GetToken(pos).ToString()));
+        }
+        ;
+
+    SymbolConstant(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Value*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } SymbolValue(context, tref.GetType()):symbolValue
+        {
+            return symbolValue;
+        }
+        ;
+
+    Value(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type) : cmajor::masm::intermediate::Value*
+        ::= RegValue(context, type):regValue{ return regValue; }
+        |   SymbolValue(context, type):symbolValue{ return symbolValue; }
+        |   LiteralValue(context, type):literalValue{ return literalValue; }
+        ;
+
+    RegValue(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type, var soul::ast::Span span) : cmajor::masm::intermediate::Value*
+        ::= DOLLAR{ span = lexer.GetSpan(pos); } 
+            NUMBER{ span.Union(lexer.GetSpan(pos)); int32_t reg = lexer.GetToken(pos).ToInt(); return context->CurrentFunction()->GetRegRef(span, type, reg, context); }
+        ;
+
+    ResultRegValue(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type, var soul::ast::Span span) : cmajor::masm::intermediate::RegValue*
+        ::= DOLLAR{ span = lexer.GetSpan(pos); } 
+            NUMBER{ span.Union(lexer.GetSpan(pos)); int32_t reg = lexer.GetToken(pos).ToInt(); return context->CurrentFunction()->MakeRegValue(span, type, reg, context); }
+        ;
+
+    SymbolValue(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type, var soul::ast::Span span) : cmajor::masm::intermediate::Value*
+        ::= AT{ span = lexer.GetSpan(pos); } ID{ span.Union(lexer.GetSpan(pos)); return context->MakeSymbolValue(span, type, util::ToUtf8(lexer.GetToken(pos).ToString()));  }
+        ;
+
+    LiteralValue(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type) : cmajor::masm::intermediate::Value*
+        ::= TRUE{ return context->GetBooleanLiteral(lexer.GetSpan(pos), type, true); }
+        |   FALSE{ return context->GetBooleanLiteral(lexer.GetSpan(pos), type, false); }
+        |   NULL_TOKEN{ return context->GetNullValue(lexer.GetSpan(pos), type); }
+        |   NUMBER{ return context->MakeNumericLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   ID{ return context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        ;
+
+    FunctionDefinitions(cmajor::masm::intermediate::Context* context)
+        ::= FunctionDefinition(context):function*
+        ;
+
+    FunctionDefinition(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::Function* function)
+        ::= FunctionHeader(context):header{ function = header; context->SetCurrentFunction(function); } LBRACE BasicBlock(context, function):basicBlock* RBRACE
+        ;
+
+    FunctionHeader(cmajor::masm::intermediate::Context* context, 
+        var cmajor::masm::intermediate::TypeRef functionTypeRef, var soul::ast::Span span, var std::string functionId) : cmajor::masm::intermediate::Function*
+        ::= 
+        (   
+            FUNCTION{ span = lexer.GetSpan(pos); } 
+            TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
+            ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+        )
+        {
+            return context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId);
+        }
+        ;
+
+    BasicBlock(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Function* function, var cmajor::masm::intermediate::BasicBlock* basicBlock, 
+        var soul::ast::Span span)
+        ::= Label:id{ span = lexer.GetSpan(pos); basicBlock = function->AddBasicBlock(span, id, context); } Instructions(context, basicBlock):instructions
+        ;
+
+    Label : int32_t
+        ::= AT NUMBER{ return lexer.GetToken(pos).ToInt(); }
+        ;
+
+    Operand(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Value*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } Value(context, tref.GetType()):value
+        {
+            return value;
+        }
+        ;
+
+    Instructions(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::BasicBlock* basicBlock)
+        ::= 
+        (
+            Instruction(context):instruction{ basicBlock->AddInstruction(instruction); }
+        )+
+        ;
+
+    Instruction(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::Instruction*
+        ::= StoreInstruction(context):store{ return store; }
+        |   ArgInstruction(context):arg{ return arg; }
+        |   JmpInstruction(context):jmp{ return jmp; }
+        |   BranchInstruction(context):branch{ return branch; }
+        |   ProcedureCallInstruction(context):procedureCall{ return procedureCall; }
+        |   RetInstruction(context):ret{ return ret; }
+        |   SwitchInstruction(context):switch_{ return switch_; }
+        |   ValueInstruction(context):valueInst{ return valueInst; }
+        |   NoOperationInstruction(context):nopInst{ return nopInst; }
+        ;
+
+    StoreInstruction(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref, var cmajor::masm::intermediate::TypeRef ptref) : cmajor::masm::intermediate::Instruction*
+        ::= STORE{ span = lexer.GetSpan(pos); }
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } 
+            Value(context, tref.GetType()):value 
+            COMMA 
+            TypeRef:ptrTypeRef{ ptref = ptrTypeRef; context->ResolveType(ptref); }
+            Value(context, ptref.GetType()):ptr
+        {
+            return new cmajor::masm::intermediate::StoreInstruction(span, value, ptr);
+        }
+        ;
+
+    ArgInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Instruction*
+        ::= ARG{ span = lexer.GetSpan(pos); }
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } 
+            Value(context, tref.GetType()):arg
+        {
+            return new cmajor::masm::intermediate::ArgInstruction(span, arg);
+        }
+        ;
+
+    JmpInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= JMP{ span = lexer.GetSpan(pos); }
+            Label:target
+        {
+            return new cmajor::masm::intermediate::JmpInstruction(span, target);
+        }
+        ;
+
+    BranchInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Instruction*
+        ::= BRANCH{ span = lexer.GetSpan(pos); }
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); }
+            Value(context, tref.GetType()):cond
+            COMMA
+            Label:trueTarget
+            COMMA
+            Label:falseTarget
+        {
+            return new cmajor::masm::intermediate::BranchInstruction(span, cond, trueTarget, falseTarget);
+        }
+        ;
+
+    ProcedureCallInstruction(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Instruction*
+        ::= CALL{ span = lexer.GetSpan(pos); }
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); }
+            Value(context, tref.GetType()):callee
+        {
+            return new cmajor::masm::intermediate::ProcedureCallInstruction(span, callee);
+        }
+        ;
+
+    RetInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= RET{ span = lexer.GetSpan(pos); }
+        (   (VOID - (VOID AST)){ return new cmajor::masm::intermediate::RetInstruction(span, nullptr); }
+        |   TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); }  
+            Value(context, tref.GetType()):returnValue{ return new cmajor::masm::intermediate::RetInstruction(span, returnValue); }
+        )
+        ;
+
+    SwitchInstruction(cmajor::masm::intermediate::Context* context, 
+        var soul::ast::Span span, var cmajor::masm::intermediate::TypeRef tref, var cmajor::masm::intermediate::TypeRef caseTref, 
+        var cmajor::masm::intermediate::SwitchInstruction* inst) : cmajor::masm::intermediate::Instruction*
+        ::= 
+        (
+            SWITCH{ span = lexer.GetSpan(pos); }
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); }  
+            Value(context, tref.GetType()):cond
+            Label:defaultTarget{ inst = new cmajor::masm::intermediate::SwitchInstruction(span, cond, defaultTarget); }
+            COMMA
+            LBRACKET
+            (
+                (   TypeRef:caseTypeRef{ caseTref = caseTypeRef; context->ResolveType(caseTref); }
+                    Value(context, caseTref.GetType()):caseValue
+                    COMMA
+                    Label:caseTarget{ inst->AddCaseTarget(cmajor::masm::intermediate::CaseTarget(caseValue, caseTarget)); }
+                ) % COLON
+            )
+            RBRACKET
+        )
+        {
+            return inst;
+        }
+        ;
+
+    ValueInstruction(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef tref, var cmajor::masm::intermediate::RegValue* rslt) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } ResultRegValue(context, tref.GetType()):result{ rslt = result; } ASSIGN Operation(context, rslt):inst
+        {
+            return inst;
+        }
+        ;
+
+    Operation(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result) : cmajor::masm::intermediate::Instruction*
+        ::= UnaryInstruction(context, result):unaryInst{ return unaryInst; }
+        |   BinaryInstruction(context, result):binaryInst{ return binaryInst; }
+        |   ParamInstruction(context, result):paramInst{ return paramInst; }
+        |   LocalInstruction(context, result):localInst{ return localInst; }
+        |   LoadInstruction(context, result):loadInst{ return loadInst; }
+        |   ElemAddrInstruction(context, result):elemAddrInst{ return elemAddrInst; }
+        |   PtrOffsetInstruction(context, result):ptrOffsetInst{ return ptrOffsetInst; }
+        |   PtrDiffInstruction(context, result):ptrDiffInst{ return ptrDiffInst; }
+        |   FunctionCallInstruction(context, result):functionCallInst{ return functionCallInst; }
+        ;
+
+    UnaryInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= NOT{ span = lexer.GetSpan(pos); } Operand(context):notOp{ return new cmajor::masm::intermediate::NotInstruction(span, result, notOp); }
+        |   NEG{ span = lexer.GetSpan(pos); } Operand(context):negOp{ return new cmajor::masm::intermediate::NegInstruction(span, result, negOp); }
+        |   SIGNEXTEND{ span = lexer.GetSpan(pos); } Operand(context):sextOp{ return new cmajor::masm::intermediate::SignExtendInstruction(span, result, sextOp); }
+        |   ZEROEXTEND{ span = lexer.GetSpan(pos); } Operand(context):zextOp{ return new cmajor::masm::intermediate::ZeroExtendInstruction(span, result, zextOp); }
+        |   TRUNCATE{ span = lexer.GetSpan(pos); } Operand(context):truncOp{ return new cmajor::masm::intermediate::TruncateInstruction(span, result, truncOp); }
+        |   BITCAST{ span = lexer.GetSpan(pos); } Operand(context):bcOp{ return new cmajor::masm::intermediate::BitcastInstruction(span, result, bcOp); }
+        |   INTTOFLOAT{ span = lexer.GetSpan(pos); } Operand(context):ifOp{ return new cmajor::masm::intermediate::IntToFloatInstruction(span, result, ifOp); }
+        |   FLOATTOINT{ span = lexer.GetSpan(pos); } Operand(context):fiOp{ return new cmajor::masm::intermediate::FloatToIntInstruction(span, result, fiOp); }
+        |   INTTOPTR{ span = lexer.GetSpan(pos); } Operand(context):ipOp{ return new cmajor::masm::intermediate::IntToPtrInstruction(span, result, ipOp); }
+        |   PTRTOINT{ span = lexer.GetSpan(pos); } Operand(context):piOp{ return new cmajor::masm::intermediate::PtrToIntInstruction(span, result, piOp); }
+        ;
+
+    BinaryInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= 
+        (   ADD{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftAdd 
+            COMMA 
+            Operand(context):rightAdd
+        )
+        { 
+            return new cmajor::masm::intermediate::AddInstruction(span, result, leftAdd, rightAdd); 
+        }
+        |   
+        (   SUB{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftSub 
+            COMMA 
+            Operand(context):rightSub
+        )
+        { 
+            return new cmajor::masm::intermediate::SubInstruction(span, result, leftSub, rightSub); 
+        }
+        |   
+        (   MUL{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftMul 
+            COMMA 
+            Operand(context):rightMul
+        )
+        { 
+            return new cmajor::masm::intermediate::MulInstruction(span, result, leftMul, rightMul); 
+        }
+        |   
+        (   DIV{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftDiv 
+            COMMA 
+            Operand(context):rightDiv
+        )
+        { 
+            return new cmajor::masm::intermediate::DivInstruction(span, result, leftDiv, rightDiv); 
+        }
+        |   
+        (   MOD{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftMod 
+            COMMA 
+            Operand(context):rightMod
+        )
+        { 
+            return new cmajor::masm::intermediate::ModInstruction(span, result, leftMod, rightMod); 
+        }
+        |
+        (   AND{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftAnd 
+            COMMA 
+            Operand(context):rightAnd
+        )
+        { 
+            return new cmajor::masm::intermediate::AndInstruction(span, result, leftAnd, rightAnd); 
+        }
+        |   
+        (   OR{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftOr 
+            COMMA 
+            Operand(context):rightOr
+        )
+        { 
+            return new cmajor::masm::intermediate::OrInstruction(span, result, leftOr, rightOr); 
+        }
+        |   
+        (   XOR{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftXor 
+            COMMA 
+            Operand(context):rightXor
+        )
+        { 
+            return new cmajor::masm::intermediate::XorInstruction(span, result, leftXor, rightXor); 
+        }
+        |   
+        (   SHL{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftShl 
+            COMMA 
+            Operand(context):rightShl
+        )
+        { 
+            return new cmajor::masm::intermediate::ShlInstruction(span, result, leftShl, rightShl); 
+        }
+        |   
+        (   SHR{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftShr 
+            COMMA 
+            Operand(context):rightShr
+        )
+        { 
+            return new cmajor::masm::intermediate::ShrInstruction(span, result, leftShr, rightShr); 
+        }
+        |   
+        (   EQUAL{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftEqual 
+            COMMA 
+            Operand(context):rightEqual
+        )
+        { 
+            return new cmajor::masm::intermediate::EqualInstruction(span, result, leftEqual, rightEqual); 
+        }
+        |   
+        (   LESS{ span = lexer.GetSpan(pos); } 
+            Operand(context):leftLess 
+            COMMA 
+            Operand(context):rightLess
+        )
+        { 
+            return new cmajor::masm::intermediate::LessInstruction(span, result, leftLess, rightLess); 
+        }
+        ;
+
+    ParamInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= PARAM{ span = lexer.GetSpan(pos); return new cmajor::masm::intermediate::ParamInstruction(span, result); }
+        ;
+
+    LocalInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span, 
+        var cmajor::masm::intermediate::TypeRef tref) : cmajor::masm::intermediate::Instruction*
+        ::= LOCAL{ span = lexer.GetSpan(pos); } 
+            TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); return new cmajor::masm::intermediate::LocalInstruction(span, result, tref.GetType()); }
+        ;
+
+    LoadInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= LOAD{ span = lexer.GetSpan(pos); } Operand(context):ptr{ return new cmajor::masm::intermediate::LoadInstruction(span, result, ptr); }
+        ;
+
+    ElemAddrInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= ELEMADDR{ span = lexer.GetSpan(pos); } Operand(context):ptr COMMA Operand(context):index
+        { 
+            return new cmajor::masm::intermediate::ElemAddrInstruction(span, result, ptr, index); 
+        }
+        ;
+
+    PtrOffsetInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= PTROFFSET{ span = lexer.GetSpan(pos); } Operand(context):ptr COMMA Operand(context):offset
+        { 
+            return new cmajor::masm::intermediate::PtrOffsetInstruction(span, result, ptr, offset); 
+        }
+        ;
+
+    PtrDiffInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var soul::ast::Span span) : 
+        cmajor::masm::intermediate::Instruction*
+        ::= PTRDIFF{ span = lexer.GetSpan(pos); } Operand(context):leftPtr COMMA Operand(context):rightPtr
+        { 
+            return new cmajor::masm::intermediate::PtrDiffInstruction(span, result, leftPtr, rightPtr); 
+        }
+        ;
+
+    FunctionCallInstruction(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result, var cmajor::masm::intermediate::TypeRef tref, 
+        var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= CALL{ span = lexer.GetSpan(pos); } TypeRef:typeRef{ tref = typeRef; context->ResolveType(tref); } Value(context, tref.GetType()):callee
+        { 
+            return new cmajor::masm::intermediate::FunctionCallInstruction(span, result, callee);
+        }
+        ;
+
+    BlockValue(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::BlockValue
+        ::= 
+        (
+            LBRACKET Operand(context):operand COMMA Label:blockId RBRACKET
+        )
+        {
+            return cmajor::masm::intermediate::BlockValue(operand, blockId);
+        }
+        ;
+
+    NoOperationInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
+        ::= NOP{ span = lexer.GetSpan(pos); return new cmajor::masm::intermediate::NoOperationInstruction(span); }
+        ;
+}

@@ -127,6 +127,7 @@ public:
     int64_t Size() const override { return -1; }
     int64_t Alignment() const override { return -1; }
 };
+
 class BoolType : public Type
 {
 public:

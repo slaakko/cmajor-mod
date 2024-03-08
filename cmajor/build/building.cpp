@@ -14,6 +14,7 @@ import cmajor.build.archiving;
 import cmajor.build.linking;
 import cmajor.build.resources;
 import cmajor.build.main.unit;
+import cmajor.masm.build;
 import cmajor.binder;
 import cmajor.ast;
 // import cmajor.llvm;
@@ -49,6 +50,10 @@ std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFile
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
     {
         backend = cmajor::ast::BackEnd::cpp;
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        backend = cmajor::ast::BackEnd::masm;
     }
     std::unique_ptr<cmajor::ast::Project> project = ParseProjectFile(projectFilePath, config, backend);
     return project;
@@ -151,6 +156,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             {
                 astBackEnd = cmajor::ast::BackEnd::cpp;
             }
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            {
+                astBackEnd = cmajor::ast::BackEnd::masm;
+            }
             if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::rebuild))
             {
                 upToDate = project->IsUpToDate(cmajor::ast::CmajorSystemModuleFilePath(config, astBackEnd));
@@ -208,8 +217,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 rootModule->SetPreparing(prevPreparing);
                 std::vector<std::string> objectFilePaths;
-                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, stop);
-                GenerateMainUnit(project, rootModule.get(), objectFilePaths);
+                std::vector<std::string> asmFilePaths;
+                std::vector<std::string> cppFilePaths;
+                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+                GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "Writing module file...");
@@ -225,6 +236,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 RunBuildActions(*project, variables);
                 AddResources(project, rootModule.get(), objectFilePaths);
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                {
+                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                }
                 if (!objectFilePaths.empty())
                 {
                     Archive(project, objectFilePaths);

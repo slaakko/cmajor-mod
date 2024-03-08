@@ -205,7 +205,6 @@ namespace System
                         Emit('1', writeOutputChar);
                         Emit(c, writeOutputChar);
                         state = 0;
-                        break;
                     }
                     break;
                 }
@@ -245,7 +244,6 @@ namespace System
                         Emit('[', writeOutputChar);
                         Emit('0', writeOutputChar);
                         Emit(c, writeOutputChar);
-                        break;
                     }
                     state = 0;
                     break;

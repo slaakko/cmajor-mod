@@ -449,6 +449,12 @@ bool DerivedTypeSymbol::IsCharacterPointerType() const
     return baseType->IsCharacterType() && derivationRec.derivations.size() == 1 && derivationRec.derivations.front() == Derivation::pointerDerivation;
 }
 
+bool DerivedTypeSymbol::IsConstCharPtrPtrType() const
+{
+    return baseType->IsCharacterType() && derivationRec.derivations.size() == 3 && derivationRec.derivations.front() == Derivation::constDerivation &&
+        derivationRec.derivations[1] == Derivation::pointerDerivation && derivationRec.derivations[2] == Derivation::pointerDerivation;
+}
+
 int DerivedTypeSymbol::PointerCount() const
 {
     return CountPointerDerivations(derivationRec.derivations);

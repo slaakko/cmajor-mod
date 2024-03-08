@@ -37,6 +37,21 @@ BoundStatement* BoundStatement::StatementParent() const
     }
 }
 
+bool BoundStatement::IsConditionalStatementInBlock(BoundCompoundStatement* block) const
+{
+    if (this == block)
+    {
+        return false;
+    }
+    if (GetBoundNodeType() == BoundNodeType::boundIfStatement || GetBoundNodeType() == BoundNodeType::boundSwitchStatement) return true;
+    BoundStatement* parent = StatementParent();
+    if (parent)
+    {
+        return parent->IsConditionalStatementInBlock(block);
+    }
+    return false;
+}
+
 void BoundStatement::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
     throw cmajor::symbols::Exception("cannot load from statement", GetFullSpan());

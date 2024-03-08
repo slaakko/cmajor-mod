@@ -95,6 +95,7 @@ public:
     const std::string& OptLLFilePath() const { return optLLFilePath; }
     const std::string& OptBCFilePath() const { return optBCFilePath; }
     const std::string& ObjectFilePath() const { return objectFilePath; }
+    const std::string& AsmFilePath() const { return asmFilePath; }
     const std::string& Id() const { return compileUnitNode->Id(); }
     void SetHasGotos() { hasGotos = true; }
     bool HasGotos() const { return hasGotos; }
@@ -155,6 +156,7 @@ private:
     std::string optBCFilePath;
     std::string optLLFilePath;
     std::string objectFilePath;
+    std::string asmFilePath;
     std::string cppFilePath;
     std::vector<std::unique_ptr<cmajor::symbols::FileScope>> fileScopes;
     std::vector<std::unique_ptr<BoundNode>> boundNodes;

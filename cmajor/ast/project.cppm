@@ -14,7 +14,7 @@ export namespace cmajor::ast {
 
 enum class BackEnd : int8_t
 {
-    llvm = 0, systemx = 1, cpp = 2
+    llvm = 0, systemx = 1, cpp = 2, masm = 3
 };
 
 enum class Config : int8_t

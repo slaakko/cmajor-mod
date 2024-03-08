@@ -793,7 +793,79 @@ void GenerateMainUnitCppWindowsGUI(cmajor::symbols::Module* rootModule, std::vec
     objectFilePaths.push_back(mainObjectFilePath);
 }
 
-void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+void GenerateMainUnitMasmConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& cppFilePaths)
+{
+    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cppFilePaths.push_back(mainFilePath);
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    cmajor::symbols::TypeSymbol* returnType = userMainFunctionSymbol->ReturnType();
+    std::ofstream mainFile(mainFilePath);
+    util::CodeFormatter formatter(mainFile);
+    std::string returnTypeName;
+    std::string retval;
+    if (returnType->IsVoidType())
+    {
+        returnTypeName = "void";
+    }
+    else if (returnType->IsIntType())
+    {
+        returnTypeName = "int";
+        retval = "retval = ";
+    }
+    else
+    {
+        throw cmajor::symbols::Exception("'void' or 'int' return type expected", userMainFunctionSymbol->GetFullSpan());
+    }
+    std::string parameters;
+    std::string arguments;
+    if (userMainFunctionSymbol->Parameters().size() == 0)
+    {
+        parameters = "()";
+        arguments = "()";
+    }
+    else if (userMainFunctionSymbol->Parameters().size() == 2)
+    {
+        parameters.append("(");
+        if (userMainFunctionSymbol->Parameters()[0]->GetType()->IsIntType())
+        {
+            parameters.append("int argc");
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("'int' parameter type expected", userMainFunctionSymbol->Parameters()[0]->GetFullSpan());
+        }
+        if (userMainFunctionSymbol->Parameters()[1]->GetType()->IsConstCharPtrPtrType())
+        {
+            parameters.append(", const char** argv");
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("'const char**' parameter type expected", userMainFunctionSymbol->Parameters()[1]->GetFullSpan());
+        }
+        parameters.append(")");
+        arguments = "(argc, argv)";
+    }
+    else
+    {
+        throw cmajor::symbols::Exception("either 0 or 2 parameters expected", userMainFunctionSymbol->GetFullSpan());
+    }
+    formatter.WriteLine("extern \"C\" " + returnTypeName + " " + util::ToUtf8(userMainFunctionSymbol->MangledName()) + parameters + ";");
+    formatter.WriteLine("extern \"C\" void RtmInit();");
+    formatter.WriteLine("extern \"C\" void RtmDone();");
+    formatter.WriteLine();
+    formatter.WriteLine("int main(int argc, const char** argv)");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    formatter.WriteLine("RtmInit();");
+    formatter.WriteLine("int retval = 0;");
+    formatter.WriteLine(retval + util::ToUtf8(userMainFunctionSymbol->MangledName()) + arguments + ";");
+    formatter.WriteLine("RtmDone();");
+    formatter.WriteLine("return retval;");
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+}
+
+void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths)
 {
     switch (project->GetTarget())
     {
@@ -815,6 +887,11 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
                 case cmajor::symbols::BackEnd::cpp:
                 {
                     GenerateMainUnitCppConsole(rootModule, objectFilePaths);
+                    break;
+                }
+                case cmajor::symbols::BackEnd::masm:
+                {
+                    GenerateMainUnitMasmConsole(rootModule, cppFilePaths);
                     break;
                 }
             }

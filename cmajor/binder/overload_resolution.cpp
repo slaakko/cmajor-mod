@@ -1016,7 +1016,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 }
                 cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
                 constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
-                    new BoundLocalVariable(temporary->GetSpan(), temporary)), conversionTargetType->AddPointer())));
+                    new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer())));
                 if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
@@ -1031,10 +1031,10 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    constructorCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
+                    constructorCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
                 }
                 BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(std::unique_ptr<BoundExpression>(constructorCall),
-                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(temporary->GetSpan(), temporary)));
+                    std::unique_ptr<BoundExpression>(new BoundLocalVariable(node->GetSpan(), temporary)));
                 argument.reset(conversion);
             }
             else if (conversionFun->GetSymbolType() == cmajor::symbols::SymbolType::conversionFunctionSymbol && conversionFun->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -1056,13 +1056,13 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 }
                 cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
                 conversionFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
-                    new BoundLocalVariable(temporary->GetSpan(), temporary)), conversionTargetType->AddPointer())));
+                    new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer())));
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
+                    conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
                 }
-                BoundLocalVariable* conversionResult = new BoundLocalVariable(temporary->GetSpan(), temporary);
+                BoundLocalVariable* conversionResult = new BoundLocalVariable(node->GetSpan(), temporary);
                 if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
@@ -1084,7 +1084,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = conversionFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
                 for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
                 {
-                    conversion->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
+                    conversion->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
                 }
                 argument.reset(conversion);
             }
@@ -1173,7 +1173,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
         std::vector<cmajor::symbols::LocalVariableSymbol*> temporaryLocalVariables = bestFun->CreateTemporariesTo(boundFunction->GetFunctionSymbol());
         for (cmajor::symbols::LocalVariableSymbol* temporaryLocalVariable : temporaryLocalVariables)
         {
-            boundFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(temporaryLocalVariable->GetSpan(), temporaryLocalVariable)));
+            boundFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
         }
     }
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunctionCall->GetFunctionSymbol();

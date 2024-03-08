@@ -56,6 +56,7 @@ public:
     bool IsForLoopStatementNode() const { return GetFlag(BoundStatementFlags::forLoopStatementNode); }
     virtual void SetForLoopStatementNode() { SetFlag(BoundStatementFlags::forLoopStatementNode); }
     virtual bool IsOrContainsBoundReturnStatement() const { return false; }
+    bool IsConditionalStatementInBlock(BoundCompoundStatement* block) const;
     bool IgnoreNode() const { return GetFlag(BoundStatementFlags::ignoreNode); }
     void SetIgnoreNode() { SetFlag(BoundStatementFlags::ignoreNode); }
     bool IsAssertNode() const { return GetFlag(BoundStatementFlags::assertNode); }

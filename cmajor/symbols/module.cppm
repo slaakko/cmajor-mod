@@ -142,7 +142,7 @@ public:
     const std::string& LibraryFilePath() const { return libraryFilePath; }
     const std::string& ResourceFilePath() const { return resourceFilePath; }
     void SetResourceFilePath(const std::string& resourceFilePath_);
-    const std::vector<Module*> AllReferencedModules() const { return allRefModules; }
+    const std::vector<Module*>& AllReferencedModules() const { return allRefModules; }
     void PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
         cmajor::ast::CompileUnitNode* rootCompileUnit);
     SymbolTable& GetSymbolTable() { return *symbolTable; }

@@ -86,6 +86,7 @@ public:
     bool IsPointerType() const override;
     bool IsVoidPtrType() const override;
     bool IsCharacterPointerType() const override;
+    bool IsConstCharPtrPtrType() const override;
     int PointerCount() const override;
     const ContainerScope* GetArrowScope() const override;
     ContainerScope* GetArrowScope() override;

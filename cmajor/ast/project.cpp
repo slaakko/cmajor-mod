@@ -110,6 +110,15 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
         sld /= config;
         return util::GetFullPath(sld.generic_string());
     }
+    else if (backend == BackEnd::masm)
+    {
+        std::filesystem::path sld(CmajorRootDir());
+        sld /= "masm";
+        sld /= "system";
+        sld /= "lib";
+        sld /= config;
+        return util::GetFullPath(sld.generic_string());
+    }
     else
     {
         return std::string();
@@ -319,6 +328,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         mfp /= "cpp";
     }
+    else if (backend == BackEnd::masm)
+    {
+        mfp /= "masm";
+    }
     mfp /= config;
     mfp /= fn;
     mfp.replace_extension(".cmm");
@@ -337,6 +350,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         lfp.replace_extension(".a");
     }
+    else if (backend == BackEnd::masm)
+    {
+        lfp.replace_extension(".lib");
+    }
     else
     {
         lfp.replace_extension(".a");
@@ -354,6 +371,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
     {
         efp /= "cpp";
     }
+    else if (backend == BackEnd::masm)
+    {
+        efp /= "masm";
+    }
     efp /= config;
     efp /= fn;
 #ifdef _WIN32
@@ -366,6 +387,10 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         efp.replace_extension(".exe");
     }
     else if (backend == BackEnd::cpp)
+    {
+        efp.replace_extension(".exe");
+    }
+    else if (backend == BackEnd::masm)
     {
         efp.replace_extension(".exe");
     }
@@ -434,6 +459,10 @@ void Project::ResolveDeclarations()
                 if (backend == BackEnd::cpp)
                 {
                     rp /= "cpp";
+                }
+                else if (backend == BackEnd::masm)
+                {
+                    rp /= "masm";
                 }
                 rp /= config;
                 rp /= fn;

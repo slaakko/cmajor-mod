@@ -29,6 +29,7 @@ public:
     void Read(SymbolReader& reader) override;
     bool IsTypeSymbol() const override { return true; }
     bool IsAutoType() const { return GetSymbolType() == SymbolType::autoTypeSymbol; }
+    bool IsIntType() const { return GetSymbolType() == SymbolType::intTypeSymbol; }
     virtual bool IsInComplete() const { return false; }
     virtual bool IsIntegralType() const { return false; }
     virtual bool IsFloatingPointType() const { return false; }
@@ -41,6 +42,7 @@ public:
     virtual bool IsEnumeratedType() const { return false; }
     virtual bool IsCharacterType() const { return false; }
     virtual bool IsCharacterPointerType() const { return false; }
+    virtual bool IsConstCharPtrPtrType() const { return false; }
     virtual const TypeSymbol* BaseType() const { return this; }
     virtual TypeSymbol* BaseType() { return this; }
     virtual TypeSymbol* PlainType() { return this; }

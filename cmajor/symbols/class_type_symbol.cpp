@@ -58,6 +58,11 @@ int32_t GetClassNameVmtIndexOffset()
     {
         return 2;
     }
+    else if (GetBackEnd() == BackEnd::masm)
+    {
+        // todo
+        return 0;
+    }
     else
     {
         return 0;
@@ -74,6 +79,11 @@ int32_t GetImtsVmtIndexOffset()
     {
         return 3;
     }
+    else if (GetBackEnd() == BackEnd::masm)
+    {
+        // todo
+        return 0;
+    }
     else
     {
         return 0;
@@ -89,6 +99,11 @@ int32_t GetFunctionVmtIndexOffset()
     else if (GetBackEnd() == BackEnd::systemx)
     {
         return 4;
+    }
+    else if (GetBackEnd() == BackEnd::masm)
+    {
+        // todo
+        return 0;
     }
     else
     {
@@ -1691,6 +1706,10 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
             }
+        }
+        else if (GetBackEnd() == BackEnd::masm)
+        {
+            // todo
         }
         void* initializer = emitter.CreateIrValueForConstantArray(localVmtObjectType, vmtArray, std::string());
         emitter.SetInitializer(vmtObject, initializer);

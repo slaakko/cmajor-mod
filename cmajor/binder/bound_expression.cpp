@@ -85,7 +85,7 @@ void BoundParameter::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFl
     void* value = emitter.Stack().Pop();
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a parameter", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a parameter", GetFullSpan(), parameterSymbol->GetFullSpan());
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
@@ -153,7 +153,7 @@ void BoundLocalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
     void* value = emitter.Stack().Pop();
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot store to address of a local variable", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot store to address of a local variable", GetFullSpan(), localVariableSymbol->GetFullSpan());
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
@@ -222,7 +222,7 @@ void BoundMemberVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operati
     {
         if (!classPtr)
         {
-            throw cmajor::symbols::Exception("class pointer of the member variable not set", GetFullSpan());
+            throw cmajor::symbols::Exception("class pointer of the member variable not set", GetFullSpan(), memberVariableSymbol->GetFullSpan());
         }
         classPtr->Load(emitter, cmajor::ir::OperationFlags::none);
         ptrType = classType->IrType(emitter);
@@ -261,7 +261,7 @@ void BoundMemberVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
     void* ptrType = nullptr;
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot store to the address of a member variable", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot store to the address of a member variable", GetFullSpan(), memberVariableSymbol->GetFullSpan());
     }
     else
     {
@@ -335,11 +335,11 @@ void BoundConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlag
     {
         if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
         {
-            throw cmajor::symbols::Exception("cannot take address of a constant", GetFullSpan());
+            throw cmajor::symbols::Exception("cannot take address of a constant", GetFullSpan(), constantSymbol->GetFullSpan());
         }
         else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
         {
-            throw cmajor::symbols::Exception("cannot dereference a constant", GetFullSpan());
+            throw cmajor::symbols::Exception("cannot dereference a constant", GetFullSpan(), constantSymbol->GetFullSpan());
         }
         else
         {
@@ -351,7 +351,7 @@ void BoundConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlag
 
 void BoundConstant::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to a constant", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot store to a constant", GetFullSpan(), constantSymbol->GetFullSpan());
 }
 
 void BoundConstant::Accept(BoundNodeVisitor& visitor)
@@ -374,11 +374,11 @@ void BoundEnumConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of an enumeration constant", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of an enumeration constant", GetFullSpan(), enumConstantSymbol->GetFullSpan());
     }
     else if ((flags & cmajor::ir::OperationFlags::deref) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot dereference an enumeration constant", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot dereference an enumeration constant", GetFullSpan(), enumConstantSymbol->GetFullSpan());
     }
     else
     {
@@ -389,7 +389,7 @@ void BoundEnumConstant::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
 
 void BoundEnumConstant::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to an enumeration constant", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot store to an enumeration constant", GetFullSpan(), enumConstantSymbol->GetFullSpan());
 }
 
 void BoundEnumConstant::Accept(BoundNodeVisitor& visitor)
@@ -485,7 +485,7 @@ void BoundGlobalVariable::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operat
     emitter.SetCurrentDebugLocation(GetSpan());
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot store to the address of a global variable", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot store to the address of a global variable", GetFullSpan(), globalVariableSymbol->GetFullSpan());
     }
     else
     {
@@ -564,7 +564,7 @@ void BoundTemporary::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFla
 
 void BoundTemporary::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to a temporary", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot store to a temporary", GetFullSpan(), backingStore->GetFullSpan());
 }
 
 void BoundTemporary::Accept(BoundNodeVisitor& visitor)
@@ -886,7 +886,7 @@ void BoundFunctionCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         }
         else
         {
-            throw cmajor::symbols::Exception("cannot take address of a function call", GetFullSpan());
+            throw cmajor::symbols::Exception("cannot take address of a function call", GetFullSpan(), functionSymbol->GetFullSpan());
         }
     }
     else
@@ -945,7 +945,7 @@ void BoundFunctionCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
 {
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a function call", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a function call", GetFullSpan(), functionSymbol->GetFullSpan());
     }
     else
     {
@@ -1041,7 +1041,7 @@ void BoundDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
 {
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan(), delegateTypeSymbol->GetFullSpan());
     }
     else
     {
@@ -1079,7 +1079,7 @@ void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
 {
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a delegate call", GetFullSpan(), delegateTypeSymbol->GetFullSpan());
     }
     else
     {
@@ -1183,7 +1183,7 @@ void BoundClassDelegateCall::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Oper
 {
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a class delegate call", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a class delegate call", GetFullSpan(), classDelegateTypeSymbol->GetFullSpan());
     }
     else
     {
@@ -1221,7 +1221,7 @@ void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
 {
     if ((flags & cmajor::ir::OperationFlags::addr) != cmajor::ir::OperationFlags::none)
     {
-        throw cmajor::symbols::Exception("cannot take address of a clas delegate call", GetFullSpan());
+        throw cmajor::symbols::Exception("cannot take address of a clas delegate call", GetFullSpan(), classDelegateTypeSymbol->GetFullSpan());
     }
     else
     {
@@ -1619,6 +1619,11 @@ void BoundIsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         emitter.Stack().Push(remainderIsZero);
         DestroyTemporaries(emitter);
     }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        // TODO
+        emitter.Stack().Push(emitter.CreateDefaultIrValueForBool());
+    }
 }
 
 void BoundIsExpression::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
@@ -1747,6 +1752,11 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
         emitter.SetCurrentBasicBlock(continueBlock);
         variable->Load(emitter, cmajor::ir::OperationFlags::none);
         DestroyTemporaries(emitter);
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        // TODO
+        variable->Load(emitter, cmajor::ir::OperationFlags::none);
     }
 }
 
@@ -2110,17 +2120,17 @@ BoundExpression* BoundTypeExpression::Clone()
 
 void BoundTypeExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load from a type", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot load from a type", GetFullSpan(), GetType()->GetFullSpan());
 }
 
 void BoundTypeExpression::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to a type", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot store to a type", GetFullSpan(), GetType()->GetFullSpan());
 }
 
 void BoundTypeExpression::Accept(BoundNodeVisitor& visitor)
 {
-    throw cmajor::symbols::Exception("cannot visit a type", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot visit a type", GetFullSpan(), GetType()->GetFullSpan());
 }
 
 cmajor::symbols::TypeSymbol* CreateNamespaceTypeSymbol(cmajor::symbols::NamespaceSymbol* ns)
@@ -2143,17 +2153,17 @@ BoundExpression* BoundNamespaceExpression::Clone()
 
 void BoundNamespaceExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot load from a namespace", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot load from a namespace", GetFullSpan(), ns->GetFullSpan());
 }
 
 void BoundNamespaceExpression::Store(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags)
 {
-    throw cmajor::symbols::Exception("cannot store to a namespace", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot store to a namespace", GetFullSpan(), ns->GetFullSpan());
 }
 
 void BoundNamespaceExpression::Accept(BoundNodeVisitor& visitor)
 {
-    throw cmajor::symbols::Exception("cannot visit a namespace", GetFullSpan());
+    throw cmajor::symbols::Exception("cannot visit a namespace", GetFullSpan(), ns->GetFullSpan());
 }
 
 cmajor::symbols::TypeSymbol* CreateFunctionGroupTypeSymbol(cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol, void* boundFunctionGroupExpression)

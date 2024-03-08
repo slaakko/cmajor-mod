@@ -159,7 +159,7 @@ Exception::~Exception()
 void Exception::SetProject(const std::string& projectName_)
 {
     projectName = projectName_;
-    what = "project: " + projectName + " " + what;
+    what = "project: " + projectName + ": " + what;
 }
 
 std::vector<cmajor::info::bs::CompileError> Exception::ToErrors() const

@@ -1,0 +1,6 @@
+using System;
+
+void three(int a, int b, int c)
+{
+}
+

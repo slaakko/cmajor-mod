@@ -317,7 +317,7 @@ void CancelBuild()
     }
 }
 
-GetDefinitionReplyServiceMessage::GetDefinitionReplyServiceMessage(const cmajor::info::bs::GetDefinitionReply& reply_) : 
+GetDefinitionReplyServiceMessage::GetDefinitionReplyServiceMessage(const cmajor::info::bs::GetDefinitionReply& reply_) :
     ServiceMessage(ServiceMessageKind::getDefinitionReply), reply(reply_)
 {
 }
@@ -336,6 +336,10 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
         else if (request.backend == "systemx")
         {
             backend = cmajor::ast::BackEnd::systemx;
+        }
+        else if (request.backend == "masm")
+        {
+            backend = cmajor::ast::BackEnd::masm;
         }
         cmajor::ast::Config config = cmajor::ast::Config::debug;
         if (request.config == "release")

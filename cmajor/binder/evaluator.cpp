@@ -1371,7 +1371,7 @@ void Evaluator::Visit(cmajor::ast::ConstructorNode& constructorNode)
             }
         }
         initializerArguments.insert(initializerArguments.begin(), std::unique_ptr<BoundExpression>(
-            new BoundTypeExpression(memberVariableSymbol->GetSpan(), memberVariableSymbol->GetType()->AddPointer())));
+            new BoundTypeExpression(constructorNode.GetSpan(), memberVariableSymbol->GetType()->AddPointer())));
         OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
         if (dontThrow)
         {
@@ -2103,7 +2103,7 @@ void Evaluator::Visit(cmajor::ast::ConstructionStatementNode& constructionStatem
             ThrowCannotEvaluateStatically(&constructionStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(type->GetSpan(), type->AddPointer())));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), type->AddPointer())));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2241,7 +2241,7 @@ void Evaluator::Visit(cmajor::ast::AssignmentStatementNode& assignmentStatementN
             ThrowCannotEvaluateStatically(&assignmentStatementNode);
         }
     }
-    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(target->GetType()->GetSpan(), target->GetType()->AddPointer())));
+    arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), target->GetType()->AddPointer())));
     std::vector<FunctionScopeLookup> scopeLookups;
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
     scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
@@ -2957,7 +2957,7 @@ void Evaluator::Visit(cmajor::ast::StructuredLiteralNode& structuredLiteralNode)
                 ThrowCannotEvaluateStatically(&structuredLiteralNode);
             }
         }
-        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(classType->GetSpan(), classType->AddPointer())));
+        arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(structuredLiteralNode.GetSpan(), classType->AddPointer())));
         std::vector<FunctionScopeLookup> scopeLookups;
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, classType->ClassOrNsScope()));
         scopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3786,7 +3786,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
             cmajor::symbols::TypeSymbol* type = static_cast<ScopedValue*>(functionGroupValue->Receiver())->GetType(symbolTable);
             if (type)
             {
-                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(type->GetSpan(), type)));
+                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), type)));
             }
         }
         templateTypeArguments = std::move(functionGroupValue->TemplateTypeArguments());
@@ -3800,7 +3800,7 @@ void Evaluator::Visit(cmajor::ast::InvokeNode& invokeNode)
         {
             if (currentClassType)
             {
-                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(currentClassType->GetSpan(), currentClassType->AddPointer())));
+                arguments.insert(arguments.begin(), std::unique_ptr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), currentClassType->AddPointer())));
                 functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, currentClassType->GetContainerScope()));
                 OverloadResolutionFlags flags = OverloadResolutionFlags::dontInstantiate;
                 if (dontThrow)

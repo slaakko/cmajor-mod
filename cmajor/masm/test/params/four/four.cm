@@ -1,0 +1,6 @@
+using System;
+
+void four(int a, int b, int c, int d)
+{
+}
+

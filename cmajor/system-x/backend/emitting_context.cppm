@@ -24,4 +24,4 @@ private:
     std::string tripleStr;
 };
 
-} // cmajor::llvm
+} // cmajor::systemx::backend

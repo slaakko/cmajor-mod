@@ -222,6 +222,9 @@
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\masm\build\build.vcxproj">
+      <Project>{fde1c072-e87c-4f82-aedc-2a2d4b9f4de9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\parser\parser.vcxproj">
       <Project>{067fedb4-998d-4efb-a2f4-70dc705264e1}</Project>
     </ProjectReference>

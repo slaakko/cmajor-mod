@@ -430,6 +430,7 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
     soul::ast::Span span = boundFunction->GetSpan();
     if (boundFunction->GetFunctionSymbol()->DontThrow()) return;
     cmajor::symbols::TypeSymbol* systemRuntimeUnwindInfoSymbol = boundCompileUnit.GetSystemRuntimeUnwindInfoSymbol();
@@ -772,7 +773,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
             if (currentClass->GetClassTypeSymbol()->StaticConstructor())
             {
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::unique_ptr<BoundExpression>(
-                    new BoundFunctionCall(boundCompoundStatement->GetSpan(), currentClass->GetClassTypeSymbol()->StaticConstructor())))));
+                    new BoundFunctionCall(compoundStatementNode.GetSpan(), currentClass->GetClassTypeSymbol()->StaticConstructor())))));
             }
         }
     }
@@ -1363,6 +1364,10 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         memFreeFunctionName = U"MemFree";
     }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        memFreeFunctionName = U"MemFree";
+    }
     std::unique_ptr<BoundFunctionCall> memFreeCall = ResolveOverload(memFreeFunctionName, containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
     CheckAccess(currentFunction->GetFunctionSymbol(), memFreeCall->GetFunctionSymbol());
     if (exceptionCapture)
@@ -1786,6 +1791,14 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
                     AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
                 }
+                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                {
+                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtThrowException"));
+                    invokeNode.AddArgument(newNode);
+                    invokeNode.AddArgument(new cmajor::ast::UuidLiteralNode(span, exceptionClassType->TypeId()));
+                    std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
+                    AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
+                }
             }
             else
             {
@@ -1870,6 +1883,14 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
             new cmajor::ast::IdentifierNode(span, U"void")),
             new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
         getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"do_catch")));
+        handlerBlock.AddStatement(getExceptionAddr);
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span,
+            new cmajor::ast::IdentifierNode(span, U"void")),
+            new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
+        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtGetException")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
     cmajor::ast::PointerNode exceptionPtrTypeNode(span, new cmajor::ast::IdentifierNode(span, caughtType->BaseType()->FullName()));
@@ -1984,6 +2005,10 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
             {
                 failAssertionFunctionName = U"System.FailAssertion";
+            }
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            {
+                // todo
             }
             std::unique_ptr<BoundStatement> emptyStatement(new BoundEmptyStatement(assertStatementNode.GetSpan()));
             emptyStatement->SetIgnoreNode();

@@ -101,6 +101,11 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
             ArchiveCpp(project, objectFilePaths, verbose);
             break;
         }
+        case cmajor::symbols::BackEnd::masm:
+        {
+            // todo
+            break;
+        }
     }
 }
 

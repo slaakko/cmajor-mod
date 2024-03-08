@@ -230,6 +230,7 @@ void ProcessResourcesInProject(cmajor::ast::Project* project, cmajor::symbols::M
     switch (project->GetBackEnd())
     {
         case cmajor::ast::BackEnd::systemx: return;
+        case cmajor::ast::BackEnd::masm: return;
     }
     AddResourcesInProjectToCurrentModule(project, module);
     if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winapp || project->GetTarget() == cmajor::ast::Target::winguiapp)

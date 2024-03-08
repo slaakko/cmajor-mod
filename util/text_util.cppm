@@ -23,6 +23,7 @@ std::string Trim(const std::string& s);
 std::string TrimAll(const std::string& s);
 std::u32string Trim(const std::u32string& s);
 std::u32string TrimAll(const std::u32string& s);
+std::string TrimEnd(const std::string& line);
 std::vector<std::string> Split(const std::string& s, char c);
 std::string Replace(const std::string& s, char oldChar, char newChar);
 std::string Replace(const std::string& s, const std::string& oldString, const std::string& newString);
@@ -64,6 +65,7 @@ std::string Format(const std::string& s, int width, FormatWidth fw, FormatJustif
 std::string Format(const std::string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar);
 std::string PlatformStringToUtf8(const std::string& platformString);
 std::string Utf8StringToPlatformString(const std::string& utf8String);
+std::vector<std::string> SplitTextIntoLines(const std::string& text);
 
 template<typename StringT>
 std::vector<StringT> Split(const StringT& s, typename StringT::value_type c)

@@ -21,6 +21,6 @@ std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> BindTypes(cmajor:
     cmajor::binder::AttributeBinder* attributeBinder, bool& stop);
 
 void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits, 
-    std::vector<std::string>& objectFilePaths, bool& stop);
+    std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, bool& stop);
 
 } // namespace cmajor::build

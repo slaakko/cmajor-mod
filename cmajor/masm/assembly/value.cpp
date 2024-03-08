@@ -1,0 +1,18 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+module cmajor.masm.assembly.value;
+
+namespace cmajor::masm::assembly {
+
+Value::Value(const std::string& name_) : name(name_)
+{
+}
+
+Value::~Value()
+{
+}
+
+} // cmajor::masm::assembly

@@ -2,10 +2,13 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/HexDump/main.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/Args/Args.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/HexDump/main.cm"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/Args/Args.cm"/>
     <currentCursorLine value="1"/>
     <breakpoints/>
-    <expandedProjects/>
+    <expandedProjects>
+        <item value="Args"/>
+        <item value="HelloGUI"/>
+    </expandedProjects>
 </solutionSettings>

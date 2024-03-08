@@ -1,0 +1,5 @@
+project cmajor.masm.intermediate.lexer;
+tokens <intermediate.token>;
+keywords <intermediate.keyword>;
+expressions <intermediate.expr>;
+lexer <intermediate.lexer>;

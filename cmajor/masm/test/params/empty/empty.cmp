@@ -1,0 +1,4 @@
+project empty;
+source <empty.cm>;
+source <main.cm>;
+

@@ -26,6 +26,10 @@ void AddResources(cmajor::ast::Project* project, cmajor::symbols::Module* rootMo
     {
         AddResourcesSystemX(project, objectFilePaths);
     }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        // todo
+    }
     else
     {
         cmajor::resources::ProcessResourcesInProject(project, rootModule);

@@ -13,7 +13,7 @@ export namespace cmajor::backend {
 
 enum class BackEndKind : int
 {
-    llvmBackEnd = 0, systemxBackEnd = 1, cppBackEnd = 2
+    llvmBackEnd = 0, systemxBackEnd = 1, cppBackEnd = 2, masmBackEnd = 3
 };
 
 class BackEnd
