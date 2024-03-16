@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ushort_unaryop_test();
+    return 0;
+}

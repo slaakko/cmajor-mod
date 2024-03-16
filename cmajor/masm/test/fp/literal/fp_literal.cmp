@@ -1,0 +1,3 @@
+project fp_literal;
+source <fp_literal.cm>;
+source <main.cm>;

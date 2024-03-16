@@ -1,0 +1,3 @@
+project six;
+source <six.cm>;
+source <main.cm>;

@@ -1,0 +1,4 @@
+project uint_value_test;
+target=program;
+source <uint_value_test.cm>;
+source <main.cm>;

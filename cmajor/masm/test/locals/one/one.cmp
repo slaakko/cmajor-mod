@@ -1,0 +1,4 @@
+project one;
+source <one.cm>;
+source <main.cm>;
+

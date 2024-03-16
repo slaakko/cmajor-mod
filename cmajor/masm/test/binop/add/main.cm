@@ -1,0 +1,7 @@
+using System;
+
+void main()
+{
+    int sum = add(1, 2);
+    RtmPrint(sum);
+}

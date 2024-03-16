@@ -10,13 +10,31 @@ import std.core;
 
 export namespace cmajor::masm::assembly {
 
-class NumericLiteral : public Value
+const int maxAssemblyLineLength = 128;
+
+class IntegerLiteral : public Value
 {
 public:
-    NumericLiteral(int64_t value_, int size_);
+    IntegerLiteral(int64_t value_, int size_);
 private:
     int64_t value;
     int size;
+};
+
+class FloatLiteral : public Value
+{
+public:
+    FloatLiteral(float value_);
+private:
+    float value;
+};
+
+class DoubleLiteral : public Value
+{
+public:
+    DoubleLiteral(double value_);
+private:
+    double value;
 };
 
 class StringLiteral : public Value

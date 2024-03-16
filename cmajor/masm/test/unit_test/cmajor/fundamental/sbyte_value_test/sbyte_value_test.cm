@@ -1,0 +1,90 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+sbyte ret(sbyte x)
+{
+    return x;
+}
+
+sbyte eval_unaryop(sbyte operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<sbyte>(+operand);
+        case UnaryOp.neg: return cast<sbyte>(-operand);
+        case UnaryOp.cpl: return cast<sbyte>(~operand);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_unaryop(sbyte operand, UnaryOp op)
+{
+    return cast<sbyte>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+sbyte eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<sbyte>(left + right);
+        case BinOp.sub: return cast<sbyte>(left - right);
+        case BinOp.mul: return cast<sbyte>(left * right);
+        case BinOp.div: return cast<sbyte>(left / right);
+        case BinOp.mod: return cast<sbyte>(left % right);
+        case BinOp.and_: return cast<sbyte>(left & right);
+        case BinOp.or_: return cast<sbyte>(left | right);
+        case BinOp.xor_: return cast<sbyte>(left ^ right);
+        case BinOp.shl: return cast<sbyte>(left << right);
+        case BinOp.shr: return cast<sbyte>(left >> right);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    return cast<sbyte>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+unit_test void sbyte_value_test()
+{
+    sbyte x;
+    #assert (x == 0);
+    sbyte y = x;
+    #assert (y == x);
+    sbyte z;
+    z = x;
+    #assert (z == x);
+    sbyte a = System.Rvalue(x);
+    #assert (a == x);
+    sbyte b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    sbyte c = 1;
+    #assert (c == 1);
+    sbyte d = c;
+    #assert (d == c);
+    sbyte e;
+    e = c;
+    #assert (e == c);
+    sbyte f = System.Rvalue(c);
+    #assert (f == c);
+    sbyte g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}

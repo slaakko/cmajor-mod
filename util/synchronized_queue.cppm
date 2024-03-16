@@ -14,7 +14,8 @@ class SynchronizedQueue
 {
 public:
     SynchronizedQueue();
-    bool IsEmpty() const;
+    bool IsEmpty();
+    int Count() const { return queue.size(); }
     void Put(const T& item);
     T Get();
     void Exit();
@@ -32,7 +33,7 @@ SynchronizedQueue<T>::SynchronizedQueue() : exiting(false)
 }
 
 template<class T>
-bool SynchronizedQueue<T>::IsEmpty() const
+bool SynchronizedQueue<T>::IsEmpty() 
 {
     std::lock_guard<std::mutex> lock(mtx);
     return queue.empty();

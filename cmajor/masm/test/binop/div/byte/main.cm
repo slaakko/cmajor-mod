@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    div();
+    return 0;
+}

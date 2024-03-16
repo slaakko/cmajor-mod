@@ -1,0 +1,25 @@
+using System;
+
+void two_float(float x, float y)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+}
+
+void two_double(double x, double y)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+}
+
+void two_double_long(double x, long y)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+}
+
+void two_long_double(long x, double y)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+}

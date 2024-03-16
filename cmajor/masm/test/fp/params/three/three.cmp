@@ -1,0 +1,3 @@
+project three;
+source <three.cm>;
+source <main.cm>;

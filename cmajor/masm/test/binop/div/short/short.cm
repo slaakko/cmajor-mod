@@ -1,0 +1,12 @@
+using System;
+
+void short_div()
+{
+    short left = -1;
+    short right = -1;
+    short result = left / right;
+    RtmPrint(result);
+
+    short x = cast<short>(RtmEvaluateBinOp(left, right, 0, 3));
+    RtmPrint(x);
+}

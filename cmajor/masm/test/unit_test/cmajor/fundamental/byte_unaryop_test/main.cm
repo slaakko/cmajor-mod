@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    byte_unaryop_test();
+    return 0;
+}

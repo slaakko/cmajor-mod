@@ -1,0 +1,23 @@
+using System;
+
+class Struct2
+{
+    public Struct2(long x_, int y_, bool b_, char c_) : x(x_), y(y_), b(b_), c(c_) {}
+    public long X() const { return x; }
+    public int Y() const { return y; }
+    public bool B() const { return b; }
+    public char C() const { return c; }
+    private long x;
+    private int y;
+    private bool b;
+    private char c;
+}
+
+void struct_2()
+{
+    Struct2 s(1, 2, true, '@');
+    RtmPrint(cast<int>(s.X()));
+    RtmPrint(s.Y());
+    RtmPrint(cast<int>(s.B()));
+    RtmPrint(cast<int>(s.C()));
+}

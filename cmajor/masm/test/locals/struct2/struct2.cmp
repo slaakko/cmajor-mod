@@ -1,0 +1,3 @@
+project struct2;
+source <struct2.cm>;
+source <main.cm>;

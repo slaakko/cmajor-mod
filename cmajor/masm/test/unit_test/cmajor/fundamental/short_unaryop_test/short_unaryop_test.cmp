@@ -1,0 +1,4 @@
+project short_unaryop_test;
+target=program;
+source <short_unaryop_test.cm>;
+source <main.cm>;

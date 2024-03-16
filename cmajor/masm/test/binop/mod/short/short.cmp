@@ -1,0 +1,3 @@
+project short;
+source <short.cm>;
+source <main.cm>;

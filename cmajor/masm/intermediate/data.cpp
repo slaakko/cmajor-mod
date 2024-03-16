@@ -55,6 +55,11 @@ bool Value::IsIntegerValue() const
     }
 }
 
+bool Value::IsFloatingPointValue() const
+{
+    return kind == ValueKind::floatValue || kind == ValueKind::doubleValue;
+}
+
 int64_t Value::GetIntegerValue() const
 {
     switch (kind)
@@ -584,7 +589,7 @@ Value* Data::MakeSymbolValue(const soul::ast::Span& span, Type* type, const std:
     return symbolValue;
 }
 
-Value* Data::MakeNumericLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue, const Types& types, Context* context)
+Value* Data::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue, const Types& types, Context* context)
 {
     switch (type->Id())
     {

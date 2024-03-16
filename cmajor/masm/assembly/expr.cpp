@@ -57,6 +57,7 @@ std::string SizePrefixStr(int size, Value* value)
     case 2: return "word ptr " + value->ToString();
     case 4: return "dword ptr " + value->ToString();
     case 8: return "qword ptr " + value->ToString();
+    case 16: return "oword ptr " + value->ToString();
     }
     return std::string();
 }

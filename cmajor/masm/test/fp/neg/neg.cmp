@@ -1,0 +1,3 @@
+project neg;
+source <neg.cm>;
+source <main.cm>;

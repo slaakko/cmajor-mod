@@ -1,0 +1,4 @@
+project byte_unaryop_test;
+target=program;
+source <byte_unaryop_test.cm>;
+source <main.cm>;

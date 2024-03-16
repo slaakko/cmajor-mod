@@ -5,7 +5,17 @@
 
 module cmajor.masm.rt.util;
 
-void RtmPrint(int64_t x)
+void RtmPrintInteger(int64_t x)
+{
+    std::cout << x << "\n";
+}
+
+void RtmPrintFloat(float x)
+{
+    std::cout << x << "\n";
+}
+
+void RtmPrintDouble(double x)
 {
     std::cout << x << "\n";
 }

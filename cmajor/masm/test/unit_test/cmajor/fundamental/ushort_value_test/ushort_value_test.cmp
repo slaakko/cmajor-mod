@@ -1,0 +1,4 @@
+project ushort_value_test;
+target=program;
+source <ushort_value_test.cm>;
+source <main.cm>;

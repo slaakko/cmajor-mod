@@ -1,0 +1,3 @@
+project eight;
+source <eight.cm>;
+source <main.cm>;

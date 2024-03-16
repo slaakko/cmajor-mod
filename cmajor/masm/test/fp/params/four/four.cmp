@@ -1,0 +1,3 @@
+project four;
+source <four.cm>;
+source <main.cm>;

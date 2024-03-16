@@ -36,7 +36,11 @@ enum class OpCode
     SFENCE, SHLD, SHLX, SHR, SHRD, SHRX, SLWPCB, STC, STD, STOS, STOSB, STOSW, STOSD, STOSQ, SUB,
     T1MSKC, TEST, TZCNT, TZMSK,
     XADD, XCHG, XLAT, XLATB, XOR,
-    DB, DW, DD, DQ
+    // floating-point support:
+    MOVDQA, MOVQ, MOVSS, ADDSD, ADDSS, SUBSD, SUBSS, MULSD, MULSS, DIVSD, DIVSS, UCOMISD, UCOMISS, COMISD, COMISS,
+    XORPD, XORPS, CVTSI2SD, CVTSI2SS, CVTTSD2SO, CVTTSS2SI, CVTSS2SD, CVTSD2SS,
+    // data definition support:
+    DB, DW, DD, DQ, REAL4, REAL8
 };
 
 std::string OpCodeStr(OpCode opCode);
@@ -47,12 +51,14 @@ public:
     Instruction(OpCode opCode_);
     void SetLabel(const std::string& label_);
     const std::string& Label() const { return label; }
+    void SetNoColon() { nocolon = true; }
     void AddOperand(Value* operand);
     OpCode GetOpCode() const { return opCode; }
     const std::vector<Value*>& Operands() const { return operands; }
     void Write(util::CodeFormatter& formatter);
 private:
     std::string label;
+    bool nocolon;
     OpCode opCode;
     std::vector<Value*> operands;
 };

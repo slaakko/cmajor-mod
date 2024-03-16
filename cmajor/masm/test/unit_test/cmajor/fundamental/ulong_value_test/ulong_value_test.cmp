@@ -1,0 +1,4 @@
+project ulong_value_test;
+target=program;
+source <ulong_value_test.cm>;
+source <main.cm>;

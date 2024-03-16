@@ -1,0 +1,4 @@
+project bool_test;
+target=program;
+source <bool_test.cm>;
+source <main.cm>;

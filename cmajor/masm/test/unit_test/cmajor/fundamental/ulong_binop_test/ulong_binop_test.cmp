@@ -1,0 +1,4 @@
+project ulong_binop_test;
+target=program;
+source <ulong_binop_test.cm>;
+source <main.cm>;

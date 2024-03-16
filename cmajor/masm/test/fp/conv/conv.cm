@@ -1,0 +1,33 @@
+using System;
+
+void int_to_float()
+{
+    int x = 127;
+    float y = x;
+    RtmPrintInteger(x);
+    RtmPrintFloat(y);
+}
+
+void float_to_int()
+{
+    float x = 127.0f;
+    int y = cast<int>(x);
+    RtmPrintFloat(x);
+    RtmPrintInteger(y);
+}
+
+void long_to_double()
+{
+    long x = 2147483637;
+    double y = x;
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+}
+
+void double_to_long()
+{
+    double x = 1234.567;
+    long y = cast<long>(x);
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+}

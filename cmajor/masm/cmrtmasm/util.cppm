@@ -9,6 +9,8 @@ import std.core;
 
 export {
 
-extern "C" void RtmPrint(int64_t x);
+extern "C" void RtmPrintInteger(int64_t x);
+extern "C" void RtmPrintFloat(float x);
+extern "C" void RtmPrintDouble(double x);
 
 }

@@ -15,7 +15,7 @@ import soul.ast.span;
 namespace cmajor::symbols {
 
 SymbolCreatorVisitor::SymbolCreatorVisitor(SymbolTable& symbolTable_) :
-    symbolTable(symbolTable_), classInstanceNode(nullptr), classTemplateSpecialization(nullptr), functionIndex(0), level(0)
+    symbolTable(symbolTable_), classInstanceNode(nullptr), classTemplateSpecialization(nullptr), functionIndex(0), level(0), leaveFunction(false)
 {
     symbolTable.ResetAxiomNumber();
     symbolTable.ResetAliasNodesAndNamespaceImports();
@@ -108,7 +108,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::FunctionNode& functionNode)
         }
     }
     --level;
-    symbolTable.EndFunction();
+    symbolTable.EndFunction(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ClassNode& classNode)
@@ -122,10 +122,6 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ClassNode& classNode)
         symbolTable.BeginClass(classNode);
     }
     ++level;
-    if (classNode.Id()->Str() == U"Bitset")
-    {
-        int x = 0;
-    }
     classNode.Id()->Accept(*this);
     int nt = classNode.TemplateParameters().Count();
     for (int i = 0; i < nt; ++i)
@@ -203,7 +199,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::StaticConstructorNode& staticConst
         staticConstructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndStaticConstructor();
+    symbolTable.EndStaticConstructor(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConstructorNode& constructorNode)
@@ -230,7 +226,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConstructorNode& constructorNode)
         constructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndConstructor();
+    symbolTable.EndConstructor(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::DestructorNode& destructorNode)
@@ -242,7 +238,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::DestructorNode& destructorNode)
         destructorNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndDestructor();
+    symbolTable.EndDestructor(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
@@ -268,7 +264,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::MemberFunctionNode& memberFunction
         memberFunctionNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndMemberFunction();
+    symbolTable.EndMemberFunction(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::ConversionFunctionNode& conversionFunctionNode)
@@ -288,7 +284,7 @@ void SymbolCreatorVisitor::Visit(cmajor::ast::ConversionFunctionNode& conversion
         conversionFunctionNode.Body()->Accept(*this);
     }
     --level;
-    symbolTable.EndConversionFunction();
+    symbolTable.EndConversionFunction(!leaveFunction);
 }
 
 void SymbolCreatorVisitor::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)

@@ -1,0 +1,3 @@
+project mod_sbyte;
+source <mod_sbyte.cm>;
+source <main.cm>;

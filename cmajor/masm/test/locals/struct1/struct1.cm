@@ -1,0 +1,13 @@
+using System;
+
+class Struct
+{
+	public int x;
+}
+
+void struct_1()
+{
+	Struct s;
+	s.x = 10;
+	RtmPrint(s.x);
+}

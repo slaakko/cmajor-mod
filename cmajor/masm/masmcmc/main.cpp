@@ -25,13 +25,9 @@ const char* version = "5.0.0";
 
 void PrintHelp()
 {
-#ifdef _WIN32
-    std::cout << "Cmajor System X compiler version " << version << " for Windows x64" << std::endl;
-#else
-    std::cout << "Cmajor System X compiler version " << version << std::endl;
-#endif
-    std::cout << "Usage: sxcmc [options] { project.cmp | solution.cms }" << std::endl;
-    std::cout << "Compiles given Cmajor solutions and projects to System X libraries or executables." << std::endl;
+    std::cout << "Cmajor compiler version " << version << " with MASM backend for Windows x64" << std::endl;
+    std::cout << "Usage: masmcmc [options] { project.cmp | solution.cms }" << std::endl;
+    std::cout << "Compiles given Cmajor solutions and projects to Windows libraries or executables using Microsoft Visual Studio." << std::endl;
     std::cout << "Options:\n" <<
         "--help (-h)\n" <<
         "   print this help message\n" <<
@@ -51,16 +47,18 @@ void PrintHelp()
         "   clean given solutions and projects\n" <<
         "--define SYMBOL (-D SYMBOL)\n" <<
         "   define a conditional compilation symbol SYMBOL.\n" <<
-        "--disable-module-cache (-d)\n" <<
-        "   do not cache recently built modules\n" <<
+        "--link-with-debug-runtime (-d)\n" <<
+        "   link with debug runtime 'cmrtmasmd.lib'\n" <<
         "--single-threaded (-s)\n" <<
         "   compile using a single thread\n" <<
-        "--gen-debug-info (-g)" <<
-        "   generate debug info (on for debug mode)\n" <<
-        "--pass=PASS (-p=PASS)\n" <<
-        "   process intermediate code by running PASS\n" <<
         "--time (-t)\n" <<
         "   print duration of compilation\n" <<
+        "--unit-test-file-path=FILEPATH (-f=FILEPATH)\n"
+        "   set unit test file path to FILEPATH\n" <<
+        "--unit-test-name=UNITTESTNAME (-n=UNITTESTNAME)\n"
+        "   set unit test name to UNITTESTNAME\n" <<
+        "--unit-test (-u)\n"
+        "   compile unit test\n" <<
         std::endl;
 }
 
@@ -122,21 +120,21 @@ int main(int argc, const char** argv)
                     {
                         prevWasDefine = true;
                     }
-                    else if (arg == "--gen-debug-info")
-                    {
-                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo);
-                    }
                     else if (arg == "--single-threaded")
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
                     }
-                    else if (arg == "--disable-module-cache")
+                    else if (arg == "--link-with-debug-runtime")
                     {
-                        useModuleCache = false;
+                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                     }
                     else if (arg == "--time")
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);
+                    }
+                    else if (arg == "--unit-test")
+                    {
+                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest);
                     }
                     else if (arg.find('=') != std::string::npos)
                     {
@@ -169,6 +167,14 @@ int main(int argc, const char** argv)
                             else if (components[0] == "--pass")
                             {
                                 cmajor::symbols::SetPass(components[1]);
+                            }
+                            else if (components[0] == "--unit-test-file-path")
+                            {
+                                cmajor::symbols::SetUnitTestFilePath(components[1]);
+                            }
+                            else if (components[0] == "--unit-test-name")
+                            {
+                                cmajor::symbols::SetUnitTestName(components[1]);
                             }
                             else
                             {
@@ -216,6 +222,14 @@ int main(int argc, const char** argv)
                         else if (components[0] == "-p")
                         {
                             cmajor::symbols::SetPass(components[1]);
+                        }
+                        else if (components[0] == "-f")
+                        {
+                            cmajor::symbols::SetUnitTestFilePath(components[1]);
+                        }
+                        else if (components[0] == "-n")
+                        {
+                            cmajor::symbols::SetUnitTestName(components[1]);
                         }
                         else
                         {
@@ -271,7 +285,7 @@ int main(int argc, const char** argv)
                             }
                             case 'd':
                             {
-                                useModuleCache = false;
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                                 break;
                             }
                             case 't':
@@ -315,6 +329,11 @@ int main(int argc, const char** argv)
             for (const std::string& file : files)
             {
                 std::filesystem::path fp(file);
+                bool prevUnitTest = false;
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+                {
+                    prevUnitTest = cmajor::symbols::BeginUnitTest();
+                }
                 if (fp.extension() == ".cms")
                 {
                     if (GetGlobalFlag(cmajor::symbols::GlobalFlags::msbuild))
@@ -344,6 +363,10 @@ int main(int argc, const char** argv)
                     {
                         cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
                     }
+                }
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+                {
+                    cmajor::symbols::EndUnitTest(prevUnitTest);
                 }
             }
             if (GetGlobalFlag(cmajor::symbols::GlobalFlags::time))

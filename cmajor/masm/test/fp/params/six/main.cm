@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    six_float(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f);
+    six_double(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
+    six_double_long_double_long_double_double(1.0, 2, 3.0, 4, 5.0, 6.0);
+    six_long_double_double_double_long_long(1, 2.0, 3.0, 4.0, 5, 6);
+}

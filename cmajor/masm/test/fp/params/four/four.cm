@@ -1,0 +1,33 @@
+using System;
+
+void four_float(float x, float y, float z, float p)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+    RtmPrintFloat(p);
+}
+
+void four_double(double x, double y, double z, double p)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+}
+
+void four_double_long_double_long(double x, long y, double z, long p)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+    RtmPrintDouble(z);
+    RtmPrintInteger(p);
+}
+
+void four_long_double_double_double(long x, double y, double z, double p)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+}

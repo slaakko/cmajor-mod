@@ -1,0 +1,29 @@
+using System;
+
+void three_float(float x, float y, float z)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+}
+
+void three_double(double x, double y, double z)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+}
+
+void three_double_long_double(double x, long y, double z)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+    RtmPrintDouble(z);
+}
+
+void three_long_double_double(long x, double y, double z)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+}

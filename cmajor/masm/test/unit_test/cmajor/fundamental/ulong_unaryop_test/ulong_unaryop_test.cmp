@@ -1,0 +1,4 @@
+project ulong_unaryop_test;
+target=program;
+source <ulong_unaryop_test.cm>;
+source <main.cm>;

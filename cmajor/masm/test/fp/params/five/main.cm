@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    five_float(1.0f, 2.0f, 3.0f, 4.0f, 5.0f);
+    five_double(1.0, 2.0, 3.0, 4.0, 5.0);
+    five_double_long_double_long_double(1.0, 2, 3.0, 4, 5.0);
+    five_long_double_double_double_long(1, 2.0, 3.0, 4.0, 5);
+}

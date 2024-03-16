@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_binop_test();
+    return 0;
+}

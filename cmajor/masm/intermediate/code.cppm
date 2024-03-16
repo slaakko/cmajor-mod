@@ -66,6 +66,7 @@ public:
     bool IsFunctionCallInstruction() const { return opCode == OpCode::function_call; }
     bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
     bool RequiresLocalRegister() const;
+    virtual bool IsFloatingPointInstruction() const { return false; }
     std::vector<BasicBlock*> Successors() const;
     int Index() const { return index; }
     void SetIndex(int index_) { index = index_; }
@@ -85,6 +86,7 @@ public:
     void Accept(Visitor& visitor) override;
     Value* GetValue() const { return value; }
     Value* GetPtr() const { return ptr; }
+    bool IsFloatingPointInstruction() const override { return value->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
 private:
     Value* value;
@@ -97,6 +99,7 @@ public:
     ArgInstruction(const soul::ast::Span& span_, Value* arg_);
     void Accept(Visitor& visitor) override;
     Value* Arg() const { return arg; }
+    bool IsFloatingPointInstruction() const override { return arg->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
 private:
     Value* arg;
@@ -156,6 +159,7 @@ public:
     RetInstruction(const soul::ast::Span& span_, Value* returnValue_);
     void Accept(Visitor& visitor) override;
     Value* ReturnValue() const { return returnValue; }
+    bool IsFloatingPointInstruction() const override;
     void AddToUses() override;
 private:
     Value* returnValue;
@@ -194,6 +198,7 @@ class ValueInstruction : public Instruction
 public:
     ValueInstruction(const soul::ast::Span& span_, RegValue* result_, OpCode opCode_);
     RegValue* Result() const { return result; }
+    bool IsFloatingPointInstruction() const override { return result->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
 private:
     RegValue* result;
@@ -221,6 +226,7 @@ class NegInstruction : public UnaryInstruction
 {
 public:
     NegInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_);
+    bool IsFloatingPointInstruction() const override { return Operand()->GetType()->IsFloatingPointType(); }
     void Accept(Visitor& visitor) override;
 };
 
@@ -256,6 +262,7 @@ class IntToFloatInstruction : public UnaryInstruction
 {
 public:
     IntToFloatInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_);
+    bool IsFloatingPointInstruction() const override { return true; }
     void Accept(Visitor& visitor) override;
 };
 
@@ -263,6 +270,7 @@ class FloatToIntInstruction : public UnaryInstruction
 {
 public:
     FloatToIntInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_);
+    bool IsFloatingPointInstruction() const override { return false; }
     void Accept(Visitor& visitor) override;
 };
 
@@ -286,6 +294,7 @@ public:
     BinaryInstruction(const soul::ast::Span& span_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_);
     Value* Left() const { return left; }
     Value* Right() const { return right; }
+    bool IsFloatingPointInstruction() const override { return Left()->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
 private:
     Value* left;
@@ -367,6 +376,7 @@ class EqualInstruction : public BinaryInstruction
 public:
     EqualInstruction(const soul::ast::Span& span_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    bool IsFloatingPointInstruction() const override { return false; }
 };
 
 class LessInstruction : public BinaryInstruction
@@ -374,6 +384,7 @@ class LessInstruction : public BinaryInstruction
 public:
     LessInstruction(const soul::ast::Span& span_, RegValue* result_, Value* left_, Value* right_);
     void Accept(Visitor& visitor) override;
+    bool IsFloatingPointInstruction() const override { return false; }
 };
 
 class ParamInstruction : public ValueInstruction

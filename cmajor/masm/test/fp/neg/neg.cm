@@ -1,0 +1,17 @@
+using System;
+
+void neg_float()
+{
+    float x = 1.0f;
+    float y = -x;
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+}
+
+void neg_double()
+{
+    double x = 1.0;
+    double y = -x;
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+}

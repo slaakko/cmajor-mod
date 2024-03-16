@@ -1,0 +1,4 @@
+project uint_unaryop_test;
+target=program;
+source <uint_unaryop_test.cm>;
+source <main.cm>;

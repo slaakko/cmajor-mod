@@ -1,0 +1,4 @@
+project sbyte_binop_test;
+target=program;
+source <sbyte_binop_test.cm>;
+source <main.cm>;

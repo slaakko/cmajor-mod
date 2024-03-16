@@ -62,17 +62,17 @@ bool Instruction::IsTerminator() const
 {
     switch (opCode)
     {
-    case OpCode::jmp:
-    case OpCode::branch:
-    case OpCode::ret:
-    case OpCode::switch_:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::jmp:
+        case OpCode::branch:
+        case OpCode::ret:
+        case OpCode::switch_:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -80,42 +80,42 @@ bool Instruction::IsValueInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    case OpCode::param:
-    case OpCode::local:
-    case OpCode::load:
-    case OpCode::elemaddr:
-    case OpCode::ptroffset:
-    case OpCode::ptrdiff:
-    case OpCode::function_call:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        case OpCode::param:
+        case OpCode::local:
+        case OpCode::load:
+        case OpCode::elemaddr:
+        case OpCode::ptroffset:
+        case OpCode::ptrdiff:
+        case OpCode::function_call:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -123,23 +123,23 @@ bool Instruction::IsUnaryInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -147,25 +147,25 @@ bool Instruction::IsBinaryInstruction() const
 {
     switch (opCode)
     {
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -173,43 +173,43 @@ bool Instruction::RequiresLocalRegister() const
 {
     switch (opCode)
     {
-    case OpCode::arg:
-    case OpCode::procedure_call:
-    case OpCode::not_:
-    case OpCode::neg:
-    case OpCode::signextend:
-    case OpCode::zeroextend:
-    case OpCode::truncate:
-    case OpCode::bitcast:
-    case OpCode::inttofloat:
-    case OpCode::floattoint:
-    case OpCode::inttoptr:
-    case OpCode::ptrtoint:
-    case OpCode::add:
-    case OpCode::sub:
-    case OpCode::mul:
-    case OpCode::div_:
-    case OpCode::mod:
-    case OpCode::and_:
-    case OpCode::or_:
-    case OpCode::xor_:
-    case OpCode::shl:
-    case OpCode::shr:
-    case OpCode::equal:
-    case OpCode::less:
-    case OpCode::param:
-    case OpCode::load:
-    case OpCode::elemaddr:
-    case OpCode::ptroffset:
-    case OpCode::ptrdiff:
-    case OpCode::function_call:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case OpCode::arg:
+        case OpCode::procedure_call:
+        case OpCode::not_:
+        case OpCode::neg:
+        case OpCode::signextend:
+        case OpCode::zeroextend:
+        case OpCode::truncate:
+        case OpCode::bitcast:
+        case OpCode::inttofloat:
+        case OpCode::floattoint:
+        case OpCode::inttoptr:
+        case OpCode::ptrtoint:
+        case OpCode::add:
+        case OpCode::sub:
+        case OpCode::mul:
+        case OpCode::div_:
+        case OpCode::mod:
+        case OpCode::and_:
+        case OpCode::or_:
+        case OpCode::xor_:
+        case OpCode::shl:
+        case OpCode::shr:
+        case OpCode::equal:
+        case OpCode::less:
+        case OpCode::param:
+        case OpCode::load:
+        case OpCode::elemaddr:
+        case OpCode::ptroffset:
+        case OpCode::ptrdiff:
+        case OpCode::function_call:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -344,6 +344,15 @@ RetInstruction::RetInstruction(const soul::ast::Span& span_, Value* returnValue_
 void RetInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+bool RetInstruction::IsFloatingPointInstruction() const 
+{ 
+    if (returnValue)
+    {
+        return returnValue->GetType()->IsFloatingPointType();
+    }
+    return false;
 }
 
 void RetInstruction::AddToUses()

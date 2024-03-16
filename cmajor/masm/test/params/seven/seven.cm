@@ -1,0 +1,12 @@
+using System;
+
+void seven(int a, int b, int c, int d, int e, int f, int g)
+{
+    RtmPrintInteger(a);
+    RtmPrintInteger(b);
+    RtmPrintInteger(c);
+    RtmPrintInteger(d);
+    RtmPrintInteger(e);
+    RtmPrintInteger(f);
+    RtmPrintInteger(g);
+}

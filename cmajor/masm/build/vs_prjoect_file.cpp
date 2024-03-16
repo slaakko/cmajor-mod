@@ -250,27 +250,28 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     soul::xml::Text* debugGenDebugInfoText = soul::xml::MakeText("true");
     debugGenDebugInfo->AppendChild(debugGenDebugInfoText);
     debugLink->AppendChild(debugGenDebugInfo);
+    std::string cmrtmasm_release = "cmrtmasm.lib";
+    std::string dom_release = "soul.xml.dom.lib";
+    std::string soul_lexer_release = "soul.lexer.lib";
+    std::string util_release = "util.lib";
+    std::string cmrtmasm_debug = "cmrtmasmd.lib";
+    std::string dom_debug = "soul.xml.domd.lib";
+    std::string soul_lexer_debug = "soul.lexerd.lib";
+    std::string util_debug = "utild.lib";
     if (project->GetTarget() == cmajor::ast::Target::program)
     {
         soul::xml::Element* debugLibraryDirs = soul::xml::MakeElement("AdditionalLibraryDirectories");
         soul::xml::Text* debugLibraryDirsText = soul::xml::MakeText(libraryDirs);
         debugLibraryDirs->AppendChild(debugLibraryDirsText);
         debugLink->AppendChild(debugLibraryDirs);
-        std::string cmrtmasm = "cmrtmasm.lib";
-        std::string util = "util.lib";
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
-        {
-            cmrtmasm = "cmrtmasmd.lib";
-            util = "utild.lib";
-        }
         soul::xml::Element* debugDependencies = soul::xml::MakeElement("AdditionalDependencies");
-        soul::xml::Text* debugDependenciesText = soul::xml::MakeText(cmrtmasm + ";" + util + ";" + references);
+        soul::xml::Text* debugDependenciesText = soul::xml::MakeText(cmrtmasm_debug + ";" + dom_debug + ";" + soul_lexer_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
-        soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly");
-        soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
-        forceFileOutput->AppendChild(multipleDefinedSymbols);
-        debugLink->AppendChild(forceFileOutput);
+        //soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly"); TODO force
+        //soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
+        //forceFileOutput->AppendChild(multipleDefinedSymbols);
+        //debugLink->AppendChild(forceFileOutput);
     }
     debugItemDefinitionGroup->AppendChild(debugLink);
 
@@ -331,13 +332,13 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         releaseLibraryDirs->AppendChild(releaseLibraryDirsText);
         releaseLink->AppendChild(releaseLibraryDirs);
         soul::xml::Element* releaseDependencies = soul::xml::MakeElement("AdditionalDependencies");
-        soul::xml::Text* releaseDepenciesText = soul::xml::MakeText("cmrtmasm.lib;util.lib;" + references);
+        soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(cmrtmasm_release + ";" + dom_release + ";" + soul_lexer_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
-        soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly");
-        soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
-        forceFileOutput->AppendChild(multipleDefinedSymbols);
-        releaseLink->AppendChild(forceFileOutput);
+        //soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly"); todo force
+        //soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
+        //forceFileOutput->AppendChild(multipleDefinedSymbols);
+        //releaseLink->AppendChild(forceFileOutput);
     }
     releaseItemDefinitionGroup->AppendChild(releaseLink);
 

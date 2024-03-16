@@ -289,7 +289,7 @@ parser IntermediateParser
         ::= TRUE{ return context->GetBooleanLiteral(lexer.GetSpan(pos), type, true); }
         |   FALSE{ return context->GetBooleanLiteral(lexer.GetSpan(pos), type, false); }
         |   NULL_TOKEN{ return context->GetNullValue(lexer.GetSpan(pos), type); }
-        |   NUMBER{ return context->MakeNumericLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
+        |   NUMBER{ return context->MakeIntegerLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
         |   ID{ return context->MakeAddressLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())); }
         ;
 

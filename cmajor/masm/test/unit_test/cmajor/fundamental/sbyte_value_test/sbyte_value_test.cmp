@@ -1,0 +1,4 @@
+project sbyte_value_test;
+target=program;
+source <sbyte_value_test.cm>;
+source <main.cm>;

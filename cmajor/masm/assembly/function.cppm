@@ -6,6 +6,7 @@
 export module cmajor.masm.assembly.function;
 
 import cmajor.masm.assembly.declaration;
+import cmajor.masm.assembly.macro;
 import std.core;
 import util;
 
@@ -33,12 +34,16 @@ public:
     void SetActiveFunctionPart(FunctionPart activeFunctionPart_);
     void AddInstruction(Instruction* inst);
     void Write(util::CodeFormatter& formatter);
+    void AddMacro(Macro* macro);
+    Macro* GetMacro(const std::string& name) const;
 private:
     std::string name;
     FunctionPart activeFunctionPart;
     std::vector<std::unique_ptr<Instruction>> prologue;
     std::vector<std::unique_ptr<Instruction>> body;
     std::vector<std::unique_ptr<Instruction>> epilogue;
+    std::vector<Macro*> macros;
+    std::map<std::string, Macro*> macroMap;
 };
 
 } // namespace cmajor::masm::assembly

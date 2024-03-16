@@ -1,0 +1,4 @@
+project long_value_test;
+target=program;
+source <long_value_test.cm>;
+source <main.cm>;

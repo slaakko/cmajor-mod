@@ -1,0 +1,21 @@
+using System;
+
+void add_float()
+{
+    float x = 1.0f;
+    float y = 2.0f;
+    float z = x + y;
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+}
+
+void add_double()
+{
+    double x = 1.0;
+    double y = 2.0;
+    double z = x + y;
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+}

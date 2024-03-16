@@ -2,4 +2,5 @@ using System;
 
 void one(int x)
 {
+    RtmPrintInteger(x);
 }

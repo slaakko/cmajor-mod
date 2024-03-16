@@ -1,0 +1,12 @@
+using System;
+
+void div()
+{
+    byte left = 128u;
+    byte right = 1u;
+    byte result = left / right;
+    RtmPrint(result);
+
+    long x = RtmEvaluateBinOp(left, right, 0, 3);
+    RtmPrint(x);
+}

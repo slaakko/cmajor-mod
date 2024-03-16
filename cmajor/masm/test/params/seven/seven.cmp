@@ -1,0 +1,3 @@
+project seven;
+source <seven.cm>;
+source <main.cm>;

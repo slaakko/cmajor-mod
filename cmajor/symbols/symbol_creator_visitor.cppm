@@ -134,6 +134,7 @@ public:
     void Visit(cmajor::ast::ConstructNode& constructNode) override;
     void Visit(cmajor::ast::NewNode& newNode) override;
     void Visit(cmajor::ast::ParenthesizedExpressionNode& parenthesizedExpressionNode) override;
+    void SetLeaveFunction() { leaveFunction = true; }
 private:
     SymbolTable& symbolTable;
     cmajor::ast::ClassNode* classInstanceNode;
@@ -141,5 +142,6 @@ private:
     std::stack<bool> conditionalCompilationStack;
     int32_t functionIndex;
     int level;
+    bool leaveFunction;
 };
 } // namespace cmajor::symbols

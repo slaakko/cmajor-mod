@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    int_to_float();
+    float_to_int();
+    long_to_double();
+    double_to_long();
+}

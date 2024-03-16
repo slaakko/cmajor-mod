@@ -1,0 +1,12 @@
+using System;
+
+void mod_sbyte()
+{
+    sbyte left = -1;
+    sbyte right = 2;
+    sbyte result = left % right;
+    RtmPrint(result);
+
+    long x = RtmEvaluateBinOp(left, right, 0, 4);
+    RtmPrint(x);
+}

@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    three_float(1.0f, 2.0f, 3.0f);
+    three_double(1.0, 2.0, 3.0);
+    three_double_long_double(1.0, 2, 3.0);
+    three_long_double_double(1, 2.0, 3.0);
+}

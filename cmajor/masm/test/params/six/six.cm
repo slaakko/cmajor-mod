@@ -1,0 +1,11 @@
+using System;
+
+void six(int a, int b, int c, int d, int e, int f)
+{
+    RtmPrintInteger(a);
+    RtmPrintInteger(b);
+    RtmPrintInteger(c);
+    RtmPrintInteger(d);
+    RtmPrintInteger(e);
+    RtmPrintInteger(f);
+}

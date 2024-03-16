@@ -1,0 +1,4 @@
+project byte_value_test;
+target=program;
+source <byte_value_test.cm>;
+source <main.cm>;

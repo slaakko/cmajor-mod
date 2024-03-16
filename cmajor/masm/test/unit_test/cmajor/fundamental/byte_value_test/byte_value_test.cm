@@ -1,0 +1,90 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+byte ret(byte x)
+{
+    return x;
+}
+
+byte eval_unaryop(byte operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<byte>(+operand);
+        case UnaryOp.neg: return cast<byte>(-operand);
+        case UnaryOp.cpl: return cast<byte>(~operand);
+    }
+    return 0u;
+}
+
+byte rtm_eval_unaryop(byte operand, UnaryOp op)
+{
+    return cast<byte>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.byte_), cast<int>(op)));
+}
+
+byte eval_binop(byte left, byte right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<byte>(left + right);
+        case BinOp.sub: return cast<byte>(left - right);
+        case BinOp.mul: return cast<byte>(left * right);
+        case BinOp.div: return cast<byte>(left / right);
+        case BinOp.mod: return cast<byte>(left % right);
+        case BinOp.and_: return cast<byte>(left & right);
+        case BinOp.or_: return cast<byte>(left | right);
+        case BinOp.xor_: return cast<byte>(left ^ right);
+        case BinOp.shl: return cast<byte>(left << right);
+        case BinOp.shr: return cast<byte>(left >> right);
+    }
+    return 0u;
+}
+
+byte rtm_eval_binop(byte left, byte right, BinOp op)
+{
+    return cast<byte>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.byte_), cast<int>(op)));
+}
+
+unit_test void byte_value_test()
+{
+    byte x;
+    #assert (x == 0u);
+    byte y = x;
+    #assert (y == x);
+    byte z;
+    z = x;
+    #assert (z == x);
+    byte a = System.Rvalue(x);
+    #assert (a == x);
+    byte b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    byte c = 1u;
+    #assert (c == 1u);
+    byte d = c;
+    #assert (d == c);
+    byte e;
+    e = c;
+    #assert (e == c);
+    byte f = System.Rvalue(c);
+    #assert (f == c);
+    byte g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}

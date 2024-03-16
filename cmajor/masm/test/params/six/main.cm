@@ -1,0 +1,6 @@
+using System;
+
+void main()
+{
+    six(1, 2, 3, 4, 5, 6);
+}

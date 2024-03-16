@@ -1,0 +1,7 @@
+using System;
+
+void main()
+{
+    one_float(1.0f);
+    one_double(1.0);
+}

@@ -9,11 +9,11 @@ import util;
 
 namespace cmajor::masm::intermediate {
 
-Frame::Frame() : localSize(32)
+Frame::Frame() : calleeParamAreaSize(32), numUsedXMMRegs(0), rbxPushed(false)
 {
 }
 
-FrameLocation Frame::GetParamLocation(int64_t size)
+FrameLocation Frame::GetParamLocation(int64_t size, cmajor::masm::assembly::Context* assemblyContext)
 {
     if (paramLocations.empty())
     {
@@ -21,10 +21,19 @@ FrameLocation Frame::GetParamLocation(int64_t size)
         paramLocations.push_back(paramLocation);
         return paramLocation;
     }
+    else if (paramLocations.size() < 4)
+    {
+        const FrameLocation& last = paramLocations.back();
+        FrameLocation paramLocation(masm::assembly::RegisterGroupKind::rsp, paramLocations.size(), last.offset + last.size, 8);
+        paramLocations.push_back(paramLocation);
+        return paramLocation;
+    }
     else
     {
         const FrameLocation& last = paramLocations.back();
-        FrameLocation paramLocation(masm::assembly::RegisterGroupKind::rsp, frameLocations.size(), last.offset + last.size, size);
+        cmajor::masm::assembly::Macro* macro = assemblyContext->MakeMacro("param" + std::to_string(paramLocations.size()) + "$");
+        FrameLocation paramLocation(masm::assembly::RegisterGroupKind::rbp, paramLocations.size(), last.offset + last.size, size);
+        paramLocation.macro = macro;
         paramLocations.push_back(paramLocation);
         return paramLocation;
     }
@@ -51,12 +60,39 @@ int64_t Frame::Size() const
 {
     if (frameLocations.empty())
     {
-        return 32;
+        return 32 + numUsedXMMRegs * 16;
     }
     else
     {
         const FrameLocation& last = frameLocations.back();
-        return util::Align(32 + last.offset + last.size, 16);
+        return util::Align(32 + last.offset + last.size + numUsedXMMRegs * 16, 16);
+    }
+}
+
+void Frame::SetMacroValues(cmajor::masm::assembly::Context* assemblyContext)
+{
+    int retVal = 1;
+    int pushRbp = 1;
+    int numUsedLocalRegs = assemblyContext->GetRegisterPool()->UsedLocalRegs().size();
+    int numUsedNonvolatileRegs = assemblyContext->GetRegisterPool()->UsedNonvolatileRegs().size();
+
+    int64_t paramOffset = 8 * (retVal + pushRbp + numUsedLocalRegs + numUsedNonvolatileRegs);
+    if (rbxPushed)
+    {
+        paramOffset += 8;
+    }
+    int64_t frameSize = Size();
+
+    for (auto& paramLocation : paramLocations)
+    {
+        cmajor::masm::assembly::Macro* macro = paramLocation.macro;
+        if (macro)
+        {
+            int64_t value = (paramLocation.index - 4) * 8 + paramOffset + frameSize;
+            value -= XMMSaveRegSize();
+            int size = 8;
+            macro->SetValue(assemblyContext->MakeIntegerLiteral(value, size));
+        }
     }
 }
 
@@ -68,7 +104,7 @@ void CallFrame::AllocateArgLocation(int64_t size)
 {
     if (argLocations.empty())
     {
-        ArgLocation argLocation(0, 0, 8);
+        ArgLocation argLocation(0, 0, 0);
         argLocations.push_back(argLocation);
     }
     else

@@ -2,4 +2,9 @@ using System;
 
 void five(int a, int b, int c, int d, int e)
 {
+    RtmPrintInteger(a);
+    RtmPrintInteger(b);
+    RtmPrintInteger(c);
+    RtmPrintInteger(d);
+    RtmPrintInteger(e);
 }

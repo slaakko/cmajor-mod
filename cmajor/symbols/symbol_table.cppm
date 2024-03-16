@@ -105,7 +105,7 @@ public:
     NamespaceSymbol* BeginNamespace(const std::u32string& namespaceName, const soul::ast::Span& span, const util::uuid& moduleId, int32_t fileIndex);
     void EndNamespace();
     void BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t functionIndex);
-    void EndFunction();
+    void EndFunction(bool addMember);
     void AddParameter(cmajor::ast::ParameterNode& parameterNode);
     void BeginClass(cmajor::ast::ClassNode& classNode);
     void EndClass();
@@ -116,15 +116,15 @@ public:
     void BeginInterface(cmajor::ast::InterfaceNode& interfaceNode);
     void EndInterface();
     void BeginStaticConstructor(cmajor::ast::StaticConstructorNode& staticConstructorNode, int32_t functionIndex);
-    void EndStaticConstructor();
+    void EndStaticConstructor(bool addMember);
     void BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex);
-    void EndConstructor();
+    void EndConstructor(bool addMember);
     void BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex);
-    void EndDestructor();
+    void EndDestructor(bool addMember);
     void BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex);
-    void EndMemberFunction();
+    void EndMemberFunction(bool addMember);
     void BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex);
-    void EndConversionFunction();
+    void EndConversionFunction(bool addMember);
     void AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode);
     void BeginDelegate(cmajor::ast::DelegateNode& delegateNode);
     void EndDelegate();
@@ -206,6 +206,7 @@ public:
     int NumSpecializationsNew() const { return numSpecializationsNew; }
     int NumSpecializationsCopied() const { return numSpecializationsCopied; }
     void Check();
+    FunctionSymbol* GetCreatedFunctionSymbol() { return createdFunctionSymbol; }
     void AddFunctionSymbol(std::unique_ptr<FunctionSymbol>&& functionSymbol);
     int NextAxiomNumber() { return axiomNumber++; }
     void ResetAxiomNumber() { axiomNumber = 0; }

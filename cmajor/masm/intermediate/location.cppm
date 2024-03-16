@@ -32,20 +32,22 @@ constexpr Locations operator~(Locations locs)
 
 struct FrameLocation
 {
-    FrameLocation() : reg(masm::assembly::RegisterGroupKind::rbp), index(-1), offset(0), size(0) {}
-    FrameLocation(masm::assembly::RegisterGroupKind reg_, int index_, int64_t offset_, int64_t size_) : reg(reg_), index(index_), offset(offset_), size(size_) {}
+    FrameLocation() : reg(masm::assembly::RegisterGroupKind::rbp), index(-1), offset(0), size(0), macro(nullptr) {}
+    FrameLocation(masm::assembly::RegisterGroupKind reg_, int index_, int64_t offset_, int64_t size_) : reg(reg_), index(index_), offset(offset_), size(size_), macro(nullptr) {}
     bool Valid() const { return index != -1; }
     int64_t ItemOffset() const { return offset + size; }
     masm::assembly::RegisterGroupKind reg;
     int index;
     int64_t offset;
     int64_t size;
+    masm::assembly::Macro* macro;
 };
 
 struct ArgLocation
 {
-    ArgLocation(int index_, int64_t offset_, int64_t size_) : index(index_), offset(offset_), size(size_) {}
+    ArgLocation(int index_, int64_t offset_, int64_t size_) : reg(masm::assembly::RegisterGroupKind::rsp), index(index_), offset(offset_), size(size_) {}
     int64_t ItemOffset() const { return offset + size; }
+    masm::assembly::RegisterGroupKind reg;
     int index;
     int64_t offset;
     int64_t size;
@@ -55,14 +57,23 @@ class Frame
 {
 public:
     Frame();
-    FrameLocation GetParamLocation(int64_t size);
+    FrameLocation GetParamLocation(int64_t size, cmajor::masm::assembly::Context* assemblyContext);
     FrameLocation GetFrameLocation(int64_t size);
+    void SetRbxPushed() { rbxPushed = true; }
+    bool RbxPushed() const { return rbxPushed; }
     int64_t Size() const;
-    int64_t LocalSize() const { return localSize; }
+    int64_t CalleeParamAreaSize() const { return calleeParamAreaSize; }
+    int64_t XMMSaveRegSize() const { return 16 * numUsedXMMRegs; }
+    void SetCalleeParamAreaSize(int64_t calleeParamAreaSize_) { calleeParamAreaSize = calleeParamAreaSize_; }
+    void SetMacroValues(cmajor::masm::assembly::Context* assemblyContext);
+    void SetNumUsedXMMRegs(int numUsedXMMRegs_) { numUsedXMMRegs = numUsedXMMRegs_; }
+    int GetNumUsedXMMRegs() const { return numUsedXMMRegs; }
 private:
     std::vector<FrameLocation> paramLocations;
     std::vector<FrameLocation> frameLocations;
-    int64_t localSize;
+    int64_t calleeParamAreaSize;
+    int numUsedXMMRegs;
+    bool rbxPushed;
 };
 
 class CallFrame

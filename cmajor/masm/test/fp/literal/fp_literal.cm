@@ -1,0 +1,13 @@
+using System;
+
+public void float_lit()
+{
+    float x = 127.0f;
+    RtmPrintFloat(x);
+}
+
+public void double_lit()
+{
+    double x = 127.0;
+    RtmPrintDouble(x);
+}

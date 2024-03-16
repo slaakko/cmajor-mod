@@ -2,5 +2,8 @@ using System;
 
 void three(int a, int b, int c)
 {
+    RtmPrintInteger(a);
+    RtmPrintInteger(b);
+    RtmPrintInteger(c);
 }
 

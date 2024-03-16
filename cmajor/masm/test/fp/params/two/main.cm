@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    two_float(1.0f, 2.0f);
+    two_double(1.0, 2.0);
+    two_double_long(1.0, 2);
+    two_long_double(1, 2.0);
+}

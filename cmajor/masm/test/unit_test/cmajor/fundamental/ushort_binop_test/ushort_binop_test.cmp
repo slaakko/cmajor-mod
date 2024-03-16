@@ -1,0 +1,4 @@
+project ushort_binop_test;
+target=program;
+source <ushort_binop_test.cm>;
+source <main.cm>;

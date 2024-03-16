@@ -59,7 +59,7 @@ public:
     void AddLiveRange(const LiveRange& liveRange, Instruction* inst);
     void AddFreeRegGroupToPool(Instruction* inst);
     void RemoveFromActive(const LiveRange& range);
-    bool NoFreeRegs() const;
+    bool NoFreeRegs(bool floatingPoint) const;
     const std::set<LiveRange, LiveRangeByStart>& LiveRanges() const { return liveRanges; }
     const std::set<LiveRange, LiveRangeByEnd> Active() const { return active; }
     FrameLocation GetFrameLocation(Instruction* inst) const;
@@ -71,7 +71,7 @@ public:
     LiveRange GetLiveRange(Instruction* inst) const;
     Frame& GetFrame() override { return frame; }
     const std::vector<Instruction*>& GetInstructions(const LiveRange& range) const;
-    RegisterAllocationAction Run(Instruction* inst) override;
+    RegisterAllocationAction Run(Instruction* inst, int argIndex) override;
     Locations GetLocations(Instruction* inst) const override;
     virtual void AddRegisterLocation(Instruction* inst, cmajor::masm::assembly::RegisterGroup* regGroup) override;
     int LastActiveLocalRegGroup() const override;

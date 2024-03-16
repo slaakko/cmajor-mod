@@ -28,8 +28,6 @@ InlineFunctionRepository::InlineFunctionRepository(BoundCompileUnit& boundCompil
 cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::symbols::FunctionSymbol* inlineFunction, cmajor::symbols::ContainerScope* containerScope, 
     cmajor::ast::Node* node)
 {
-    throw std::runtime_error("inline functions not implemented");
-/*
     if (inlineFunction->GetCompileUnit() == boundCompileUnit.GetCompileUnitNode()) return inlineFunction;
     while (inlineFunction->Master())
     {
@@ -218,7 +216,6 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         result->SetCopy();
         return result;
     }
-*/
 }
 
 } // namespace cmajor::binder

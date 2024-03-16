@@ -13,6 +13,7 @@ export import cmajor.masm.assembly.file;
 export import cmajor.masm.assembly.function;
 export import cmajor.masm.assembly.instruction;
 export import cmajor.masm.assembly.literal;
+export import cmajor.masm.assembly.macro;
 export import cmajor.masm.assembly.reg;
 export import cmajor.masm.assembly.symbol;
 export import cmajor.masm.assembly.value;

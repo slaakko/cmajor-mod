@@ -1,0 +1,4 @@
+project uint_binop_test;
+target=program;
+source <uint_binop_test.cm>;
+source <main.cm>;

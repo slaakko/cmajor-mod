@@ -1,0 +1,11 @@
+using System;
+
+void one_float(float x)
+{
+    RtmPrintFloat(x);
+}
+
+void one_double(double x)
+{
+    RtmPrintDouble(x);
+}

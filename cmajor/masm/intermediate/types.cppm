@@ -95,6 +95,7 @@ public:
     bool IsArithmeticType() const { return IsIntegerType() || IsFloatingPointType(); }
     bool IsIntegerType() const;
     bool IsUnsignedType() const;
+    bool IsSignedType() const;
     bool IsFloatingPointType() const;
     bool IsFloatType() const { return id == floatTypeId; }
     bool IsDoubleType() const { return id == doubleTypeId; }

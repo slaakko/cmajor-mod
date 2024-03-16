@@ -1,0 +1,90 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+ulong ret(ulong x)
+{
+    return x;
+}
+
+ulong eval_unaryop(ulong operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<ulong>(+operand);
+        case UnaryOp.neg: return cast<ulong>(-operand);
+        case UnaryOp.cpl: return cast<ulong>(~operand);
+    }
+    return 0u;
+}
+
+ulong rtm_eval_unaryop(ulong operand, UnaryOp op)
+{
+    return cast<ulong>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.ulong_), cast<int>(op)));
+}
+
+ulong eval_binop(ulong left, ulong right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<ulong>(left + right);
+        case BinOp.sub: return cast<ulong>(left - right);
+        case BinOp.mul: return cast<ulong>(left * right);
+        case BinOp.div: return cast<ulong>(left / right);
+        case BinOp.mod: return cast<ulong>(left % right);
+        case BinOp.and_: return cast<ulong>(left & right);
+        case BinOp.or_: return cast<ulong>(left | right);
+        case BinOp.xor_: return cast<ulong>(left ^ right);
+        case BinOp.shl: return cast<ulong>(left << right);
+        case BinOp.shr: return cast<ulong>(left >> right);
+    }
+    return 0u;
+}
+
+ulong rtm_eval_binop(ulong left, ulong right, BinOp op)
+{
+    return cast<ulong>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.ulong_), cast<int>(op)));
+}
+
+unit_test void ulong_value_test()
+{
+    ulong x;
+    #assert (x == 0u);
+    ulong y = x;
+    #assert (y == x);
+    ulong z;
+    z = x;
+    #assert (z == x);
+    ulong a = System.Rvalue(x);
+    #assert (a == x);
+    ulong b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    ulong c = 1u;
+    #assert (c == 1u);
+    ulong d = c;
+    #assert (d == c);
+    ulong e;
+    e = c;
+    #assert (e == c);
+    ulong f = System.Rvalue(c);
+    #assert (f == c);
+    ulong g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}

@@ -4863,7 +4863,7 @@ soul::parser::Match IntermediateParser<LexerT>::LiteralValue(LexerT& lexer, cmaj
                         #ifdef SOUL_PARSER_DEBUG_SUPPORT
                         if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "LiteralValue");
                         #endif
-                        return soul::parser::Match(true, context->MakeNumericLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())));
+                        return soul::parser::Match(true, context->MakeIntegerLiteral(lexer.GetSpan(pos), type, util::ToUtf8(lexer.GetToken(pos).ToString())));
                     }
                 }
                 *parentMatch4 = match;

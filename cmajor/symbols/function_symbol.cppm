@@ -206,8 +206,7 @@ public:
     void SetGroupName(const std::u32string& groupName_);
     const std::vector<TemplateParameterSymbol*>& TemplateParameters() const { return templateParameters; }
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
-    //bool IsInline() const { return GetFlag(FunctionSymbolFlags::inline_); }
-    bool IsInline() const { return false; }
+    bool IsInline() const { return GetFlag(FunctionSymbolFlags::inline_); }
     void SetInline() { SetFlag(FunctionSymbolFlags::inline_); }
     bool IsConstExpr() const { return GetFlag(FunctionSymbolFlags::constExpr); }
     void SetConstExpr() { SetFlag(FunctionSymbolFlags::constExpr); }

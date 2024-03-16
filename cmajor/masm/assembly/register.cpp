@@ -12,7 +12,10 @@ std::string regName[] =
     "al", "bl", "cl", "dl", "sil", "dil", "bpl", "spl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b",
     "ax", "bx", "cx", "dx", "si", "di", "bp", "sp", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w",
     "eax", "ebx", "ecx", "edx", "esi", "edi", "ebp", "esp", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d",
-    "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", ""
+    "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "rbp", "rsp", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", 
+    "ah", "bh", "ch", "dh",
+    "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7", "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15",
+    ""
 };
 
 Register::Register() : Value(std::string()), kind(), group()
@@ -33,7 +36,7 @@ RegisterGroup::RegisterGroup(RegisterGroupKind kind_) : kind(kind_), nonvolatile
 
 const Register* RegisterGroup::GetReg(int64_t size) const
 {
-    if (size >= 1 && size <= 8)
+    if (size >= 1 && size <= 8 || size == highByteRegSize || size == 16)
     {
         return &regs[size - 1];
     }
@@ -45,7 +48,7 @@ const Register* RegisterGroup::GetReg(int64_t size) const
 
 Register* RegisterGroup::GetReg(int64_t size)
 {
-    if (size >= 1 && size <= 8)
+    if (size >= 1 && size <= 8 || size == highByteRegSize || size ==  16)
     {
         return &regs[size - 1];
     }
@@ -57,19 +60,23 @@ Register* RegisterGroup::GetReg(int64_t size)
 
 void RegisterGroup::SetReg(int64_t size, const Register& reg)
 {
-    if (size >= 1 && size <= 8)
+    if (size >= 1 && size <= 8 || size == highByteRegSize || size == 16)
     {
         regs[size - 1] = reg;
     }
     else
     {
-        throw std::runtime_error("otava.assembly.RegisterGroup::GetReg: invalid size");
+        throw std::runtime_error("otava.assembly.RegisterGroup::SetReg: invalid size");
     }
 }
 
 bool RegisterGroup::IsLocal() const
 {
     if (kind >= RegisterGroupKind::r8 && kind <= RegisterGroupKind::r15)
+    {
+        return true;
+    }
+    else if (kind >= RegisterGroupKind::xmm6 && kind <= RegisterGroupKind::xmm15)
     {
         return true;
     }
@@ -84,6 +91,7 @@ Registers::Registers()
     rax->SetReg(2, Register(RegisterKind::ax, RegisterGroupKind::rax, 2));
     rax->SetReg(4, Register(RegisterKind::eax, RegisterGroupKind::rax, 4));
     rax->SetReg(8, Register(RegisterKind::rax, RegisterGroupKind::rax, 8));
+    rax->SetReg(highByteRegSize, Register(RegisterKind::ah, RegisterGroupKind::rax, highByteRegSize));
     regGroups.push_back(std::unique_ptr<RegisterGroup>(rax));
 
     RegisterGroup* rbx = new RegisterGroup(RegisterGroupKind::rbx);
@@ -92,6 +100,7 @@ Registers::Registers()
     rbx->SetReg(2, Register(RegisterKind::bx, RegisterGroupKind::rbx, 2));
     rbx->SetReg(4, Register(RegisterKind::ebx, RegisterGroupKind::rbx, 4));
     rbx->SetReg(8, Register(RegisterKind::rbx, RegisterGroupKind::rbx, 8));
+    rbx->SetReg(highByteRegSize, Register(RegisterKind::bh, RegisterGroupKind::rbx, highByteRegSize));
     regGroups.push_back(std::unique_ptr<RegisterGroup>(rbx));
 
     RegisterGroup* rcx = new RegisterGroup(RegisterGroupKind::rcx);
@@ -100,6 +109,7 @@ Registers::Registers()
     rcx->SetReg(2, Register(RegisterKind::cx, RegisterGroupKind::rcx, 2));
     rcx->SetReg(4, Register(RegisterKind::ecx, RegisterGroupKind::rcx, 4));
     rcx->SetReg(8, Register(RegisterKind::rcx, RegisterGroupKind::rcx, 8));
+    rcx->SetReg(highByteRegSize, Register(RegisterKind::ch, RegisterGroupKind::rcx, highByteRegSize));
     regGroups.push_back(std::unique_ptr<RegisterGroup>(rcx));
 
     RegisterGroup* rdx = new RegisterGroup(RegisterGroupKind::rdx);
@@ -108,6 +118,7 @@ Registers::Registers()
     rdx->SetReg(2, Register(RegisterKind::dx, RegisterGroupKind::rdx, 2));
     rdx->SetReg(4, Register(RegisterKind::edx, RegisterGroupKind::rdx, 4));
     rdx->SetReg(8, Register(RegisterKind::rdx, RegisterGroupKind::rdx, 8));
+    rdx->SetReg(highByteRegSize, Register(RegisterKind::dh, RegisterGroupKind::rdx, highByteRegSize));
     regGroups.push_back(std::unique_ptr<RegisterGroup>(rdx));
 
     RegisterGroup* rsi = new RegisterGroup(RegisterGroupKind::rsi);
@@ -205,9 +216,115 @@ Registers::Registers()
     r15->SetReg(4, Register(RegisterKind::r15d, RegisterGroupKind::r15, 4));
     r15->SetReg(8, Register(RegisterKind::r15, RegisterGroupKind::r15, 8));
     regGroups.push_back(std::unique_ptr<RegisterGroup>(r15));
+
+    RegisterGroup* xmm0 = new RegisterGroup(RegisterGroupKind::xmm0);
+    xmm0->SetReg(4, Register(RegisterKind::xmm0, RegisterGroupKind::xmm0, 4));
+    xmm0->SetReg(8, Register(RegisterKind::xmm0, RegisterGroupKind::xmm0, 8));
+    xmm0->SetReg(16, Register(RegisterKind::xmm0, RegisterGroupKind::xmm0, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm0));
+
+    RegisterGroup* xmm1 = new RegisterGroup(RegisterGroupKind::xmm1);
+    xmm1->SetReg(4, Register(RegisterKind::xmm1, RegisterGroupKind::xmm1, 4));
+    xmm1->SetReg(8, Register(RegisterKind::xmm1, RegisterGroupKind::xmm1, 8));
+    xmm1->SetReg(16, Register(RegisterKind::xmm1, RegisterGroupKind::xmm1, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm1));
+
+    RegisterGroup* xmm2 = new RegisterGroup(RegisterGroupKind::xmm2);
+    xmm2->SetReg(4, Register(RegisterKind::xmm2, RegisterGroupKind::xmm2, 4));
+    xmm2->SetReg(8, Register(RegisterKind::xmm2, RegisterGroupKind::xmm2, 8));
+    xmm2->SetReg(16, Register(RegisterKind::xmm2, RegisterGroupKind::xmm2, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm2));
+
+    RegisterGroup* xmm3 = new RegisterGroup(RegisterGroupKind::xmm3);
+    xmm3->SetReg(4, Register(RegisterKind::xmm3, RegisterGroupKind::xmm3, 4));
+    xmm3->SetReg(8, Register(RegisterKind::xmm3, RegisterGroupKind::xmm3, 8));
+    xmm3->SetReg(16, Register(RegisterKind::xmm3, RegisterGroupKind::xmm3, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm3));
+
+    RegisterGroup* xmm4 = new RegisterGroup(RegisterGroupKind::xmm4);
+    xmm4->SetReg(4, Register(RegisterKind::xmm4, RegisterGroupKind::xmm4, 4));
+    xmm4->SetReg(8, Register(RegisterKind::xmm4, RegisterGroupKind::xmm4, 8));
+    xmm4->SetReg(16, Register(RegisterKind::xmm4, RegisterGroupKind::xmm4, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm4));
+
+    RegisterGroup* xmm5 = new RegisterGroup(RegisterGroupKind::xmm5);
+    xmm5->SetReg(4, Register(RegisterKind::xmm5, RegisterGroupKind::xmm5, 4));
+    xmm5->SetReg(8, Register(RegisterKind::xmm5, RegisterGroupKind::xmm5, 8));
+    xmm5->SetReg(16, Register(RegisterKind::xmm5, RegisterGroupKind::xmm5, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm5));
+
+    RegisterGroup* xmm6 = new RegisterGroup(RegisterGroupKind::xmm6);
+    xmm6->SetNonvolatile(true);
+    xmm6->SetReg(4, Register(RegisterKind::xmm6, RegisterGroupKind::xmm6, 4));
+    xmm6->SetReg(8, Register(RegisterKind::xmm6, RegisterGroupKind::xmm6, 8));
+    xmm6->SetReg(16, Register(RegisterKind::xmm6, RegisterGroupKind::xmm6, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm6));
+
+    RegisterGroup* xmm7 = new RegisterGroup(RegisterGroupKind::xmm7);
+    xmm7->SetNonvolatile(true);
+    xmm7->SetReg(4, Register(RegisterKind::xmm7, RegisterGroupKind::xmm7, 4));
+    xmm7->SetReg(8, Register(RegisterKind::xmm7, RegisterGroupKind::xmm7, 8));
+    xmm7->SetReg(16, Register(RegisterKind::xmm7, RegisterGroupKind::xmm7, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm7));
+
+    RegisterGroup* xmm8 = new RegisterGroup(RegisterGroupKind::xmm8);
+    xmm8->SetNonvolatile(true);
+    xmm8->SetReg(4, Register(RegisterKind::xmm8, RegisterGroupKind::xmm8, 4));
+    xmm8->SetReg(8, Register(RegisterKind::xmm8, RegisterGroupKind::xmm8, 8));
+    xmm8->SetReg(16, Register(RegisterKind::xmm8, RegisterGroupKind::xmm8, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm8));
+
+    RegisterGroup* xmm9 = new RegisterGroup(RegisterGroupKind::xmm9);
+    xmm9->SetNonvolatile(true);
+    xmm9->SetReg(4, Register(RegisterKind::xmm9, RegisterGroupKind::xmm9, 4));
+    xmm9->SetReg(8, Register(RegisterKind::xmm9, RegisterGroupKind::xmm9, 8));
+    xmm9->SetReg(16, Register(RegisterKind::xmm9, RegisterGroupKind::xmm9, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm9));
+
+    RegisterGroup* xmm10 = new RegisterGroup(RegisterGroupKind::xmm10);
+    xmm10->SetNonvolatile(true);
+    xmm10->SetReg(4, Register(RegisterKind::xmm10, RegisterGroupKind::xmm10, 4));
+    xmm10->SetReg(8, Register(RegisterKind::xmm10, RegisterGroupKind::xmm10, 8));
+    xmm10->SetReg(16, Register(RegisterKind::xmm10, RegisterGroupKind::xmm10, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm10));
+
+    RegisterGroup* xmm11 = new RegisterGroup(RegisterGroupKind::xmm11);
+    xmm11->SetNonvolatile(true);
+    xmm11->SetReg(4, Register(RegisterKind::xmm11, RegisterGroupKind::xmm11, 4));
+    xmm11->SetReg(8, Register(RegisterKind::xmm11, RegisterGroupKind::xmm11, 8));
+    xmm11->SetReg(16, Register(RegisterKind::xmm11, RegisterGroupKind::xmm11, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm11));
+
+    RegisterGroup* xmm12 = new RegisterGroup(RegisterGroupKind::xmm12);
+    xmm12->SetNonvolatile(true);
+    xmm12->SetReg(4, Register(RegisterKind::xmm12, RegisterGroupKind::xmm12, 4));
+    xmm12->SetReg(8, Register(RegisterKind::xmm12, RegisterGroupKind::xmm12, 8));
+    xmm12->SetReg(16, Register(RegisterKind::xmm12, RegisterGroupKind::xmm12, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm12));
+
+    RegisterGroup* xmm13 = new RegisterGroup(RegisterGroupKind::xmm13);
+    xmm13->SetNonvolatile(true);
+    xmm13->SetReg(4, Register(RegisterKind::xmm13, RegisterGroupKind::xmm13, 4));
+    xmm13->SetReg(8, Register(RegisterKind::xmm13, RegisterGroupKind::xmm13, 8));
+    xmm13->SetReg(16, Register(RegisterKind::xmm13, RegisterGroupKind::xmm13, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm13));
+
+    RegisterGroup* xmm14 = new RegisterGroup(RegisterGroupKind::xmm14);
+    xmm14->SetNonvolatile(true);
+    xmm14->SetReg(4, Register(RegisterKind::xmm14, RegisterGroupKind::xmm14, 4));
+    xmm14->SetReg(8, Register(RegisterKind::xmm14, RegisterGroupKind::xmm14, 8));
+    xmm14->SetReg(16, Register(RegisterKind::xmm14, RegisterGroupKind::xmm14, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm14));
+
+    RegisterGroup* xmm15 = new RegisterGroup(RegisterGroupKind::xmm15);
+    xmm15->SetNonvolatile(true);
+    xmm15->SetReg(4, Register(RegisterKind::xmm15, RegisterGroupKind::xmm15, 4));
+    xmm15->SetReg(8, Register(RegisterKind::xmm15, RegisterGroupKind::xmm15, 8));
+    xmm15->SetReg(16, Register(RegisterKind::xmm15, RegisterGroupKind::xmm15, 16));
+    regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm15));
 }
 
-RegisterPool::RegisterPool(Registers& registers)
+RegisterPool::RegisterPool(Registers& registers) : localRegisterCount(0), localXMMRegisterCount(0)
 {
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::rsi));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::rdi));
@@ -217,7 +334,18 @@ RegisterPool::RegisterPool(Registers& registers)
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r13));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r14));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r15));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm6));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm7));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm8));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm9));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm10));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm11));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm12));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm13));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm14));
+    AddLocalXMMRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::xmm15));
     localRegisterCount = localRegisterPool.size();
+    localXMMRegisterCount = localXMMRegisterPool.size();
     globalRegisterMap[RegisterGroupKind::rax] = registers.GetRegisterGroup(RegisterGroupKind::rax);
     globalRegisterMap[RegisterGroupKind::rbx] = registers.GetRegisterGroup(RegisterGroupKind::rbx);
     globalRegisterMap[RegisterGroupKind::rcx] = registers.GetRegisterGroup(RegisterGroupKind::rcx);
@@ -226,6 +354,12 @@ RegisterPool::RegisterPool(Registers& registers)
     globalRegisterMap[RegisterGroupKind::r9] = registers.GetRegisterGroup(RegisterGroupKind::r9);
     globalRegisterMap[RegisterGroupKind::rbp] = registers.GetRegisterGroup(RegisterGroupKind::rbp);
     globalRegisterMap[RegisterGroupKind::rsp] = registers.GetRegisterGroup(RegisterGroupKind::rsp);
+    globalRegisterMap[RegisterGroupKind::xmm0] = registers.GetRegisterGroup(RegisterGroupKind::xmm0);
+    globalRegisterMap[RegisterGroupKind::xmm1] = registers.GetRegisterGroup(RegisterGroupKind::xmm1);
+    globalRegisterMap[RegisterGroupKind::xmm2] = registers.GetRegisterGroup(RegisterGroupKind::xmm2);
+    globalRegisterMap[RegisterGroupKind::xmm3] = registers.GetRegisterGroup(RegisterGroupKind::xmm3);
+    globalRegisterMap[RegisterGroupKind::xmm4] = registers.GetRegisterGroup(RegisterGroupKind::xmm4);
+    globalRegisterMap[RegisterGroupKind::xmm5] = registers.GetRegisterGroup(RegisterGroupKind::xmm5);
 }
 
 void RegisterPool::AddLocalRegisterGroup(RegisterGroup* regGroup)
@@ -233,11 +367,16 @@ void RegisterPool::AddLocalRegisterGroup(RegisterGroup* regGroup)
     localRegisterPool.insert(regGroup);
 }
 
+void RegisterPool::AddLocalXMMRegisterGroup(RegisterGroup* regGroup)
+{
+    localXMMRegisterPool.insert(regGroup);
+}
+
 RegisterGroup* RegisterPool::GetLocalRegisterGroup()
 {
     if (localRegisterPool.empty())
     {
-        throw std::runtime_error("register pool is empty");
+        throw std::runtime_error("local register pool is empty");
     }
     RegisterGroup* regGroup = *localRegisterPool.begin();
     localRegisterPool.erase(regGroup);
@@ -245,13 +384,25 @@ RegisterGroup* RegisterPool::GetLocalRegisterGroup()
     return regGroup;
 }
 
-RegisterGroup* RegisterPool::GetGlobalRegisterGroup(RegisterGroupKind regGroupKind)
+RegisterGroup* RegisterPool::GetLocalXMMRegisterGroup()
+{
+    if (localXMMRegisterPool.empty())
+    {
+        throw std::runtime_error("local XMM register pool is empty");
+    }
+    RegisterGroup* regGroup = *localXMMRegisterPool.begin();
+    localXMMRegisterPool.erase(regGroup);
+    usedLocalXMMRegs.insert(regGroup);
+    return regGroup;
+}
+
+RegisterGroup* RegisterPool::GetGlobalRegisterGroup(RegisterGroupKind regGroupKind, bool used)
 {
     auto it = globalRegisterMap.find(regGroupKind);
     if (it != globalRegisterMap.cend())
     {
         RegisterGroup* regGroup = it->second;
-        if (regGroup->IsNonvolatile())
+        if (used && regGroup->IsNonvolatile())
         {
             usedNonvolatileRegs.insert(regGroup);
         }

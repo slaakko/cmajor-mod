@@ -1,0 +1,41 @@
+using System;
+
+void six_float(float x, float y, float z, float p, float q, float r)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+    RtmPrintFloat(p);
+    RtmPrintFloat(q);
+    RtmPrintFloat(r);
+}
+
+void six_double(double x, double y, double z, double p, double q, double r)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintDouble(q);
+    RtmPrintDouble(r);
+}
+
+void six_double_long_double_long_double_double(double x, long y, double z, long p, double q, double r)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+    RtmPrintDouble(z);
+    RtmPrintInteger(p);
+    RtmPrintDouble(q);
+    RtmPrintDouble(r);
+}
+
+void six_long_double_double_double_long_long(long x, double y, double z, double p, long q, long r)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintInteger(q);
+    RtmPrintInteger(r);
+}

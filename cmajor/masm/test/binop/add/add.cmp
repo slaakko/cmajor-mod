@@ -1,0 +1,3 @@
+project add;
+source <add.cm>;
+source <main.cm>;

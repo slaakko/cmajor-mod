@@ -1,0 +1,49 @@
+using System;
+
+void eight_float(float x, float y, float z, float p, float q, float r, float o, float a)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+    RtmPrintFloat(p);
+    RtmPrintFloat(q);
+    RtmPrintFloat(r);
+    RtmPrintFloat(o);
+    RtmPrintFloat(a);
+}
+
+void eight_double(double x, double y, double z, double p, double q, double r, double o, double a)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintDouble(q);
+    RtmPrintDouble(r);
+    RtmPrintDouble(o);
+    RtmPrintDouble(a);
+}
+
+void eight_double_long_double_long_long_double_double_long(double x, long y, double z, long p, long q, double r, double o, long a)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+    RtmPrintDouble(z);
+    RtmPrintInteger(p);
+    RtmPrintInteger(q);
+    RtmPrintDouble(r);
+    RtmPrintDouble(o);
+    RtmPrintInteger(a);
+}
+
+void eight_long_double_double_double_double_long_long_double(long x, double y, double z, double p, double q, long r, long o, double a)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintDouble(q);
+    RtmPrintInteger(r);
+    RtmPrintInteger(o);
+    RtmPrintDouble(a);
+}

@@ -1,0 +1,37 @@
+using System;
+
+void five_float(float x, float y, float z, float p, float q)
+{
+    RtmPrintFloat(x);
+    RtmPrintFloat(y);
+    RtmPrintFloat(z);
+    RtmPrintFloat(p);
+    RtmPrintFloat(q);
+}
+
+void five_double(double x, double y, double z, double p, double q)
+{
+    RtmPrintDouble(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintDouble(q);
+}
+
+void five_double_long_double_long_double(double x, long y, double z, long p, double q)
+{
+    RtmPrintDouble(x);
+    RtmPrintInteger(y);
+    RtmPrintDouble(z);
+    RtmPrintInteger(p);
+    RtmPrintDouble(q);
+}
+
+void five_long_double_double_double_long(long x, double y, double z, double p, long q)
+{
+    RtmPrintInteger(x);
+    RtmPrintDouble(y);
+    RtmPrintDouble(z);
+    RtmPrintDouble(p);
+    RtmPrintInteger(q);
+}

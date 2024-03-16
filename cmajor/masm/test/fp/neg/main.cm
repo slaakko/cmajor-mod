@@ -1,0 +1,7 @@
+using System;
+
+void main()
+{
+    neg_float();
+    neg_double();
+}

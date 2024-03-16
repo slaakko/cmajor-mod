@@ -1,0 +1,90 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+ushort ret(ushort x)
+{
+    return x;
+}
+
+ushort eval_unaryop(ushort operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<ushort>(+operand);
+        case UnaryOp.neg: return cast<ushort>(-operand);
+        case UnaryOp.cpl: return cast<ushort>(~operand);
+    }
+    return 0u;
+}
+
+ushort rtm_eval_unaryop(ushort operand, UnaryOp op)
+{
+    return cast<ushort>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.ushort_), cast<int>(op)));
+}
+
+ushort eval_binop(ushort left, ushort right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<ushort>(left + right);
+        case BinOp.sub: return cast<ushort>(left - right);
+        case BinOp.mul: return cast<ushort>(left * right);
+        case BinOp.div: return cast<ushort>(left / right);
+        case BinOp.mod: return cast<ushort>(left % right);
+        case BinOp.and_: return cast<ushort>(left & right);
+        case BinOp.or_: return cast<ushort>(left | right);
+        case BinOp.xor_: return cast<ushort>(left ^ right);
+        case BinOp.shl: return cast<ushort>(left << right);
+        case BinOp.shr: return cast<ushort>(left >> right);
+    }
+    return 0u;
+}
+
+ushort rtm_eval_binop(ushort left, ushort right, BinOp op)
+{
+    return cast<ushort>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.ushort_), cast<int>(op)));
+}
+
+unit_test void ushort_value_test()
+{
+    ushort x;
+    #assert (x == 0u);
+    ushort y = x;
+    #assert (y == x);
+    ushort z;
+    z = x;
+    #assert (z == x);
+    ushort a = System.Rvalue(x);
+    #assert (a == x);
+    ushort b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    ushort c = 1u;
+    #assert (c == 1u);
+    ushort d = c;
+    #assert (d == c);
+    ushort e;
+    e = c;
+    #assert (e == c);
+    ushort f = System.Rvalue(c);
+    #assert (f == c);
+    ushort g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}

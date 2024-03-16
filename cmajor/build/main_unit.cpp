@@ -798,6 +798,10 @@ void GenerateMainUnitMasmConsole(cmajor::symbols::Module* rootModule, std::vecto
     std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cppFilePaths.push_back(mainFilePath);
     cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    if (!userMainFunctionSymbol)
+    {
+        throw std::runtime_error("program has no main function");
+    }
     cmajor::symbols::TypeSymbol* returnType = userMainFunctionSymbol->ReturnType();
     std::ofstream mainFile(mainFilePath);
     util::CodeFormatter formatter(mainFile);
@@ -852,14 +856,30 @@ void GenerateMainUnitMasmConsole(cmajor::symbols::Module* rootModule, std::vecto
     formatter.WriteLine("extern \"C\" " + returnTypeName + " " + util::ToUtf8(userMainFunctionSymbol->MangledName()) + parameters + ";");
     formatter.WriteLine("extern \"C\" void RtmInit();");
     formatter.WriteLine("extern \"C\" void RtmDone();");
+    formatter.WriteLine("extern \"C\" void RtmBeginUnitTest(int numAssertions, const char* unitTestFilePath);");
+    formatter.WriteLine("extern \"C\" void RtmEndUnitTest(const char* testName, int exitCode);");
     formatter.WriteLine();
     formatter.WriteLine("int main(int argc, const char** argv)");
     formatter.WriteLine("{");
     formatter.IncIndent();
-    formatter.WriteLine("RtmInit();");
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+    {
+        formatter.WriteLine("RtmBeginUnitTest(" + std::to_string(cmajor::symbols::GetNumUnitTestAssertions()) + ", \"" + util::StringStr(cmajor::symbols::UnitTestFilePath()) + "\");");
+    }
+    else
+    {
+        formatter.WriteLine("RtmInit();");
+    }
     formatter.WriteLine("int retval = 0;");
     formatter.WriteLine(retval + util::ToUtf8(userMainFunctionSymbol->MangledName()) + arguments + ";");
-    formatter.WriteLine("RtmDone();");
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+    {
+        formatter.WriteLine("RtmEndUnitTest(\"" + cmajor::symbols::UnitTestName() + "\", retval);");
+    }
+    else
+    {
+        formatter.WriteLine("RtmDone();");
+    }
     formatter.WriteLine("return retval;");
     formatter.DecIndent();
     formatter.WriteLine("}");

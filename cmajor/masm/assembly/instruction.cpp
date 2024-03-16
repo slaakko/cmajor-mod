@@ -39,7 +39,11 @@ const char* opCodeStr[] =
     "sfence", "shld", "shlx", "shr", "shrd", "shrx", "slwpcb", "stc", "std", "stos", "stosb", "stosw", "stosd", "stosq", "sub",
     "t1mskc", "test", "tzcnt", "tzmsk",
     "xadd", "xchg", "xlat", "xlatb", "xor", 
-    "DB", "DW", "DD", "DQ"
+    // floating-point support:
+    "movdqa", "movq", "movss", "addsd", "addss", "subsd", "subss", "mulsd", "mulss", "divsd", "divss", "ucomisd", "ucomiss", "comisd", "comiss",
+    "xorpd", "xorps", "cvtsi2sd", "cvtsi2ss", "cvttsd2si", "cvttss2si", "cvtss2sd", "cvtsd2ss",
+    // data definition support:
+    "DB", "DW", "DD", "DQ", "REAL4", "REAL8"
 };
 
 std::string OpCodeStr(OpCode opCode)
@@ -47,7 +51,7 @@ std::string OpCodeStr(OpCode opCode)
     return opCodeStr[int(opCode)];
 }
 
-Instruction::Instruction(OpCode opCode_) : opCode(opCode_)
+Instruction::Instruction(OpCode opCode_) : opCode(opCode_), nocolon(false)
 {
 }
 
@@ -66,7 +70,12 @@ void Instruction::Write(util::CodeFormatter& formatter)
     if (!label.empty())
     {
         formatter.DecIndent();
-        formatter.Write(util::Format(label + ":", 8));
+        std::string c(":");
+        if (nocolon)
+        {
+            c = " ";
+        }
+        formatter.Write(util::Format(label + c, 8, util::FormatWidth::min, util::FormatJustify::left));
     }
     formatter.Write(util::Format(OpCodeStr(opCode), 16));
     bool first = true;

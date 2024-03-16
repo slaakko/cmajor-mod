@@ -539,11 +539,18 @@ void SymbolTable::BeginFunction(cmajor::ast::FunctionNode& functionNode, int32_t
     ResetDeclarationBlockIndex();
 }
 
-void SymbolTable::EndFunction()
+void SymbolTable::EndFunction(bool addMember)
 {
     FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(container);
     EndContainer();
-    container->AddMember(functionSymbol);
+    if (addMember)
+    {
+        container->AddMember(functionSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = functionSymbol;
+    }
 }
 
 void SymbolTable::AddParameter(cmajor::ast::ParameterNode& parameterNode)
@@ -718,11 +725,18 @@ void SymbolTable::BeginStaticConstructor(cmajor::ast::StaticConstructorNode& sta
     ResetDeclarationBlockIndex();
 }
 
-void SymbolTable::EndStaticConstructor()
+void SymbolTable::EndStaticConstructor(bool addMember)
 {
     StaticConstructorSymbol* staticConstructorSymbol = static_cast<StaticConstructorSymbol*>(container);
     EndContainer();
-    container->AddMember(staticConstructorSymbol);
+    if (addMember)
+    {
+        container->AddMember(staticConstructorSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = staticConstructorSymbol;
+    }
 }
 
 void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode, int32_t functionIndex)
@@ -771,11 +785,18 @@ void SymbolTable::BeginConstructor(cmajor::ast::ConstructorNode& constructorNode
     }
 }
 
-void SymbolTable::EndConstructor()
+void SymbolTable::EndConstructor(bool addMember)
 {
     ConstructorSymbol* constructorSymbol = static_cast<ConstructorSymbol*>(container);
     EndContainer();
-    container->AddMember(constructorSymbol);
+    if (addMember)
+    {
+        container->AddMember(constructorSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = constructorSymbol;
+    }
 }
 
 void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, int32_t functionIndex)
@@ -819,11 +840,18 @@ void SymbolTable::BeginDestructor(cmajor::ast::DestructorNode& destructorNode, i
     }
 }
 
-void SymbolTable::EndDestructor()
+void SymbolTable::EndDestructor(bool addMember)
 {
     DestructorSymbol* destructorSymbol = static_cast<DestructorSymbol*>(container);
     EndContainer();
-    container->AddMember(destructorSymbol);
+    if (addMember)
+    {
+        container->AddMember(destructorSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = destructorSymbol;
+    }
 }
 
 void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFunctionNode, int32_t functionIndex)
@@ -887,11 +915,18 @@ void SymbolTable::BeginMemberFunction(cmajor::ast::MemberFunctionNode& memberFun
     }
 }
 
-void SymbolTable::EndMemberFunction()
+void SymbolTable::EndMemberFunction(bool addMember)
 {
     MemberFunctionSymbol* memberFunctionSymbol = static_cast<MemberFunctionSymbol*>(container);
     EndContainer();
-    container->AddMember(memberFunctionSymbol);
+    if (addMember)
+    {
+        container->AddMember(memberFunctionSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = memberFunctionSymbol;
+    }
 }
 
 void SymbolTable::BeginConversionFunction(cmajor::ast::ConversionFunctionNode& conversionFunctionNode, int32_t functionIndex)
@@ -940,11 +975,18 @@ void SymbolTable::BeginConversionFunction(cmajor::ast::ConversionFunctionNode& c
     conversionFunctionSymbol->AddMember(thisParam);
 }
 
-void SymbolTable::EndConversionFunction()
+void SymbolTable::EndConversionFunction(bool addMember)
 {
     ConversionFunctionSymbol* conversionFunctionSymbol = static_cast<ConversionFunctionSymbol*>(container);
     EndContainer();
-    container->AddMember(conversionFunctionSymbol);
+    if (addMember)
+    {
+        container->AddMember(conversionFunctionSymbol);
+    }
+    else
+    {
+        createdFunctionSymbol = conversionFunctionSymbol;
+    }
 }
 
 void SymbolTable::AddMemberVariable(cmajor::ast::MemberVariableNode& memberVariableNode)

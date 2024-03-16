@@ -59,7 +59,7 @@ public:
     Value* MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from);
     Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
     Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);
-    Value* MakeNumericLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue);
+    Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue);
     Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);

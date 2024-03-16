@@ -1,0 +1,90 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+int ret(int x)
+{
+    return x;
+}
+
+int eval_unaryop(int operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<int>(+operand);
+        case UnaryOp.neg: return cast<int>(-operand);
+        case UnaryOp.cpl: return cast<int>(~operand);
+    }
+    return 0;
+}
+
+int rtm_eval_unaryop(int operand, UnaryOp op)
+{
+    return cast<int>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.int_), cast<int>(op)));
+}
+
+int eval_binop(int left, int right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<int>(left + right);
+        case BinOp.sub: return cast<int>(left - right);
+        case BinOp.mul: return cast<int>(left * right);
+        case BinOp.div: return cast<int>(left / right);
+        case BinOp.mod: return cast<int>(left % right);
+        case BinOp.and_: return cast<int>(left & right);
+        case BinOp.or_: return cast<int>(left | right);
+        case BinOp.xor_: return cast<int>(left ^ right);
+        case BinOp.shl: return cast<int>(left << right);
+        case BinOp.shr: return cast<int>(left >> right);
+    }
+    return 0;
+}
+
+int rtm_eval_binop(int left, int right, BinOp op)
+{
+    return cast<int>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.int_), cast<int>(op)));
+}
+
+unit_test void int_value_test()
+{
+    int x;
+    #assert (x == 0);
+    int y = x;
+    #assert (y == x);
+    int z;
+    z = x;
+    #assert (z == x);
+    int a = System.Rvalue(x);
+    #assert (a == x);
+    int b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    int c = 1;
+    #assert (c == 1);
+    int d = c;
+    #assert (d == c);
+    int e;
+    e = c;
+    #assert (e == c);
+    int f = System.Rvalue(c);
+    #assert (f == c);
+    int g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}

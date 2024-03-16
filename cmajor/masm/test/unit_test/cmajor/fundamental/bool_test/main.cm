@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    bool_test();
+    return 0;
+}

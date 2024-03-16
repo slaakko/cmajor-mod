@@ -205,4 +205,27 @@ void ResetGlobalFlags()
     assertionLineNumberVector = nullptr;
 }
 
+std::string unitTestFilePath;
+std::string unitTestName;
+
+void SetUnitTestFilePath(const std::string& filePath)
+{
+    unitTestFilePath = filePath;
+}
+
+const std::string& UnitTestFilePath()
+{
+    return unitTestFilePath;
+}
+
+void SetUnitTestName(const std::string& name)
+{
+    unitTestName = name;
+}
+
+const std::string& UnitTestName()
+{
+    return unitTestName;
+}
+
 } // namespace cmajor::symbols

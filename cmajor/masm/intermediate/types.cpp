@@ -24,21 +24,21 @@ bool Type::IsIntegerType() const
 {
     switch (id)
     {
-    case sbyteTypeId:
-    case byteTypeId:
-    case shortTypeId:
-    case ushortTypeId:
-    case intTypeId:
-    case uintTypeId:
-    case longTypeId:
-    case ulongTypeId:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case sbyteTypeId:
+        case byteTypeId:
+        case shortTypeId:
+        case ushortTypeId:
+        case intTypeId:
+        case uintTypeId:
+        case longTypeId:
+        case ulongTypeId:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -46,17 +46,35 @@ bool Type::IsUnsignedType() const
 {
     switch (id)
     {
-    case byteTypeId:
-    case ushortTypeId:
-    case uintTypeId:
-    case ulongTypeId:
-    {
-        return true;
+        case byteTypeId:
+        case ushortTypeId:
+        case uintTypeId:
+        case ulongTypeId:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
-    default:
+}
+
+bool Type::IsSignedType() const
+{
+    switch (id)
     {
-        return false;
-    }
+        case sbyteTypeId:
+        case shortTypeId:
+        case intTypeId:
+        case longTypeId:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 
@@ -64,15 +82,15 @@ bool Type::IsFloatingPointType() const
 {
     switch (id)
     {
-    case floatTypeId:
-    case doubleTypeId:
-    {
-        return true;
-    }
-    default:
-    {
-        return false;
-    }
+        case floatTypeId:
+        case doubleTypeId:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
     }
 }
 

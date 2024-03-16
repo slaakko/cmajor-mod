@@ -1,0 +1,284 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+sbyte ret(sbyte x)
+{
+    return x;
+}
+
+sbyte eval_unaryop(sbyte operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<sbyte>(+operand);
+        case UnaryOp.neg: return cast<sbyte>(-operand);
+        case UnaryOp.cpl: return cast<sbyte>(~operand);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_unaryop(sbyte operand, UnaryOp op)
+{
+    return cast<sbyte>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+sbyte eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<sbyte>(left + right);
+        case BinOp.sub: return cast<sbyte>(left - right);
+        case BinOp.mul: return cast<sbyte>(left * right);
+        case BinOp.div: return cast<sbyte>(left / right);
+        case BinOp.mod: return cast<sbyte>(left % right);
+        case BinOp.and_: return cast<sbyte>(left & right);
+        case BinOp.or_: return cast<sbyte>(left | right);
+        case BinOp.xor_: return cast<sbyte>(left ^ right);
+        case BinOp.shl: return cast<sbyte>(left << right);
+        case BinOp.shr: return cast<sbyte>(left >> right);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    return cast<sbyte>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+unit_test void sbyte_binop_test()
+{
+    sbyte left1 = 0;
+    sbyte right1 = 0;
+    #assert (eval_binop(left1, right1, BinOp.add) == rtm_eval_binop(left1, right1, BinOp.add));
+    #assert (eval_binop(left1, right1, BinOp.sub) == rtm_eval_binop(left1, right1, BinOp.sub));
+    #assert (eval_binop(left1, right1, BinOp.mul) == rtm_eval_binop(left1, right1, BinOp.mul));
+    #assert (eval_binop(left1, right1, BinOp.and_) == rtm_eval_binop(left1, right1, BinOp.and_));
+    #assert (eval_binop(left1, right1, BinOp.or_) == rtm_eval_binop(left1, right1, BinOp.or_));
+    #assert (eval_binop(left1, right1, BinOp.xor_) == rtm_eval_binop(left1, right1, BinOp.xor_));
+    #assert (eval_binop(left1, right1, BinOp.shl) == rtm_eval_binop(left1, right1, BinOp.shl));
+    #assert (eval_binop(left1, right1, BinOp.shr) == rtm_eval_binop(left1, right1, BinOp.shr));
+    sbyte left2 = 0;
+    sbyte right2 = 1;
+    #assert (eval_binop(left2, right2, BinOp.add) == rtm_eval_binop(left2, right2, BinOp.add));
+    #assert (eval_binop(left2, right2, BinOp.sub) == rtm_eval_binop(left2, right2, BinOp.sub));
+    #assert (eval_binop(left2, right2, BinOp.mul) == rtm_eval_binop(left2, right2, BinOp.mul));
+    #assert (eval_binop(left2, right2, BinOp.div) == rtm_eval_binop(left2, right2, BinOp.div));
+    #assert (eval_binop(left2, right2, BinOp.mod) == rtm_eval_binop(left2, right2, BinOp.mod));
+    #assert (eval_binop(left2, right2, BinOp.and_) == rtm_eval_binop(left2, right2, BinOp.and_));
+    #assert (eval_binop(left2, right2, BinOp.or_) == rtm_eval_binop(left2, right2, BinOp.or_));
+    #assert (eval_binop(left2, right2, BinOp.xor_) == rtm_eval_binop(left2, right2, BinOp.xor_));
+    #assert (eval_binop(left2, right2, BinOp.shl) == rtm_eval_binop(left2, right2, BinOp.shl));
+    #assert (eval_binop(left2, right2, BinOp.shr) == rtm_eval_binop(left2, right2, BinOp.shr));
+    sbyte left3 = 1;
+    sbyte right3 = 0;
+    #assert (eval_binop(left3, right3, BinOp.add) == rtm_eval_binop(left3, right3, BinOp.add));
+    #assert (eval_binop(left3, right3, BinOp.sub) == rtm_eval_binop(left3, right3, BinOp.sub));
+    #assert (eval_binop(left3, right3, BinOp.mul) == rtm_eval_binop(left3, right3, BinOp.mul));
+    #assert (eval_binop(left3, right3, BinOp.and_) == rtm_eval_binop(left3, right3, BinOp.and_));
+    #assert (eval_binop(left3, right3, BinOp.or_) == rtm_eval_binop(left3, right3, BinOp.or_));
+    #assert (eval_binop(left3, right3, BinOp.xor_) == rtm_eval_binop(left3, right3, BinOp.xor_));
+    #assert (eval_binop(left3, right3, BinOp.shl) == rtm_eval_binop(left3, right3, BinOp.shl));
+    #assert (eval_binop(left3, right3, BinOp.shr) == rtm_eval_binop(left3, right3, BinOp.shr));
+    sbyte left4 = 1;
+    sbyte right4 = 1;
+    #assert (eval_binop(left4, right4, BinOp.add) == rtm_eval_binop(left4, right4, BinOp.add));
+    #assert (eval_binop(left4, right4, BinOp.sub) == rtm_eval_binop(left4, right4, BinOp.sub));
+    #assert (eval_binop(left4, right4, BinOp.mul) == rtm_eval_binop(left4, right4, BinOp.mul));
+    #assert (eval_binop(left4, right4, BinOp.div) == rtm_eval_binop(left4, right4, BinOp.div));
+    #assert (eval_binop(left4, right4, BinOp.mod) == rtm_eval_binop(left4, right4, BinOp.mod));
+    #assert (eval_binop(left4, right4, BinOp.and_) == rtm_eval_binop(left4, right4, BinOp.and_));
+    #assert (eval_binop(left4, right4, BinOp.or_) == rtm_eval_binop(left4, right4, BinOp.or_));
+    #assert (eval_binop(left4, right4, BinOp.xor_) == rtm_eval_binop(left4, right4, BinOp.xor_));
+    #assert (eval_binop(left4, right4, BinOp.shl) == rtm_eval_binop(left4, right4, BinOp.shl));
+    #assert (eval_binop(left4, right4, BinOp.shr) == rtm_eval_binop(left4, right4, BinOp.shr));
+    sbyte left5 = 1;
+    sbyte right5 = 2;
+    #assert (eval_binop(left5, right5, BinOp.add) == rtm_eval_binop(left5, right5, BinOp.add));
+    #assert (eval_binop(left5, right5, BinOp.sub) == rtm_eval_binop(left5, right5, BinOp.sub));
+    #assert (eval_binop(left5, right5, BinOp.mul) == rtm_eval_binop(left5, right5, BinOp.mul));
+    #assert (eval_binop(left5, right5, BinOp.div) == rtm_eval_binop(left5, right5, BinOp.div));
+    #assert (eval_binop(left5, right5, BinOp.mod) == rtm_eval_binop(left5, right5, BinOp.mod));
+    #assert (eval_binop(left5, right5, BinOp.and_) == rtm_eval_binop(left5, right5, BinOp.and_));
+    #assert (eval_binop(left5, right5, BinOp.or_) == rtm_eval_binop(left5, right5, BinOp.or_));
+    #assert (eval_binop(left5, right5, BinOp.xor_) == rtm_eval_binop(left5, right5, BinOp.xor_));
+    #assert (eval_binop(left5, right5, BinOp.shl) == rtm_eval_binop(left5, right5, BinOp.shl));
+    #assert (eval_binop(left5, right5, BinOp.shr) == rtm_eval_binop(left5, right5, BinOp.shr));
+    sbyte left6 = 2;
+    sbyte right6 = 1;
+    #assert (eval_binop(left6, right6, BinOp.add) == rtm_eval_binop(left6, right6, BinOp.add));
+    #assert (eval_binop(left6, right6, BinOp.sub) == rtm_eval_binop(left6, right6, BinOp.sub));
+    #assert (eval_binop(left6, right6, BinOp.mul) == rtm_eval_binop(left6, right6, BinOp.mul));
+    #assert (eval_binop(left6, right6, BinOp.div) == rtm_eval_binop(left6, right6, BinOp.div));
+    #assert (eval_binop(left6, right6, BinOp.mod) == rtm_eval_binop(left6, right6, BinOp.mod));
+    #assert (eval_binop(left6, right6, BinOp.and_) == rtm_eval_binop(left6, right6, BinOp.and_));
+    #assert (eval_binop(left6, right6, BinOp.or_) == rtm_eval_binop(left6, right6, BinOp.or_));
+    #assert (eval_binop(left6, right6, BinOp.xor_) == rtm_eval_binop(left6, right6, BinOp.xor_));
+    #assert (eval_binop(left6, right6, BinOp.shl) == rtm_eval_binop(left6, right6, BinOp.shl));
+    #assert (eval_binop(left6, right6, BinOp.shr) == rtm_eval_binop(left6, right6, BinOp.shr));
+    sbyte left7 = 2;
+    sbyte right7 = 2;
+    #assert (eval_binop(left7, right7, BinOp.add) == rtm_eval_binop(left7, right7, BinOp.add));
+    #assert (eval_binop(left7, right7, BinOp.sub) == rtm_eval_binop(left7, right7, BinOp.sub));
+    #assert (eval_binop(left7, right7, BinOp.mul) == rtm_eval_binop(left7, right7, BinOp.mul));
+    #assert (eval_binop(left7, right7, BinOp.div) == rtm_eval_binop(left7, right7, BinOp.div));
+    #assert (eval_binop(left7, right7, BinOp.mod) == rtm_eval_binop(left7, right7, BinOp.mod));
+    #assert (eval_binop(left7, right7, BinOp.and_) == rtm_eval_binop(left7, right7, BinOp.and_));
+    #assert (eval_binop(left7, right7, BinOp.or_) == rtm_eval_binop(left7, right7, BinOp.or_));
+    #assert (eval_binop(left7, right7, BinOp.xor_) == rtm_eval_binop(left7, right7, BinOp.xor_));
+    #assert (eval_binop(left7, right7, BinOp.shl) == rtm_eval_binop(left7, right7, BinOp.shl));
+    #assert (eval_binop(left7, right7, BinOp.shr) == rtm_eval_binop(left7, right7, BinOp.shr));
+    sbyte left8 = -1;
+    sbyte right8 = 0;
+    #assert (eval_binop(left8, right8, BinOp.add) == rtm_eval_binop(left8, right8, BinOp.add));
+    #assert (eval_binop(left8, right8, BinOp.sub) == rtm_eval_binop(left8, right8, BinOp.sub));
+    #assert (eval_binop(left8, right8, BinOp.mul) == rtm_eval_binop(left8, right8, BinOp.mul));
+    #assert (eval_binop(left8, right8, BinOp.and_) == rtm_eval_binop(left8, right8, BinOp.and_));
+    #assert (eval_binop(left8, right8, BinOp.or_) == rtm_eval_binop(left8, right8, BinOp.or_));
+    #assert (eval_binop(left8, right8, BinOp.xor_) == rtm_eval_binop(left8, right8, BinOp.xor_));
+    #assert (eval_binop(left8, right8, BinOp.shl) == rtm_eval_binop(left8, right8, BinOp.shl));
+    #assert (eval_binop(left8, right8, BinOp.shr) == rtm_eval_binop(left8, right8, BinOp.shr));
+    sbyte left9 = -1;
+    sbyte right9 = -1;
+    #assert (eval_binop(left9, right9, BinOp.add) == rtm_eval_binop(left9, right9, BinOp.add));
+    #assert (eval_binop(left9, right9, BinOp.sub) == rtm_eval_binop(left9, right9, BinOp.sub));
+    #assert (eval_binop(left9, right9, BinOp.mul) == rtm_eval_binop(left9, right9, BinOp.mul));
+    #assert (eval_binop(left9, right9, BinOp.div) == rtm_eval_binop(left9, right9, BinOp.div));
+    #assert (eval_binop(left9, right9, BinOp.mod) == rtm_eval_binop(left9, right9, BinOp.mod));
+    #assert (eval_binop(left9, right9, BinOp.and_) == rtm_eval_binop(left9, right9, BinOp.and_));
+    #assert (eval_binop(left9, right9, BinOp.or_) == rtm_eval_binop(left9, right9, BinOp.or_));
+    #assert (eval_binop(left9, right9, BinOp.xor_) == rtm_eval_binop(left9, right9, BinOp.xor_));
+    sbyte left10 = -1;
+    sbyte right10 = 2;
+    #assert (eval_binop(left10, right10, BinOp.add) == rtm_eval_binop(left10, right10, BinOp.add));
+    #assert (eval_binop(left10, right10, BinOp.sub) == rtm_eval_binop(left10, right10, BinOp.sub));
+    #assert (eval_binop(left10, right10, BinOp.mul) == rtm_eval_binop(left10, right10, BinOp.mul));
+    #assert (eval_binop(left10, right10, BinOp.div) == rtm_eval_binop(left10, right10, BinOp.div));
+    #assert (eval_binop(left10, right10, BinOp.mod) == rtm_eval_binop(left10, right10, BinOp.mod));
+    #assert (eval_binop(left10, right10, BinOp.and_) == rtm_eval_binop(left10, right10, BinOp.and_));
+    #assert (eval_binop(left10, right10, BinOp.or_) == rtm_eval_binop(left10, right10, BinOp.or_));
+    #assert (eval_binop(left10, right10, BinOp.xor_) == rtm_eval_binop(left10, right10, BinOp.xor_));
+    #assert (eval_binop(left10, right10, BinOp.shl) == rtm_eval_binop(left10, right10, BinOp.shl));
+    #assert (eval_binop(left10, right10, BinOp.shr) == rtm_eval_binop(left10, right10, BinOp.shr));
+    sbyte left11 = 2;
+    sbyte right11 = -1;
+    #assert (eval_binop(left11, right11, BinOp.add) == rtm_eval_binop(left11, right11, BinOp.add));
+    #assert (eval_binop(left11, right11, BinOp.sub) == rtm_eval_binop(left11, right11, BinOp.sub));
+    #assert (eval_binop(left11, right11, BinOp.mul) == rtm_eval_binop(left11, right11, BinOp.mul));
+    #assert (eval_binop(left11, right11, BinOp.div) == rtm_eval_binop(left11, right11, BinOp.div));
+    #assert (eval_binop(left11, right11, BinOp.mod) == rtm_eval_binop(left11, right11, BinOp.mod));
+    #assert (eval_binop(left11, right11, BinOp.and_) == rtm_eval_binop(left11, right11, BinOp.and_));
+    #assert (eval_binop(left11, right11, BinOp.or_) == rtm_eval_binop(left11, right11, BinOp.or_));
+    #assert (eval_binop(left11, right11, BinOp.xor_) == rtm_eval_binop(left11, right11, BinOp.xor_));
+    sbyte left12 = 127;
+    sbyte right12 = 1;
+    #assert (eval_binop(left12, right12, BinOp.add) == rtm_eval_binop(left12, right12, BinOp.add));
+    #assert (eval_binop(left12, right12, BinOp.sub) == rtm_eval_binop(left12, right12, BinOp.sub));
+    #assert (eval_binop(left12, right12, BinOp.mul) == rtm_eval_binop(left12, right12, BinOp.mul));
+    #assert (eval_binop(left12, right12, BinOp.div) == rtm_eval_binop(left12, right12, BinOp.div));
+    #assert (eval_binop(left12, right12, BinOp.mod) == rtm_eval_binop(left12, right12, BinOp.mod));
+    #assert (eval_binop(left12, right12, BinOp.and_) == rtm_eval_binop(left12, right12, BinOp.and_));
+    #assert (eval_binop(left12, right12, BinOp.or_) == rtm_eval_binop(left12, right12, BinOp.or_));
+    #assert (eval_binop(left12, right12, BinOp.xor_) == rtm_eval_binop(left12, right12, BinOp.xor_));
+    #assert (eval_binop(left12, right12, BinOp.shl) == rtm_eval_binop(left12, right12, BinOp.shl));
+    #assert (eval_binop(left12, right12, BinOp.shr) == rtm_eval_binop(left12, right12, BinOp.shr));
+    sbyte left13 = 127;
+    sbyte right13 = -1;
+    #assert (eval_binop(left13, right13, BinOp.add) == rtm_eval_binop(left13, right13, BinOp.add));
+    #assert (eval_binop(left13, right13, BinOp.sub) == rtm_eval_binop(left13, right13, BinOp.sub));
+    #assert (eval_binop(left13, right13, BinOp.mul) == rtm_eval_binop(left13, right13, BinOp.mul));
+    #assert (eval_binop(left13, right13, BinOp.div) == rtm_eval_binop(left13, right13, BinOp.div));
+    #assert (eval_binop(left13, right13, BinOp.mod) == rtm_eval_binop(left13, right13, BinOp.mod));
+    #assert (eval_binop(left13, right13, BinOp.and_) == rtm_eval_binop(left13, right13, BinOp.and_));
+    #assert (eval_binop(left13, right13, BinOp.or_) == rtm_eval_binop(left13, right13, BinOp.or_));
+    #assert (eval_binop(left13, right13, BinOp.xor_) == rtm_eval_binop(left13, right13, BinOp.xor_));
+    sbyte left14 = 127;
+    sbyte right14 = 2;
+    #assert (eval_binop(left14, right14, BinOp.add) == rtm_eval_binop(left14, right14, BinOp.add));
+    #assert (eval_binop(left14, right14, BinOp.sub) == rtm_eval_binop(left14, right14, BinOp.sub));
+    #assert (eval_binop(left14, right14, BinOp.mul) == rtm_eval_binop(left14, right14, BinOp.mul));
+    #assert (eval_binop(left14, right14, BinOp.div) == rtm_eval_binop(left14, right14, BinOp.div));
+    #assert (eval_binop(left14, right14, BinOp.mod) == rtm_eval_binop(left14, right14, BinOp.mod));
+    #assert (eval_binop(left14, right14, BinOp.and_) == rtm_eval_binop(left14, right14, BinOp.and_));
+    #assert (eval_binop(left14, right14, BinOp.or_) == rtm_eval_binop(left14, right14, BinOp.or_));
+    #assert (eval_binop(left14, right14, BinOp.xor_) == rtm_eval_binop(left14, right14, BinOp.xor_));
+    #assert (eval_binop(left14, right14, BinOp.shl) == rtm_eval_binop(left14, right14, BinOp.shl));
+    #assert (eval_binop(left14, right14, BinOp.shr) == rtm_eval_binop(left14, right14, BinOp.shr));
+    sbyte left15 = 127;
+    sbyte right15 = 127;
+    #assert (eval_binop(left15, right15, BinOp.add) == rtm_eval_binop(left15, right15, BinOp.add));
+    #assert (eval_binop(left15, right15, BinOp.sub) == rtm_eval_binop(left15, right15, BinOp.sub));
+    #assert (eval_binop(left15, right15, BinOp.mul) == rtm_eval_binop(left15, right15, BinOp.mul));
+    #assert (eval_binop(left15, right15, BinOp.div) == rtm_eval_binop(left15, right15, BinOp.div));
+    #assert (eval_binop(left15, right15, BinOp.mod) == rtm_eval_binop(left15, right15, BinOp.mod));
+    #assert (eval_binop(left15, right15, BinOp.and_) == rtm_eval_binop(left15, right15, BinOp.and_));
+    #assert (eval_binop(left15, right15, BinOp.or_) == rtm_eval_binop(left15, right15, BinOp.or_));
+    #assert (eval_binop(left15, right15, BinOp.xor_) == rtm_eval_binop(left15, right15, BinOp.xor_));
+    sbyte left16 = -127;
+    sbyte right16 = 0;
+    #assert (eval_binop(left16, right16, BinOp.add) == rtm_eval_binop(left16, right16, BinOp.add));
+    #assert (eval_binop(left16, right16, BinOp.sub) == rtm_eval_binop(left16, right16, BinOp.sub));
+    #assert (eval_binop(left16, right16, BinOp.mul) == rtm_eval_binop(left16, right16, BinOp.mul));
+    #assert (eval_binop(left16, right16, BinOp.and_) == rtm_eval_binop(left16, right16, BinOp.and_));
+    #assert (eval_binop(left16, right16, BinOp.or_) == rtm_eval_binop(left16, right16, BinOp.or_));
+    #assert (eval_binop(left16, right16, BinOp.xor_) == rtm_eval_binop(left16, right16, BinOp.xor_));
+    #assert (eval_binop(left16, right16, BinOp.shl) == rtm_eval_binop(left16, right16, BinOp.shl));
+    #assert (eval_binop(left16, right16, BinOp.shr) == rtm_eval_binop(left16, right16, BinOp.shr));
+    sbyte left17 = -127;
+    sbyte right17 = 1;
+    #assert (eval_binop(left17, right17, BinOp.add) == rtm_eval_binop(left17, right17, BinOp.add));
+    #assert (eval_binop(left17, right17, BinOp.sub) == rtm_eval_binop(left17, right17, BinOp.sub));
+    #assert (eval_binop(left17, right17, BinOp.mul) == rtm_eval_binop(left17, right17, BinOp.mul));
+    #assert (eval_binop(left17, right17, BinOp.div) == rtm_eval_binop(left17, right17, BinOp.div));
+    #assert (eval_binop(left17, right17, BinOp.mod) == rtm_eval_binop(left17, right17, BinOp.mod));
+    #assert (eval_binop(left17, right17, BinOp.and_) == rtm_eval_binop(left17, right17, BinOp.and_));
+    #assert (eval_binop(left17, right17, BinOp.or_) == rtm_eval_binop(left17, right17, BinOp.or_));
+    #assert (eval_binop(left17, right17, BinOp.xor_) == rtm_eval_binop(left17, right17, BinOp.xor_));
+    #assert (eval_binop(left17, right17, BinOp.shl) == rtm_eval_binop(left17, right17, BinOp.shl));
+    #assert (eval_binop(left17, right17, BinOp.shr) == rtm_eval_binop(left17, right17, BinOp.shr));
+    sbyte left18 = -127;
+    sbyte right18 = -1;
+    #assert (eval_binop(left18, right18, BinOp.add) == rtm_eval_binop(left18, right18, BinOp.add));
+    #assert (eval_binop(left18, right18, BinOp.sub) == rtm_eval_binop(left18, right18, BinOp.sub));
+    #assert (eval_binop(left18, right18, BinOp.mul) == rtm_eval_binop(left18, right18, BinOp.mul));
+    #assert (eval_binop(left18, right18, BinOp.div) == rtm_eval_binop(left18, right18, BinOp.div));
+    #assert (eval_binop(left18, right18, BinOp.mod) == rtm_eval_binop(left18, right18, BinOp.mod));
+    #assert (eval_binop(left18, right18, BinOp.and_) == rtm_eval_binop(left18, right18, BinOp.and_));
+    #assert (eval_binop(left18, right18, BinOp.or_) == rtm_eval_binop(left18, right18, BinOp.or_));
+    #assert (eval_binop(left18, right18, BinOp.xor_) == rtm_eval_binop(left18, right18, BinOp.xor_));
+    sbyte left19 = -127;
+    sbyte right19 = 2;
+    #assert (eval_binop(left19, right19, BinOp.add) == rtm_eval_binop(left19, right19, BinOp.add));
+    #assert (eval_binop(left19, right19, BinOp.sub) == rtm_eval_binop(left19, right19, BinOp.sub));
+    #assert (eval_binop(left19, right19, BinOp.mul) == rtm_eval_binop(left19, right19, BinOp.mul));
+    #assert (eval_binop(left19, right19, BinOp.div) == rtm_eval_binop(left19, right19, BinOp.div));
+    #assert (eval_binop(left19, right19, BinOp.mod) == rtm_eval_binop(left19, right19, BinOp.mod));
+    #assert (eval_binop(left19, right19, BinOp.and_) == rtm_eval_binop(left19, right19, BinOp.and_));
+    #assert (eval_binop(left19, right19, BinOp.or_) == rtm_eval_binop(left19, right19, BinOp.or_));
+    #assert (eval_binop(left19, right19, BinOp.xor_) == rtm_eval_binop(left19, right19, BinOp.xor_));
+    #assert (eval_binop(left19, right19, BinOp.shl) == rtm_eval_binop(left19, right19, BinOp.shl));
+    #assert (eval_binop(left19, right19, BinOp.shr) == rtm_eval_binop(left19, right19, BinOp.shr));
+    sbyte left20 = -127;
+    sbyte right20 = -127;
+    #assert (eval_binop(left20, right20, BinOp.add) == rtm_eval_binop(left20, right20, BinOp.add));
+    #assert (eval_binop(left20, right20, BinOp.sub) == rtm_eval_binop(left20, right20, BinOp.sub));
+    #assert (eval_binop(left20, right20, BinOp.mul) == rtm_eval_binop(left20, right20, BinOp.mul));
+    #assert (eval_binop(left20, right20, BinOp.div) == rtm_eval_binop(left20, right20, BinOp.div));
+    #assert (eval_binop(left20, right20, BinOp.mod) == rtm_eval_binop(left20, right20, BinOp.mod));
+    #assert (eval_binop(left20, right20, BinOp.and_) == rtm_eval_binop(left20, right20, BinOp.and_));
+    #assert (eval_binop(left20, right20, BinOp.or_) == rtm_eval_binop(left20, right20, BinOp.or_));
+    #assert (eval_binop(left20, right20, BinOp.xor_) == rtm_eval_binop(left20, right20, BinOp.xor_));
+}

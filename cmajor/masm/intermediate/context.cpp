@@ -202,9 +202,9 @@ Value* Context::MakeSymbolValue(const soul::ast::Span& span, Type* type, const s
     return data.MakeSymbolValue(span, type, symbol);
 }
 
-Value* Context::MakeNumericLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue)
+Value* Context::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue)
 {
-    return data.MakeNumericLiteral(span, type, strValue, types, this);
+    return data.MakeIntegerLiteral(span, type, strValue, types, this);
 }
 
 Value* Context::MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id)

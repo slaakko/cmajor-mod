@@ -18,7 +18,7 @@ std::string ToHexStr(const std::string& hexStr)
     return hexStr;
 }
 
-std::string ToLiteralStr(int64_t value, int size)
+std::string ToIntegerLiteralStr(int64_t value, int size)
 {
     switch (size)
     {
@@ -42,7 +42,25 @@ std::string ToLiteralStr(int64_t value, int size)
     return ToHexStr(util::ToHexString(static_cast<uint64_t>(value)) + "H");
 }
 
-NumericLiteral::NumericLiteral(int64_t value_, int size_) : Value(ToLiteralStr(value_, size_)), value(value_), size(size_)
+std::string ToFloatLiteralStr(float value)
+{
+    return std::to_string(value);
+}
+
+std::string ToDoubleLiteralStr(double value)
+{
+    return std::to_string(value);
+}
+
+IntegerLiteral::IntegerLiteral(int64_t value_, int size_) : Value(ToIntegerLiteralStr(value_, size_)), value(value_), size(size_)
+{
+}
+
+FloatLiteral::FloatLiteral(float value_) : Value(ToFloatLiteralStr(value_)), value(value_)
+{
+}
+
+DoubleLiteral::DoubleLiteral(double value_) : Value(ToDoubleLiteralStr(value_)), value(value_)
 {
 }
 

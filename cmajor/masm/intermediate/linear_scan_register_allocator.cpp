@@ -75,7 +75,14 @@ void LinearScanRegisterAllocator::AddFreeRegGroupToPool(Instruction* inst)
     cmajor::masm::assembly::RegisterGroup* reg = GetRegisterGroup(inst);
     if (reg)
     {
-        context->AssemblyContext()->GetRegisterPool()->AddLocalRegisterGroup(reg);
+        if (reg->IsFloatingPointReg())
+        {
+            context->AssemblyContext()->GetRegisterPool()->AddLocalXMMRegisterGroup(reg);
+        }
+        else
+        {
+            context->AssemblyContext()->GetRegisterPool()->AddLocalRegisterGroup(reg);
+        }
         RemoveRegisterGroup(inst);
     }
 }
@@ -89,9 +96,16 @@ void LinearScanRegisterAllocator::RemoveFromActive(const LiveRange& range)
     }
 }
 
-bool LinearScanRegisterAllocator::NoFreeRegs() const
+bool LinearScanRegisterAllocator::NoFreeRegs(bool floatingPoint) const
 {
-    return context->AssemblyContext()->GetRegisterPool()->NumFreeLocalRegisters() == 0;
+    if (floatingPoint)
+    {
+        return context->AssemblyContext()->GetRegisterPool()->NumFreeLocalXMMRegisters() == 0;
+    }
+    else
+    {
+        return context->AssemblyContext()->GetRegisterPool()->NumFreeLocalRegisters() == 0;
+    }
 }
 
 cmajor::masm::assembly::RegisterGroup* LinearScanRegisterAllocator::GetRegisterGroup(Instruction* inst) const
@@ -127,7 +141,14 @@ FrameLocation LinearScanRegisterAllocator::GetFrameLocation(Instruction* inst) c
 
 void LinearScanRegisterAllocator::AllocateRegister(Instruction* inst)
 {
-    registerGroups[inst] = context->AssemblyContext()->GetRegisterPool()->GetLocalRegisterGroup();
+    if (inst->IsFloatingPointInstruction())
+    {
+        registerGroups[inst] = context->AssemblyContext()->GetRegisterPool()->GetLocalXMMRegisterGroup();
+    }
+    else
+    {
+        registerGroups[inst] = context->AssemblyContext()->GetRegisterPool()->GetLocalRegisterGroup();
+    }
     LiveRange range = GetLiveRange(inst);
     active.insert(range);
     locations[inst] = locations[inst] | Locations::reg;
@@ -138,8 +159,13 @@ void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst)
     if (inst->IsParamInstruction())
     {
         ParamInstruction* paramInst = static_cast<ParamInstruction*>(inst);
-        int64_t size = util::Align(paramInst->GetType()->Size(), 8);
-        frameLocations[paramInst] = frame.GetParamLocation(size);
+        int alignment = 8;
+        if (paramInst->GetType()->IsFloatingPointType())
+        {
+            alignment = 16;
+        }
+        int64_t size = util::Align(paramInst->GetType()->Size(), alignment);
+        frameLocations[paramInst] = frame.GetParamLocation(size, context->AssemblyContext());
         locations[paramInst] = locations[paramInst] | Locations::frame;
     }
     else if (inst->IsLocalInstruction())
@@ -273,13 +299,13 @@ int LinearScanRegisterAllocator::LastActiveLocalRegGroup() const
     return lastActiveLocalRegGroup;
 }
 
-RegisterAllocationAction LinearScanRegisterAllocator::Run(Instruction* inst)
+RegisterAllocationAction LinearScanRegisterAllocator::Run(Instruction* inst, int argIndex)
 {
     LiveRange liveRange = GetLiveRange(inst);
     ExpireOldRanges(liveRange);
-    if (inst->RequiresLocalRegister())
+    if ((argIndex == -1 || argIndex > 3) && inst->RequiresLocalRegister())
     {
-        if (NoFreeRegs())
+        if (NoFreeRegs(inst->IsFloatingPointInstruction()))
         {
             Spill(inst);
             return RegisterAllocationAction::spill;

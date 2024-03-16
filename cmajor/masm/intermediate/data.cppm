@@ -33,6 +33,9 @@ public:
     bool IsAddressValue() const { return kind == ValueKind::addressValue; }
     bool IsGlobalVariable() const { return kind == ValueKind::globalVariable; }
     bool IsIntegerValue() const;
+    bool IsFloatingPointValue() const;
+    bool IsFloatValue() const { return kind == ValueKind::floatValue; }
+    bool IsDoubleValue() const { return kind == ValueKind::doubleValue; }
     int64_t GetIntegerValue() const;
     const soul::ast::Span& Span() const { return span; }
     ValueKind Kind() const { return kind; }
@@ -313,7 +316,7 @@ public:
     Value* MakeConversionValue(const soul::ast::Span& span, Type* type, Value* from);
     Value* MakeClsIdValue(const soul::ast::Span& span, Type* type, const std::string& clsIdStr);
     Value* MakeSymbolValue(const soul::ast::Span& span, Type* type, const std::string& symbol);
-    Value* MakeNumericLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue, const Types& types, Context* context);
+    Value* MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const std::string& strValue, const Types& types, Context* context);
     Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id, Context* context);
     void VisitGlobalVariables(Visitor& visitor);
 private:

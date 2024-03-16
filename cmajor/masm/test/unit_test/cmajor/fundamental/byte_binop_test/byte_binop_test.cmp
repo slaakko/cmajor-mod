@@ -1,0 +1,4 @@
+project byte_binop_test;
+target=program;
+source <byte_binop_test.cm>;
+source <main.cm>;

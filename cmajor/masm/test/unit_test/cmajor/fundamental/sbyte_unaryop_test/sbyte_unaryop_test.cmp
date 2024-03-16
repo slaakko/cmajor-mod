@@ -1,0 +1,4 @@
+project sbyte_unaryop_test;
+target=program;
+source <sbyte_unaryop_test.cm>;
+source <main.cm>;

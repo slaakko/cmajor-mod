@@ -164,6 +164,8 @@
     <ClCompile Include="instruction.cppm" />
     <ClCompile Include="literal.cpp" />
     <ClCompile Include="literal.cppm" />
+    <ClCompile Include="macro.cpp" />
+    <ClCompile Include="macro.cppm" />
     <ClCompile Include="register.cpp" />
     <ClCompile Include="register.cppm" />
     <ClCompile Include="symbol.cpp" />

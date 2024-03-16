@@ -1956,8 +1956,13 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         int32_t assertionLineNumber = cmajor::symbols::GetLineNumber(assertStatementNode.GetFullSpan());
         int32_t assertionIndex = cmajor::symbols::GetNextUnitTestAssertionNumber();
         cmajor::symbols::AddAssertionLineNumber(assertionLineNumber);
+        std::u32string setAssertionResultFunctionName = U"RtSetUnitTestAssertionResult";
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            setAssertionResultFunctionName = U"RtmSetUnitTestAssertionResult";
+        }
         cmajor::ast::InvokeNode* invokeSetUnitTestAssertionResult = new cmajor::ast::InvokeNode(assertStatementNode.GetSpan(),
-            new cmajor::ast::IdentifierNode(assertStatementNode.GetSpan(), U"RtSetUnitTestAssertionResult"));
+            new cmajor::ast::IdentifierNode(assertStatementNode.GetSpan(), setAssertionResultFunctionName));
         invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSpan(), assertionIndex));
         cmajor::ast::CloneContext cloneContext;
         invokeSetUnitTestAssertionResult->AddArgument(assertStatementNode.AssertExpr()->Clone(cloneContext));

@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    short_value_test();
+    return 0;
+}

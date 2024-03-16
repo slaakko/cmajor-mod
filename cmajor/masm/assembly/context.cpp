@@ -7,18 +7,23 @@ module cmajor.masm.assembly.context;
 
 import cmajor.masm.assembly.literal;
 import cmajor.masm.assembly.symbol;
+import cmajor.masm.assembly.function;
+import cmajor.masm.assembly.macro;
+import cmajor.masm.assembly.data;
+import cmajor.masm.assembly.instruction;
+import cmajor.masm.assembly.file;
 
 namespace cmajor::masm::assembly {
 
 void CheckSize(int64_t size, const std::string& message)
 {
-    if (size != 1 && size != 2 && size != 4 && size != 8)
+    if (size != 1 && size != 2 && size != 4 && size != 8 && size != highByteRegSize && size != 16)
     {
         throw std::runtime_error(message);
     }
 }
 
-Context::Context() : registerPool(new RegisterPool(registers))
+Context::Context() : file(nullptr), registerPool(new RegisterPool(registers)), currentFunction(nullptr), floatingLiteralCounter(0)
 {
 }
 
@@ -36,16 +41,53 @@ Register* Context::GetLocalReg(int64_t size)
 
 Register* Context::GetGlobalReg(int64_t size, RegisterGroupKind regGroupKind)
 {
+    return GetGlobalReg(size, regGroupKind, true);
+}
+
+Register* Context::GetGlobalReg(int64_t size, RegisterGroupKind regGroupKind, bool used)
+{
     CheckSize(size, "cmajor.masm.assembly.GetGlobalReg: invalid size: " + std::to_string(size));
-    RegisterGroup* regGroup = registerPool->GetGlobalRegisterGroup(regGroupKind);
+    RegisterGroup* regGroup = registerPool->GetGlobalRegisterGroup(regGroupKind, used);
     return regGroup->GetReg(static_cast<int>(size));
 }
 
-NumericLiteral* Context::MakeNumericLiteral(int64_t value, int size)
+IntegerLiteral* Context::MakeIntegerLiteral(int64_t value, int size)
 {
-    NumericLiteral* literal = new NumericLiteral(value, size);
+    IntegerLiteral* literal = new IntegerLiteral(value, size);
     values.push_back(std::unique_ptr<Value>(literal));
     return literal;
+}
+
+Value* Context::MakeFloatLiteralSymbol(float value)
+{
+    FloatLiteral* literal = new FloatLiteral(value);
+    values.push_back(std::unique_ptr<Value>(literal));
+    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++));
+    Value* expr = MakeSizePrefix(4, MakeContent(symbol));
+    Data* data = new Data();
+    Instruction* inst = new Instruction(OpCode::REAL4);
+    inst->SetNoColon();
+    inst->SetLabel(symbol->Name());
+    inst->AddOperand(literal);
+    data->AddInstruction(inst);
+    file->GetDataSection().AddData(data);
+    return expr;
+}
+
+Value* Context::MakeDoubleLiteralSymbol(double value)
+{
+    DoubleLiteral* literal = new DoubleLiteral(value);
+    values.push_back(std::unique_ptr<Value>(literal));
+    Symbol* symbol = MakeSymbol("floating_" + std::to_string(floatingLiteralCounter++));
+    Value* expr = MakeSizePrefix(8, MakeContent(symbol));
+    Data* data = new Data();
+    Instruction* inst = new Instruction(OpCode::REAL8);
+    inst->SetNoColon();
+    inst->SetLabel(symbol->Name());
+    inst->AddOperand(literal);
+    data->AddInstruction(inst);
+    file->GetDataSection().AddData(data);
+    return expr;
 }
 
 Symbol* Context::MakeSymbol(const std::string& symbolName)
@@ -53,6 +95,17 @@ Symbol* Context::MakeSymbol(const std::string& symbolName)
     Symbol* symbol = new Symbol(symbolName);
     values.push_back(std::unique_ptr<Value>(symbol));
     return symbol;
+}
+
+Macro* Context::MakeMacro(const std::string& name)
+{
+    Macro* macro = new Macro(name);
+    values.push_back(std::unique_ptr<Macro>(macro));
+    if (currentFunction)
+    {
+        currentFunction->AddMacro(macro);
+    }
+    return macro;
 }
 
 Value* Context::MakeContent(Value* value)

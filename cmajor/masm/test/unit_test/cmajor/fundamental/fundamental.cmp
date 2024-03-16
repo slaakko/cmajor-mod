@@ -1,0 +1,11 @@
+project fundamental;
+target=unitTest;
+source <bool.cm>;
+source <sbyte.cm>;
+source <byte.cm>;
+source <short.cm>;
+source <ushort.cm>;
+source <int.cm>;
+source <uint.cm>;
+source <long.cm>;
+source <ulong.cm>;

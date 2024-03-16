@@ -1,0 +1,9 @@
+using System;
+
+void main()
+{
+    eight_float(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+    eight_double(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0);
+    eight_double_long_double_long_long_double_double_long(1.0, 2, 3.0, 4, 5, 6.0, 7.0, 8);
+    eight_long_double_double_double_double_long_long_double(1, 2.0, 3.0, 4.0, 5.0, 6, 7, 8.0);
+}

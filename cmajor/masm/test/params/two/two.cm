@@ -2,5 +2,7 @@ using System;
 
 void two(int x, int y)
 {
+    RtmPrintInteger(x);
+    RtmPrintInteger(y);
 }
 

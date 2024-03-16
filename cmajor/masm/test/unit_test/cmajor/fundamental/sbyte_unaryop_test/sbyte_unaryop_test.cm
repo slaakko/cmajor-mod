@@ -1,0 +1,92 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+sbyte ret(sbyte x)
+{
+    return x;
+}
+
+sbyte eval_unaryop(sbyte operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<sbyte>(+operand);
+        case UnaryOp.neg: return cast<sbyte>(-operand);
+        case UnaryOp.cpl: return cast<sbyte>(~operand);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_unaryop(sbyte operand, UnaryOp op)
+{
+    return cast<sbyte>(RtmEvaluateUnaryOp(cast<long>(operand), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+sbyte eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<sbyte>(left + right);
+        case BinOp.sub: return cast<sbyte>(left - right);
+        case BinOp.mul: return cast<sbyte>(left * right);
+        case BinOp.div: return cast<sbyte>(left / right);
+        case BinOp.mod: return cast<sbyte>(left % right);
+        case BinOp.and_: return cast<sbyte>(left & right);
+        case BinOp.or_: return cast<sbyte>(left | right);
+        case BinOp.xor_: return cast<sbyte>(left ^ right);
+        case BinOp.shl: return cast<sbyte>(left << right);
+        case BinOp.shr: return cast<sbyte>(left >> right);
+    }
+    return 0;
+}
+
+sbyte rtm_eval_binop(sbyte left, sbyte right, BinOp op)
+{
+    return cast<sbyte>(RtmEvaluateBinOp(cast<long>(left), cast<long>(right), cast<int>(Type.sbyte_), cast<int>(op)));
+}
+
+unit_test void sbyte_unaryop_test()
+{
+    sbyte operand1 = 0;
+    #assert (eval_unaryop(operand1, UnaryOp.plus) == rtm_eval_unaryop(operand1, UnaryOp.plus));
+    #assert (eval_unaryop(operand1, UnaryOp.neg) == rtm_eval_unaryop(operand1, UnaryOp.neg));
+    #assert (eval_unaryop(operand1, UnaryOp.cpl) == rtm_eval_unaryop(operand1, UnaryOp.cpl));
+    sbyte operand2 = 1;
+    #assert (eval_unaryop(operand2, UnaryOp.plus) == rtm_eval_unaryop(operand2, UnaryOp.plus));
+    #assert (eval_unaryop(operand2, UnaryOp.neg) == rtm_eval_unaryop(operand2, UnaryOp.neg));
+    #assert (eval_unaryop(operand2, UnaryOp.cpl) == rtm_eval_unaryop(operand2, UnaryOp.cpl));
+    sbyte operand3 = 2;
+    #assert (eval_unaryop(operand3, UnaryOp.plus) == rtm_eval_unaryop(operand3, UnaryOp.plus));
+    #assert (eval_unaryop(operand3, UnaryOp.neg) == rtm_eval_unaryop(operand3, UnaryOp.neg));
+    #assert (eval_unaryop(operand3, UnaryOp.cpl) == rtm_eval_unaryop(operand3, UnaryOp.cpl));
+    sbyte operand4 = 127;
+    #assert (eval_unaryop(operand4, UnaryOp.plus) == rtm_eval_unaryop(operand4, UnaryOp.plus));
+    #assert (eval_unaryop(operand4, UnaryOp.neg) == rtm_eval_unaryop(operand4, UnaryOp.neg));
+    #assert (eval_unaryop(operand4, UnaryOp.cpl) == rtm_eval_unaryop(operand4, UnaryOp.cpl));
+    sbyte operand5 = -1;
+    #assert (eval_unaryop(operand5, UnaryOp.plus) == rtm_eval_unaryop(operand5, UnaryOp.plus));
+    #assert (eval_unaryop(operand5, UnaryOp.neg) == rtm_eval_unaryop(operand5, UnaryOp.neg));
+    #assert (eval_unaryop(operand5, UnaryOp.cpl) == rtm_eval_unaryop(operand5, UnaryOp.cpl));
+    sbyte operand6 = -2;
+    #assert (eval_unaryop(operand6, UnaryOp.plus) == rtm_eval_unaryop(operand6, UnaryOp.plus));
+    #assert (eval_unaryop(operand6, UnaryOp.neg) == rtm_eval_unaryop(operand6, UnaryOp.neg));
+    #assert (eval_unaryop(operand6, UnaryOp.cpl) == rtm_eval_unaryop(operand6, UnaryOp.cpl));
+    sbyte operand7 = -127;
+    #assert (eval_unaryop(operand7, UnaryOp.plus) == rtm_eval_unaryop(operand7, UnaryOp.plus));
+    #assert (eval_unaryop(operand7, UnaryOp.neg) == rtm_eval_unaryop(operand7, UnaryOp.neg));
+    #assert (eval_unaryop(operand7, UnaryOp.cpl) == rtm_eval_unaryop(operand7, UnaryOp.cpl));
+}
