@@ -1,0 +1,8 @@
+using System;
+
+void main()
+{
+    foo();
+    bar();
+    uint* x = &nul;
+}

@@ -1,0 +1,9 @@
+using System;
+
+void foo()
+{
+    long x = 0;
+    long* px = &x;
+    construct<long>(px, 1);
+    #assert(x == 1);
+}

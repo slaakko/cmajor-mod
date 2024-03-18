@@ -1,0 +1,9 @@
+using System;
+
+public class Foo<T>
+{
+    public void foo()
+    {
+        T x;
+    }
+}

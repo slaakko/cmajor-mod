@@ -1,0 +1,84 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+float ret(float x)
+{
+    return x;
+}
+
+float eval_unaryop(float operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<float>(+operand);
+        case UnaryOp.neg: return cast<float>(-operand);
+    }
+    return 0.000000f;
+}
+
+float rtm_eval_unaryop(float operand, UnaryOp op)
+{
+    return cast<float>(RtmEvaluateFloatUnaryOp(cast<float>(operand), cast<int>(op)));
+}
+
+float eval_binop(float left, float right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<float>(left + right);
+        case BinOp.sub: return cast<float>(left - right);
+        case BinOp.mul: return cast<float>(left * right);
+        case BinOp.div: return cast<float>(left / right);
+    }
+    return 0.000000f;
+}
+
+float rtm_eval_binop(float left, float right, BinOp op)
+{
+    return cast<float>(RtmEvaluateFloatBinaryOp(cast<float>(left), cast<float>(right), cast<int>(op)));
+}
+
+unit_test void float_unaryop_test()
+{
+    float operand1 = 0.000000f;
+    #assert (eval_unaryop(operand1, UnaryOp.plus) == rtm_eval_unaryop(operand1, UnaryOp.plus));
+    #assert (eval_unaryop(operand1, UnaryOp.neg) == rtm_eval_unaryop(operand1, UnaryOp.neg));
+    float operand2 = 1.000000f;
+    #assert (eval_unaryop(operand2, UnaryOp.plus) == rtm_eval_unaryop(operand2, UnaryOp.plus));
+    #assert (eval_unaryop(operand2, UnaryOp.neg) == rtm_eval_unaryop(operand2, UnaryOp.neg));
+    float operand3 = 2.000000f;
+    #assert (eval_unaryop(operand3, UnaryOp.plus) == rtm_eval_unaryop(operand3, UnaryOp.plus));
+    #assert (eval_unaryop(operand3, UnaryOp.neg) == rtm_eval_unaryop(operand3, UnaryOp.neg));
+    float operand4 = 2147483648.000000f;
+    #assert (eval_unaryop(operand4, UnaryOp.plus) == rtm_eval_unaryop(operand4, UnaryOp.plus));
+    #assert (eval_unaryop(operand4, UnaryOp.neg) == rtm_eval_unaryop(operand4, UnaryOp.neg));
+    float operand5 = -1.000000f;
+    #assert (eval_unaryop(operand5, UnaryOp.plus) == rtm_eval_unaryop(operand5, UnaryOp.plus));
+    #assert (eval_unaryop(operand5, UnaryOp.neg) == rtm_eval_unaryop(operand5, UnaryOp.neg));
+    float operand6 = -2.000000f;
+    #assert (eval_unaryop(operand6, UnaryOp.plus) == rtm_eval_unaryop(operand6, UnaryOp.plus));
+    #assert (eval_unaryop(operand6, UnaryOp.neg) == rtm_eval_unaryop(operand6, UnaryOp.neg));
+    float operand7 = -2147483648.000000f;
+    #assert (eval_unaryop(operand7, UnaryOp.plus) == rtm_eval_unaryop(operand7, UnaryOp.plus));
+    #assert (eval_unaryop(operand7, UnaryOp.neg) == rtm_eval_unaryop(operand7, UnaryOp.neg));
+    float operand8 = 9223372036854775808.000000f;
+    #assert (eval_unaryop(operand8, UnaryOp.plus) == rtm_eval_unaryop(operand8, UnaryOp.plus));
+    #assert (eval_unaryop(operand8, UnaryOp.neg) == rtm_eval_unaryop(operand8, UnaryOp.neg));
+    float operand9 = -9223372036854775808.000000f;
+    #assert (eval_unaryop(operand9, UnaryOp.plus) == rtm_eval_unaryop(operand9, UnaryOp.plus));
+    #assert (eval_unaryop(operand9, UnaryOp.neg) == rtm_eval_unaryop(operand9, UnaryOp.neg));
+}

@@ -148,6 +148,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cmrtmasm.cppm" />
+    <ClCompile Include="error.cpp" />
+    <ClCompile Include="error.cppm" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.cppm" />
     <ClCompile Include="memory.cpp" />

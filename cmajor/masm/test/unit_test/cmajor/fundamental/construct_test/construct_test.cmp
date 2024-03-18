@@ -1,0 +1,4 @@
+project construct_test;
+target=program;
+source <construct_test.cm>;
+source <main.cm>;

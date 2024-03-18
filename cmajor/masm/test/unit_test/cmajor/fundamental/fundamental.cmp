@@ -9,3 +9,6 @@ source <int.cm>;
 source <uint.cm>;
 source <long.cm>;
 source <ulong.cm>;
+source <float.cm>;
+source <double.cm>;
+source <construct.cm>;

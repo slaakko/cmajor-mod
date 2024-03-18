@@ -388,7 +388,8 @@ void JsonAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* 
     }
 }
 
-void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::MemberFunctionSymbol* jsonCreatorFunctionSymbol, StatementBinder* statementBinder)
+void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
+    cmajor::symbols::MemberFunctionSymbol* jsonCreatorFunctionSymbol, StatementBinder* statementBinder)
 {
     try
     {
@@ -406,6 +407,7 @@ void JsonAttributeProcessor::GenerateJsonCreatorImplementation(cmajor::ast::Attr
         newNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"@value"));
         cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, newNode);
         compoundStatementNode.AddStatement(returnStatementNode);
+        std::lock_guard<std::recursive_mutex> lock(statementBinder->GetBoundCompileUnit().GetModule().GetLock());
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(jsonCreatorFunctionSymbol);
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -499,6 +501,7 @@ void JsonAttributeProcessor::GenerateJsonConstructorImplementation(cmajor::ast::
             cmajor::ast::ExpressionStatementNode* fromJsonStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), invokeNode);
             compoundStatementNode.AddStatement(fromJsonStatement);
         }
+        std::lock_guard<std::recursive_mutex> lock(statementBinder->GetBoundCompileUnit().GetModule().GetLock());
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(jsonConstructorSymbol);
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -601,6 +604,7 @@ void JsonAttributeProcessor::GenerateToJsonJsonObjectImplementation(cmajor::ast:
             cmajor::ast::ExpressionStatementNode* addFieldStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), addFieldInvokeNode);
             compoundStatementNode.AddStatement(addFieldStatement);
         }
+        std::lock_guard<std::recursive_mutex> lock(statementBinder->GetBoundCompileUnit().GetModule().GetLock());
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(toJsonJsonObjectMemberFunctionSymbol);
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -666,6 +670,7 @@ void JsonAttributeProcessor::GenerateToJsonImplementation(cmajor::ast::Attribute
             new cmajor::ast::IdentifierNode(span, U"Release"))));
         cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(span, invokeJsonValue);
         compoundStatementNode.AddStatement(returnStatement);
+        std::lock_guard<std::recursive_mutex> lock(statementBinder->GetBoundCompileUnit().GetModule().GetLock());
         cmajor::symbols::SymbolTable& symbolTable = statementBinder->GetBoundCompileUnit().GetSymbolTable();
         symbolTable.BeginContainer(toJsonMemberFunctionSymbol);
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);

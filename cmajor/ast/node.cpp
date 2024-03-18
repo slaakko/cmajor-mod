@@ -88,10 +88,6 @@ Node::~Node()
 void Node::SetParent(Node* parent_)
 {
     parent = parent_;
-    if (parent == this)
-    {
-        int x = 0;
-    }
 }
 
 const util::uuid& Node::ModuleId() const

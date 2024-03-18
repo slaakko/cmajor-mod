@@ -1,0 +1,4 @@
+project double_unaryop_test;
+target=program;
+source <double_unaryop_test.cm>;
+source <main.cm>;

@@ -56,6 +56,7 @@ public:
     OpCode GetOpCode() const { return opCode; }
     const std::vector<Value*>& Operands() const { return operands; }
     void Write(util::CodeFormatter& formatter);
+    int Length() const;
 private:
     std::string label;
     bool nocolon;

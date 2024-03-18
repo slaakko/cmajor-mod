@@ -12,5 +12,6 @@ export {
 extern "C" void RtmPrintInteger(int64_t x);
 extern "C" void RtmPrintFloat(float x);
 extern "C" void RtmPrintDouble(double x);
+extern "C" void RtmPrintString(const char* s);
 
 }

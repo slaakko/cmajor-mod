@@ -1,0 +1,3 @@
+project construct;
+source <construct.cm>;
+source <main.cm>;

@@ -737,7 +737,8 @@ void FunctionSymbol::ComputeMangledName()
     {
         constraintString = " " + Constraint()->ToString();
     }
-    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentString + constraintString)));
+    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
+        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentString + constraintString + compileUnitId)));
     SetMangledName(mangledName);
 }
 
@@ -1591,6 +1592,11 @@ std::string FunctionSymbol::GetSymbolHelp() const
     }
     help.append(util::ToUtf8(FullName(true)));
     return help;
+}
+
+void FunctionSymbol::SetCompileUnitId(const std::string& compileUnitId_)
+{
+    compileUnitId = compileUnitId_;
 }
 
 StaticConstructorSymbol::StaticConstructorSymbol(const soul::ast::Span& span_, const std::u32string& name_) :

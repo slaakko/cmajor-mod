@@ -256,6 +256,7 @@ public:
     void SetInstalled() { SetFlag(SymbolFlags::installed); }
     void ResetInstalled() { ResetFlag(SymbolFlags::installed); }
     bool IsInstalled() const { return GetFlag(SymbolFlags::installed); }
+    bool IsDestructorSymbol() const { return symbolType == SymbolType::destructorSymbol; }
 private:
     SymbolType symbolType;
     soul::ast::Span span;

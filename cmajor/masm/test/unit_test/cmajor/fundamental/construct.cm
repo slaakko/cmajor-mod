@@ -1,0 +1,44 @@
+using System;
+
+unit_test void construct_test()
+{
+    long x0 = 0;
+    long* px0 = &x0;
+    construct<long>(px0, 1);
+    #assert(x0 == 1);
+
+    ulong x1 = 0u;
+    ulong* px1 = &x1;
+    construct<ulong>(px1, 1u);
+    #assert(x1 == 1u);
+
+    int x2 = 0;
+    int* px2 = &x2;
+    construct<int>(px2, 1);
+    #assert(x2 == 1);
+
+    uint x3 = 0u;
+    uint* px3 = &x3;
+    construct<uint>(px3, 1u);
+    #assert(x3 == 1u);
+
+    short x4 = 0;
+    short* px4 = &x4;
+    construct<short>(px4, 1);
+    #assert(x4 == 1);
+
+    ushort x5 = 0u;
+    ushort* px5 = &x5;
+    construct<ushort>(px5, 1u);
+    #assert(x5 == 1u);
+
+    sbyte x6 = 0;
+    sbyte* px6 = &x6;
+    construct<sbyte>(px6, 1);
+    #assert(x6 == 1);
+
+    byte x7 = 0u;
+    byte* px7 = &x7;
+    construct<byte>(px7, 1u);
+    #assert(x7 == 1u);
+}

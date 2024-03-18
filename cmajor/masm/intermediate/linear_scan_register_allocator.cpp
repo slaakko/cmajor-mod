@@ -299,11 +299,11 @@ int LinearScanRegisterAllocator::LastActiveLocalRegGroup() const
     return lastActiveLocalRegGroup;
 }
 
-RegisterAllocationAction LinearScanRegisterAllocator::Run(Instruction* inst, int argIndex)
+RegisterAllocationAction LinearScanRegisterAllocator::Run(Instruction* inst)
 {
     LiveRange liveRange = GetLiveRange(inst);
     ExpireOldRanges(liveRange);
-    if ((argIndex == -1 || argIndex > 3) && inst->RequiresLocalRegister())
+    if (inst->RequiresLocalRegister())
     {
         if (NoFreeRegs(inst->IsFloatingPointInstruction()))
         {

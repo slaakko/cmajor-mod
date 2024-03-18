@@ -1,0 +1,3 @@
+project list;
+source <list.cm>;
+source <main.cm>;

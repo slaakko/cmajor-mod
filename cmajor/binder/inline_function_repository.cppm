@@ -24,6 +24,8 @@ public:
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_map<cmajor::symbols::FunctionSymbol*, cmajor::symbols::FunctionSymbol*> inlineFunctionMap;
+    std::map<cmajor::symbols::FunctionSymbol*, cmajor::symbols::FunctionSymbol*> copyMap;
+    cmajor::symbols::FunctionSymbol* GetCopy(cmajor::symbols::FunctionSymbol* master) const;
 };
 
 } // namespace cmajor::binder

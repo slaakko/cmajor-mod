@@ -98,6 +98,35 @@ void Instruction::Write(util::CodeFormatter& formatter)
     }
 }
 
+int Instruction::Length() const
+{
+    int length = 0;
+    if (!label.empty())
+    {
+        std::string c = ":";
+        length = util::Format(label + c, 8, util::FormatWidth::min, util::FormatJustify::left).length();
+    }
+    else
+    {
+        length += 8;
+    }
+    length += util::Format(OpCodeStr(opCode), 16).length();
+    bool first = true;
+    for (auto& operand : operands)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            length += 2;
+        }
+        length += operand->Length();
+    }
+    return length;
+}
+
 Instruction* MakeInst(OpCode opCode, Value* operand)
 {
     Instruction* inst = new Instruction(opCode);

@@ -1385,8 +1385,8 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                         int index = bestFun->GetIndex();
                         bestFun = specialization->GetFunctionByIndex(index);
                     }
-                    bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
-                    if (!firstTry)
+                    bestFun = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
+                    if (!bestFun)
                     {
                         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(bestFun->Parent());
                         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
@@ -1395,8 +1395,8 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                             copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);
                         int index = bestFun->GetIndex();
                         bestFun = copy->GetFunctionByIndex(index);
-                        bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
-                        if (!secondTry)
+                        bestFun = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
+                        if (!bestFun)
                         {
                             throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" +
                                 util::ToUtf8(specialization->FullName()) + "'", node->GetFullSpan(), specialization->GetFullSpan());
@@ -1513,16 +1513,16 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                     int index = singleBest->GetIndex();
                     singleBest = specialization->GetFunctionByIndex(index);
                 }
-                bool firstTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
-                if (!firstTry)
+                singleBest = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
+                if (!singleBest)
                 {
                     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
                     cmajor::symbols::ClassTemplateSpecializationSymbol* copy = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(specialization);
                     boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);
                     int index = singleBest->GetIndex();
                     singleBest = copy->GetFunctionByIndex(index);
-                    bool secondTry = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
-                    if (!secondTry)
+                    singleBest = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
+                    if (!singleBest)
                     {
                         throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" +
                             util::ToUtf8(specialization->FullName()) + "'", node->GetFullSpan(), specialization->GetFullSpan());
@@ -1584,8 +1584,8 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
     }
 }
 
-void CollectViableFunctionsFromSymbolTable(int arity, const std::u32string& groupName, const std::vector<FunctionScopeLookup>& functionScopeLookups, BoundCompileUnit& boundCompileUnit,
-    cmajor::symbols::ViableFunctionSet& viableFunctions)
+void CollectViableFunctionsFromSymbolTable(int arity, const std::u32string& groupName, const std::vector<FunctionScopeLookup>& functionScopeLookups, 
+    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ViableFunctionSet& viableFunctions)
 {
     std::unordered_set<cmajor::symbols::ContainerScope*> scopesLookedUp;
     bool fileScopesLookedUp = false;
@@ -1607,7 +1607,8 @@ void CollectViableFunctionsFromSymbolTable(int arity, const std::u32string& grou
     }
 }
 
-std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, const std::vector<FunctionScopeLookup>& functionScopeLookups,
+std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, 
+    const std::vector<FunctionScopeLookup>& functionScopeLookups,
     std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     std::unique_ptr<cmajor::symbols::Exception> exception;
@@ -1616,7 +1617,8 @@ std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupNa
         OverloadResolutionFlags::none, templateArgumentTypes, exception);
 }
 
-std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, const std::vector<FunctionScopeLookup>& functionScopeLookups,
+std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupName, cmajor::symbols::ContainerScope* containerScope, 
+    const std::vector<FunctionScopeLookup>& functionScopeLookups,
     std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundCompileUnit& boundCompileUnit, BoundFunction* currentFunction, cmajor::ast::Node* node,
     OverloadResolutionFlags flags, std::vector<cmajor::symbols::TypeSymbol*>& templateArgumentTypes, std::unique_ptr<cmajor::symbols::Exception>& exception)
 {

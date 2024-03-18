@@ -5,6 +5,7 @@
 
 export module cmajor.masm.intermediate.data;
 
+import cmajor.masm.assembly;
 import cmajor.masm.intermediate.types;
 import soul.ast.span;
 import std.core;
@@ -54,6 +55,7 @@ public:
     BoolValue(bool value_, Type* type_);
     bool GetValue() const { return value; }
     void Accept(Visitor& visitor) override;
+    int64_t ToInteger() const { return value ? 1 : 0; }
 private:
     bool value;
 };

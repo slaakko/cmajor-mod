@@ -305,6 +305,8 @@ public:
     std::string GetSymbolCategoryStr() const override { return "FN"; }
     std::string GetSymbolCategoryDescription() const override { return "function"; }
     std::string GetSymbolHelp() const override;
+    void SetCompileUnitId(const std::string& compileUnitId_);
+    const std::string& CompileUnitId() const { return compileUnitId; }
 private:
     FunctionSymbol* functionTemplate;
     FunctionSymbol* master;
@@ -331,6 +333,7 @@ private:
     bool isProgramMain;
     TypeSymbol* conversionSourceType;
     TypeSymbol* conversionTargetType;
+    std::string compileUnitId;
 };
 
 class StaticConstructorSymbol : public FunctionSymbol

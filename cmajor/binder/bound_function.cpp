@@ -65,8 +65,9 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
         }
         else if (destructorSymbol->Parent()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
         {
-            bool firstTry = GetBoundCompileUnit()->GetClassTemplateRepository().Instantiate(destructorSymbol, currentContainerScope, currentFunction, node);
-            if (!firstTry)
+            destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(
+                GetBoundCompileUnit()->GetClassTemplateRepository().Instantiate(destructorSymbol, currentContainerScope, currentFunction, node));
+            if (!destructorSymbol)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(destructorSymbol->Parent());
                 std::lock_guard<std::recursive_mutex> lock(GetBoundCompileUnit()->GetModule().GetLock());
@@ -74,11 +75,11 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                 GetBoundCompileUnit()->GetClassTemplateRepository().BindClassTemplateSpecialization(copy, currentContainerScope, node);
                 int index = destructorSymbol->GetIndex();
                 cmajor::symbols::FunctionSymbol* functionSymbol = copy->GetFunctionByIndex(index);
-                bool secondTry = GetBoundCompileUnit()->InstantiateClassTemplateMemberFunction(functionSymbol, currentContainerScope, currentFunction, node);
-                if (!secondTry)
+                functionSymbol = GetBoundCompileUnit()->InstantiateClassTemplateMemberFunction(functionSymbol, currentContainerScope, currentFunction, node);
+                if (!functionSymbol)
                 {
-                    throw cmajor::symbols::Exception("internal error: could not instantiate destructor of a class template specialization '" + util::ToUtf8(specialization->FullName()) + "'",
-                        specialization->GetFullSpan());
+                    throw cmajor::symbols::Exception("internal error: could not instantiate destructor of a class template specialization '" + 
+                        util::ToUtf8(specialization->FullName()) + "'", specialization->GetFullSpan());
                 }
             }
         }

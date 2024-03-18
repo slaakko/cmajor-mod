@@ -1,0 +1,4 @@
+project float_unaryop_test;
+target=program;
+source <float_unaryop_test.cm>;
+source <main.cm>;

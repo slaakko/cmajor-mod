@@ -29,16 +29,18 @@ public:
         cmajor::symbols::ContainerScope* containerScope, cmajor::ast::Node* node);
     void BindClassTemplateSpecialization(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
         cmajor::ast::Node* node);
-    bool Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
-        cmajor::ast::Node* node);
+    cmajor::symbols::FunctionSymbol* Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
+        BoundFunction* currentFunction, cmajor::ast::Node* node);
     void InstantiateAll(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
         BoundFunction* currentFunction, cmajor::ast::Node* node);
 private:
     BoundCompileUnit& boundCompileUnit;
     std::unordered_set<cmajor::symbols::FunctionSymbol*> instantiatedMemberFunctions;
     std::unordered_set<std::pair<util::uuid, int>, ClassIdMemberFunctionIndexHash> classIdMemberFunctionIndexSet;
+    std::map<cmajor::symbols::FunctionSymbol*, cmajor::symbols::FunctionSymbol*> copyMap;
     bool InstantiateDestructorAndVirtualFunctions(cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization, cmajor::symbols::ContainerScope* containerScope, 
         BoundFunction* currentFunction, cmajor::ast::Node* node);
+    cmajor::symbols::FunctionSymbol* GetCopy(cmajor::symbols::FunctionSymbol* master) const;
 };
 
 } // namespace cmajor::binder

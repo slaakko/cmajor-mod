@@ -685,8 +685,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                 int index = conversion->GetIndex();
                 conversion = specialization->GetFunctionByIndex(index);
             }
-            bool firstTry = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
-            if (!firstTry)
+            conversion = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
+            if (!conversion)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(conversion->Parent());
                 std::lock_guard<std::recursive_mutex> lock(symbolTable.GetModule()->GetLock());
@@ -694,8 +694,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                 classTemplateRepository.BindClassTemplateSpecialization(copy, symbolTable.GlobalNs().GetContainerScope(), node);
                 int index = conversion->GetIndex();
                 conversion = copy->GetFunctionByIndex(index);
-                bool secondTry = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
-                if (!secondTry)
+                conversion = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
+                if (!conversion)
                 {
                     throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" + 
                         util::ToUtf8(specialization->FullName()) + "'", specialization->GetFullSpan());
@@ -723,8 +723,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::InstantiateFunctionTemplate(c
     return functionTemplateRepository.Instantiate(functionTemplate, templateParameterMapping, node);
 }
 
-bool BoundCompileUnit::InstantiateClassTemplateMemberFunction(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
-    BoundFunction* currentFunction, cmajor::ast::Node* node)
+cmajor::symbols::FunctionSymbol* BoundCompileUnit::InstantiateClassTemplateMemberFunction(
+    cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     return classTemplateRepository.Instantiate(memberFunction, containerScope, currentFunction, node);
 }

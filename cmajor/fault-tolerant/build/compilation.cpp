@@ -116,10 +116,6 @@ void Compilation::Read()
 
 std::vector<cmajor::fault::tolerant::symbols::TokenInfo> Compilation::GetTokenInfo(const std::string& sourceFilePath) 
 {
-    if (sourceFilePath == "C:/work/cmajor-mod/cmajor/system/System.Base/Algorithm.cm")
-    {
-        int x = 0;
-    }
     cmajor::fault::tolerant::ast::CompileUnitNode* compileUnit = project->GetCompileUnit(sourceFilePath);
     if (compileUnit)
     {

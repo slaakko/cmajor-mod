@@ -25,6 +25,8 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     const soul::ast::Span& Span() const;
     void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction);
+    void EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmajor::masm::assembly::OpCode dataOpCode);
+    void Visit(GlobalVariable& globalVariable) override;
     void Visit(Function& function) override;
     void Visit(BasicBlock& basicBlock) override;
     void Visit(RetInstruction& inst) override;
@@ -63,6 +65,26 @@ public:
     void Visit(NegInstruction& inst) override;
     void Visit(NoOperationInstruction& inst) override;
     void Visit(SwitchInstruction& inst) override;
+    void Visit(BoolValue& value) override;
+    void Visit(SByteValue& value) override;
+    void Visit(ByteValue& value) override;
+    void Visit(ShortValue& value) override;
+    void Visit(UShortValue& value) override;
+    void Visit(IntValue& value) override;
+    void Visit(UIntValue& value) override;
+    void Visit(LongValue& value) override;
+    void Visit(ULongValue& value) override;
+    void Visit(FloatValue& value) override;
+    void Visit(DoubleValue& value) override;
+    void Visit(NullValue& value) override;
+    void Visit(AddressValue& value) override;
+    void Visit(ArrayValue& value) override;
+    void Visit(StructureValue& value) override;
+    void Visit(StringValue& value) override;
+    void Visit(StringArrayValue& value) override;
+    void Visit(ConversionValue& value) override;
+    void Visit(ClsIdValue& value) override;
+    void Visit(SymbolValue& value) override;
     void Error(const std::string& message);
     void WriteOutputFile();
 private:
@@ -74,6 +96,10 @@ private:
     RegisterAllocator* registerAllocator;
     std::vector<ArgInstruction*> args;
     bool leader;
+    cmajor::masm::assembly::Data* data;
+    std::string label;
+    cmajor::masm::assembly::Instruction* dataInstruction;
+    cmajor::masm::assembly::OpCode prevDataOpCode;
 };
 
 } // cmajor::masm::intermediate

@@ -1,0 +1,6 @@
+using System;
+
+void panic()
+{
+    RtmPanic("panic");
+}

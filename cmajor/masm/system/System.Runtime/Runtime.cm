@@ -10,6 +10,7 @@ public extern cdecl nothrow void RtmMemFree(void* ptr);
 public extern cdecl nothrow void RtmPrintInteger(long x);
 public extern cdecl nothrow void RtmPrintFloat(float x);
 public extern cdecl nothrow void RtmPrintDouble(double x);
+public extern cdecl nothrow void RtmPrintString(const char* s);
 public extern cdecl nothrow void RtmBeginUnitTest(int numAssertions, const char* unitTestFilePath);
 public extern cdecl nothrow void RtmEndUnitTest(const char* testName, int exitCode);
 public extern cdecl nothrow void RtmSetUnitTestAssertionResult(int assertionIndex, bool assertionResult, int line);
@@ -19,3 +20,5 @@ public extern cdecl nothrow float RtmEvaluateFloatUnaryOp(float operand, int ope
 public extern cdecl nothrow float RtmEvaluateFloatBinaryOp(float left, float right, int operation);
 public extern cdecl nothrow double RtmEvaluateDoubleUnaryOp(double operand, int operation);
 public extern cdecl nothrow double RtmEvaluateDoubleBinaryOp(double left, double right, int operation);
+public extern cdecl nothrow void RtmPanic(const char* message);
+public extern cdecl nothrow void RtmFailAssertion(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);

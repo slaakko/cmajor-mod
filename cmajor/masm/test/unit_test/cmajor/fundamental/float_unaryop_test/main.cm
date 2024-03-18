@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    float_unaryop_test();
+    return 0;
+}

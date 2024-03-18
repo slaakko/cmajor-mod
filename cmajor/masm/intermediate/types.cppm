@@ -87,6 +87,7 @@ public:
     virtual void Accept(Visitor& visitor) {}
     virtual int64_t Size() const = 0;
     virtual int64_t Alignment() const = 0;
+    virtual cmajor::masm::assembly::OpCode DataOpCode() const { return cmajor::masm::assembly::OpCode::DB; }
     TypeKind Kind() const { return kind; }
     bool IsFundamentalType() const { return kind == TypeKind::fundamentalType; }
     bool IsVoidType() const { return id == voidTypeId; }
@@ -162,6 +163,7 @@ public:
     std::string Name() const override { return "short"; }
     int64_t Size() const override { return 2; }
     int64_t Alignment() const override { return 2; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DW; }
 };
 
 class UShortType : public Type
@@ -171,6 +173,7 @@ public:
     std::string Name() const override { return "ushort"; }
     int64_t Size() const override { return 2; }
     int64_t Alignment() const override { return 2; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DW; }
 };
 
 class IntType : public Type
@@ -180,6 +183,7 @@ public:
     std::string Name() const override { return "int"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DD; }
 };
 
 class UIntType : public Type
@@ -189,6 +193,7 @@ public:
     std::string Name() const override { return "uint"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DD; }
 };
 
 class LongType : public Type
@@ -198,6 +203,7 @@ public:
     std::string Name() const override { return "long"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DQ; }
 };
 
 class ULongType : public Type
@@ -207,6 +213,7 @@ public:
     std::string Name() const override { return "ulong"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::DQ; }
 };
 
 class FloatType : public Type
@@ -216,6 +223,7 @@ public:
     std::string Name() const override { return "float"; }
     int64_t Size() const override { return 4; }
     int64_t Alignment() const override { return 4; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::REAL4; }
 };
 
 class DoubleType : public Type
@@ -225,6 +233,7 @@ public:
     std::string Name() const override { return "double"; }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
+    cmajor::masm::assembly::OpCode DataOpCode() const override { return cmajor::masm::assembly::OpCode::REAL8; }
 };
 
 class TypeRef

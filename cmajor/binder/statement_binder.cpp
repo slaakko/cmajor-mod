@@ -740,6 +740,7 @@ void StatementBinder::Visit(cmajor::ast::CompoundStatementNode& compoundStatemen
                     new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"System.Runtime.FunctionProfiler"),
                     new cmajor::ast::IdentifierNode(compoundStatementNode.GetSpan(), U"@functionProfiler"));
                 constructFunctionProfiler.AddArgument(new cmajor::ast::UuidLiteralNode(compoundStatementNode.GetSpan(), functionId));
+                std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
                 symbolTable.SetCurrentFunctionSymbol(currentFunction->GetFunctionSymbol());
                 symbolTable.BeginContainer(containerScope->Container());
                 cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -1570,6 +1571,7 @@ void StatementBinder::Visit(cmajor::ast::RangeForStatementNode& rangeForStatemen
     cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(span, constructIteratorStatement, itNotEndCond, incrementItStatement, actionStatement);
     compoundStatementNode->AddStatement(forStatement);
 
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.BeginContainer(containerScope->Container());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
     compoundStatementNode->Accept(symbolCreatorVisitor);
@@ -1913,6 +1915,7 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
         handlerBlock.AddStatement(setExceptionVar);
     }
     handlerBlock.AddStatement(static_cast<cmajor::ast::StatementNode*>(catchNode.CatchBlock()->Clone(cloneContext)));
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.BeginContainer(containerScope->Container());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
     handlerBlock.Accept(symbolCreatorVisitor);
@@ -1968,6 +1971,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         invokeSetUnitTestAssertionResult->AddArgument(assertStatementNode.AssertExpr()->Clone(cloneContext));
         invokeSetUnitTestAssertionResult->AddArgument(new cmajor::ast::IntLiteralNode(assertStatementNode.GetSpan(), assertionLineNumber));
         cmajor::ast::ExpressionStatementNode setUnitTestAssertionResult(assertStatementNode.GetSpan(), invokeSetUnitTestAssertionResult);
+        std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
         symbolTable.BeginContainer(containerScope->Container());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
         setUnitTestAssertionResult.Accept(symbolCreatorVisitor);
@@ -1993,13 +1997,18 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, symbolTable.GlobalNs().GetContainerScope()));
             std::vector<std::unique_ptr<BoundExpression>> arguments;
             cmajor::symbols::TypeSymbol* constCharPtrType = symbolTable.GetTypeByName(U"char")->AddConst()->AddPointer();
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
+                new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
                 boundCompileUnit.Install(assertStatementNode.AssertExpr()->ToString()), assertStatementNode.AssertExpr()->ToString())), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
-                boundCompileUnit.Install(util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName())), util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName()))), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
+                new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
+                boundCompileUnit.Install(util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName())), 
+                    util::ToUtf8(currentFunction->GetFunctionSymbol()->FullName()))), constCharPtrType)));
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
+                new cmajor::symbols::StringValue(assertStatementNode.GetSpan(),
                 boundCompileUnit.Install(sourceFilePath), sourceFilePath)), constCharPtrType)));
-            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::IntValue(assertStatementNode.GetSpan(),
+            arguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(
+                new cmajor::symbols::IntValue(assertStatementNode.GetSpan(),
                 lineNumber)), symbolTable.GetTypeByName(U"int"))));
             std::unique_ptr<BoundExpression> assertExpression = BindExpression(assertStatementNode.AssertExpr(), boundCompileUnit, currentFunction, containerScope, this);
             const char32_t* failAssertionFunctionName = U"";
@@ -2013,7 +2022,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             }
             else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
             {
-                // todo
+                failAssertionFunctionName = U"RtmFailAssertion";
             }
             std::unique_ptr<BoundStatement> emptyStatement(new BoundEmptyStatement(assertStatementNode.GetSpan()));
             emptyStatement->SetIgnoreNode();

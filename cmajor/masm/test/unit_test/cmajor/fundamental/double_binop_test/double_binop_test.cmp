@@ -1,0 +1,4 @@
+project double_binop_test;
+target=program;
+source <double_binop_test.cm>;
+source <main.cm>;

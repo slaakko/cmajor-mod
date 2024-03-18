@@ -12,6 +12,7 @@ export namespace cmajor::masm::ir {
 class Type;
 class PtrType;
 class Context;
+class GlobalVariable;
 
 class Value
 {

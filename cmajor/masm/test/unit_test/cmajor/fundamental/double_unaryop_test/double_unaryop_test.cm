@@ -1,0 +1,84 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+double ret(double x)
+{
+    return x;
+}
+
+double eval_unaryop(double operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<double>(+operand);
+        case UnaryOp.neg: return cast<double>(-operand);
+    }
+    return 0.000000;
+}
+
+double rtm_eval_unaryop(double operand, UnaryOp op)
+{
+    return cast<double>(RtmEvaluateDoubleUnaryOp(cast<double>(operand), cast<int>(op)));
+}
+
+double eval_binop(double left, double right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<double>(left + right);
+        case BinOp.sub: return cast<double>(left - right);
+        case BinOp.mul: return cast<double>(left * right);
+        case BinOp.div: return cast<double>(left / right);
+    }
+    return 0.000000;
+}
+
+double rtm_eval_binop(double left, double right, BinOp op)
+{
+    return cast<double>(RtmEvaluateDoubleBinaryOp(cast<double>(left), cast<double>(right), cast<int>(op)));
+}
+
+unit_test void double_unaryop_test()
+{
+    double operand1 = 0.000000;
+    #assert (eval_unaryop(operand1, UnaryOp.plus) == rtm_eval_unaryop(operand1, UnaryOp.plus));
+    #assert (eval_unaryop(operand1, UnaryOp.neg) == rtm_eval_unaryop(operand1, UnaryOp.neg));
+    double operand2 = 1.000000;
+    #assert (eval_unaryop(operand2, UnaryOp.plus) == rtm_eval_unaryop(operand2, UnaryOp.plus));
+    #assert (eval_unaryop(operand2, UnaryOp.neg) == rtm_eval_unaryop(operand2, UnaryOp.neg));
+    double operand3 = 2.000000;
+    #assert (eval_unaryop(operand3, UnaryOp.plus) == rtm_eval_unaryop(operand3, UnaryOp.plus));
+    #assert (eval_unaryop(operand3, UnaryOp.neg) == rtm_eval_unaryop(operand3, UnaryOp.neg));
+    double operand4 = 2147483647.000000;
+    #assert (eval_unaryop(operand4, UnaryOp.plus) == rtm_eval_unaryop(operand4, UnaryOp.plus));
+    #assert (eval_unaryop(operand4, UnaryOp.neg) == rtm_eval_unaryop(operand4, UnaryOp.neg));
+    double operand5 = -1.000000;
+    #assert (eval_unaryop(operand5, UnaryOp.plus) == rtm_eval_unaryop(operand5, UnaryOp.plus));
+    #assert (eval_unaryop(operand5, UnaryOp.neg) == rtm_eval_unaryop(operand5, UnaryOp.neg));
+    double operand6 = -2.000000;
+    #assert (eval_unaryop(operand6, UnaryOp.plus) == rtm_eval_unaryop(operand6, UnaryOp.plus));
+    #assert (eval_unaryop(operand6, UnaryOp.neg) == rtm_eval_unaryop(operand6, UnaryOp.neg));
+    double operand7 = -2147483647.000000;
+    #assert (eval_unaryop(operand7, UnaryOp.plus) == rtm_eval_unaryop(operand7, UnaryOp.plus));
+    #assert (eval_unaryop(operand7, UnaryOp.neg) == rtm_eval_unaryop(operand7, UnaryOp.neg));
+    double operand8 = 9223372036854775808.000000;
+    #assert (eval_unaryop(operand8, UnaryOp.plus) == rtm_eval_unaryop(operand8, UnaryOp.plus));
+    #assert (eval_unaryop(operand8, UnaryOp.neg) == rtm_eval_unaryop(operand8, UnaryOp.neg));
+    double operand9 = -9223372036854775808.000000;
+    #assert (eval_unaryop(operand9, UnaryOp.plus) == rtm_eval_unaryop(operand9, UnaryOp.plus));
+    #assert (eval_unaryop(operand9, UnaryOp.neg) == rtm_eval_unaryop(operand9, UnaryOp.neg));
+}

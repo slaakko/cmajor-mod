@@ -71,7 +71,7 @@ public:
     LiveRange GetLiveRange(Instruction* inst) const;
     Frame& GetFrame() override { return frame; }
     const std::vector<Instruction*>& GetInstructions(const LiveRange& range) const;
-    RegisterAllocationAction Run(Instruction* inst, int argIndex) override;
+    RegisterAllocationAction Run(Instruction* inst) override;
     Locations GetLocations(Instruction* inst) const override;
     virtual void AddRegisterLocation(Instruction* inst, cmajor::masm::assembly::RegisterGroup* regGroup) override;
     int LastActiveLocalRegGroup() const override;

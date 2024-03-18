@@ -192,6 +192,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         }
         classTemplateSpecialization->AddMember(boundTemplateParameter);
     }
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, currentNs->FileIndex(), currentNs->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -235,10 +236,13 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     }
 }
 
-bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction, 
+cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, BoundFunction* currentFunction,
     cmajor::ast::Node* node)
 {
-    if (instantiatedMemberFunctions.find(memberFunction) != instantiatedMemberFunctions.cend()) return true;
+    if (instantiatedMemberFunctions.find(memberFunction) != instantiatedMemberFunctions.cend())
+    {
+        return GetCopy(memberFunction);
+    }
     instantiatedMemberFunctions.insert(memberFunction);
     try
     {
@@ -252,13 +256,13 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
 //          If <parent class id, member function index> pair is found from the classIdMemberFunctionIndexSet, the member function is already instantiated 
 //          for this compile unit, so return true.
             instantiatedMemberFunctions.insert(memberFunction);
-            return true;
+            return memberFunction;
         }
         Assert(classTemplateSpecialization->IsBound(), "class template specialization not bound"); 
         cmajor::ast::Node* memberFunctionNode = symbolTable.GetNodeNoThrow(memberFunction);
         if (!memberFunctionNode)
         {
-            return false;
+            return nullptr;
         }
         boundCompileUnit.FinalizeBinding(classTemplateSpecialization);
         cmajor::symbols::ClassTypeSymbol* classTemplate = classTemplateSpecialization->GetClassTemplate();
@@ -358,12 +362,25 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
         cmajor::symbols::FunctionSymbol* master = memberFunction;
         master->ResetImmutable();
-        memberFunction = master->Copy();
+        cmajor::symbols::FunctionSymbol* copy = master->Copy();
+        copyMap[master] = copy;
+        memberFunction = copy;
         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(memberFunction));
         master->SetImmutable();
         symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
         InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                memberFunction->SetCompileUnitId(compileUnitNode->Id());
+                memberFunction->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
+                memberFunction->ComputeMangledName();
+                boundCompileUnit.SetCanReuse(memberFunction);
+            }
+        }
         symbolTable.BeginContainer(memberFunction);
         symbolTable.MapNode(functionInstanceNode, memberFunction);
         functionInstanceNode->Body()->Accept(symbolCreatorVisitor);
@@ -412,7 +429,15 @@ bool ClassTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* membe
         classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);
         boundCompileUnit.AddBoundNode(std::move(boundClass));
         boundCompileUnit.RemoveLastFileScope();
-        return InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, node);
+        bool succeeded = InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, node);
+        if (succeeded)
+        {
+            return memberFunction;
+        }
+        else
+        {
+            return nullptr;
+        }
     }
     catch (const cmajor::symbols::Exception& ex)
     {
@@ -472,6 +497,19 @@ void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpeci
         references.insert(references.end(), ex.References().begin(), ex.References().end());
         throw cmajor::symbols::Exception("full instantiation request for class template specialization '" + util::ToUtf8(classTemplateSpecialization->FullName()) + 
             "' failed. Reason: " + ex.Message(), node->GetFullSpan(), references);
+    }
+}
+
+cmajor::symbols::FunctionSymbol* ClassTemplateRepository::GetCopy(cmajor::symbols::FunctionSymbol* master) const
+{
+    auto it = copyMap.find(master);
+    if (it != copyMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return master;
     }
 }
 

@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    double_value_test();
+    return 0;
+}

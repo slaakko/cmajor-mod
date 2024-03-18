@@ -1,0 +1,3 @@
+project panic;
+source <main.cm>;
+source <panic.cm>;

@@ -15,4 +15,9 @@ Value::~Value()
 {
 }
 
+void Value::SetName(const std::string& name_)
+{
+    name = name_;
+}
+
 } // cmajor::masm::assembly

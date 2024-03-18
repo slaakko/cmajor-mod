@@ -814,10 +814,6 @@ void TypeBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
     {
         throw cmajor::symbols::Exception("static class cannot contain instance variables", memberVariableNode.GetFullSpan(), parent->GetFullSpan());
     }
-    if (memberVariableNode.TypeExpr()->IsDotNode() && static_cast<cmajor::ast::DotNode*>(memberVariableNode.TypeExpr())->MemberId()->Str() == U"UnicodeEngine")
-    {
-        int x = 0;
-    }
     cmajor::symbols::TypeSymbol* memberVariableType = ResolveType(memberVariableNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
     memberVariableSymbol->SetType(memberVariableType);
     if (memberVariableType->IsClassTypeSymbol() && memberVariableType->IsProject() && !memberVariableType->IsBound() && !cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::info))

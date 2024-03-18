@@ -30,7 +30,7 @@ class RegisterAllocator
 public:
     RegisterAllocator();
     virtual ~RegisterAllocator();
-    virtual RegisterAllocationAction Run(Instruction* inst, int argIndex) = 0;
+    virtual RegisterAllocationAction Run(Instruction* inst) = 0;
     virtual const std::vector<SpillData>& GetSpillData() const = 0;
     virtual Locations GetLocations(Instruction* inst) const = 0;
     virtual cmajor::masm::assembly::RegisterGroup* GetRegisterGroup(Instruction* inst) const = 0;

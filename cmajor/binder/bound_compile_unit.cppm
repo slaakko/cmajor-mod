@@ -64,7 +64,7 @@ public:
     cmajor::symbols::FunctionSymbol* InstantiateFunctionTemplate(cmajor::symbols::FunctionSymbol* functionTemplate, 
         const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping, 
         cmajor::ast::Node* node);
-    bool InstantiateClassTemplateMemberFunction(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope, 
+    cmajor::symbols::FunctionSymbol* InstantiateClassTemplateMemberFunction(cmajor::symbols::FunctionSymbol* memberFunction, cmajor::symbols::ContainerScope* containerScope,
         BoundFunction* currentFunction, cmajor::ast::Node* node);
     cmajor::symbols::FunctionSymbol* InstantiateInlineFunction(cmajor::symbols::FunctionSymbol* inlineFunction, cmajor::symbols::ContainerScope* containerScope, 
         cmajor::ast::Node* node);

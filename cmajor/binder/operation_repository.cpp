@@ -1637,8 +1637,9 @@ ArrayCopyConstructorOperation::ArrayCopyConstructorOperation(BoundCompileUnit& b
 {
 }
 
-void ArrayCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::ContainerScope* containerScope, const std::vector<std::unique_ptr<BoundExpression>>& arguments, BoundFunction* currentFunction,
-    cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node, CollectFlags flags)
+void ArrayCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::ContainerScope* containerScope, const std::vector<std::unique_ptr<BoundExpression>>& arguments, 
+    BoundFunction* currentFunction, cmajor::symbols::ViableFunctionSet& viableFunctions, std::unique_ptr<cmajor::symbols::Exception>& exception, cmajor::ast::Node* node, 
+    CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     if (type->PointerCount() != 1 || !type->RemovePointer()->IsArrayType()) return;
@@ -2119,7 +2120,7 @@ void InterfaceMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::C
 class ClassDefaultConstructor : public cmajor::symbols::ConstructorSymbol
 {
 public:
-    ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_);
+    ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
@@ -2128,7 +2129,7 @@ private:
     cmajor::symbols::ClassTypeSymbol* classType;
 };
 
-ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_) :
+ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
     cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -2136,6 +2137,17 @@ ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbo
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"this");
     thisParam->SetType(classType->AddPointer());
     AddMember(thisParam);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        if (boundCompileUnit)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                SetCompileUnitId(compileUnitNode->Id());
+            }
+        }
+    }
     ComputeName();
 }
 
@@ -2180,7 +2192,7 @@ void ClassDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
     cmajor::symbols::FunctionSymbol* function = functionMap[classType->TypeId()];
     if (!function)
     {
-        std::unique_ptr<ClassDefaultConstructor> defaultConstructor(new ClassDefaultConstructor(classType));
+        std::unique_ptr<ClassDefaultConstructor> defaultConstructor(new ClassDefaultConstructor(classType, &GetBoundCompileUnit()));
         function = defaultConstructor.get();
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(classType);
@@ -2302,7 +2314,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
 class ClassCopyConstructor : public cmajor::symbols::ConstructorSymbol
 {
 public:
-    ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_);
+    ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
@@ -2311,7 +2323,7 @@ private:
     cmajor::symbols::ClassTypeSymbol* classType;
 };
 
-ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_) :
+ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
     cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -2322,6 +2334,17 @@ ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* cla
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
     thatParam->SetType(classType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        if (boundCompileUnit)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                SetCompileUnitId(compileUnitNode->Id());
+            }
+        }
+    }
     ComputeName();
 }
 
@@ -2396,7 +2419,7 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
         cmajor::symbols::FunctionSymbol* function = functionMap[classType->TypeId()];
         if (!function)
         {
-            std::unique_ptr<ClassCopyConstructor> copyConstructor(new ClassCopyConstructor(classType));
+            std::unique_ptr<ClassCopyConstructor> copyConstructor(new ClassCopyConstructor(classType, &GetBoundCompileUnit()));
             function = copyConstructor.get();
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
@@ -2535,7 +2558,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
 class ClassMoveConstructor : public cmajor::symbols::ConstructorSymbol
 {
 public:
-    ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_);
+    ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
@@ -2544,7 +2567,7 @@ private:
     cmajor::symbols::ClassTypeSymbol* classType;
 };
 
-ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_) :
+ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
     cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -2555,6 +2578,17 @@ ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* cla
     cmajor::symbols::ParameterSymbol* thatParam = new cmajor::symbols::ParameterSymbol(classType->GetSpan(), U"that");
     thatParam->SetType(classType->AddRvalueReference());
     AddMember(thatParam);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        if (boundCompileUnit)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                SetCompileUnitId(compileUnitNode->Id());
+            }
+        }
+    }
     ComputeName();
 }
 
@@ -2621,7 +2655,7 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
         cmajor::symbols::FunctionSymbol* function = functionMap[classType->TypeId()];
         if (!function)
         {
-            std::unique_ptr<ClassMoveConstructor> moveConstructor(new ClassMoveConstructor(classType));
+            std::unique_ptr<ClassMoveConstructor> moveConstructor(new ClassMoveConstructor(classType, &GetBoundCompileUnit()));
             function = moveConstructor.get();
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
@@ -2767,7 +2801,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
 class ClassCopyAssignment : public cmajor::symbols::MemberFunctionSymbol
 {
 public:
-    ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_);
+    ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
@@ -2776,7 +2810,7 @@ private:
     cmajor::symbols::ClassTypeSymbol* classType;
 };
 
-ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_) :
+ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit) :
     cmajor::symbols::MemberFunctionSymbol(classType_->GetSpan(), U"operator="), classType(classType_)
 {
     SetGroupName(U"operator=");
@@ -2789,6 +2823,17 @@ ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* class
     thatParam->SetType(classType->AddConst()->AddLvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType_);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        if (boundCompileUnit)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                SetCompileUnitId(compileUnitNode->Id());
+            }
+        }
+    }
     ComputeName();
 }
 
@@ -2853,7 +2898,8 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
         cmajor::symbols::FunctionSymbol* function = functionMap[classType->TypeId()];
         if (!function)
         {
-            std::unique_ptr<ClassCopyAssignment> copyAssignment(new ClassCopyAssignment(classType, GetBoundCompileUnit().GetSymbolTable().GetTypeByName(U"void")));
+            std::unique_ptr<ClassCopyAssignment> copyAssignment(new ClassCopyAssignment(classType, GetBoundCompileUnit().GetSymbolTable().GetTypeByName(U"void"),
+                &GetBoundCompileUnit()));
             function = copyAssignment.get();
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
@@ -2963,7 +3009,7 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
 class ClassMoveAssignment : public cmajor::symbols::MemberFunctionSymbol
 {
 public:
-    ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_);
+    ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
@@ -2972,7 +3018,7 @@ private:
     cmajor::symbols::ClassTypeSymbol* classType;
 };
 
-ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_) :
+ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit) :
     cmajor::symbols::MemberFunctionSymbol(classType_->GetSpan(), U"operator="), classType(classType_)
 {
     SetGroupName(U"operator=");
@@ -2985,6 +3031,17 @@ ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* class
     thatParam->SetType(classType->AddRvalueReference());
     AddMember(thatParam);
     SetReturnType(voidType_);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        if (boundCompileUnit)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                SetCompileUnitId(compileUnitNode->Id());
+            }
+        }
+    }
     ComputeName();
 }
 
@@ -3047,7 +3104,8 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
         cmajor::symbols::FunctionSymbol* function = functionMap[classType->TypeId()];
         if (!function)
         {
-            std::unique_ptr<ClassMoveAssignment> moveAssignment(new ClassMoveAssignment(classType, GetBoundCompileUnit().GetSymbolTable().GetTypeByName(U"void")));
+            std::unique_ptr<ClassMoveAssignment> moveAssignment(new ClassMoveAssignment(classType, GetBoundCompileUnit().GetSymbolTable().GetTypeByName(U"void"),
+                &GetBoundCompileUnit()));
             function = moveAssignment.get();
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
@@ -3246,6 +3304,7 @@ BoundExpression* MakeExitEntryPtr(BoundCompileUnit& boundCompileUnit, cmajor::sy
                 cmajor::symbols::ClassGroupTypeSymbol* classGroupSymbol = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(symbol);
                 symbol = classGroupSymbol->GetClass(0);
             }
+            std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
             cmajor::symbols::TypeSymbol* exitEntryType = static_cast<cmajor::symbols::TypeSymbol*>(symbol);
             cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(boundCompileUnit.GetSymbolTable());
             cmajor::ast::GlobalVariableNode globalVariableNode(node->GetSpan(), cmajor::ast::Specifiers::private_, new cmajor::ast::DotNode(node->GetSpan(),
@@ -4202,7 +4261,7 @@ void OperationRepository::GenerateCopyConstructorFor(cmajor::symbols::ClassTypeS
     BoundFunction* currentFunction, cmajor::ast::Node* node)
 {
     if (boundCompileUnit.HasCopyConstructorFor(classTypeSymbol->TypeId())) return;
-    std::unique_ptr<ClassCopyConstructor> copyConstructor(new ClassCopyConstructor(classTypeSymbol));
+    std::unique_ptr<ClassCopyConstructor> copyConstructor(new ClassCopyConstructor(classTypeSymbol, currentFunction->GetBoundCompileUnit()));
     copyConstructor->SetCompileUnit(boundCompileUnit.GetCompileUnitNode());
     copyConstructor->SetModule(&boundCompileUnit.GetModule());
     ClassCopyConstructorOperation* copyConstructorOp = static_cast<ClassCopyConstructorOperation*>(copyConstructorOperation);

@@ -41,6 +41,8 @@ class StringLiteral : public Value
 {
 public:
     StringLiteral(const std::string& value_);
+    bool CanSplit() const override { return true; }
+    Value* Split(int length) override;
 private:
     std::string value;
 };

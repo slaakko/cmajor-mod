@@ -1,0 +1,18 @@
+using System;
+using System.Collections;
+
+void foo()
+{
+    List<int> x;
+    RtmPrintInteger(x.Count());
+    x.Add(1);
+    RtmPrintInteger(x.Count());
+    x.Add(2);
+    RtmPrintInteger(x.Count());
+    x.Add(3);
+    RtmPrintInteger(x.Count());
+    for (auto a : x)
+    {
+        RtmPrintInteger(a);
+    }
+}

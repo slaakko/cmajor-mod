@@ -1,0 +1,7 @@
+using System;
+
+public void a()
+{
+    Foo<int> x;
+    x.foo();
+}

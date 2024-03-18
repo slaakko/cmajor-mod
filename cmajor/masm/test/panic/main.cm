@@ -1,0 +1,7 @@
+using System;
+
+void main()
+{
+    panic();
+    RtmPrintString("not exited yet");
+}

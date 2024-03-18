@@ -968,9 +968,18 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
                     {
+                        cmajor::symbols::DestructorSymbol* destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
+                        compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));
+                        cmajor::ast::CompileUnitNode* compileUnitNode = compileUnit->GetCompileUnitNode();
+                        if (compileUnitNode)
+                        {
+                            destructor->SetCompileUnitId(compileUnitNode->Id());
+                            destructor->ComputeMangledName();
+                        }
                         newCleanupNeeded = true;
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
-                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), classType->Destructor()));
+                        std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(
+                            new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), destructor));
                         destructorCall->AddArgument(std::move(classPtrArgument));
                         Assert(currentBlock, "current block not set");
                         auto it = blockDestructionMap.find(currentBlock);

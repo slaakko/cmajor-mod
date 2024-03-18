@@ -19,3 +19,8 @@ void RtmPrintDouble(double x)
 {
     std::cout << x << "\n";
 }
+
+void RtmPrintString(const char* s)
+{
+    std::cout << s << "\n";
+}

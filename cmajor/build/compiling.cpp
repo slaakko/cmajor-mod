@@ -14,6 +14,7 @@ namespace cmajor::build {
 
 void CreateSymbols(cmajor::symbols::SymbolTable& symbolTable, cmajor::ast::Project* project, bool& stop)
 {
+    std::lock_guard<std::recursive_mutex> lock(symbolTable.GetModule()->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(symbolTable);
     for (const std::unique_ptr<cmajor::ast::CompileUnitNode>& compileUnit : project->CompileUnits())
     {

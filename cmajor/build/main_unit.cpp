@@ -149,6 +149,7 @@ void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vecto
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
+    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
     mainCompileUnit.Accept(symbolCreator);
     cmajor::binder::AttributeBinder attributeBinder(rootModule);
@@ -243,6 +244,7 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
+    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
     mainCompileUnit.Accept(symbolCreator);
     cmajor::binder::AttributeBinder attributeBinder(rootModule);
@@ -405,6 +407,7 @@ void GenerateMainUnitCppConsole(cmajor::symbols::Module* rootModule, std::vector
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
+    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
     mainCompileUnit.Accept(symbolCreator);
     cmajor::binder::AttributeBinder attributeBinder(rootModule);
@@ -586,6 +589,7 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::symbols::Module* rootModule, std::ve
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
+    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
     mainCompileUnit.Accept(symbolCreator);
     cmajor::binder::AttributeBinder attributeBinder(rootModule);
@@ -770,6 +774,7 @@ void GenerateMainUnitCppWindowsGUI(cmajor::symbols::Module* rootModule, std::vec
     mainFunctionBody->AddStatement(returnStatement);
     mainFunction->SetBody(mainFunctionBody);
     mainCompileUnit.GlobalNs()->AddMember(mainFunction);
+    std::lock_guard<std::recursive_mutex> lock(rootModule->Lock());
     cmajor::symbols::SymbolCreatorVisitor symbolCreator(rootModule->GetSymbolTable());
     mainCompileUnit.Accept(symbolCreator);
     cmajor::binder::AttributeBinder attributeBinder(rootModule);

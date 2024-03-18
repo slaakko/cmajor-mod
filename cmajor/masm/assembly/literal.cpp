@@ -64,8 +64,14 @@ DoubleLiteral::DoubleLiteral(double value_) : Value(ToDoubleLiteralStr(value_)),
 {
 }
 
-StringLiteral::StringLiteral(const std::string& value_) : Value("'" + value_ + "'")
+StringLiteral::StringLiteral(const std::string& value_) : Value("'" + value_ + "'"), value(value_)
 {
+}
+
+Value* StringLiteral::Split(int length) 
+{
+    SetName("'" + value.substr(0, length) + "'");
+    return new StringLiteral(value.substr(length));
 }
 
 } // namespace cmajor::masm::assembly

@@ -35,7 +35,6 @@ struct FrameLocation
     FrameLocation() : reg(masm::assembly::RegisterGroupKind::rbp), index(-1), offset(0), size(0), macro(nullptr) {}
     FrameLocation(masm::assembly::RegisterGroupKind reg_, int index_, int64_t offset_, int64_t size_) : reg(reg_), index(index_), offset(offset_), size(size_), macro(nullptr) {}
     bool Valid() const { return index != -1; }
-    int64_t ItemOffset() const { return offset + size; }
     masm::assembly::RegisterGroupKind reg;
     int index;
     int64_t offset;
@@ -46,7 +45,6 @@ struct FrameLocation
 struct ArgLocation
 {
     ArgLocation(int index_, int64_t offset_, int64_t size_) : reg(masm::assembly::RegisterGroupKind::rsp), index(index_), offset(offset_), size(size_) {}
-    int64_t ItemOffset() const { return offset + size; }
     masm::assembly::RegisterGroupKind reg;
     int index;
     int64_t offset;

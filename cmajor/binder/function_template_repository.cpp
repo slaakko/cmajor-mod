@@ -38,7 +38,8 @@ FunctionTemplateRepository::FunctionTemplateRepository(BoundCompileUnit& boundCo
 {
 }
 
-cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* functionTemplate, const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping,
+cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor::symbols::FunctionSymbol* functionTemplate, 
+    const std::map<cmajor::symbols::TemplateParameterSymbol*, cmajor::symbols::TypeSymbol*>& templateParameterMapping,
     cmajor::ast::Node* node)
 {
     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
@@ -59,7 +60,8 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     auto it = functionTemplateMap.find(key);
     if (it != functionTemplateMap.cend())
     {
-        return it->second;
+        cmajor::symbols::FunctionSymbol* fn = it->second;
+        return fn;
     }
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
     cmajor::ast::Node* functionTemplateNode = symbolTable.GetNodeNoThrow(functionTemplate);
@@ -104,6 +106,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     }
     cmajor::ast::FunctionNode* functionInstanceNode = static_cast<cmajor::ast::FunctionNode*>(functionNode->Clone(cloneContext));
     currentNs->AddMember(functionInstanceNode);
+    std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
     InstantiationGuard instantiationGuard(symbolTable, functionNode->FileIndex(), functionNode->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
@@ -115,6 +118,14 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     functionSymbol->SetTemplateSpecialization();
     functionSymbol->SetFunctionTemplate(functionTemplate);
     functionSymbol->SetTemplateArgumentTypes(templateArgumentTypes);
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+        if (compileUnitNode)
+        {
+            functionSymbol->SetCompileUnitId(compileUnitNode->Id());
+        }
+    }
     functionTemplateMap[key] = functionSymbol;
     for (cmajor::symbols::TemplateParameterSymbol* templateParameter : functionTemplate->TemplateParameters())
     {

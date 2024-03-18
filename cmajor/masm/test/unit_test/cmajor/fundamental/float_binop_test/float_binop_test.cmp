@@ -1,0 +1,4 @@
+project float_binop_test;
+target=program;
+source <float_binop_test.cm>;
+source <main.cm>;

@@ -1,0 +1,7 @@
+using System;
+
+void b()
+{
+    int x = 0;
+    int&& y = Rvalue(x);
+}

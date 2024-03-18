@@ -1,0 +1,83 @@
+using System;
+
+enum UnaryOp
+{
+    plus, neg, cpl
+}
+
+enum BinOp
+{
+    add, sub, mul, div, mod, and_, or_, xor_, shl, shr
+}
+
+enum Type
+{
+    sbyte_, byte_, short_, ushort_, int_, uint_, long_, ulong_
+}
+
+double ret(double x)
+{
+    return x;
+}
+
+double eval_unaryop(double operand, UnaryOp op)
+{
+    switch (op)
+    {
+        case UnaryOp.plus: return cast<double>(+operand);
+        case UnaryOp.neg: return cast<double>(-operand);
+    }
+    return 0.000000;
+}
+
+double rtm_eval_unaryop(double operand, UnaryOp op)
+{
+    return cast<double>(RtmEvaluateDoubleUnaryOp(cast<double>(operand), cast<int>(op)));
+}
+
+double eval_binop(double left, double right, BinOp op)
+{
+    switch (op)
+    {
+        case BinOp.add: return cast<double>(left + right);
+        case BinOp.sub: return cast<double>(left - right);
+        case BinOp.mul: return cast<double>(left * right);
+        case BinOp.div: return cast<double>(left / right);
+    }
+    return 0.000000;
+}
+
+double rtm_eval_binop(double left, double right, BinOp op)
+{
+    return cast<double>(RtmEvaluateDoubleBinaryOp(cast<double>(left), cast<double>(right), cast<int>(op)));
+}
+
+unit_test void double_value_test()
+{
+    double x;
+    #assert (x == 0.000000);
+    double y = x;
+    #assert (y == x);
+    double z;
+    z = x;
+    #assert (z == x);
+    double a = System.Rvalue(x);
+    #assert (a == x);
+    double b;
+    b = System.Rvalue(x);
+    #assert (b == x);
+    #assert (ret(x) == x);
+    double c = 1.000000;
+    #assert (c == 1.000000);
+    double d = c;
+    #assert (d == c);
+    double e;
+    e = c;
+    #assert (e == c);
+    double f = System.Rvalue(c);
+    #assert (f == c);
+    double g;
+    g = System.Rvalue(c);
+    #assert (g == c);
+    #assert (ret(c) == c);
+}
