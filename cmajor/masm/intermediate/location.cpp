@@ -17,7 +17,7 @@ FrameLocation Frame::GetParamLocation(int64_t size, cmajor::masm::assembly::Cont
 {
     if (paramLocations.empty())
     {
-        FrameLocation paramLocation(masm::assembly::RegisterGroupKind::rsp, 0, 8, 0);
+        FrameLocation paramLocation(masm::assembly::RegisterGroupKind::rsp, 0, 8, 8);
         paramLocations.push_back(paramLocation);
         return paramLocation;
     }
@@ -43,7 +43,7 @@ FrameLocation Frame::GetFrameLocation(int64_t size)
 {
     if (frameLocations.empty())
     {
-        FrameLocation frameLocation(masm::assembly::RegisterGroupKind::rbp, 0, 0, size);
+        FrameLocation frameLocation(masm::assembly::RegisterGroupKind::rbp, 0, 8, size);
         frameLocations.push_back(frameLocation);
         return frameLocation;
     }
@@ -90,8 +90,7 @@ void Frame::SetMacroValues(cmajor::masm::assembly::Context* assemblyContext)
         {
             int64_t value = (paramLocation.index - 4) * 8 + paramOffset + frameSize;
             value -= XMMSaveRegSize();
-            int size = 8;
-            macro->SetValue(assemblyContext->MakeIntegerLiteral(value, size));
+            macro->SetValue(assemblyContext->MakeIntegerLiteral(value, 8));
         }
     }
 }
@@ -104,7 +103,7 @@ void CallFrame::AllocateArgLocation(int64_t size)
 {
     if (argLocations.empty())
     {
-        ArgLocation argLocation(0, 0, 0);
+        ArgLocation argLocation(0, 0, 8);
         argLocations.push_back(argLocation);
     }
     else
