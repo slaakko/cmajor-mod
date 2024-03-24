@@ -1,0 +1,30 @@
+using System;
+
+void foo()
+{
+    string s;
+    if (s.IsEmpty())
+    {
+        RtmPrintInteger(0);
+    }
+    RtmPrintInteger(s.Length());
+    RtmPrintString(s.Chars());
+    string t = "abc";
+    if (!t.IsEmpty())
+    {
+        RtmPrintInteger(1);
+    }
+    RtmPrintInteger(t.Length());
+    RtmPrintString(t.Chars());
+    string u;
+    for (int i = 0; i < 256; ++i)
+    {
+        u.Append('x');
+    }
+    if (!u.IsEmpty())
+    {
+        RtmPrintInteger(1);
+    }
+    RtmPrintInteger(u.Length());
+    RtmPrintString(u.Chars());
+}

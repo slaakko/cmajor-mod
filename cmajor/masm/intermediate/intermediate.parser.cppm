@@ -58,6 +58,7 @@ struct IntermediateParser
     static soul::parser::Match SymbolValue(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type);
     static soul::parser::Match LiteralValue(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Type* type);
     static soul::parser::Match FunctionDefinitions(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match FunctionDeclaration(LexerT& lexer, cmajor::masm::intermediate::Context* context);
     static soul::parser::Match FunctionDefinition(LexerT& lexer, cmajor::masm::intermediate::Context* context);
     static soul::parser::Match FunctionHeader(LexerT& lexer, cmajor::masm::intermediate::Context* context);
     static soul::parser::Match BasicBlock(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::Function* function);

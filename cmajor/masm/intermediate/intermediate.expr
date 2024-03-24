@@ -6,6 +6,9 @@
 expressions cmajor.masm.intermediate.expr
 {
     ws = "[ \t\n\r]+";
+    newline = "\r\n|\n|\r";
+    comment = "//[^\n\r]*{newline}";
+    separators = "({ws}|{comment})+";
     id = "({unicode_id_start}|_)({unicode_id_cont}|@|_)*";
     digit = "[0-9]";
     typeidentifier = "$T{digit}+";

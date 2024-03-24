@@ -1,0 +1,6 @@
+using System;
+
+void a()
+{
+    Foo<string> x;
+}

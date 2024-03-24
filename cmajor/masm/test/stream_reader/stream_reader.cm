@@ -1,0 +1,12 @@
+using System;
+using System.IO;
+
+void foo()
+{
+    Result<StreamReader> readerResult = File.OpenRead("foo");
+    if (readerResult.Error())
+    {
+        string errorMessage = readerResult.GetErrorMessage();
+        Console.Error() << errorMessage << "\n";
+    }
+}

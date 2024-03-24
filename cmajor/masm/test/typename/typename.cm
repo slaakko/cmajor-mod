@@ -1,0 +1,13 @@
+using System;
+
+class Foo
+{
+    public default virtual ~Foo();
+}
+
+void foo()
+{
+    UniquePtr<Foo> f = new Foo();
+    Foo* p = f.Get();
+    RtmPrintString(typename(*p));
+}

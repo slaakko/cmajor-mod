@@ -1554,6 +1554,10 @@ void CppEmitter::SetFunctionName(const std::string& functionName)
     currentFunction->SetFullName(functionName);
 }
 
+void CppEmitter::SetFunctionComment(void* function, const std::string& functionComment)
+{
+}
+
 void CppEmitter::BeginScope()
 {
     context->BeginScope();

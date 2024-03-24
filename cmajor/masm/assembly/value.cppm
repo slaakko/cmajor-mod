@@ -20,6 +20,7 @@ public:
     int Length() const { return ToString().length(); }
     virtual bool CanSplit() const { return false; }
     virtual Value* Split(int length) { return nullptr; }
+    virtual bool IsEmpty() const { return false; }
 private:
     std::string name;
 };

@@ -1,0 +1,3 @@
+project stream_reader;
+source <stream_reader.cm>;
+source <main.cm>;

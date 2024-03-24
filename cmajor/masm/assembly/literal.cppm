@@ -43,6 +43,7 @@ public:
     StringLiteral(const std::string& value_);
     bool CanSplit() const override { return true; }
     Value* Split(int length) override;
+    bool IsEmpty() const override { return value.empty(); }
 private:
     std::string value;
 };

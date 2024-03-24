@@ -52,6 +52,24 @@ std::string ToDoubleLiteralStr(double value)
     return std::to_string(value);
 }
 
+std::string ToStringLiteralStr(const std::string& s)
+{
+    if (s.find('\'') == std::string::npos) return s;
+    std::string result;
+    for (char c : s)
+    {
+        if (c == '\'')
+        {
+            result.append(2, '\'');
+        }
+        else
+        {
+            result.append(1, c);
+        }
+    }
+    return result;
+}
+
 IntegerLiteral::IntegerLiteral(int64_t value_, int size_) : Value(ToIntegerLiteralStr(value_, size_)), value(value_), size(size_)
 {
 }
@@ -64,14 +82,21 @@ DoubleLiteral::DoubleLiteral(double value_) : Value(ToDoubleLiteralStr(value_)),
 {
 }
 
-StringLiteral::StringLiteral(const std::string& value_) : Value("'" + value_ + "'"), value(value_)
+StringLiteral::StringLiteral(const std::string& value_) : Value("'" + ToStringLiteralStr(value_) + "'"), value(value_)
 {
 }
 
 Value* StringLiteral::Split(int length) 
 {
-    SetName("'" + value.substr(0, length) + "'");
-    return new StringLiteral(value.substr(length));
+    SetName("'" + ToStringLiteralStr(value.substr(0, length)) + "'");
+    if (value.length() < length)
+    {
+        return new StringLiteral(std::string());
+    }
+    else
+    {
+        return new StringLiteral(value.substr(length));
+    }
 }
 
 } // namespace cmajor::masm::assembly

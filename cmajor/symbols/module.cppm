@@ -125,6 +125,36 @@ private:
     std::unordered_map<std::string, std::unique_ptr<std::u32string>> fileContentMap;
 };
 
+class SourceFileInfo
+{
+public:
+    SourceFileInfo();
+    SourceFileInfo(int32_t sourceFileId_, const std::string& sourceFilePath_);
+    int32_t SourceFileId() const { return sourceFileId; }
+    const std::string& SourceFilePath() const { return sourceFilePath; }
+    void Write(util::BinaryStreamWriter& writer);
+    void Read(util::BinaryStreamReader& reader);
+private:
+    int32_t sourceFileId;
+    std::string sourceFilePath;
+};
+
+class FunctionTraceInfo
+{
+public:
+    FunctionTraceInfo();
+    FunctionTraceInfo(int32_t functionId_, const std::string& functionFullName_, int32_t sourceFileId_);
+    int32_t FunctionId() const { return functionId; }
+    const std::string& FunctionFullName() const { return functionFullName; }
+    int32_t SourceFileId() const { return sourceFileId; }
+    void Write(util::BinaryStreamWriter& writer);
+    void Read(util::BinaryStreamReader& reader);
+private:
+    int32_t functionId;
+    std::string functionFullName;
+    int32_t sourceFileId;
+};
+
 class Module
 {
 public:
@@ -234,6 +264,11 @@ public:
     void MakeFileMapFromFileTable();
     std::string GetErrorLines(const soul::ast::Span& span, int fileIndex, soul::ast::LineColLen& lineColLen);
     soul::ast::LineColLen GetLineColLen(const soul::ast::Span& span, int fileIndex);
+    int32_t MakeFunctionId(const std::string& fullFunctionName, const std::string& sourceFilePath);
+    void WriteFunctionTraceData(util::BinaryStreamWriter& writer);
+    void ReadFunctionTraceData(util::BinaryStreamReader& reader);
+    void ImportTraceData(Module* module);
+    void WriteTraceData(const std::string& traceDataFilePath);
 private:
     uint8_t format;
     ModuleFlags flags;
@@ -288,6 +323,13 @@ private:
     // std::unique_ptr<Sources> sources;
     soul::lexer::FileMap fileMap;
     soul::lexer::LexerBase<char32_t>* lexer;
+    std::vector<std::unique_ptr<SourceFileInfo>> sourceFileInfoVec;
+    std::vector<SourceFileInfo*> allSourceFileInfoVec;
+    std::map<std::string, SourceFileInfo*> sourceFileInfoMap;
+    std::vector<std::unique_ptr<FunctionTraceInfo>> traceInfoVec;
+    std::map<std::string, FunctionTraceInfo*> traceInfoMap;
+    std::vector<FunctionTraceInfo*> allTraceInfoVec;
+    std::set<std::u32string> traceDataImported;
     void CheckUpToDate();
 };
 

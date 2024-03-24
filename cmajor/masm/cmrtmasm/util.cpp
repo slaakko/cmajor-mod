@@ -5,22 +5,31 @@
 
 module cmajor.masm.rt.util;
 
+import cmajor.masm.rt.io;
+
 void RtmPrintInteger(int64_t x)
 {
-    std::cout << x << "\n";
+    std::string s = std::to_string(x);
+    RtmPrintString(s.c_str());
 }
 
 void RtmPrintFloat(float x)
 {
-    std::cout << x << "\n";
+    std::string s = std::to_string(x);
+    RtmPrintString(s.c_str());
 }
 
 void RtmPrintDouble(double x)
 {
-    std::cout << x << "\n";
+    std::string s = std::to_string(x);
+    RtmPrintString(s.c_str());
 }
 
 void RtmPrintString(const char* s)
 {
-    std::cout << s << "\n";
+    int32_t errorId = 0;
+    std::string str(s);
+    str.append(1, '\n');
+    void* stdOut = RtmOpenStdFile(1, errorId);
+    RtmPrintToFile(stdOut, str.c_str());
 }

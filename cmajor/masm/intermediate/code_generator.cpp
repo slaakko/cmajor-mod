@@ -344,10 +344,11 @@ void EmitIntegerPtrOperand(int64_t size, Value* value, cmajor::masm::assembly::I
         AddressValue* addressValue = static_cast<AddressValue*>(value);
         GlobalVariable* globalVar = addressValue->GetValue();
         cmajor::masm::assembly::Instruction* leaInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::LEA);
-        leaInst->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx));
+        leaInst->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rdx));
         leaInst->AddOperand(assemblyContext->MakeSymbol(globalVar->Name()));
         codeGenerator.Emit(leaInst);
-        instruction->AddOperand(assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx))));
+        instruction->AddOperand(assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(
+            assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rdx))));
         return;
     }
     if (inst)
@@ -389,7 +390,7 @@ void EmitFloatingPointPtrOperand(int64_t size, Value* value, cmajor::masm::assem
         AddressValue* addressValue = static_cast<AddressValue*>(value);
         GlobalVariable* globalVar = addressValue->GetValue();
         cmajor::masm::assembly::Instruction* leaInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::LEA);
-        leaInst->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx));
+        leaInst->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rdx));
         leaInst->AddOperand(assemblyContext->MakeSymbol(globalVar->Name()));
         codeGenerator.Emit(leaInst);
         instruction->AddOperand(assemblyContext->MakeSizePrefix(
@@ -782,7 +783,7 @@ void EmitZeroExtend(ZeroExtendInstruction& inst, CodeGenerator& codeGenerator)
     int64_t resultSize = inst.Result()->GetType()->Size();
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
     cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::MOV;
-    if (operandSize <= 2)
+    if (operandSize <= 2 && operandSize != resultSize)
     {
         opCode = cmajor::masm::assembly::OpCode::MOVZX;
     }
@@ -807,7 +808,7 @@ void EmitZeroExtend(ZeroExtendInstruction& inst, CodeGenerator& codeGenerator)
     }
 }
 
-void EmitTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
+void EmitIntegerTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
 {
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
     cmajor::masm::assembly::RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
@@ -821,6 +822,37 @@ void EmitTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
         movInst->AddOperand(resultReg);
         movInst->AddOperand(sourceReg);
         codeGenerator.Emit(movInst);
+    }
+    else
+    {
+        codeGenerator.Error("error emitting truncate instruction: reg group for inst not found");
+    }
+}
+
+void EmitFloatingPointTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
+{
+    cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
+    cmajor::masm::assembly::RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+    if (regGroup)
+    {
+        int64_t resultSize = inst.Result()->GetType()->Size();
+        int64_t operandSize = inst.Operand()->GetType()->Size();
+        cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(resultSize);
+        cmajor::masm::assembly::Register* sourceReg = MakeFloatingPointRegOperand(
+            inst.Operand(), assemblyContext->GetGlobalReg(operandSize, cmajor::masm::assembly::RegisterGroupKind::xmm0), codeGenerator);
+        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::NOP;
+        if (resultSize == 4 && operandSize == 8)
+        {
+            opCode = cmajor::masm::assembly::OpCode::CVTSD2SS;
+        }
+        else 
+        {
+            codeGenerator.Error("error emitting truncate instruction: invalid floating-point truncation types");
+        }
+        cmajor::masm::assembly::Instruction* convertInst = new cmajor::masm::assembly::Instruction(opCode);
+        convertInst->AddOperand(resultReg);
+        convertInst->AddOperand(sourceReg);
+        codeGenerator.Emit(convertInst);
     }
     else
     {
@@ -1196,12 +1228,26 @@ void EmitIntToFloat(IntToFloatInstruction& inst, CodeGenerator& codeGenerator)
     int64_t operandSize = operandType->Size();
     Type* resultType = inst.Result()->GetType();
     int64_t resultSize = resultType->Size();
+    cmajor::masm::assembly::Register* sourceReg = MakeIntegerRegOperand(
+        inst.Operand(), assemblyContext->GetGlobalReg(operandSize, cmajor::masm::assembly::RegisterGroupKind::rbx), codeGenerator);
+    if (operandSize < 4)
+    {
+        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::MOVSX;
+        if (operandType->IsUnsignedType())
+        {
+            opCode = cmajor::masm::assembly::OpCode::MOVZX;
+        }
+        cmajor::masm::assembly::Instruction* extendInst = new cmajor::masm::assembly::Instruction(opCode);
+        cmajor::masm::assembly::Register* rax = assemblyContext->GetGlobalReg(4, cmajor::masm::assembly::RegisterGroupKind::rax);
+        extendInst->AddOperand(rax);
+        extendInst->AddOperand(sourceReg);
+        codeGenerator.Emit(extendInst);
+        sourceReg = rax;
+    }
     cmajor::masm::assembly::RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
     if (regGroup)
     {
         cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(resultSize);
-        cmajor::masm::assembly::Register* sourceReg = MakeIntegerRegOperand(
-            inst.Operand(), assemblyContext->GetGlobalReg(operandSize, cmajor::masm::assembly::RegisterGroupKind::rax), codeGenerator);
         cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::NOP;
         if (resultSize == 4)
         {
@@ -2457,7 +2503,7 @@ void EmitPtrDiff(PtrDiffInstruction& inst, CodeGenerator& codeGenerator)
 
 CodeGenerator::CodeGenerator(Context* context_, const std::string& assemblyFilePath_) :
     Visitor(context_), context(context_), file(assemblyFilePath_), currentFunction(nullptr), currentInst(nullptr), assemblyFunction(nullptr), leader(false),
-    registerAllocator(nullptr), data(nullptr), label(), dataInstruction(nullptr), prevDataOpCode(cmajor::masm::assembly::OpCode::DB)
+    registerAllocator(nullptr), data(nullptr), label(), dataInstruction(nullptr), prevDataOpCode(cmajor::masm::assembly::OpCode::DB), currentOffset(0)
 {
     context->AssemblyContext()->SetFile(&file);
 }
@@ -2516,16 +2562,27 @@ void CodeGenerator::EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmaj
             cmajor::masm::assembly::Value* next = dataValue->Split(cmajor::masm::assembly::maxAssemblyLineLength - dataInstruction->Length());
             dataInstruction->AddOperand(dataValue);
             dataValue = next;
+            if (dataValue->IsEmpty())
+            {
+                delete dataValue;
+                return;
+            }
         }
         data->AddInstruction(dataInstruction);
         dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
         dataInstruction->SetNoColon();
     }
     dataInstruction->AddOperand(dataValue);
+    prevDataOpCode = dataOpCode;
 }
 
 void CodeGenerator::Visit(GlobalVariable& globalVariable)
 {
+    if (data && dataInstruction)
+    {
+        data->AddInstruction(dataInstruction);
+        dataInstruction = nullptr;
+    }
     if (globalVariable.Initializer())
     {
         file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(globalVariable.Name()));
@@ -2533,7 +2590,14 @@ void CodeGenerator::Visit(GlobalVariable& globalVariable)
         data = new cmajor::masm::assembly::Data();
         file.GetDataSection().AddData(data);
         leader = true;
+        currentOffset = 0;
         globalVariable.Initializer()->Accept(*this);
+        ByteType* byteType = context->GetTypes().GetByteType();
+        while ((currentOffset & 7) != 0)
+        {
+            ByteValue value(0u, byteType);
+            Visit(value);
+        }
     }
     else
     {
@@ -2549,10 +2613,6 @@ void CodeGenerator::Visit(Function& function)
     }
     else
     {
-        if (function.Name() == "function_foo_00F4173D145260F9C5E75C65C45F2BB7EDCB9B44")
-        {
-            int x = 0;
-        }
         file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(function.Name()));
         currentFunction = &function;
         context->AssemblyContext()->ResetRegisterPool();
@@ -2694,7 +2754,14 @@ void CodeGenerator::Visit(PtrDiffInstruction& inst)
 
 void CodeGenerator::Visit(TruncateInstruction& inst)
 {
-    EmitTruncate(inst, *this);
+    if (inst.GetType()->IsIntegerType())
+    {
+        EmitIntegerTruncate(inst, *this);
+    }
+    else if (inst.GetType()->IsFloatingPointType())
+    {
+        EmitFloatingPointTruncate(inst, *this);
+    }
 }
 
 void CodeGenerator::Visit(AddInstruction& inst)
@@ -2864,66 +2931,79 @@ void CodeGenerator::Visit(SwitchInstruction& inst)
 void CodeGenerator::Visit(BoolValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.ToInteger(), 1), cmajor::masm::assembly::OpCode::DB);
+    currentOffset += 1;
 }
 
 void CodeGenerator::Visit(SByteValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1), cmajor::masm::assembly::OpCode::DB);
+    currentOffset += 1;
 }
 
 void CodeGenerator::Visit(ByteValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1), cmajor::masm::assembly::OpCode::DB);
+    currentOffset += 1;
 }
 
 void CodeGenerator::Visit(ShortValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2), cmajor::masm::assembly::OpCode::DW);
+    currentOffset += 2;
 }
 
 void CodeGenerator::Visit(UShortValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2), cmajor::masm::assembly::OpCode::DW);
+    currentOffset += 2;
 }
 
 void CodeGenerator::Visit(IntValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4), cmajor::masm::assembly::OpCode::DD);
+    currentOffset += 4;
 }
 
 void CodeGenerator::Visit(UIntValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4), cmajor::masm::assembly::OpCode::DD);
+    currentOffset += 4;
 }
 
 void CodeGenerator::Visit(LongValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8), cmajor::masm::assembly::OpCode::DQ);
+    currentOffset += 8;
 }
 
 void CodeGenerator::Visit(ULongValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8), cmajor::masm::assembly::OpCode::DQ);
+    currentOffset += 8;
 }
 
 void CodeGenerator::Visit(FloatValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::FloatLiteral(value.GetValue()), cmajor::masm::assembly::OpCode::REAL4);
+    currentOffset += 4;
 }
 
 void CodeGenerator::Visit(DoubleValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::DoubleLiteral(value.GetValue()), cmajor::masm::assembly::OpCode::REAL8);
+    currentOffset += 8;
 }
 
 void CodeGenerator::Visit(NullValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(0, 8), cmajor::masm::assembly::OpCode::DQ);
+    currentOffset += 8;
 }
 
 void CodeGenerator::Visit(AddressValue& value)
 {
     EmitDataValue(new cmajor::masm::assembly::Symbol(value.GetValue()->Name()), cmajor::masm::assembly::OpCode::DQ);
+    currentOffset += 8;
 }
 
 void CodeGenerator::Visit(ArrayValue& value)
@@ -2965,6 +3045,7 @@ void CodeGenerator::Visit(StringValue& value)
                 else
                 {
                     stringValue.append(1, c);
+                    currentOffset += 1;
                 }
                 break;
             }
@@ -2979,6 +3060,7 @@ void CodeGenerator::Visit(StringValue& value)
                 hexByteStr.append(1, c);
                 uint8_t value = util::ParseHexByte(hexByteStr);
                 EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value, 1), cmajor::masm::assembly::OpCode::DB);
+                currentOffset += 1;
                 hexByteStr.clear();
                 state = 0;
                 break;

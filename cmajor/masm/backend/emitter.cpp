@@ -10,7 +10,8 @@ import cmajor.masm.ir;
 namespace cmajor::masm::backend {
 
 MasmEmitter::MasmEmitter(cmajor::ir::EmittingContext* emittingContext_) :
-    cmajor::ir::Emitter(), emittingContext(emittingContext_), emittingDelegate(nullptr), context(nullptr), compileUnit(nullptr), currentFunction(nullptr), objectPointer(nullptr)
+    cmajor::ir::Emitter(), emittingContext(emittingContext_), emittingDelegate(nullptr), context(nullptr), compileUnit(nullptr), currentFunction(nullptr), objectPointer(nullptr),
+    substituteLineNumber(false), currentLineNumber(0)
 {
     SetStack(&stack);
 }
@@ -337,7 +338,14 @@ void* MasmEmitter::CreateIrValueForUShort(uint16_t value)
 
 void* MasmEmitter::CreateIrValueForInt(int32_t value)
 {
-    return context->GetIntValue(value);
+    if (substituteLineNumber)
+    {
+        return context->GetIntValue(currentLineNumber);
+    }
+    else
+    {
+        return context->GetIntValue(value);
+    }
 }
 
 void* MasmEmitter::CreateIrValueForUInt(uint32_t value)
@@ -1519,6 +1527,12 @@ void MasmEmitter::SetFunctionName(const std::string& functionName)
 {
 }
 
+void MasmEmitter::SetFunctionComment(void* function, const std::string& functionComment)
+{
+    cmajor::masm::ir::Function* fn = static_cast<cmajor::masm::ir::Function*>(function);
+    fn->SetComment(functionComment);
+}
+
 void MasmEmitter::BeginScope()
 {
 }
@@ -1810,15 +1824,23 @@ void MasmEmitter::DebugPrintDebugInfo(const std::string& filePath)
 
 void MasmEmitter::BeginSubstituteLineNumber(int32_t lineNumber)
 {
+    substituteLineNumber = true;
+    currentLineNumber = lineNumber;
 }
 
 void MasmEmitter::EndSubstituteLineNumber()
 {
+    substituteLineNumber = false;
 }
 
 void MasmEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
     //context->SetCurrentLineNumber(lineNumber);
+}
+
+void MasmEmitter::SetSpan(const soul::ast::Span& span)
+{
+    emittingDelegate->SetSpan(span);
 }
 
 } // namespace cmajor::masm::backend

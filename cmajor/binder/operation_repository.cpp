@@ -3254,7 +3254,8 @@ void GenerateDestructorImplementation(BoundClass* boundClass, cmajor::symbols::D
                 boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), destructorSymbol->GetThisParam())));
                 memberDestructorCallArguments.push_back(std::unique_ptr<BoundExpression>(
                     new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
-                std::unique_ptr<BoundFunctionCall> memberDestructorCall = ResolveOverload(U"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
+                std::unique_ptr<BoundFunctionCall> memberDestructorCall = ResolveOverload(
+                    U"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
                     boundCompileUnit, boundFunction.get(), node);
                 boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundExpressionStatement(std::move(memberDestructorCall), node->GetSpan())));
             }
@@ -3484,7 +3485,19 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                     }
                     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                     {
-                        // todo
+                        std::vector<FunctionScopeLookup> enqueueLookups;
+                        enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
+                        enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
+                        std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
+                        enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                        enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                        const char32_t* enqueueDestructorFunction = U"RtmEnqueueDestruction";
+                        std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, enqueueArguments,
+                            boundCompileUnit, boundFunction, node);
+                        boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(enqueueDestructorCall))));
                     }
                 }
             }
@@ -3546,7 +3559,19 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                     }
                     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                     {
-                        // todo
+                        std::vector<FunctionScopeLookup> enqueueLookups;
+                        enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
+                        enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
+                        std::vector<std::unique_ptr<BoundExpression>> enqueueArguments;
+                        enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::unique_ptr<BoundExpression>(new BoundFunctionPtr(node->GetSpan(),
+                            memberVariableClassTypeWithDestructor->Destructor(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                        enqueueArguments.push_back(std::unique_ptr<BoundExpression>(new BoundBitCast(std::move(addrOfBoundMemberVariable2),
+                            boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
+                        const char32_t* enqueueDestructorFunction = U"RtmEnqueueDestruction";
+                        std::unique_ptr<BoundFunctionCall> enqueueDestructorCall = ResolveOverload(enqueueDestructorFunction, containerScope, enqueueLookups, enqueueArguments,
+                            boundCompileUnit, boundFunction, node);
+                        boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(enqueueDestructorCall))));
                     }
                 }
             }

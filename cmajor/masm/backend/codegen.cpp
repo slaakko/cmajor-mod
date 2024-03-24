@@ -34,7 +34,7 @@ MasmCodeGenerator::MasmCodeGenerator(cmajor::ir::Emitter* emitter_) : emitter(em
     prevWasTerminator(false), destructorCallGenerated(false), genJumpingBoolCode(false), trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr),
     basicBlockOpen(false), lastAlloca(nullptr), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), newCleanupNeeded(false), inTryBlock(false),
     sequenceSecond(nullptr), currentBlock(nullptr), breakTargetBlock(nullptr), continueTargetBlock(nullptr), defaultDest(nullptr),
-    currentTryBlockId(-1), nextTryBlockId(0), currentCaseMap(nullptr), latestRet(nullptr)
+    currentTryBlockId(-1), nextTryBlockId(0), currentCaseMap(nullptr), latestRet(nullptr), prevLineNumber(0), inSetLineOrEntryCode(false)
 {
     emitter->SetEmittingDelegate(this);
 }
@@ -121,7 +121,10 @@ void MasmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targe
                         emitter->SetCurrentBasicBlock(nextBlock);
                         createBasicBlock = false;
                     }
+                    bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+                    inSetLineOrEntryCode = true;
                     destructorCall->Accept(*this);
+                    inSetLineOrEntryCode = prevSetLineOrEntryCode;
                     destructorCallGenerated = true;
                     newCleanupNeeded = true;
                 }
@@ -212,31 +215,20 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     newCleanupNeeded = false;
     labeledStatementMap.clear();
     latestRet = nullptr;
-/*
-    if (functionSymbol->HasSource())
+    if (functionSymbol->HasSource() && cmajor::symbols::GetConfig() != "release" && module->Name() != U"System.Runtime" && module->Name() != U"System.Core")
     {
         generateLineNumbers = true;
-        emitter->SetCurrentSourcePos(GetLineNumber(boundFunction.Body()->GetSpan()), 0, 0);
+        emitter->SetGenerateLocationInfo(true);
+        fullSpan = functionSymbol->GetFullSpan();
     }
     else
     {
         generateLineNumbers = false;
-        emitter->SetCurrentSourcePos(0, 0, 0);
+        emitter->SetGenerateLocationInfo(false);
+        fullSpan = soul::ast::FullSpan();
     }
-*/
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
-/*
-    if (functionSymbol->HasSource())
-    {
-        void* mdStruct = emitter->CreateMDStruct();
-        emitter->AddMDItem(mdStruct, "nodeType", emitter->CreateMDLong(funcInfoNodeType));
-        emitter->AddMDItem(mdStruct, "fullName", emitter->CreateMDString(util::ToUtf8(functionSymbol->FullName())));
-        void* mdFile = emitter->GetMDStructRefForSourceFile(module->GetFilePath(fileIndex));
-        emitter->AddMDItem(mdStruct, "sourceFile", mdFile);
-        int mdId = emitter->GetMDStructId(mdStruct);
-        emitter->SetFunctionMdId(function, mdId);
-    }
-*/
+    emitter->SetFunctionComment(function, util::ToUtf8(functionSymbol->FullName()));
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
     {
         emitter->AddInlineFunctionAttribute(function);
@@ -384,18 +376,11 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             lastInstructionWasRet = true;
         }
     }
-    //GenerateCodeForCleanups();
     emitter->FinalizeFunction(function, functionSymbol->HasCleanup());
 }
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
 {
-/*
-    if (generateLineNumbers)
-    {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCompoundStatement.GetSpan()), 0, 0);
-    }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -405,6 +390,14 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
     currentBlock = &boundCompoundStatement;
     blockDestructionMap[currentBlock] = std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>>();
     blocks.push_back(currentBlock);
+    if (!prevBlock)
+    {
+        GenerateEnterFunctionCode(*currentFunction);
+    }
+    if (generateLineNumbers)
+    {
+        SetSpan(boundCompoundStatement.GetSpan());
+    }
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
     {
@@ -435,12 +428,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSeque
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundReturnStatement.GetSpan()), 0, 0);
+        SetSpan(boundReturnStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -483,12 +474,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnS
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCaseStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoCaseStatement.GetSpan()), 0, 0);
+        SetSpan(boundGotoCaseStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -511,12 +500,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoC
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGotoDefaultStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoDefaultStatement.GetSpan()), 0, 0);
+        SetSpan(boundGotoDefaultStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -536,12 +523,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGo
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundBreakStatement.GetSpan()), 0, 0);
+        SetSpan(boundBreakStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -567,12 +552,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakSta
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundContinueStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundContinueStatement.GetSpan()), 0, 0);
+        SetSpan(boundContinueStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -589,12 +572,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundConti
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundGotoStatement.GetSpan()), 0, 0);
+        SetSpan(boundGotoStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -619,12 +600,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoState
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundIfStatement.GetSpan()), 0, 0);
+        SetSpan(boundIfStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -663,12 +642,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundWhileStatement.GetSpan()), 0, 0);
+        SetSpan(boundWhileStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -707,12 +684,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileSta
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundDoStatement.GetSpan()), 0, 0);
+        SetSpan(boundDoStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -753,12 +728,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundForStatement.GetSpan()), 0, 0);
+        SetSpan(boundForStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -804,12 +777,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStateme
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundSwitchStatement.GetSpan()), 0, 0);
+        SetSpan(boundSwitchStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -878,12 +849,6 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchS
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatement)
 {
-/*
-    if (generateLineNumbers)
-    {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCaseStatement.GetSpan()), 0, 0);
-    }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -897,6 +862,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseState
         {
             void* caseDest = it->second;
             emitter->SetCurrentBasicBlock(caseDest);
+            if (generateLineNumbers)
+            {
+                SetSpan(boundCaseStatement.GetSpan());
+            }
             if (boundCaseStatement.CompoundStatement())
             {
                 boundCaseStatement.CompoundStatement()->Accept(*this);
@@ -916,12 +885,6 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseState
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaultStatement)
 {
-/*
-    if (generateLineNumbers)
-    {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundDefaultStatement.GetSpan()), 0, 0);
-    }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -930,6 +893,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaul
     if (defaultDest)
     {
         emitter->SetCurrentBasicBlock(defaultDest);
+        if (generateLineNumbers)
+        {
+            SetSpan(boundDefaultStatement.GetSpan());
+        }
         if (boundDefaultStatement.CompoundStatement())
         {
             boundDefaultStatement.CompoundStatement()->Accept(*this);
@@ -943,12 +910,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaul
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundConstructionStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundConstructionStatement.GetSpan()), 0, 0);
+        SetSpan(boundConstructionStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -966,15 +931,19 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
                 if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
-                    if (classType->Destructor())
+                    cmajor::symbols::DestructorSymbol* destructor = classType->Destructor();
+                    if (destructor)
                     {
-                        cmajor::symbols::DestructorSymbol* destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
-                        compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));
-                        cmajor::ast::CompileUnitNode* compileUnitNode = compileUnit->GetCompileUnitNode();
-                        if (compileUnitNode)
+                        if (destructor->IsGeneratedFunction() || destructor->IsTemplateSpecialization())
                         {
-                            destructor->SetCompileUnitId(compileUnitNode->Id());
-                            destructor->ComputeMangledName();
+                            destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
+                            compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));
+                            cmajor::ast::CompileUnitNode* compileUnitNode = compileUnit->GetCompileUnitNode();
+                            if (compileUnitNode)
+                            {
+                                destructor->SetCompileUnitId(compileUnitNode->Id());
+                                destructor->ComputeMangledName();
+                            }
                         }
                         newCleanupNeeded = true;
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
@@ -1001,12 +970,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssignmentStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundAssignmentStatement.GetSpan()), 0, 0);
+        SetSpan(boundAssignmentStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1017,12 +984,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAss
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpressionStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundExpressionStatement.GetSpan()), 0, 0);
+        SetSpan(boundExpressionStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1036,12 +1001,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExp
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boundInitializationStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundInitializationStatement.GetSpan()), 0, 0);
+        SetSpan(boundInitializationStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1055,12 +1018,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boun
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundEmptyStatement.GetSpan()), 0, 0);
+        SetSpan(boundEmptyStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1090,12 +1051,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundThrowStatement.GetSpan()), 0, 0);
+        SetSpan(boundThrowStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1106,12 +1065,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowSta
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundTryStatement.GetSpan()), 0, 0);
+        SetSpan(boundTryStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1164,12 +1121,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStateme
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatchStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundCatchStatement.GetSpan()), 0, 0);
+        SetSpan(boundCatchStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1197,12 +1152,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatchSta
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrowStatement)
 {
-/*
     if (generateLineNumbers)
     {
-        emitter->SetCurrentSourcePos(GetLineNumber(boundRethrowStatement.GetSpan()), 0, 0);
+        SetSpan(boundRethrowStatement.GetSpan());
     }
-*/
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1546,6 +1499,53 @@ bool MasmCodeGenerator::InTryBlock() const
 int MasmCodeGenerator::CurrentTryBlockId() const
 {
     return currentTryBlockId;
+}
+
+void MasmCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
+{
+    const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
+    if (enterCode.empty()) return;
+    bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+    inSetLineOrEntryCode = true;
+    cmajor::symbols::LocalVariableSymbol* traceEntryVar = boundFunction.GetFunctionSymbol()->TraceEntryVar();
+    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter));
+    emitter->SetIrObject(traceEntryVar, traceEntryAlloca);
+    cmajor::symbols::LocalVariableSymbol* traceGuardVar = boundFunction.GetFunctionSymbol()->TraceGuardVar();
+    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter));
+    emitter->SetIrObject(traceGuardVar, traceGuardAlloca);
+    lastAlloca = traceGuardAlloca;
+    for (const auto& statement : enterCode)
+    {
+        statement->Accept(*this);
+    }
+    inSetLineOrEntryCode = prevSetLineOrEntryCode;
+}
+
+void MasmCodeGenerator::SetSpan(const soul::ast::Span& span)
+{
+    if (!span.IsValid()) return;
+    if (inSetLineOrEntryCode) return;
+    fullSpan.span = span;
+    SetLineNumber(cmajor::symbols::GetLineNumber(fullSpan));
+}
+
+void MasmCodeGenerator::SetLineNumber(int32_t lineNumber)
+{
+    if (prevLineNumber == lineNumber) return;
+    prevLineNumber = lineNumber;
+    cmajor::binder::BoundStatement* setLineNumberStatement = currentFunction->GetLineCode();
+    if (setLineNumberStatement)
+    {
+        bool prevGenJumpingBoolCode = genJumpingBoolCode;
+        genJumpingBoolCode = false;
+        emitter->BeginSubstituteLineNumber(lineNumber);
+        bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+        inSetLineOrEntryCode = true;
+        setLineNumberStatement->Accept(*this);
+        inSetLineOrEntryCode = prevSetLineOrEntryCode;
+        emitter->EndSubstituteLineNumber();
+        genJumpingBoolCode = prevGenJumpingBoolCode;
+    }
 }
 
 } // namespace cmajor::masm::backend

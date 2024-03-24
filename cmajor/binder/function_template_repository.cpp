@@ -74,8 +74,8 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     Assert(functionTemplateNode->GetNodeType() == cmajor::ast::NodeType::functionNode, "function node expected");
     cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(functionTemplateNode);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSpan(), new cmajor::ast::IdentifierNode(functionNode->GetSpan(), U"")));
-    globalNs->SetFileIndex(functionNode->FileIndex());
-    globalNs->SetModuleId(functionNode->ModuleId());
+    globalNs->SetFileIndex(functionTemplate->FileIndex());
+    globalNs->SetModuleId(functionTemplate->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateFunctionNode();
@@ -108,7 +108,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     currentNs->AddMember(functionInstanceNode);
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
-    InstantiationGuard instantiationGuard(symbolTable, functionNode->FileIndex(), functionNode->ModuleId());
+    InstantiationGuard instantiationGuard(symbolTable, functionTemplate->FileIndex(), functionTemplate->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
     globalNs->Accept(symbolCreatorVisitor);
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);

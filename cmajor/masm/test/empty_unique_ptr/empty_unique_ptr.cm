@@ -1,0 +1,19 @@
+using System;
+
+int bar()
+{
+    UniquePtr<int> x;
+    return *x;
+}
+
+int foo()
+{
+    int x = bar();
+    return x;
+}
+
+void main()
+{
+    int x = foo();
+    Console.WriteLine(x);
+}

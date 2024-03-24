@@ -92,6 +92,9 @@ public:
     int Install(const std::string& str) override;
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
+    void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
+    void SetLineNumber(int32_t lineNumber) override;
+    void SetSpan(const soul::ast::Span& span) override;
 private:
     int fileIndex;
     cmajor::ir::Emitter* emitter;
@@ -137,6 +140,9 @@ private:
     cmajor::binder::BoundCompoundStatement* breakTargetBlock;
     cmajor::binder::BoundCompoundStatement* continueTargetBlock;
     std::vector<cmajor::binder::BoundCompoundStatement*> blocks;
+    int prevLineNumber;
+    soul::ast::FullSpan fullSpan;
+    bool inSetLineOrEntryCode;
 };
 
 } // namespace cmajor::masm::backend

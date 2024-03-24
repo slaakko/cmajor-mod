@@ -12,65 +12,40 @@ namespace System
         public typedef P PointerType;
         private typedef RandomAccessIter<ValueType, ReferenceType, PointerType> Self;
 
-        public nothrow inline RandomAccessIter() : ptr(null)
+        public inline RandomAccessIter() : ptr(null)
         {
         }
-        public nothrow inline explicit RandomAccessIter(PointerType ptr_) : ptr(ptr_)
+        public inline explicit RandomAccessIter(PointerType ptr_) : ptr(ptr_)
         {
         }
         public inline Self& operator++()
         {
-        #if (DEBUG)
-            if (ptr == null)
-            {
-                RtmPanic("RandomAccessIter.operator++: pointer is null");
-            }
-        #endif
+            #assert(ptr != null);
             ++ptr;
             return *this;
         }
         public inline Self& operator--()
         {
-        #if (DEBUG)
-            if (ptr == null)
-            {
-                RtmPanic("RandomAccessIter.operator--: pointer is null");
-            }
-        #endif
+            #assert(ptr != null);
             --ptr;
             return *this;
         }
         public inline ReferenceType operator*()
         {
-        #if (DEBUG)
-            if (ptr == null)
-            {
-                RtmPanic("RandomAccessIter.operator*: pointer is null");
-            }
-        #endif
+            #assert(ptr != null);
             return *ptr;
         }
         public inline PointerType operator->()
         {
-        #if (DEBUG)
-            if (ptr == null)
-            {
-                RtmPanic("RandomAccessIter.operator->: pointer is null");
-            }
-        #endif
+            #assert(ptr != null);
             return ptr;
         }
         public inline ReferenceType operator[](long index)
         {
-        #if (DEBUG)
-            if (ptr == null)
-            {
-                RtmPanic("RandomAccessIter.operator[]: pointer is null");
-            }
-        #endif
+            #assert(ptr != null);
             return ptr[index];
         }
-        public nothrow inline PointerType Ptr() const
+        public inline PointerType Ptr() const
         {
             return ptr;
         }
@@ -79,43 +54,25 @@ namespace System
 
     public inline RandomAccessIter<T, R, P> operator+<T, R, P>(const RandomAccessIter<T, R, P>& it, long offset)
     {
-    #if (DEBUG)
-        if (it.Ptr() == null)
-        {
-            RtmPanic("operator+(RandomAccessIter): pointer is null");
-        }
-    #endif
+        #assert(it.Ptr() != null);
         return RandomAccessIter<T, R, P>(it.Ptr() + offset);
     }
 
     public inline RandomAccessIter<T, R, P> operator+<T, R, P>(long offset, const RandomAccessIter<T, R, P>& it)
     {
-    #if (DEBUG)
-        if (it.Ptr() == null)
-        {
-            RtmPanic("operator+(RandomAccessIter): pointer is null");
-        }
-    #endif
+        #assert(it.Ptr() != null);
         return RandomAccessIter<T, R, P>(it.Ptr() + offset);
     }
 
     public inline RandomAccessIter<T, R, P> operator-<T, R, P>(const RandomAccessIter<T, R, P>& it, long offset)
     {
-    #if (DEBUG)
-        if (it.Ptr() == null)
-        {
-            RtmPanic("operator-(RandomAccessIter): pointer is null");
-        }
-    #endif
+        #assert(it.Ptr() != null);
         return RandomAccessIter<T, R, P>(it.Ptr() - offset);
     }
 
     public inline long operator-<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
     {
-        if (!(left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null))
-        {
-            RtmPanic("operator-(RandomAccessIter): precondition violation");
-        }
+        #assert((left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null));
         if (left.Ptr() == null && right.Ptr() == null)
         {
             return 0;
@@ -123,17 +80,14 @@ namespace System
         return left.Ptr() - right.Ptr();
     }
 
-    public nothrow inline bool operator==<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
+    public inline bool operator==<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
     {
         return left.Ptr() == right.Ptr();
     }
 
     public inline bool operator<<T, R, P>(const RandomAccessIter<T, R, P>& left, const RandomAccessIter<T, R, P>& right)
     {
-        if (!(left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null))
-        {
-            RtmPanic("operator<(RandomAccessIter): precondition violation");
-        }
+        #assert((left.Ptr() == null && right.Ptr() == null || left.Ptr() != null && right.Ptr() != null));
         return left.Ptr() < right.Ptr();
     }
 }

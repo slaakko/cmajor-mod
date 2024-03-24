@@ -122,6 +122,10 @@ public:
     cmajor::symbols::TypeSymbol* GetSystemRuntimeUnwindInfoSymbol() const { return systemRuntimeUnwindInfoSymbol; }
     void GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Span& span);
     cmajor::symbols::FunctionSymbol* GetInitUnwindInfoFunctionSymbol() const { return initUnwindInfoFunctionSymbol.get(); }
+    void SetSystemRuntimeTraceEntryTypeSymbol(cmajor::symbols::TypeSymbol* traceEntryTypeSymbol_) { traceEntryTypeSymbol = traceEntryTypeSymbol_; }
+    cmajor::symbols::TypeSymbol* GetSystemRuntimeTraceEntryTypeSymbol() const { return traceEntryTypeSymbol; }
+    void SetSystemRuntimeTraceGuardTypeSymbol(cmajor::symbols::TypeSymbol* traceGuardTypeSymbol_) { traceGuardTypeSymbol = traceGuardTypeSymbol_; }
+    cmajor::symbols::TypeSymbol* GetSystemRuntimeTraceGuardTypeSymbol() const { return traceGuardTypeSymbol; }
     void GenerateCompileUnitInitialization(const soul::ast::Span & span);
     cmajor::symbols::FunctionSymbol* GetInitCompileUnitFunctionSymbol() const { return initCompileUnitFunctionSymbol.get(); }
     cmajor::symbols::FunctionSymbol* GetPushCompileUnitUnwindInfoInitFunctionSymbol() const { return pushCompileUnitUnwindInfoInitFunctionSymbol; }
@@ -194,6 +198,8 @@ private:
     std::unique_ptr<cmajor::symbols::GlobalVariableSymbol> compileUnitUnwindInfoVarSymbol;
     cmajor::symbols::FunctionSymbol* globalInitFunctionSymbol;
     std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>> allCompileUnitInitFunctionSymbols;
+    cmajor::symbols::TypeSymbol* traceEntryTypeSymbol;
+    cmajor::symbols::TypeSymbol* traceGuardTypeSymbol;
 };
 
 } // namespace cmajor::binder

@@ -1,0 +1,38 @@
+using System;
+using System.IO;
+
+int main()
+{
+    {
+        auto result = File.CreateText("C:/work/foo.txt");
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << "\n";
+            return 1;
+        }
+        StreamWriter& writer = result.Value();
+        writer.WriteLine("foo");
+        writer.WriteLine("bar");
+        writer.WriteLine("bazz");
+    }
+    {
+        auto result = File.OpenRead("C:/work/foo.txt");
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << "\n";
+            return 1;
+        }
+        StreamReader& reader = result.Value();
+        while (!reader.EndOfStream())
+        {
+            auto line = reader.ReadLine();
+            if (line.Error())
+            {
+                Console.Error() << line.GetErrorMessage() << "\n";
+                return 1;
+            }
+            Console.WriteLine(line.Value());
+        }
+    }
+    return 0;
+}

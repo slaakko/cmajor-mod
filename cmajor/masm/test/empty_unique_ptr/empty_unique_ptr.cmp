@@ -1,0 +1,2 @@
+project empty_unique_ptr;
+source <empty_unique_ptr.cm>;

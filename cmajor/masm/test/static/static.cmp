@@ -1,0 +1,3 @@
+project static;
+source <static.cm>;
+source <main.cm>;

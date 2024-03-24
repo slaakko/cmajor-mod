@@ -238,7 +238,17 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 AddResources(project, rootModule.get(), objectFilePaths);
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
-                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                    std::string classIndexFilePath;
+                    std::string traceDataFilePath;
+                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    {
+                        classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
+                        cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
+                        traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
+                        rootModule->WriteTraceData(traceDataFilePath);
+                    }
+                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, classIndexFilePath, traceDataFilePath,
+                        cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
                 }
                 if (!objectFilePaths.empty())
                 {

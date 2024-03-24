@@ -1187,6 +1187,20 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(destructorSymbol->Parent());
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    {
+                        cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
+                        boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
+                        cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+                        if (compileUnitNode)
+                        {
+                            copy->SetCompileUnitId(compileUnitNode->Id());
+                            copy->ComputeMangledName();
+                        }
+                        destructorSymbol->SetInstantiatedName(copy->MangledName());
+                        destructorSymbol = copy;
+                        boundFunctionCall->SetFunctionSymbol(destructorSymbol);
+                    }
                     boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                     std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
                     GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, boundFunction, node);
@@ -1382,11 +1396,11 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                     if (specialization->GetModule() != module)
                     {
                         specialization = boundCompileUnit.GetSymbolTable().GetCurrentClassTemplateSpecialization(specialization);
-                        int index = bestFun->GetIndex();
+                        int index = bestMatch.fun->GetIndex();
                         bestFun = specialization->GetFunctionByIndex(index);
                     }
-                    bestFun = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
-                    if (!bestFun)
+                    cmajor::symbols::FunctionSymbol* instantiatedBestFun = boundCompileUnit.InstantiateClassTemplateMemberFunction(bestFun, containerScope, boundFunction, node);
+                    if (!instantiatedBestFun)
                     {
                         cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(bestFun->Parent());
                         std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
@@ -1401,6 +1415,10 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                             throw cmajor::symbols::Exception("internal error: could not instantiate member function of a class template specialization '" +
                                 util::ToUtf8(specialization->FullName()) + "'", node->GetFullSpan(), specialization->GetFullSpan());
                         }
+                    }
+                    else
+                    {
+                        bestFun = instantiatedBestFun;
                     }
                 }
             }
@@ -1519,7 +1537,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().Lock());
                     cmajor::symbols::ClassTemplateSpecializationSymbol* copy = boundCompileUnit.GetSymbolTable().CopyClassTemplateSpecialization(specialization);
                     boundCompileUnit.GetClassTemplateRepository().BindClassTemplateSpecialization(copy, boundCompileUnit.GetSymbolTable().GlobalNs().GetContainerScope(), node);
-                    int index = singleBest->GetIndex();
+                    int index = bestMatch.fun->GetIndex();
                     singleBest = copy->GetFunctionByIndex(index);
                     singleBest = boundCompileUnit.InstantiateClassTemplateMemberFunction(singleBest, containerScope, boundFunction, node);
                     if (!singleBest)

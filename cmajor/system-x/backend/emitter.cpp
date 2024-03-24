@@ -1519,6 +1519,10 @@ void SystemXEmitter::SetFunctionName(const std::string& functionName)
 {
 }
 
+void SystemXEmitter::SetFunctionComment(void* function, const std::string& functionComment)
+{
+}
+
 void SystemXEmitter::BeginScope()
 {
 }

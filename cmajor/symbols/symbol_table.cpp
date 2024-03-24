@@ -617,10 +617,6 @@ void SymbolTable::EndClass()
     currentClassStack.pop();
     EndContainer();
     classTypeSymbol->ComputeMinArity();
-    if (container->IsDeclarationBlock())
-    {
-        int x = 0;
-    }
     container->AddMember(classTypeSymbol);
 }
 
@@ -1983,11 +1979,6 @@ void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* i
     SymbolLocation definitionLocation;
     if (symbol->GetLocation(definitionLocation))
     {
-        if (definitionLocation.fileIndex == -1)
-        {
-            std::cout << util::ToUtf8(symbol->Name()) << "\n";
-            int x = 0;
-        }
         symbolDefinitionMap[identifierLocation] = definitionLocation;
     }
 }

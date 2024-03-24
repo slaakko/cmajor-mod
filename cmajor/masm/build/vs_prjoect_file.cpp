@@ -10,10 +10,27 @@ import soul.xml.dom;
 
 namespace cmajor::masm::build {
 
+void MakeResourceFile(const std::string& resourceFilePath, const std::string& classIndexFilePath, const std::string& traceDataFilePath)
+{
+    std::ofstream resourceFile(resourceFilePath);
+    util::CodeFormatter formatter(resourceFile);
+    formatter.WriteLine("CLASS_INDEX RCDATA \"" + classIndexFilePath + "\"");
+    formatter.WriteLine("TRACE_DATA RCDATA \"" + traceDataFilePath + "\"");
+}
+
 std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, 
-    const std::vector<std::string> cppFilePaths, bool verbose)
+    const std::vector<std::string> cppFilePaths, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
 {
     std::string vsProjectFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".vcxproj");
+
+    if (project->GetTarget() == cmajor::ast::Target::program)
+    {
+        if (!classIndexFilePath.empty() && !traceDataFilePath.empty())
+        {
+            std::string resourceFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "runtime_info.rc");
+            MakeResourceFile(resourceFilePath, classIndexFilePath, traceDataFilePath);
+        }
+    }
 
     std::string libraryDirs;
     std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(util::CmajorRoot(), "lib"));
@@ -268,10 +285,6 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         soul::xml::Text* debugDependenciesText = soul::xml::MakeText(cmrtmasm_debug + ";" + dom_debug + ";" + soul_lexer_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
-        //soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly"); TODO force
-        //soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
-        //forceFileOutput->AppendChild(multipleDefinedSymbols);
-        //debugLink->AppendChild(forceFileOutput);
     }
     debugItemDefinitionGroup->AppendChild(debugLink);
 
@@ -335,10 +348,6 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(cmrtmasm_release + ";" + dom_release + ";" + soul_lexer_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
-        //soul::xml::Text* multipleDefinedSymbols = soul::xml::MakeText("MultiplyDefinedSymbolOnly"); todo force
-        //soul::xml::Element* forceFileOutput = soul::xml::MakeElement("ForceFileOutput");
-        //forceFileOutput->AppendChild(multipleDefinedSymbols);
-        //releaseLink->AppendChild(forceFileOutput);
     }
     releaseItemDefinitionGroup->AppendChild(releaseLink);
 
@@ -366,12 +375,12 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     {
         soul::xml::Element* rcItemGroup = soul::xml::MakeElement("ItemGroup");
         soul::xml::Element* rcCompile = soul::xml::MakeElement("ResourceCompile");
-/*
-        if (!classIndexFilePath.empty())
+        if (!classIndexFilePath.empty() && !traceDataFilePath.empty())
         {
-            rcCompile->SetAttribute("Include", "class_index.rc");
+            rcCompile->SetAttribute("Include", "runtime_info.rc");
             rcItemGroup->AppendChild(rcCompile);
         }
+/*
         for (const auto& resourceFile : resourceFiles)
         {
             soul::xml::Element* rcCompile = soul::xml::MakeElement("ResourceCompile");

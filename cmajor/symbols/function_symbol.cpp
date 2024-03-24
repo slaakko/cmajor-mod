@@ -30,6 +30,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
+std::mutex instantiationMutex;
+
 AccessCheckFunction hasAccess;
 
 void SetAccessCheckFunction(AccessCheckFunction accessCheckFunc)
@@ -470,7 +472,7 @@ FunctionSymbol::FunctionSymbol(const soul::ast::Span& span_, const std::u32strin
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
-    conversionSourceType(nullptr), conversionTargetType(nullptr)
+    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr)
 {
 }
 
@@ -479,7 +481,7 @@ FunctionSymbol::FunctionSymbol(SymbolType symbolType_, const soul::ast::Span& sp
     functionId(util::nil_uuid()), groupName(), parameters(), localVariables(),
     returnType(), flags(FunctionSymbolFlags::none), index(-1), vmtIndex(-1), imtIndex(-1),
     nextTemporaryIndex(0), functionGroup(nullptr), isProgramMain(false), unwindInfoVar(nullptr),
-    conversionSourceType(nullptr), conversionTargetType(nullptr)
+    conversionSourceType(nullptr), conversionTargetType(nullptr), traceEntryVar(nullptr), traceGuardVar(nullptr)
 {
 }
 
@@ -538,6 +540,7 @@ void FunctionSymbol::Write(SymbolWriter& writer)
         writer.GetBinaryStreamWriter().Write(conversionSourceType->TypeId());
         writer.GetBinaryStreamWriter().Write(conversionTargetType->TypeId());
     }
+    writer.GetBinaryStreamWriter().Write(instantiatedName);
 }
 
 void FunctionSymbol::Read(SymbolReader& reader)
@@ -597,6 +600,7 @@ void FunctionSymbol::Read(SymbolReader& reader)
         reader.GetSymbolTable()->EmplaceTypeRequest(reader, this, conversionTargetTypeId, 10001);
         reader.AddConversion(this);
     }
+    instantiatedName = reader.GetBinaryStreamReader().ReadUtf32String();
 }
 
 void FunctionSymbol::EmplaceFunction(FunctionSymbol* functionSymbol, int index)
@@ -740,6 +744,20 @@ void FunctionSymbol::ComputeMangledName()
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
         util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentString + constraintString + compileUnitId)));
     SetMangledName(mangledName);
+}
+
+const std::u32string& FunctionSymbol::InstantiatedName() const
+{
+    std::lock_guard<std::mutex> lock(instantiationMutex);
+    if (!instantiatedName.empty()) return instantiatedName;
+    return MangledName();
+}
+
+void FunctionSymbol::SetInstantiatedName(const std::u32string& instantiatedName_)
+{
+    std::lock_guard<std::mutex> lock(instantiationMutex);
+    if (!instantiatedName.empty()) return;
+    instantiatedName = instantiatedName_;
 }
 
 std::u32string FunctionSymbol::FullName(bool withParamNames) const
@@ -916,7 +934,8 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
         genObject->Load(emitter, flags & cmajor::ir::OperationFlags::functionCallFlags);
     }
     void* functionType = IrType(emitter);
-    void* callee = emitter.GetOrInsertFunction(util::ToUtf8(MangledName()), functionType, DontThrow());
+    // MangledName changed to InstantiatedName:
+    void* callee = emitter.GetOrInsertFunction(util::ToUtf8(InstantiatedName()), functionType, DontThrow());
     std::vector<void*> args;
     int n = parameters.size();
     if (ReturnsClassInterfaceOrClassDelegateByValue())
@@ -1527,6 +1546,16 @@ void FunctionSymbol::SetPrevUnwindInfoVar(LocalVariableSymbol* prevUnwindInfoVar
 void FunctionSymbol::SetUnwindInfoVar(LocalVariableSymbol* unwindInfoVar_)
 {
     unwindInfoVar.reset(unwindInfoVar_);
+}
+
+void FunctionSymbol::SetTraceEntryVar(LocalVariableSymbol* traceEntryVar_)
+{
+    traceEntryVar = traceEntryVar_;
+}
+
+void FunctionSymbol::SetTraceGuardVar(LocalVariableSymbol* traceGuardVar_)
+{
+    traceGuardVar = traceGuardVar_;
 }
 
 int FunctionSymbol::NextTemporaryIndex()

@@ -1,0 +1,35 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System.Concepts;
+
+namespace System
+{
+    public class ErrorId
+    {
+        public ErrorId(int value_) : value(value_) {}
+        public int value;
+    }
+
+    public class Result<T> 
+    {
+        public Result() : value(), errorId(0) {}
+        public Result(const T& value_) : value(value_), errorId(0) {}
+        public Result(T&& value_) : value(Rvalue(value_)), errorId(0) {}
+        public Result(ErrorId errorId_) : value(), errorId(errorId_.value) {}
+        public Result(const T& value_, ErrorId errorId_) : value(value_), errorId(errorId_.value) {}
+        public Result(T&& value_, ErrorId errorId_) : value(Rvalue(value_)), errorId(errorId_.value) {}
+        public Result<T> AndThen(const Result<T>& second) { if (Error()) return *this; else return second; }
+        public const T& Value() const { return value; }
+        public T& Value() { return value; }
+        public bool Error() const { return errorId != 0; }
+        public int GetErrorId() const { return errorId; }
+        public void SetErrorId(int errorId_) { errorId = errorId_; }
+        public string GetErrorMessage() const { return RtmGetErrorMessage(errorId); }
+        private T value;
+        private int errorId;
+    }
+
+}

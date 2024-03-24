@@ -1,0 +1,87 @@
+using System;
+
+class Foo 
+{
+    public default virtual ~Foo();
+}
+
+class Bar
+{
+    public default virtual ~Bar();
+}
+
+class Base 
+{
+    public default virtual ~Base();
+}
+
+class DerivedClass : Base
+{
+}
+
+class Third : DerivedClass
+{
+}
+
+void test()
+{
+    UniquePtr<Foo> foo = new Foo();
+    if (foo.Get() is Foo*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    if (foo.Get() is Bar*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    UniquePtr<Base> derived = new DerivedClass();
+    if (derived.Get() is Base*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    if (derived.Get() is Foo*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    if (derived.Get() is Third*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    UniquePtr<Base> third = new Third();
+    if (third.Get() is DerivedClass*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    if (third.Get() is Base*)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+}

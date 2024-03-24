@@ -1,0 +1,97 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public constexpr inline byte MinValue(byte)
+    {
+        return cast<byte>(0x00);
+    }
+
+    public constexpr inline byte MaxValue(byte)
+    {
+        return cast<byte>(0xFF);
+    }
+
+    public constexpr inline sbyte MinValue(sbyte)
+    {
+        return cast<sbyte>(0x80);
+    }
+
+    public constexpr inline sbyte MaxValue(sbyte)
+    {
+        return cast<sbyte>(0x7F);
+    }
+
+    public constexpr inline short MinValue(short)
+    {
+        return cast<short>(0x8000);
+    }
+
+    public constexpr inline short MaxValue(short)
+    {
+        return cast<short>(0x7FFF);
+    }
+
+    public constexpr inline ushort MinValue(ushort)
+    {
+        return cast<ushort>(0x0000);
+    }
+
+    public constexpr inline ushort MaxValue(ushort)
+    {
+        return cast<ushort>(0xFFFF);
+    }
+
+    public constexpr inline int MinValue(int)
+    {
+        return cast<int>(0x80000000);
+    }
+
+    public constexpr inline int MaxValue(int)
+    {
+        return cast<int>(0x7FFFFFFF);
+    }
+
+    public constexpr inline uint MinValue(uint)
+    {
+        return cast<uint>(0x00000000);
+    }
+
+    public constexpr inline uint MaxValue(uint)
+    {
+        return cast<uint>(0xFFFFFFFF);
+    }
+
+    public constexpr inline long MinValue(long)
+    {
+        return cast<long>(0x8000000000000000);
+    }
+
+    public constexpr inline long MaxValue(long)
+    {
+        return cast<long>(0x7FFFFFFFFFFFFFFF);
+    }
+
+    public constexpr inline ulong MinValue(ulong)
+    {
+        return cast<ulong>(0x0000000000000000);
+    }
+
+    public constexpr inline ulong MaxValue(ulong)
+    {
+        return cast<ulong>(0xFFFFFFFFFFFFFFFF);
+    }
+    
+    public constexpr inline I MinValue<I>() 
+    {
+        return MinValue(cast<I>(0));
+    }
+
+    public constexpr inline I MaxValue<I>() 
+    {
+        return MaxValue(cast<I>(0));
+    }
+}

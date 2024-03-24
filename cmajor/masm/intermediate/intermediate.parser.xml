@@ -1,7 +1,7 @@
 <parserFile>
  <grammar name="IntermediateParser">
-  <rule first="{#, DATA, FUNCTION, TYPES}" name="IntermediateFile">
-   <sequence first="{#, DATA, FUNCTION, TYPES}">
+  <rule first="{#, DATA, EXTERN, FUNCTION, TYPES}" name="IntermediateFile">
+   <sequence first="{#, DATA, EXTERN, FUNCTION, TYPES}">
     <sequence first="{#, DATA, TYPES}">
      <sequence first="{#, TYPES}">
       <action first="{#}">
@@ -15,8 +15,8 @@
       <nonterminal first="{DATA}" ruleName="DataDefinitions"/>
      </optional>
     </sequence>
-    <optional first="{#, FUNCTION}">
-     <nonterminal first="{#, FUNCTION}" ruleName="FunctionDefinitions"/>
+    <optional first="{#, EXTERN, FUNCTION}">
+     <nonterminal first="{#, EXTERN, FUNCTION}" ruleName="FunctionDefinitions"/>
     </optional>
    </sequence>
   </rule>
@@ -704,10 +704,37 @@
     </action>
    </choice>
   </rule>
-  <rule first="{#, FUNCTION}" name="FunctionDefinitions">
-   <kleene first="{#, FUNCTION}">
-    <nonterminal first="{FUNCTION}" ruleName="FunctionDefinition"/>
+  <rule first="{#, EXTERN, FUNCTION}" name="FunctionDefinitions">
+   <kleene first="{#, EXTERN, FUNCTION}">
+    <group first="{EXTERN, FUNCTION}">
+     <choice first="{EXTERN, FUNCTION}">
+      <nonterminal first="{EXTERN}" ruleName="FunctionDeclaration"/>
+      <nonterminal first="{FUNCTION}" ruleName="FunctionDefinition"/>
+     </choice>
+    </group>
    </kleene>
+  </rule>
+  <rule first="{EXTERN}" name="FunctionDeclaration">
+   <action first="{EXTERN}">
+    <group first="{EXTERN}">
+     <sequence first="{EXTERN}">
+      <sequence first="{EXTERN}">
+       <sequence first="{EXTERN}">
+        <action first="{EXTERN}">
+         <token first="{EXTERN}" name="EXTERN"/>
+        </action>
+        <token first="{FUNCTION}" name="FUNCTION"/>
+       </sequence>
+       <action first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
+        <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="TypeRef"/>
+       </action>
+      </sequence>
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
   </rule>
   <rule first="{FUNCTION}" name="FunctionDefinition">
    <sequence first="{FUNCTION}">

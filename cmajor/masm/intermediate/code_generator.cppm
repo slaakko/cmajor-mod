@@ -100,6 +100,7 @@ private:
     std::string label;
     cmajor::masm::assembly::Instruction* dataInstruction;
     cmajor::masm::assembly::OpCode prevDataOpCode;
+    int64_t currentOffset;
 };
 
 } // cmajor::masm::intermediate

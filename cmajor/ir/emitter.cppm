@@ -29,6 +29,7 @@ public:
     virtual void* GetGlobalUStringConstant(int stringId, void*& arrayType) = 0;
     virtual void* GetGlobalUuidConstant(int uuidId) = 0;
     virtual void SetLineNumber(int32_t lineNumber) {}
+    virtual void SetSpan(const soul::ast::Span& span) {}
     virtual void* HandlerBlock() { return nullptr; }
     virtual void* CleanupBlock() { return nullptr; }
     virtual bool NewCleanupNeeded() { return false; }
@@ -323,6 +324,7 @@ public:
     virtual void SetFunctionCallConventionToStdCall(void* function) = 0;
     virtual void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) = 0;
     virtual void SetFunctionName(const std::string& functionName) = 0;
+    virtual void SetFunctionComment(void* function, const std::string& functionComment) = 0;
     virtual void BeginScope() = 0;
     virtual void EndScope() = 0;
     virtual int16_t GetCurrentScopeId() const = 0;
@@ -369,6 +371,9 @@ public:
     virtual void SetFunctionMdId(void* function, int mdId) = 0;
     virtual void* GetMDStructRefForSourceFile(const std::string& sourceFileName) = 0;
     virtual void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) = 0;
+    bool GenerateLocationInfo() const { return generateLocationInfo; }
+    void SetGenerateLocationInfo(bool generateLocationInfo_) { generateLocationInfo = generateLocationInfo_; }
+    virtual void SetSpan(const soul::ast::Span& span) {}
     virtual void SetMetadataRef(void* inst, void* mdStructRef) = 0;
     virtual void FinalizeFunction(void* function, bool hasCleanup) = 0;
     virtual int Install(const std::string& str) = 0;
@@ -389,6 +394,7 @@ public:
     virtual void* GetBoundCompileUnit() const = 0;
 private:
     ValueStack* stack;
+    bool generateLocationInfo;
 };
 
 } // namespace cmajor::ir

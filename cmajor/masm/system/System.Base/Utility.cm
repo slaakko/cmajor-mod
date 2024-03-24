@@ -7,16 +7,11 @@ namespace System
 {
     public constexpr inline long Align(long n, long alignment)
     {
-    #if (DEBUG)
-        if (alignment <= 0)
-        {
-            RtmPanic("Align: invalid alignment");
-        }
-    #endif
+        #assert(alignment > 0);
         return (n + alignment - 1) & -alignment;
     }
 
-    public constexpr nothrow inline long StrLen(const char* s)
+    public constexpr inline long StrLen(const char* s)
     {
         long len = 0;
         if (s != null)
@@ -30,7 +25,7 @@ namespace System
         return len;
     }
 
-    public constexpr nothrow inline long StrLen(const wchar* s)
+    public constexpr inline long StrLen(const wchar* s)
     {
         long len = 0;
         if (s != null)
@@ -44,7 +39,7 @@ namespace System
         return len;
     }
 
-    public constexpr nothrow inline long StrLen(const uchar* s)
+    public constexpr inline long StrLen(const uchar* s)
     {
         long len = 0;
         if (s != null)
@@ -60,12 +55,7 @@ namespace System
 
     public inline void StrCopy(char* buf, const char* from)
     {
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -78,12 +68,7 @@ namespace System
 
     public inline void StrCopy(wchar* buf, const wchar* from)
     {
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -96,12 +81,7 @@ namespace System
 
     public inline void StrCopy(uchar* buf, const uchar* from)
     {
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -115,12 +95,7 @@ namespace System
     public inline long StrCopy(char* buf, const char* from, long length)
     {
         long resultLen = 0;
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -140,12 +115,7 @@ namespace System
     public inline long StrCopy(wchar* buf, const wchar* from, long length)
     {
         long resultLen = 0;
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -165,12 +135,7 @@ namespace System
     public inline long StrCopy(uchar* buf, const uchar* from, long length)
     {
         long resultLen = 0;
-    #if (DEBUG)
-        if (buf == null)
-        {
-            RtmPanic("StrCopy: buffer is null");
-        }
-    #endif
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -187,7 +152,7 @@ namespace System
         return resultLen;
     }
 
-    public nothrow long MemGrow(long size)
+    public long MemGrow(long size)
     {
         if (size < 8)
         {

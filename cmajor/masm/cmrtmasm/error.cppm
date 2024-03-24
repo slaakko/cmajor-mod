@@ -7,9 +7,20 @@ export module cmajor.masm.rt.error;
 
 import std.core;
 
+export namespace cmajor::masm::rt {
+
+class StackTrace;
+
+int AllocateError(const std::string& errorMessage);
+
+} // cmajor::masm::rt
+
 export {
 
 extern "C" void RtmPanic(const char* message);
 extern "C" void RtmFailAssertion(const char* assertion, const char* function, const char* sourceFilePath, int lineNumber);
+extern "C" int RtmAllocateError(const char* errorMessage);
+extern "C" const char* RtmGetErrorMessage(int errorId);
+extern "C" void RtmDisposeError(int errorId);
 
 }

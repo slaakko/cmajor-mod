@@ -13,7 +13,7 @@ lexer IntermediateLexer
 {
     rules
     {
-        "{ws}" {}
+        "{separators}" {}
         "{clsid}"  { return CLSID; }
         "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return kw; }
         "{typeidentifier}" { return TYPEID; }

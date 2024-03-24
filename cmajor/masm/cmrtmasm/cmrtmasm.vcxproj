@@ -116,7 +116,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4267;4146</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -136,7 +136,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4267;4146</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -147,13 +147,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ascii.cpp" />
+    <ClCompile Include="ascii.cppm" />
+    <ClCompile Include="classes.cpp" />
+    <ClCompile Include="classes.cppm" />
     <ClCompile Include="cmrtmasm.cppm" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.cppm" />
     <ClCompile Include="init_done.cpp" />
     <ClCompile Include="init_done.cppm" />
+    <ClCompile Include="io.cpp" />
+    <ClCompile Include="io.cppm" />
+    <ClCompile Include="math.cpp" />
+    <ClCompile Include="math.cppm" />
     <ClCompile Include="memory.cpp" />
     <ClCompile Include="memory.cppm" />
+    <ClCompile Include="random.cpp" />
+    <ClCompile Include="random.cppm" />
+    <ClCompile Include="strings.cpp" />
+    <ClCompile Include="strings.cppm" />
+    <ClCompile Include="time.cpp" />
+    <ClCompile Include="time.cppm" />
+    <ClCompile Include="trace.cpp" />
+    <ClCompile Include="trace.cppm" />
     <ClCompile Include="unit_test.cpp" />
     <ClCompile Include="unit_test.cppm" />
     <ClCompile Include="util.cpp" />

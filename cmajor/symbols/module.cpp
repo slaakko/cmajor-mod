@@ -275,6 +275,49 @@ const std::u32string& SourceFileCache::GetFileContent(const std::string& filePat
     }
 }
 
+SourceFileInfo::SourceFileInfo() : sourceFileId(-1), sourceFilePath()
+{
+}
+
+SourceFileInfo::SourceFileInfo(int32_t sourceFileId_, const std::string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
+{
+}
+
+void SourceFileInfo::Write(util::BinaryStreamWriter& writer)
+{
+    writer.Write(sourceFileId);
+    writer.Write(sourceFilePath);
+}
+
+void SourceFileInfo::Read(util::BinaryStreamReader& reader)
+{
+    sourceFileId = reader.ReadInt();
+    sourceFilePath = reader.ReadUtf8String();
+}
+
+FunctionTraceInfo::FunctionTraceInfo() : functionId(-1), functionFullName(), sourceFileId(-1)
+{
+}
+
+FunctionTraceInfo::FunctionTraceInfo(int32_t functionId_, const std::string& functionFullName_, int32_t sourceFileId_) :
+    functionId(functionId_), functionFullName(functionFullName_), sourceFileId(sourceFileId_)
+{
+}
+
+void FunctionTraceInfo::Write(util::BinaryStreamWriter& writer)
+{
+    writer.Write(functionId);
+    writer.Write(functionFullName);
+    writer.Write(sourceFileId);
+}
+
+void FunctionTraceInfo::Read(util::BinaryStreamReader& reader)
+{
+    functionId = reader.ReadInt();
+    functionFullName = reader.ReadUtf8String();
+    sourceFileId = reader.ReadInt();
+}
+
 void Visit(std::vector<Module*>& finishReadOrder, Module* module, std::unordered_set<Module*>& visited, std::unordered_set<Module*>& tempVisit,
     std::unordered_map<Module*, ModuleDependency*>& dependencyMap, const Module* rootModule)
 {
@@ -360,9 +403,11 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             reader.GetBinaryStreamReader().GetStream().Seek(module->SymbolTablePos(), util::Origin::seekSet);
             reader.SetRootModule(rootModule);
             module->GetSymbolTable().Read(reader);
+            module->ReadFunctionTraceData(reader.GetBinaryStreamReader());
             for (Module* referencedModule : module->ReferencedModules())
             {
                 module->GetSymbolTable().Import(referencedModule->GetSymbolTable());
+                rootModule->ImportTraceData(referencedModule);
             }
             module->GetSymbolTable().FinishRead(arrayTypes, derivedTypes, classTemplateSpecializations, typeAndConceptRequests, functionRequests, conversions);
             module->SetImmutable();
@@ -371,6 +416,7 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
 #endif
             if (rootModule == module) continue;
             rootModule->GetSymbolTable().Import(module->GetSymbolTable());
+            rootModule->ImportTraceData(module);
         }
         else
         {
@@ -378,6 +424,7 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             LogMessage(rootModule->LogStreamId(), "FinishReads: " + ToUtf8(module->Name()) + " in cache", rootModule->DebugLogIndent());
 #endif 
             rootModule->GetSymbolTable().Import(module->GetSymbolTable());
+            rootModule->ImportTraceData(module);
         }
     }
 #ifdef MODULE_READING_DEBUG
@@ -1007,6 +1054,93 @@ void Module::Write(SymbolWriter& writer)
         writer.GetBinaryStreamWriter().Write(exportedData[i]);
     }
     symbolTable->Write(writer);
+    WriteFunctionTraceData(writer.GetBinaryStreamWriter());
+}
+
+void Module::WriteFunctionTraceData(util::BinaryStreamWriter& writer)
+{
+    if (GetBackEnd() != BackEnd::masm) return;
+    if (name == U"System.Core" || name == U"System.Runtime") return;
+    if (GetConfig() == "release") return;
+    int32_t ns = sourceFileInfoVec.size();
+    writer.Write(ns);
+    for (auto& sourceFileInfo : sourceFileInfoVec)
+    {
+        sourceFileInfo->Write(writer);
+    }
+    int32_t nf = traceInfoVec.size();
+    writer.Write(nf);
+    for (auto& traceInfo : traceInfoVec)
+    {
+        traceInfo->Write(writer);
+    }
+}
+
+void Module::ReadFunctionTraceData(util::BinaryStreamReader& reader)
+{
+    if (GetBackEnd() != BackEnd::masm) return;
+    if (name == U"System.Core" || name == U"System.Runtime") return;
+    if (GetConfig() == "release") return;
+    int32_t ns = reader.ReadInt();
+    for (int32_t i = 0; i < ns; ++i)
+    {
+        std::unique_ptr<SourceFileInfo> sourceFileInfo(new SourceFileInfo());
+        sourceFileInfo->Read(reader);
+        sourceFileInfoVec.push_back(std::move(sourceFileInfo));
+    }
+    int32_t nf = reader.ReadInt();
+    for (int32_t i = 0; i < nf; ++i)
+    {
+        std::unique_ptr<FunctionTraceInfo> traceInfo(new FunctionTraceInfo());
+        traceInfo->Read(reader);
+        traceInfoVec.push_back(std::move(traceInfo));
+    }
+    for (const auto& sourceFileInfo : sourceFileInfoVec)
+    {
+        sourceFileInfoMap[sourceFileInfo->SourceFilePath()] = sourceFileInfo.get();
+    }
+    for (const auto& functionTraceInfo : traceInfoVec)
+    {
+        traceInfoMap[functionTraceInfo->FunctionFullName()] = functionTraceInfo.get();
+    }
+}
+
+void Module::ImportTraceData(Module* module)
+{
+    if (GetBackEnd() != BackEnd::masm) return;
+    if (name == U"System.Core" || name == U"System.Runtime") return;
+    if (GetConfig() == "release") return;
+    if (traceDataImported.find(module->Name()) != traceDataImported.end()) return;
+    traceDataImported.insert(module->Name());
+    for (const auto& sourceFileInfo : module->sourceFileInfoVec)
+    {
+        allSourceFileInfoVec.push_back(sourceFileInfo.get());
+        sourceFileInfoMap[sourceFileInfo->SourceFilePath()] = sourceFileInfo.get();
+    }
+    for (const auto& functionTraceInfo : module->traceInfoVec)
+    {
+        allTraceInfoVec.push_back(functionTraceInfo.get());
+        traceInfoMap[functionTraceInfo->FunctionFullName()] = functionTraceInfo.get();
+    }
+}
+
+void Module::WriteTraceData(const std::string& traceDataFilePath)
+{
+    util::FileStream fileStream(traceDataFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BufferedStream bufferedStream(fileStream);
+    util::BinaryStreamWriter writer(bufferedStream);
+    int32_t ns = allSourceFileInfoVec.size();
+    writer.Write(ns);
+    for (auto sourceFileInfo : allSourceFileInfoVec)
+    {
+        sourceFileInfo->Write(writer);
+    }
+    int32_t nt = allTraceInfoVec.size();
+    writer.Write(nt);
+    for (auto traceInfo : allTraceInfoVec)
+    {
+        traceInfo->Write(writer);
+    }
 }
 
 void Module::AddReferencedModule(Module* referencedModule)
@@ -1866,6 +2000,38 @@ std::string Module::GetParamHelpList(const std::string& sourceFilePath, int symb
     }
 */
     return std::string();
+}
+
+int32_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::string& sourceFilePath)
+{
+    std::lock_guard<std::recursive_mutex> lck(lock);
+    SourceFileInfo* sourceFileInfo = nullptr;
+    auto sit = sourceFileInfoMap.find(sourceFilePath);
+    if (sit != sourceFileInfoMap.end())
+    {
+        sourceFileInfo = sit->second;
+    }
+    else
+    {
+        sourceFileInfo = new SourceFileInfo(allSourceFileInfoVec.size(), sourceFilePath);
+        sourceFileInfoVec.push_back(std::unique_ptr<SourceFileInfo>(sourceFileInfo));
+        allSourceFileInfoVec.push_back(sourceFileInfo);
+        sourceFileInfoMap[sourceFilePath] = sourceFileInfo;
+    }
+    FunctionTraceInfo* functionTraceInfo = nullptr;
+    auto fit = traceInfoMap.find(fullFunctionName);
+    if (fit != traceInfoMap.end())
+    {
+        functionTraceInfo = fit->second;
+    }
+    else
+    {
+        functionTraceInfo = new FunctionTraceInfo(allTraceInfoVec.size(), fullFunctionName, sourceFileInfo->SourceFileId());
+        traceInfoVec.push_back(std::unique_ptr<FunctionTraceInfo>(functionTraceInfo));
+        allTraceInfoVec.push_back(functionTraceInfo);
+        traceInfoMap[fullFunctionName] = functionTraceInfo;
+    }
+    return functionTraceInfo->FunctionId();
 }
 
 #ifdef _WIN32

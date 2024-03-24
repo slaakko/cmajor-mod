@@ -18,7 +18,6 @@ class Context;
 class Function : public Value
 {
 public:
-    //Function(const std::string& name_, FunctionType* type_, Context& context);
     Function(const std::string& name_, Type* type_, Context& context);
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
@@ -29,6 +28,7 @@ public:
     Type* GetType(Context& context) override { return type; }
     Value* GetParam(int index) const;
     std::string Name(Context& context) override { return "@" + name; }
+    void SetComment(const std::string& comment_);
     void Write(util::CodeFormatter& formatter, Context& context);
 private:
     std::string name;
@@ -39,6 +39,7 @@ private:
     std::vector<std::unique_ptr<BasicBlock>> cleanupBasicBlocks;
     int32_t nextResultNumber;
     int nextBBNumber;
+    std::string comment;
 };
 
 } // namespace cmajor::masm::ir

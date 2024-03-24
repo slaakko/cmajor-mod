@@ -1685,7 +1685,8 @@ void ExpressionBinder::Visit(cmajor::ast::IsNode& isNode)
             cmajor::symbols::ClassTypeSymbol* rightClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(rightBaseType);
             if (rightClassType->IsPolymorphic())
             {
-                std::unique_ptr<BoundExpression> boundExpr = BindExpression(isNode.Expr(), boundCompileUnit, boundFunction, containerScope, statementBinder, false, false, false, false);
+                std::unique_ptr<BoundExpression> boundExpr = BindExpression(
+                    isNode.Expr(), boundCompileUnit, boundFunction, containerScope, statementBinder, false, false, false, false);
                 cmajor::symbols::TypeSymbol* leftType = boundExpr->GetType();
                 if (leftType->IsPointerType())
                 {
@@ -2736,10 +2737,7 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::DotNode(newNode.GetSpan(),
-            new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"System"),
-            new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"MemAlloc")));
-        // todo
+        invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"RtmMemAlloc"));
     }
     invokeMemAlloc->AddArgument(new cmajor::ast::SizeOfNode(newNode.GetSpan(), newNode.TypeExpr()->Clone(cloneContext)));
     if (memDebug)

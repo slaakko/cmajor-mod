@@ -1,0 +1,201 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.IO
+{
+    public const int stdin = 0;
+    public const int stdout = 1;
+    public const int stderr = 2;
+
+    public nothrow bool IsConsoleHandle(int handle)
+    {
+        return RtmIsConsoleHandle(handle);
+    }
+
+    public enum OpenMode : byte
+    {
+        none = 0u,
+        read = 1u << 0u,
+        write = 1u << 1u,
+        append = 1u << 2u,
+        binary = 1u << 3u
+    }
+
+    public class FileStream : Stream
+    {
+        public FileStream(int handle) : file(null)
+        {
+            int errorId = 0;
+            file = RtmOpenStdFile(handle, errorId);
+            if (file == null)
+            {
+                SetLatestErrorId(errorId);
+            }
+        }
+        public FileStream(const string& filePath, OpenMode openMode) : file(null)
+        {
+            Open(filePath, openMode);
+        }
+        suppress FileStream(const FileStream&);
+        suppress void operator=(const FileStream&);
+        public FileStream(FileStream&& that) : file(that.file)
+        {
+            that.file = null;
+        }
+        public default void operator=(FileStream&&);
+        public override ~FileStream()
+        {
+            if (file != null)
+            {
+                int errorId = 0;
+                RtmDisposeFile(file, errorId);
+            }
+        }
+        public inline bool IsOpen() const
+        {
+            return file != null;
+        }
+        public Result<bool> Open(const string& filePath, OpenMode openMode)
+        {
+            Close();
+            int errorId = 0;
+            file = RtmOpenFile(filePath.Chars(), openMode, errorId);
+            if (file == null)
+            {
+                SetLatestErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public Result<bool> Close()
+        {
+            if (file != null)
+            {
+                int errorId = 0;
+                if (!RtmClose(file, errorId))
+                {
+                    SetLatestErrorId(errorId);
+                    return Result<bool>(ErrorId(errorId));
+                }
+                file = null;
+            }
+            return Result<bool>(true);
+        }
+        public override Result<int> ReadByte()
+        {
+            int result = RtmReadByte(file);
+            if (result == -1)
+            {
+                if (RtmEof(file))
+                {
+                    return Result<int>(-1);
+                }
+                else
+                {
+                    int errorId = 0;
+                    if (RtmGetFileError(file, errorId))
+                    {
+                        SetLatestErrorId(errorId);
+                        return Result<int>(ErrorId(errorId));
+                    }
+                }
+            }
+            return result;
+        }
+        public override Result<long> Read(byte* buffer, long count)
+        {
+            if (count < 0)
+            {
+                int errorId = RtmAllocateError("FileStream.Read: count less than zero");
+                SetLatestErrorId(errorId);
+                return Result<long>(-1, ErrorId(errorId));
+            }
+            int errorId = 0;
+            long result = RtmRead(file, buffer, count, errorId);
+            if (result == -1)
+            {
+                SetLatestErrorId(errorId);
+                return Result<long>(-1, ErrorId(errorId));
+            }
+            return Result<long>(result);
+        }
+        public override Result<bool> Write(byte x)
+        {
+            int errorId = 0;
+            if (!RtmWriteByte(file, x, errorId))
+            {
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Write(byte* buffer, long count)
+        {
+            if (count < 0)
+            {
+                int errorId = RtmAllocateError("FileStream.Write: count less than zero");
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            int errorId = 0;
+            long result = RtmWrite(file, buffer, count, errorId);
+            if (result == -1)
+            {
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Seek(long pos, Origin origin)
+        {
+            int errorId = 0;
+            if (!RtmSeek(file, pos, origin, errorId))
+            {
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<long> Tell()
+        {
+            int errorId = 0;
+            long result = RtmTell(file, errorId);
+            if (result == -1)
+            {
+                SetLatestErrorId(errorId);
+                return Result<long>(-1, ErrorId(errorId));
+            }
+            return Result<long>(result);
+        }
+        public override Result<bool> Flush()
+        {
+            int errorId = 0;
+            if (!RtmFlush(file, errorId))
+            {
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private void* file;
+    }
+}
+
+namespace System
+{
+    public class Endl
+    {
+        public nothrow Endl()
+        {
+        }
+    }
+
+    public nothrow Endl endl()
+    {
+        return Endl();
+    }
+}

@@ -294,7 +294,24 @@ parser IntermediateParser
         ;
 
     FunctionDefinitions(cmajor::masm::intermediate::Context* context)
-        ::= FunctionDefinition(context):function*
+        ::= 
+            (   FunctionDeclaration(context):declaration
+            |   FunctionDefinition(context):function
+            )*
+        ;
+
+    FunctionDeclaration(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::TypeRef functionTypeRef, 
+        var soul::ast::Span span, var std::string functionId) 
+        ::= 
+        (   
+            EXTERN{ span = lexer.GetSpan(pos); } 
+            FUNCTION 
+            TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
+            ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+        )
+        {
+            context->AddFunctionDeclaration(span, functionTypeRef.GetType(), functionId);
+        }
         ;
 
     FunctionDefinition(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::Function* function)

@@ -7,7 +7,7 @@ import cmajor.masm.intermediate.token;
 
 keywords cmajor.masm.intermediate.keyword
 { 
-    ("types", TYPES), ("data", DATA), ("function", FUNCTION), 
+    ("types", TYPES), ("data", DATA), ("function", FUNCTION), ("extern", EXTERN),
     ("store", STORE), ("arg", ARG), ("jmp", JMP), ("branch", BRANCH), ("call", CALL), ("ret", RET), ("switch", SWITCH), ("nop", NOP), 
     ("not", NOT), ("neg", NEG), ("signextend", SIGNEXTEND), ("zeroextend", ZEROEXTEND), ("truncate", TRUNCATE), ("bitcast", BITCAST),
     ("inttofloat", INTTOFLOAT), ("floattoint", FLOATTOINT), ("inttoptr", INTTOPTR), ("ptrtoint", PTRTOINT),

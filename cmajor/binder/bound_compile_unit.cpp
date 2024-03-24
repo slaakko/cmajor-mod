@@ -261,7 +261,8 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
     constExprFunctionRepository(*this), conversionTable(cmajor::symbols::ConversionTable::Owner::compileUnit, nullptr), bindingTypes(false), compileUnitIndex(-2), 
     immutable(false), nextExitEntryIndex(0),
     systemRuntimeUnwindInfoSymbol(nullptr), systemRuntimeAddCompileUnitFunctionSymbol(nullptr), pushCompileUnitUnwindInfoInitFunctionSymbol(nullptr),
-    initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(module.Id())
+    initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(module.Id()),
+    traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr)
 {
     if (compileUnitNode)
     {
@@ -685,8 +686,8 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                 int index = conversion->GetIndex();
                 conversion = specialization->GetFunctionByIndex(index);
             }
-            conversion = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
-            if (!conversion)
+            cmajor::symbols::FunctionSymbol* instantiatedConversion = InstantiateClassTemplateMemberFunction(conversion, containerScope, currentFunction, node);
+            if (!instantiatedConversion)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(conversion->Parent());
                 std::lock_guard<std::recursive_mutex> lock(symbolTable.GetModule()->GetLock());

@@ -40,12 +40,37 @@ namespace cmajor::symbols {
 
 int32_t GetClassIdVmtIndexOffset()
 {
-    return 0;
+    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx)
+    {
+        return 0;
+    }
+    else if (GetBackEnd() == BackEnd::masm)
+    {
+        Assert(false, "MASM backend does not support class ids");
+        return -1;
+    }
+    else
+    {
+        Assert(false, "unknown backend");
+        return -1;
+    }
 }
 
 int32_t GetTypeIdVmtIndexOffset()
 {
-    return 2;
+    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx)
+    {
+        return 2;
+    }
+    else if (GetBackEnd() == BackEnd::masm)
+    {
+        return 0;
+    }
+    else
+    {
+        Assert(false, "unknown backend");
+        return -1;
+    }
 }
 
 int32_t GetClassNameVmtIndexOffset()
@@ -60,12 +85,13 @@ int32_t GetClassNameVmtIndexOffset()
     }
     else if (GetBackEnd() == BackEnd::masm)
     {
-        // todo
-        return 0;
+        Assert(false, "MASM backend does not support in-class typename");
+        return -1;
     }
     else
     {
-        return 0;
+        Assert(false, "unknown backend");
+        return -1;
     }
 }
 
@@ -81,12 +107,12 @@ int32_t GetImtsVmtIndexOffset()
     }
     else if (GetBackEnd() == BackEnd::masm)
     {
-        // todo
-        return 0;
+        return 2;
     }
     else
     {
-        return 0;
+        Assert(false, "unknown backend");
+        return -1;
     }
 }
 
@@ -102,12 +128,12 @@ int32_t GetFunctionVmtIndexOffset()
     }
     else if (GetBackEnd() == BackEnd::masm)
     {
-        // todo
-        return 0;
+        return 3;
     }
     else
     {
-        return 0;
+        Assert(false, "unknown backend");
+        return -1;
     }
 }
 
@@ -1581,16 +1607,18 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         emitter.SetVmtObjectType(this, localVmtObjectType);
     }
     void* className = nullptr;
-    if (!emitter.IsVmtObjectCreated(this) && create)
+    if (GetBackEnd() != BackEnd::masm)
     {
-        className = emitter.CreateGlobalStringPtr(util::ToUtf8(FullName()));
+        if (!emitter.IsVmtObjectCreated(this) && create)
+        {
+            className = emitter.CreateGlobalStringPtr(util::ToUtf8(FullName()));
+        }
     }
     void* vmtObject = emitter.GetOrInsertGlobal(VmtObjectName(emitter), localVmtObjectType);
     if (!emitter.IsVmtObjectCreated(this) && create)
     {
         emitter.SetVmtObjectCreated(this);
         bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
-        //if ((GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx) && !specialization) // REMOVED
         if (!specialization)
         {
             if (VmtEmitted())
@@ -1709,7 +1737,37 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         }
         else if (GetBackEnd() == BackEnd::masm)
         {
-            // todo
+            uint64_t typeId1 = 0;
+            uint64_t typeId2 = 0;
+            UuidToInts(TypeId(), typeId1, typeId2);
+            //      16-byte type id:
+            vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId1)));
+            vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId2)));
+            if (!implementedInterfaces.empty())
+            {
+                void* itabsArrayObject = CreateImts(emitter);
+                vmtArray.push_back(emitter.CreateBitCast(itabsArrayObject, emitter.GetIrTypeForVoidPtrType())); // interface method table pointer
+            }
+            else
+            {
+                vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
+            }
+            //      virtual method table:
+            int n = vmt.size();
+            for (int i = 0; i < n; ++i)
+            {
+                FunctionSymbol* virtualFunction = vmt[i];
+                if (!virtualFunction || virtualFunction->IsAbstract())
+                {
+                    vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
+                }
+                else
+                {
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter), 
+                        virtualFunction->DontThrow());
+                    vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
+                }
+            }
         }
         void* initializer = emitter.CreateIrValueForConstantArray(localVmtObjectType, vmtArray, std::string());
         emitter.SetInitializer(vmtObject, initializer);
@@ -2023,4 +2081,27 @@ void MakeClassIdFile(const std::set<ClassTypeSymbol*>& polymorphicClasses, const
         ++i;
     }
 }
+
+void MakeClassIndexFile(const std::set<ClassTypeSymbol*>& polymorphicClasses, const std::string& classIndexFilePath)
+{
+    util::FileStream file(classIndexFilePath, util::OpenMode::write | util::OpenMode::binary);
+    util::BufferedStream bufferedFile(file);
+    util::BinaryStreamWriter binaryStreamWriter(bufferedFile);
+    binaryStreamWriter.Write(static_cast<int32_t>(polymorphicClasses.size()));
+    for (ClassTypeSymbol* cls : polymorphicClasses)
+    {
+        binaryStreamWriter.Write(cls->TypeId());
+        ClassTypeSymbol* baseClass = cls->BaseClass();
+        if (baseClass)
+        {
+            binaryStreamWriter.Write(baseClass->TypeId());
+        }
+        else
+        {
+            binaryStreamWriter.Write(util::nil_uuid());
+        }
+        binaryStreamWriter.Write(cls->FullName());
+    }
+}
+
 } // namespace cmajor::symbols

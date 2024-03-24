@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.IO
+{
+    public enum Origin : byte
+    {
+        seekSet, seekCur, seekEnd
+    }
+
+    public abstract class Stream : IOBase
+    {
+        public Stream() : base() {}
+        suppress Stream(const Stream&);
+        suppress void operator=(const Stream&);
+        public default Stream(Stream&&);
+        public default void operator=(Stream&&);
+        public abstract Result<int> ReadByte();
+        public abstract Result<long> Read(byte* buf, long count);
+        public abstract Result<bool> Write(byte x);
+        public abstract Result<bool> Write(byte* buf, long count);
+        public virtual Result<bool> Flush()
+        {
+            return Result<bool>(true);
+        }
+        public virtual Result<bool> Seek(long pos, Origin origin)
+        {
+            string streamClassName = typename(*this);
+            string errorMessage = streamClassName + " stream does not support seek";
+            int errorId = RtmAllocateError(errorMessage.Chars());
+            SetLatestErrorId(errorId);
+            return Result<bool>(false, ErrorId(errorId));
+        }
+        public virtual Result<long> Tell()
+        {
+            string streamClassName = typename(*this);
+            string errorMessage = streamClassName + " stream does not support tell";
+            int errorId = RtmAllocateError(errorMessage.Chars());
+            SetLatestErrorId(errorId);
+            return Result<long>(-1, ErrorId(errorId));
+        }
+    }
+}

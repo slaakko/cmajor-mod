@@ -51,8 +51,8 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     }
     cmajor::ast::FunctionNode* functionNode = static_cast<cmajor::ast::FunctionNode*>(inlineFunctionNode);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(functionNode->GetSpan(), new cmajor::ast::IdentifierNode(functionNode->GetSpan(), U"")));
-    globalNs->SetFileIndex(functionNode->FileIndex());
-    globalNs->SetModuleId(functionNode->ModuleId());
+    globalNs->SetFileIndex(inlineFunction->FileIndex());
+    globalNs->SetModuleId(inlineFunction->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateFunctionNode();
@@ -101,7 +101,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     currentNs->AddMember(functionInstanceNode);
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
-    InstantiationGuard instantiationGuard(symbolTable, functionNode->FileIndex(), functionNode->ModuleId());
+    InstantiationGuard instantiationGuard(symbolTable, inlineFunction->FileIndex(), inlineFunction->ModuleId());
     if (!inlineFunction->Parent()->IsClassTypeSymbol())
     {
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);

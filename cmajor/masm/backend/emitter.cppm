@@ -289,6 +289,7 @@ public:
     void SetFunctionCallConventionToStdCall(void* function) override;
     void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) override;
     void SetFunctionName(const std::string& functionName) override;
+    void SetFunctionComment(void* function, const std::string& functionComment) override;
     void BeginScope() override;
     void EndScope() override;
     int16_t GetCurrentScopeId() const override;
@@ -353,6 +354,7 @@ public:
     void SetBoundCompileUnit(void* boundCompileUnit_) override { }
     void* GetBoundCompileUnit() const override { return nullptr; }
     void SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol) override;
+    void SetSpan(const soul::ast::Span& span) override;
 private:
     cmajor::ir::EmittingContext* emittingContext;
     cmajor::ir::EmittingDelegate* emittingDelegate;
@@ -368,6 +370,9 @@ private:
     std::set<void*> staticObjectCreatedSet;
     std::map<void*, cmajor::masm::ir::StructureType*> staticTypeMap;
     std::map<void*, std::string> staticObjectNameMap;
+    bool substituteLineNumber;
+    int currentLineNumber;
 };
+
 
 } // namespace cmajor::masm::backend

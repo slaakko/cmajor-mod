@@ -914,7 +914,7 @@ void ConstraintChecker::Visit(cmajor::ast::ConstructorConstraintNode& constructo
             references.push_back(exception->Defined());
             references.insert(references.end(), exception->References().begin(), exception->References().end());
         }
-        throw cmajor::symbols::Exception(message, constructorConstraintNode.GetFullSpan() , references);
+        throw cmajor::symbols::Exception(message, constructorConstraintNode.GetFullSpan(), references);
     }
     else
     {

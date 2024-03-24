@@ -1,0 +1,14 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    ForwardList<int> list;
+    list.InsertFront(3);
+    list.InsertFront(2);
+    list.InsertFront(1);
+    for (auto x : list)
+    {
+        Console.WriteLine(x);
+    }
+}

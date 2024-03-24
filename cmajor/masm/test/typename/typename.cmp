@@ -1,0 +1,3 @@
+project typename;
+source <typename.cm>;
+source <main.cm>;

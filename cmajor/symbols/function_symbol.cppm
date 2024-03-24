@@ -164,6 +164,8 @@ public:
     std::string TypeString() const override { return "function"; }
     bool IsExportSymbol() const override;
     virtual void ComputeName();
+    const std::u32string& InstantiatedName() const;
+    void SetInstantiatedName(const std::u32string& instantiatedName_);
     std::u32string FullName() const override;
     std::u32string FullName(bool withParamNames) const;
     std::u32string FullNameWithSpecifiers() const override;
@@ -298,6 +300,10 @@ public:
     LocalVariableSymbol* PrevUnwindInfoVar() const { return prevUnwindInfoVar.get(); }
     void SetUnwindInfoVar(LocalVariableSymbol* unwindInfoVar_);
     LocalVariableSymbol* UnwindInfoVar() const { return unwindInfoVar.get(); }
+    LocalVariableSymbol* TraceEntryVar() const { return traceEntryVar; }
+    void SetTraceEntryVar(LocalVariableSymbol* traceEntryVar_);
+    LocalVariableSymbol* TraceGuardVar() const { return traceGuardVar; }
+    void SetTraceGuardVar(LocalVariableSymbol* traceGuardVar_);
     int NextTemporaryIndex();
     void CopyFrom(const Symbol* that) override;
     virtual FunctionSymbol* Copy() const;
@@ -319,6 +325,8 @@ private:
     std::vector<LocalVariableSymbol*> localVariables;
     std::unique_ptr<LocalVariableSymbol> unwindInfoVar;
     std::unique_ptr<LocalVariableSymbol> prevUnwindInfoVar;
+    LocalVariableSymbol* traceEntryVar;
+    LocalVariableSymbol* traceGuardVar;
     TypeSymbol* returnType;
     FunctionSymbolFlags flags;
     int32_t index;
@@ -334,6 +342,7 @@ private:
     TypeSymbol* conversionSourceType;
     TypeSymbol* conversionTargetType;
     std::string compileUnitId;
+    std::u32string instantiatedName;
 };
 
 class StaticConstructorSymbol : public FunctionSymbol

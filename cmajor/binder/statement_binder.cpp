@@ -311,6 +311,19 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
         if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
         {
             boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            {
+                cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
+                boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
+                cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+                if (compileUnitNode)
+                {
+                    copy->SetCompileUnitId(compileUnitNode->Id());
+                    copy->ComputeMangledName();
+                }
+                destructorSymbol->SetInstantiatedName(copy->MangledName());
+                destructorSymbol = copy;
+            }
             GenerateDestructorImplementation(currentClass, destructorSymbol, boundCompileUnit, containerScope, currentFunction, &classNode);
         }
     }
@@ -334,6 +347,19 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                {
+                    cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
+                    boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
+                    cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+                    if (compileUnitNode)
+                    {
+                        copy->SetCompileUnitId(compileUnitNode->Id());
+                        copy->ComputeMangledName();
+                    }
+                    destructorSymbol->SetInstantiatedName(copy->MangledName());
+                    destructorSymbol = copy;
+                }
                 GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, &memberVariableNode);
                 boundCompileUnit.AddBoundNode(std::move(boundClass));
             }
@@ -430,103 +456,196 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
-    soul::ast::Span span = boundFunction->GetSpan();
-    if (boundFunction->GetFunctionSymbol()->DontThrow()) return;
-    cmajor::symbols::TypeSymbol* systemRuntimeUnwindInfoSymbol = boundCompileUnit.GetSystemRuntimeUnwindInfoSymbol();
-    if (systemRuntimeUnwindInfoSymbol == nullptr)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        cmajor::ast::IdentifierNode systemRuntimeUnwindInfoNode(span, U"System.Runtime.UnwindInfo");
-        systemRuntimeUnwindInfoSymbol = ResolveType(&systemRuntimeUnwindInfoNode, boundCompileUnit, containerScope);
-        boundCompileUnit.SetSystemRuntimeUnwindInfoSymbol(systemRuntimeUnwindInfoSymbol);
+        if (cmajor::symbols::GetConfig() == "release") return;
+        cmajor::symbols::Module& currentModule = boundFunction->GetBoundCompileUnit()->GetModule();
+        if (currentModule.Name() == U"System.Core" || currentModule.Name() == U"System.Runtime") return;
+        soul::ast::FullSpan functionSpan = boundFunction->GetFunctionSymbol()->GetFullSpan();
+        if (!functionSpan.IsValid())
+        {
+            return;
+        }
+        std::string fullFunctionName = util::ToUtf8(boundFunction->GetFunctionSymbol()->FullName());
+        std::string sourceFileName = cmajor::symbols::GetSourceFilePath(functionSpan.fileIndex, functionSpan.moduleId);
+        if (sourceFileName.empty())
+        {
+            return;
+        }
+        int32_t functionId = currentModule.MakeFunctionId(fullFunctionName, sourceFileName);
+
+        soul::ast::Span span = boundFunction->GetSpan();
+        cmajor::symbols::TypeSymbol* traceEntryTypeSymbol = boundCompileUnit.GetSystemRuntimeTraceEntryTypeSymbol();
+        if (!traceEntryTypeSymbol)
+        {
+            cmajor::ast::IdentifierNode systemRuntimeTraceEntryNode(span, U"System.Runtime.TraceEntry");
+            traceEntryTypeSymbol = ResolveType(&systemRuntimeTraceEntryNode, boundCompileUnit, containerScope);
+            boundCompileUnit.SetSystemRuntimeTraceEntryTypeSymbol(traceEntryTypeSymbol);
+        }
+        cmajor::symbols::TypeSymbol* traceGuardTypeSymbol = boundCompileUnit.GetSystemRuntimeTraceGuardTypeSymbol();
+        if (!traceGuardTypeSymbol)
+        {
+            cmajor::ast::IdentifierNode systemRuntimeTraceGuardNode(span, U"System.Runtime.TraceGuard");
+            traceGuardTypeSymbol = ResolveType(&systemRuntimeTraceGuardNode, boundCompileUnit, containerScope);
+            boundCompileUnit.SetSystemRuntimeTraceGuardTypeSymbol(traceGuardTypeSymbol);
+        }
+
+        std::unique_ptr<cmajor::ast::IdentifierNode> traceEntryNode(new cmajor::ast::IdentifierNode(span, U"@traceEntry"));
+
+        cmajor::ast::CloneContext cloneContext;
+
+        // System.Runtime.TraceEntry @traceEntry;
+
+        std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructTraceEntry(new cmajor::ast::ConstructionStatementNode(span,
+            new cmajor::ast::IdentifierNode(span, U"System.Runtime.TraceEntry"), static_cast<cmajor::ast::IdentifierNode*>(traceEntryNode->Clone(cloneContext))));
+        symbolTable.BeginContainer(boundFunction->GetFunctionSymbol());
+        symbolTable.AddLocalVariable(*constructTraceEntry);
+        symbolTable.EndContainer();
+        cmajor::symbols::Symbol* traceEntrySymbol = symbolTable.GetSymbol(constructTraceEntry.get());
+        if (traceEntrySymbol && traceEntrySymbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol)
+        {
+            cmajor::symbols::LocalVariableSymbol* traceEntryVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(traceEntrySymbol);
+            boundFunction->GetFunctionSymbol()->SetTraceEntryVar(traceEntryVariableSymbol);
+            traceEntryVariableSymbol->SetType(traceEntryTypeSymbol);
+        }
+        constructTraceEntry->AddArgument(new cmajor::ast::IntLiteralNode(span, functionId));
+        constructTraceEntry->Accept(*this);
+        std::unique_ptr<BoundStatement> constructTraceEntryStatement(statement.release());
+
+        // @traceEntry.line = LINE
+
+        std::unique_ptr<cmajor::ast::DotNode> lineDotNode(new cmajor::ast::DotNode(span, traceEntryNode->Clone(cloneContext), new cmajor::ast::IdentifierNode(span, U"line")));
+        std::unique_ptr<cmajor::ast::AssignmentStatementNode> assignTraceEntryLine(new cmajor::ast::AssignmentStatementNode(
+            span, lineDotNode.release(), new cmajor::ast::IntLiteralNode(span, 0)));
+        assignTraceEntryLine->Accept(*this);
+        std::unique_ptr<BoundStatement> assignTraceEntryLineStatement(statement.release());
+        boundFunction->SetLineCode(std::move(assignTraceEntryLineStatement));
+
+        std::unique_ptr<cmajor::ast::IdentifierNode> traceGuardNode(new cmajor::ast::IdentifierNode(span, U"@traceGuard"));
+  
+        // System.Runtime.TraceGuard @traceGuard(&@traceEntry);
+
+        std::unique_ptr<cmajor::ast::ConstructionStatementNode> constructTraceGuard(new cmajor::ast::ConstructionStatementNode(span,
+            new cmajor::ast::IdentifierNode(span, U"System.Runtime.TraceGuard"), static_cast<cmajor::ast::IdentifierNode*>(traceGuardNode->Clone(cloneContext))));
+        symbolTable.BeginContainer(boundFunction->GetFunctionSymbol());
+        symbolTable.AddLocalVariable(*constructTraceGuard);
+        symbolTable.EndContainer();
+        cmajor::symbols::Symbol* traceGuardSymbol = symbolTable.GetSymbol(constructTraceGuard.get());
+        if (traceGuardSymbol && traceGuardSymbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol)
+        {
+            cmajor::symbols::LocalVariableSymbol* traceGuardVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(traceGuardSymbol);
+            boundFunction->GetFunctionSymbol()->SetTraceGuardVar(traceGuardVariableSymbol);
+            traceGuardVariableSymbol->SetType(traceGuardTypeSymbol);
+        }
+        constructTraceGuard->AddArgument(new cmajor::ast::AddrOfNode(span, traceEntryNode->Clone(cloneContext)));
+        constructTraceGuard->Accept(*this);
+        std::unique_ptr<BoundStatement> constructTraceGuardStatement(statement.release());
+
+        std::vector<std::unique_ptr<BoundStatement>> enterCode;
+        enterCode.push_back(std::move(constructTraceEntryStatement));
+        enterCode.push_back(std::move(constructTraceGuardStatement));
+        boundFunction->SetEnterCode(std::move(enterCode));
+
     }
-    cmajor::symbols::FunctionSymbol* initUnwindSymbol = boundCompileUnit.GetInitUnwindInfoFunctionSymbol();
-    if (initUnwindSymbol == nullptr)
+    else
     {
-        boundCompileUnit.GenerateInitUnwindInfoFunctionSymbol(span);
+        soul::ast::Span span = boundFunction->GetSpan();
+        if (boundFunction->GetFunctionSymbol()->DontThrow()) return;
+        cmajor::symbols::TypeSymbol* systemRuntimeUnwindInfoSymbol = boundCompileUnit.GetSystemRuntimeUnwindInfoSymbol();
+        if (systemRuntimeUnwindInfoSymbol == nullptr)
+        {
+            cmajor::ast::IdentifierNode systemRuntimeUnwindInfoNode(span, U"System.Runtime.UnwindInfo");
+            systemRuntimeUnwindInfoSymbol = ResolveType(&systemRuntimeUnwindInfoNode, boundCompileUnit, containerScope);
+            boundCompileUnit.SetSystemRuntimeUnwindInfoSymbol(systemRuntimeUnwindInfoSymbol);
+        }
+        cmajor::symbols::FunctionSymbol* initUnwindSymbol = boundCompileUnit.GetInitUnwindInfoFunctionSymbol();
+        if (initUnwindSymbol == nullptr)
+        {
+            boundCompileUnit.GenerateInitUnwindInfoFunctionSymbol(span);
+        }
+        cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@prevUnwindInfo");
+        containerScope->Install(prevUnwindInfoVariableSymbol);
+        prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer());
+        boundFunction->GetFunctionSymbol()->SetPrevUnwindInfoVar(prevUnwindInfoVariableSymbol);
+        cmajor::ast::IdentifierNode* prevUnwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
+        symbolTable.MapSymbol(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
+        symbolTable.MapNode(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
+        cmajor::ast::InvokeNode* pushUnwindInfo = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPushUnwindInfo"));
+        cmajor::symbols::LocalVariableSymbol* unwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@unwindInfo");
+        containerScope->Install(unwindInfoVariableSymbol);
+        unwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol);
+        boundFunction->GetFunctionSymbol()->SetUnwindInfoVar(unwindInfoVariableSymbol);
+        cmajor::ast::IdentifierNode* unwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
+        symbolTable.MapSymbol(unwindInfoNode1, unwindInfoVariableSymbol);
+        symbolTable.MapNode(unwindInfoNode1, unwindInfoVariableSymbol);
+        pushUnwindInfo->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)),
+            new cmajor::ast::AddrOfNode(span, unwindInfoNode1)));
+        cmajor::ast::AssignmentStatementNode assignUnwindInfo(span, prevUnwindInfoNode1,
+            new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Runtime.UnwindInfo")), pushUnwindInfo));
+        assignUnwindInfo.Accept(*this);
+        std::unique_ptr<BoundStatement> pushUnwindInfoStatement(statement.release());
+
+        cmajor::ast::IdentifierNode* prevUnwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
+        symbolTable.MapSymbol(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
+        symbolTable.MapNode(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
+        cmajor::ast::IdentifierNode* unwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
+        symbolTable.MapSymbol(unwindInfoNode2, unwindInfoVariableSymbol);
+        symbolTable.MapNode(unwindInfoNode2, unwindInfoVariableSymbol);
+        cmajor::ast::AssignmentStatementNode assignUnwindInfoNext(span, new cmajor::ast::DotNode(span, unwindInfoNode2, new cmajor::ast::IdentifierNode(span, U"next")),
+            prevUnwindInfoNode2);
+        assignUnwindInfoNext.Accept(*this);
+        std::unique_ptr<BoundStatement> assignUnwindInfoNextStatement(statement.release());
+
+        cmajor::ast::IdentifierNode* unwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
+        symbolTable.MapSymbol(unwindInfoNode3, unwindInfoVariableSymbol);
+        symbolTable.MapNode(unwindInfoNode3, unwindInfoVariableSymbol);
+        cmajor::ast::FunctionPtrNode* functionPtrNode = new cmajor::ast::FunctionPtrNode(span);
+        BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(span, boundFunction->GetFunctionSymbol(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
+        BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
+        std::unique_ptr<BoundExpression> boundFunctionPtrAsVoidPtr(boundBitCast);
+        functionPtrNode->SetBoundExpression(boundFunctionPtrAsVoidPtr.get());
+        cmajor::ast::AssignmentStatementNode assignFunctionPtr(span, new cmajor::ast::DotNode(span, unwindInfoNode3, new cmajor::ast::IdentifierNode(span, U"function")),
+            new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), functionPtrNode));
+        assignFunctionPtr.Accept(*this);
+        std::unique_ptr<BoundStatement> assignFunctionPtrStatement(statement.release());
+
+        cmajor::ast::IdentifierNode* unwindInfoNode4 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
+        symbolTable.MapSymbol(unwindInfoNode4, unwindInfoVariableSymbol);
+        symbolTable.MapNode(unwindInfoNode4, unwindInfoVariableSymbol);
+        cmajor::ast::AssignmentStatementNode assignUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode4, new cmajor::ast::IdentifierNode(span, U"line")),
+            new cmajor::ast::IntLiteralNode(span, 0));
+        assignUnwindInfoLine.Accept(*this);
+        std::unique_ptr<BoundStatement> assignUnwindInfoLineStatement(statement.release());
+
+        cmajor::ast::IdentifierNode* prevUnwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
+        symbolTable.MapSymbol(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
+        symbolTable.MapNode(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
+        cmajor::ast::InvokeNode* setPrevUnwindInfoListPtr = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPopUnwindInfo"));
+        setPrevUnwindInfoListPtr->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), prevUnwindInfoNode3));
+        cmajor::ast::ExpressionStatementNode setPrevUnwindInfoList(span, setPrevUnwindInfoListPtr);
+        setPrevUnwindInfoList.Accept(*this);
+        std::unique_ptr<BoundStatement> setPrevUnwindInfoListStatement(statement.release());
+
+        std::vector<std::unique_ptr<BoundStatement>> enterCode;
+        enterCode.push_back(std::move(pushUnwindInfoStatement));
+        enterCode.push_back(std::move(assignUnwindInfoNextStatement));
+        enterCode.push_back(std::move(assignFunctionPtrStatement));
+        enterCode.push_back(std::move(assignUnwindInfoLineStatement));
+        boundFunction->SetEnterCode(std::move(enterCode));
+
+        std::unique_ptr<BoundStatement> setLineCode;
+        cmajor::ast::IdentifierNode* unwindInfoNode5 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
+        symbolTable.MapSymbol(unwindInfoNode5, unwindInfoVariableSymbol);
+        cmajor::ast::AssignmentStatementNode setUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode5, new cmajor::ast::IdentifierNode(span, U"line")),
+            new cmajor::ast::IntLiteralNode(span, 0));
+        setUnwindInfoLine.Accept(*this);
+        std::unique_ptr<BoundStatement> setLineStatement(statement.release());
+        boundFunction->SetLineCode(std::move(setLineStatement));
+
+        std::vector<std::unique_ptr<BoundStatement>> exitCode;
+        exitCode.push_back(std::move(setPrevUnwindInfoListStatement));
+        boundFunction->SetExitCode(std::move(exitCode));
     }
-    cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@prevUnwindInfo");
-    containerScope->Install(prevUnwindInfoVariableSymbol);
-    prevUnwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol->AddPointer());
-    boundFunction->GetFunctionSymbol()->SetPrevUnwindInfoVar(prevUnwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
-    symbolTable.MapSymbol(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
-    symbolTable.MapNode(prevUnwindInfoNode1, prevUnwindInfoVariableSymbol);
-    cmajor::ast::InvokeNode* pushUnwindInfo = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPushUnwindInfo"));
-    cmajor::symbols::LocalVariableSymbol* unwindInfoVariableSymbol = new cmajor::symbols::LocalVariableSymbol(span, U"@unwindInfo");
-    containerScope->Install(unwindInfoVariableSymbol);
-    unwindInfoVariableSymbol->SetType(systemRuntimeUnwindInfoSymbol);
-    boundFunction->GetFunctionSymbol()->SetUnwindInfoVar(unwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* unwindInfoNode1 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
-    symbolTable.MapSymbol(unwindInfoNode1, unwindInfoVariableSymbol);
-    symbolTable.MapNode(unwindInfoNode1, unwindInfoVariableSymbol);
-    pushUnwindInfo->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), 
-        new cmajor::ast::AddrOfNode(span, unwindInfoNode1)));
-    cmajor::ast::AssignmentStatementNode assignUnwindInfo(span, prevUnwindInfoNode1,
-        new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Runtime.UnwindInfo")), pushUnwindInfo));
-    assignUnwindInfo.Accept(*this);
-    std::unique_ptr<BoundStatement> pushUnwindInfoStatement(statement.release());
-
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
-    symbolTable.MapSymbol(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
-    symbolTable.MapNode(prevUnwindInfoNode2, prevUnwindInfoVariableSymbol);
-    cmajor::ast::IdentifierNode* unwindInfoNode2 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
-    symbolTable.MapSymbol(unwindInfoNode2, unwindInfoVariableSymbol);
-    symbolTable.MapNode(unwindInfoNode2, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode assignUnwindInfoNext(span, new cmajor::ast::DotNode(span, unwindInfoNode2, new cmajor::ast::IdentifierNode(span, U"next")), 
-        prevUnwindInfoNode2);
-    assignUnwindInfoNext.Accept(*this);
-    std::unique_ptr<BoundStatement> assignUnwindInfoNextStatement(statement.release());
-
-    cmajor::ast::IdentifierNode* unwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
-    symbolTable.MapSymbol(unwindInfoNode3, unwindInfoVariableSymbol);
-    symbolTable.MapNode(unwindInfoNode3, unwindInfoVariableSymbol);
-    cmajor::ast::FunctionPtrNode* functionPtrNode = new cmajor::ast::FunctionPtrNode(span);
-    BoundFunctionPtr* boundFunctionPtr = new BoundFunctionPtr(span, boundFunction->GetFunctionSymbol(), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
-    BoundBitCast* boundBitCast = new BoundBitCast(std::unique_ptr<BoundExpression>(boundFunctionPtr), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer());
-    std::unique_ptr<BoundExpression> boundFunctionPtrAsVoidPtr(boundBitCast);
-    functionPtrNode->SetBoundExpression(boundFunctionPtrAsVoidPtr.get());
-    cmajor::ast::AssignmentStatementNode assignFunctionPtr(span, new cmajor::ast::DotNode(span, unwindInfoNode3, new cmajor::ast::IdentifierNode(span, U"function")),
-        new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), functionPtrNode));
-    assignFunctionPtr.Accept(*this);
-    std::unique_ptr<BoundStatement> assignFunctionPtrStatement(statement.release());
-
-    cmajor::ast::IdentifierNode* unwindInfoNode4 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
-    symbolTable.MapSymbol(unwindInfoNode4, unwindInfoVariableSymbol);
-    symbolTable.MapNode(unwindInfoNode4, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode assignUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode4, new cmajor::ast::IdentifierNode(span, U"line")),
-        new cmajor::ast::IntLiteralNode(span, 0));
-    assignUnwindInfoLine.Accept(*this);
-    std::unique_ptr<BoundStatement> assignUnwindInfoLineStatement(statement.release());
-
-    cmajor::ast::IdentifierNode* prevUnwindInfoNode3 = new cmajor::ast::IdentifierNode(span, U"@prevUnwindInfo");
-    symbolTable.MapSymbol(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
-    symbolTable.MapNode(prevUnwindInfoNode3, prevUnwindInfoVariableSymbol);
-    cmajor::ast::InvokeNode* setPrevUnwindInfoListPtr = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtPopUnwindInfo"));
-    setPrevUnwindInfoListPtr->AddArgument(new cmajor::ast::CastNode(span, new cmajor::ast::PointerNode(span, new cmajor::ast::VoidNode(span)), prevUnwindInfoNode3));
-    cmajor::ast::ExpressionStatementNode setPrevUnwindInfoList(span, setPrevUnwindInfoListPtr);
-    setPrevUnwindInfoList.Accept(*this);
-    std::unique_ptr<BoundStatement> setPrevUnwindInfoListStatement(statement.release());
-
-    std::vector<std::unique_ptr<BoundStatement>> enterCode;
-    enterCode.push_back(std::move(pushUnwindInfoStatement));
-    enterCode.push_back(std::move(assignUnwindInfoNextStatement));
-    enterCode.push_back(std::move(assignFunctionPtrStatement));
-    enterCode.push_back(std::move(assignUnwindInfoLineStatement));
-    boundFunction->SetEnterCode(std::move(enterCode));
-
-    std::unique_ptr<BoundStatement> setLineCode;
-    cmajor::ast::IdentifierNode* unwindInfoNode5 = new cmajor::ast::IdentifierNode(span, U"@unwindInfo");
-    symbolTable.MapSymbol(unwindInfoNode5, unwindInfoVariableSymbol);
-    cmajor::ast::AssignmentStatementNode setUnwindInfoLine(span, new cmajor::ast::DotNode(span, unwindInfoNode5, new cmajor::ast::IdentifierNode(span, U"line")),
-        new cmajor::ast::IntLiteralNode(span, 0));
-    setUnwindInfoLine.Accept(*this);
-    std::unique_ptr<BoundStatement> setLineStatement(statement.release());
-    boundFunction->SetLineCode(std::move(setLineStatement));
-
-    std::vector<std::unique_ptr<BoundStatement>> exitCode;
-    exitCode.push_back(std::move(setPrevUnwindInfoListStatement));
-    boundFunction->SetExitCode(std::move(exitCode));
 }
 
 void StatementBinder::Visit(cmajor::ast::ConstructorNode& constructorNode)
@@ -1280,11 +1399,25 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
         cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(functionSymbol->Parent());
         if (classType->Destructor() && classType->Destructor()->IsGeneratedFunction() && !cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::info))
         {
-            if (!boundCompileUnit.IsGeneratedDestructorInstantiated(classType->Destructor()))
+            cmajor::symbols::DestructorSymbol* destructorSymbol = classType->Destructor();
+            if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
             {
-                boundCompileUnit.SetGeneratedDestructorInstantiated(classType->Destructor());
+                boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                GenerateDestructorImplementation(boundClass.get(), classType->Destructor(), boundCompileUnit, containerScope, currentFunction, &constructionStatementNode);
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                {
+                    cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
+                    boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
+                    cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+                    if (compileUnitNode)
+                    {
+                        copy->SetCompileUnitId(compileUnitNode->Id());
+                        copy->ComputeMangledName();
+                    }
+                    destructorSymbol->SetInstantiatedName(copy->MangledName());
+                    destructorSymbol = copy;
+                }
+                GenerateDestructorImplementation(boundClass.get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, &constructionStatementNode);
                 boundCompileUnit.AddBoundNode(std::move(boundClass));
             }
         }
@@ -1367,7 +1500,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        memFreeFunctionName = U"MemFree";
+        memFreeFunctionName = U"RtmMemFree";
     }
     std::unique_ptr<BoundFunctionCall> memFreeCall = ResolveOverload(memFreeFunctionName, containerScope, lookups, arguments, boundCompileUnit, currentFunction, &deleteStatementNode);
     CheckAccess(currentFunction->GetFunctionSymbol(), memFreeCall->GetFunctionSymbol());

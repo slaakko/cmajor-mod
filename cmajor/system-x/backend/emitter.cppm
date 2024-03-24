@@ -289,6 +289,7 @@ public:
     void SetFunctionCallConventionToStdCall(void* function) override;
     void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) override;
     void SetFunctionName(const std::string& functionName) override;
+    void SetFunctionComment(void* function, const std::string& functionComment) override;
     void BeginScope() override;
     void EndScope() override;
     int16_t GetCurrentScopeId() const override;

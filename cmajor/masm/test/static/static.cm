@@ -1,0 +1,24 @@
+using System;
+
+public class Static
+{
+    static Static() : instance(new Static())
+    {
+    }
+    public static Static& Instance()
+    {
+        return *instance;
+    }
+    private Static()
+    {
+    }
+    public ~Static()
+    {
+        RtmPrintString("static destructor");
+    }
+    public void Run()
+    {
+        RtmPrintString("static run");
+    }
+    private static UniquePtr<Static> instance;
+}

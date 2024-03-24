@@ -281,6 +281,7 @@ public:
     bool IsLvalueExpression() const override;
     const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const { return functionSymbol; }
     cmajor::symbols::FunctionSymbol* GetFunctionSymbol() { return functionSymbol; }
+    void SetFunctionSymbol(cmajor::symbols::FunctionSymbol* functionSymbol_) { functionSymbol = functionSymbol_; }
     void AddArgument(std::unique_ptr<BoundExpression>&& argument);
     void SetArguments(std::vector<std::unique_ptr<BoundExpression>>&& arguments_);
     const std::vector<std::unique_ptr<BoundExpression>>& Arguments() const { return arguments; }

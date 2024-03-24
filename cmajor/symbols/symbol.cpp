@@ -313,6 +313,8 @@ void Symbol::CopyFrom(const Symbol* that)
 {
     symbolType = that->symbolType;
     span = that->span;
+    fileIndex = that->fileIndex;
+    moduleId = that->moduleId;
     name = that->name;
     flags = that->flags;
     mangledName = that->mangledName;

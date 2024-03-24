@@ -124,8 +124,8 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     Assert(classTemplateNode->GetNodeType() == cmajor::ast::NodeType::classNode, "class node expected");
     cmajor::ast::ClassNode* classNode = static_cast<cmajor::ast::ClassNode*>(classTemplateNode);
     std::unique_ptr<cmajor::ast::NamespaceNode> globalNs(new cmajor::ast::NamespaceNode(classNode->GetSpan(), new cmajor::ast::IdentifierNode(classNode->GetSpan(), U"")));
-    globalNs->SetFileIndex(classNode->FileIndex());
-    globalNs->SetModuleId(classNode->ModuleId());
+    globalNs->SetFileIndex(classTemplateSpecialization->FileIndex());
+    globalNs->SetModuleId(classTemplateSpecialization->ModuleId());
     cmajor::ast::NamespaceNode* currentNs = globalNs.get();
     cmajor::ast::CloneContext cloneContext;
     cloneContext.SetInstantiateClassNode();
@@ -194,7 +194,7 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
     }
     std::lock_guard<std::recursive_mutex> lock(boundCompileUnit.GetModule().GetLock());
     symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
-    InstantiationGuard instantiationGuard(symbolTable, currentNs->FileIndex(), currentNs->ModuleId());
+    InstantiationGuard instantiationGuard(symbolTable, classTemplateSpecialization->FileIndex(), classTemplateSpecialization->ModuleId());
     cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
     symbolCreatorVisitor.SetClassInstanceNode(classInstanceNode);
     symbolCreatorVisitor.SetClassTemplateSpecialization(classTemplateSpecialization);
@@ -378,6 +378,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
                 memberFunction->SetCompileUnitId(compileUnitNode->Id());
                 memberFunction->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
                 memberFunction->ComputeMangledName();
+                master->SetInstantiatedName(memberFunction->MangledName());
                 boundCompileUnit.SetCanReuse(memberFunction);
             }
         }

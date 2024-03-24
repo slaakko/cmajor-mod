@@ -4938,7 +4938,34 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionDefinitions(LexerT& lexe
         {
             int64_t save = lexer.GetPos();
             {
-                soul::parser::Match match = IntermediateParser<LexerT>::FunctionDefinition(lexer, context);
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch1 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch2 = &match;
+                    switch (*lexer)
+                    {
+                        case EXTERN:
+                        {
+                            soul::parser::Match match = IntermediateParser<LexerT>::FunctionDeclaration(lexer, context);
+                            if (match.hit)
+                            {
+                                *parentMatch2 = match;
+                            }
+                            break;
+                        }
+                        case FUNCTION:
+                        {
+                            soul::parser::Match match = IntermediateParser<LexerT>::FunctionDefinition(lexer, context);
+                            if (match.hit)
+                            {
+                                *parentMatch2 = match;
+                            }
+                            break;
+                        }
+                    }
+                    *parentMatch1 = match;
+                }
                 if (match.hit)
                 {
                     *parentMatch0 = match;
@@ -4966,6 +4993,145 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionDefinitions(LexerT& lexe
 }
 
 template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::FunctionDeclaration(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDeclaration");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545895);
+    cmajor::masm::intermediate::TypeRef functionTypeRef = cmajor::masm::intermediate::TypeRef();
+    soul::ast::Span span = soul::ast::Span();
+    std::string functionId = std::string();
+    std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch4 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch5 = &match;
+                        {
+                            int64_t pos = lexer.GetPos();
+                            soul::parser::Match match(false);
+                            if (*lexer == EXTERN)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            if (match.hit)
+                            {
+                                span = lexer.GetSpan(pos);
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    if (match.hit)
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch6 = &match;
+                        {
+                            soul::parser::Match match(false);
+                            if (*lexer == FUNCTION)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch7 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch8 = &match;
+                        {
+                            int64_t pos = lexer.GetPos();
+                            soul::parser::Match match = IntermediateParser<LexerT>::TypeRef(lexer);
+                            typeRef.reset(static_cast<soul::parser::Value<cmajor::masm::intermediate::TypeRef>*>(match.value));
+                            if (match.hit)
+                            {
+                                functionTypeRef = typeRef->value;
+                                context->ResolveType(functionTypeRef);
+                            }
+                            *parentMatch8 = match;
+                        }
+                        *parentMatch7 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch9 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch10 = &match;
+                    {
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == ID)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            functionId = util::ToUtf8(lexer.GetToken(pos).ToString());
+                        }
+                        *parentMatch10 = match;
+                    }
+                    *parentMatch9 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            context->AddFunctionDeclaration(span, functionTypeRef.GetType(), functionId);
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "FunctionDeclaration");
+        else soul::lexer::WriteFailureToLog(lexer, "FunctionDeclaration");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
 soul::parser::Match IntermediateParser<LexerT>::FunctionDefinition(LexerT& lexer, cmajor::masm::intermediate::Context* context)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -4977,7 +5143,7 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionDefinition(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionDefinition");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545895);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545896);
     cmajor::masm::intermediate::Function* function = nullptr;
     std::unique_ptr<cmajor::masm::intermediate::Function> header;
     soul::parser::Match match(false);
@@ -5093,7 +5259,7 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionHeader");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545896);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545897);
     cmajor::masm::intermediate::TypeRef functionTypeRef = cmajor::masm::intermediate::TypeRef();
     soul::ast::Span span = soul::ast::Span();
     std::string functionId = std::string();
@@ -5217,7 +5383,7 @@ soul::parser::Match IntermediateParser<LexerT>::BasicBlock(LexerT& lexer, cmajor
         soul::lexer::WriteBeginRuleToLog(lexer, "BasicBlock");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545897);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545898);
     cmajor::masm::intermediate::BasicBlock* basicBlock = nullptr;
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<int32_t>> id;
@@ -5275,7 +5441,7 @@ soul::parser::Match IntermediateParser<LexerT>::Label(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Label");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545898);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545899);
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -5343,7 +5509,7 @@ soul::parser::Match IntermediateParser<LexerT>::Operand(LexerT& lexer, cmajor::m
         soul::lexer::WriteBeginRuleToLog(lexer, "Operand");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545899);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545900);
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
     std::unique_ptr<cmajor::masm::intermediate::Value> value;
@@ -5417,7 +5583,7 @@ soul::parser::Match IntermediateParser<LexerT>::Instructions(LexerT& lexer, cmaj
         soul::lexer::WriteBeginRuleToLog(lexer, "Instructions");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545900);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545901);
     std::unique_ptr<cmajor::masm::intermediate::Instruction> instruction;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -5504,7 +5670,7 @@ soul::parser::Match IntermediateParser<LexerT>::Instruction(LexerT& lexer, cmajo
         soul::lexer::WriteBeginRuleToLog(lexer, "Instruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545901);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545902);
     std::unique_ptr<cmajor::masm::intermediate::Instruction> store;
     std::unique_ptr<cmajor::masm::intermediate::Instruction> arg;
     std::unique_ptr<cmajor::masm::intermediate::Instruction> jmp;
@@ -5782,7 +5948,7 @@ soul::parser::Match IntermediateParser<LexerT>::StoreInstruction(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "StoreInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545902);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545903);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     cmajor::masm::intermediate::TypeRef ptref = cmajor::masm::intermediate::TypeRef();
@@ -5953,7 +6119,7 @@ soul::parser::Match IntermediateParser<LexerT>::ArgInstruction(LexerT& lexer, cm
         soul::lexer::WriteBeginRuleToLog(lexer, "ArgInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545903);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545904);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -6058,7 +6224,7 @@ soul::parser::Match IntermediateParser<LexerT>::JmpInstruction(LexerT& lexer, cm
         soul::lexer::WriteBeginRuleToLog(lexer, "JmpInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545904);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545905);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<int32_t>> target;
     soul::parser::Match match(false);
@@ -6134,7 +6300,7 @@ soul::parser::Match IntermediateParser<LexerT>::BranchInstruction(LexerT& lexer,
         soul::lexer::WriteBeginRuleToLog(lexer, "BranchInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545905);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545906);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -6313,7 +6479,7 @@ soul::parser::Match IntermediateParser<LexerT>::ProcedureCallInstruction(LexerT&
         soul::lexer::WriteBeginRuleToLog(lexer, "ProcedureCallInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545906);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545907);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -6418,7 +6584,7 @@ soul::parser::Match IntermediateParser<LexerT>::RetInstruction(LexerT& lexer, cm
         soul::lexer::WriteBeginRuleToLog(lexer, "RetInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545907);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545908);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -6623,7 +6789,7 @@ soul::parser::Match IntermediateParser<LexerT>::SwitchInstruction(LexerT& lexer,
         soul::lexer::WriteBeginRuleToLog(lexer, "SwitchInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545908);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545909);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     cmajor::masm::intermediate::TypeRef caseTref = cmajor::masm::intermediate::TypeRef();
@@ -7057,7 +7223,7 @@ soul::parser::Match IntermediateParser<LexerT>::ValueInstruction(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "ValueInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545909);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545910);
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     cmajor::masm::intermediate::RegValue* rslt = nullptr;
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -7179,7 +7345,7 @@ soul::parser::Match IntermediateParser<LexerT>::Operation(LexerT& lexer, cmajor:
         soul::lexer::WriteBeginRuleToLog(lexer, "Operation");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545910);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545911);
     std::unique_ptr<cmajor::masm::intermediate::Instruction> unaryInst;
     std::unique_ptr<cmajor::masm::intermediate::Instruction> binaryInst;
     std::unique_ptr<cmajor::masm::intermediate::Instruction> paramInst;
@@ -7465,7 +7631,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "UnaryInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545911);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545912);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> notOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> negOp;
@@ -8058,7 +8224,7 @@ soul::parser::Match IntermediateParser<LexerT>::BinaryInstruction(LexerT& lexer,
         soul::lexer::WriteBeginRuleToLog(lexer, "BinaryInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545912);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545913);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> leftAdd;
     std::unique_ptr<cmajor::masm::intermediate::Value> rightAdd;
@@ -9267,7 +9433,7 @@ soul::parser::Match IntermediateParser<LexerT>::ParamInstruction(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "ParamInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545913);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545914);
     soul::ast::Span span = soul::ast::Span();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -9317,7 +9483,7 @@ soul::parser::Match IntermediateParser<LexerT>::LocalInstruction(LexerT& lexer, 
         soul::lexer::WriteBeginRuleToLog(lexer, "LocalInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545914);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545915);
     soul::ast::Span span = soul::ast::Span();
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -9396,7 +9562,7 @@ soul::parser::Match IntermediateParser<LexerT>::LoadInstruction(LexerT& lexer, c
         soul::lexer::WriteBeginRuleToLog(lexer, "LoadInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545915);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545916);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> ptr;
     soul::parser::Match match(false);
@@ -9472,7 +9638,7 @@ soul::parser::Match IntermediateParser<LexerT>::ElemAddrInstruction(LexerT& lexe
         soul::lexer::WriteBeginRuleToLog(lexer, "ElemAddrInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545916);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545917);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> ptr;
     std::unique_ptr<cmajor::masm::intermediate::Value> index;
@@ -9585,7 +9751,7 @@ soul::parser::Match IntermediateParser<LexerT>::PtrOffsetInstruction(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "PtrOffsetInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545917);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545918);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> ptr;
     std::unique_ptr<cmajor::masm::intermediate::Value> offset;
@@ -9698,7 +9864,7 @@ soul::parser::Match IntermediateParser<LexerT>::PtrDiffInstruction(LexerT& lexer
         soul::lexer::WriteBeginRuleToLog(lexer, "PtrDiffInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545918);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545919);
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<cmajor::masm::intermediate::Value> leftPtr;
     std::unique_ptr<cmajor::masm::intermediate::Value> rightPtr;
@@ -9811,7 +9977,7 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionCallInstruction(LexerT& 
         soul::lexer::WriteBeginRuleToLog(lexer, "FunctionCallInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545919);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545920);
     cmajor::masm::intermediate::TypeRef tref = cmajor::masm::intermediate::TypeRef();
     soul::ast::Span span = soul::ast::Span();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
@@ -9916,7 +10082,7 @@ soul::parser::Match IntermediateParser<LexerT>::BlockValue(LexerT& lexer, cmajor
         soul::lexer::WriteBeginRuleToLog(lexer, "BlockValue");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545920);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545921);
     std::unique_ptr<cmajor::masm::intermediate::Value> operand;
     std::unique_ptr<soul::parser::Value<int32_t>> blockId;
     soul::parser::Match match(false);
@@ -10043,7 +10209,7 @@ soul::parser::Match IntermediateParser<LexerT>::NoOperationInstruction(LexerT& l
         soul::lexer::WriteBeginRuleToLog(lexer, "NoOperationInstruction");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545921);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545922);
     soul::ast::Span span = soul::ast::Span();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;

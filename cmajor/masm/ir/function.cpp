@@ -84,8 +84,20 @@ Value* Function::GetParam(int index) const
 
 void Function::Write(util::CodeFormatter& formatter, Context& context)
 {
-    if (basicBlocks.empty()) return;
+    if (!comment.empty())
+    {
+        formatter.WriteLine("// " + comment);
+        formatter.WriteLine();
+    }
+    if (basicBlocks.empty())
+    {
+        formatter.Write("extern ");
+    }
     formatter.WriteLine("function " + type->Name() + " " + name);
+    if (basicBlocks.empty())
+    {
+        return;
+    }
     formatter.WriteLine("{");
     formatter.IncIndent();
     bool first = true;
@@ -107,6 +119,11 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     }
     formatter.DecIndent();
     formatter.WriteLine("}");
+}
+
+void Function::SetComment(const std::string& comment_)
+{
+    comment = comment_;
 }
 
 } // namespace cmajor::masm::ir

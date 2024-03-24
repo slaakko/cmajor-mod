@@ -264,7 +264,7 @@ public:
     void Add(Types* types, Context* context) override;
     void Resolve(Types* types, Context* context) override;
     int64_t Size() const override;
-    int64_t Alignment() const override { return 8; }
+    int64_t Alignment() const override { return 1; }
     std::string Name() const override { return "struct " + std::to_string(Id()); }
     bool IsWeakType() const override;
     int FieldCount() const { return fieldTypeRefs.size(); }

@@ -57,6 +57,20 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                 if (!boundCompileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
                     boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    {
+                        cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
+                        boundCompileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
+                        cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit->GetCompileUnitNode();
+                        if (compileUnitNode)
+                        {
+                            copy->SetCompileUnitId(compileUnitNode->Id());
+                            copy->ComputeMangledName();
+                        }
+                        destructorSymbol->SetInstantiatedName(copy->MangledName());
+                        destructorSymbol = copy;
+                        destructorCall->SetFunctionSymbol(destructorSymbol);
+                    }
                     std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
                     GenerateDestructorImplementation(boundClass.get(), destructorSymbol, *boundCompileUnit, currentContainerScope, currentFunction, node);
                     boundCompileUnit->AddBoundNode(std::move(boundClass));
@@ -65,9 +79,9 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
         }
         else if (destructorSymbol->Parent()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
         {
-            destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(
+            cmajor::symbols::DestructorSymbol* instantiatedDestructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(
                 GetBoundCompileUnit()->GetClassTemplateRepository().Instantiate(destructorSymbol, currentContainerScope, currentFunction, node));
-            if (!destructorSymbol)
+            if (!instantiatedDestructorSymbol)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(destructorSymbol->Parent());
                 std::lock_guard<std::recursive_mutex> lock(GetBoundCompileUnit()->GetModule().GetLock());
@@ -81,6 +95,12 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                     throw cmajor::symbols::Exception("internal error: could not instantiate destructor of a class template specialization '" + 
                         util::ToUtf8(specialization->FullName()) + "'", specialization->GetFullSpan());
                 }
+                destructorCall->SetFunctionSymbol(functionSymbol);
+            }
+            else
+            {
+                destructorSymbol = instantiatedDestructorSymbol;
+                destructorCall->SetFunctionSymbol(destructorSymbol);
             }
         }
     }

@@ -1,0 +1,6 @@
+using System;
+
+class Foo<T>
+{
+    private T x;
+}

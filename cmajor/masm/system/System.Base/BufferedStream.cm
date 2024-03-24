@@ -1,0 +1,257 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.IO
+{
+    public class IOBuffer
+    {
+        public IOBuffer(long size_) : size(size_), mem(RtmMemAlloc(size)) {}
+        suppress IOBuffer(const IOBuffer&);
+        suppress void operator=(const IOBuffer&);
+        public IOBuffer(IOBuffer&& that): size(that.size), mem(that.mem)
+        {
+            that.size = 0;
+            that.mem = null;
+        }
+        public default void operator=(IOBuffer&& that);
+        public ~IOBuffer()
+        {
+            if (mem != null)
+            {
+                RtmMemFree(mem);
+            }
+        }
+        public inline long Size() const
+        {
+            return size;
+        }
+        public inline void* Mem() const
+        {
+            return mem;
+        }
+        public inline byte operator[](long index) const
+        {
+            #assert(index >= 0 && index < size);
+            return cast<byte*>(mem)[index];
+        }
+        public inline byte& operator[](long index)
+        {
+            #assert(index >= 0 && index < size);
+            return cast<byte*>(mem)[index];
+        }
+        private long size;
+        private void* mem;
+    }
+
+    public class BufferedStream : Stream
+    {
+        public BufferedStream() : base(), baseStream(null), buffer(), pos(buffer.Size()), bytesAvailable(0), end(0)
+        {
+        }
+        public BufferedStream(Stream* baseStream_) : this(baseStream_, 4096)
+        {
+        }
+        public BufferedStream(Stream* baseStream_, long bufferSize_) : base(), baseStream(baseStream_), buffer(bufferSize_), pos(buffer.Size()), bytesAvailable(0), end(0)
+        {
+        }
+        public Stream* BaseStream()
+        {
+            return baseStream;
+        }
+        suppress BufferedStream(const BufferedStream&);
+        suppress void operator=(const BufferedStream&);
+        public override ~BufferedStream()
+        {
+            Flush();
+        }
+        public override Result<int> ReadByte()
+        {
+            auto flushResult = Flush();
+            if (flushResult.Error()) 
+            {
+                SetLatestErrorId(flushResult.GetErrorId());
+                return Result<int>(-1, ErrorId(flushResult.GetErrorId()));
+            }
+            if (bytesAvailable == 0)
+            {
+                auto fillResult = FillBuf();
+                if (fillResult.Error()) 
+                {
+                    SetLatestErrorId(fillResult.GetErrorId());
+                    return Result<int>(-1, ErrorId(fillResult.GetErrorId()));
+                }
+                if (bytesAvailable == 0)
+                {
+                    return Result<int>(-1);
+                }
+            }
+            byte value = buffer[pos++];
+            --bytesAvailable;
+            return Result<int>(value);
+        }
+        public override Result<long> Read(byte* buf, long count)
+        {
+            if (count < 0)
+            {
+                int errorId = RtmAllocateError("BufferedStream.Read: count less than zero");
+                SetLatestErrorId(errorId);
+                return Result<long>(-1, ErrorId(errorId));
+            }
+            auto flushResult = Flush();
+            if (flushResult.Error()) 
+            {
+                SetLatestErrorId(flushResult.GetErrorId());
+                return Result<long>(-1, ErrorId(flushResult.GetErrorId()));
+            }
+            if (bytesAvailable == 0)
+            {
+                auto fillResult = FillBuf();
+                if (fillResult.Error()) 
+                {
+                    SetLatestErrorId(fillResult.GetErrorId());
+                    return Result<long>(-1, ErrorId(fillResult.GetErrorId()));
+                }
+            }
+            long bytesRead = 0;
+            long n = Min(bytesAvailable, count);
+            for (long i = 0; i < n; ++i)
+            {
+                buf[i] = buffer[pos++];
+                ++bytesRead;
+                --bytesAvailable;
+            }
+            return Result<long>(bytesRead);
+        }
+        public override Result<bool> Write(byte x)
+        {
+            if (end >= buffer.Size())
+            {
+                auto flushResult = Flush();
+                if (flushResult.Error()) 
+                {
+                    SetLatestErrorId(flushResult.GetErrorId());
+                    return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
+                }
+            }
+            buffer[end++] = x;
+            return Result<bool>(true);
+        }
+        public override Result<bool> Write(byte* buf, long count)
+        {
+            if (count < 0)
+            {
+                int errorId = RtmAllocateError("BufferedStream.Write: count less than zero");
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            for (long i = 0; i < count; ++i)
+            {
+                auto result = Write(buf[i]);
+                if (result.Error()) 
+                {
+                    SetLatestErrorId(result.GetErrorId());
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Flush()
+        {
+            if (end != 0)
+            {
+                if (baseStream == null)
+                {
+                    int errorId = RtmAllocateError("BufferedStream.Flush: base stream is null");
+                    SetLatestErrorId(errorId);
+                    return Result<bool>(false, ErrorId(errorId));
+                }
+                auto writeResult = baseStream->Write(cast<byte*>(buffer.Mem()), end);
+                if (writeResult.Error())
+                {
+                    SetLatestErrorId(writeResult.GetErrorId());
+                    return Result<bool>(false, ErrorId(writeResult.GetErrorId()));
+                }
+                auto flushResult = baseStream->Flush();
+                if (flushResult.Error()) 
+                {
+                    SetLatestErrorId(flushResult.GetErrorId());
+                    return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
+                }
+                end = 0;
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Seek(long pos, Origin origin)
+        {
+            auto flushResult = Flush();
+            if (flushResult.Error()) 
+            {
+                SetLatestErrorId(flushResult.GetErrorId());
+                return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
+            }
+            bytesAvailable = 0;
+            if (baseStream == null)
+            {
+                int errorId = RtmAllocateError("BufferedStream.Seek: base stream is null");
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            auto seekResult = baseStream->Seek(pos, origin);
+            if (seekResult.Error())
+            {
+                SetLatestErrorId(seekResult.GetErrorId());
+                return seekResult;
+            }
+            return Result<bool>(true);
+        }
+        public override Result<long> Tell()
+        {
+            auto flushResult = Flush();
+            if (flushResult.Error()) 
+            {
+                SetLatestErrorId(flushResult.GetErrorId());
+                return Result<long>(-1, ErrorId(flushResult.GetErrorId()));
+            }
+            if (baseStream == null)
+            {
+                int errorId = RtmAllocateError("BufferedStream.Tell: base stream is null");
+                SetLatestErrorId(errorId);
+                return Result<long>(-1, ErrorId(errorId));
+            }
+            Result<long> tellResult = baseStream->Tell();
+            if (tellResult.Error()) 
+            {
+                SetLatestErrorId(tellResult.GetErrorId());
+                return tellResult;
+            }
+            return Result<long>(tellResult.Value() - bytesAvailable);
+        }
+        private Result<bool> FillBuf()
+        {
+            if (baseStream == null)
+            {
+                int errorId = RtmAllocateError("BufferedStream.FillBuf: base stream is null");
+                SetLatestErrorId(errorId);
+                return Result<bool>(false, ErrorId(errorId));
+            }
+            Result<long> readResult = baseStream->Read(cast<byte*>(buffer.Mem()), buffer.Size());
+            if (readResult.Error()) 
+            {
+                SetLatestErrorId(readResult.GetErrorId());
+                return Result<bool>(false, ErrorId(readResult.GetErrorId()));
+            }
+            bytesAvailable = readResult.Value();
+            pos = 0;
+            return Result<bool>(true);
+        }
+        private Stream* baseStream;
+        private IOBuffer buffer;
+        private long pos;
+        private long bytesAvailable;
+        private long end;
+    }
+}
