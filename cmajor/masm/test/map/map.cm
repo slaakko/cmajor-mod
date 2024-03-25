@@ -1,0 +1,16 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    Map<int, string> m;
+    m[0] = "a";
+    m[1] = "b";
+    m[2] = "c";
+    for (const auto& x : m)
+    {
+        Console.Out() << x.first << " : " << x.second << "\n";
+    }
+    string s = m[2];
+    Console.WriteLine(s);
+}

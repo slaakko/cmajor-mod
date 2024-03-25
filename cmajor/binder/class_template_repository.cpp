@@ -147,8 +147,8 @@ void ClassTemplateRepository::BindClassTemplateSpecialization(cmajor::symbols::C
         for (const std::u32string& nsComponent : nsComponents)
         {
             cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(classNode->GetSpan(), new cmajor::ast::IdentifierNode(classNode->GetSpan(), nsComponent));
-            nsNode->SetFileIndex(classNode->FileIndex());
-            nsNode->SetModuleId(classNode->ModuleId());
+            nsNode->SetFileIndex(classTemplateSpecialization->FileIndex());
+            nsNode->SetModuleId(classTemplateSpecialization->ModuleId());
             currentNs->AddMember(nsNode);
             currentNs = nsNode;
         }
@@ -425,6 +425,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); 
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
         boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
+        statementBinder.GenerateEnterAndExitFunctionCode(boundFunction.get());
         std::u32string instantiatedMemberFunctionMangledName = boundFunction->GetFunctionSymbol()->MangledName();
         boundClass->AddMember(std::move(boundFunction));
         classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);

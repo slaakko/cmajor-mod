@@ -15,6 +15,12 @@ void RtmPanic(const char* message)
     std::string errorMessage = "error: ";
     errorMessage.append(message).append("\n");
     RtmPrintToFile(stderr, errorMessage.c_str());
+    cmajor::masm::rt::StackTrace stackTrace = cmajor::masm::rt::GetStackTrace();
+    if (!stackTrace.IsEmpty())
+    {
+        std::string trace = "\nSTACK TRACE:\n" + stackTrace.ToString();
+        RtmPrintToFile(stderr, trace.c_str());
+    }
     std::exit(1);
 }
 
@@ -26,6 +32,12 @@ void RtmFailAssertion(const char* assertion, const char* function, const char* s
     errorMessage.append(assertion).append("' failed: function=").append(function).append(", file=").append(sourceFilePath).append(", line=").append(
         std::to_string(lineNumber).append("\n"));
     RtmPrintToFile(stderr, errorMessage.c_str());
+    cmajor::masm::rt::StackTrace stackTrace = cmajor::masm::rt::GetStackTrace();
+    if (!stackTrace.IsEmpty())
+    {
+        std::string trace = "\nSTACK TRACE:\n" + stackTrace.ToString();
+        RtmPrintToFile(stderr, trace.c_str());
+    }
     std::exit(1);
 }
 

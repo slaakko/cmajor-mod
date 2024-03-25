@@ -1886,6 +1886,10 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
 
 void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 {
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        throw cmajor::symbols::Exception("MASM backend does not support exceptions", throwStatementNode.GetFullSpan());
+    }
     bool prevCompilingThrow = compilingThrow;
     compilingThrow = true;
     if (currentFunction->GetFunctionSymbol()->DontThrow() && !currentFunction->GetFunctionSymbol()->HasTry())
@@ -1964,6 +1968,10 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        throw cmajor::symbols::Exception("MASM backend does not support exceptions", tryStatementNode.GetFullSpan());
+    }
     BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSpan());
     tryStatementNode.TryBlock()->Accept(*this);
     boundTryStatement->SetTryBlock(std::move(statement));
@@ -1982,6 +1990,10 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        throw cmajor::symbols::Exception("MASM backend does not support exceptions", catchNode.GetFullSpan());
+    }
     bool prevInsideCatch = insideCatch;
     insideCatch = true;
     soul::ast::Span span;

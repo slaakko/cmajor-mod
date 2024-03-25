@@ -1,0 +1,17 @@
+using System;
+
+void bar()
+{
+    string s;
+    s[1] = '0';
+}
+
+void foo()
+{
+    bar();
+}
+
+void main()
+{
+    foo();
+}

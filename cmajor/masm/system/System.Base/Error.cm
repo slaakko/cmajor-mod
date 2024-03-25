@@ -3,8 +3,6 @@
 // Distributed under the MIT license
 // =================================
 
-using System.Concepts;
-
 namespace System
 {
     public class ErrorId
@@ -12,6 +10,9 @@ namespace System
         public ErrorId(int value_) : value(value_) {}
         public int value;
     }
+
+//  The Result<T> class template will hold either a value T or an error identifier. An error identifier is a integer that represents an error instance contained by the run-time. 
+//  Error identifier 0 indicates success and positive integer indicates an error.    
 
     public class Result<T> 
     {
@@ -32,4 +33,17 @@ namespace System
         private int errorId;
     }
 
+//  AllocateError creates and returns an error identifier for an error message. 
+
+    public int AllocateError(const string& errorMessage)
+    {
+        return RtmAllocateError(errorMessage.Chars());
+    }
+
+//  GetErrorMessage returns an error message for an error identifier. In debug mode the error message will contain a stack trace.
+
+    public string GetErrorMessage(int errorId)
+    {
+        return RtmGetErrorMessage(errorId);
+    }
 }
