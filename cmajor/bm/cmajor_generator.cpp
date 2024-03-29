@@ -450,7 +450,15 @@ void GenerateBinaryMessageFiles(const std::string& schemaFileName, bool verbose)
         std::cout << "> " << schemaFileName << std::endl;
     }
     std::string content = util::ReadFile(schemaFileName);
-    std::u32string ucontent = util::ToUtf32(content);
+    std::u32string ucontent;
+    try
+    {
+        ucontent = util::ToUtf32(content);
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + schemaFileName);
+    }
     if (ucontent.empty())
     {
         throw std::runtime_error("file '" + schemaFileName + "' is empty: need at least an export module declaration.");

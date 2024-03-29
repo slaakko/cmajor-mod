@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <errno.h>
+
 module cmajor.masm.rt.error;
 
 import cmajor.masm.rt.io;
@@ -145,4 +148,9 @@ int RtmAllocateError(const char* errorMessage)
 void RtmDisposeError(int errorId)
 {
     cmajor::masm::rt::Errors::Instance().DisposeError(errorId);
+}
+
+int RtmGetErrno()
+{
+    return errno;
 }

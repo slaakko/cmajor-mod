@@ -1,0 +1,1576 @@
+using System;
+
+unit_test void string_value_test()
+{
+    string empty;
+    #assert(empty.IsEmpty());
+    #assert(empty.Length() == 0);
+    string emptyCopy = empty;
+    #assert(emptyCopy.IsEmpty());
+    #assert(emptyCopy.Length() == 0);
+    #assert(emptyCopy == empty);
+    string emptyCopyAssign;
+    emptyCopyAssign = empty;
+    #assert(emptyCopyAssign.IsEmpty());
+    #assert(emptyCopyAssign.Length() == 0);
+    #assert(emptyCopyAssign == empty);
+    string empty2;
+    string emptyMove = Rvalue(empty2);
+    #assert(emptyMove.IsEmpty());
+    #assert(emptyMove.Length() == 0);
+    #assert(emptyMove == empty);
+    string emptyMoveAssign;
+    string empty3;
+    emptyMoveAssign = Rvalue(empty3);
+    #assert(emptyMoveAssign.IsEmpty());
+    #assert(emptyMoveAssign.Length() == 0);
+    #assert(emptyMoveAssign == empty);
+
+    string one("a");
+    #assert(!one.IsEmpty());
+    #assert(one.Length() == 1);
+    #assert(one == "a");
+    string oneCopy = one;
+    #assert(!oneCopy.IsEmpty());
+    #assert(oneCopy.Length() == 1);
+    #assert(oneCopy == one);
+    string oneCopyAssign;
+    oneCopyAssign = one;
+    #assert(!oneCopyAssign.IsEmpty());
+    #assert(oneCopyAssign.Length() == 1);
+    #assert(oneCopyAssign == one);
+    string one2 = one;
+    string oneMove = Rvalue(one2);
+    #assert(!oneMove.IsEmpty());
+    #assert(oneMove.Length() == 1);
+    #assert(oneMove == one);
+    string oneMoveAssign;
+    string one3 = one;
+    oneMoveAssign = Rvalue(one3);
+    #assert(!oneMoveAssign.IsEmpty());
+    #assert(oneMoveAssign.Length() == 1);
+    #assert(oneMoveAssign == one);
+
+    string two("ab");
+    #assert(!two.IsEmpty());
+    #assert(two.Length() == 2);
+    #assert(two == "ab");
+    string twoCopy = two;
+    #assert(!twoCopy.IsEmpty());
+    #assert(twoCopy.Length() == 2);
+    #assert(twoCopy == two);
+    string twoCopyAssign;
+    twoCopyAssign = two;
+    #assert(!twoCopyAssign.IsEmpty());
+    #assert(twoCopyAssign.Length() == 2);
+    #assert(twoCopyAssign == two);
+    string two2 = two;
+    string twoMove = Rvalue(two2);
+    #assert(!twoMove.IsEmpty());
+    #assert(twoMove.Length() == 2);
+    #assert(twoMove == two);
+    string two3 = two;
+    string twoMoveAssign;
+    twoMoveAssign = Rvalue(two3);
+    #assert(!twoMoveAssign.IsEmpty());
+    #assert(twoMoveAssign.Length() == 2);
+    #assert(twoMoveAssign == two);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append('a');
+    }
+    #assert(!kilo.IsEmpty());
+    #assert(kilo.Length() == 1024);
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(kilo[i] == 'a');
+    }
+    string kiloCopy = kilo;
+    #assert(!kiloCopy.IsEmpty());
+    #assert(kiloCopy.Length() == 1024);
+    #assert(kiloCopy == kilo);
+    string kiloCopyAssign;
+    kiloCopyAssign = kilo;
+    #assert(!kiloCopyAssign.IsEmpty());
+    #assert(kiloCopyAssign.Length() == 1024);
+    #assert(kiloCopyAssign == kilo);
+    string kilo2 = kilo;
+    string kiloMove = Rvalue(kilo2);
+    #assert(!kiloMove.IsEmpty());
+    #assert(kiloMove.Length() == 1024);
+    #assert(kiloMove == kilo);
+    string kilo3 = kilo;
+    string kiloMoveAssign;
+    kiloMoveAssign = Rvalue(kilo3);
+    #assert(!kiloMoveAssign.IsEmpty());
+    #assert(kiloMoveAssign.Length() == 1024);
+    #assert(kiloMoveAssign == kilo);
+}
+
+unit_test void string_append_test()
+{
+    string emptyOne;
+    emptyOne.Append('a');
+    #assert(!emptyOne.IsEmpty());
+    #assert(emptyOne.Length() == 1);
+    #assert(emptyOne[0] == 'a');
+    #assert(emptyOne == "a");
+    string emptyEight;
+    emptyEight.Append('a', 8);
+    #assert(!emptyEight.IsEmpty());
+    #assert(emptyEight.Length() == 8);
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert(emptyEight[i] == 'a');
+    }
+    #assert(emptyEight == "aaaaaaaa");
+    string emptyStr;
+    emptyStr.Append("abc");
+    #assert(!emptyStr.IsEmpty());
+    #assert(emptyStr.Length() == 3);
+    #assert(emptyStr[0] == 'a');
+    #assert(emptyStr[1] == 'b');
+    #assert(emptyStr[2] == 'c');
+    #assert(emptyStr == "abc");
+
+    string oneOne('a');
+    oneOne.Append('b');
+    #assert(!oneOne.IsEmpty());
+    #assert(oneOne.Length() == 2);
+    #assert(oneOne[0] == 'a');
+    #assert(oneOne[1] == 'b');
+    #assert(oneOne == "ab");
+    string oneEight('a');
+    oneEight.Append('b', 8);
+    #assert(!oneEight.IsEmpty());
+    #assert(oneEight.Length() == 9);
+    #assert(oneEight[0] == 'a');
+    for (int i = 1; i < 9; ++i)
+    {
+        #assert(oneEight[i] == 'b');
+    }
+    #assert(oneEight == "abbbbbbbb");
+    string oneStr("a");
+    oneStr.Append("bcd");
+    #assert(!oneStr.IsEmpty());
+    #assert(oneStr.Length() == 4);
+    #assert(oneStr[0] == 'a');
+    #assert(oneStr[1] == 'b');
+    #assert(oneStr[2] == 'c');
+    #assert(oneStr[3] == 'd');
+    #assert(oneStr == "abcd");
+
+    string twoOne("ab");
+    twoOne.Append('c');
+    #assert(!twoOne.IsEmpty());
+    #assert(twoOne.Length() == 3);
+    #assert(twoOne[0] == 'a');
+    #assert(twoOne[1] == 'b');
+    #assert(twoOne[2] == 'c');
+    #assert(twoOne == "abc");
+    string twoEight("ab");
+    twoEight.Append('c', 8);
+    #assert(!twoEight.IsEmpty());
+    #assert(twoEight.Length() == 10);
+    #assert(twoEight[0] == 'a');
+    #assert(twoEight[1] == 'b');
+    for (int i = 2; i < 10; ++i)
+    {
+        #assert(twoEight[i] == 'c');
+    }
+    #assert(twoEight == "abcccccccc");
+    string twoStr("ab");
+    twoStr.Append("cde");
+    #assert(!twoStr.IsEmpty());
+    #assert(twoStr.Length() == 5);
+    #assert(twoStr[0] == 'a');
+    #assert(twoStr[1] == 'b');
+    #assert(twoStr[2] == 'c');
+    #assert(twoStr[3] == 'd');
+    #assert(twoStr[4] == 'e');
+    #assert(twoStr == "abcde");
+    string twoKilo("ab");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append('c');
+    }
+    twoKilo.Append(kilo);
+    #assert(!twoKilo.IsEmpty());
+    #assert(twoKilo.Length() == 1024 + 2);
+    #assert(twoKilo[0] == 'a');
+    #assert(twoKilo[1] == 'b');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(twoKilo[i + 2] == 'c');
+    }
+}
+
+unit_test void string_insert_char_test()
+{
+    string emptyInsert;
+    emptyInsert.Insert(0, 'a');
+    #assert(!emptyInsert.IsEmpty());
+    #assert(emptyInsert.Length() == 1);
+    #assert(emptyInsert[0] == 'a');
+    string oneInsert('a');
+    oneInsert.Insert(0, 'b');
+    #assert(!oneInsert.IsEmpty());
+    #assert(oneInsert.Length() == 2);
+    #assert(oneInsert[0] == 'b');
+    #assert(oneInsert[1] == 'a');
+    string twoInsert("ab");
+    twoInsert.Insert(0, 'c');
+    #assert(!twoInsert.IsEmpty());
+    #assert(twoInsert.Length() == 3);
+    #assert(twoInsert[0] == 'c');
+    #assert(twoInsert[1] == 'a');
+    #assert(twoInsert[2] == 'b');
+    string kiloInsert;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kiloInsert.Append('c');
+    }
+    kiloInsert.Insert(0, 'a');
+    #assert(!kiloInsert.IsEmpty());
+    #assert(kiloInsert.Length() == 1025);
+    #assert(kiloInsert[0] == 'a');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(kiloInsert[i + 1] == 'c');
+    }
+}
+
+unit_test void string_insert_string_test()
+{
+    string insert("abc");
+    string emptyInsert;
+    emptyInsert.Insert(0, insert);
+    #assert(!emptyInsert.IsEmpty());
+    #assert(emptyInsert.Length() == 3);
+    #assert(emptyInsert[0] == 'a');
+    #assert(emptyInsert[1] == 'b');
+    #assert(emptyInsert[2] == 'c');
+    string oneInsert('x');
+    oneInsert.Insert(0, insert);
+    #assert(!oneInsert.IsEmpty());
+    #assert(oneInsert.Length() == 4);
+    #assert(oneInsert[0] == 'a');
+    #assert(oneInsert[1] == 'b');
+    #assert(oneInsert[2] == 'c');
+    #assert(oneInsert[3] == 'x');
+    string twoInsert("xy");
+    twoInsert.Insert(0, insert);
+    #assert(!twoInsert.IsEmpty());
+    #assert(twoInsert.Length() == 5);
+    #assert(twoInsert[0] == 'a');
+    #assert(twoInsert[1] == 'b');
+    #assert(twoInsert[2] == 'c');
+    #assert(twoInsert[3] == 'x');
+    #assert(twoInsert[4] == 'y');
+    string kiloInsert;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kiloInsert.Append('x');
+    }
+    kiloInsert.Insert(0, insert);
+    #assert(!kiloInsert.IsEmpty());
+    #assert(kiloInsert.Length() == 1024 + 3);
+    #assert(kiloInsert[0] == 'a');
+    #assert(kiloInsert[1] == 'b');
+    #assert(kiloInsert[2] == 'c');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(kiloInsert[i + 3] == 'x');
+    }
+}
+
+unit_test void string_remove_test()
+{
+    string empty;
+    empty.Remove(0, 0);
+    #assert(empty.IsEmpty());
+    #assert(empty.Length() == 0);
+    string one('a');
+    one.Remove(0, 1);
+    #assert(one.IsEmpty());
+    #assert(one.Length() == 0);
+    string two("ab");
+    two.Remove(0, 1);
+    #assert(!two.IsEmpty());
+    #assert(two.Length() == 1);
+    #assert(two[0] == 'b');
+    string eight("12345678");
+    eight.Remove(2, 4);
+    #assert(!eight.IsEmpty());
+    #assert(eight.Length() == 4);
+    #assert(eight == "1278");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Remove(2, 4);
+    #assert(!kilo.IsEmpty());
+    #assert(kilo.Length() == 1024 - 4);
+    for (int i = 0; i < 1024 - 4; ++i)
+    {
+        if (i < 2)
+        {
+            #assert(kilo[i] == cast<char>(cast<int>('0') + (i % 10)));
+        }
+        else
+        {
+            #assert(kilo[i] == cast<char>(cast<int>('0') + ((i + 4) % 10)));
+        }
+    }
+}
+
+unit_test void string_replace_char_test()
+{
+    string empty;
+    empty.Replace('a', 'x');
+    #assert(empty.IsEmpty());
+    #assert(empty.Length() == 0);
+    string one('a');
+    one.Replace('a', 'x');
+    #assert(!one.IsEmpty());
+    #assert(one.Length() == 1);
+    #assert(one == "x");
+    string oneNot('a');
+    oneNot.Replace('b', 'x');
+    #assert(!oneNot.IsEmpty());
+    #assert(oneNot.Length() == 1);
+    #assert(oneNot == "a");
+    string two("ab");
+    two.Replace('a', 'x');
+    #assert(!two.IsEmpty());
+    #assert(two.Length() == 2);
+    #assert(two == "xb");
+    string twoNot("ab");
+    twoNot.Replace('c', 'x');
+    #assert(!twoNot.IsEmpty());
+    #assert(twoNot.Length() == 2);
+    #assert(twoNot == "ab");
+    string eight("12345678");
+    eight.Replace('4', 'x');
+    #assert(!eight.IsEmpty());
+    #assert(eight.Length() == 8);
+    #assert(eight == "123x5678");
+    string eightNot("12345678");
+    eightNot.Replace('y', 'x');
+    #assert(!eightNot.IsEmpty());
+    #assert(eightNot.Length() == 8);
+    #assert(eightNot == "12345678");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Replace('4', 'x');
+    for (int i = 0; i < 1024; ++i)
+    {
+        if ((i % 10) == 4)
+        {
+            #assert(kilo[i] == 'x');
+        }
+        else
+        {
+            #assert(kilo[i] == cast<char>(cast<int>('0') + (i % 10)));
+        }
+    }
+}
+
+unit_test void string_replace_string_test()
+{
+    string empty;
+    empty.Replace("abc", "x");
+    #assert(empty.IsEmpty());
+    #assert(empty.Length() == 0);
+    string one('a');
+    string a('a');
+    string x("xyz");
+    one.Replace(a, x);
+    #assert(!one.IsEmpty());
+    #assert(one.Length() == 3);
+    #assert(one == "xyz");
+    string oneNot('a');
+    string n('n');
+    oneNot.Replace(n, x);
+    #assert(!oneNot.IsEmpty());
+    #assert(oneNot.Length() == 1);
+    #assert(oneNot == "a");
+    string two("ab");
+    two.Replace("ab", "xyz");
+    #assert(!two.IsEmpty());
+    #assert(two.Length() == 3);
+    #assert(two == "xyz");
+    string two2("ab");
+    two2.Replace("a", "x");
+    #assert(!two2.IsEmpty());
+    #assert(two2.Length() == 2);
+    #assert(two2 == "xb");
+    string twoNot("ab");
+    twoNot.Replace(n, x);
+    #assert(!twoNot.IsEmpty());
+    #assert(twoNot.Length() == 2);
+    #assert(twoNot == "ab");
+    string eight("12345678");
+    eight.Replace("4", "xyz");
+    #assert(!eight.IsEmpty());
+    #assert(eight.Length() == 8 - 1 + 3);
+    #assert(eight == "123xyz5678");
+    string eightNot("12345678");
+    eightNot.Replace("x", "abc");
+    #assert(!eightNot.IsEmpty());
+    #assert(eightNot.Length() == 8);
+    #assert(eightNot ==  "12345678");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Replace("123", "xy");
+    #assert(!kilo.IsEmpty());
+    Console.WriteLine(kilo.Length());
+    #assert(kilo.Length() == 921);
+    for (int i = 0; i < 921; ++i)
+    {
+        if (i % 9 == 0)
+        {
+            string s = kilo.Substring(i, 9);
+            string t = "0xy456789";
+            t = t.Substring(0, s.Length());
+            #assert(s == t);
+        }
+    }
+}
+
+unit_test void string_substring_test()
+{
+    string empty;
+    string s0 = empty.Substring(0);
+    #assert(s0.IsEmpty());
+    #assert(s0.Length() == 0);
+    string one('a');
+    string s1 = one.Substring(0);
+    #assert(!s1.IsEmpty());
+    #assert(s1.Length() == 1);
+    #assert(s1 == one);
+    string s2 = one.Substring(1);
+    #assert(s2.IsEmpty());
+    #assert(s2.Length() == 0);
+    string two("ab");
+    string s3 = two.Substring(0, 1);
+    #assert(!s3.IsEmpty());
+    #assert(s3.Length() == 1);
+    #assert(s3 == "a");
+    string s4 = two.Substring(1, 1);
+    #assert(!s4.IsEmpty());
+    #assert(s4.Length() == 1);
+    #assert(s4 == "b");
+    string s5 = two.Substring(1, 3);
+    #assert(!s5.IsEmpty());
+    #assert(s5.Length() == 1);
+    #assert(s5 == "b");
+    string eight("12345678");
+    string s6 = eight.Substring(10, 100);
+    #assert(s6.IsEmpty());
+    #assert(s6.Length() == 0);
+    string s7 = eight.Substring(0, 8);
+    #assert(!s7.IsEmpty());
+    #assert(s7.Length() == 8);
+    #assert(s7 == "12345678");
+    string s8 = eight.Substring(2, 4);
+    #assert(!s8.IsEmpty());
+    #assert(s8.Length() == 4);
+    #assert(s8 == "3456");
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    string s9 = kilo.Substring(0);
+    #assert(!s9.IsEmpty());
+    #assert(s9.Length() == 1024);
+    #assert(s9 == kilo);
+    string s10 = kilo.Substring(1, 4);
+    #assert(!s10.IsEmpty());
+    #assert(s10.Length() == 4);
+    #assert(s10 == "1234");
+    string s11 = kilo.Substring(200, 0);
+    #assert(s11.IsEmpty());
+    #assert(s11.Length() == 0);
+    string s12 = kilo.Substring(1024 - 10, 10);
+    #assert(!s12.IsEmpty());
+    #assert(s12.Length() == 10);
+    #assert(s12 == "4567890123");
+    string s13 = kilo.Substring(1024 - 10, 5);
+    #assert(!s13.IsEmpty());
+    #assert(s13.Length() == 5);
+    #assert(s13 == "45678");
+    string s14 = kilo.Substring(1024 - 10, 20);
+    #assert(!s14.IsEmpty());
+    #assert(s14.Length() == 10);
+    #assert(s14 == "4567890123");
+}
+
+unit_test void string_iterator_test()
+{
+    string empty;
+    #assert(empty.Begin() == empty.End());
+    #assert(empty.CBegin() == empty.CEnd());
+
+    string one('a');
+    #assert(one.Begin() != one.End());
+    #assert(one.Begin() + 1 == one.End());
+    #assert(*one.Begin() == 'a');
+    #assert(one.CBegin() != one.CEnd());
+    #assert(one.CBegin() + 1 == one.CEnd());
+    #assert(*one.CBegin() == 'a');
+
+    string two("ab");
+    #assert(two.Begin() != two.End());
+    #assert(two.Begin() + 2 == two.End());
+    #assert(*two.Begin() == 'a');
+    #assert(*(two.Begin() + 1) == 'b');
+    #assert(two.CBegin() != two.CEnd());
+    #assert(two.CBegin() + 2 == two.CEnd());
+    #assert(*two.CBegin() == 'a');
+    #assert(*(two.CBegin() + 1) == 'b');
+
+    string eight("12345678");
+    #assert(eight.Begin() != eight.End());
+    #assert(eight.Begin() + 8 == eight.End());
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert(*(eight.Begin() + i) == cast<char>(cast<int>('1') + i));
+    }
+    #assert(eight.CBegin() != eight.CEnd());
+    #assert(eight.CBegin() + 8 == eight.CEnd());
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert(*(eight.CBegin() + i) == cast<char>(cast<int>('1') + i));
+    }
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo.Begin() != kilo.End());
+    #assert(kilo.Begin() + 1024 == kilo.End());
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(*(kilo.Begin() + i) == cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo.CBegin() != kilo.CEnd());
+    #assert(kilo.CBegin() + 1024 == kilo.CEnd());
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert(*(kilo.CBegin() + i) == cast<char>(cast<int>('0') + (i % 10)));
+    }
+}
+
+unit_test void string_starts_with_test()
+{
+    string a('a');
+    string x('x');
+    string abc("abc");
+
+    string empty;
+    #assert(empty.StartsWith(string()));
+    #assert(empty.StartsWith(empty));
+    #assert(!empty.StartsWith(a));
+    #assert(!empty.StartsWith(x));
+    #assert(!empty.StartsWith(abc));
+
+    string one('a');
+    #assert(one.StartsWith(string()));
+    #assert(one.StartsWith(a));
+    #assert(!one.StartsWith(x));
+    #assert(!one.StartsWith(abc));
+
+    string two("ab");
+    #assert(two.StartsWith(string()));
+    #assert(two.StartsWith(a));
+    #assert(two.StartsWith(string("ab")));
+    #assert(!two.StartsWith(x));
+    #assert(!two.StartsWith(abc));
+
+    string eight("12345678");
+    #assert(eight.StartsWith(string()));
+    #assert(eight.StartsWith(string("1")));
+    #assert(eight.StartsWith(string("12")));
+    #assert(eight.StartsWith(string("123")));
+    #assert(!eight.StartsWith(string("2")));
+    #assert(!eight.StartsWith(string("23")));
+    #assert(!eight.StartsWith(a));
+    #assert(!eight.StartsWith(x));
+    #assert(!eight.StartsWith(abc));
+    #assert(eight.StartsWith(string("12345678")));
+    #assert(!eight.StartsWith(string("123456789")));
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo.StartsWith(string()));
+    #assert(kilo.StartsWith(string("0")));
+    #assert(!kilo.StartsWith(string("1")));
+    #assert(kilo.StartsWith(string("01")));
+    #assert(kilo.StartsWith(string("0123")));
+    #assert(!kilo.StartsWith(a));
+    #assert(!kilo.StartsWith(x));
+    #assert(!kilo.StartsWith(abc));
+    #assert(kilo.StartsWith(kilo));
+    string kiloPlusOne = kilo + "1";
+    #assert(!kilo.StartsWith(kiloPlusOne));
+}
+
+unit_test void string_ends_with_test()
+{
+    string a('a');
+    string x('x');
+    string abc("abc");
+
+    string empty;
+    #assert(empty.EndsWith(string()));
+    #assert(empty.EndsWith(empty));
+    #assert(!empty.EndsWith(a));
+    #assert(!empty.EndsWith(x));
+    #assert(!empty.EndsWith(abc));
+
+    string one('a');
+    #assert(one.EndsWith(string()));
+    #assert(one.EndsWith(empty));
+    #assert(one.EndsWith(a));
+    #assert(one.EndsWith(one));
+    #assert(!one.EndsWith(x));
+    #assert(!one.EndsWith(abc));
+
+    string two("ab");
+    #assert(two.EndsWith(string()));
+    #assert(two.EndsWith(empty));
+    #assert(!two.EndsWith(a));
+    #assert(two.EndsWith("b"));
+    #assert(two.EndsWith(two));
+    #assert(two.EndsWith("ab"));
+    #assert(!two.EndsWith(x));
+    #assert(!two.EndsWith(abc));
+    #assert(!two.EndsWith("12345678"));
+
+    string eight("12345678");
+    #assert(eight.EndsWith(string()));
+    #assert(eight.EndsWith(empty));
+    #assert(eight.EndsWith("8"));
+    #assert(eight.EndsWith("78"));
+    #assert(eight.EndsWith("678"));
+    #assert(eight.EndsWith(eight));
+    #assert(!eight.EndsWith(a));
+    #assert(!eight.EndsWith("b"));
+    #assert(!eight.EndsWith(two));
+    #assert(!eight.EndsWith("ab"));
+    #assert(!eight.EndsWith(x));
+    #assert(!eight.EndsWith(abc));
+    #assert(!eight.EndsWith("123456789"));
+    #assert(!eight.EndsWith("12"));
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo.EndsWith(string()));
+    #assert(kilo.EndsWith(empty));
+    string e("4567890123");
+    #assert(kilo.EndsWith(e));
+    #assert(kilo.EndsWith(e.Substring(4)));
+    #assert(kilo.EndsWith(kilo));
+    #assert(kilo.EndsWith(kilo.Substring(0, 4)));
+    #assert(!kilo.EndsWith(a));
+    #assert(!kilo.EndsWith(x));
+    #assert(!kilo.EndsWith(abc));
+    string kiloPlusOne = kilo + "1";
+    #assert(!kilo.EndsWith(kiloPlusOne));
+}
+
+unit_test void string_split_char_test()
+{
+    string empty;
+    auto result0 = empty.Split('a');
+    #assert(result0.IsEmpty());
+    #assert(result0.Count() == 0);
+
+    string one('a');
+    auto result1 = one.Split('a');
+    #assert(!result1.IsEmpty());
+    #assert(result1.Count() == 1);
+    #assert(result1[0].IsEmpty());
+    #assert(result1[0].Length() == 0);
+    auto result2 = one.Split('x');
+    #assert(!result2.IsEmpty());
+    #assert(result2.Count() == 1);
+    #assert(result2[0] == "a");
+
+    string two("ab");
+    auto result3 = two.Split('a');
+    #assert(!result3.IsEmpty());
+    #assert(result3.Count() == 2);
+    #assert(result3[0].IsEmpty());
+    #assert(result3[0].Length() == 0);
+    #assert(!result3[1].IsEmpty());
+    #assert(result3[1].Length() == 1);
+    #assert(result3[1] == "b");
+
+    auto result4 = two.Split('b');
+    #assert(!result4.IsEmpty());
+    #assert(result4.Count() == 1);
+    #assert(!result4[0].IsEmpty());
+    #assert(result4[0].Length() == 1);
+    #assert(result4[0] == "a");
+
+    auto result6 = two.Split('c');
+    #assert(!result6.IsEmpty());
+    #assert(result6.Count() == 1);
+    #assert(!result6[0].IsEmpty());
+    #assert(result6[0].Length() == 2);
+    #assert(result6[0] == "ab");
+
+    string eight("12345678");
+    auto result7 = eight.Split('1');
+    #assert(!result7.IsEmpty());
+    #assert(result7.Count() == 2);
+    #assert(result7[0].IsEmpty());
+    #assert(result7[0].Length() == 0);
+    #assert(!result7[1].IsEmpty());
+    #assert(result7[1].Length() == 7);
+    #assert(result7[1] == "2345678");
+
+    auto result8 = eight.Split('2');
+    #assert(!result8.IsEmpty());
+    #assert(result8.Count() == 2);
+    #assert(!result8[0].IsEmpty());
+    #assert(result8[0].Length() == 1);
+    #assert(result8[0] == "1");
+    #assert(!result8[1].IsEmpty());
+    #assert(result8[1].Length() == 6);
+    #assert(result8[1] == "345678");
+
+    auto result9 = eight.Split('7');
+    #assert(!result9.IsEmpty());
+    #assert(result9.Count() == 2);
+    #assert(!result9[0].IsEmpty());
+    #assert(result9[0].Length() == 6);
+    #assert(result9[0] == "123456");
+    #assert(!result9[1].IsEmpty());
+    #assert(result9[1].Length() == 1);
+    #assert(result9[1] == "8");
+
+    auto result10 = eight.Split('8');
+    #assert(!result10.IsEmpty());
+    #assert(result10.Count() == 1);
+    #assert(!result10[0].IsEmpty());
+    #assert(result10[0].Length() == 7);
+    #assert(result10[0] == "1234567");
+
+    auto result11 = eight.Split('9');
+    #assert(!result11.IsEmpty());
+    #assert(result11.Count() == 1);
+    #assert(!result11[0].IsEmpty());
+    #assert(result11[0].Length() == 8);
+    #assert(result11[0] == "12345678");
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+
+    auto result12 = kilo.Split('x');
+    #assert(!result12.IsEmpty());
+    #assert(result12.Count() == 1);
+    #assert(!result12[0].IsEmpty());
+    #assert(result12[0].Length() == 1024);
+    #assert(result12[0] == kilo);
+    auto result13 = kilo.Split('0');
+    #assert(!result13.IsEmpty());
+    #assert(result13.Count() == 104);
+    #assert(result13[0].IsEmpty());
+    #assert(result13[0].Length() == 0);
+    for (int i = 1; i < 103; ++i)
+    {
+        #assert(!result13[i].IsEmpty());
+        #assert(result13[i].Length() == 9);
+        #assert(result13[i] == "123456789");
+    }
+    #assert(!result13[103].IsEmpty());
+    #assert(result13[103].Length() == 3);
+    #assert(result13[103] == "123");
+
+    auto result14 = kilo.Split('5');
+    #assert(!result14.IsEmpty());
+    #assert(result14.Count() == 103);
+    #assert(!result14[0].IsEmpty());
+    #assert(result14[0].Length() == 5);
+    #assert(result14[0] == "01234");
+    for (int i = 1; i < 102; ++i)
+    {
+        #assert(!result14[i].IsEmpty());
+        #assert(result14[i].Length() == 9);
+        #assert(result14[i] == "678901234");
+    }
+    #assert(!result14[102].IsEmpty());
+    #assert(result14[102].Length() == 8);
+    #assert(result14[102] == "67890123");
+}
+
+unit_test void string_split_string_test()
+{
+    string empty;
+    auto result0 = empty.Split(string());
+    #assert(result0.IsEmpty());
+    #assert(result0.Count() == 0);
+
+    auto result1 = empty.Split("abc");
+    #assert(result1.IsEmpty());
+    #assert(result1.Count() == 0);
+
+    string one('a');
+    auto result2 = one.Split(string());
+    #assert(!result2.IsEmpty());
+    #assert(result2.Count() == 1);
+    #assert(!result2[0].IsEmpty());
+    #assert(result2[0].Length() == 1);
+    #assert(result2[0] == "a");
+
+    auto result3 = one.Split("a");
+    #assert(!result3.IsEmpty());
+    #assert(result3.Count() == 1);
+    #assert(result3[0].IsEmpty());
+    #assert(result3[0].Length() == 0);
+
+    auto result4 = one.Split("abc");
+    #assert(!result4.IsEmpty());
+    #assert(result4.Count() == 1);
+    #assert(!result4[0].IsEmpty());
+    #assert(result4[0].Length() == 1);
+    #assert(result4[0] == "a");
+
+    string two("ab");
+    auto result5 = two.Split(string());
+    #assert(!result5.IsEmpty());
+    #assert(result5.Count() == 1);
+    #assert(!result5[0].IsEmpty());
+    #assert(result5[0].Length() == 2);
+    #assert(result5[0] == "ab");
+
+    auto result6 = two.Split("a");
+    #assert(!result6.IsEmpty());
+    #assert(result6.Count() == 2);
+    #assert(result6[0].IsEmpty());
+    #assert(result6[0].Length() == 0);
+    #assert(!result6[1].IsEmpty());
+    #assert(result6[1].Length() == 1);
+    #assert(result6[1] == "b");
+
+    auto result7 = two.Split("b");
+    #assert(!result7.IsEmpty());
+    #assert(result7.Count() == 1);
+    #assert(!result7[0].IsEmpty());
+    #assert(result7[0].Length() == 1);
+    #assert(result7[0] == "a");
+
+    auto result8 = two.Split("ab");
+    #assert(!result8.IsEmpty());
+    #assert(result8.Count() == 1);
+    #assert(result8[0].IsEmpty());
+    #assert(result8[0].Length() == 0);
+
+    auto result9 = two.Split("abc");
+    #assert(!result9.IsEmpty());
+    #assert(result9.Count() == 1);
+    #assert(!result9[0].IsEmpty());
+    #assert(result9[0].Length() == 2);
+    #assert(result9[0] == "ab");
+
+    string eight("12345678");
+    auto result10 = eight.Split(string());
+    #assert(!result10.IsEmpty());
+    #assert(result10.Count() == 1);
+    #assert(!result10[0].IsEmpty());
+    #assert(result10[0].Length() == 8);
+    #assert(result10[0] == eight);
+
+    auto result11 = eight.Split("1");
+    #assert(!result11.IsEmpty());
+    #assert(result11.Count() == 2);
+    #assert(result11[0].IsEmpty());
+    #assert(result11[0].Length() == 0);
+    #assert(!result11[1].IsEmpty());
+    #assert(result11[1].Length() == 7);
+    #assert(result11[1] == "2345678");
+
+    auto result12 = eight.Split("234");
+    #assert(!result12.IsEmpty());
+    #assert(result12.Count() == 2);
+    #assert(!result12[0].IsEmpty());
+    #assert(result12[0].Length() == 1);
+    #assert(result12[0] == "1");
+    #assert(!result12[1].IsEmpty());
+    #assert(result12[1].Length() == 4);
+    #assert(result12[1] == "5678");
+
+    auto result13 = eight.Split("78");
+    #assert(!result13.IsEmpty());
+    #assert(result13.Count() == 1);
+    #assert(!result13[0].IsEmpty());
+    #assert(result13[0].Length() == 6);
+    #assert(result13[0] == "123456");
+
+    auto result14 = eight.Split(eight);
+    #assert(!result14.IsEmpty());
+    #assert(result14.Count() == 1);
+    #assert(result14[0].IsEmpty());
+    #assert(result14[0].Length() == 0);
+
+    auto result15 = eight.Split(eight + "9");
+    #assert(!result15.IsEmpty());
+    #assert(result15.Count() == 1);
+    #assert(!result15[0].IsEmpty());
+    #assert(result15[0].Length() == 8);
+    #assert(result15[0] == eight);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    auto result16 = kilo.Split(string());
+    #assert(!result16.IsEmpty());
+    #assert(result16.Count() == 1);
+    #assert(!result16[0].IsEmpty());
+    #assert(result16[0].Length() == 1024);
+    #assert(result16[0] == kilo);
+
+    auto result17 = kilo.Split("0");
+    #assert(!result17.IsEmpty());
+    #assert(result17.Count() == 104);
+    #assert(result17[0].IsEmpty());
+    #assert(result17[0].Length() == 0);
+    for (int i = 1; i < 103; ++i)
+    {
+        #assert(!result17[i].IsEmpty());
+        #assert(result17[i].Length() == 9);
+        #assert(result17[i] == "123456789");
+    }
+    #assert(!result17[103].IsEmpty());
+    #assert(result17[103].Length() == 3);
+    #assert(result17[103] == "123");
+
+    auto result18 = kilo.Split("5");
+    #assert(!result18.IsEmpty());
+    #assert(result18.Count() == 103);
+    #assert(!result18[0].IsEmpty());
+    #assert(result18[0].Length() == 5);
+    #assert(result18[0] == "01234");
+    for (int i = 1; i < 102; ++i)
+    {
+        #assert(!result18[i].IsEmpty());
+        #assert(result18[i].Length() == 9);
+        #assert(result18[i] == "678901234");
+    }
+    #assert(!result18[102].IsEmpty());
+    #assert(result18[102].Length() == 8);
+    #assert(result18[102] == "67890123");
+}
+
+unit_test void string_find_char_test()
+{
+    string empty;
+    long result0 = empty.Find('x', 0);
+    #assert(result0 == -1);
+
+    string one('a');
+    long result1 = one.Find('x', 0);
+    #assert(result1 == -1);
+    long result2 = one.Find('a', 0);
+    #assert(result2 == 0);
+    long result3 = one.Find('a', 1);
+    #assert(result3 == -1);
+
+    string two("ab");
+    long result4 = two.Find('x', 0);
+    #assert(result4 == -1);
+    long result5 = two.Find('a', 0);
+    #assert(result5 == 0);
+    long result6 = two.Find('b', 0);
+    #assert(result6 == 1);
+    long result7 = two.Find('b', 1);
+    #assert(result7 == 1);
+    long result8 = two.Find('b', 2);
+    #assert(result8 == -1);
+
+    string eight("12345678");
+    long result9 = eight.Find('x', 0);
+    #assert(result9 == -1);
+    long result10 = eight.Find('1', 0);
+    #assert(result10 == 0);
+    long result11 = eight.Find('2', 0);
+    #assert(result11 == 1);
+    long result12 = eight.Find('3', 0);
+    #assert(result12 == 2);
+    long result13 = eight.Find('8', 0);
+    #assert(result13 == 7);
+    long result14 = eight.Find('1', 1);
+    #assert(result14 == -1);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long result15 = kilo.Find('x', 0);
+    #assert(result15 == -1);
+    long result16 = kilo.Find('0', 0);
+    #assert(result16 == 0);
+    long result17 = kilo.Find('1', 0);
+    #assert(result17 == 1);
+    long result18 = kilo.Find('2', 0);
+    #assert(result18 == 2);
+    long result19 = kilo.Find('0', 1);
+    #assert(result19 == 10);
+}
+
+unit_test void string_find_string_test()
+{
+    string empty;
+    long result = empty.Find(empty, 0);
+    #assert(result == 0);
+    long result0 = empty.Find("x", 0);
+    #assert(result0 == -1);
+
+    string one('a');
+    long resultA = one.Find(string(), 0);
+    #assert(resultA == 0);
+    long result1 = one.Find("a", 0);
+    #assert(result1 == 0);
+    long result2 = one.Find("ab", 0);
+    #assert(result2 == -1);
+    long result3 = one.Find("x", 0);
+    #assert(result3 == -1);
+    long result4 = one.Find("a", 1);
+    #assert(result4 == -1);
+    long result5 = one.Find("ab", 1);
+    #assert(result5 == -1);
+
+    string two("ab");
+    long resultB = two.Find(string(), 1);
+    #assert(resultB == 1);
+    long result6 = two.Find("a", 0);
+    #assert(result6 == 0);
+    long result7 = two.Find("ab", 0);
+    #assert(result7 == 0);
+    long result8 = two.Find("ac", 0);
+    #assert(result8 == -1);
+    long result9 = two.Find("ba", 0);
+    #assert(result9  == -1);
+    long result10 = two.Find("abc", 0);
+    #assert(result10 == -1);
+    long result11 = two.Find("b", 0);
+    #assert(result11 == 1);
+    long result12 = two.Find("b", 1);
+    #assert(result12 == 1);
+    long result13 = two.Find("b", 2);
+    #assert(result13 == -1);
+
+    string eight("12345678");
+    long resultC = eight.Find(string(), 0);
+    #assert(resultC == 0);
+    long result14 = eight.Find("x", 0);
+    #assert(result14 == -1);
+    long result15 = eight.Find("1", 0);
+    #assert(result15 == 0);
+    long result16 = eight.Find("123", 0);
+    #assert(result16 == 0);
+    long result17 = eight.Find("124", 0);
+    #assert(result17 == -1);
+    long result18 = eight.Find("345", 0);
+    #assert(result18 == 2);
+    long result19 = eight.Find("12345678", 0);
+    #assert(result19 == 0);
+    long result20 = eight.Find("23456789", 0);
+    #assert(result20 == -1);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long resultD = kilo.Find(string(), 0);
+    #assert(resultD == 0);
+    long result21 = kilo.Find("x", 0);
+    #assert(result21 == -1);
+    long result22 = kilo.Find("0", 0);
+    #assert(result22 == 0);
+    long result23 = kilo.Find("013", 0);
+    #assert(result23 == -1);
+    long result24 = kilo.Find("0123", 1);
+    #assert(result24 == 10);
+}
+
+unit_test void string_rfind_char_test()
+{
+    string empty;
+    long result0 = empty.RFind('x', -1);
+    #assert(result0 == -1);
+
+    string one('a');
+    long result1 = one.RFind('x', 0);
+    #assert(result1 == -1);
+    long result2 = one.RFind('a', 0);
+    #assert(result2 == 0);
+
+    string two("ab");
+    long result3 = two.RFind('x', 1);
+    #assert(result3 == -1);
+    long result4 = two.RFind('b', 1);
+    #assert(result4 == 1);
+    long result5 = two.RFind('a', 1);
+    #assert(result5 == 0);
+    long result6 = two.RFind('a', 0);
+    #assert(result6 == 0);
+    long result7 = two.RFind('b', 0);
+    #assert(result7 == -1);
+
+    string eight("12345678");
+    long result8 = eight.RFind('x', 7);
+    #assert(result8 == -1);
+    long result9 = eight.RFind('8', 7);
+    #assert(result9 == 7);
+    long result10 = eight.RFind('1', 7);
+    #assert(result10 == 0);
+    long result11 = eight.RFind('6', 5);
+    #assert(result11 == 5);
+    long result12 = eight.RFind('1', 5);
+    #assert(result12 == 0);
+    long result13 = eight.RFind('2', 5);
+    #assert(result13 == 1);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long result14 = kilo.RFind('x', 1023);
+    #assert(result14 == -1);
+    long result15 = kilo.RFind('3', 1023);
+    #assert(result15 == 1023);
+    long result16 = kilo.RFind('0', 1023);
+    #assert(result16 == 1020);
+    long result17 = kilo.RFind('9', 1000);
+    #assert(result17 == 999);
+    long result18 = kilo.RFind('x', 1000);
+    #assert(result18 == -1);
+}
+
+unit_test void string_rfind_string_test()
+{
+    string empty;
+    long result = empty.RFind(empty, -1);
+    #assert(result == -1);
+    long result0 = empty.RFind("x", -1);
+    #assert(result0 == -1);
+
+    string one('a');
+    long resulta = one.RFind(string(), 0);
+    #assert(resulta == 0);
+    long result1 = one.RFind("x", 0);
+    #assert(result1 == -1);
+    long result2 = one.RFind("a", 0);
+    #assert(result2 == 0);
+    long result3 = one.RFind("ab", 0);
+    #assert(result3 == -1);
+    long result4 = one.RFind("ba", 0);
+    #assert(result4 == -1);
+
+    string two("ab");
+    long resultb = two.RFind(string(), 1);
+    #assert(resultb == 1);
+    long result5 = two.RFind("x", 1);
+    #assert(result5 == -1);
+    long result6 = two.RFind("b", 1);
+    #assert(result6 == 1);
+    long result7 = two.RFind("a", 1);
+    #assert(result7 == 0);
+    long result8 = two.RFind("ab", 1);
+    #assert(result8 == 0);
+    long result9 = two.RFind("b", 0);
+    #assert(result9 == -1);
+    long result10 = two.RFind("abc", 1);
+    #assert(result10 == -1);
+    long result11 = two.RFind("a", 0);
+    #assert(result11 == 0);
+
+    string eight("12345678");
+    long resultc = eight.RFind(string(), 7);
+    #assert(resultc == 7);
+    long resultd = eight.RFind(string(), 4);
+    #assert(resultd == 4);
+    long result12 = eight.RFind("x", 7);
+    #assert(result12 == -1);
+    long result13 = eight.RFind("8", 7);
+    #assert(result13 == 7);
+    long result14 = eight.RFind("1", 7);
+    #assert(result14 == 0);
+    long result15 = eight.RFind("123", 7);
+    #assert(result15 == 0);
+    long result16 = eight.RFind("234", 7);
+    #assert(result16 == 1);
+    long result17 = eight.RFind(eight, 7);
+    #assert(result17 == 0);
+
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long result18 = kilo.RFind(string(), 1023);
+    #assert(result18 == 1023);
+    long result19 = kilo.RFind("x", 1023);
+    #assert(result19 == -1);
+    long result20 = kilo.RFind("901", 1023);
+    #assert(result20 == 1019);
+    long result21 = kilo.RFind("0123456789", 1023);
+    #assert(result21 == 1010);
+}
+
+unit_test void string_equal_test()
+{
+    string empty;
+    #assert(empty == empty);
+    string one('a');
+    #assert(one == one);
+    #assert(one != empty);
+    #assert(empty != one);
+    string two("ab");
+    #assert(two == two);
+    #assert(two != one);
+    #assert(one != two);
+    #assert(two != empty);
+    #assert(empty != two);
+    string eight("12345678");
+    #assert(eight == eight);
+    #assert(eight != empty);
+    #assert(empty != eight);
+    #assert(eight != one);
+    #assert(one != eight);
+    #assert(eight != two);
+    #assert(two != eight);
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo == kilo);
+    #assert(kilo != empty);
+    #assert(empty != kilo);
+    #assert(kilo != one);
+    #assert(one != kilo);
+    #assert(kilo != two);
+    #assert(two != kilo);
+    #assert(kilo != eight);
+    #assert(eight != kilo);
+}
+
+unit_test void string_compare_test()
+{
+    string empty;
+    #assert(!(empty < empty));
+    #assert(!(empty > empty));
+    #assert(empty <= empty);
+    #assert(empty >= empty);
+    string one('a');
+    #assert(empty < one);
+    #assert(!(empty > one));
+    #assert(empty <= one);
+    #assert(!(empty >= one));
+    #assert(!(one < empty));
+    #assert(one > empty);
+    #assert(!(one <= empty));
+    #assert(one >= empty);
+    string two("ab");
+    #assert(!(two < two));
+    #assert(!(two > two));
+    #assert(two <= two);
+    #assert(two >= two);
+    #assert(empty < two);
+    #assert(!(empty > two));
+    #assert(empty <= two);
+    #assert(!(empty >= two));
+    #assert(!(two < empty));
+    #assert(two > empty);
+    #assert(!(two <= empty));
+    #assert(two >= empty);
+    #assert(one < two);
+    #assert(!(one > two));
+    #assert(one <= two);
+    #assert(!(one >= two));
+    #assert(two > one);
+    #assert(!(two < one));
+    #assert(two >= one);
+    #assert(!(two <= one));
+    string eight("12345678");
+    #assert(!(eight < eight));
+    #assert(!(eight > eight));
+    #assert(eight <= eight);
+    #assert(eight >= eight);
+    #assert(!(eight < empty));
+    #assert(eight > empty);
+    #assert(!(eight <= empty));
+    #assert(eight >= empty);
+    #assert(empty < eight);
+    #assert(!(empty > eight));
+    #assert(empty <= eight);
+    #assert(!(empty >= eight));
+    #assert(eight < one);
+    #assert(!(eight > one));
+    #assert(eight <= one);
+    #assert(!(eight >= one));
+    #assert(!(one < eight));
+    #assert(one > eight);
+    #assert(!(one <= eight));
+    #assert(one >= eight);
+    #assert(eight < two);
+    #assert(!(eight > two));
+    #assert(eight <= two);
+    #assert(!(eight >= two));
+    #assert(!(two < eight));
+    #assert(two > eight);
+    #assert(!(two <= eight));
+    #assert(two >= eight);
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(!(kilo < kilo));
+    #assert(!(kilo > kilo));
+    #assert(kilo <= kilo);
+    #assert(kilo >= kilo);
+    #assert(!(kilo < empty));
+    #assert(kilo > empty);
+    #assert(!(kilo <= empty));
+    #assert(kilo >= empty);
+    #assert(empty < kilo);
+    #assert(!(empty > kilo));
+    #assert(empty <= kilo);
+    #assert(!(empty >= kilo));
+    #assert(kilo < one);
+    #assert(!(kilo > one));
+    #assert(kilo <= one);
+    #assert(!(kilo >= one));
+    #assert(!(one < kilo));
+    #assert(one > kilo);
+    #assert(!(one <= kilo));
+    #assert(one >= kilo);
+    #assert(kilo < two);
+    #assert(!(kilo > two));
+    #assert(kilo <= two);
+    #assert(!(kilo >= two));
+    #assert(!(two < kilo));
+    #assert(two > kilo);
+    #assert(!(two <= kilo));
+    #assert(two >= kilo);
+    #assert(kilo < eight);
+    #assert(!(kilo > eight));
+    #assert(kilo <= eight);
+    #assert(!(kilo >= eight));
+    #assert(!(eight < kilo));
+    #assert(eight > kilo);
+    #assert(!(eight <= kilo));
+    #assert(eight >= kilo);
+}
+
+unit_test void string_plus_string_test()
+{
+    string empty;
+    #assert(empty + empty == empty);
+    string one('a');
+    #assert(one + one == "aa");
+    #assert(one + empty == one);
+    #assert(empty + one == one);
+    string two("ab");
+    #assert(two + two == "abab");
+    #assert(two + empty == two);
+    #assert(empty + two == two);
+    #assert(two + one == "aba");
+    #assert(one + two == "aab");
+    string eight("12345678");
+    #assert(eight + eight == "1234567812345678");
+    #assert(eight + empty == eight);
+    #assert(empty + eight == eight);
+    #assert(eight + one == "12345678a");
+    #assert(one + eight == "a12345678");
+    #assert(eight + two == "12345678ab");
+    #assert(two + eight == "ab12345678");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    string twoKilos;
+    for (int i = 0; i < 1024; ++i)
+    {
+        twoKilos.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    for (int i = 0; i < 1024; ++i)
+    {
+        twoKilos.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert(kilo + kilo == twoKilos);
+    #assert(kilo + empty == kilo);
+    #assert(empty + kilo == kilo);
+    string kiloPlusOne(kilo);
+    kiloPlusOne.Append(one);
+    string onePlusKilo(one);
+    onePlusKilo.Append(kilo);
+    #assert(kilo + one == kiloPlusOne);
+    #assert(one + kilo == onePlusKilo);
+    string kiloPlusTwo(kilo);
+    kiloPlusTwo.Append(two);
+    string twoPlusKilo(two);
+    twoPlusKilo.Append(kilo);
+    #assert(kilo + two == kiloPlusTwo);
+    #assert(two + kilo == twoPlusKilo);
+    string kiloPlusEight(kilo);
+    kiloPlusEight.Append(eight);
+    string eightPlusKilo(eight);
+    eightPlusKilo.Append(kilo);
+    #assert(kilo + eight == kiloPlusEight);
+    #assert(eight + kilo == eightPlusKilo);
+}
+
+unit_test void string_plus_char_ptr_test()
+{
+    string empty;
+    #assert(empty + "" == "");
+    #assert("" + empty == "");
+    string one('a');
+    #assert(one + "a" == "aa");
+    #assert("a" + one == "aa");
+    #assert(one + "" == "a");
+    #assert("" + one == "a");
+    string two("ab");
+    #assert(two + "a" == "aba");
+    #assert("a" + two == "aab");
+    #assert(two + "" == "ab");
+    #assert("" + two == "ab");
+    string eight("12345678");
+    #assert(eight + "" == "12345678");
+    #assert("" + eight == "12345678");
+    #assert(eight + "a" == "12345678a");
+    #assert("a" + eight == "a12345678");
+    #assert(eight + "ab" == "12345678ab");
+    #assert("ab" + eight == "ab12345678");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    string kiloPlusOne(kilo);
+    kiloPlusOne.Append(one);
+    string onePlusKilo(one);
+    onePlusKilo.Append(kilo);
+    string kiloPlusTwo(kilo);
+    kiloPlusTwo.Append(two);
+    string twoPlusKilo(two);
+    twoPlusKilo.Append(kilo);
+    string kiloPlusEight(kilo);
+    kiloPlusEight.Append(eight);
+    string eightPlusKilo(eight);
+    eightPlusKilo.Append(kilo);
+    #assert(kilo + "" == kilo);
+    #assert("" + kilo == kilo);
+    #assert(kilo + "a" == kiloPlusOne);
+    #assert("a" + kilo == onePlusKilo);
+    #assert(kilo + "ab" == kiloPlusTwo);
+    #assert("ab" + kilo == twoPlusKilo);
+    #assert(kilo + "12345678" == kiloPlusEight);
+    #assert("12345678" + kilo == eightPlusKilo);
+}
+
+unit_test void last_components_equal_test()
+{
+    #assert(LastComponentsEqual(string(), string(), '.'));
+    #assert(LastComponentsEqual("a", string(), '.'));
+    #assert(LastComponentsEqual(string(), "a", '.'));
+    #assert(LastComponentsEqual("a.b", "", '.'));
+    #assert(LastComponentsEqual("a.b", "b", '.'));
+    #assert(!LastComponentsEqual("a.b", "a", '.'));
+    #assert(LastComponentsEqual("a.b", "a.b", '.'));
+    #assert(!LastComponentsEqual("a.b", "b.a", '.'));
+    #assert(!LastComponentsEqual("a.b", "x.y", '.'));
+    #assert(LastComponentsEqual("alpha.beta.gamma", "alpha.beta.gamma", '.'));
+    #assert(LastComponentsEqual("alpha.beta.gamma", "beta.gamma", '.'));
+    #assert(LastComponentsEqual("alpha.beta.gamma", "gamma", '.'));
+    #assert(!LastComponentsEqual("alpha.beta.gamma", "alpha.beta.delta", '.'));
+    #assert(!LastComponentsEqual("alpha.beta.gamma", "beta.delta", '.'));
+    #assert(!LastComponentsEqual("alpha.beta.gamma", "delta", '.'));
+}
+
+unit_test void to_lower_test()
+{
+    auto result0 = ToLower(string());
+    #assert(!result0.Error() && result0.Value() == string());
+    auto result1 = ToLower("alpha");
+    #assert(!result1.Error() && result1.Value() == "alpha");
+    auto result2 = ToLower("Alpha");
+    #assert(!result2.Error() && result2.Value() == "alpha");
+    auto result3 = ToLower("ALPHA");
+    #assert(!result3.Error() && result3.Value() == "alpha");
+    auto result4 = ToLower("a");
+    #assert(!result4.Error() && result4.Value() == "a");
+    auto result5 = ToLower("A");
+    #assert(!result5.Error() && result5.Value() == "a");
+    auto result6 = ToLower("ab");
+    #assert(!result6.Error() && result6.Value() == "ab");
+    auto result7 = ToLower("Ab");
+    #assert(!result7.Error() && result7.Value() == "ab");
+    auto result8 = ToLower("aB");
+    #assert(!result8.Error() && result8.Value() == "ab");
+    auto result9 = ToLower("AB");
+    #assert(!result9.Error() && result9.Value() == "ab");
+    auto result10 = ToLower("12345678");
+    #assert(!result10.Error() && result10.Value() == "12345678");
+}
+
+unit_test void to_upper_test()
+{
+    auto result0 = ToUpper(string());
+    #assert(!result0.Error() && result0.Value() == string());
+    auto result1 = ToUpper("alpha");
+    #assert(!result1.Error() && result1.Value() == "ALPHA");
+    auto result2 = ToUpper("Alpha");
+    #assert(!result2.Error() && result2.Value() == "ALPHA");
+    auto result3 = ToUpper("ALPHA");
+    #assert(!result3.Error() && result3.Value() == "ALPHA");
+    auto result4 = ToUpper("a");
+    #assert(!result4.Error() && result4.Value() == "A");
+    auto result5 = ToUpper("A");
+    #assert(!result5.Error() && result5.Value() == "A");
+    auto result6 = ToUpper("ab");
+    #assert(!result6.Error() && result6.Value() == "AB");
+    auto result7 = ToUpper("Ab");
+    #assert(!result7.Error() && result7.Value() == "AB");
+    auto result8 = ToUpper("aB");
+    #assert(!result8.Error() && result8.Value() == "AB");
+    auto result9 = ToUpper("AB");
+    #assert(!result9.Error() && result9.Value() == "AB");
+    auto result10 = ToUpper("12345678");
+    #assert(!result10.Error() && result10.Value() == "12345678");
+}

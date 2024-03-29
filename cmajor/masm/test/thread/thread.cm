@@ -1,0 +1,14 @@
+using System;
+using System.Threading;
+
+void foo()
+{
+    Console.WriteLine("in thread");
+}
+
+void main()
+{
+    int cores = HardwareConcurrency();
+    Console.WriteLine(cores);
+    Thread thread = Thread.StartFunction(foo);
+}

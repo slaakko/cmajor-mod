@@ -1,0 +1,620 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public string Trim(const string& s)
+    {
+        long b = 0;
+        while (b < s.Length() && IsSpace(s[b]))
+        {
+            ++b;
+        }
+        long e = s.Length() - 1;
+        while (e >= b && IsSpace(s[e]))
+        {
+            --e;
+        }
+        return s.Substring(b, e - b + 1);
+    }
+
+    public Result<wstring> Trim(const wstring& s)
+    {
+        auto result = ToUtf32(s);
+        if (result.Error())
+        {
+            return Result<wstring>(ErrorId(result.GetErrorId()));
+        }
+        auto trimResult = Trim(result.Value());
+        if (trimResult.Error())
+        {
+            return Result<wstring>(ErrorId(trimResult.GetErrorId()));
+        }
+        return ToUtf16(trimResult.Value());
+    }
+
+    public Result<ustring> Trim(const ustring& s)
+    {
+        long b = 0;
+        bool stop = false;
+        while (b < s.Length() && !stop)
+        {
+            auto wsResult = IsWhiteSpace(s[b]);
+            if (wsResult.Error())
+            {
+                return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+            }
+            stop = !wsResult.Value();
+            if (!stop)
+            {
+                ++b;
+            }
+        }
+        long e = s.Length() - 1;
+        stop = false;
+        while (e >= b && !stop)
+        {
+            auto wsResult = IsWhiteSpace(s[e]);
+            if (wsResult.Error())
+            {
+                return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+            }
+            stop = !wsResult.Value();
+            if (!stop)
+            {
+                --e;
+            }
+        }
+        return Result<ustring>(s.Substring(b, e - b + 1));
+    }
+
+    public string TrimAll(const string& s)
+    {
+        string result;
+        result.Reserve(s.Length());
+        int state = 0 ;
+        for (char c : s)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    if (!IsSpace(c))
+                    {
+                        result.Append(c);
+                        state = 1;
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    if (IsSpace(c))
+                    {
+                        state = 2;
+                    }
+                    else
+                    {
+                        result.Append(c);
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    if (!IsSpace(c))
+                    {
+                        result.Append(' ');
+                        result.Append(c);
+                        state = 1;
+                    }
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public Result<wstring> TrimAll(const wstring& s)
+    {
+        auto result = ToUtf32(s);
+        if (result.Error())
+        {
+            return Result<wstring>(ErrorId(result.GetErrorId()));
+        }
+        auto trimResult = TrimAll(result.Value());
+        if (trimResult.Error())
+        {
+            return Result<wstring>(ErrorId(trimResult.GetErrorId()));
+        }
+        return ToUtf16(trimResult.Value());
+    }
+
+    public Result<ustring> TrimAll(const ustring& s)
+    {
+        ustring result;
+        result.Reserve(s.Length());
+        int state = 0;
+        for (uchar c : s)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (!wsResult.Value())
+                    {
+                        result.Append(c);
+                        state = 1;
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (wsResult.Value())
+                    {
+                        state = 2;
+                    }
+                    else
+                    {
+                        result.Append(c);
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (!wsResult.Value())
+                    {
+                        result.Append(u' ');
+                        result.Append(c);
+                        state = 1;
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<ustring>(result);
+    }
+
+    public Result<string> HexEscape(char c)
+    {
+        auto result = ToHexString(cast<byte>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
+    }
+
+    public Result<string> HexEscape(wchar c)
+    {
+        auto result = ToHexString(cast<ushort>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
+    }
+
+    public Result<string> HexEscape(uchar c)
+    {
+        auto result = ToHexString(cast<uint>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
+    }
+
+    public Result<string> CharStr(char c)
+    {
+        switch (c)
+        {
+            case '\\': return "\\\\";
+            case '"':  return "\\\"";
+            case '\'': return "\\'";
+            case '\a': return "\\a";
+            case '\b': return "\\b";
+            case '\f': return "\\f";
+            case '\n': return "\\n";
+            case '\r': return "\\r";
+            case '\t': return "\\t";
+            case '\v': return "\\v";
+            case '\0': return "\\0";
+            default:
+            {
+                if (IsPrintable(c))
+                {
+                    return Result<string>(string(c));
+                }
+                else
+                {
+                    return HexEscape(c);
+                }
+            }
+        }
+        return Result<string>(string());
+    }
+
+    public Result<string> MakeCharLiteral(char c)
+    {
+        if (c == '"')
+        {
+            return Result<string>(string("'\"'"));
+        }
+        auto charStrResult = CharStr(c);
+        if (charStrResult.Error())
+        {
+            return Result<string>(ErrorId(charStrResult.GetErrorId()));
+        }
+        return Result<string>("'" + charStrResult.Value() + "'");
+    }
+
+
+    public Result<wstring> CharStr(wchar c)
+    {
+        switch (c)
+        {
+            case w'\\': return w"\\\\";
+            case w'"':  return w"\\\"";
+            case w'\'': return w"\\'";
+            case w'\a': return w"\\a";
+            case w'\b': return w"\\b";
+            case w'\f': return w"\\f";
+            case w'\n': return w"\\n";
+            case w'\r': return w"\\r";
+            case w'\t': return w"\\t";
+            case w'\v': return w"\\v";
+            case w'\0': return w"\\0";
+            default:
+            {
+                if (cast<ushort>(c) < 256u && IsPrintable(cast<char>(c)))
+                {
+                    return Result<wstring>(wstring(c));
+                }
+                else
+                {
+                    auto result = HexEscape(c);
+                    if (result.Error())
+                    {
+                        return Result<wstring>(ErrorId(result.GetErrorId()));
+                    }
+                    return ToUtf16(result.Value());
+                }
+            }
+        }
+        return Result<wstring>(wstring());
+    }
+
+    public Result<ustring> CharStr(uchar c)
+    {
+        switch (c)
+        {
+            case u'\\': return u"\\\\";
+            case u'"':  return u"\\\"";
+            case u'\'': return u"\\'";
+            case u'\a': return u"\\a";
+            case u'\b': return u"\\b";
+            case u'\f': return u"\\f";
+            case u'\n': return u"\\n";
+            case u'\r': return u"\\r";
+            case u'\t': return u"\\t";
+            case u'\v': return u"\\v";
+            case u'\0': return u"\\0";
+            default:
+            {
+                if (cast<uint>(c) < 256u && IsPrintable(cast<char>(c)))
+                {
+                    return Result<ustring>(ustring(c));
+                }
+                else
+                {
+                    auto result = HexEscape(c);
+                    if (result.Error())
+                    {
+                        return Result<ustring>(ErrorId(result.GetErrorId()));
+                    }
+                    return ToUtf32(result.Value());
+                }
+            }
+        }
+        return Result<ustring>(ustring());
+    }
+
+    public Result<string> StringStr(const string& s)
+    {
+        string result;
+        for (char c : s)
+        {
+            if (c == '\'')
+            {
+                result.Append(c);
+            }
+            else
+            {
+                auto charStrResult = CharStr(c);
+                if (charStrResult.Error())
+                {
+                    return Result<string>(ErrorId(charStrResult.GetErrorId()));
+                }
+                result.Append(charStrResult.Value());
+            }
+        }
+        return Result<string>(result);
+    }
+
+    public Result<ustring> StringStr(const ustring& s)
+    {
+        ustring result;
+        for (uchar c : s)
+        {
+            if (c == u'\'')
+            {
+                result.Append(c);
+            }
+            else
+            {
+                auto charStrResult = CharStr(c);
+                if (charStrResult.Error())
+                {
+                    return Result<ustring>(ErrorId(charStrResult.GetErrorId()));
+                }
+                result.Append(charStrResult.Value());
+            }
+        }
+        return Result<ustring>(result);
+    }
+
+    public Result<string> MakeStringLiteral(const string& s)
+    {
+        string result = "\"";
+        auto stringStrResult = StringStr(s);
+        if (stringStrResult.Error())
+        {
+            return Result<string>(ErrorId(stringStrResult.GetErrorId()));
+        }
+        result.Append(stringStrResult.Value());
+        result.Append('"');
+        return Result<string>(result);
+    }
+
+    public Result<ustring> MakeStringLiteral(const ustring& s)
+    {
+        ustring result = u"\"";
+        auto stringStrResult = StringStr(s);
+        if (stringStrResult.Error())
+        {
+            return Result<ustring>(ErrorId(stringStrResult.GetErrorId()));
+        }
+        result.Append(stringStrResult.Value());
+        result.Append(u'"');
+        return Result<ustring>(result);
+    }
+
+    public string Unescape(const string& stringStr)
+    {
+        string result;
+        int state = 0;
+        for (char c : stringStr)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    if (c == '\\')
+                    {
+                        state = 1;
+                    }
+                    else
+                    {
+                        result.Append(c);
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    switch (c)
+                    {
+                        case '\\':
+                        case '"':
+                        case '\'':
+                        {
+                            result.Append(c);
+                            break;
+                        }
+                        case 'n':
+                        {
+                            result.Append("\n");
+                            break;
+                        }
+                        default:
+                        {
+                            result.Append('\\').Append(c);
+                            break;
+                        }
+                    }
+                    state = 0;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public ustring Unescape(const ustring& stringStr)
+    {
+        ustring result;
+        int state = 0;
+        for (uchar c : stringStr)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    if (c == '\\')
+                    {
+                        state = 1;
+                    }
+                    else
+                    {
+                        result.Append(c);
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    switch (c)
+                    {
+                        case '\\':
+                        case '"':
+                        case '\'':
+                        {
+                            result.Append(c);
+                            break;
+                        }
+                        case 'n':
+                        {
+                            result.Append('\n');
+                            break;
+                        }
+                        default:
+                        {
+                            result.Append('\\').Append(c);
+                            break;
+                        }
+                    }
+                    state = 0;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public enum FormatWidth
+    {
+        exact, min
+    }
+
+    public enum FormatJustify
+    {
+        left, right
+    }
+
+    public string Format(const string& s, int width)
+    {
+        return Format(s, width, FormatWidth.exact, FormatJustify.left);
+    }
+
+    public string Format(const string& s, int width, FormatJustify justify)
+    {
+        return Format(s, width, FormatWidth.exact, justify);
+    }
+
+    public string Format(const string& s, int width, FormatWidth fw)
+    {
+        return Format(s, width, fw, FormatJustify.left);
+    }
+
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify)
+    {
+        return Format(s, width, fw, justify, ' ');
+    }
+
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    {
+        string result;
+        int m = cast<int>(s.Length());
+        if (fw == FormatWidth.min)
+        {
+            width = Max(width, m);
+        }
+        else if (fw == FormatWidth.exact)
+        {
+            m = Min(m, width);
+        }
+        int n = Max(0, width - m);
+        if (justify == FormatJustify.right)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                result.Append(fillChar);
+            }
+        }
+        for (int i = 0; i < m; ++i)
+        {
+            result.Append(s[i]);
+        }
+        if (justify == FormatJustify.left)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                result.Append(fillChar);
+            }
+        }
+        return result;
+    }
+
+    public ustring Format(const ustring& s, int width)
+    {
+        return Format(s, width, FormatWidth.exact, FormatJustify.left);
+    }
+
+    public ustring Format(const ustring& s, int width, FormatJustify justify)
+    {
+        return Format(s, width, FormatWidth.exact, justify);
+    }
+
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify)
+    {
+        return Format(s, width, fw, justify, ' ');
+    }
+
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    {
+        ustring result;
+        int m = cast<int>(s.Length());
+        if (fw == FormatWidth.min)
+        {
+            width = Max(width, m);
+        }
+        else if (fw == FormatWidth.exact)
+        {
+            m = Min(m, width);
+        }
+        int n = Max(0, width - m);
+        if (justify == FormatJustify.right)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                result.Append(fillChar);
+            }
+        }
+        for (int i = 0; i < m; ++i)
+        {
+            result.Append(s[i]);
+        }
+        if (justify == FormatJustify.left)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                result.Append(fillChar);
+            }
+        }
+        return result;
+    }
+}

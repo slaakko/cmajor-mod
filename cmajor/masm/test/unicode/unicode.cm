@@ -1,0 +1,13 @@
+using System;
+
+void main()
+{
+    string s = "öhkömömmö";
+    Console.WriteLine(s);
+    auto u = ToUpper(s);
+    if (u.Error())
+    {
+        Console.Error() << u.GetErrorMessage() << endl();
+    }
+    Console.WriteLine(u.Value());
+}

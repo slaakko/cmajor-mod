@@ -1,2 +1,3 @@
 solution cmajor;
 project <fundamental/fundamental.cmp>;
+project <library/system.base/system.base.cmp>;

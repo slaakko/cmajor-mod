@@ -1,0 +1,7 @@
+project system.base;
+target=unitTest;
+source <strings/string.cm>;
+source <strings/wstring.cm>;
+source <strings/ustring.cm>;
+source <containers/list/int_list.cm>;
+source <containers/list/string_list.cm>;

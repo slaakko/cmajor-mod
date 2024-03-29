@@ -352,19 +352,26 @@ namespace System
         public List<String<CharT>> Split(const String<CharT>& s)
         {
             List<String<CharT>> result;
-            long start = 0;
-            while (start < len)
+            if (!IsEmpty() && s.IsEmpty()) 
             {
-                long end = Find(s, start);
-                if (end != -1)
+                result.Add(*this);
+            }
+            else
+            {
+                long start = 0;
+                while (start < len)
                 {
-                    result.Add(Substring(start, end));
-                    start = end + s.len;
-                }
-                else
-                {
-                    result.Add(Substring(start));
-                    start = len;
+                    long end = Find(s, start);
+                    if (end != -1)
+                    {
+                        result.Add(Substring(start, end - start));
+                        start = end + s.len;
+                    }
+                    else
+                    {
+                        result.Add(Substring(start));
+                        start = len;
+                    }
                 }
             }
             return result;
@@ -568,45 +575,94 @@ namespace System
         }
         return true;
     }
-/*
-    public ustring ToLower(const ustring& s)
+
+    public Result<ustring> ToLower(const ustring& s)
     {
         ustring lower;
         for (uchar c : s)
         {
-            lower.Append(ToLower(c));
+            auto result = ToLower(c);
+            if (result.Error())
+            {
+                return Result<ustring>(ErrorId(result.GetErrorId()));
+            }
+            lower.Append(result.Value());
         }
-        return lower;
+        return Result<ustring>(lower);
     }
 
-    public ustring ToUpper(const ustring& s)
+    public Result<ustring> ToUpper(const ustring& s)
     {
         ustring upper;
         for (uchar c : s)
         {
-            upper.Append(ToUpper(c));
+            auto result = ToUpper(c);
+            if (result.Error())
+            {
+                return Result<ustring>(ErrorId(result.GetErrorId()));
+            }
+            upper.Append(result.Value());
         }
-        return upper;
+        return Result<ustring>(upper);
     }
 
-    public wstring ToLower(const wstring& s)
+    public Result<wstring> ToLower(const wstring& s)
     {
-        return ToUtf16(ToLower(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<wstring>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto lowerResult = ToLower(utfResult.Value());
+        if (lowerResult.Error())
+        {
+            return Result<wstring>(ErrorId(lowerResult.GetErrorId()));
+        }
+        return ToUtf16(lowerResult.Value());
     }
 
-    public wstring ToUpper(const wstring& s)
+    public Result<wstring> ToUpper(const wstring& s)
     {
-        return ToUtf16(ToUpper(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<wstring>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto upperResult = ToUpper(utfResult.Value());
+        if (upperResult.Error())
+        {
+            return Result<wstring>(ErrorId(upperResult.GetErrorId()));
+        }
+        return ToUtf16(upperResult.Value());
     }
 
-    public string ToLower(const string& s)
+    public Result<string> ToLower(const string& s)
     {
-        return ToUtf8(ToLower(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<string>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto lowerResult = ToLower(utfResult.Value());
+        if (lowerResult.Error())
+        {
+            return Result<string>(ErrorId(lowerResult.GetErrorId()));
+        }
+        return ToUtf8(lowerResult.Value());
     }
 
-    public string ToUpper(const string& s)
+    public Result<string> ToUpper(const string& s)
     {
-        return ToUtf8(ToUpper(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<string>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto upperResult = ToUpper(utfResult.Value());
+        if (upperResult.Error())
+        {
+            return Result<string>(ErrorId(upperResult.GetErrorId()));
+        }
+        return ToUtf8(upperResult.Value());
     }
-*/
 }

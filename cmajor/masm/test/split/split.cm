@@ -1,0 +1,8 @@
+using System;
+
+void main()
+{
+    string one('a');
+    auto result2 = one.Split(string());
+    Console.WriteLine(result2[0]);
+}

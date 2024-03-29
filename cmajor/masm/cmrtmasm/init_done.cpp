@@ -7,6 +7,7 @@ module cmajor.masm.rt.init_done;
 
 import cmajor.masm.rt.classes;
 import cmajor.masm.rt.io;
+import cmajor.masm.rt.thread;
 
 void RtmInit()
 {
@@ -15,6 +16,7 @@ void RtmInit()
 
 void RtmDone()
 {
+    cmajor::masm::rt::DoneThread();
     cmajor::masm::rt::RunDestructors();
     cmajor::masm::rt::DoneIO();
 }

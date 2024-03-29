@@ -19,7 +19,15 @@ void Assemble(int logStreamId, const std::string& assemblyFilePath, const std::s
     {
         util::LogMessage(logStreamId, "> " + assemblyFilePath);
     }
-    std::u32string assemblyContent = util::ToUtf32(util::ReadFile(assemblyFilePath));
+    std::u32string assemblyContent; 
+    try
+    {
+        assemblyContent = util::ToUtf32(util::ReadFile(assemblyFilePath));
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + assemblyFilePath);
+    }
     if (!assemblyContent.empty())
     {
         auto lexer = cmajor::systemx::assembler::lexer::MakeLexer(assemblyContent.c_str(), assemblyContent.c_str() + assemblyContent.length(), assemblyFilePath);

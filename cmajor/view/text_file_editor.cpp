@@ -33,7 +33,15 @@ TextFileEditor::TextFileEditor(TextFileEditorCreateParams& createParams) : Edito
     wing::ScrollableControl* scrollableTextView(new wing::ScrollableControl(wing::ScrollableControlCreateParams(textViewPtr.release()).SetDock(wing::Dock::fill)));
     AddChild(scrollableTextView);
     textView->SetFilePath(createParams.filePath);
-    std::u32string content = util::ToUtf32(util::ReadFile(createParams.filePath));
+    std::u32string content;
+    try
+    {
+        content = util::ToUtf32(util::ReadFile(createParams.filePath));
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + createParams.filePath);
+    }
     textView->SetTextContent(content);
     textView->SetIndentSize(4);
     textView->SetDoubleBuffered();

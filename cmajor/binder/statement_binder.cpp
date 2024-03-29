@@ -1930,14 +1930,6 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
                     AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
                 }
-                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-                {
-                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtThrowException"));
-                    invokeNode.AddArgument(newNode);
-                    invokeNode.AddArgument(new cmajor::ast::UuidLiteralNode(span, exceptionClassType->TypeId()));
-                    std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
-                    AddStatement(new BoundThrowStatement(span, std::move(throwCallExpr)));
-                }
             }
             else
             {
@@ -2030,14 +2022,6 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
             new cmajor::ast::IdentifierNode(span, U"void")),
             new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
         getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"do_catch")));
-        handlerBlock.AddStatement(getExceptionAddr);
-    }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-    {
-        cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span,
-            new cmajor::ast::IdentifierNode(span, U"void")),
-            new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
-        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtGetException")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
     cmajor::ast::PointerNode exceptionPtrTypeNode(span, new cmajor::ast::IdentifierNode(span, caughtType->BaseType()->FullName()));

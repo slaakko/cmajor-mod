@@ -22,7 +22,7 @@ public:
     UnicodeException(const std::string& message_);
 };
 
-void ThrowInvalidUtf8Sequence();
+void ThrowInvalidUtf8Sequence(int index);
 void ThrowUnicodeException(const std::string& message_);
 
 std::u32string ToUtf32(const std::string& utf8Str);
@@ -42,11 +42,13 @@ public:
     void Put(uint8_t x);
     bool ResultReady() const { return resultReady; }
     char32_t Result() const { return result; }
+    void ResetIndex() { index = 0; }
 private:
     int state;
     bool resultReady;
     char32_t result;
     uint8_t bytes[4];
+    int index;
 };
 
 std::u32string ToUpper(const std::u32string& s);

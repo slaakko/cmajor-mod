@@ -33,6 +33,18 @@ namespace System
         private int errorId;
     }
 
+    public bool operator==<T>(const Result<T>& left, const Result<T>& right)
+    {
+        return left.Value() == right.Value() && left.GetErrorId() == right.GetErrorErrorId();
+    }
+
+    public bool operator<<T>(const Result<T>& left, const Result<T>& right)
+    {
+        if (left.Value() < right.Value()) return true;
+        if (left.Value() > right.Value()) return false;
+        return left.GetErrorId() < right.GetErrorId();
+    }
+
 //  AllocateError creates and returns an error identifier for an error message. 
 
     public int AllocateError(const string& errorMessage)
@@ -45,5 +57,10 @@ namespace System
     public string GetErrorMessage(int errorId)
     {
         return RtmGetErrorMessage(errorId);
+    }
+
+    public int GetErrno()
+    {
+        return RtmGetErrno();
     }
 }

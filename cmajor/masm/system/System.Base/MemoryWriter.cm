@@ -14,10 +14,18 @@ namespace System.IO
         }
         public Result<bool> Write(bool x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<byte>(x));
         }
         public Result<bool> Write(byte x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             if (pos - ptr >= count)
             {
                 int errorId = AllocateError("memory writer: end of space");
@@ -29,10 +37,18 @@ namespace System.IO
         }
         public Result<bool> Write(sbyte x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<byte>(x));
         }
         public Result<bool> Write(ushort x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             byte b0 = cast<byte>(x >> 8u);
             byte b1 = cast<byte>(x);
             auto result = Write(b0);
@@ -44,10 +60,18 @@ namespace System.IO
         }
         public Result<bool> Write(short x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<ushort>(x));
         }
         public Result<bool> Write(uint x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             byte b0 = cast<byte>(x >> 24u);
             byte b1 = cast<byte>(x >> 16u);
             byte b2 = cast<byte>(x >> 8u);
@@ -71,10 +95,18 @@ namespace System.IO
         }
         public Result<bool> Write(int x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<uint>(x));
         }
         public Result<bool> Write(ulong x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             byte b0 = cast<byte>(x >> 56u);
             byte b1 = cast<byte>(x >> 48u);
             byte b2 = cast<byte>(x >> 40u);
@@ -122,32 +154,60 @@ namespace System.IO
         }
         public Result<bool> Write(long x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<ulong>(x));
         }
         public Result<bool> Write(float x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             uint* u = cast<uint*>(cast<void*>(&x));
             return Write(*u);
         }
         public Result<bool> Write(double x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             ulong* u = cast<ulong*>(cast<void*>(&x));
             return Write(*u);
         }
         public Result<bool> Write(char x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<byte>(x));
         }
         public Result<bool> Write(wchar x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<ushort>(x));
         }
         public Result<bool> Write(uchar x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             return Write(cast<uint>(x));
         }
         public Result<bool> Write(const Date& date)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             auto result = Write(date.Year());
             if (result.Error())
             {
@@ -162,6 +222,10 @@ namespace System.IO
         }
         public Result<bool> Write(const DateTime& dt)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             Date date = dt.GetDate();
             auto result = Write(date);
             if (result.Error())
@@ -172,6 +236,10 @@ namespace System.IO
         }
         public Result<bool> Write(const string& s)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             for (char c : s)
             {
                 auto result = Write(cast<byte>(c));
@@ -184,6 +252,10 @@ namespace System.IO
         }
         public Result<bool> Write(const Uuid& x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             for (byte b : x)
             {
                 auto result = Write(b);

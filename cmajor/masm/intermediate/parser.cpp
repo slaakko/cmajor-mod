@@ -20,7 +20,15 @@ void Parse(int logStreamId, const std::string& filePath, Context& context, bool 
     }
     int fileIndex = context.GetFileMap().MapFile(filePath);
     context.SetFileId(fileIndex);
-    std::u32string content = util::ToUtf32(util::ReadFile(filePath));
+    std::u32string content;
+    try
+    {
+        content = util::ToUtf32(util::ReadFile(filePath));
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + filePath);
+    }
     auto lexer = cmajor::masm::intermediate::lexer::MakeLexer(content.c_str(), content.c_str() + content.length(), filePath);
     lexer.SetFile(fileIndex);
     using LexerType = decltype(lexer);

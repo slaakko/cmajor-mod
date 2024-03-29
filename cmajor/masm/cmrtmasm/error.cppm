@@ -22,5 +22,6 @@ extern "C" void RtmFailAssertion(const char* assertion, const char* function, co
 extern "C" int RtmAllocateError(const char* errorMessage);
 extern "C" const char* RtmGetErrorMessage(int errorId);
 extern "C" void RtmDisposeError(int errorId);
+extern "C" int RtmGetErrno();
 
 }

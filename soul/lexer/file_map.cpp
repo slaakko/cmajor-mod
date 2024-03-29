@@ -87,7 +87,15 @@ void FileMap::ReadFile(int32_t fileId)
 {
     std::string filePath = GetFilePath(fileId);
     std::string fileContent = util::ReadFile(filePath);
-    std::u32string ucontent = util::ToUtf32(fileContent);
+    std::u32string ucontent;
+    try
+    {
+        ucontent = util::ToUtf32(fileContent);
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + filePath);
+    }
     std::vector<int> lineStartIndeces = ComputeLineStartIndeces(ucontent);
     AddFileContent(fileId, std::move(ucontent), std::move(lineStartIndeces));
 }

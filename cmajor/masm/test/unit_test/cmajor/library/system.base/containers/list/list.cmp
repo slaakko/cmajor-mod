@@ -1,0 +1,4 @@
+project list;
+target=unitTest;
+source <int_list.cm>;
+//source <string_list.cm>;

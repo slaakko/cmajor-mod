@@ -1,0 +1,5 @@
+project strings;
+target=unitTest;
+source <string.cm>;
+source <wstring.cm>;
+source <ustring.cm>;

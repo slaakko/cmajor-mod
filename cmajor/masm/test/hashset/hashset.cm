@@ -1,0 +1,14 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    HashSet<int> s;
+    s.Insert(1);
+    s.Insert(2);
+    s.Insert(3);
+    for (auto x : s)
+    {
+        Console.WriteLine(x);
+    }
+}

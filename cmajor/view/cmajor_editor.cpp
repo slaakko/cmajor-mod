@@ -40,7 +40,15 @@ CmajorEditor::CmajorEditor(CmajorEditorCreateParams& createParams) : Editor(crea
     sourceCodeView->SetEditor(this);
     sourceCodeView->SetDebugStrip(debugStrip);
     sourceCodeView->SetFilePath(createParams.filePath);
-    std::u32string content = util::ToUtf32(util::ReadFile(createParams.filePath));
+    std::u32string content; 
+    try
+    {
+        content = util::ToUtf32(util::ReadFile(createParams.filePath));
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + createParams.filePath);
+    }
     sourceCodeView->SetTextContent(content);
     sourceCodeView->SetIndentSize(4);
     sourceCodeView->SetDoubleBuffered();

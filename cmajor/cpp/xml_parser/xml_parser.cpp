@@ -12,14 +12,30 @@ namespace soul::xml::parser {
 void ParseXmlFile(const std::string& xmlFileName, XmlContentHandler* contentHandler)
 {
     std::string xmlContent = util::ReadFile(xmlFileName);
-    std::u32string fileContent = util::ToUtf32(xmlContent);
+    std::u32string fileContent;
+    try
+    {
+        fileContent = util::ToUtf32(xmlContent);
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + xmlFileName);
+    }
     ParseXmlContent(fileContent, xmlFileName, contentHandler);
 }
 
 void ParseXmlFile(const std::string& xmlFileName, XmlContentHandler* contentHandler, soul::lexer::FileMap& fileMap)
 {
     std::string xmlContent = util::ReadFile(xmlFileName);
-    std::u32string fileContent = util::ToUtf32(xmlContent);
+    std::u32string fileContent; 
+    try
+    {
+        fileContent = util::ToUtf32(xmlContent);
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + xmlFileName);
+    }
     return ParseXmlContent(std::move(fileContent), xmlFileName, contentHandler, fileMap);
 }
 

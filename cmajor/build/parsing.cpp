@@ -23,7 +23,15 @@ std::unique_ptr<cmajor::ast::CompileUnitNode> ParseSourceFile(int fileIndex, sou
 {
     std::string sourceFilePath = fileMap.GetFilePath(fileIndex);
     std::string content = util::ReadFile(sourceFilePath);
-    std::u32string ucontent = util::ToUtf32(content);
+    std::u32string ucontent;
+    try
+    {
+        ucontent = util::ToUtf32(content);
+    }
+    catch (const util::UnicodeException& ex)
+    {
+        util::ThrowUnicodeException(std::string(ex.what()) + ", file=" + sourceFilePath);
+    }
     auto lexer = cmajor::lexer::MakeLexer(ucontent.c_str(), ucontent.c_str() + ucontent.length(), sourceFilePath);
     lexer.SetFile(fileIndex);
     using LexerType = decltype(lexer);
