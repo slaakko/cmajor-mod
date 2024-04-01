@@ -1503,6 +1503,8 @@ uint64_t MasmEmitter::GetClassTypeAlignmentInBits(void* classIrType)
 
 void MasmEmitter::AddInlineFunctionAttribute(void* function)
 {
+    cmajor::masm::ir::Function* fn = static_cast<cmajor::masm::ir::Function*>(function);
+    fn->SetInline();
 }
 
 void MasmEmitter::SetFunctionLinkage(void* function, bool setInline)

@@ -1,12 +1,36 @@
 using System;
+using System.Collections;
+
+string AlignedValue(int i)
+{
+    string s;
+    s.Append(ToString((i / 1000) % 10));
+    s.Append(ToString((i / 100) % 10));
+    s.Append(ToString((i / 10) % 10));
+    s.Append(ToString(i % 10));
+    return s;
+}
+
+public Set<string> MakeKilo()
+{
+    Set<string> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(AlignedValue(i));
+    }
+    return s;
+}
 
 void main()
 {
-    string kilo;
-    for (int i = 0; i < 1024; ++i)
+    Set<string> s4 = MakeKilo();
+    #assert(s4.Count() == 1024);
+    #assert(s4.Begin() != s4.End());
+    #assert(s4.CBegin() != s4.CEnd());
+    int value = 0;
+    for (auto it = s4.Begin(); it != s4.End(); ++it)
     {
-        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+        Console.Out() << *it << " == " << AlignedValue(value) << endl();
+        ++value;
     }
-    auto result = kilo.RFind("901", 1023);
-    Console.WriteLine(result);
 }

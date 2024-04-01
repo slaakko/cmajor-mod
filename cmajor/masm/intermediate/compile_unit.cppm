@@ -19,6 +19,7 @@ public:
     void SetContext(Context* context_) { context = context_; }
     const std::string& FilePath() const { return filePath; }
     void SetFilePath(const std::string& filePath_);
+    void Write();
 private:
     Context* context;
     std::string filePath;

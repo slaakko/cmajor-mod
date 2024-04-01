@@ -29,6 +29,7 @@ public:
     Value* GetParam(int index) const;
     std::string Name(Context& context) override { return "@" + name; }
     void SetComment(const std::string& comment_);
+    void SetInline() { isInline = true; }
     void Write(util::CodeFormatter& formatter, Context& context);
 private:
     std::string name;
@@ -40,6 +41,7 @@ private:
     int32_t nextResultNumber;
     int nextBBNumber;
     std::string comment;
+    bool isInline;
 };
 
 } // namespace cmajor::masm::ir

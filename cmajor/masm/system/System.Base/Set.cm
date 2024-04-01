@@ -111,6 +111,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<T, C>(TextWriter& writer, const Set<T, C>& set)
     {
+        if (writer.Error()) return writer;
         writer << "{";
         bool first = true;
         for (const T& element : set)

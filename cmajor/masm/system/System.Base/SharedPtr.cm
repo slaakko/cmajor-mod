@@ -476,6 +476,7 @@ namespace System
     [system_default]
     public TextWriter& operator<<<T>(TextWriter& writer, const SharedPtr<T>& ptr)
     {
+        if (writer.Error()) return writer;
         if (ptr.IsNull())
         {
             writer << "null";

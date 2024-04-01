@@ -17,6 +17,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(DATA, "DATA", "'data'"));
         tokens.AddToken(new soul::ast::slg::Token(FUNCTION, "FUNCTION", "'function'"));
         tokens.AddToken(new soul::ast::slg::Token(EXTERN, "EXTERN", "'extern'"));
+        tokens.AddToken(new soul::ast::slg::Token(INLINE, "INLINE", "'inline'"));
         tokens.AddToken(new soul::ast::slg::Token(STORE, "STORE", "'store'"));
         tokens.AddToken(new soul::ast::slg::Token(ARG, "ARG", "'arg'"));
         tokens.AddToken(new soul::ast::slg::Token(JMP, "JMP", "'jmp'"));
@@ -112,6 +113,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "data", DATA },
          { "function", FUNCTION },
          { "extern", EXTERN },
+         { "inline", INLINE },
          { "store", STORE },
          { "arg", ARG },
          { "jmp", JMP },
@@ -182,6 +184,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"data", DATA },
          { u8"function", FUNCTION },
          { u8"extern", EXTERN },
+         { u8"inline", INLINE },
          { u8"store", STORE },
          { u8"arg", ARG },
          { u8"jmp", JMP },
@@ -252,6 +255,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"data", DATA },
          { u"function", FUNCTION },
          { u"extern", EXTERN },
+         { u"inline", INLINE },
          { u"store", STORE },
          { u"arg", ARG },
          { u"jmp", JMP },
@@ -322,6 +326,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"data", DATA },
          { U"function", FUNCTION },
          { U"extern", EXTERN },
+         { U"inline", INLINE },
          { U"store", STORE },
          { U"arg", ARG },
          { U"jmp", JMP },

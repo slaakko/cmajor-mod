@@ -1808,7 +1808,45 @@ void BoundAsExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operation
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        // TODO
+        expr->Load(emitter, cmajor::ir::OperationFlags::none);
+        void* thisPtr = emitter.Stack().Pop();
+        cmajor::symbols::TypeSymbol* exprType = static_cast<cmajor::symbols::TypeSymbol*>(expr->GetType());
+        Assert(exprType->IsPointerType(), "pointer type expected");
+        cmajor::symbols::TypeSymbol* leftType = exprType->RemovePointer();
+        Assert(leftType->IsClassTypeSymbol(), "class type expected");
+        cmajor::symbols::ClassTypeSymbol* leftClassType = static_cast<cmajor::symbols::ClassTypeSymbol*>(leftType);
+        cmajor::symbols::ClassTypeSymbol* leftVmtPtrHolderClass = leftClassType->VmtPtrHolderClass();
+        if (leftClassType != leftVmtPtrHolderClass)
+        {
+            thisPtr = emitter.CreateBitCast(thisPtr, leftVmtPtrHolderClass->AddPointer()->IrType(emitter));
+        }
+        void* vmtPtr = emitter.GetVmtPtr(leftVmtPtrHolderClass->IrType(emitter), thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), leftClassType->VmtPtrType(emitter));
+        void* leftClassIdPtr = emitter.GetClassIdPtr(leftVmtPtrHolderClass->VmtArrayType(emitter), vmtPtr, cmajor::symbols::GetTypeIdVmtIndexOffset());
+        void* rightClassTypeVmtObject = rightClassType->VmtObject(emitter, false);
+        void* rightClassIdPtr = emitter.GetClassIdPtr(rightClassType->VmtArrayType(emitter), rightClassTypeVmtObject, cmajor::symbols::GetTypeIdVmtIndexOffset());
+        void* retType = emitter.GetIrTypeForBool();
+        std::vector<void*> paramTypes;
+        paramTypes.push_back(emitter.GetIrTypeForVoidPtrType());
+        paramTypes.push_back(emitter.GetIrTypeForVoidPtrType());
+        void* isFnType = emitter.GetIrTypeForFunction(retType, paramTypes);
+        void* isFn = emitter.GetOrInsertFunction("RtmIs", isFnType, true);
+        std::vector<void*> args;
+        args.push_back(emitter.CreateBitCast(leftClassIdPtr, emitter.GetIrTypeForVoidPtrType()));
+        args.push_back(emitter.CreateBitCast(rightClassIdPtr, emitter.GetIrTypeForVoidPtrType()));
+        void* isResult = emitter.CreateCall(isFnType, isFn, args);
+        void* trueBlock = emitter.CreateBasicBlock("true");
+        void* falseBlock = emitter.CreateBasicBlock("false");
+        void* continueBlock = emitter.CreateBasicBlock("continue");
+        emitter.CreateCondBr(isResult, trueBlock, falseBlock);
+        emitter.SetCurrentBasicBlock(trueBlock);
+        emitter.Stack().Push(emitter.CreateBitCast(thisPtr, rightClassType->AddPointer()->IrType(emitter)));
+        variable->Store(emitter, cmajor::ir::OperationFlags::none);
+        emitter.CreateBr(continueBlock);
+        emitter.SetCurrentBasicBlock(falseBlock);
+        emitter.Stack().Push(emitter.CreateDefaultIrValueForPtrType(rightClassType->AddPointer()->IrType(emitter)));
+        variable->Store(emitter, cmajor::ir::OperationFlags::none);
+        emitter.CreateBr(continueBlock);
+        emitter.SetCurrentBasicBlock(continueBlock);
         variable->Load(emitter, cmajor::ir::OperationFlags::none);
     }
 }

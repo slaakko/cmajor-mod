@@ -45,7 +45,6 @@ void CompileUnit::Write()
     std::ofstream file(filePath);
     util::CodeFormatter formatter(file);
     formatter.SetIndentSize(8);
-    formatter.WriteLine();
     context.GetTypeRepository().Write(formatter);
     context.GetDataRepository().Write(context, formatter);
     bool first = true;

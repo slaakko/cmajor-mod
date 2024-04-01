@@ -1,0 +1,168 @@
+<results>
+    <int_string_map_value_test project="map" solution="">
+        <test count="20" exitCode="0" name="int_string_map_value_test">
+            <assertion index="0" line="68" result="passed"/>
+            <assertion index="1" line="69" result="passed"/>
+            <assertion index="2" line="73" result="passed"/>
+            <assertion index="3" line="74" result="passed"/>
+            <assertion index="4" line="76" result="passed"/>
+            <assertion index="5" line="78" result="passed"/>
+            <assertion index="6" line="79" result="passed"/>
+            <assertion index="7" line="80" result="passed"/>
+            <assertion index="8" line="83" result="passed"/>
+            <assertion index="9" line="84" result="passed"/>
+            <assertion index="10" line="85" result="passed"/>
+            <assertion index="11" line="88" result="passed"/>
+            <assertion index="12" line="89" result="passed"/>
+            <assertion index="13" line="90" result="passed"/>
+            <assertion index="14" line="94" result="passed"/>
+            <assertion index="15" line="95" result="passed"/>
+            <assertion index="16" line="96" result="passed"/>
+            <assertion index="17" line="98" result="passed"/>
+            <assertion index="18" line="99" result="passed"/>
+            <assertion index="19" line="100" result="passed"/>
+        </test>
+    </int_string_map_value_test>
+    <int_string_map_iterator_test project="map" solution="">
+        <test count="17" exitCode="0" name="int_string_map_iterator_test">
+            <assertion index="0" line="109" result="passed"/>
+            <assertion index="1" line="110" result="passed"/>
+            <assertion index="2" line="111" result="passed"/>
+            <assertion index="3" line="113" result="passed"/>
+            <assertion index="4" line="114" result="passed"/>
+            <assertion index="5" line="118" result="passed"/>
+            <assertion index="6" line="119" result="passed"/>
+            <assertion index="7" line="123" result="passed"/>
+            <assertion index="8" line="124" result="passed"/>
+            <assertion index="9" line="125" result="passed"/>
+            <assertion index="10" line="129" result="passed"/>
+            <assertion index="11" line="130" result="passed"/>
+            <assertion index="12" line="134" result="passed"/>
+            <assertion index="13" line="135" result="passed"/>
+            <assertion index="14" line="136" result="passed"/>
+            <assertion index="15" line="140" result="passed"/>
+            <assertion index="16" line="141" result="passed"/>
+        </test>
+    </int_string_map_iterator_test>
+    <int_string_map_find_test project="map" solution="">
+        <test count="29" exitCode="0" name="int_string_map_find_test">
+            <assertion index="0" line="150" result="passed"/>
+            <assertion index="1" line="152" result="passed"/>
+            <assertion index="2" line="155" result="passed"/>
+            <assertion index="3" line="156" result="passed"/>
+            <assertion index="4" line="157" result="passed"/>
+            <assertion index="5" line="159" result="passed"/>
+            <assertion index="6" line="160" result="passed"/>
+            <assertion index="7" line="161" result="passed"/>
+            <assertion index="8" line="163" result="passed"/>
+            <assertion index="9" line="166" result="passed"/>
+            <assertion index="10" line="167" result="passed"/>
+            <assertion index="11" line="168" result="passed"/>
+            <assertion index="12" line="170" result="passed"/>
+            <assertion index="13" line="171" result="passed"/>
+            <assertion index="14" line="172" result="passed"/>
+            <assertion index="15" line="174" result="passed"/>
+            <assertion index="16" line="175" result="passed"/>
+            <assertion index="17" line="176" result="passed"/>
+            <assertion index="18" line="178" result="passed"/>
+            <assertion index="19" line="179" result="passed"/>
+            <assertion index="20" line="180" result="passed"/>
+            <assertion index="21" line="182" result="passed"/>
+            <assertion index="22" line="187" result="passed"/>
+            <assertion index="23" line="188" result="passed"/>
+            <assertion index="24" line="189" result="passed"/>
+            <assertion index="25" line="191" result="passed"/>
+            <assertion index="26" line="192" result="passed"/>
+            <assertion index="27" line="193" result="passed"/>
+            <assertion index="28" line="196" result="passed"/>
+        </test>
+    </int_string_map_find_test>
+    <int_string_map_lower_bound_test project="map" solution="">
+        <test count="56" exitCode="0" name="int_string_map_lower_bound_test">
+            <assertion index="0" line="203" result="passed"/>
+            <assertion index="1" line="205" result="passed"/>
+            <assertion index="2" line="208" result="passed"/>
+            <assertion index="3" line="209" result="passed"/>
+            <assertion index="4" line="210" result="passed"/>
+            <assertion index="5" line="212" result="passed"/>
+            <assertion index="6" line="213" result="passed"/>
+            <assertion index="7" line="214" result="passed"/>
+            <assertion index="8" line="216" result="passed"/>
+            <assertion index="9" line="217" result="passed"/>
+            <assertion index="10" line="218" result="passed"/>
+            <assertion index="11" line="220" result="passed"/>
+            <assertion index="12" line="221" result="passed"/>
+            <assertion index="13" line="222" result="passed"/>
+            <assertion index="14" line="224" result="passed"/>
+            <assertion index="15" line="226" result="passed"/>
+            <assertion index="16" line="229" result="passed"/>
+            <assertion index="17" line="230" result="passed"/>
+            <assertion index="18" line="231" result="passed"/>
+            <assertion index="19" line="233" result="passed"/>
+            <assertion index="20" line="234" result="passed"/>
+            <assertion index="21" line="235" result="passed"/>
+            <assertion index="22" line="237" result="passed"/>
+            <assertion index="23" line="238" result="passed"/>
+            <assertion index="24" line="239" result="passed"/>
+            <assertion index="25" line="241" result="passed"/>
+            <assertion index="26" line="242" result="passed"/>
+            <assertion index="27" line="243" result="passed"/>
+            <assertion index="28" line="245" result="passed"/>
+            <assertion index="29" line="246" result="passed"/>
+            <assertion index="30" line="247" result="passed"/>
+            <assertion index="31" line="249" result="passed"/>
+            <assertion index="32" line="250" result="passed"/>
+            <assertion index="33" line="251" result="passed"/>
+            <assertion index="34" line="253" result="passed"/>
+            <assertion index="35" line="255" result="passed"/>
+            <assertion index="36" line="258" result="passed"/>
+            <assertion index="37" line="259" result="passed"/>
+            <assertion index="38" line="260" result="passed"/>
+            <assertion index="39" line="262" result="passed"/>
+            <assertion index="40" line="263" result="passed"/>
+            <assertion index="41" line="264" result="passed"/>
+            <assertion index="42" line="266" result="passed"/>
+            <assertion index="43" line="267" result="passed"/>
+            <assertion index="44" line="268" result="passed"/>
+            <assertion index="45" line="270" result="passed"/>
+            <assertion index="46" line="271" result="passed"/>
+            <assertion index="47" line="272" result="passed"/>
+            <assertion index="48" line="274" result="passed"/>
+            <assertion index="49" line="275" result="passed"/>
+            <assertion index="50" line="276" result="passed"/>
+            <assertion index="51" line="278" result="passed"/>
+            <assertion index="52" line="279" result="passed"/>
+            <assertion index="53" line="280" result="passed"/>
+            <assertion index="54" line="282" result="passed"/>
+            <assertion index="55" line="284" result="passed"/>
+        </test>
+    </int_string_map_lower_bound_test>
+    <int_string_map_op_subscript_test project="map" solution="">
+        <test count="24" exitCode="0" name="int_string_map_op_subscript_test">
+            <assertion index="0" line="293" result="passed"/>
+            <assertion index="1" line="294" result="passed"/>
+            <assertion index="2" line="295" result="passed"/>
+            <assertion index="3" line="299" result="passed"/>
+            <assertion index="4" line="300" result="passed"/>
+            <assertion index="5" line="301" result="passed"/>
+            <assertion index="6" line="305" result="passed"/>
+            <assertion index="7" line="306" result="passed"/>
+            <assertion index="8" line="307" result="passed"/>
+            <assertion index="9" line="310" result="passed"/>
+            <assertion index="10" line="311" result="passed"/>
+            <assertion index="11" line="312" result="passed"/>
+            <assertion index="12" line="316" result="passed"/>
+            <assertion index="13" line="317" result="passed"/>
+            <assertion index="14" line="318" result="passed"/>
+            <assertion index="15" line="321" result="passed"/>
+            <assertion index="16" line="322" result="passed"/>
+            <assertion index="17" line="323" result="passed"/>
+            <assertion index="18" line="326" result="passed"/>
+            <assertion index="19" line="327" result="passed"/>
+            <assertion index="20" line="328" result="passed"/>
+            <assertion index="21" line="331" result="passed"/>
+            <assertion index="22" line="332" result="passed"/>
+            <assertion index="23" line="333" result="passed"/>
+        </test>
+    </int_string_map_op_subscript_test>
+</results>

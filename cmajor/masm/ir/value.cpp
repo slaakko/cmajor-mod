@@ -313,29 +313,29 @@ StringValue::StringValue(Type* type_, const std::string& value_) : Value(), type
 
 std::string StringValue::Name(Context& context)
 {
-    std::string name("\"");
+    std::string s("\"");
     for (char c : value)
     {
         if (c == '"')
         {
-            name.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
         }
         else if (c == '\\')
         {
-            name.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
         }
         else if (c >= 32 && c < 127)
         {
-            name.append(1, c);
+            s.append(1, c);
         }
         else
         {
-            name.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
         }
     }
-    name.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
-    name.append("\"");
-    return name;
+    s.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
+    s.append("\"");
+    return s;
 }
 
 Type* StringValue::GetType(Context& context)

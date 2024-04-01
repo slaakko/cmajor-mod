@@ -32,6 +32,7 @@ struct UnitTest
     UnitTest();
     bool IsDefault() const { return index == -1; }
     int index;
+    int lineOffset;
     std::string solution;
     std::string project;
     std::string name;
@@ -40,7 +41,7 @@ struct UnitTest
     std::string xmlFilePath;
 };
 
-UnitTest::UnitTest() : index(-1)
+UnitTest::UnitTest() : index(-1), lineOffset(0)
 {
 }
 
@@ -48,6 +49,7 @@ struct UnitTestResult
 {
     UnitTestResult();
     int index;
+    int lineOffset;
     std::string solution;
     std::string project;
     std::string name;
@@ -59,7 +61,7 @@ struct UnitTestResult
     std::string executeErrorMessage;
 };
 
-UnitTestResult::UnitTestResult() : index(-1), compileError(false), executeError(false), executeExitCode(0)
+UnitTestResult::UnitTestResult() : index(-1), lineOffset(0), compileError(false), executeError(false), executeExitCode(0)
 {
 }
 
@@ -75,6 +77,7 @@ void DoUnitTest(UnitTest& unitTest, util::SynchronizedQueue<UnitTestResult>& res
         compileCommand.append(" --config=" + cmajor::symbols::GetConfig());
         compileCommand.append(" ").append(unitTest.projectFilePath);
         result.index = unitTest.index;
+        result.lineOffset = unitTest.lineOffset;
         result.solution = unitTest.solution;
         result.project = unitTest.project;
         result.name = unitTest.name;
@@ -146,8 +149,22 @@ void MakeUnitTestFiles(cmajor::ast::Solution* solution, cmajor::ast::Project* pr
     cmajor::ast::CloneContext makeUnitTestUnitContext;
     makeUnitTestUnitContext.SetMakeTestUnits();
     std::unique_ptr<cmajor::ast::CompileUnitNode> environmentNode(static_cast<cmajor::ast::CompileUnitNode*>(compileUnit->Clone(makeUnitTestUnitContext)));
+    int firstLine = -1;
+    int lineOffset = 0;
     for (cmajor::ast::FunctionNode* unitTestFunction : makeUnitTestUnitContext.UnitTestFunctions())
     {
+        soul::ast::Span span = unitTestFunction->GetSpan();
+        const std::vector<int>* lineStarts = fileMap.LineStartIndeces(fileIndex);
+        if (lineStarts)
+        {
+            soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(span, *lineStarts);
+            int line = lineColLen.line;
+            if (firstLine == -1)
+            {
+                firstLine = line;
+            }
+            lineOffset = line - firstLine;
+        }
         std::string unitTestName = util::ToUtf8(unitTestFunction->GroupId());
         cmajor::ast::CloneContext testUnitContext;
         std::unique_ptr<cmajor::ast::CompileUnitNode> testUnitCompileUnit(static_cast<cmajor::ast::CompileUnitNode*>(environmentNode->Clone(testUnitContext)));
@@ -182,6 +199,7 @@ void MakeUnitTestFiles(cmajor::ast::Solution* solution, cmajor::ast::Project* pr
         projectFileFormatter.WriteLine("source <main.cm>;");
         UnitTest unitTest;
         unitTest.index = unitTestIndex++;
+        unitTest.lineOffset = lineOffset;
         if (solution)
         {
             unitTest.solution = util::ToUtf8(solution->Name());
@@ -271,6 +289,20 @@ std::string MakeResultXml(const std::string& resultDir, util::SynchronizedQueue<
             {
                 std::unique_ptr<soul::xml::Document> executeDoc(soul::xml::ParseXmlFile(result.xmlFilePath));
                 resultElement->AppendChild(executeDoc->RemoveChild(executeDoc->DocumentElement()).release());
+                int lineOffset = result.lineOffset;
+                auto nodeSet = soul::xml::xpath::EvaluateToNodeSet("test/assertion", resultElement);
+                int count = nodeSet->Count();
+                for (int i = 0; i < count; ++i)
+                {
+                    soul::xml::Node* node = nodeSet->GetNode(i);
+                    if (node->IsElementNode())
+                    {
+                        soul::xml::Element* element = static_cast<soul::xml::Element*>(node);
+                        int line = std::stoi(element->GetAttribute("line"));
+                        line += lineOffset;
+                        element->SetAttribute("line", std::to_string(line));
+                    }
+                }
             }
         }
         resultElement->SetAttribute("solution", result.solution);

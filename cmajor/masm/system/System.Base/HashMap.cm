@@ -112,6 +112,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<K, T, H, C>(TextWriter& writer, const HashMap<K, T, H, C>& hashMap)
     {
+        if (writer.Error()) return writer;
         writer << "{";
         bool first = true;
         for (const Pair<K, T>& element : hashMap)

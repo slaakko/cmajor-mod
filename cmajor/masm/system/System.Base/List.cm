@@ -168,7 +168,7 @@ namespace System.Collections
         }
         public ValueType Remove(Iterator pos)
         {
-            #assert(pos >= Begin() && pos <= End());
+            #assert(pos >= Begin() && pos < End());
             ValueType result = Rvalue(*pos);
             Move(pos + 1, End(), pos);
             --count;
@@ -370,6 +370,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<T>(TextWriter& writer, const List<T>& list)
     {
+        if (writer.Error()) return writer;
         writer << "[";
         bool first = true;
         for (const T& element : list)

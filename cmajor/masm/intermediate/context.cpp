@@ -226,7 +226,7 @@ void Context::SetCurrentFunction(Function* function)
     code.SetCurrentFunction(function);
 }
 
-Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId)
+Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_)
 {
     if (type->IsPointerType())
     {
@@ -235,7 +235,7 @@ Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type
     if (type->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(type);
-        return code.AddFunctionDefinition(span, functionType, functionId, this);
+        return code.AddFunctionDefinition(span, functionType, functionId, inline_, this);
     }
     else
     {
@@ -260,6 +260,12 @@ Function* Context::AddFunctionDeclaration(const soul::ast::Span& span, Type* typ
         Error("error adding function '" + functionId + "' declaration: invalid type '" + type->Name() + "': function type expected", span, this);
     }
     return nullptr;
+}
+
+void Context::Write(const std::string& intermediateFilePath)
+{
+    compileUnit.SetFilePath(intermediateFilePath);
+    compileUnit.Write();
 }
 
 } // cmajor::masm::intermediate

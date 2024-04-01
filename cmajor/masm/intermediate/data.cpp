@@ -11,6 +11,51 @@ import cmajor.masm.intermediate.visitor;
 
 namespace cmajor::masm::intermediate {
 
+CloneContext::CloneContext() : context(nullptr), currentFunction(nullptr)
+{
+}
+
+void CloneContext::MapInstruction(Instruction* inst, Instruction* clone)
+{
+    instMap[inst] = clone;
+}
+
+Instruction* CloneContext::GetMappedInstruction(Instruction* inst) const
+{
+    auto it = instMap.find(inst);
+    if (it != instMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void CloneContext::AddUnmappedInstruction(Instruction* inst, RegValue* regValue)
+{
+    unmappedInstructions.insert(std::make_pair(inst, regValue));
+}
+
+BasicBlock* CloneContext::GetMappedBasicBlock(BasicBlock* bb) const
+{
+    auto it = bbMap.find(bb);
+    if (it != bbMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void CloneContext::MapBasicBlock(BasicBlock* bb, BasicBlock* clone)
+{
+    bbMap[bb] = clone;
+}
+
 const char* valueKindStr[]
 {
     "boolValue", "sbyteValue", "byteValue", "shortValue", "ushortValue", "intValue", "uintValue", "longValue", "ulongValue", "floatValue", "doubleValue", "nullValue",
@@ -137,6 +182,11 @@ void BoolValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string BoolValue::ToString() const
+{
+    return value ? "true" : "false";
+}
+
 SByteValue::SByteValue(int8_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::sbyteValue, type_), value(value_)
 {
 }
@@ -144,6 +194,11 @@ SByteValue::SByteValue(int8_t value_, Type* type_) : Value(soul::ast::Span(), Va
 void SByteValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string SByteValue::ToString() const
+{
+    return std::to_string(value);
 }
 
 ByteValue::ByteValue(uint8_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::byteValue, type_), value(value_)
@@ -155,6 +210,11 @@ void ByteValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string ByteValue::ToString() const
+{
+    return std::to_string(value);
+}
+
 ShortValue::ShortValue(int16_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::shortValue, type_), value(value_)
 {
 }
@@ -162,6 +222,11 @@ ShortValue::ShortValue(int16_t value_, Type* type_) : Value(soul::ast::Span(), V
 void ShortValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string ShortValue::ToString() const
+{
+    return std::to_string(value);
 }
 
 UShortValue::UShortValue(uint16_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::ushortValue, type_), value(value_)
@@ -173,6 +238,11 @@ void UShortValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string UShortValue::ToString() const
+{
+    return std::to_string(value);
+}
+
 IntValue::IntValue(int32_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::intValue, type_), value(value_)
 {
 }
@@ -180,6 +250,11 @@ IntValue::IntValue(int32_t value_, Type* type_) : Value(soul::ast::Span(), Value
 void IntValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string IntValue::ToString() const
+{
+    return std::to_string(value);
 }
 
 UIntValue::UIntValue(uint32_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::uintValue, type_), value(value_)
@@ -191,6 +266,11 @@ void UIntValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string UIntValue::ToString() const
+{
+    return std::to_string(value);
+}
+
 LongValue::LongValue(int64_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::longValue, type_), value(value_)
 {
 }
@@ -198,6 +278,11 @@ LongValue::LongValue(int64_t value_, Type* type_) : Value(soul::ast::Span(), Val
 void LongValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string LongValue::ToString() const
+{
+    return std::to_string(value);
 }
 
 ULongValue::ULongValue(uint64_t value_, Type* type_) : Value(soul::ast::Span(), ValueKind::ulongValue, type_), value(value_)
@@ -209,6 +294,11 @@ void ULongValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string ULongValue::ToString() const
+{
+    return std::to_string(value);
+}
+
 FloatValue::FloatValue(float value_, Type* type_) : Value(soul::ast::Span(), ValueKind::floatValue, type_), value(value_)
 {
 }
@@ -216,6 +306,11 @@ FloatValue::FloatValue(float value_, Type* type_) : Value(soul::ast::Span(), Val
 void FloatValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string FloatValue::ToString() const
+{
+    return std::to_string(value);
 }
 
 DoubleValue::DoubleValue(double value_, Type* type_) : Value(soul::ast::Span(), ValueKind::doubleValue, type_), value(value_)
@@ -227,6 +322,11 @@ void DoubleValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string DoubleValue::ToString() const
+{
+    return std::to_string(value);
+}
+
 NullValue::NullValue(Type* type_) : Value(soul::ast::Span(), ValueKind::nullValue, type_)
 {
 }
@@ -234,6 +334,11 @@ NullValue::NullValue(Type* type_) : Value(soul::ast::Span(), ValueKind::nullValu
 void NullValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string NullValue::ToString() const
+{
+    return "null";
 }
 
 AddressValue::AddressValue(const soul::ast::Span& span_, GlobalVariable* globalVariable_, Type* type) :
@@ -244,6 +349,11 @@ AddressValue::AddressValue(const soul::ast::Span& span_, GlobalVariable* globalV
 void AddressValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string AddressValue::ToString() const
+{
+    return globalVariable->Name();
 }
 
 ArrayValue::ArrayValue(const soul::ast::Span& span_, const std::vector<Value*>& elements_) :
@@ -271,6 +381,33 @@ void ArrayValue::SetType(Type* type)
 void ArrayValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string ArrayValue::ToString() const
+{
+    std::string s = "[ ";
+    bool first = true;
+    for (Value* element : elements)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        if (element->IsAggregateValue())
+        {
+            s.append(element->ToString());
+        }
+        else
+        {
+            s.append(element->GetType()->Name()).append(" ").append(element->ToString());
+        }
+    }
+    s.append(" ]");
+    return s;
 }
 
 StructureValue::StructureValue(const soul::ast::Span& span_, const std::vector<Value*>& fieldValues_) :
@@ -302,6 +439,33 @@ void StructureValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string StructureValue::ToString() const
+{
+    std::string s = "{ ";
+    bool first = true;
+    for (Value* field : fieldValues)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        if (field->IsAggregateValue())
+        {
+            s.append(field->ToString());
+        }
+        else
+        {
+            s.append(field->GetType()->Name()).append(" ").append(field->ToString());
+        }
+    }
+    s.append(" }");
+    return s;
+}
+
 StringValue::StringValue(const soul::ast::Span& span_, const std::string& value_) :
     Value(span_, ValueKind::stringValue, nullptr), value(value_)
 {
@@ -310,6 +474,33 @@ StringValue::StringValue(const soul::ast::Span& span_, const std::string& value_
 void StringValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string StringValue::ToString() const
+{
+    std::string s("\"");
+    for (char c : value)
+    {
+        if (c == '"')
+        {
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+        }
+        else if (c == '\\')
+        {
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+        }
+        else if (c >= 32 && c < 127)
+        {
+            s.append(1, c);
+        }
+        else
+        {
+            s.append("\\").append(util::ToHexString(static_cast<uint8_t>(c)));
+        }
+    }
+    s.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
+    s.append("\"");
+    return s;
 }
 
 StringArrayValue::StringArrayValue(const soul::ast::Span& span_, char prefix_, const std::vector<Value*>& strings_) :
@@ -322,6 +513,26 @@ void StringArrayValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string StringArrayValue::ToString() const
+{
+    std::string s = prefix + "[ ";
+    bool first = true;
+    for (Value* string : strings)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            s.append(", ");
+        }
+        s.append(string->GetType()->Name()).append(" ").append(string->ToString());
+    }
+    s.append(" ]");
+    return s;
+}
+
 ConversionValue::ConversionValue(const soul::ast::Span& span_, Type* type_, Value* from_) :
     Value(span_, ValueKind::conversionValue, type_), from(from_)
 {
@@ -330,6 +541,13 @@ ConversionValue::ConversionValue(const soul::ast::Span& span_, Type* type_, Valu
 void ConversionValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string ConversionValue::ToString() const
+{
+    std::string s = "conv(";
+    s.append(from->GetType()->Name()).append(1, ' ').append(from->ToString()).append(1, ')');
+    return s;
 }
 
 ClsIdValue::ClsIdValue(const soul::ast::Span& span_, Type* type_, const std::string& typeId_) :
@@ -342,6 +560,12 @@ void ClsIdValue::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+std::string ClsIdValue::ToString() const
+{
+    std::string s = "clsid(" + typeId + ")";
+    return s;
+}
+
 SymbolValue::SymbolValue(const soul::ast::Span& span_, Type* type_, const std::string& symbol_) :
     Value(span_, ValueKind::symbolValue, type_), symbol(symbol_), function(nullptr), globalVariable(nullptr)
 {
@@ -350,6 +574,18 @@ SymbolValue::SymbolValue(const soul::ast::Span& span_, Type* type_, const std::s
 void SymbolValue::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+std::string SymbolValue::ToString() const
+{
+    if (function)
+    {
+        return "@" + symbol;
+    }
+    else
+    {
+        return symbol;
+    }
 }
 
 GlobalVariable::GlobalVariable(const soul::ast::Span& span_, Type* type_, const std::string& name_, Value* initializer_) :
@@ -364,6 +600,36 @@ GlobalVariable::GlobalVariable(const soul::ast::Span& span_, Type* type_, const 
 void GlobalVariable::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);
+}
+
+void GlobalVariable::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(GetType()->Name());
+    formatter.Write(" ");
+    formatter.Write(name);
+    if (initializer)
+    {
+        formatter.Write(" = ");
+        if (initializer->IsAggregateValue() || initializer->IsStringValue())
+        {
+            formatter.Write(initializer->ToString());
+        }
+        else
+        {
+            formatter.Write(initializer->GetType()->Name());
+            formatter.Write(" ");
+            formatter.Write(initializer->ToString());
+        }
+    }
+    else
+    {
+        formatter.Write(";");
+    }
+}
+
+std::string GlobalVariable::ToString() const
+{
+    return name;
 }
 
 Data::Data() : context(nullptr)
@@ -721,6 +987,22 @@ void Data::VisitGlobalVariables(Visitor& visitor)
     {
         globalVariable->Accept(visitor);
     }
+}
+
+void Data::Write(util::CodeFormatter& formatter)
+{
+    if (globalVariables.empty()) return;
+    formatter.WriteLine("data");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    for (const auto& globalVariable : globalVariables)
+    {
+        globalVariable->Write(formatter);
+        formatter.WriteLine();
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+    formatter.WriteLine();
 }
 
 } // cmajor::systemx::intermediate

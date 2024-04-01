@@ -7,6 +7,7 @@ export module cmajor.masm.intermediate.types;
 
 import cmajor.masm.assembly;
 import soul.ast.span;
+import util;
 import std.core;
 
 export namespace cmajor::masm::intermediate {
@@ -114,6 +115,8 @@ public:
     virtual void Resolve(Types* types, Context* context);
     const soul::ast::Span& Span() const { return span; }
     int32_t Id() const { return id; }
+    void Write(util::CodeFormatter& formatter);
+    virtual void WriteDeclaration(util::CodeFormatter& formatter);
 private:
     soul::ast::Span span;
     TypeKind kind;
@@ -265,12 +268,13 @@ public:
     void Resolve(Types* types, Context* context) override;
     int64_t Size() const override;
     int64_t Alignment() const override { return 1; }
-    std::string Name() const override { return "struct " + std::to_string(Id()); }
+    std::string Name() const override { return "$T" + std::to_string(Id() - userTypeId); }
     bool IsWeakType() const override;
     int FieldCount() const { return fieldTypeRefs.size(); }
     const std::vector<TypeRef>& FieldTypeRefs() const { return fieldTypeRefs; }
     Type* FieldType(int i) const { return fieldTypeRefs[i].GetType(); }
     int64_t GetFieldOffset(int64_t index) const;
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     void ComputeSizeAndOffsets() const;
     std::vector<TypeRef> fieldTypeRefs;
@@ -288,11 +292,12 @@ public:
     void Resolve(Types* types, Context* context) override;
     int64_t Size() const override;
     int64_t Alignment() const override { return 8; }
-    std::string Name() const override { return "array " + std::to_string(Id()); }
+    std::string Name() const override { return "$T" + std::to_string(Id() - userTypeId); }
     bool IsWeakType() const override;
     int64_t ElementCount() const { return elementCount; }
     const TypeRef& ElementTypeRef() const { return elementTypeRef; }
     Type* ElementType() const { return elementTypeRef.GetType(); }
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     int64_t elementCount;
     TypeRef elementTypeRef;
@@ -309,11 +314,12 @@ public:
     int Arity() const { return paramTypeRefs.size(); }
     int64_t Size() const override { return 8; }
     int64_t Alignment() const override { return 8; }
-    std::string Name() const override { return "function " + std::to_string(Id()); }
+    std::string Name() const override { return "$T" + std::to_string(Id() - userTypeId); }
     const TypeRef& ReturnTypeRef() const { return returnTypeRef; }
     Type* ReturnType() const { return returnTypeRef.GetType(); }
     const std::vector<TypeRef>& ParamTypeRefs() const { return paramTypeRefs; }
     Type* ParamType(int index) const { return paramTypeRefs[index].GetType(); }
+    void WriteDeclaration(util::CodeFormatter& formatter) override;
 private:
     TypeRef returnTypeRef;
     std::vector<TypeRef> paramTypeRefs;
@@ -365,11 +371,12 @@ public:
     FloatType* GetFloatType() const { return const_cast<FloatType*>(&floatType); }
     DoubleType* GetDoubleType() const { return const_cast<DoubleType*>(&doubleType); }
     PointerType* MakePointerType(const soul::ast::Span& span, int32_t baseTypeId, int8_t pointerCount, Context* context);
+    void Write(util::CodeFormatter& formatter);
 private:
     Type* GetFundamentalType(int32_t id) const;
     Context* context;
     std::vector<std::unique_ptr<Type>> types;
-    std::vector<Type*> declaratedTypes;
+    std::vector<Type*> declaredTypes;
     std::map<int32_t, Type*> typeMap;
     std::map<std::pair<int32_t, int8_t>, PointerType*> pointerTypeMap;
     VoidType voidType;

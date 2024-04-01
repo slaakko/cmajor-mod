@@ -257,6 +257,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcmunit", "cmajor\masm\mcmu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "masmtest", "cmajor\masm\masmtest\masmtest.vcxproj", "{2E282B94-4B9C-41E9-B92B-A20CF45C190B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "optimizer", "cmajor\masm\optimizer\optimizer.vcxproj", "{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Itanium = Debug|Itanium
@@ -2673,6 +2675,30 @@ Global
 		{2E282B94-4B9C-41E9-B92B-A20CF45C190B}.Trace|x64.Build.0 = Debug|x64
 		{2E282B94-4B9C-41E9-B92B-A20CF45C190B}.Trace|x86.ActiveCfg = Debug|Win32
 		{2E282B94-4B9C-41E9-B92B-A20CF45C190B}.Trace|x86.Build.0 = Debug|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|Itanium.ActiveCfg = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|Itanium.Build.0 = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|x64.ActiveCfg = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|x64.Build.0 = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|x86.ActiveCfg = Debug|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Debug|x86.Build.0 = Debug|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|Itanium.ActiveCfg = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|Itanium.Build.0 = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|x64.ActiveCfg = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|x64.Build.0 = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|x86.ActiveCfg = Release|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Release|x86.Build.0 = Release|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|Itanium.ActiveCfg = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|Itanium.Build.0 = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|x64.ActiveCfg = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|x64.Build.0 = Release|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|x86.ActiveCfg = Release|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.ReleaseWithoutAsm|x86.Build.0 = Release|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|Itanium.ActiveCfg = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|Itanium.Build.0 = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|x64.ActiveCfg = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|x64.Build.0 = Debug|x64
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|x86.ActiveCfg = Debug|Win32
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B}.Trace|x86.Build.0 = Debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2780,6 +2806,7 @@ Global
 		{8AD4DB0B-D173-4CA8-92B9-D3B70F8429A4} = {571C5C1E-262A-4E0B-A8DB-F62E4023DE40}
 		{E4F7D53C-F092-485A-9678-AC53CDF53709} = {571C5C1E-262A-4E0B-A8DB-F62E4023DE40}
 		{2E282B94-4B9C-41E9-B92B-A20CF45C190B} = {571C5C1E-262A-4E0B-A8DB-F62E4023DE40}
+		{EA6464EC-A7AE-4D23-9F0C-2CDFC28FB92B} = {571C5C1E-262A-4E0B-A8DB-F62E4023DE40}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0933D439-CC99-45F8-ABD6-916F27C97E1E}

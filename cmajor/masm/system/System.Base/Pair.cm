@@ -62,6 +62,7 @@ namespace System
     [system_default]
     public TextWriter& operator<<<T, U>(TextWriter& writer, const Pair<T, U>& pair)
     {
+        if (writer.Error()) return writer;
         return writer << "(" << pair.first << ", " << pair.second << ")";
     }
 

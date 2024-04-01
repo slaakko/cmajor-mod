@@ -9,6 +9,7 @@ module;
 module cmajor.masm.backend.codegen;
 
 import cmajor.masm.intermediate;
+import cmajor.masm.optimizer;
 import cmajor.masm.assembly;
 import util;
 
@@ -137,6 +138,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
 {
     fileIndex = boundCompileUnit.FileIndex();
     std::string intermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
+    std::string optimizedIntermediateFilePath = util::Path::ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
     NativeModule nativeModule(emitter, intermediateFilePath);
     compileUnitId = boundCompileUnit.Id();
     emitter->SetCompileUnitId(compileUnitId);
@@ -165,10 +167,20 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     }
     nativeCompileUnit->Write();
     cmajor::masm::intermediate::Context intermediateContext;
+    cmajor::masm::intermediate::Context optimizationContext;
+    cmajor::masm::intermediate::Context* finalContext = &intermediateContext;
     cmajor::masm::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), intermediateFilePath, intermediateContext,
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     cmajor::masm::intermediate::Verify(intermediateContext);
-    cmajor::masm::intermediate::CodeGenerator codeGenerator(&intermediateContext, boundCompileUnit.AsmFilePath());
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    {
+        cmajor::masm::optimizer::Optimize(&intermediateContext);
+        intermediateContext.Write(optimizedIntermediateFilePath);
+        cmajor::masm::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), optimizedIntermediateFilePath, optimizationContext,
+            cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+        finalContext = &optimizationContext;
+    }
+    cmajor::masm::intermediate::CodeGenerator codeGenerator(finalContext, boundCompileUnit.AsmFilePath());
     intermediateContext.GetData().VisitGlobalVariables(codeGenerator);
     intermediateContext.GetCode().VisitFunctions(codeGenerator);
     codeGenerator.WriteOutputFile();

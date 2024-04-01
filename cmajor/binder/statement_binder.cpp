@@ -1227,6 +1227,8 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::declarationBlock, "declaration block expected");
     cmajor::symbols::DeclarationBlock* declarationBlock = static_cast<cmajor::symbols::DeclarationBlock*>(symbol);
     containerScope = declarationBlock->GetContainerScope();
+    forStatementNode.InitS()->Accept(*this);
+    std::unique_ptr<BoundStatement> initS(statement.release());
     std::unique_ptr<BoundExpression> condition;
     if (forStatementNode.Condition())
     {
@@ -1256,13 +1258,11 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     {
         s = std::move(statement);
     }
-    forStatementNode.InitS()->Accept(*this);
-    BoundStatement* initS = statement.release();
     forStatementNode.LoopS()->Accept(*this);
-    BoundStatement* loopS = statement.release();
+    std::unique_ptr<BoundStatement> loopS(statement.release());
     loopS->SetForLoopStatementNode();
     forStatementNode.ActionS()->Accept(*this);
-    BoundStatement* actionS = statement.release();
+    std::unique_ptr<BoundStatement> actionS(statement.release());
     if (s)
     {
         AddStatement(s.release());
@@ -1271,8 +1271,11 @@ void StatementBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
     {
         AddReleaseExceptionStatement(&forStatementNode);
     }
-    AddStatement(new BoundForStatement(forStatementNode.GetSpan(), std::unique_ptr<BoundStatement>(initS), std::move(condition), std::unique_ptr<BoundStatement>(loopS),
-        std::unique_ptr<BoundStatement>(actionS)));
+    AddStatement(new BoundForStatement(forStatementNode.GetSpan(), 
+        std::unique_ptr<BoundStatement>(initS.release()), 
+        std::move(condition), 
+        std::unique_ptr<BoundStatement>(loopS.release()), 
+        std::unique_ptr<BoundStatement>(actionS.release())));
     containerScope = prevContainerScope;
 }
 

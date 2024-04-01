@@ -13,7 +13,7 @@ import util;
 
 namespace cmajor::masm::ir {
 
-Function::Function(const std::string& name_, Type* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0)
+Function::Function(const std::string& name_, Type* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false)
 {
     Type* t = type;
     if (type->IsPtrType())
@@ -92,6 +92,10 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     if (basicBlocks.empty())
     {
         formatter.Write("extern ");
+    }
+    else if (isInline)
+    {
+        formatter.Write("inline ");
     }
     formatter.WriteLine("function " + type->Name() + " " + name);
     if (basicBlocks.empty())

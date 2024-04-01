@@ -63,10 +63,11 @@ public:
     Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);
-    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId);
+    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_);
     Function* AddFunctionDeclaration(const soul::ast::Span& span, Type* type, const std::string& functionId);
     soul::lexer::FileMap& GetFileMap() { return fileMap; }
     cmajor::masm::assembly::Context* AssemblyContext() { return &assemblyContext; }
+    void Write(const std::string& intermediateFilePath);
 private:
     CompileUnit compileUnit;
     Types types;

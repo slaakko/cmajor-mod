@@ -171,6 +171,17 @@ void Type::Resolve(Types* types, Context* context)
 {
 }
 
+void Type::Write(util::CodeFormatter& formatter)
+{
+    formatter.Write(Name());
+}
+
+void Type::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    formatter.Write(Name());
+    formatter.Write(" = type ");
+}
+
 VoidType::VoidType() : Type(soul::ast::Span(), TypeKind::fundamentalType, voidTypeId)
 {
 }
@@ -309,6 +320,23 @@ int64_t StructureType::GetFieldOffset(int64_t index) const
     return fieldOffsets[index];
 }
 
+void StructureType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("{ ");
+    int n = FieldCount();
+    for (int i = 0; i < n; ++i)
+    {
+        Type* fieldType = FieldType(i);
+        if (i > 0)
+        {
+            formatter.Write(", ");
+        }
+        fieldType->Write(formatter);
+    }
+    formatter.Write(" }");
+}
+
 ArrayType::ArrayType(const soul::ast::Span& span_, int32_t typeId_, int64_t elementCount_, const TypeRef& elementTypeRef_) :
     Type(span_, TypeKind::arrayType, typeId_), elementCount(elementCount_), elementTypeRef(elementTypeRef_)
 {
@@ -342,6 +370,16 @@ bool ArrayType::IsWeakType() const
         return false;
     }
     return true;
+}
+
+void ArrayType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("[");
+    formatter.Write(std::to_string(elementCount));
+    formatter.Write(" x ");
+    ElementType()->Write(formatter);
+    formatter.Write("]");
 }
 
 FunctionType::FunctionType(const soul::ast::Span& span_, int32_t typeId_, const TypeRef& returnTypeRef_, const std::vector<TypeRef>& paramTypeRefs_) :
@@ -387,6 +425,24 @@ bool FunctionType::IsWeakType() const
     return true;
 }
 
+void FunctionType::WriteDeclaration(util::CodeFormatter& formatter)
+{
+    Type::WriteDeclaration(formatter);
+    formatter.Write("function ");
+    ReturnType()->Write(formatter);
+    formatter.Write("(");
+    int n = Arity();
+    for (int i = 0; i < n; ++i)
+    {
+        if (i > 0)
+        {
+            formatter.Write(", ");
+        }
+        ParamType(i)->Write(formatter);
+    }
+    formatter.Write(")");
+}
+
 PointerType::PointerType(const soul::ast::Span& span_, int32_t typeId_, int8_t pointerCount_, int32_t baseTypeId_) :
     Type(span_, TypeKind::pointerType, typeId_), pointerCount(pointerCount_), baseTypeRef(span_, baseTypeId_)
 {
@@ -424,7 +480,7 @@ void Types::Add(Type* type, Context* context)
         Error("error adding type id " + std::to_string(type->Id()) + ": type id not unique", type->Span(), context, prev->Span());
     }
     Map(type);
-    declaratedTypes.push_back(type);
+    declaredTypes.push_back(type);
 }
 
 Type* Types::Get(int32_t id) const
@@ -471,7 +527,7 @@ void Types::Map(Type* type)
 
 void Types::VisitTypeDeclarations(Visitor& visitor)
 {
-    for (Type* declaredType : declaratedTypes)
+    for (Type* declaredType : declaredTypes)
     {
         declaredType->Accept(visitor);
     }
@@ -536,6 +592,22 @@ void Types::ResolveType(TypeRef& typeRef, Context* context)
         Error("error resolving type: type id " + std::to_string(typeRef.Id()) + " not found", typeRef.Span(), context);
     }
     typeRef.SetType(type);
+}
+
+void Types::Write(util::CodeFormatter& formatter)
+{
+    if (types.empty()) return;
+    formatter.WriteLine("types");
+    formatter.WriteLine("{");
+    formatter.IncIndent();
+    for (const auto& type : declaredTypes)
+    {
+        type->WriteDeclaration(formatter);
+        formatter.WriteLine();
+    }
+    formatter.DecIndent();
+    formatter.WriteLine("}");
+    formatter.WriteLine();
 }
 
 } // cmajor::masm::intermediate

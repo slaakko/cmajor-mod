@@ -1,0 +1,21 @@
+using System;
+using System.Collections;
+
+public List<int> MakeEight()
+{
+    List<int> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(i);
+    }
+    return eight;
+}
+
+void main()
+{
+    List<int> eight = MakeEight();
+    for (auto it = eight.Begin(); it != eight.End(); ++it)
+    {
+        Console.WriteLine(it - eight.Begin());
+    }
+}

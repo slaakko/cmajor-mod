@@ -1,0 +1,105 @@
+using System;
+
+class Foo 
+{
+    public default virtual ~Foo();
+}
+
+class Bar
+{
+    public default virtual ~Bar();
+}
+
+class Base 
+{
+    public default virtual ~Base();
+}
+
+class DerivedClass : Base
+{
+}
+
+class Third : DerivedClass
+{
+}
+
+/*
+should print:
+yes
+no
+yes
+no
+no
+yes
+yes
+*/
+
+void test()
+{
+    UniquePtr<Foo> foo = new Foo();
+    Foo* result = foo.Get() as Foo*;
+    if (result != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    Bar* result2 = foo.Get() as Bar*;
+    if (result2 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    UniquePtr<Base> derived = new DerivedClass();
+    Base* result3 = derived.Get() as Base*;
+    if (result3 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    Foo* result4 = derived.Get() as Foo*;
+    if (result4 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    Third* result5 = derived.Get() as Third*;
+    if (result5 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    UniquePtr<Base> third = new Third();
+    DerivedClass* result6 = third.Get() as DerivedClass*;
+    if (result6 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+    Base* result7 = third.Get() as Base*;
+    if (result7 != null)
+    {
+        RtmPrintString("yes");
+    }
+    else
+    {
+        RtmPrintString("no");
+    }
+}

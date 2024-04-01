@@ -1,0 +1,404 @@
+<results>
+    <int_set_value_test project="set" solution="">
+        <test count="20" exitCode="0" name="int_set_value_test">
+            <assertion index="0" line="74" result="passed"/>
+            <assertion index="1" line="75" result="passed"/>
+            <assertion index="2" line="79" result="passed"/>
+            <assertion index="3" line="80" result="passed"/>
+            <assertion index="4" line="82" result="passed"/>
+            <assertion index="5" line="84" result="passed"/>
+            <assertion index="6" line="85" result="passed"/>
+            <assertion index="7" line="86" result="passed"/>
+            <assertion index="8" line="89" result="passed"/>
+            <assertion index="9" line="90" result="passed"/>
+            <assertion index="10" line="91" result="passed"/>
+            <assertion index="11" line="94" result="passed"/>
+            <assertion index="12" line="95" result="passed"/>
+            <assertion index="13" line="96" result="passed"/>
+            <assertion index="14" line="100" result="passed"/>
+            <assertion index="15" line="101" result="passed"/>
+            <assertion index="16" line="102" result="passed"/>
+            <assertion index="17" line="104" result="passed"/>
+            <assertion index="18" line="105" result="passed"/>
+            <assertion index="19" line="106" result="passed"/>
+        </test>
+    </int_set_value_test>
+    <int_set_iterator_test project="set" solution="">
+        <test count="18" exitCode="0" name="int_set_iterator_test">
+            <assertion index="0" line="115" result="passed"/>
+            <assertion index="1" line="116" result="passed"/>
+            <assertion index="2" line="117" result="passed"/>
+            <assertion index="3" line="119" result="passed"/>
+            <assertion index="4" line="120" result="passed"/>
+            <assertion index="5" line="124" result="passed"/>
+            <assertion index="6" line="127" result="passed"/>
+            <assertion index="7" line="128" result="passed"/>
+            <assertion index="8" line="129" result="passed"/>
+            <assertion index="9" line="133" result="passed"/>
+            <assertion index="10" line="136" result="passed"/>
+            <assertion index="11" line="137" result="passed"/>
+            <assertion index="12" line="138" result="passed"/>
+            <assertion index="13" line="142" result="passed"/>
+            <assertion index="14" line="145" result="passed"/>
+            <assertion index="15" line="146" result="passed"/>
+            <assertion index="16" line="147" result="passed"/>
+            <assertion index="17" line="151" result="passed"/>
+        </test>
+    </int_set_iterator_test>
+    <int_set_find_test project="set" solution="">
+        <test count="26" exitCode="0" name="int_set_find_test">
+            <assertion index="0" line="159" result="passed"/>
+            <assertion index="1" line="161" result="passed"/>
+            <assertion index="2" line="164" result="passed"/>
+            <assertion index="3" line="165" result="passed"/>
+            <assertion index="4" line="167" result="passed"/>
+            <assertion index="5" line="168" result="passed"/>
+            <assertion index="6" line="170" result="passed"/>
+            <assertion index="7" line="173" result="passed"/>
+            <assertion index="8" line="174" result="passed"/>
+            <assertion index="9" line="176" result="passed"/>
+            <assertion index="10" line="177" result="passed"/>
+            <assertion index="11" line="179" result="passed"/>
+            <assertion index="12" line="180" result="passed"/>
+            <assertion index="13" line="182" result="passed"/>
+            <assertion index="14" line="183" result="passed"/>
+            <assertion index="15" line="185" result="passed"/>
+            <assertion index="16" line="190" result="passed"/>
+            <assertion index="17" line="191" result="passed"/>
+            <assertion index="18" line="193" result="passed"/>
+            <assertion index="19" line="194" result="passed"/>
+            <assertion index="20" line="197" result="passed"/>
+            <assertion index="21" line="202" result="passed"/>
+            <assertion index="22" line="203" result="passed"/>
+            <assertion index="23" line="205" result="passed"/>
+            <assertion index="24" line="206" result="passed"/>
+            <assertion index="25" line="209" result="passed"/>
+        </test>
+    </int_set_find_test>
+    <int_set_lower_bound_test project="set" solution="">
+        <test count="40" exitCode="0" name="int_set_lower_bound_test">
+            <assertion index="0" line="216" result="passed"/>
+            <assertion index="1" line="218" result="passed"/>
+            <assertion index="2" line="221" result="passed"/>
+            <assertion index="3" line="222" result="passed"/>
+            <assertion index="4" line="224" result="passed"/>
+            <assertion index="5" line="225" result="passed"/>
+            <assertion index="6" line="227" result="passed"/>
+            <assertion index="7" line="228" result="passed"/>
+            <assertion index="8" line="230" result="passed"/>
+            <assertion index="9" line="231" result="passed"/>
+            <assertion index="10" line="233" result="passed"/>
+            <assertion index="11" line="235" result="passed"/>
+            <assertion index="12" line="238" result="passed"/>
+            <assertion index="13" line="239" result="passed"/>
+            <assertion index="14" line="241" result="passed"/>
+            <assertion index="15" line="242" result="passed"/>
+            <assertion index="16" line="244" result="passed"/>
+            <assertion index="17" line="245" result="passed"/>
+            <assertion index="18" line="247" result="passed"/>
+            <assertion index="19" line="248" result="passed"/>
+            <assertion index="20" line="250" result="passed"/>
+            <assertion index="21" line="251" result="passed"/>
+            <assertion index="22" line="253" result="passed"/>
+            <assertion index="23" line="254" result="passed"/>
+            <assertion index="24" line="256" result="passed"/>
+            <assertion index="25" line="258" result="passed"/>
+            <assertion index="26" line="261" result="passed"/>
+            <assertion index="27" line="262" result="passed"/>
+            <assertion index="28" line="264" result="passed"/>
+            <assertion index="29" line="265" result="passed"/>
+            <assertion index="30" line="267" result="passed"/>
+            <assertion index="31" line="268" result="passed"/>
+            <assertion index="32" line="270" result="passed"/>
+            <assertion index="33" line="271" result="passed"/>
+            <assertion index="34" line="273" result="passed"/>
+            <assertion index="35" line="274" result="passed"/>
+            <assertion index="36" line="276" result="passed"/>
+            <assertion index="37" line="277" result="passed"/>
+            <assertion index="38" line="279" result="passed"/>
+            <assertion index="39" line="281" result="passed"/>
+        </test>
+    </int_set_lower_bound_test>
+    <int_set_remove_value_test project="set" solution="">
+        <test count="9" exitCode="0" name="int_set_remove_value_test">
+            <assertion index="0" line="288" result="passed"/>
+            <assertion index="1" line="290" result="passed"/>
+            <assertion index="2" line="292" result="passed"/>
+            <assertion index="3" line="294" result="passed"/>
+            <assertion index="4" line="295" result="passed"/>
+            <assertion index="5" line="297" result="passed"/>
+            <assertion index="6" line="298" result="passed"/>
+            <assertion index="7" line="300" result="passed"/>
+            <assertion index="8" line="307" result="passed"/>
+        </test>
+    </int_set_remove_value_test>
+    <int_set_remove_iterator_test project="set" solution="">
+        <test count="4" exitCode="0" name="int_set_remove_iterator_test">
+            <assertion index="0" line="317" result="passed"/>
+            <assertion index="1" line="320" result="passed"/>
+            <assertion index="2" line="322" result="passed"/>
+            <assertion index="3" line="330" result="passed"/>
+        </test>
+    </int_set_remove_iterator_test>
+    <int_set_equal_test project="set" solution="">
+        <test count="16" exitCode="0" name="int_set_equal_test">
+            <assertion index="0" line="338" result="passed"/>
+            <assertion index="1" line="340" result="passed"/>
+            <assertion index="2" line="341" result="passed"/>
+            <assertion index="3" line="342" result="passed"/>
+            <assertion index="4" line="344" result="passed"/>
+            <assertion index="5" line="345" result="passed"/>
+            <assertion index="6" line="346" result="passed"/>
+            <assertion index="7" line="347" result="passed"/>
+            <assertion index="8" line="348" result="passed"/>
+            <assertion index="9" line="350" result="passed"/>
+            <assertion index="10" line="351" result="passed"/>
+            <assertion index="11" line="352" result="passed"/>
+            <assertion index="12" line="353" result="passed"/>
+            <assertion index="13" line="354" result="passed"/>
+            <assertion index="14" line="355" result="passed"/>
+            <assertion index="15" line="356" result="passed"/>
+        </test>
+    </int_set_equal_test>
+    <int_set_compare_test project="set" solution="">
+        <test count="36" exitCode="0" name="int_set_compare_test">
+            <assertion index="0" line="362" result="passed"/>
+            <assertion index="1" line="363" result="passed"/>
+            <assertion index="2" line="364" result="passed"/>
+            <assertion index="3" line="365" result="passed"/>
+            <assertion index="4" line="367" result="passed"/>
+            <assertion index="5" line="368" result="passed"/>
+            <assertion index="6" line="369" result="passed"/>
+            <assertion index="7" line="370" result="passed"/>
+            <assertion index="8" line="371" result="passed"/>
+            <assertion index="9" line="372" result="passed"/>
+            <assertion index="10" line="373" result="passed"/>
+            <assertion index="11" line="374" result="passed"/>
+            <assertion index="12" line="375" result="passed"/>
+            <assertion index="13" line="376" result="passed"/>
+            <assertion index="14" line="377" result="passed"/>
+            <assertion index="15" line="378" result="passed"/>
+            <assertion index="16" line="380" result="passed"/>
+            <assertion index="17" line="381" result="passed"/>
+            <assertion index="18" line="382" result="passed"/>
+            <assertion index="19" line="383" result="passed"/>
+            <assertion index="20" line="384" result="passed"/>
+            <assertion index="21" line="385" result="passed"/>
+            <assertion index="22" line="386" result="passed"/>
+            <assertion index="23" line="387" result="passed"/>
+            <assertion index="24" line="388" result="passed"/>
+            <assertion index="25" line="389" result="passed"/>
+            <assertion index="26" line="390" result="passed"/>
+            <assertion index="27" line="391" result="passed"/>
+            <assertion index="28" line="392" result="passed"/>
+            <assertion index="29" line="393" result="passed"/>
+            <assertion index="30" line="394" result="passed"/>
+            <assertion index="31" line="395" result="passed"/>
+            <assertion index="32" line="396" result="passed"/>
+            <assertion index="33" line="397" result="passed"/>
+            <assertion index="34" line="398" result="passed"/>
+            <assertion index="35" line="399" result="passed"/>
+        </test>
+    </int_set_compare_test>
+    <string_set_value_test project="set" solution="">
+        <test count="20" exitCode="0" name="string_set_value_test">
+            <assertion index="0" line="84" result="passed"/>
+            <assertion index="1" line="85" result="passed"/>
+            <assertion index="2" line="89" result="passed"/>
+            <assertion index="3" line="90" result="passed"/>
+            <assertion index="4" line="92" result="passed"/>
+            <assertion index="5" line="94" result="passed"/>
+            <assertion index="6" line="95" result="passed"/>
+            <assertion index="7" line="96" result="passed"/>
+            <assertion index="8" line="99" result="passed"/>
+            <assertion index="9" line="100" result="passed"/>
+            <assertion index="10" line="101" result="passed"/>
+            <assertion index="11" line="104" result="passed"/>
+            <assertion index="12" line="105" result="passed"/>
+            <assertion index="13" line="106" result="passed"/>
+            <assertion index="14" line="110" result="passed"/>
+            <assertion index="15" line="111" result="passed"/>
+            <assertion index="16" line="112" result="passed"/>
+            <assertion index="17" line="114" result="passed"/>
+            <assertion index="18" line="115" result="passed"/>
+            <assertion index="19" line="116" result="passed"/>
+        </test>
+    </string_set_value_test>
+    <string_set_iterator_test project="set" solution="">
+        <test count="18" exitCode="0" name="string_set_iterator_test">
+            <assertion index="0" line="125" result="passed"/>
+            <assertion index="1" line="126" result="passed"/>
+            <assertion index="2" line="127" result="passed"/>
+            <assertion index="3" line="129" result="passed"/>
+            <assertion index="4" line="130" result="passed"/>
+            <assertion index="5" line="134" result="passed"/>
+            <assertion index="6" line="138" result="passed"/>
+            <assertion index="7" line="139" result="passed"/>
+            <assertion index="8" line="140" result="passed"/>
+            <assertion index="9" line="144" result="passed"/>
+            <assertion index="10" line="148" result="passed"/>
+            <assertion index="11" line="149" result="passed"/>
+            <assertion index="12" line="150" result="passed"/>
+            <assertion index="13" line="154" result="passed"/>
+            <assertion index="14" line="158" result="passed"/>
+            <assertion index="15" line="159" result="passed"/>
+            <assertion index="16" line="160" result="passed"/>
+            <assertion index="17" line="164" result="passed"/>
+        </test>
+    </string_set_iterator_test>
+    <string_set_find_test project="set" solution="">
+        <test count="26" exitCode="0" name="string_set_find_test">
+            <assertion index="0" line="173" result="passed"/>
+            <assertion index="1" line="175" result="passed"/>
+            <assertion index="2" line="178" result="passed"/>
+            <assertion index="3" line="179" result="passed"/>
+            <assertion index="4" line="181" result="passed"/>
+            <assertion index="5" line="182" result="passed"/>
+            <assertion index="6" line="184" result="passed"/>
+            <assertion index="7" line="187" result="passed"/>
+            <assertion index="8" line="188" result="passed"/>
+            <assertion index="9" line="190" result="passed"/>
+            <assertion index="10" line="191" result="passed"/>
+            <assertion index="11" line="193" result="passed"/>
+            <assertion index="12" line="194" result="passed"/>
+            <assertion index="13" line="196" result="passed"/>
+            <assertion index="14" line="197" result="passed"/>
+            <assertion index="15" line="199" result="passed"/>
+            <assertion index="16" line="204" result="passed"/>
+            <assertion index="17" line="205" result="passed"/>
+            <assertion index="18" line="207" result="passed"/>
+            <assertion index="19" line="208" result="passed"/>
+            <assertion index="20" line="211" result="passed"/>
+            <assertion index="21" line="216" result="passed"/>
+            <assertion index="22" line="217" result="passed"/>
+            <assertion index="23" line="219" result="passed"/>
+            <assertion index="24" line="220" result="passed"/>
+            <assertion index="25" line="223" result="passed"/>
+        </test>
+    </string_set_find_test>
+    <string_set_lower_bound_test project="set" solution="">
+        <test count="40" exitCode="0" name="string_set_lower_bound_test">
+            <assertion index="0" line="230" result="passed"/>
+            <assertion index="1" line="232" result="passed"/>
+            <assertion index="2" line="235" result="passed"/>
+            <assertion index="3" line="236" result="passed"/>
+            <assertion index="4" line="238" result="passed"/>
+            <assertion index="5" line="239" result="passed"/>
+            <assertion index="6" line="241" result="passed"/>
+            <assertion index="7" line="242" result="passed"/>
+            <assertion index="8" line="244" result="passed"/>
+            <assertion index="9" line="245" result="passed"/>
+            <assertion index="10" line="247" result="passed"/>
+            <assertion index="11" line="249" result="passed"/>
+            <assertion index="12" line="252" result="passed"/>
+            <assertion index="13" line="253" result="passed"/>
+            <assertion index="14" line="255" result="passed"/>
+            <assertion index="15" line="256" result="passed"/>
+            <assertion index="16" line="258" result="passed"/>
+            <assertion index="17" line="259" result="passed"/>
+            <assertion index="18" line="261" result="passed"/>
+            <assertion index="19" line="262" result="passed"/>
+            <assertion index="20" line="264" result="passed"/>
+            <assertion index="21" line="265" result="passed"/>
+            <assertion index="22" line="267" result="passed"/>
+            <assertion index="23" line="268" result="passed"/>
+            <assertion index="24" line="270" result="passed"/>
+            <assertion index="25" line="272" result="passed"/>
+            <assertion index="26" line="275" result="passed"/>
+            <assertion index="27" line="276" result="passed"/>
+            <assertion index="28" line="278" result="passed"/>
+            <assertion index="29" line="279" result="passed"/>
+            <assertion index="30" line="281" result="passed"/>
+            <assertion index="31" line="282" result="passed"/>
+            <assertion index="32" line="284" result="passed"/>
+            <assertion index="33" line="285" result="passed"/>
+            <assertion index="34" line="287" result="passed"/>
+            <assertion index="35" line="288" result="passed"/>
+            <assertion index="36" line="290" result="passed"/>
+            <assertion index="37" line="291" result="passed"/>
+            <assertion index="38" line="293" result="passed"/>
+            <assertion index="39" line="295" result="passed"/>
+        </test>
+    </string_set_lower_bound_test>
+    <sting_set_remove_value_test project="set" solution="">
+        <test count="9" exitCode="0" name="sting_set_remove_value_test">
+            <assertion index="0" line="302" result="passed"/>
+            <assertion index="1" line="304" result="passed"/>
+            <assertion index="2" line="306" result="passed"/>
+            <assertion index="3" line="308" result="passed"/>
+            <assertion index="4" line="309" result="passed"/>
+            <assertion index="5" line="311" result="passed"/>
+            <assertion index="6" line="312" result="passed"/>
+            <assertion index="7" line="314" result="passed"/>
+            <assertion index="8" line="321" result="passed"/>
+        </test>
+    </sting_set_remove_value_test>
+    <string_set_remove_iterator_test project="set" solution="">
+        <test count="4" exitCode="0" name="string_set_remove_iterator_test">
+            <assertion index="0" line="331" result="passed"/>
+            <assertion index="1" line="334" result="passed"/>
+            <assertion index="2" line="336" result="passed"/>
+            <assertion index="3" line="344" result="passed"/>
+        </test>
+    </string_set_remove_iterator_test>
+    <string_set_equal_test project="set" solution="">
+        <test count="16" exitCode="0" name="string_set_equal_test">
+            <assertion index="0" line="352" result="passed"/>
+            <assertion index="1" line="354" result="passed"/>
+            <assertion index="2" line="355" result="passed"/>
+            <assertion index="3" line="356" result="passed"/>
+            <assertion index="4" line="358" result="passed"/>
+            <assertion index="5" line="359" result="passed"/>
+            <assertion index="6" line="360" result="passed"/>
+            <assertion index="7" line="361" result="passed"/>
+            <assertion index="8" line="362" result="passed"/>
+            <assertion index="9" line="364" result="passed"/>
+            <assertion index="10" line="365" result="passed"/>
+            <assertion index="11" line="366" result="passed"/>
+            <assertion index="12" line="367" result="passed"/>
+            <assertion index="13" line="368" result="passed"/>
+            <assertion index="14" line="369" result="passed"/>
+            <assertion index="15" line="370" result="passed"/>
+        </test>
+    </string_set_equal_test>
+    <string_set_compare_test project="set" solution="">
+        <test count="36" exitCode="0" name="string_set_compare_test">
+            <assertion index="0" line="376" result="passed"/>
+            <assertion index="1" line="377" result="passed"/>
+            <assertion index="2" line="378" result="passed"/>
+            <assertion index="3" line="379" result="passed"/>
+            <assertion index="4" line="381" result="passed"/>
+            <assertion index="5" line="382" result="passed"/>
+            <assertion index="6" line="383" result="passed"/>
+            <assertion index="7" line="384" result="passed"/>
+            <assertion index="8" line="385" result="passed"/>
+            <assertion index="9" line="386" result="passed"/>
+            <assertion index="10" line="387" result="passed"/>
+            <assertion index="11" line="388" result="passed"/>
+            <assertion index="12" line="389" result="passed"/>
+            <assertion index="13" line="390" result="passed"/>
+            <assertion index="14" line="391" result="passed"/>
+            <assertion index="15" line="392" result="passed"/>
+            <assertion index="16" line="394" result="passed"/>
+            <assertion index="17" line="395" result="passed"/>
+            <assertion index="18" line="396" result="passed"/>
+            <assertion index="19" line="397" result="passed"/>
+            <assertion index="20" line="398" result="passed"/>
+            <assertion index="21" line="399" result="passed"/>
+            <assertion index="22" line="400" result="passed"/>
+            <assertion index="23" line="401" result="passed"/>
+            <assertion index="24" line="402" result="passed"/>
+            <assertion index="25" line="403" result="passed"/>
+            <assertion index="26" line="404" result="passed"/>
+            <assertion index="27" line="405" result="passed"/>
+            <assertion index="28" line="406" result="passed"/>
+            <assertion index="29" line="407" result="passed"/>
+            <assertion index="30" line="408" result="passed"/>
+            <assertion index="31" line="409" result="passed"/>
+            <assertion index="32" line="410" result="passed"/>
+            <assertion index="33" line="411" result="passed"/>
+            <assertion index="34" line="412" result="passed"/>
+            <assertion index="35" line="413" result="passed"/>
+        </test>
+    </string_set_compare_test>
+</results>

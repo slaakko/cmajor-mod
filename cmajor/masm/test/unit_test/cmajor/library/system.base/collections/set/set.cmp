@@ -1,0 +1,4 @@
+project set;
+target=unitTest;
+source <int_set.cm>;
+source <string_set.cm>;

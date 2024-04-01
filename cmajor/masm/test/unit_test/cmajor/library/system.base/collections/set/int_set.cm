@@ -1,0 +1,400 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public Set<int> MakeSet(const List<int>& x)
+{
+    Set<int> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(x[i]);
+    }
+    return s;
+}
+
+public Set<int> MakeOne()
+{
+    Set<int> s;
+    s.Insert(0);
+    return s;
+}
+
+public Set<int> MakeTwo()
+{
+    Set<int> s;
+    s.Insert(0);
+    s.Insert(1);
+    return s;
+}
+
+public Set<int> MakeEight()
+{
+    Set<int> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public Set<int> MakeKilo()
+{
+    Set<int> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public Set<int> Return(const Set<int>& x)
+{
+    return x;
+}
+
+unit_test void int_set_value_test()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        List<int> p = MakeList(i);
+        do
+        {
+            Set<int> x0 = MakeSet(p);
+            if (i == 0)
+            {
+                #assert(x0.IsEmpty());
+                #assert(x0.Count() == 0);
+            }
+            else
+            {
+                #assert(!x0.IsEmpty());
+                #assert(x0.Count() == i);
+            }
+            #assert(x0 == x0);
+            Set<int> x1(x0);
+            #assert(x1.IsEmpty() == x0.IsEmpty());
+            #assert(x1.Count() == x0.Count());
+            #assert(x1 == x0);
+            Set<int> x2;
+            x2 = x0;
+            #assert(x2.IsEmpty() == x0.IsEmpty());
+            #assert(x2.Count() == x0.Count());
+            #assert(x2 == x0);
+            Set<int> xcopy0(x0);
+            Set<int> x3(Rvalue(xcopy0));
+            #assert(x3.IsEmpty() == x0.IsEmpty());
+            #assert(x3.Count() == x0.Count());
+            #assert(x3 == x0);
+            Set<int> xcopy1(x0);
+            Set<int> x4;
+            x4 = Rvalue(xcopy1);
+            #assert(x4.IsEmpty() == x0.IsEmpty());
+            #assert(x4.Count() == x0.Count());
+            #assert(x4 == x0);
+            Set<int> x5 = Return(x0);
+            #assert(x5.IsEmpty() == x0.IsEmpty());
+            #assert(x5.Count() == x0.Count());
+            #assert(x5 == x0);
+        }
+        while (NextPermutation(p.Begin(), p.End()));
+    }
+}
+
+unit_test void int_set_iterator_test()
+{
+    Set<int> s0;
+    #assert(s0.Count() == 0);
+    #assert(s0.Begin() == s0.End());
+    #assert(s0.CBegin() == s0.CEnd());
+    Set<int> s1 = MakeOne();
+    #assert(s1.Count() == 1);
+    #assert(s1.Begin() != s1.End());
+    int value = 0;
+    for (auto it = s1.Begin(); it != s1.End(); ++it)
+    {
+        #assert(*it == value++);
+    }
+    Set<int> s2 = MakeTwo();
+    #assert(s2.Count() == 2);
+    #assert(s2.Begin() != s2.End());
+    #assert(s2.CBegin() != s2.CEnd());
+    value = 0;
+    for (auto it = s2.Begin(); it != s2.End(); ++it)
+    {
+        #assert(*it == value++);
+    }
+    Set<int> s3 = MakeEight();
+    #assert(s3.Count() == 8);
+    #assert(s3.Begin() != s3.End());
+    #assert(s3.CBegin() != s3.CEnd());
+    value = 0;
+    for (auto it = s3.Begin(); it != s3.End(); ++it)
+    {
+        #assert(*it == value++);
+    }
+    Set<int> s4 = MakeKilo();
+    #assert(s4.Count() == 1024);
+    #assert(s4.Begin() != s4.End());
+    #assert(s4.CBegin() != s4.CEnd());
+    value = 0;
+    for (auto it = s4.Begin(); it != s4.End(); ++it)
+    {
+        #assert(*it == value++);
+    }
+}
+
+unit_test void int_set_find_test()
+{
+    Set<int> s0;
+    auto it0 = s0.Find(0);
+    #assert(it0 == s0.End());
+    auto it1 = s0.CFind(0);
+    #assert(it1 == s0.CEnd());
+    Set<int> s1 = MakeOne();
+    auto it2 = s1.Find(0);
+    #assert(it2 != s1.End());
+    #assert(*it2 == 0);
+    auto it3 = s1.CFind(0);
+    #assert(it3 != s1.CEnd());
+    #assert(*it3 == 0);
+    auto it4 = s1.Find(-1);
+    #assert(it4 == s1.End());
+    Set<int> s2 = MakeTwo();
+    auto it5 = s2.Find(0);
+    #assert(it5 != s2.End());
+    #assert(*it5 == 0);
+    auto it6 = s2.CFind(0);
+    #assert(it6 != s2.CEnd());
+    #assert(*it6 == 0);
+    auto it7 = s2.Find(1);
+    #assert(it7 != s2.End());
+    #assert(*it7 == 1);
+    auto it8 = s2.CFind(1);
+    #assert(it8 != s2.CEnd());
+    #assert(*it8 == 1);
+    auto it9 = s2.Find(-1);
+    #assert(it9 == s2.End());
+    Set<int> s3 = MakeEight();
+    for (int i = 0; i < 8; ++i)
+    {
+        auto it1 = s3.Find(i);
+        #assert(it1 != s3.End());
+        #assert(*it1 == i);
+        auto it2 = s3.CFind(i);
+        #assert(it2 != s3.CEnd());
+        #assert(*it2 == i);
+    }
+    auto it10 = s3.Find(-1);
+    #assert(it10 == s3.End());
+    Set<int> s4 = MakeKilo();
+    for (int i = 0; i < 1024; ++i)
+    {
+        auto it1 = s4.Find(i);
+        #assert(it1 != s4.End());
+        #assert(*it1 == i);
+        auto it2 = s4.CFind(i);
+        #assert(it2 != s4.CEnd());
+        #assert(*it2 == i);
+    }
+    auto it11 = s4.Find(-1);
+    #assert(it11 == s4.End());
+}
+
+unit_test void int_set_lower_bound_test()
+{
+    Set<int> s0;
+    auto it0 = s0.LowerBound(0);
+    #assert(it0 == s0.End());
+    auto it1 = s0.CLowerBound(0);
+    #assert(it1 == s0.CEnd());
+
+    Set<int> s1 = MakeOne();
+    auto it2 = s1.LowerBound(0);
+    #assert(it2 != s1.End());
+    #assert(*it2 == 0);
+    auto it3 = s1.CLowerBound(0);
+    #assert(it3 != s1.CEnd());
+    #assert(*it3 == 0);
+    auto it4 = s1.LowerBound(-1);
+    #assert(it4 != s1.End());
+    #assert(*it4 == 0);
+    auto it5 = s1.CLowerBound(-1);
+    #assert(it5 != s1.CEnd());
+    #assert(*it5 == 0);
+    auto it6 = s1.LowerBound(2);
+    #assert(it6 == s1.End());
+    auto it7 = s1.CLowerBound(2);
+    #assert(it7 == s1.CEnd());
+    Set<int> s2 = MakeTwo();
+    auto it8 = s2.LowerBound(0);
+    #assert(it8 != s2.End());
+    #assert(*it8 == 0);
+    auto it9 = s2.CLowerBound(0);
+    #assert(it9 != s2.CEnd());
+    #assert(*it9 == 0);
+    auto it10 = s2.LowerBound(-1);
+    #assert(it10 != s2.End());
+    #assert(*it10 == 0);
+    auto it11 = s2.CLowerBound(-1);
+    #assert(it11 != s2.CEnd());
+    #assert(*it11 == 0);
+    auto it12 = s2.LowerBound(1);
+    #assert(it12 != s2.End());
+    #assert(*it12 == 1);
+    auto it13 = s2.CLowerBound(1);
+    #assert(it13 != s2.CEnd());
+    #assert(*it13 == 1);
+    auto it14 = s2.LowerBound(2);
+    #assert(it14 == s2.End());
+    auto it15 = s2.CLowerBound(2);
+    #assert(it15 == s2.CEnd());
+    Set<int> s3 = MakeEight();
+    auto it16 = s3.LowerBound(0);
+    #assert(it16 != s3.End());
+    #assert(*it16 == 0);
+    auto it17 = s3.CLowerBound(0);
+    #assert(it17 != s3.CEnd());
+    #assert(*it17 == 0);
+    auto it18 = s3.LowerBound(-1);
+    #assert(it18 != s3.End());
+    #assert(*it18 == 0);
+    auto it19 = s3.CLowerBound(-1);
+    #assert(it19 != s3.CEnd());
+    #assert(*it19 == 0);
+    auto it20 = s3.LowerBound(5);
+    #assert(it20 != s3.End());
+    #assert(*it20 == 5);
+    auto it21 = s3.CLowerBound(5);
+    #assert(it21 != s3.CEnd());
+    #assert(*it21 == 5);
+    auto it22 = s3.LowerBound(10);
+    #assert(it22 == s3.End());
+    auto it23 = s3.CLowerBound(10);
+    #assert(it23 == s3.CEnd());
+}
+
+unit_test void int_set_remove_value_test()
+{
+    Set<int> s0;
+    #assert(!s0.Remove(0));
+    Set<int> s1 = MakeOne();
+    #assert(s1.Remove(0));
+    Set<int> s2 = MakeOne();
+    #assert(!s2.Remove(-1));
+    Set<int> s3 = MakeTwo();
+    #assert(s3.Remove(0));
+    #assert(s3.Remove(1));
+    Set<int> s4 = MakeTwo();
+    #assert(s4.Remove(1));
+    #assert(s4.Remove(0));
+    Set<int> s5 = MakeTwo();
+    #assert(!s5.Remove(-1));
+    List<int> p = MakeList(8);
+    do
+    {
+        Set<int> s6 = MakeEight();
+        for (int i = 0; i < 8; ++i)
+        {
+            #assert(s6.Remove(p[i]));
+        }
+    }
+    while (NextPermutation(p.Begin(), p.End()));
+}
+
+unit_test void int_set_remove_iterator_test()
+{
+    Set<int> s1 = MakeOne();
+    s1.Remove(s1.Begin());
+    #assert(s1.Count() == 0);
+    Set<int> s2 = MakeTwo();
+    s2.Remove(s2.Begin());
+    #assert(s2.Count() == 1);
+    s2.Remove(s2.Begin());
+    #assert(s2.Count() == 0);
+    Set<int> s3 = MakeEight();
+    auto it3 = s3.Begin();
+    int n = 8;
+    for (int i = 0; i < 8; ++i)
+    {
+        s3.Remove(it3);
+        --n;
+        #assert(s3.Count() == n);
+        it3 = s3.Begin();
+    }
+}
+
+unit_test void int_set_equal_test()
+{
+    Set<int> s0;
+    #assert(s0 == s0);
+    Set<int> s1 = MakeOne();
+    #assert(s1 == s1);
+    #assert(s1 != s0);
+    #assert(s0 != s1);
+    Set<int> s2 = MakeTwo();
+    #assert(s2 == s2);
+    #assert(s2 != s1);
+    #assert(s1 != s2);
+    #assert(s2 != s0);
+    #assert(s0 != s2);
+    Set<int> s3 = MakeEight();
+    #assert(s3 == s3);
+    #assert(s3 != s2);
+    #assert(s2 != s3);
+    #assert(s3 != s1);
+    #assert(s1 != s3);
+    #assert(s3 != s0);
+    #assert(s0 != s3);
+}
+
+unit_test void int_set_compare_test()
+{
+    Set<int> s0;
+    #assert(!(s0 < s0));
+    #assert(!(s0 > s0));
+    #assert(s0 <= s0);
+    #assert(s0 >= s0);
+    Set<int> s1 = MakeOne();
+    #assert(!(s1 < s1));
+    #assert(!(s1 > s1));
+    #assert(s1 <= s1);
+    #assert(s1 >= s1);
+    #assert(!(s1 < s0));
+    #assert(s1 > s0);
+    #assert(!(s1 <= s0));
+    #assert(s1 >= s0);
+    #assert(s0 < s1);
+    #assert(!(s0 > s1));
+    #assert(s0 <= s1);
+    #assert(!(s0 >= s1));
+    Set<int> s2 = MakeTwo();
+    #assert(!(s2 < s2));
+    #assert(!(s2 > s2));
+    #assert(s2 <= s2);
+    #assert(s2 >= s2);
+    #assert(!(s2 < s1));
+    #assert(s2 > s1);
+    #assert(!(s2 <= s1));
+    #assert(s2 >= s1);
+    #assert(s1 < s2);
+    #assert(!(s1 > s2));
+    #assert(s1 <= s2);
+    #assert(!(s1 >= s2));
+    #assert(!(s2 < s0));
+    #assert(s2 > s0);
+    #assert(!(s2 <= s0));
+    #assert(s2 >= s0);
+    #assert(s0 < s2);
+    #assert(!(s0 > s2));
+    #assert(s0 <= s2);
+    #assert(!(s0 >= s2));
+}
