@@ -356,8 +356,7 @@ std::string AddressValue::ToString() const
     return globalVariable->Name();
 }
 
-ArrayValue::ArrayValue(const soul::ast::Span& span_, const std::vector<Value*>& elements_) :
-    Value(span_, ValueKind::arrayValue, nullptr), elements(elements_)
+ArrayValue::ArrayValue(const soul::ast::Span& span_, const std::vector<Value*>& elements_) : Value(span_, ValueKind::arrayValue, nullptr), elements(elements_)
 {
 }
 
@@ -466,8 +465,7 @@ std::string StructureValue::ToString() const
     return s;
 }
 
-StringValue::StringValue(const soul::ast::Span& span_, const std::string& value_) :
-    Value(span_, ValueKind::stringValue, nullptr), value(value_)
+StringValue::StringValue(const soul::ast::Span& span_, const std::string& value_) : Value(span_, ValueKind::stringValue, nullptr), value(value_)
 {
 }
 
@@ -479,6 +477,8 @@ void StringValue::Accept(Visitor& visitor)
 std::string StringValue::ToString() const
 {
     std::string s("\"");
+    s.append(value);
+/*
     for (char c : value)
     {
         if (c == '"')
@@ -499,6 +499,7 @@ std::string StringValue::ToString() const
         }
     }
     s.append("\\").append(util::ToHexString(static_cast<uint8_t>(0)));
+*/
     s.append("\"");
     return s;
 }
@@ -515,7 +516,7 @@ void StringArrayValue::Accept(Visitor& visitor)
 
 std::string StringArrayValue::ToString() const
 {
-    std::string s = prefix + "[ ";
+    std::string s = std::string(1, prefix) + "[ ";
     bool first = true;
     for (Value* string : strings)
     {
@@ -584,7 +585,7 @@ std::string SymbolValue::ToString() const
     }
     else
     {
-        return symbol;
+        return "@" + symbol;
     }
 }
 
@@ -604,13 +605,17 @@ void GlobalVariable::Accept(Visitor& visitor)
 
 void GlobalVariable::Write(util::CodeFormatter& formatter)
 {
+    if (name == "vmt_UnicodeEngine_4BA56D0BC89EA412C5D44E2EAC43EF3D52AA83DE")
+    {
+        int x = 0;
+    }
     formatter.Write(GetType()->Name());
     formatter.Write(" ");
     formatter.Write(name);
     if (initializer)
     {
         formatter.Write(" = ");
-        if (initializer->IsAggregateValue() || initializer->IsStringValue())
+        if (initializer->IsAggregateValue() || initializer->IsStringValue() || initializer->IsStringArrayValue())
         {
             formatter.Write(initializer->ToString());
         }

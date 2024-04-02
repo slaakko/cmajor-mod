@@ -68,6 +68,7 @@ public:
     bool IsStructureValue() const { return kind == ValueKind::structureValue; }
     bool IsAggregateValue() const { return IsArrayValue() || IsStructureValue(); }
     bool IsStringValue() const { return kind == ValueKind::stringValue; }
+    bool IsStringArrayValue() const { return kind == ValueKind::stringArrayValue; }
     int64_t GetIntegerValue() const;
     const soul::ast::Span& Span() const { return span; }
     ValueKind Kind() const { return kind; }

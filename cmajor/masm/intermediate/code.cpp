@@ -1941,7 +1941,9 @@ void Function::Write(util::CodeFormatter& formatter)
     {
         formatter.Write("inline ");
     }
-    formatter.WriteLine("function " + type->Name() + " " + name);
+    Context* context = Parent()->GetContext();
+    Type* ptrType = type->AddPointer(context);
+    formatter.WriteLine("function " + ptrType->Name() + " " + name);
     if (basicBlocks.IsEmpty())
     {
         return;

@@ -52,7 +52,7 @@ namespace System
         {
             return defaultTextColor;
         }
-        public inline Color.Constant DefautBackColor() const
+        public inline Color.Constant DefaultBackColor() const
         {
             return defaultBackColor;
         }

@@ -209,7 +209,7 @@ parser IntermediateParser
             (COMMA Constant(context):next{ elements.push_back(next); })*)? 
             RBRACKET
         {
-            return context->MakeArrayValue(span, elements);
+            return context->MakeArrayValue(span, elements, prefix);
         }
         ;
 
