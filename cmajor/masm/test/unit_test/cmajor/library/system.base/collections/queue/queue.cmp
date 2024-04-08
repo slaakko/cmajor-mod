@@ -1,0 +1,4 @@
+project queue;
+target=unitTest;
+source <int_queue.cm>;
+source <string_queue.cm>;

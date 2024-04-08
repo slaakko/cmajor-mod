@@ -137,10 +137,7 @@ namespace System
 
     public constexpr I Next<I>(I i, long n) where I is ForwardIterator
     {
-        if (n < 0)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(n >= 0);
         while (n > 0)
         {
             ++i;
@@ -350,63 +347,36 @@ namespace System
         return count;
     }
 
-    public O RemoveCopy<I, O, P>(I begin, I end, O result, P p) where I is InputIterator and O is OutputIterator and O.ValueType is I.ValueType and P is UnaryPredicate and P.ArgumentType is I.ValueType
-    {
-        while (begin != end)
-        {
-            if (!p(*begin))
-            {
-                *result = *begin;
-                ++result;
-            }
-            ++begin;
-        }
-        return result;
-    }
-
-    public I Remove<I, P>(I begin, I end, P p) where I is ForwardIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
-    {
-        begin = Find(begin, end, p);
-        if (begin == end)
-        {
-            return begin;
-        }
-        else
-        {
-            I i = begin;
-            ++i;
-            return RemoveCopy(i, end, begin, p);
-        }
-    }
-
-    public O RemoveCopy<I, O, T>(I begin, I end, O result, const T& value)
-        where T is Semiregular and I is InputIterator and O is OutputIterator and O.ValueType is I.ValueType and EqualityComparable<T, I.ValueType>
-    {
-        while (begin != end)
-        {
-            if (*begin != value)
-            {
-                *result = *begin;
-                ++result;
-            }
-            ++begin;
-        }
-        return result;
-    }
-
-    public I Remove<I, T>(I begin, I end, const T& value) where I is ForwardIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
+    public constexpr I Remove<I, T>(I begin, I end, const T& value) where I is ForwardIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
     {
         begin = Find(begin, end, value);
-        if (begin == end)
+        if (begin != end)
         {
-            return begin;
+            for (I it = begin; ++it != end;)
+            {
+                if (!(*it == value))
+                {
+                    *begin++ = Rvalue(*it);
+                }
+            }
         }
-        else
+        return begin;
+    }
+
+    public constexpr I Remove<I, P>(I begin, I end, P p) where I is ForwardIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
+    {
+        begin = Find(begin, end, p);
+        if (begin != end)
         {
-            I i = begin;
-            ++i;
-            return RemoveCopy(i, end, begin, value);
+            for (auto it = begin; ++it != end;)
+            {
+                if (!p(*it))
+                {
+                    *begin++ = Rvalue(*it);
+                }
+            }
         }
+        return begin;
     }
 
     public void Fill<I, T>(I begin, I end, const T& value) where T is Semiregular and I is ForwardIterator and I.ValueType is T

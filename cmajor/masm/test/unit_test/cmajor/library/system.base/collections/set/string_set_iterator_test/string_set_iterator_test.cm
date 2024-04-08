@@ -1,0 +1,119 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+string AlignedValue(int i)
+{
+    string s;
+    s.Append(ToString((i / 1000) % 10));
+    s.Append(ToString((i / 100) % 10));
+    s.Append(ToString((i / 10) % 10));
+    s.Append(ToString(i % 10));
+    return s;
+}
+
+public Set<string> MakeSet(const List<int>& x)
+{
+    Set<string> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(ToString(x[i]));
+    }
+    return s;
+}
+
+public Set<string> MakeOne()
+{
+    Set<string> s;
+    s.Insert("0");
+    return s;
+}
+
+public Set<string> MakeTwo()
+{
+    Set<string> s;
+    s.Insert("0");
+    s.Insert("1");
+    return s;
+}
+
+public Set<string> MakeEight()
+{
+    Set<string> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(ToString(i));
+    }
+    return s;
+}
+
+public Set<string> MakeKilo()
+{
+    Set<string> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(AlignedValue(i));
+    }
+    return s;
+}
+
+public Set<string> Return(const Set<string>& x)
+{
+    return x;
+}
+
+unit_test void string_set_iterator_test()
+{
+    Set<string> s0;
+    #assert (s0.Count() == 0);
+    #assert (s0.Begin() == s0.End());
+    #assert (s0.CBegin() == s0.CEnd());
+    Set<string> s1 = MakeOne();
+    #assert (s1.Count() == 1);
+    #assert (s1.Begin() != s1.End());
+    int value = 0;
+    for (auto it = s1.Begin(); it != s1.End(); ++it)
+    {
+        #assert (*it == ToString(value));
+        ++value;
+    }
+    Set<string> s2 = MakeTwo();
+    #assert (s2.Count() == 2);
+    #assert (s2.Begin() != s2.End());
+    #assert (s2.CBegin() != s2.CEnd());
+    value = 0;
+    for (auto it = s2.Begin(); it != s2.End(); ++it)
+    {
+        #assert (*it == ToString(value));
+        ++value;
+    }
+    Set<string> s3 = MakeEight();
+    #assert (s3.Count() == 8);
+    #assert (s3.Begin() != s3.End());
+    #assert (s3.CBegin() != s3.CEnd());
+    value = 0;
+    for (auto it = s3.Begin(); it != s3.End(); ++it)
+    {
+        #assert (*it == ToString(value));
+        ++value;
+    }
+    Set<string> s4 = MakeKilo();
+    #assert (s4.Count() == 1024);
+    #assert (s4.Begin() != s4.End());
+    #assert (s4.CBegin() != s4.CEnd());
+    value = 0;
+    for (auto it = s4.Begin(); it != s4.End(); ++it)
+    {
+        #assert (*it == AlignedValue(value));
+        ++value;
+    }
+}

@@ -1,0 +1,96 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public Map<string, int> MakeMap(const List<int>& x)
+{
+    Map<string, int> m;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        m.Insert(MakePair(ToString(x[i]), x[i]));
+    }
+    return m;
+}
+
+public Map<string, int> MakeOne()
+{
+    Map<string, int> m;
+    Pair<string, int> p("0", 0);
+    m.Insert(p);
+    return m;
+}
+
+public Map<string, int> MakeTwo()
+{
+    Map<string, int> m;
+    Pair<string, int> p0("0", 0);
+    m.Insert(p0);
+    Pair<string, int> p1("1", 1);
+    m.Insert(p1);
+    return m;
+}
+
+public Map<string, int> MakeEight()
+{
+    Map<string, int> m;
+    for (int i = 0; i < 8; ++i)
+    {
+        Pair<string, int> p(ToString(i), i);
+        m.Insert(p);
+    }
+    return m;
+}
+
+public Map<string, int> Return(const Map<string, int>& x)
+{
+    return x;
+}
+
+unit_test void string_int_map_iterator_test()
+{
+    Map<string, int> s0;
+    #assert (s0.Count() == 0);
+    #assert (s0.Begin() == s0.End());
+    #assert (s0.CBegin() == s0.CEnd());
+    Map<string, int> s1 = MakeOne();
+    #assert (s1.Count() == 1);
+    #assert (s1.Begin() != s1.End());
+    int value = 0;
+    for (auto it = s1.Begin(); it != s1.End(); ++it)
+    {
+        #assert (it->first == ToString(value));
+        #assert (it->second == value);
+        ++value;
+    }
+    Map<string, int> s2 = MakeTwo();
+    #assert (s2.Count() == 2);
+    #assert (s2.Begin() != s2.End());
+    #assert (s2.CBegin() != s2.CEnd());
+    value = 0;
+    for (auto it = s2.Begin(); it != s2.End(); ++it)
+    {
+        #assert (it->first == ToString(value));
+        #assert (it->second == value);
+        ++value;
+    }
+    Map<string, int> s3 = MakeEight();
+    #assert (s3.Count() == 8);
+    #assert (s3.Begin() != s3.End());
+    #assert (s3.CBegin() != s3.CEnd());
+    value = 0;
+    for (auto it = s3.Begin(); it != s3.End(); ++it)
+    {
+        #assert (it->first == ToString(value));
+        #assert (it->second == value);
+        ++value;
+    }
+}

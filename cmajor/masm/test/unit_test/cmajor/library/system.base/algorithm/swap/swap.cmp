@@ -1,0 +1,3 @@
+project swap;
+target=unitTest;
+source <swap.cm>;

@@ -1,0 +1,4 @@
+project int_list_resize_test;
+target=program;
+source <int_list_resize_test.cm>;
+source <main.cm>;

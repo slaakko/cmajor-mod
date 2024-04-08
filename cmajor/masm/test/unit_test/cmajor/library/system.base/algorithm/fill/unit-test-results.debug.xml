@@ -1,0 +1,7 @@
+<results>
+    <fill_test project="fill" solution="">
+        <test count="1" exitCode="0" name="fill_test">
+            <assertion index="0" line="13" result="passed"/>
+        </test>
+    </fill_test>
+</results>

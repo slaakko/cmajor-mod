@@ -1,0 +1,13 @@
+using System;
+using System.Collections;
+
+unit_test void next_ra_iter_test()
+{
+    List<int> l;
+    for (int i = 0; i < 8; ++i)
+    {
+        l.Add(i);
+    }
+    auto it = Next(l.Begin(), 4);
+    #assert(Distance(l.Begin(), it) == 4);
+}

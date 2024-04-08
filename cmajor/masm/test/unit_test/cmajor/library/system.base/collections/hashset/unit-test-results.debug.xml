@@ -1,0 +1,202 @@
+<results>
+    <int_hashset_value_test project="hashset" solution="">
+        <test count="20" exitCode="0" name="int_hashset_value_test">
+            <assertion index="0" line="74" result="passed"/>
+            <assertion index="1" line="75" result="passed"/>
+            <assertion index="2" line="79" result="passed"/>
+            <assertion index="3" line="80" result="passed"/>
+            <assertion index="4" line="82" result="passed"/>
+            <assertion index="5" line="84" result="passed"/>
+            <assertion index="6" line="85" result="passed"/>
+            <assertion index="7" line="86" result="passed"/>
+            <assertion index="8" line="89" result="passed"/>
+            <assertion index="9" line="90" result="passed"/>
+            <assertion index="10" line="91" result="passed"/>
+            <assertion index="11" line="94" result="passed"/>
+            <assertion index="12" line="95" result="passed"/>
+            <assertion index="13" line="96" result="passed"/>
+            <assertion index="14" line="100" result="passed"/>
+            <assertion index="15" line="101" result="passed"/>
+            <assertion index="16" line="102" result="passed"/>
+            <assertion index="17" line="104" result="passed"/>
+            <assertion index="18" line="105" result="passed"/>
+            <assertion index="19" line="106" result="passed"/>
+        </test>
+    </int_hashset_value_test>
+    <int_hashset_find_test project="hashset" solution="">
+        <test count="26" exitCode="0" name="int_hashset_find_test">
+            <assertion index="0" line="116" result="passed"/>
+            <assertion index="1" line="118" result="passed"/>
+            <assertion index="2" line="121" result="passed"/>
+            <assertion index="3" line="122" result="passed"/>
+            <assertion index="4" line="124" result="passed"/>
+            <assertion index="5" line="125" result="passed"/>
+            <assertion index="6" line="127" result="passed"/>
+            <assertion index="7" line="130" result="passed"/>
+            <assertion index="8" line="131" result="passed"/>
+            <assertion index="9" line="133" result="passed"/>
+            <assertion index="10" line="134" result="passed"/>
+            <assertion index="11" line="136" result="passed"/>
+            <assertion index="12" line="137" result="passed"/>
+            <assertion index="13" line="139" result="passed"/>
+            <assertion index="14" line="140" result="passed"/>
+            <assertion index="15" line="142" result="passed"/>
+            <assertion index="16" line="147" result="passed"/>
+            <assertion index="17" line="148" result="passed"/>
+            <assertion index="18" line="150" result="passed"/>
+            <assertion index="19" line="151" result="passed"/>
+            <assertion index="20" line="154" result="passed"/>
+            <assertion index="21" line="159" result="passed"/>
+            <assertion index="22" line="160" result="passed"/>
+            <assertion index="23" line="162" result="passed"/>
+            <assertion index="24" line="163" result="passed"/>
+            <assertion index="25" line="166" result="passed"/>
+        </test>
+    </int_hashset_find_test>
+    <int_hashset_remove_value_test project="hashset" solution="">
+        <test count="14" exitCode="0" name="int_hashset_remove_value_test">
+            <assertion index="0" line="173" result="passed"/>
+            <assertion index="1" line="174" result="passed"/>
+            <assertion index="2" line="177" result="passed"/>
+            <assertion index="3" line="178" result="passed"/>
+            <assertion index="4" line="181" result="passed"/>
+            <assertion index="5" line="182" result="passed"/>
+            <assertion index="6" line="186" result="passed"/>
+            <assertion index="7" line="187" result="passed"/>
+            <assertion index="8" line="191" result="passed"/>
+            <assertion index="9" line="192" result="passed"/>
+            <assertion index="10" line="195" result="passed"/>
+            <assertion index="11" line="196" result="passed"/>
+            <assertion index="12" line="205" result="passed"/>
+            <assertion index="13" line="206" result="passed"/>
+        </test>
+    </int_hashset_remove_value_test>
+    <int_hashset_remove_iterator_test project="hashset" solution="">
+        <test count="4" exitCode="0" name="int_hashset_remove_iterator_test">
+            <assertion index="0" line="215" result="passed"/>
+            <assertion index="1" line="218" result="passed"/>
+            <assertion index="2" line="220" result="passed"/>
+            <assertion index="3" line="228" result="passed"/>
+        </test>
+    </int_hashset_remove_iterator_test>
+    <int_hashset_equal_test project="hashset" solution="">
+        <test count="16" exitCode="0" name="int_hashset_equal_test">
+            <assertion index="0" line="236" result="passed"/>
+            <assertion index="1" line="238" result="passed"/>
+            <assertion index="2" line="239" result="passed"/>
+            <assertion index="3" line="240" result="passed"/>
+            <assertion index="4" line="242" result="passed"/>
+            <assertion index="5" line="243" result="passed"/>
+            <assertion index="6" line="244" result="passed"/>
+            <assertion index="7" line="245" result="passed"/>
+            <assertion index="8" line="246" result="passed"/>
+            <assertion index="9" line="248" result="passed"/>
+            <assertion index="10" line="249" result="passed"/>
+            <assertion index="11" line="250" result="passed"/>
+            <assertion index="12" line="251" result="passed"/>
+            <assertion index="13" line="252" result="passed"/>
+            <assertion index="14" line="253" result="passed"/>
+            <assertion index="15" line="254" result="passed"/>
+        </test>
+    </int_hashset_equal_test>
+    <string_hashset_value_test project="hashset" solution="">
+        <test count="20" exitCode="0" name="string_hashset_value_test">
+            <assertion index="0" line="84" result="passed"/>
+            <assertion index="1" line="85" result="passed"/>
+            <assertion index="2" line="89" result="passed"/>
+            <assertion index="3" line="90" result="passed"/>
+            <assertion index="4" line="92" result="passed"/>
+            <assertion index="5" line="94" result="passed"/>
+            <assertion index="6" line="95" result="passed"/>
+            <assertion index="7" line="96" result="passed"/>
+            <assertion index="8" line="99" result="passed"/>
+            <assertion index="9" line="100" result="passed"/>
+            <assertion index="10" line="101" result="passed"/>
+            <assertion index="11" line="104" result="passed"/>
+            <assertion index="12" line="105" result="passed"/>
+            <assertion index="13" line="106" result="passed"/>
+            <assertion index="14" line="110" result="passed"/>
+            <assertion index="15" line="111" result="passed"/>
+            <assertion index="16" line="112" result="passed"/>
+            <assertion index="17" line="114" result="passed"/>
+            <assertion index="18" line="115" result="passed"/>
+            <assertion index="19" line="116" result="passed"/>
+        </test>
+    </string_hashset_value_test>
+    <string_hashset_find_test project="hashset" solution="">
+        <test count="26" exitCode="0" name="string_hashset_find_test">
+            <assertion index="0" line="126" result="passed"/>
+            <assertion index="1" line="128" result="passed"/>
+            <assertion index="2" line="131" result="passed"/>
+            <assertion index="3" line="132" result="passed"/>
+            <assertion index="4" line="134" result="passed"/>
+            <assertion index="5" line="135" result="passed"/>
+            <assertion index="6" line="137" result="passed"/>
+            <assertion index="7" line="140" result="passed"/>
+            <assertion index="8" line="141" result="passed"/>
+            <assertion index="9" line="143" result="passed"/>
+            <assertion index="10" line="144" result="passed"/>
+            <assertion index="11" line="146" result="passed"/>
+            <assertion index="12" line="147" result="passed"/>
+            <assertion index="13" line="149" result="passed"/>
+            <assertion index="14" line="150" result="passed"/>
+            <assertion index="15" line="152" result="passed"/>
+            <assertion index="16" line="157" result="passed"/>
+            <assertion index="17" line="158" result="passed"/>
+            <assertion index="18" line="160" result="passed"/>
+            <assertion index="19" line="161" result="passed"/>
+            <assertion index="20" line="164" result="passed"/>
+            <assertion index="21" line="169" result="passed"/>
+            <assertion index="22" line="170" result="passed"/>
+            <assertion index="23" line="172" result="passed"/>
+            <assertion index="24" line="173" result="passed"/>
+            <assertion index="25" line="176" result="passed"/>
+        </test>
+    </string_hashset_find_test>
+    <string_hashset_remove_value_test project="hashset" solution="">
+        <test count="14" exitCode="0" name="string_hashset_remove_value_test">
+            <assertion index="0" line="183" result="passed"/>
+            <assertion index="1" line="184" result="passed"/>
+            <assertion index="2" line="187" result="passed"/>
+            <assertion index="3" line="188" result="passed"/>
+            <assertion index="4" line="191" result="passed"/>
+            <assertion index="5" line="192" result="passed"/>
+            <assertion index="6" line="196" result="passed"/>
+            <assertion index="7" line="197" result="passed"/>
+            <assertion index="8" line="201" result="passed"/>
+            <assertion index="9" line="202" result="passed"/>
+            <assertion index="10" line="205" result="passed"/>
+            <assertion index="11" line="206" result="passed"/>
+            <assertion index="12" line="215" result="passed"/>
+            <assertion index="13" line="216" result="passed"/>
+        </test>
+    </string_hashset_remove_value_test>
+    <string_hashset_remove_iterator_test project="hashset" solution="">
+        <test count="4" exitCode="0" name="string_hashset_remove_iterator_test">
+            <assertion index="0" line="225" result="passed"/>
+            <assertion index="1" line="228" result="passed"/>
+            <assertion index="2" line="230" result="passed"/>
+            <assertion index="3" line="238" result="passed"/>
+        </test>
+    </string_hashset_remove_iterator_test>
+    <string_hashset_equal_test project="hashset" solution="">
+        <test count="16" exitCode="0" name="string_hashset_equal_test">
+            <assertion index="0" line="246" result="passed"/>
+            <assertion index="1" line="248" result="passed"/>
+            <assertion index="2" line="249" result="passed"/>
+            <assertion index="3" line="250" result="passed"/>
+            <assertion index="4" line="252" result="passed"/>
+            <assertion index="5" line="253" result="passed"/>
+            <assertion index="6" line="254" result="passed"/>
+            <assertion index="7" line="255" result="passed"/>
+            <assertion index="8" line="256" result="passed"/>
+            <assertion index="9" line="258" result="passed"/>
+            <assertion index="10" line="259" result="passed"/>
+            <assertion index="11" line="260" result="passed"/>
+            <assertion index="12" line="261" result="passed"/>
+            <assertion index="13" line="262" result="passed"/>
+            <assertion index="14" line="263" result="passed"/>
+            <assertion index="15" line="264" result="passed"/>
+        </test>
+    </string_hashset_equal_test>
+</results>

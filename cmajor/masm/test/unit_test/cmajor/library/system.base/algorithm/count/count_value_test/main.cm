@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    count_value_test();
+    return 0;
+}

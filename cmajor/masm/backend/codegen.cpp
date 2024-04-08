@@ -178,11 +178,12 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
         intermediateContext.Write(optimizedIntermediateFilePath);
         cmajor::masm::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), optimizedIntermediateFilePath, optimizationContext,
             cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+        cmajor::masm::intermediate::Verify(optimizationContext);
         finalContext = &optimizationContext;
     }
     cmajor::masm::intermediate::CodeGenerator codeGenerator(finalContext, boundCompileUnit.AsmFilePath());
-    intermediateContext.GetData().VisitGlobalVariables(codeGenerator);
-    intermediateContext.GetCode().VisitFunctions(codeGenerator);
+    finalContext->GetData().VisitGlobalVariables(codeGenerator);
+    finalContext->GetCode().VisitFunctions(codeGenerator);
     codeGenerator.WriteOutputFile();
 }
 

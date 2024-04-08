@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    last_components_equal_test();
+    return 0;
+}

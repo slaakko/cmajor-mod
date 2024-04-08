@@ -1,0 +1,4 @@
+project lower_bound_bi_iter_value_test;
+target=program;
+source <lower_bound_bi_iter_value_test.cm>;
+source <main.cm>;

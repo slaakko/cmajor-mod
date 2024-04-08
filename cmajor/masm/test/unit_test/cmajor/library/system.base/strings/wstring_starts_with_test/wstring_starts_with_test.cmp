@@ -1,0 +1,4 @@
+project wstring_starts_with_test;
+target=program;
+source <wstring_starts_with_test.cm>;
+source <main.cm>;

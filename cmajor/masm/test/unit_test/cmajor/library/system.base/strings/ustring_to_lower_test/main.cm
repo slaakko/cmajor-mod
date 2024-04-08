@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ustring_to_lower_test();
+    return 0;
+}

@@ -1,0 +1,50 @@
+using System;
+
+unit_test void ustring_plus_uchar_ptr_test()
+{
+    ustring empty;
+    #assert (empty + u"" == u"");
+    #assert (u"" + empty == u"");
+    ustring one('a');
+    #assert (one + u"a" == u"aa");
+    #assert (u"a" + one == u"aa");
+    #assert (one + u"" == u"a");
+    #assert (u"" + one == u"a");
+    ustring two(u"ab");
+    #assert (two + u"a" == u"aba");
+    #assert (u"a" + two == u"aab");
+    #assert (two + u"" == u"ab");
+    #assert (u"" + two == u"ab");
+    ustring eight(u"12345678");
+    #assert (eight + u"" == u"12345678");
+    #assert (u"" + eight == u"12345678");
+    #assert (eight + u"a" == u"12345678a");
+    #assert (u"a" + eight == u"a12345678");
+    #assert (eight + u"ab" == u"12345678ab");
+    #assert (u"ab" + eight == u"ab12345678");
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    ustring kiloPlusOne(kilo);
+    kiloPlusOne.Append(one);
+    ustring onePlusKilo(one);
+    onePlusKilo.Append(kilo);
+    ustring kiloPlusTwo(kilo);
+    kiloPlusTwo.Append(two);
+    ustring twoPlusKilo(two);
+    twoPlusKilo.Append(kilo);
+    ustring kiloPlusEight(kilo);
+    kiloPlusEight.Append(eight);
+    ustring eightPlusKilo(eight);
+    eightPlusKilo.Append(kilo);
+    #assert (kilo + u"" == kilo);
+    #assert (u"" + kilo == kilo);
+    #assert (kilo + u"a" == kiloPlusOne);
+    #assert (u"a" + kilo == onePlusKilo);
+    #assert (kilo + u"ab" == kiloPlusTwo);
+    #assert (u"ab" + kilo == twoPlusKilo);
+    #assert (kilo + u"12345678" == kiloPlusEight);
+    #assert (u"12345678" + kilo == eightPlusKilo);
+}

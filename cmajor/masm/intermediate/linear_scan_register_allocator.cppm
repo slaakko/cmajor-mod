@@ -61,7 +61,7 @@ public:
     void RemoveFromActive(const LiveRange& range);
     bool NoFreeRegs(bool floatingPoint) const;
     const std::set<LiveRange, LiveRangeByStart>& LiveRanges() const { return liveRanges; }
-    const std::set<LiveRange, LiveRangeByEnd> Active() const { return active; }
+    const std::set<LiveRange, LiveRangeByEnd>& Active() const { return active; }
     FrameLocation GetFrameLocation(Instruction* inst) const;
     cmajor::masm::assembly::RegisterGroup* GetRegisterGroup(Instruction* inst) const override;
     void RemoveRegisterGroup(Instruction* inst);

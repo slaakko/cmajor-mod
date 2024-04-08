@@ -147,6 +147,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="inline_expander.cpp" />
+    <ClCompile Include="inline_expander.cppm" />
     <ClCompile Include="optimize.cpp" />
     <ClCompile Include="optimize.cppm" />
     <ClCompile Include="optmizer.cppm" />

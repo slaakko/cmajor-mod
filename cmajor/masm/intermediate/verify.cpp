@@ -207,6 +207,7 @@ void VerifierVisitor::CheckRegValue(Value* value, const soul::ast::Span& span)
             if (inst)
             {
                 regValue->SetInst(inst);
+                inst->SetRegValueIndex(regValue->Reg());
             }
             else
             {
@@ -228,6 +229,7 @@ void VerifierVisitor::CheckValueInstruction(ValueInstruction* valueInstruction)
     if (regValue->Reg() == regNumber)
     {
         regValue->SetInst(valueInstruction);
+        valueInstruction->SetRegValueIndex(regValue->Reg());
         ++regNumber;
     }
     else
@@ -703,11 +705,11 @@ void VerifierVisitor::Visit(ElemAddrInstruction& inst)
     if (baseType->IsStructureType())
     {
         StructureType* structureType = static_cast<StructureType*>(baseType);
-        CheckIntegerType(inst.Index()->GetType(), "integer type index", inst.Span());
+        CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.Span());
         CheckValueInstruction(&inst);
-        if (inst.Index()->IsIntegerValue())
+        if (inst.IndexValue()->IsIntegerValue())
         {
-            int64_t index = inst.Index()->GetIntegerValue();
+            int64_t index = inst.IndexValue()->GetIntegerValue();
             if (index < 0 || index >= structureType->FieldCount())
             {
                 Error("code verification error: invalid index", inst.Span(), GetContext());
@@ -717,11 +719,11 @@ void VerifierVisitor::Visit(ElemAddrInstruction& inst)
     else if (baseType->IsArrayType())
     {
         ArrayType* arrayType = static_cast<ArrayType*>(baseType);
-        CheckIntegerType(inst.Index()->GetType(), "integer type index", inst.Span());
+        CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.Span());
         CheckValueInstruction(&inst);
-        if (inst.Index()->IsIntegerValue())
+        if (inst.IndexValue()->IsIntegerValue())
         {
-            int64_t index = inst.Index()->GetIntegerValue();
+            int64_t index = inst.IndexValue()->GetIntegerValue();
             if (index < 0 || index > arrayType->ElementCount())
             {
                 Error("code verification error: invalid index", inst.Span(), GetContext());

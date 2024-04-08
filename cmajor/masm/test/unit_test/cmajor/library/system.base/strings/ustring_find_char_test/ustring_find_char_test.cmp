@@ -1,0 +1,4 @@
+project ustring_find_char_test;
+target=program;
+source <ustring_find_char_test.cm>;
+source <main.cm>;

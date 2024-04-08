@@ -1,0 +1,41 @@
+using System;
+using System.Collections;
+
+class P : UnaryPred<int>
+{
+    public inline P(int y_) :
+        y(y_)
+    {
+    }
+    public inline bool operator()(int x) const
+    {
+        return x == y;
+    }
+    private int y;
+}
+
+unit_test void remove_predicate_test()
+{
+    List<int> x;
+    x.Add(1);
+    x.Add(0);
+    x.Add(3);
+    x.Add(2);
+    x.Add(2);
+    x.Add(5);
+    x.Add(0);
+    x.Add(5);
+    auto it1 = Remove(x.Begin(), x.End(), P(0));
+    List<int> y;
+    y.Add(1);
+    y.Add(3);
+    y.Add(2);
+    y.Add(2);
+    y.Add(5);
+    y.Add(5);
+    int index = 0;
+    for (auto it = x.Begin(); it != it1; ++it)
+    {
+        #assert (*it == y[index++]);
+    }
+}

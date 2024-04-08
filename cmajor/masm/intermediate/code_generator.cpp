@@ -13,6 +13,7 @@ import cmajor.masm.intermediate.location;
 import cmajor.masm.intermediate.register_allocator;
 import cmajor.masm.intermediate.linear_scan_register_allocator;
 import cmajor.masm.intermediate.error;
+import cmajor.symbols;
 import util;
 
 namespace cmajor::masm::intermediate {
@@ -26,6 +27,7 @@ void EmitFrameLocationOperand(int64_t size, const FrameLocation& frameLocation, 
 
 void StoreParamToHome(ParamInstruction* inst, CodeGenerator& codeGenerator)
 {
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release)) return;
     Type* type = inst->GetType();
     int64_t size = type->Size();
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -116,6 +118,18 @@ void EmitPrologue(CodeGenerator& codeGenerator)
     frame.SetNumUsedXMMRegs(nxmmregs);
     frame.SetMacroValues(assemblyContext);
 
+    if (frame.Size() > 4096)
+    {
+        assemblyContext->GetFile()->GetDeclarationSection().AddFunctionDeclaration(new cmajor::masm::assembly::FunctionDeclaration("__chkstk"));
+        cmajor::masm::assembly::Instruction* movEax = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::MOV);
+        movEax->AddOperand(assemblyContext->GetGlobalReg(4, cmajor::masm::assembly::RegisterGroupKind::rax));
+        movEax->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 16));
+        codeGenerator.Emit(movEax);
+        cmajor::masm::assembly::Value* chkstk = assemblyContext->MakeSymbol("__chkstk");
+        cmajor::masm::assembly::Instruction* checkStackCall = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::CALL);
+        checkStackCall->AddOperand(chkstk);
+        codeGenerator.Emit(checkStackCall);
+    }
     cmajor::masm::assembly::Instruction* subRsp = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::SUB);
     subRsp->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rsp));
     subRsp->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 16));
@@ -2360,7 +2374,7 @@ void EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGenerator)
     if (elemAddrKind == ElemAddrKind::array)
     {
         cmajor::masm::assembly::Register* indexReg = MakeIntegerRegOperand(
-            inst.Index(), assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx), codeGenerator);
+            inst.IndexValue(), assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx), codeGenerator);
         int64_t indexFactor = GetElementSize(inst.Ptr()->GetType(), codeGenerator);
         cmajor::masm::assembly::Instruction* movInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::MOV);
         cmajor::masm::assembly::Register* rax = assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rax);
@@ -2395,7 +2409,7 @@ void EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGenerator)
         if (regGroup)
         {
             cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(8);
-            int64_t index = GetIndex(inst.Index(), codeGenerator);
+            int64_t index = GetIndex(inst.IndexValue(), codeGenerator);
             int64_t offset = GetOffset(inst.Ptr()->GetType(), index, codeGenerator);
             cmajor::masm::assembly::Instruction* movOffsetInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::MOV);
             cmajor::masm::assembly::Register* rbx = assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx);

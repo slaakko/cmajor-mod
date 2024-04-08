@@ -1,0 +1,4 @@
+project int_stack_test;
+target=program;
+source <int_stack_test.cm>;
+source <main.cm>;

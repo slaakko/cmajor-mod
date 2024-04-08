@@ -1,0 +1,4 @@
+project remove_value_test;
+target=program;
+source <remove_value_test.cm>;
+source <main.cm>;

@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_ends_with_test();
+    return 0;
+}

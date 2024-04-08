@@ -410,6 +410,7 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
     if (type->GetSymbolType() == cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
+        cmajor::symbols::TypeSymbol* originalType = type;
         if (currentClass && classGroup->Name() == currentClass->Name())
         {
             type = currentClass;
@@ -420,8 +421,8 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
         }
         if (!type)
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", 
-                dotNode.GetFullSpan(), type->GetFullSpan());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(originalType->FullName()) + "' does not denote a class type, an array type or a namespace",
+                dotNode.GetFullSpan(), originalType->GetFullSpan());
         }
     }
     if (type->GetSymbolType() == cmajor::symbols::SymbolType::namespaceTypeSymbol)
@@ -470,6 +471,7 @@ void TypeResolver::Visit(cmajor::ast::AliasNode& aliasNode)
     if (type && type->GetSymbolType() == cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
+        cmajor::symbols::TypeSymbol* originalType = type;
         if (currentClass && classGroup->Name() == currentClass->Name())
         {
             type = currentClass;
@@ -480,8 +482,8 @@ void TypeResolver::Visit(cmajor::ast::AliasNode& aliasNode)
         }
         if (!type)
         {
-            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(type->FullName()) + "' does not denote a class type, an array type or a namespace", 
-                aliasNode.GetFullSpan(), type->GetFullSpan());
+            throw cmajor::symbols::Exception("symbol '" + util::ToUtf8(originalType->FullName()) + "' does not denote a class type, an array type or a namespace",
+                aliasNode.GetFullSpan(), originalType->GetFullSpan());
         }
     }
 }

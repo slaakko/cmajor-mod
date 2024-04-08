@@ -1,0 +1,4 @@
+project int_string_hashmap_find_test;
+target=program;
+source <int_string_hashmap_find_test.cm>;
+source <main.cm>;

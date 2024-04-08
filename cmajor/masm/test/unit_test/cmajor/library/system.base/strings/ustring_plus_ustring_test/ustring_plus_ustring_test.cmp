@@ -1,0 +1,4 @@
+project ustring_plus_ustring_test;
+target=program;
+source <ustring_plus_ustring_test.cm>;
+source <main.cm>;

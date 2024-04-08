@@ -1,0 +1,7 @@
+<results>
+    <accumulate_test project="accumulate" solution="">
+        <test count="1" exitCode="0" name="accumulate_test">
+            <assertion index="0" line="11" result="passed"/>
+        </test>
+    </accumulate_test>
+</results>

@@ -1,0 +1,4 @@
+project string_set_iterator_test;
+target=program;
+source <string_set_iterator_test.cm>;
+source <main.cm>;

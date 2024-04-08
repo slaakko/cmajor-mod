@@ -1,0 +1,12 @@
+<results>
+    <next_ra_iter_test project="next" solution="">
+        <test count="1" exitCode="0" name="next_ra_iter_test">
+            <assertion index="0" line="12" result="passed"/>
+        </test>
+    </next_ra_iter_test>
+    <next_bi_iter_test project="next" solution="">
+        <test count="1" exitCode="0" name="next_bi_iter_test">
+            <assertion index="0" line="12" result="passed"/>
+        </test>
+    </next_bi_iter_test>
+</results>

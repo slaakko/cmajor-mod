@@ -1,0 +1,52 @@
+using System;
+using System.Collections;
+
+unit_test void sort_test()
+{
+    List<int> x0;
+    Sort(x0);
+    #assert(x0.IsEmpty());
+    #assert(x0.Count() == 0);
+
+    List<int> x1;
+    x1.Add(1);
+    x1.Add(2);
+    x1.Add(3);
+    Sort(x1);
+    for (int i = 0; i < x1.Count(); ++i)
+    {
+        #assert(x1[i] == i + 1);
+    }
+
+    List<int> x2;
+    x2.Add(1);
+    x2.Add(3);
+    x2.Add(2);
+    Sort(x2);
+    for (int i = 0; i < x1.Count(); ++i)
+    {
+        #assert(x2[i] == i + 1);
+    }
+
+    List<int> x3;
+    for (int i = 0; i < 8; ++i)
+    {
+        x3.Add(7 - i);
+    }
+    Sort(x3);
+    for (int i = 0; i < x1.Count(); ++i)
+    {
+        #assert(x3[i] == i);
+    }
+
+    List<int> x4;
+    for (int i = 0; i < 1024; ++i)
+    {
+        x4.Add(cast<int>(RandomNumber(1024u)));
+    }
+    Sort(x4);
+    for (int i = 0; i < 1023; ++i)
+    {
+        #assert(x4[i] <= x4[i + 1]);
+    }
+}

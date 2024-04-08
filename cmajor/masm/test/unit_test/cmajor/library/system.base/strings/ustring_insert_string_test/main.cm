@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ustring_insert_string_test();
+    return 0;
+}

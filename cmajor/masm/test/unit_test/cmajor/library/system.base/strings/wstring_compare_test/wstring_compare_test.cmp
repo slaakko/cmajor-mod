@@ -1,0 +1,4 @@
+project wstring_compare_test;
+target=program;
+source <wstring_compare_test.cm>;
+source <main.cm>;

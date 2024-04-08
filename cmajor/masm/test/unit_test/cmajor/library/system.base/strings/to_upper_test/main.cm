@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    to_upper_test();
+    return 0;
+}

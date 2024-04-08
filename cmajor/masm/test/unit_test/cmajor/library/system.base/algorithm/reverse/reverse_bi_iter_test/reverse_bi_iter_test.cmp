@@ -1,0 +1,4 @@
+project reverse_bi_iter_test;
+target=program;
+source <reverse_bi_iter_test.cm>;
+source <main.cm>;

@@ -1074,9 +1074,16 @@ bool RtmFlush(void* fileHandle, int32_t& errorId)
     return cmajor::masm::rt::FlushFile(fileHandle, errorId);
 }
 
-bool RtmFileExists(const char* filePath)
+bool RtmFileExists(const char* filePath, int32_t& errorId)
 {
-    return std::filesystem::exists(filePath);
+    std::error_code ec;
+    bool exists = std::filesystem::exists(filePath, ec);
+    if (ec)
+    {
+        errorId = cmajor::masm::rt::AllocateError("error checking if file '" + std::string(filePath) + "' exists: " + util::PlatformStringToUtf8(ec.message()));
+        return false;
+    }
+    return exists;
 }
 
 bool RtmLastWriteTimeLess(const char* filePath1, const char* filePath2, int& errorId)

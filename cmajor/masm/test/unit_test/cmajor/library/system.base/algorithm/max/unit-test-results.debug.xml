@@ -1,0 +1,22 @@
+<results>
+    <max_test project="max" solution="">
+        <test count="16" exitCode="0" name="max_test">
+            <assertion index="0" line="24" result="passed"/>
+            <assertion index="1" line="25" result="passed"/>
+            <assertion index="2" line="26" result="passed"/>
+            <assertion index="3" line="27" result="passed"/>
+            <assertion index="4" line="28" result="passed"/>
+            <assertion index="5" line="29" result="passed"/>
+            <assertion index="6" line="30" result="passed"/>
+            <assertion index="7" line="33" result="passed"/>
+            <assertion index="8" line="34" result="passed"/>
+            <assertion index="9" line="35" result="passed"/>
+            <assertion index="10" line="37" result="passed"/>
+            <assertion index="11" line="38" result="passed"/>
+            <assertion index="12" line="42" result="passed"/>
+            <assertion index="13" line="43" result="passed"/>
+            <assertion index="14" line="44" result="passed"/>
+            <assertion index="15" line="45" result="passed"/>
+        </test>
+    </max_test>
+</results>

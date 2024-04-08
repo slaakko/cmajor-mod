@@ -1,0 +1,20 @@
+<results>
+    <find_value_test project="find" solution="">
+        <test count="5" exitCode="0" name="find_value_test">
+            <assertion index="0" line="21" result="passed"/>
+            <assertion index="1" line="24" result="passed"/>
+            <assertion index="2" line="26" result="passed"/>
+            <assertion index="3" line="28" result="passed"/>
+            <assertion index="4" line="31" result="passed"/>
+        </test>
+    </find_value_test>
+    <find_predicate_test project="find" solution="">
+        <test count="5" exitCode="0" name="find_predicate_test">
+            <assertion index="0" line="50" result="passed"/>
+            <assertion index="1" line="53" result="passed"/>
+            <assertion index="2" line="55" result="passed"/>
+            <assertion index="3" line="57" result="passed"/>
+            <assertion index="4" line="60" result="passed"/>
+        </test>
+    </find_predicate_test>
+</results>

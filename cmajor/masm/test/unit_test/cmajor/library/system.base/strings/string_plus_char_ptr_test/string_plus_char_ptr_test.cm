@@ -1,0 +1,50 @@
+using System;
+
+unit_test void string_plus_char_ptr_test()
+{
+    string empty;
+    #assert (empty + "" == "");
+    #assert ("" + empty == "");
+    string one('a');
+    #assert (one + "a" == "aa");
+    #assert ("a" + one == "aa");
+    #assert (one + "" == "a");
+    #assert ("" + one == "a");
+    string two("ab");
+    #assert (two + "a" == "aba");
+    #assert ("a" + two == "aab");
+    #assert (two + "" == "ab");
+    #assert ("" + two == "ab");
+    string eight("12345678");
+    #assert (eight + "" == "12345678");
+    #assert ("" + eight == "12345678");
+    #assert (eight + "a" == "12345678a");
+    #assert ("a" + eight == "a12345678");
+    #assert (eight + "ab" == "12345678ab");
+    #assert ("ab" + eight == "ab12345678");
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    string kiloPlusOne(kilo);
+    kiloPlusOne.Append(one);
+    string onePlusKilo(one);
+    onePlusKilo.Append(kilo);
+    string kiloPlusTwo(kilo);
+    kiloPlusTwo.Append(two);
+    string twoPlusKilo(two);
+    twoPlusKilo.Append(kilo);
+    string kiloPlusEight(kilo);
+    kiloPlusEight.Append(eight);
+    string eightPlusKilo(eight);
+    eightPlusKilo.Append(kilo);
+    #assert (kilo + "" == kilo);
+    #assert ("" + kilo == kilo);
+    #assert (kilo + "a" == kiloPlusOne);
+    #assert ("a" + kilo == onePlusKilo);
+    #assert (kilo + "ab" == kiloPlusTwo);
+    #assert ("ab" + kilo == twoPlusKilo);
+    #assert (kilo + "12345678" == kiloPlusEight);
+    #assert ("12345678" + kilo == eightPlusKilo);
+}

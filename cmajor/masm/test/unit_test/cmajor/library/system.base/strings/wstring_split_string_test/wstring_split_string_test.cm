@@ -1,0 +1,143 @@
+using System;
+
+unit_test void wstring_split_string_test()
+{
+    wstring empty;
+    auto result0 = empty.Split(wstring());
+    #assert (result0.IsEmpty());
+    #assert (result0.Count() == 0);
+    auto result1 = empty.Split(w"abc");
+    #assert (result1.IsEmpty());
+    #assert (result1.Count() == 0);
+    wstring one('a');
+    auto result2 = one.Split(wstring());
+    #assert (!result2.IsEmpty());
+    #assert (result2.Count() == 1);
+    #assert (!result2[0].IsEmpty());
+    #assert (result2[0].Length() == 1);
+    #assert (result2[0] == w"a");
+    auto result3 = one.Split(w"a");
+    #assert (!result3.IsEmpty());
+    #assert (result3.Count() == 1);
+    #assert (result3[0].IsEmpty());
+    #assert (result3[0].Length() == 0);
+    auto result4 = one.Split(w"abc");
+    #assert (!result4.IsEmpty());
+    #assert (result4.Count() == 1);
+    #assert (!result4[0].IsEmpty());
+    #assert (result4[0].Length() == 1);
+    #assert (result4[0] == w"a");
+    wstring two(w"ab");
+    auto result5 = two.Split(wstring());
+    #assert (!result5.IsEmpty());
+    #assert (result5.Count() == 1);
+    #assert (!result5[0].IsEmpty());
+    #assert (result5[0].Length() == 2);
+    #assert (result5[0] == w"ab");
+    auto result6 = two.Split(w"a");
+    #assert (!result6.IsEmpty());
+    #assert (result6.Count() == 2);
+    #assert (result6[0].IsEmpty());
+    #assert (result6[0].Length() == 0);
+    #assert (!result6[1].IsEmpty());
+    #assert (result6[1].Length() == 1);
+    #assert (result6[1] == w"b");
+    auto result7 = two.Split(w"b");
+    #assert (!result7.IsEmpty());
+    #assert (result7.Count() == 1);
+    #assert (!result7[0].IsEmpty());
+    #assert (result7[0].Length() == 1);
+    #assert (result7[0] == w"a");
+    auto result8 = two.Split(w"ab");
+    #assert (!result8.IsEmpty());
+    #assert (result8.Count() == 1);
+    #assert (result8[0].IsEmpty());
+    #assert (result8[0].Length() == 0);
+    auto result9 = two.Split(w"abc");
+    #assert (!result9.IsEmpty());
+    #assert (result9.Count() == 1);
+    #assert (!result9[0].IsEmpty());
+    #assert (result9[0].Length() == 2);
+    #assert (result9[0] == w"ab");
+    wstring eight(w"12345678");
+    auto result10 = eight.Split(wstring());
+    #assert (!result10.IsEmpty());
+    #assert (result10.Count() == 1);
+    #assert (!result10[0].IsEmpty());
+    #assert (result10[0].Length() == 8);
+    #assert (result10[0] == eight);
+    auto result11 = eight.Split(w"1");
+    #assert (!result11.IsEmpty());
+    #assert (result11.Count() == 2);
+    #assert (result11[0].IsEmpty());
+    #assert (result11[0].Length() == 0);
+    #assert (!result11[1].IsEmpty());
+    #assert (result11[1].Length() == 7);
+    #assert (result11[1] == w"2345678");
+    auto result12 = eight.Split(w"234");
+    #assert (!result12.IsEmpty());
+    #assert (result12.Count() == 2);
+    #assert (!result12[0].IsEmpty());
+    #assert (result12[0].Length() == 1);
+    #assert (result12[0] == w"1");
+    #assert (!result12[1].IsEmpty());
+    #assert (result12[1].Length() == 4);
+    #assert (result12[1] == w"5678");
+    auto result13 = eight.Split(w"78");
+    #assert (!result13.IsEmpty());
+    #assert (result13.Count() == 1);
+    #assert (!result13[0].IsEmpty());
+    #assert (result13[0].Length() == 6);
+    #assert (result13[0] == w"123456");
+    auto result14 = eight.Split(eight);
+    #assert (!result14.IsEmpty());
+    #assert (result14.Count() == 1);
+    #assert (result14[0].IsEmpty());
+    #assert (result14[0].Length() == 0);
+    auto result15 = eight.Split(eight + w"9");
+    #assert (!result15.IsEmpty());
+    #assert (result15.Count() == 1);
+    #assert (!result15[0].IsEmpty());
+    #assert (result15[0].Length() == 8);
+    #assert (result15[0] == eight);
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    auto result16 = kilo.Split(wstring());
+    #assert (!result16.IsEmpty());
+    #assert (result16.Count() == 1);
+    #assert (!result16[0].IsEmpty());
+    #assert (result16[0].Length() == 1024);
+    #assert (result16[0] == kilo);
+    auto result17 = kilo.Split(w"0");
+    #assert (!result17.IsEmpty());
+    #assert (result17.Count() == 104);
+    #assert (result17[0].IsEmpty());
+    #assert (result17[0].Length() == 0);
+    for (int i = 1; i < 103; ++i)
+    {
+        #assert (!result17[i].IsEmpty());
+        #assert (result17[i].Length() == 9);
+        #assert (result17[i] == w"123456789");
+    }
+    #assert (!result17[103].IsEmpty());
+    #assert (result17[103].Length() == 3);
+    #assert (result17[103] == w"123");
+    auto result18 = kilo.Split(w"5");
+    #assert (!result18.IsEmpty());
+    #assert (result18.Count() == 103);
+    #assert (!result18[0].IsEmpty());
+    #assert (result18[0].Length() == 5);
+    #assert (result18[0] == w"01234");
+    for (int i = 1; i < 102; ++i)
+    {
+        #assert (!result18[i].IsEmpty());
+        #assert (result18[i].Length() == 9);
+        #assert (result18[i] == w"678901234");
+    }
+    #assert (!result18[102].IsEmpty());
+    #assert (result18[102].Length() == 8);
+    #assert (result18[102] == w"67890123");
+}

@@ -1,0 +1,4 @@
+project int_queue_test;
+target=program;
+source <int_queue_test.cm>;
+source <main.cm>;

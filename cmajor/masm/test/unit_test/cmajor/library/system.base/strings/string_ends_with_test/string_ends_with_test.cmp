@@ -1,0 +1,4 @@
+project string_ends_with_test;
+target=program;
+source <string_ends_with_test.cm>;
+source <main.cm>;

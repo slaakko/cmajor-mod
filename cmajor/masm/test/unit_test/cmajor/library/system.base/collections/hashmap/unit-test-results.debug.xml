@@ -1,0 +1,264 @@
+<results>
+    <int_string_hashmap_value_test project="hashmap" solution="">
+        <test count="20" exitCode="0" name="int_string_hashmap_value_test">
+            <assertion index="0" line="68" result="passed"/>
+            <assertion index="1" line="69" result="passed"/>
+            <assertion index="2" line="73" result="passed"/>
+            <assertion index="3" line="74" result="passed"/>
+            <assertion index="4" line="76" result="passed"/>
+            <assertion index="5" line="78" result="passed"/>
+            <assertion index="6" line="79" result="passed"/>
+            <assertion index="7" line="80" result="passed"/>
+            <assertion index="8" line="83" result="passed"/>
+            <assertion index="9" line="84" result="passed"/>
+            <assertion index="10" line="85" result="passed"/>
+            <assertion index="11" line="88" result="passed"/>
+            <assertion index="12" line="89" result="passed"/>
+            <assertion index="13" line="90" result="passed"/>
+            <assertion index="14" line="94" result="passed"/>
+            <assertion index="15" line="95" result="passed"/>
+            <assertion index="16" line="96" result="passed"/>
+            <assertion index="17" line="98" result="passed"/>
+            <assertion index="18" line="99" result="passed"/>
+            <assertion index="19" line="100" result="passed"/>
+        </test>
+    </int_string_hashmap_value_test>
+    <int_string_hashmap_find_test project="hashmap" solution="">
+        <test count="29" exitCode="0" name="int_string_hashmap_find_test">
+            <assertion index="0" line="110" result="passed"/>
+            <assertion index="1" line="112" result="passed"/>
+            <assertion index="2" line="115" result="passed"/>
+            <assertion index="3" line="116" result="passed"/>
+            <assertion index="4" line="117" result="passed"/>
+            <assertion index="5" line="119" result="passed"/>
+            <assertion index="6" line="120" result="passed"/>
+            <assertion index="7" line="121" result="passed"/>
+            <assertion index="8" line="123" result="passed"/>
+            <assertion index="9" line="126" result="passed"/>
+            <assertion index="10" line="127" result="passed"/>
+            <assertion index="11" line="128" result="passed"/>
+            <assertion index="12" line="130" result="passed"/>
+            <assertion index="13" line="131" result="passed"/>
+            <assertion index="14" line="132" result="passed"/>
+            <assertion index="15" line="134" result="passed"/>
+            <assertion index="16" line="135" result="passed"/>
+            <assertion index="17" line="136" result="passed"/>
+            <assertion index="18" line="138" result="passed"/>
+            <assertion index="19" line="139" result="passed"/>
+            <assertion index="20" line="140" result="passed"/>
+            <assertion index="21" line="142" result="passed"/>
+            <assertion index="22" line="147" result="passed"/>
+            <assertion index="23" line="148" result="passed"/>
+            <assertion index="24" line="149" result="passed"/>
+            <assertion index="25" line="151" result="passed"/>
+            <assertion index="26" line="152" result="passed"/>
+            <assertion index="27" line="153" result="passed"/>
+            <assertion index="28" line="156" result="passed"/>
+        </test>
+    </int_string_hashmap_find_test>
+    <int_string_hashmap_op_subscript_test project="hashmap" solution="">
+        <test count="24" exitCode="0" name="int_string_hashmap_op_subscript_test">
+            <assertion index="0" line="164" result="passed"/>
+            <assertion index="1" line="165" result="passed"/>
+            <assertion index="2" line="166" result="passed"/>
+            <assertion index="3" line="170" result="passed"/>
+            <assertion index="4" line="171" result="passed"/>
+            <assertion index="5" line="172" result="passed"/>
+            <assertion index="6" line="176" result="passed"/>
+            <assertion index="7" line="177" result="passed"/>
+            <assertion index="8" line="178" result="passed"/>
+            <assertion index="9" line="181" result="passed"/>
+            <assertion index="10" line="182" result="passed"/>
+            <assertion index="11" line="183" result="passed"/>
+            <assertion index="12" line="187" result="passed"/>
+            <assertion index="13" line="188" result="passed"/>
+            <assertion index="14" line="189" result="passed"/>
+            <assertion index="15" line="192" result="passed"/>
+            <assertion index="16" line="193" result="passed"/>
+            <assertion index="17" line="194" result="passed"/>
+            <assertion index="18" line="197" result="passed"/>
+            <assertion index="19" line="198" result="passed"/>
+            <assertion index="20" line="199" result="passed"/>
+            <assertion index="21" line="202" result="passed"/>
+            <assertion index="22" line="203" result="passed"/>
+            <assertion index="23" line="204" result="passed"/>
+        </test>
+    </int_string_hashmap_op_subscript_test>
+    <int_string_hashmap_remove_value_test project="hashmap" solution="">
+        <test count="14" exitCode="0" name="int_string_hashmap_remove_value_test">
+            <assertion index="0" line="217" result="passed"/>
+            <assertion index="1" line="218" result="passed"/>
+            <assertion index="2" line="221" result="passed"/>
+            <assertion index="3" line="222" result="passed"/>
+            <assertion index="4" line="225" result="passed"/>
+            <assertion index="5" line="226" result="passed"/>
+            <assertion index="6" line="230" result="passed"/>
+            <assertion index="7" line="231" result="passed"/>
+            <assertion index="8" line="235" result="passed"/>
+            <assertion index="9" line="236" result="passed"/>
+            <assertion index="10" line="239" result="passed"/>
+            <assertion index="11" line="240" result="passed"/>
+            <assertion index="12" line="249" result="passed"/>
+            <assertion index="13" line="250" result="passed"/>
+        </test>
+    </int_string_hashmap_remove_value_test>
+    <int_string_hashmap_remove_iterator_test project="hashmap" solution="">
+        <test count="4" exitCode="0" name="int_string_hashmap_remove_iterator_test">
+            <assertion index="0" line="259" result="passed"/>
+            <assertion index="1" line="262" result="passed"/>
+            <assertion index="2" line="264" result="passed"/>
+            <assertion index="3" line="272" result="passed"/>
+        </test>
+    </int_string_hashmap_remove_iterator_test>
+    <int_string_hashmap_equal_test project="hashmap" solution="">
+        <test count="16" exitCode="0" name="int_string_hashmap_equal_test">
+            <assertion index="0" line="280" result="passed"/>
+            <assertion index="1" line="282" result="passed"/>
+            <assertion index="2" line="283" result="passed"/>
+            <assertion index="3" line="284" result="passed"/>
+            <assertion index="4" line="286" result="passed"/>
+            <assertion index="5" line="287" result="passed"/>
+            <assertion index="6" line="288" result="passed"/>
+            <assertion index="7" line="289" result="passed"/>
+            <assertion index="8" line="290" result="passed"/>
+            <assertion index="9" line="292" result="passed"/>
+            <assertion index="10" line="293" result="passed"/>
+            <assertion index="11" line="294" result="passed"/>
+            <assertion index="12" line="295" result="passed"/>
+            <assertion index="13" line="296" result="passed"/>
+            <assertion index="14" line="297" result="passed"/>
+            <assertion index="15" line="298" result="passed"/>
+        </test>
+    </int_string_hashmap_equal_test>
+    <string_int_hashmap_value_test project="hashmap" solution="">
+        <test count="20" exitCode="0" name="string_int_hashmap_value_test">
+            <assertion index="0" line="68" result="passed"/>
+            <assertion index="1" line="69" result="passed"/>
+            <assertion index="2" line="73" result="passed"/>
+            <assertion index="3" line="74" result="passed"/>
+            <assertion index="4" line="76" result="passed"/>
+            <assertion index="5" line="78" result="passed"/>
+            <assertion index="6" line="79" result="passed"/>
+            <assertion index="7" line="80" result="passed"/>
+            <assertion index="8" line="83" result="passed"/>
+            <assertion index="9" line="84" result="passed"/>
+            <assertion index="10" line="85" result="passed"/>
+            <assertion index="11" line="88" result="passed"/>
+            <assertion index="12" line="89" result="passed"/>
+            <assertion index="13" line="90" result="passed"/>
+            <assertion index="14" line="94" result="passed"/>
+            <assertion index="15" line="95" result="passed"/>
+            <assertion index="16" line="96" result="passed"/>
+            <assertion index="17" line="98" result="passed"/>
+            <assertion index="18" line="99" result="passed"/>
+            <assertion index="19" line="100" result="passed"/>
+        </test>
+    </string_int_hashmap_value_test>
+    <string_int_hashmap_find_test project="hashmap" solution="">
+        <test count="29" exitCode="0" name="string_int_hashmap_find_test">
+            <assertion index="0" line="110" result="passed"/>
+            <assertion index="1" line="112" result="passed"/>
+            <assertion index="2" line="115" result="passed"/>
+            <assertion index="3" line="116" result="passed"/>
+            <assertion index="4" line="117" result="passed"/>
+            <assertion index="5" line="119" result="passed"/>
+            <assertion index="6" line="120" result="passed"/>
+            <assertion index="7" line="121" result="passed"/>
+            <assertion index="8" line="123" result="passed"/>
+            <assertion index="9" line="126" result="passed"/>
+            <assertion index="10" line="127" result="passed"/>
+            <assertion index="11" line="128" result="passed"/>
+            <assertion index="12" line="130" result="passed"/>
+            <assertion index="13" line="131" result="passed"/>
+            <assertion index="14" line="132" result="passed"/>
+            <assertion index="15" line="134" result="passed"/>
+            <assertion index="16" line="135" result="passed"/>
+            <assertion index="17" line="136" result="passed"/>
+            <assertion index="18" line="138" result="passed"/>
+            <assertion index="19" line="139" result="passed"/>
+            <assertion index="20" line="140" result="passed"/>
+            <assertion index="21" line="142" result="passed"/>
+            <assertion index="22" line="147" result="passed"/>
+            <assertion index="23" line="148" result="passed"/>
+            <assertion index="24" line="149" result="passed"/>
+            <assertion index="25" line="151" result="passed"/>
+            <assertion index="26" line="152" result="passed"/>
+            <assertion index="27" line="153" result="passed"/>
+            <assertion index="28" line="156" result="passed"/>
+        </test>
+    </string_int_hashmap_find_test>
+    <string_int_hashmap_op_subscript_test project="hashmap" solution="">
+        <test count="24" exitCode="0" name="string_int_hashmap_op_subscript_test">
+            <assertion index="0" line="164" result="passed"/>
+            <assertion index="1" line="165" result="passed"/>
+            <assertion index="2" line="166" result="passed"/>
+            <assertion index="3" line="170" result="passed"/>
+            <assertion index="4" line="171" result="passed"/>
+            <assertion index="5" line="172" result="passed"/>
+            <assertion index="6" line="176" result="passed"/>
+            <assertion index="7" line="177" result="passed"/>
+            <assertion index="8" line="178" result="passed"/>
+            <assertion index="9" line="181" result="passed"/>
+            <assertion index="10" line="182" result="passed"/>
+            <assertion index="11" line="183" result="passed"/>
+            <assertion index="12" line="187" result="passed"/>
+            <assertion index="13" line="188" result="passed"/>
+            <assertion index="14" line="189" result="passed"/>
+            <assertion index="15" line="192" result="passed"/>
+            <assertion index="16" line="193" result="passed"/>
+            <assertion index="17" line="194" result="passed"/>
+            <assertion index="18" line="197" result="passed"/>
+            <assertion index="19" line="198" result="passed"/>
+            <assertion index="20" line="199" result="passed"/>
+            <assertion index="21" line="202" result="passed"/>
+            <assertion index="22" line="203" result="passed"/>
+            <assertion index="23" line="204" result="passed"/>
+        </test>
+    </string_int_hashmap_op_subscript_test>
+    <string_int_hashmap_remove_value_test project="hashmap" solution="">
+        <test count="14" exitCode="0" name="string_int_hashmap_remove_value_test">
+            <assertion index="0" line="217" result="passed"/>
+            <assertion index="1" line="218" result="passed"/>
+            <assertion index="2" line="221" result="passed"/>
+            <assertion index="3" line="222" result="passed"/>
+            <assertion index="4" line="225" result="passed"/>
+            <assertion index="5" line="226" result="passed"/>
+            <assertion index="6" line="230" result="passed"/>
+            <assertion index="7" line="231" result="passed"/>
+            <assertion index="8" line="235" result="passed"/>
+            <assertion index="9" line="236" result="passed"/>
+            <assertion index="10" line="239" result="passed"/>
+            <assertion index="11" line="240" result="passed"/>
+            <assertion index="12" line="249" result="passed"/>
+            <assertion index="13" line="250" result="passed"/>
+        </test>
+    </string_int_hashmap_remove_value_test>
+    <string_int_hashmap_remove_iterator_test project="hashmap" solution="">
+        <test count="4" exitCode="0" name="string_int_hashmap_remove_iterator_test">
+            <assertion index="0" line="259" result="passed"/>
+            <assertion index="1" line="262" result="passed"/>
+            <assertion index="2" line="264" result="passed"/>
+            <assertion index="3" line="272" result="passed"/>
+        </test>
+    </string_int_hashmap_remove_iterator_test>
+    <string_int_hashmap_equal_test project="hashmap" solution="">
+        <test count="16" exitCode="0" name="string_int_hashmap_equal_test">
+            <assertion index="0" line="280" result="passed"/>
+            <assertion index="1" line="282" result="passed"/>
+            <assertion index="2" line="283" result="passed"/>
+            <assertion index="3" line="284" result="passed"/>
+            <assertion index="4" line="286" result="passed"/>
+            <assertion index="5" line="287" result="passed"/>
+            <assertion index="6" line="288" result="passed"/>
+            <assertion index="7" line="289" result="passed"/>
+            <assertion index="8" line="290" result="passed"/>
+            <assertion index="9" line="292" result="passed"/>
+            <assertion index="10" line="293" result="passed"/>
+            <assertion index="11" line="294" result="passed"/>
+            <assertion index="12" line="295" result="passed"/>
+            <assertion index="13" line="296" result="passed"/>
+            <assertion index="14" line="297" result="passed"/>
+            <assertion index="15" line="298" result="passed"/>
+        </test>
+    </string_int_hashmap_equal_test>
+</results>

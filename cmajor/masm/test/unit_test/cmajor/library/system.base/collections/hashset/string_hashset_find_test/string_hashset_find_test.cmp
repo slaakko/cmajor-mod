@@ -1,0 +1,4 @@
+project string_hashset_find_test;
+target=program;
+source <string_hashset_find_test.cm>;
+source <main.cm>;

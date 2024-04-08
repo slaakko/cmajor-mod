@@ -1,0 +1,4 @@
+project wstring_split_string_test;
+target=program;
+source <wstring_split_string_test.cm>;
+source <main.cm>;

@@ -1,4 +1,4 @@
 project map;
 target=unitTest;
 source <int_string_map.cm>;
-//source <string_int_map.cm>;
+source <string_int_map.cm>;

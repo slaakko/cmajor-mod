@@ -1,0 +1,64 @@
+using System;
+using System.Collections;
+
+public LinkedList<string> MakeOne()
+{
+    LinkedList<string> one;
+    one.Add(ToString(1));
+    return one;
+}
+
+public LinkedList<string> MakeTwo()
+{
+    LinkedList<string> two;
+    two.Add(ToString(1));
+    two.Add(ToString(2));
+    return two;
+}
+
+public LinkedList<string> MakeEight()
+{
+    LinkedList<string> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(ToString(i));
+    }
+    return eight;
+}
+
+public LinkedList<string> MakeKilo()
+{
+    LinkedList<string> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(ToString(i % 10));
+    }
+    return kilo;
+}
+
+public LinkedList<string> Return(const LinkedList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_linked_list_remove_iterator_test()
+{
+    LinkedList<string> s1 = MakeOne();
+    s1.Remove(s1.Begin());
+    #assert (s1.Count() == 0);
+    LinkedList<string> s2 = MakeTwo();
+    s2.Remove(s2.Begin());
+    #assert (s2.Count() == 1);
+    s2.Remove(s2.Begin());
+    #assert (s2.Count() == 0);
+    LinkedList<string> s3 = MakeEight();
+    auto it3 = s3.Begin();
+    int n = 8;
+    for (int i = 0; i < 8; ++i)
+    {
+        s3.Remove(it3);
+        --n;
+        #assert (s3.Count() == n);
+        it3 = s3.Begin();
+    }
+}

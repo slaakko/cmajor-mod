@@ -1,0 +1,4 @@
+project ustring_to_upper_test;
+target=program;
+source <ustring_to_upper_test.cm>;
+source <main.cm>;

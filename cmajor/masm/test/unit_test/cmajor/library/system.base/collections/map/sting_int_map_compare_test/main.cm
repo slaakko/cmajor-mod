@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    sting_int_map_compare_test();
+    return 0;
+}

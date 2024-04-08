@@ -1,0 +1,4 @@
+project swap_test;
+target=program;
+source <swap_test.cm>;
+source <main.cm>;

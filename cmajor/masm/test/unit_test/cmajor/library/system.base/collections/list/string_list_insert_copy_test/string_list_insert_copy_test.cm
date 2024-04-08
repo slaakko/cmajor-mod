@@ -1,0 +1,199 @@
+using System;
+using System.Collections;
+
+public List<string> MakeTwo()
+{
+    List<string> two;
+    two.Add(ToString(1));
+    two.Add(ToString(2));
+    return two;
+}
+
+public List<string> MakeEight()
+{
+    List<string> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(ToString(i));
+    }
+    return eight;
+}
+
+public List<string> MakeKilo()
+{
+    List<string> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(ToString(i % 10));
+    }
+    return kilo;
+}
+
+public List<string> Return(const List<string>& x)
+{
+    return x;
+}
+
+unit_test void string_list_insert_copy_test()
+{
+    List<string> x0;
+    string v0 = "0";
+    auto it0 = x0.Insert(x0.Begin(), v0);
+    #assert (x0.Count() == 1);
+    #assert (*it0 == v0);
+    List<string> x1(1, "1");
+    string v1 = "0";
+    auto it1 = x1.Insert(x1.Begin(), v1);
+    #assert (x1.Count() == 2);
+    #assert (*it1 == "0");
+    #assert (x1[0] == "0");
+    #assert (x1[1] == "1");
+    List<string> x2(1, "1");
+    string v2 = "0";
+    auto it2 = x2.Insert(x2.Begin() + 1, v2);
+    #assert (x2.Count() == 2);
+    #assert (x2[0] == "1");
+    #assert (x2[1] == "0");
+    #assert (*it2 == "0");
+    List<string> x3 = MakeTwo();
+    string v3 = "0";
+    auto it3 = x3.Insert(x3.Begin(), v3);
+    #assert (x3.Count() == 3);
+    #assert (*it3 == "0");
+    #assert (x3[0] == "0");
+    #assert (x3[1] == "1");
+    #assert (x3[2] == "2");
+    List<string> x4 = MakeTwo();
+    string v4 = "0";
+    auto it4 = x4.Insert(x4.Begin() + 1, v4);
+    #assert (x4.Count() == 3);
+    #assert (*it4 == "0");
+    #assert (x4[0] == "1");
+    #assert (x4[1] == "0");
+    #assert (x4[2] == "2");
+    List<string> x5 = MakeTwo();
+    string v5 = "0";
+    auto it5 = x5.Insert(x5.Begin() + 2, v5);
+    #assert (x5.Count() == 3);
+    #assert (*it5 == "0");
+    #assert (x5[0] == "1");
+    #assert (x5[1] == "2");
+    #assert (x5[2] == "0");
+    List<string> x6 = MakeEight();
+    string v6 = "9";
+    auto it6 = x6.Insert(x6.Begin(), v6);
+    #assert (x6.Count() == 9);
+    #assert (*it6 == "9");
+    for (int i = 1; i < 9; ++i)
+    {
+        #assert (x6[i] == ToString(i - 1));
+    }
+    List<string> x7 = MakeEight();
+    string v7 = "9";
+    auto it7 = x7.Insert(x7.Begin() + 1, v7);
+    #assert (x7.Count() == 9);
+    #assert (*it7 == "9");
+    for (int i = 0; i < 9; ++i)
+    {
+        if (i == 1)
+        {
+            #assert (x7[i] == "9");
+        }
+        else if (i < 1)
+        {
+            #assert (x7[i] == ToString(i));
+        }
+        else
+        {
+            #assert (x7[i] == ToString(i - 1));
+        }
+    }
+    List<string> x8 = MakeEight();
+    string v8 = "9";
+    auto it8 = x8.Insert(x8.Begin() + 7, v8);
+    #assert (x8.Count() == 9);
+    #assert (*it8 == "9");
+    for (int i = 0; i < 9; ++i)
+    {
+        if (i == 7)
+        {
+            #assert (x8[i] == "9");
+        }
+        else if (i < 7)
+        {
+            #assert (x8[i] == ToString(i));
+        }
+        else
+        {
+            #assert (x8[i] == ToString(i - 1));
+        }
+    }
+    List<string> x9 = MakeEight();
+    string v9 = "9";
+    auto it9 = x9.Insert(x9.Begin() + 8, v9);
+    #assert (x9.Count() == 9);
+    #assert (*it9 == "9");
+    for (int i = 0; i < 9; ++i)
+    {
+        if (i == 8)
+        {
+            #assert (x9[i] == "9");
+        }
+        else if (i < 8)
+        {
+            #assert (x9[i] == ToString(i));
+        }
+    }
+    List<string> x10 = MakeKilo();
+    string v10 = "10";
+    auto it10 = x10.Insert(x10.Begin(), v10);
+    #assert (x10.Count() == 1025);
+    #assert (*it10 == "10");
+    for (int i = 0; i < 1025; ++i)
+    {
+        if (i == 0)
+        {
+            #assert (x10[i] == "10");
+        }
+        else
+        {
+            #assert (x10[i] == ToString((i - 1) % 10));
+        }
+    }
+    List<string> x11 = MakeKilo();
+    string v11 = "10";
+    auto it11 = x11.Insert(x11.Begin() + 1, v11);
+    #assert (x11.Count() == 1025);
+    #assert (*it11 == "10");
+    for (int i = 0; i < 1025; ++i)
+    {
+        if (i == 1)
+        {
+            #assert (x11[i] == "10");
+        }
+        else if (i < 1)
+        {
+            #assert (x11[i] == ToString(i % 10));
+        }
+        else
+        {
+            #assert (x11[i] == ToString((i - 1) % 10));
+        }
+    }
+    List<string> x12 = MakeKilo();
+    string v12 = "10";
+    auto it12 = x12.Insert(x12.Begin() + 1024, v12);
+    #assert (x12.Count() == 1025);
+    #assert (*it12 == "10");
+    for (int i = 0; i < 1025; ++i)
+    {
+        if (i == 1024)
+        {
+            #assert (x12[i] == "10");
+        }
+        else if (i < 1024)
+        {
+            #assert (x12[i] == ToString(i % 10));
+        }
+    }
+}

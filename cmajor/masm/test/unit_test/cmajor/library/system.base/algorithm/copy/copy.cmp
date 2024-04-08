@@ -1,0 +1,3 @@
+project copy;
+target=unitTest;
+source <copy.cm>;

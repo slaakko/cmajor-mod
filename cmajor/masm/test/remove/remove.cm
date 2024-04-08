@@ -1,0 +1,20 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<int> x;
+    x.Add(1);
+    x.Add(0);
+    x.Add(3);
+    x.Add(2);
+    x.Add(2);
+    x.Add(5);
+    x.Add(0);
+    x.Add(5);
+    auto it1 = Remove(x.Begin(), x.End(), 0);
+    for (auto it = x.Begin(); it != it1; ++it)
+    {
+        Console.Out() << *it << endl();
+    }
+}

@@ -3198,7 +3198,8 @@ void Evaluator::EvaluateConstantSymbol(cmajor::symbols::ConstantSymbol* constant
                 error = true;
                 return;
             }
-            throw cmajor::symbols::Exception("node for constant symbol '" + util::ToUtf8(constantSymbol->FullName()) + "' not found from symbol table", node->GetFullSpan());
+            throw cmajor::symbols::Exception("node for constant symbol '" + util::ToUtf8(constantSymbol->FullName()) + "' not found from symbol table", 
+                constantSymbol->GetFullSpan());
         }
         Assert(node->GetNodeType() == cmajor::ast::NodeType::constantNode, "constant node expected");
         cmajor::ast::ConstantNode* constantNode = static_cast<cmajor::ast::ConstantNode*>(node);

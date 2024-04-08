@@ -1,0 +1,53 @@
+using System;
+
+unit_test void ustring_starts_with_test()
+{
+    ustring a('a');
+    ustring x('x');
+    ustring abc(u"abc");
+    ustring empty;
+    #assert (empty.StartsWith(ustring()));
+    #assert (empty.StartsWith(empty));
+    #assert (!empty.StartsWith(a));
+    #assert (!empty.StartsWith(x));
+    #assert (!empty.StartsWith(abc));
+    ustring one('a');
+    #assert (one.StartsWith(ustring()));
+    #assert (one.StartsWith(a));
+    #assert (!one.StartsWith(x));
+    #assert (!one.StartsWith(abc));
+    ustring two(u"ab");
+    #assert (two.StartsWith(ustring()));
+    #assert (two.StartsWith(a));
+    #assert (two.StartsWith(ustring(u"ab")));
+    #assert (!two.StartsWith(x));
+    #assert (!two.StartsWith(abc));
+    ustring eight(u"12345678");
+    #assert (eight.StartsWith(ustring()));
+    #assert (eight.StartsWith(ustring(u"1")));
+    #assert (eight.StartsWith(ustring(u"12")));
+    #assert (eight.StartsWith(ustring(u"123")));
+    #assert (!eight.StartsWith(ustring(u"2")));
+    #assert (!eight.StartsWith(ustring(u"23")));
+    #assert (!eight.StartsWith(a));
+    #assert (!eight.StartsWith(x));
+    #assert (!eight.StartsWith(abc));
+    #assert (eight.StartsWith(ustring(u"12345678")));
+    #assert (!eight.StartsWith(ustring(u"123456789")));
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.StartsWith(ustring()));
+    #assert (kilo.StartsWith(ustring(u"0")));
+    #assert (!kilo.StartsWith(ustring(u"1")));
+    #assert (kilo.StartsWith(ustring(u"01")));
+    #assert (kilo.StartsWith(ustring(u"0123")));
+    #assert (!kilo.StartsWith(a));
+    #assert (!kilo.StartsWith(x));
+    #assert (!kilo.StartsWith(abc));
+    #assert (kilo.StartsWith(kilo));
+    ustring kiloPlusOne = kilo + u"1";
+    #assert (!kilo.StartsWith(kiloPlusOne));
+}

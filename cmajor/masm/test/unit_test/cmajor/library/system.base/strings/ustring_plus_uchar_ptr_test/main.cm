@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ustring_plus_uchar_ptr_test();
+    return 0;
+}

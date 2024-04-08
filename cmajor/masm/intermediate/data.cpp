@@ -878,6 +878,7 @@ Value* Data::MakeIntegerLiteral(const soul::ast::Span& span, Type* type, const s
         {
             Error("error making literal: Boolean value expected", span, context);
         }
+        break;
     }
     case sbyteTypeId:
     {

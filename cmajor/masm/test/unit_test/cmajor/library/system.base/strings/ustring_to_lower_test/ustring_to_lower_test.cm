@@ -1,0 +1,27 @@
+using System;
+
+unit_test void ustring_to_lower_test()
+{
+    auto result0 = ToLower(ustring());
+    #assert (!result0.Error() && result0.Value() == ustring());
+    auto result1 = ToLower(u"alpha");
+    #assert (!result1.Error() && result1.Value() == u"alpha");
+    auto result2 = ToLower(u"Alpha");
+    #assert (!result2.Error() && result2.Value() == u"alpha");
+    auto result3 = ToLower(u"ALPHA");
+    #assert (!result3.Error() && result3.Value() == u"alpha");
+    auto result4 = ToLower(u"a");
+    #assert (!result4.Error() && result4.Value() == u"a");
+    auto result5 = ToLower(u"A");
+    #assert (!result5.Error() && result5.Value() == u"a");
+    auto result6 = ToLower(u"ab");
+    #assert (!result6.Error() && result6.Value() == u"ab");
+    auto result7 = ToLower(u"Ab");
+    #assert (!result7.Error() && result7.Value() == u"ab");
+    auto result8 = ToLower(u"aB");
+    #assert (!result8.Error() && result8.Value() == u"ab");
+    auto result9 = ToLower(u"AB");
+    #assert (!result9.Error() && result9.Value() == u"ab");
+    auto result10 = ToLower(u"12345678");
+    #assert (!result10.Error() && result10.Value() == u"12345678");
+}

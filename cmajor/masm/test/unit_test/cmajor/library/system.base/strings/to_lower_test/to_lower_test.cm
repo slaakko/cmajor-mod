@@ -1,0 +1,27 @@
+using System;
+
+unit_test void to_lower_test()
+{
+    auto result0 = ToLower(string());
+    #assert (!result0.Error() && result0.Value() == string());
+    auto result1 = ToLower("alpha");
+    #assert (!result1.Error() && result1.Value() == "alpha");
+    auto result2 = ToLower("Alpha");
+    #assert (!result2.Error() && result2.Value() == "alpha");
+    auto result3 = ToLower("ALPHA");
+    #assert (!result3.Error() && result3.Value() == "alpha");
+    auto result4 = ToLower("a");
+    #assert (!result4.Error() && result4.Value() == "a");
+    auto result5 = ToLower("A");
+    #assert (!result5.Error() && result5.Value() == "a");
+    auto result6 = ToLower("ab");
+    #assert (!result6.Error() && result6.Value() == "ab");
+    auto result7 = ToLower("Ab");
+    #assert (!result7.Error() && result7.Value() == "ab");
+    auto result8 = ToLower("aB");
+    #assert (!result8.Error() && result8.Value() == "ab");
+    auto result9 = ToLower("AB");
+    #assert (!result9.Error() && result9.Value() == "ab");
+    auto result10 = ToLower("12345678");
+    #assert (!result10.Error() && result10.Value() == "12345678");
+}

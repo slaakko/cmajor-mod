@@ -1,0 +1,4 @@
+project distance_ra_iter_test;
+target=program;
+source <distance_ra_iter_test.cm>;
+source <main.cm>;

@@ -1,0 +1,20 @@
+using System;
+
+unit_test void wstring_last_components_equal_test()
+{
+    #assert (LastComponentsEqual(wstring(), wstring(), '.'));
+    #assert (LastComponentsEqual(w"a", wstring(), '.'));
+    #assert (LastComponentsEqual(wstring(), w"a", '.'));
+    #assert (LastComponentsEqual(w"a.b", w"", '.'));
+    #assert (LastComponentsEqual(w"a.b", w"b", '.'));
+    #assert (!LastComponentsEqual(w"a.b", w"a", '.'));
+    #assert (LastComponentsEqual(w"a.b", w"a.b", '.'));
+    #assert (!LastComponentsEqual(w"a.b", w"b.a", '.'));
+    #assert (!LastComponentsEqual(w"a.b", w"x.y", '.'));
+    #assert (LastComponentsEqual(w"alpha.beta.gamma", w"alpha.beta.gamma", '.'));
+    #assert (LastComponentsEqual(w"alpha.beta.gamma", w"beta.gamma", '.'));
+    #assert (LastComponentsEqual(w"alpha.beta.gamma", w"gamma", '.'));
+    #assert (!LastComponentsEqual(w"alpha.beta.gamma", w"alpha.beta.delta", '.'));
+    #assert (!LastComponentsEqual(w"alpha.beta.gamma", w"beta.delta", '.'));
+    #assert (!LastComponentsEqual(w"alpha.beta.gamma", w"delta", '.'));
+}

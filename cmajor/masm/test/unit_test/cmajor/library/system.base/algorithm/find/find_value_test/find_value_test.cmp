@@ -1,0 +1,4 @@
+project find_value_test;
+target=program;
+source <find_value_test.cm>;
+source <main.cm>;

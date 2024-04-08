@@ -1,0 +1,4 @@
+project ustring_equal_test;
+target=program;
+source <ustring_equal_test.cm>;
+source <main.cm>;

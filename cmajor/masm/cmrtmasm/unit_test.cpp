@@ -33,7 +33,7 @@ private:
     std::vector<AssertionResult> assertionResults;
 };
 
-UnitTestEngine::UnitTestEngine()
+UnitTestEngine::UnitTestEngine(): numAssertions(0)
 {
 }
 

@@ -1,0 +1,3 @@
+project count;
+target=unitTest;
+source <count.cm>;

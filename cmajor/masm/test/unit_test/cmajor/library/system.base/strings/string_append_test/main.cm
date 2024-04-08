@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_append_test();
+    return 0;
+}

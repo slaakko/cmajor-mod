@@ -1,0 +1,185 @@
+using System;
+using System.Collections;
+
+public ForwardList<int> MakeOne()
+{
+    ForwardList<int> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, 1);
+    return one;
+}
+
+public ForwardList<int> MakeTwo()
+{
+    ForwardList<int> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, 1);
+    it = two.InsertAfter(it, 2);
+    return two;
+}
+
+public ForwardList<int> MakeEight()
+{
+    ForwardList<int> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, i);
+    }
+    return eight;
+}
+
+public ForwardList<int> MakeKilo()
+{
+    ForwardList<int> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, i % 10);
+    }
+    return kilo;
+}
+
+public ForwardList<int> Return(const ForwardList<int>& x)
+{
+    return x;
+}
+
+unit_test void int_forward_list_value_test()
+{
+    ForwardList<int> empty;
+    #assert (empty.IsEmpty());
+    #assert (empty.Count() == 0);
+    ForwardList<int> x0(empty);
+    #assert (x0.IsEmpty());
+    #assert (x0.Count() == 0);
+    #assert (x0 == empty);
+    ForwardList<int> x1;
+    x1 = empty;
+    #assert (x1.IsEmpty());
+    #assert (x1.Count() == 0);
+    #assert (x1 == empty);
+    ForwardList<int> e2(empty);
+    ForwardList<int> x2(Rvalue(e2));
+    #assert (x2.IsEmpty());
+    #assert (x2.Count() == 0);
+    #assert (x2 == empty);
+    ForwardList<int> x3;
+    ForwardList<int> e3(empty);
+    x3 = Rvalue(e3);
+    #assert (x3.IsEmpty());
+    #assert (x3.Count() == 0);
+    #assert (x3 == empty);
+    ForwardList<int> x4 = Return(empty);
+    #assert (x4.IsEmpty());
+    #assert (x4.Count() == 0);
+    #assert (x4 == empty);
+    ForwardList<int> one = MakeOne();
+    #assert (!one.IsEmpty());
+    #assert (one.Count() == 1);
+    ForwardList<int> x5(one);
+    #assert (!x5.IsEmpty());
+    #assert (x5.Count() == 1);
+    #assert (x5 == one);
+    ForwardList<int> x6;
+    x6 = one;
+    #assert (!x6.IsEmpty());
+    #assert (x6.Count() == 1);
+    #assert (x6 == one);
+    ForwardList<int> one2(one);
+    ForwardList<int> x7(Rvalue(one2));
+    #assert (!x7.IsEmpty());
+    #assert (x7.Count() == 1);
+    #assert (x7 == one);
+    ForwardList<int> one3(one);
+    ForwardList<int> x8;
+    x8 = Rvalue(one3);
+    #assert (!x8.IsEmpty());
+    #assert (x8.Count() == 1);
+    #assert (x8 == one);
+    ForwardList<int> x9 = Return(one);
+    #assert (!x9.IsEmpty());
+    #assert (x9.Count() == 1);
+    #assert (x9 == one);
+    ForwardList<int> two = MakeTwo();
+    #assert (!two.IsEmpty());
+    #assert (two.Count() == 2);
+    ForwardList<int> x10(two);
+    #assert (!x10.IsEmpty());
+    #assert (x10.Count() == 2);
+    #assert (x10 == two);
+    ForwardList<int> x11;
+    x11 = two;
+    #assert (!x11.IsEmpty());
+    #assert (x11.Count() == 2);
+    #assert (x11 == two);
+    ForwardList<int> two2(two);
+    ForwardList<int> x12(Rvalue(two2));
+    #assert (!x12.IsEmpty());
+    #assert (x12.Count() == 2);
+    #assert (x12 == two);
+    ForwardList<int> two3(two);
+    ForwardList<int> x13;
+    x13 = Rvalue(two3);
+    #assert (!x13.IsEmpty());
+    #assert (x13.Count() == 2);
+    #assert (x13 == two);
+    ForwardList<int> x14 = Return(two);
+    #assert (!x14.IsEmpty());
+    #assert (x14.Count() == 2);
+    #assert (x14 == two);
+    ForwardList<int> eight = MakeEight();
+    #assert (!eight.IsEmpty());
+    #assert (eight.Count() == 8);
+    ForwardList<int> x15(eight);
+    #assert (!x15.IsEmpty());
+    #assert (x15.Count() == 8);
+    #assert (x15 == eight);
+    ForwardList<int> x16;
+    x16 = eight;
+    #assert (!x16.IsEmpty());
+    #assert (x16.Count() == 8);
+    #assert (x16 == eight);
+    ForwardList<int> eight2(eight);
+    ForwardList<int> x17(Rvalue(eight2));
+    #assert (!x17.IsEmpty());
+    #assert (x17.Count() == 8);
+    #assert (x17 == eight);
+    ForwardList<int> eight3(eight);
+    ForwardList<int> x18;
+    x18 = Rvalue(eight3);
+    #assert (!x18.IsEmpty());
+    #assert (x18.Count() == 8);
+    #assert (x18 == eight);
+    ForwardList<int> x19 = Return(eight);
+    #assert (!x19.IsEmpty());
+    #assert (x19.Count() == 8);
+    #assert (x19 == eight);
+    ForwardList<int> kilo = MakeKilo();
+    #assert (!kilo.IsEmpty());
+    #assert (kilo.Count() == 1024);
+    ForwardList<int> x20(kilo);
+    #assert (!x20.IsEmpty());
+    #assert (x20.Count() == 1024);
+    #assert (x20 == kilo);
+    ForwardList<int> x21;
+    x21 = kilo;
+    #assert (!x21.IsEmpty());
+    #assert (x21.Count() == 1024);
+    #assert (x21 == kilo);
+    ForwardList<int> kilo2(kilo);
+    ForwardList<int> x22(Rvalue(kilo2));
+    #assert (!x22.IsEmpty());
+    #assert (x22.Count() == 1024);
+    #assert (x22 == kilo);
+    ForwardList<int> kilo3(kilo);
+    ForwardList<int> x23;
+    x23 = Rvalue(kilo3);
+    #assert (!x23.IsEmpty());
+    #assert (x23.Count() == 1024);
+    #assert (x23 == kilo);
+    ForwardList<int> x24 = Return(kilo);
+    #assert (!x24.IsEmpty());
+    #assert (x24.Count() == 1024);
+    #assert (x24 == kilo);
+}

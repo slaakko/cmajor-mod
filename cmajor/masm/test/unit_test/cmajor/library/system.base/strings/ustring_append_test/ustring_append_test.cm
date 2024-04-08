@@ -1,0 +1,98 @@
+using System;
+
+unit_test void ustring_append_test()
+{
+    ustring emptyOne;
+    emptyOne.Append('a');
+    #assert (!emptyOne.IsEmpty());
+    #assert (emptyOne.Length() == 1);
+    #assert (emptyOne[0] == 'a');
+    #assert (emptyOne == u"a");
+    ustring emptyEight;
+    emptyEight.Append('a', 8);
+    #assert (!emptyEight.IsEmpty());
+    #assert (emptyEight.Length() == 8);
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (emptyEight[i] == 'a');
+    }
+    #assert (emptyEight == u"aaaaaaaa");
+    ustring emptyStr;
+    emptyStr.Append(u"abc");
+    #assert (!emptyStr.IsEmpty());
+    #assert (emptyStr.Length() == 3);
+    #assert (emptyStr[0] == 'a');
+    #assert (emptyStr[1] == 'b');
+    #assert (emptyStr[2] == 'c');
+    #assert (emptyStr == u"abc");
+    ustring oneOne('a');
+    oneOne.Append('b');
+    #assert (!oneOne.IsEmpty());
+    #assert (oneOne.Length() == 2);
+    #assert (oneOne[0] == 'a');
+    #assert (oneOne[1] == 'b');
+    #assert (oneOne == u"ab");
+    ustring oneEight('a');
+    oneEight.Append('b', 8);
+    #assert (!oneEight.IsEmpty());
+    #assert (oneEight.Length() == 9);
+    #assert (oneEight[0] == 'a');
+    for (int i = 1; i < 9; ++i)
+    {
+        #assert (oneEight[i] == 'b');
+    }
+    #assert (oneEight == u"abbbbbbbb");
+    ustring oneStr(u"a");
+    oneStr.Append(u"bcd");
+    #assert (!oneStr.IsEmpty());
+    #assert (oneStr.Length() == 4);
+    #assert (oneStr[0] == 'a');
+    #assert (oneStr[1] == 'b');
+    #assert (oneStr[2] == 'c');
+    #assert (oneStr[3] == 'd');
+    #assert (oneStr == u"abcd");
+    ustring twoOne(u"ab");
+    twoOne.Append('c');
+    #assert (!twoOne.IsEmpty());
+    #assert (twoOne.Length() == 3);
+    #assert (twoOne[0] == 'a');
+    #assert (twoOne[1] == 'b');
+    #assert (twoOne[2] == 'c');
+    #assert (twoOne == u"abc");
+    ustring twoEight(u"ab");
+    twoEight.Append('c', 8);
+    #assert (!twoEight.IsEmpty());
+    #assert (twoEight.Length() == 10);
+    #assert (twoEight[0] == 'a');
+    #assert (twoEight[1] == 'b');
+    for (int i = 2; i < 10; ++i)
+    {
+        #assert (twoEight[i] == 'c');
+    }
+    #assert (twoEight == u"abcccccccc");
+    ustring twoStr(u"ab");
+    twoStr.Append(u"cde");
+    #assert (!twoStr.IsEmpty());
+    #assert (twoStr.Length() == 5);
+    #assert (twoStr[0] == 'a');
+    #assert (twoStr[1] == 'b');
+    #assert (twoStr[2] == 'c');
+    #assert (twoStr[3] == 'd');
+    #assert (twoStr[4] == 'e');
+    #assert (twoStr == u"abcde");
+    ustring twoKilo(u"ab");
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append('c');
+    }
+    twoKilo.Append(kilo);
+    #assert (!twoKilo.IsEmpty());
+    #assert (twoKilo.Length() == 1024 + 2);
+    #assert (twoKilo[0] == 'a');
+    #assert (twoKilo[1] == 'b');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (twoKilo[i + 2] == 'c');
+    }
+}

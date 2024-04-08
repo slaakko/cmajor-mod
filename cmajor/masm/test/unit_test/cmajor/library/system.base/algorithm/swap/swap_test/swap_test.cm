@@ -1,0 +1,75 @@
+using System;
+using System.Collections;
+
+class X
+{
+    public X(int id_) :
+        id(id_)
+    {
+    }
+    public int id;
+}
+
+unit_test void swap_test()
+{
+    int i0 = 0;
+    int i1 = 1;
+    Swap(i0, i1);
+    #assert (i0 == 1);
+    #assert (i1 == 0);
+    Swap(i0, i1);
+    #assert (i0 == 0);
+    #assert (i1 == 1);
+    string s0 = "0";
+    string s1 = "1";
+    Swap(s0, s1);
+    #assert (s0 == "1");
+    #assert (s1 == "0");
+    Swap(s0, s1);
+    #assert (s0 == "0");
+    #assert (s1 == "1");
+    X x0(0);
+    X x1(1);
+    Swap(x0, x1);
+    #assert (x0.id == 1);
+    #assert (x1.id == 0);
+    Swap(x0, x1);
+    #assert (x0.id == 0);
+    #assert (x1.id == 1);
+    List<int> l0;
+    for (int i = 0; i < 8; ++i)
+    {
+        l0.Add(i);
+    }
+    List<int> l1;
+    for (int i = 0; i < 8; ++i)
+    {
+        l1.Add(i + 10);
+    }
+    Swap(l0, l1);
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (l0[i] == i + 10);
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (l1[i] == i);
+    }
+    Swap(l0, l1);
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (l0[i] == i);
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (l1[i] == i + 10);
+    }
+    UniquePtr<X> u0(new X(0));
+    UniquePtr<X> u1(new X(1));
+    Swap(u0, u1);
+    #assert (u0->id == 1);
+    #assert (u1->id == 0);
+    Swap(u0, u1);
+    #assert (u0->id == 0);
+    #assert (u1->id == 1);
+}

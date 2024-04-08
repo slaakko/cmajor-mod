@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    wstring_replace_char_test();
+    return 0;
+}

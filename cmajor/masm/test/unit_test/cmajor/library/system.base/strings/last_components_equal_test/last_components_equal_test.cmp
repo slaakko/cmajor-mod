@@ -1,0 +1,4 @@
+project last_components_equal_test;
+target=program;
+source <last_components_equal_test.cm>;
+source <main.cm>;

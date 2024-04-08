@@ -11,7 +11,7 @@ namespace System
         return (n + alignment - 1) & -alignment;
     }
 
-    public constexpr inline long StrLen(const char* s)
+    public constexpr long StrLen(const char* s)
     {
         long len = 0;
         if (s != null)
@@ -25,7 +25,7 @@ namespace System
         return len;
     }
 
-    public constexpr inline long StrLen(const wchar* s)
+    public constexpr long StrLen(const wchar* s)
     {
         long len = 0;
         if (s != null)
@@ -39,7 +39,7 @@ namespace System
         return len;
     }
 
-    public constexpr inline long StrLen(const uchar* s)
+    public constexpr long StrLen(const uchar* s)
     {
         long len = 0;
         if (s != null)
@@ -53,7 +53,7 @@ namespace System
         return len;
     }
 
-    public inline void StrCopy(char* buf, const char* from)
+    public void StrCopy(char* buf, const char* from)
     {
         #assert(buf != null);
         if (from != null)
@@ -66,7 +66,7 @@ namespace System
         *buf = '\0';
     }
 
-    public inline void StrCopy(wchar* buf, const wchar* from)
+    public void StrCopy(wchar* buf, const wchar* from)
     {
         #assert(buf != null);
         if (from != null)
@@ -79,7 +79,7 @@ namespace System
         *buf = '\0';
     }
 
-    public inline void StrCopy(uchar* buf, const uchar* from)
+    public void StrCopy(uchar* buf, const uchar* from)
     {
         #assert(buf != null);
         if (from != null)
@@ -92,7 +92,7 @@ namespace System
         *buf = '\0';
     }
 
-    public inline long StrCopy(char* buf, const char* from, long length)
+    public long StrCopy(char* buf, const char* from, long length)
     {
         long resultLen = 0;
         #assert(buf != null);
@@ -112,7 +112,7 @@ namespace System
         return resultLen;
     }
 
-    public inline long StrCopy(wchar* buf, const wchar* from, long length)
+    public long StrCopy(wchar* buf, const wchar* from, long length)
     {
         long resultLen = 0;
         #assert(buf != null);
@@ -132,7 +132,7 @@ namespace System
         return resultLen;
     }
 
-    public inline long StrCopy(uchar* buf, const uchar* from, long length)
+    public long StrCopy(uchar* buf, const uchar* from, long length)
     {
         long resultLen = 0;
         #assert(buf != null);

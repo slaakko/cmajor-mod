@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_linked_list_value_test();
+    return 0;
+}

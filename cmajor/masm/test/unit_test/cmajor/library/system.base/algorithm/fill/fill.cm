@@ -1,0 +1,15 @@
+using System;
+using System.Collections;
+
+unit_test void fill_test()
+{
+    List<int> x;
+    x.Add(1);
+    x.Add(2);
+    x.Add(3);
+    Fill(x.Begin(), x.End(), cast<int>(0));
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        #assert(x[i] == 0);
+    }
+}

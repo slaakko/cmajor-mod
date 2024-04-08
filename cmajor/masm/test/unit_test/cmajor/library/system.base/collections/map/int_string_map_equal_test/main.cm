@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_string_map_equal_test();
+    return 0;
+}

@@ -1,0 +1,4 @@
+project string_append_test;
+target=program;
+source <string_append_test.cm>;
+source <main.cm>;

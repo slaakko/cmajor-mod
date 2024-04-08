@@ -1,0 +1,60 @@
+using System;
+
+unit_test void wstring_plus_wstring_test()
+{
+    wstring empty;
+    #assert (empty + empty == empty);
+    wstring one('a');
+    #assert (one + one == w"aa");
+    #assert (one + empty == one);
+    #assert (empty + one == one);
+    wstring two(w"ab");
+    #assert (two + two == w"abab");
+    #assert (two + empty == two);
+    #assert (empty + two == two);
+    #assert (two + one == w"aba");
+    #assert (one + two == w"aab");
+    wstring eight(w"12345678");
+    #assert (eight + eight == w"1234567812345678");
+    #assert (eight + empty == eight);
+    #assert (empty + eight == eight);
+    #assert (eight + one == w"12345678a");
+    #assert (one + eight == w"a12345678");
+    #assert (eight + two == w"12345678ab");
+    #assert (two + eight == w"ab12345678");
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    wstring twoKilos;
+    for (int i = 0; i < 1024; ++i)
+    {
+        twoKilos.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    for (int i = 0; i < 1024; ++i)
+    {
+        twoKilos.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo + kilo == twoKilos);
+    #assert (kilo + empty == kilo);
+    #assert (empty + kilo == kilo);
+    wstring kiloPlusOne(kilo);
+    kiloPlusOne.Append(one);
+    wstring onePlusKilo(one);
+    onePlusKilo.Append(kilo);
+    #assert (kilo + one == kiloPlusOne);
+    #assert (one + kilo == onePlusKilo);
+    wstring kiloPlusTwo(kilo);
+    kiloPlusTwo.Append(two);
+    wstring twoPlusKilo(two);
+    twoPlusKilo.Append(kilo);
+    #assert (kilo + two == kiloPlusTwo);
+    #assert (two + kilo == twoPlusKilo);
+    wstring kiloPlusEight(kilo);
+    kiloPlusEight.Append(eight);
+    wstring eightPlusKilo(eight);
+    eightPlusKilo.Append(kilo);
+    #assert (kilo + eight == kiloPlusEight);
+    #assert (eight + kilo == eightPlusKilo);
+}

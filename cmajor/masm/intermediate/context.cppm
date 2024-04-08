@@ -68,6 +68,8 @@ public:
     soul::lexer::FileMap& GetFileMap() { return fileMap; }
     cmajor::masm::assembly::Context* AssemblyContext() { return &assemblyContext; }
     void Write(const std::string& intermediateFilePath);
+    void SetInlineDepth(int inlineDepth_) { inlineDepth = inlineDepth_; }
+    int InlineDepth() const { return inlineDepth; }
 private:
     CompileUnit compileUnit;
     Types types;
@@ -76,6 +78,7 @@ private:
     soul::lexer::FileMap fileMap;
     int32_t fileId;
     cmajor::masm::assembly::Context assemblyContext;
+    int inlineDepth;
 };
 
 } // cmajor::masm::intermediate

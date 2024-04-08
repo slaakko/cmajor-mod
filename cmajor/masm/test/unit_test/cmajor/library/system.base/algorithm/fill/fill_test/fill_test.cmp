@@ -1,0 +1,4 @@
+project fill_test;
+target=program;
+source <fill_test.cm>;
+source <main.cm>;

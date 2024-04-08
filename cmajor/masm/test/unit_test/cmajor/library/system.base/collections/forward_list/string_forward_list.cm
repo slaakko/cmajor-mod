@@ -1,0 +1,461 @@
+using System;
+using System.Collections;
+
+public ForwardList<string> MakeOne()
+{
+    ForwardList<string> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, ToString(1));
+    return one;
+}
+
+public ForwardList<string> MakeTwo()
+{
+    ForwardList<string> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, ToString(1));
+    it = two.InsertAfter(it, ToString(2));
+    return two;
+}
+
+public ForwardList<string> MakeEight()
+{
+    ForwardList<string> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, ToString(i));
+    }
+    return eight;
+}
+
+public ForwardList<string> MakeKilo()
+{
+    ForwardList<string> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, ToString(i % 10));
+    }
+    return kilo;
+}
+
+public ForwardList<string> Return(const ForwardList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_forward_list_value_test()
+{
+    ForwardList<string> empty;
+    #assert(empty.IsEmpty());
+    #assert(empty.Count() == 0);
+    ForwardList<string> x0(empty);
+    #assert(x0.IsEmpty());
+    #assert(x0.Count() == 0);
+    #assert(x0 == empty);
+    ForwardList<string> x1;
+    x1 = empty;
+    #assert(x1.IsEmpty());
+    #assert(x1.Count() == 0);
+    #assert(x1 == empty);
+    ForwardList<string> e2(empty);
+    ForwardList<string> x2(Rvalue(e2));
+    #assert(x2.IsEmpty());
+    #assert(x2.Count() == 0);
+    #assert(x2 == empty);
+    ForwardList<string> x3;
+    ForwardList<string> e3(empty);
+    x3 = Rvalue(e3);
+    #assert(x3.IsEmpty());
+    #assert(x3.Count() == 0);
+    #assert(x3 == empty);
+    ForwardList<string> x4 = Return(empty);
+    #assert(x4.IsEmpty());
+    #assert(x4.Count() == 0);
+    #assert(x4 == empty);
+
+    ForwardList<string> one = MakeOne();
+    #assert(!one.IsEmpty());
+    #assert(one.Count() == 1);
+    ForwardList<string> x5(one);
+    #assert(!x5.IsEmpty());
+    #assert(x5.Count() == 1);
+    #assert(x5 == one);
+    ForwardList<string> x6;
+    x6 = one;
+    #assert(!x6.IsEmpty());
+    #assert(x6.Count() == 1);
+    #assert(x6 == one);
+    ForwardList<string> one2(one);
+    ForwardList<string> x7(Rvalue(one2));
+    #assert(!x7.IsEmpty());
+    #assert(x7.Count() == 1);
+    #assert(x7 == one);
+    ForwardList<string> one3(one);
+    ForwardList<string> x8;
+    x8 = Rvalue(one3);
+    #assert(!x8.IsEmpty());
+    #assert(x8.Count() == 1);
+    #assert(x8 == one);
+    ForwardList<string> x9 = Return(one);
+    #assert(!x9.IsEmpty());
+    #assert(x9.Count() == 1);
+    #assert(x9 == one);
+
+    ForwardList<string> two = MakeTwo();
+    #assert(!two.IsEmpty());
+    #assert(two.Count() == 2);
+    ForwardList<string> x10(two);
+    #assert(!x10.IsEmpty());
+    #assert(x10.Count() == 2);
+    #assert(x10 == two);
+    ForwardList<string> x11;
+    x11 = two;
+    #assert(!x11.IsEmpty());
+    #assert(x11.Count() == 2);
+    #assert(x11 == two);
+    ForwardList<string> two2(two);
+    ForwardList<string> x12(Rvalue(two2));
+    #assert(!x12.IsEmpty());
+    #assert(x12.Count() == 2);
+    #assert(x12 == two);
+    ForwardList<string> two3(two);
+    ForwardList<string> x13;
+    x13 = Rvalue(two3);
+    #assert(!x13.IsEmpty());
+    #assert(x13.Count() == 2);
+    #assert(x13 == two);
+    ForwardList<string> x14 = Return(two);
+    #assert(!x14.IsEmpty());
+    #assert(x14.Count() == 2);
+    #assert(x14 == two);
+
+    ForwardList<string> eight = MakeEight();
+    #assert(!eight.IsEmpty());
+    #assert(eight.Count() == 8);
+    ForwardList<string> x15(eight);
+    #assert(!x15.IsEmpty());
+    #assert(x15.Count() == 8);
+    #assert(x15 == eight);
+    ForwardList<string> x16;
+    x16 = eight;
+    #assert(!x16.IsEmpty());
+    #assert(x16.Count() == 8);
+    #assert(x16 == eight);
+    ForwardList<string> eight2(eight);
+    ForwardList<string> x17(Rvalue(eight2));
+    #assert(!x17.IsEmpty());
+    #assert(x17.Count() == 8);
+    #assert(x17 == eight);
+    ForwardList<string> eight3(eight);
+    ForwardList<string> x18;
+    x18 = Rvalue(eight3);
+    #assert(!x18.IsEmpty());
+    #assert(x18.Count() == 8);
+    #assert(x18 == eight);
+    ForwardList<string> x19 = Return(eight);
+    #assert(!x19.IsEmpty());
+    #assert(x19.Count() == 8);
+    #assert(x19 == eight);
+
+    ForwardList<string> kilo = MakeKilo();
+    #assert(!kilo.IsEmpty());
+    #assert(kilo.Count() == 1024);
+    ForwardList<string> x20(kilo);
+    #assert(!x20.IsEmpty());
+    #assert(x20.Count() == 1024);
+    #assert(x20 == kilo);
+    ForwardList<string> x21;
+    x21 = kilo;
+    #assert(!x21.IsEmpty());
+    #assert(x21.Count() == 1024);
+    #assert(x21 == kilo);
+    ForwardList<string> kilo2(kilo);
+    ForwardList<string> x22(Rvalue(kilo2));
+    #assert(!x22.IsEmpty());
+    #assert(x22.Count() == 1024);
+    #assert(x22 == kilo);
+    ForwardList<string> kilo3(kilo);
+    ForwardList<string> x23;
+    x23 = Rvalue(kilo3);
+    #assert(!x23.IsEmpty());
+    #assert(x23.Count() == 1024);
+    #assert(x23 == kilo);
+    ForwardList<string> x24 = Return(kilo);
+    #assert(!x24.IsEmpty());
+    #assert(x24.Count() == 1024);
+    #assert(x24 == kilo);
+}
+
+unit_test void string_forward_list_iterator_test()
+{
+    ForwardList<string> empty;
+    #assert(empty.Begin() == empty.End());
+    #assert(empty.CBegin() == empty.CEnd());
+    ForwardList<string> one = MakeOne();
+    #assert(one.Begin() != one.End());
+    #assert(*one.Begin() == "1");
+    #assert(one.CBegin() != one.CEnd());
+    #assert(*one.CBegin() == "1");
+    ForwardList<string> two = MakeTwo();
+    #assert(two.Begin() != two.End());
+    auto it0 = two.Begin();
+    #assert(*it0 == "1");
+    ++it0;
+    #assert(*it0 == "2");
+    #assert(two.CBegin() != two.CEnd());
+    auto it1 = two.CBegin();
+    #assert(*it1 == "1");
+    ++it1;
+    #assert(*it1 == "2");
+    ForwardList<string> eight = MakeEight();
+    #assert(eight.Begin() != eight.End());
+    int value = 0;
+    for (auto it = eight.Begin(); it != eight.End(); ++it)
+    {
+        #assert(*it == ToString(value));
+        ++value;
+    }
+    #assert(eight.CBegin() != eight.CEnd());
+    value = 0;
+    for (auto it = eight.CBegin(); it != eight.CEnd(); ++it)
+    {
+        #assert(*it == ToString(value));
+        ++value;
+    }
+    ForwardList<string> kilo = MakeKilo();
+    #assert(kilo.Begin() != kilo.End());
+    value = 0;
+    for (auto it = kilo.Begin(); it != kilo.End(); ++it)
+    {
+        #assert(*it == ToString(value % 10));
+        ++value;
+    }
+    #assert(kilo.CBegin() != kilo.CEnd());
+    value = 0;
+    for (auto it = kilo.CBegin(); it != kilo.CEnd(); ++it)
+    {
+        #assert(*it == ToString(value % 10));
+        ++value;
+    }
+}
+
+unit_test void string_forward_list_remove_value_test()
+{
+    ForwardList<string> x0 = MakeOne();
+    x0.Remove("1");
+    #assert(x0.Count() == 0);
+
+    ForwardList<string> x1 = MakeOne();
+    x1.Remove("x");
+    #assert(x1.Count() == 1);
+    #assert(*x1.Begin() == "1");
+
+    ForwardList<string> x2 = MakeTwo();
+    x2.Remove("1");
+    #assert(x2.Count() == 1);
+    #assert(*x2.Begin() == "2");
+
+    ForwardList<string> x3 = MakeTwo();
+    x3.Remove("2");
+    #assert(x3.Count() == 1);
+    #assert(*x3.Begin() == "1");
+
+    ForwardList<string> x4 = MakeTwo();
+    x4.Remove("x");
+    #assert(x4.Count() == 2);
+    auto it0 = x4.Begin();
+    #assert(*it0 == "1");
+    ++it0;
+    #assert(*it0 == "2");
+
+    ForwardList<string> x5 = MakeEight();
+    x5.Remove("0");
+    #assert(x5.Count() == 7);
+    auto it1 = x5.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert(*it1 == ToString(i + 1));
+        ++it1;
+    }
+
+    ForwardList<string> x6 = MakeEight();
+    x6.Remove("1");
+    #assert(x6.Count() == 7);
+    auto it2 = x6.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 1)
+        {
+            #assert(*it2 == ToString(i));
+        }
+        else
+        {
+            #assert(*it2 == ToString(i + 1));
+        }
+        ++it2;
+    }
+
+    ForwardList<string> x7 = MakeEight();
+    x7.Remove("6");
+    #assert(x7.Count() == 7);
+    auto it3 = x7.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 6)
+        {
+            #assert(*it3 == ToString(i));
+        }
+        else
+        {
+            #assert(*it3 == ToString(i + 1));
+        }
+        ++it3;
+    }
+
+    ForwardList<string> x8 = MakeEight();
+    x8.Remove("7");
+    #assert(x8.Count() == 7);
+    auto it4 = x8.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert(*it4 == ToString(i));
+        ++it4;
+    }
+
+    ForwardList<string> x9 = MakeEight();
+    x9.Remove("x");
+    #assert(x9.Count() == 8);
+    auto it5 = x9.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert(*it5 == ToString(i));
+        ++it5;
+    }
+
+    ForwardList<string> x10 = MakeKilo();
+    x10.Remove("0");
+    #assert(x10.Count() == 921);
+    int value = 0;
+    auto it6 = x10.Begin();
+    for (int i = 0; i < 921; ++i)
+    {
+        if ((i % 9) == 0)
+        {
+            ++value;
+        }
+        else
+        {
+            #assert(*it6 == ToString((value % 9) + 1));
+            ++value;
+        }
+        ++it6;
+    }
+}
+
+unit_test void string_forward_list_equal_test()
+{
+    ForwardList<string> x0;
+    #assert(x0 == x0);
+
+    ForwardList<string> x1 = MakeOne();
+    #assert(x1 == x1);
+    #assert(x1 != x0);
+
+    ForwardList<string> x2 = MakeTwo();
+    #assert(x2 == x2);
+    #assert(x2 != x1);
+    #assert(x1 != x2);
+    #assert(x2 != x0);
+    #assert(x0 != x2);
+
+    ForwardList<string> x3 = MakeEight();
+    #assert(x3 == x3);
+    #assert(x3 != x2);
+    #assert(x2 != x3);
+    #assert(x3 != x1);
+    #assert(x1 != x3);
+    #assert(x3 != x0);
+    #assert(x0 != x3);
+
+    ForwardList<string> x4 = MakeKilo();
+    #assert(x4 == x4);
+    #assert(x4 != x3);
+    #assert(x3 != x4);
+    #assert(x4 != x2);
+    #assert(x2 != x4);
+    #assert(x4 != x1);
+    #assert(x1 != x4);
+    #assert(x4 != x0);
+    #assert(x0 != x4);
+}
+
+unit_test void string_forward_list_compare_test()
+{
+    ForwardList<string> x0;
+    #assert(!(x0 < x0));
+    #assert(!(x0 > x0));
+    #assert((x0 <= x0));
+    #assert((x0 >= x0));
+
+    ForwardList<string> x1 = MakeOne();
+    #assert(!(x1 < x1));
+    #assert(!(x1 > x1));
+    #assert(x1 <= x1);
+    #assert(x1 >= x1);
+    #assert(x0 < x1);
+    #assert(!(x0 > x1));
+    #assert(x0 <= x1);
+    #assert(!(x0 >= x1));
+    #assert(!(x1 < x0));
+    #assert(x1 > x0);
+    #assert(!(x1 <= x0));
+    #assert(x1 >= x0);
+
+    ForwardList<string> x2 = MakeTwo();
+    #assert(!(x2 < x2));
+    #assert(!(x2 > x2));
+    #assert(x2 <= x2);
+    #assert(x2 >= x2);
+    #assert(!(x2 < x1));
+    #assert(!(x2 < x1));
+    #assert(x1 < x2);
+    #assert(!(x1 > x2));
+    #assert(x1 <= x2);
+    #assert(!(x1 >= x2));
+    #assert(!(x2 < x0));
+    #assert(x2 > x0);
+    #assert(!(x2 <= x0));
+    #assert(x2 >= x0);
+
+    ForwardList<string> x3 = MakeEight();
+    #assert(!(x3 < x3));
+    #assert(!(x3 > x3));
+    #assert(x3 <= x3);
+    #assert(x3 >= x3);
+    #assert(x3 < x2);
+    #assert(!(x3 > x2));
+    #assert(x3 <= x2);
+    #assert(!(x3 >= x2));
+    #assert(!(x2 < x3));
+    #assert(x2 > x3);
+    #assert(!(x2 <= x3));
+    #assert(x2 >= x3);
+    #assert(x3 < x1);
+    #assert(!(x3 > x1));
+    #assert(x3 <= x1);
+    #assert(!(x3 >= x1));
+    #assert(!(x1 < x3));
+    #assert(x1 > x3);
+    #assert(!(x1 <= x3));
+    #assert(x1 >= x3);
+    #assert(!(x3 < x0));
+    #assert(x3 > x0);
+    #assert(!(x3 <= x0));
+    #assert(x3 >= x0);
+    #assert(x0 < x3);
+    #assert(!(x0 > x3));
+    #assert(x0 <= x3);
+    #assert(!(x0 >= x3));
+}

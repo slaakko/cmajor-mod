@@ -1,0 +1,79 @@
+using System;
+using System.Collections;
+
+public ForwardList<string> MakeOne()
+{
+    ForwardList<string> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, ToString(1));
+    return one;
+}
+
+public ForwardList<string> MakeTwo()
+{
+    ForwardList<string> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, ToString(1));
+    it = two.InsertAfter(it, ToString(2));
+    return two;
+}
+
+public ForwardList<string> MakeEight()
+{
+    ForwardList<string> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, ToString(i));
+    }
+    return eight;
+}
+
+public ForwardList<string> MakeKilo()
+{
+    ForwardList<string> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, ToString(i % 10));
+    }
+    return kilo;
+}
+
+public ForwardList<string> Return(const ForwardList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_forward_list_equal_test()
+{
+    ForwardList<string> x0;
+    #assert (x0 == x0);
+    ForwardList<string> x1 = MakeOne();
+    #assert (x1 == x1);
+    #assert (x1 != x0);
+    ForwardList<string> x2 = MakeTwo();
+    #assert (x2 == x2);
+    #assert (x2 != x1);
+    #assert (x1 != x2);
+    #assert (x2 != x0);
+    #assert (x0 != x2);
+    ForwardList<string> x3 = MakeEight();
+    #assert (x3 == x3);
+    #assert (x3 != x2);
+    #assert (x2 != x3);
+    #assert (x3 != x1);
+    #assert (x1 != x3);
+    #assert (x3 != x0);
+    #assert (x0 != x3);
+    ForwardList<string> x4 = MakeKilo();
+    #assert (x4 == x4);
+    #assert (x4 != x3);
+    #assert (x3 != x4);
+    #assert (x4 != x2);
+    #assert (x2 != x4);
+    #assert (x4 != x1);
+    #assert (x1 != x4);
+    #assert (x4 != x0);
+    #assert (x0 != x4);
+}

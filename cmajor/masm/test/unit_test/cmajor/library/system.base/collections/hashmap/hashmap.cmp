@@ -1,0 +1,4 @@
+project hashmap;
+target=unitTest;
+source <int_string_hashmap.cm>;
+source <string_int_hashmap.cm>;

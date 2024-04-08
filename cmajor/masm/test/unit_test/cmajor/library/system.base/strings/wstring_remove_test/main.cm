@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    wstring_remove_test();
+    return 0;
+}

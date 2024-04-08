@@ -1,0 +1,2 @@
+project insert_iterator;
+source <insert_iterator.cm>;

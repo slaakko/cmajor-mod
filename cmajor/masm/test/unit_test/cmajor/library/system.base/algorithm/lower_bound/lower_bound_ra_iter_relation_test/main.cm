@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    lower_bound_ra_iter_relation_test();
+    return 0;
+}

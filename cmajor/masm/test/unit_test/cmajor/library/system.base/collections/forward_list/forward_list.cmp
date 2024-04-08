@@ -1,0 +1,4 @@
+project forward_list;
+target=unitTest;
+source <int_forward_list.cm>;
+source <string_forward_list.cm>;

@@ -1,0 +1,4 @@
+project sort_test;
+target=program;
+source <sort_test.cm>;
+source <main.cm>;

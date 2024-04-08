@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_list_insert_copy_test();
+    return 0;
+}

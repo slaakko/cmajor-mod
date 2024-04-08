@@ -1,0 +1,4 @@
+project wstring_replace_string_test;
+target=program;
+source <wstring_replace_string_test.cm>;
+source <main.cm>;

@@ -15,6 +15,9 @@ namespace System.Collections
         public LinkedListNode(const ValueType& value_, LinkedListNode<T>* prev_, LinkedListNode<T>* next_) : value(value_), prev(prev_), next(next_)
         {
         }
+        public LinkedListNode(ValueType&& value_, LinkedListNode<T>* prev_, LinkedListNode<T>* next_) : value(value_), prev(prev_), next(next_)
+        {
+        }
         public inline const ValueType& Value() const
         {
             return value;
@@ -219,6 +222,20 @@ namespace System.Collections
             }
         }
         public void Add(const ValueType& value)
+        {
+            if (tail == null)
+            {
+                tail = new LinkedListNode<ValueType>(value, null, null);
+                head = tail;
+            }
+            else
+            {
+                tail = new LinkedListNode<ValueType>(value, tail, null);
+                tail->Prev()->SetNext(tail);
+            }
+            ++count;
+        }
+        public void Add(ValueType&& value)
         {
             if (tail == null)
             {

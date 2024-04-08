@@ -1,0 +1,181 @@
+using System;
+using System.Collections;
+
+public LinkedList<string> MakeOne()
+{
+    LinkedList<string> one;
+    one.Add(ToString(1));
+    return one;
+}
+
+public LinkedList<string> MakeTwo()
+{
+    LinkedList<string> two;
+    two.Add(ToString(1));
+    two.Add(ToString(2));
+    return two;
+}
+
+public LinkedList<string> MakeEight()
+{
+    LinkedList<string> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(ToString(i));
+    }
+    return eight;
+}
+
+public LinkedList<string> MakeKilo()
+{
+    LinkedList<string> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(ToString(i % 10));
+    }
+    return kilo;
+}
+
+public LinkedList<string> Return(const LinkedList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_linked_list_value_test()
+{
+    LinkedList<string> empty;
+    #assert (empty.IsEmpty());
+    #assert (empty.Count() == 0);
+    LinkedList<string> x0(empty);
+    #assert (x0.IsEmpty());
+    #assert (x0.Count() == 0);
+    #assert (x0 == empty);
+    LinkedList<string> x1;
+    x1 = empty;
+    #assert (x1.IsEmpty());
+    #assert (x1.Count() == 0);
+    #assert (x1 == empty);
+    LinkedList<string> e2(empty);
+    LinkedList<string> x2(Rvalue(e2));
+    #assert (x2.IsEmpty());
+    #assert (x2.Count() == 0);
+    #assert (x2 == empty);
+    LinkedList<string> x3;
+    LinkedList<string> e3(empty);
+    x3 = Rvalue(e3);
+    #assert (x3.IsEmpty());
+    #assert (x3.Count() == 0);
+    #assert (x3 == empty);
+    LinkedList<string> x4 = Return(empty);
+    #assert (x4.IsEmpty());
+    #assert (x4.Count() == 0);
+    #assert (x4 == empty);
+    LinkedList<string> one = MakeOne();
+    #assert (!one.IsEmpty());
+    #assert (one.Count() == 1);
+    LinkedList<string> x5(one);
+    #assert (!x5.IsEmpty());
+    #assert (x5.Count() == 1);
+    #assert (x5 == one);
+    LinkedList<string> x6;
+    x6 = one;
+    #assert (!x6.IsEmpty());
+    #assert (x6.Count() == 1);
+    #assert (x6 == one);
+    LinkedList<string> one2(one);
+    LinkedList<string> x7(Rvalue(one2));
+    #assert (!x7.IsEmpty());
+    #assert (x7.Count() == 1);
+    #assert (x7 == one);
+    LinkedList<string> one3(one);
+    LinkedList<string> x8;
+    x8 = Rvalue(one3);
+    #assert (!x8.IsEmpty());
+    #assert (x8.Count() == 1);
+    #assert (x8 == one);
+    LinkedList<string> x9 = Return(one);
+    #assert (!x9.IsEmpty());
+    #assert (x9.Count() == 1);
+    #assert (x9 == one);
+    LinkedList<string> two = MakeTwo();
+    #assert (!two.IsEmpty());
+    #assert (two.Count() == 2);
+    LinkedList<string> x10(two);
+    #assert (!x10.IsEmpty());
+    #assert (x10.Count() == 2);
+    #assert (x10 == two);
+    LinkedList<string> x11;
+    x11 = two;
+    #assert (!x11.IsEmpty());
+    #assert (x11.Count() == 2);
+    #assert (x11 == two);
+    LinkedList<string> two2(two);
+    LinkedList<string> x12(Rvalue(two2));
+    #assert (!x12.IsEmpty());
+    #assert (x12.Count() == 2);
+    #assert (x12 == two);
+    LinkedList<string> two3(two);
+    LinkedList<string> x13;
+    x13 = Rvalue(two3);
+    #assert (!x13.IsEmpty());
+    #assert (x13.Count() == 2);
+    #assert (x13 == two);
+    LinkedList<string> x14 = Return(two);
+    #assert (!x14.IsEmpty());
+    #assert (x14.Count() == 2);
+    #assert (x14 == two);
+    LinkedList<string> eight = MakeEight();
+    #assert (!eight.IsEmpty());
+    #assert (eight.Count() == 8);
+    LinkedList<string> x15(eight);
+    #assert (!x15.IsEmpty());
+    #assert (x15.Count() == 8);
+    #assert (x15 == eight);
+    LinkedList<string> x16;
+    x16 = eight;
+    #assert (!x16.IsEmpty());
+    #assert (x16.Count() == 8);
+    #assert (x16 == eight);
+    LinkedList<string> eight2(eight);
+    LinkedList<string> x17(Rvalue(eight2));
+    #assert (!x17.IsEmpty());
+    #assert (x17.Count() == 8);
+    #assert (x17 == eight);
+    LinkedList<string> eight3(eight);
+    LinkedList<string> x18;
+    x18 = Rvalue(eight3);
+    #assert (!x18.IsEmpty());
+    #assert (x18.Count() == 8);
+    #assert (x18 == eight);
+    LinkedList<string> x19 = Return(eight);
+    #assert (!x19.IsEmpty());
+    #assert (x19.Count() == 8);
+    #assert (x19 == eight);
+    LinkedList<string> kilo = MakeKilo();
+    #assert (!kilo.IsEmpty());
+    #assert (kilo.Count() == 1024);
+    LinkedList<string> x20(kilo);
+    #assert (!x20.IsEmpty());
+    #assert (x20.Count() == 1024);
+    #assert (x20 == kilo);
+    LinkedList<string> x21;
+    x21 = kilo;
+    #assert (!x21.IsEmpty());
+    #assert (x21.Count() == 1024);
+    #assert (x21 == kilo);
+    LinkedList<string> kilo2(kilo);
+    LinkedList<string> x22(Rvalue(kilo2));
+    #assert (!x22.IsEmpty());
+    #assert (x22.Count() == 1024);
+    #assert (x22 == kilo);
+    LinkedList<string> kilo3(kilo);
+    LinkedList<string> x23;
+    x23 = Rvalue(kilo3);
+    #assert (!x23.IsEmpty());
+    #assert (x23.Count() == 1024);
+    #assert (x23 == kilo);
+    LinkedList<string> x24 = Return(kilo);
+    #assert (!x24.IsEmpty());
+    #assert (x24.Count() == 1024);
+    #assert (x24 == kilo);
+}

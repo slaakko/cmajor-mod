@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_plus_string_test();
+    return 0;
+}

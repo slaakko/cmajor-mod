@@ -1,0 +1,4 @@
+project accumulate_test;
+target=program;
+source <accumulate_test.cm>;
+source <main.cm>;

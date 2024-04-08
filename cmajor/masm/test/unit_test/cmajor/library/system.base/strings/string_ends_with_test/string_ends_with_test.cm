@@ -1,0 +1,63 @@
+using System;
+
+unit_test void string_ends_with_test()
+{
+    string a('a');
+    string x('x');
+    string abc("abc");
+    string empty;
+    #assert (empty.EndsWith(string()));
+    #assert (empty.EndsWith(empty));
+    #assert (!empty.EndsWith(a));
+    #assert (!empty.EndsWith(x));
+    #assert (!empty.EndsWith(abc));
+    string one('a');
+    #assert (one.EndsWith(string()));
+    #assert (one.EndsWith(empty));
+    #assert (one.EndsWith(a));
+    #assert (one.EndsWith(one));
+    #assert (!one.EndsWith(x));
+    #assert (!one.EndsWith(abc));
+    string two("ab");
+    #assert (two.EndsWith(string()));
+    #assert (two.EndsWith(empty));
+    #assert (!two.EndsWith(a));
+    #assert (two.EndsWith("b"));
+    #assert (two.EndsWith(two));
+    #assert (two.EndsWith("ab"));
+    #assert (!two.EndsWith(x));
+    #assert (!two.EndsWith(abc));
+    #assert (!two.EndsWith("12345678"));
+    string eight("12345678");
+    #assert (eight.EndsWith(string()));
+    #assert (eight.EndsWith(empty));
+    #assert (eight.EndsWith("8"));
+    #assert (eight.EndsWith("78"));
+    #assert (eight.EndsWith("678"));
+    #assert (eight.EndsWith(eight));
+    #assert (!eight.EndsWith(a));
+    #assert (!eight.EndsWith("b"));
+    #assert (!eight.EndsWith(two));
+    #assert (!eight.EndsWith("ab"));
+    #assert (!eight.EndsWith(x));
+    #assert (!eight.EndsWith(abc));
+    #assert (!eight.EndsWith("123456789"));
+    #assert (!eight.EndsWith("12"));
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.EndsWith(string()));
+    #assert (kilo.EndsWith(empty));
+    string e("4567890123");
+    #assert (kilo.EndsWith(e));
+    #assert (kilo.EndsWith(e.Substring(4)));
+    #assert (kilo.EndsWith(kilo));
+    #assert (kilo.EndsWith(kilo.Substring(0, 4)));
+    #assert (!kilo.EndsWith(a));
+    #assert (!kilo.EndsWith(x));
+    #assert (!kilo.EndsWith(abc));
+    string kiloPlusOne = kilo + "1";
+    #assert (!kilo.EndsWith(kiloPlusOne));
+}

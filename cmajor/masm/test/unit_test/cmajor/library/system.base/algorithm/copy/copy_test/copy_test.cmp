@@ -1,0 +1,4 @@
+project copy_test;
+target=program;
+source <copy_test.cm>;
+source <main.cm>;

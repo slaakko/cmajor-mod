@@ -1,0 +1,95 @@
+using System;
+using System.Collections;
+
+public LinkedList<int> MakeOne()
+{
+    LinkedList<int> one;
+    one.Add(1);
+    return one;
+}
+
+public LinkedList<int> MakeTwo()
+{
+    LinkedList<int> two;
+    two.Add(1);
+    two.Add(2);
+    return two;
+}
+
+public LinkedList<int> MakeEight()
+{
+    LinkedList<int> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(i);
+    }
+    return eight;
+}
+
+public LinkedList<int> MakeKilo()
+{
+    LinkedList<int> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(i % 10);
+    }
+    return kilo;
+}
+
+public LinkedList<int> Return(const LinkedList<int>& x)
+{
+    return x;
+}
+
+unit_test void int_linked_list_iterator_test()
+{
+    LinkedList<int> empty;
+    #assert (empty.Begin() == empty.End());
+    #assert (empty.CBegin() == empty.CEnd());
+    LinkedList<int> one = MakeOne();
+    #assert (one.Begin() != one.End());
+    #assert (*one.Begin() == 1);
+    #assert (one.CBegin() != one.CEnd());
+    #assert (*one.CBegin() == 1);
+    LinkedList<int> two = MakeTwo();
+    #assert (two.Begin() != two.End());
+    auto it0 = two.Begin();
+    #assert (*it0 == 1);
+    ++it0;
+    #assert (*it0 == 2);
+    #assert (two.CBegin() != two.CEnd());
+    auto it1 = two.CBegin();
+    #assert (*it1 == 1);
+    ++it1;
+    #assert (*it1 == 2);
+    LinkedList<int> eight = MakeEight();
+    #assert (eight.Begin() != eight.End());
+    int value = 0;
+    for (auto it = eight.Begin(); it != eight.End(); ++it)
+    {
+        #assert (*it == value);
+        ++value;
+    }
+    #assert (eight.CBegin() != eight.CEnd());
+    value = 0;
+    for (auto it = eight.CBegin(); it != eight.CEnd(); ++it)
+    {
+        #assert (*it == value);
+        ++value;
+    }
+    LinkedList<int> kilo = MakeKilo();
+    #assert (kilo.Begin() != kilo.End());
+    value = 0;
+    for (auto it = kilo.Begin(); it != kilo.End(); ++it)
+    {
+        #assert (*it == value % 10);
+        ++value;
+    }
+    #assert (kilo.CBegin() != kilo.CEnd());
+    value = 0;
+    for (auto it = kilo.CBegin(); it != kilo.CEnd(); ++it)
+    {
+        #assert (*it == value % 10);
+        ++value;
+    }
+}

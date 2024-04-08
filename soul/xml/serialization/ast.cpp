@@ -315,7 +315,8 @@ void MemberVariableNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-CppBlockNode::CppBlockNode(const soul::ast::SourcePos& sourcePos_, const std::string& cppText_) : Node(NodeKind::cppBlockNode, sourcePos_), cppText(cppText_)
+CppBlockNode::CppBlockNode(const soul::ast::SourcePos& sourcePos_, const std::string& cppText_) : 
+    Node(NodeKind::cppBlockNode, sourcePos_), cppText(cppText_), implementation(false)
 {
 }
 

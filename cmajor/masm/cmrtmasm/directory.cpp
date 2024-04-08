@@ -32,7 +32,7 @@ private:
     std::mutex mtx;
 };
 
-DirectoryIterationTable::DirectoryIterationTable()
+DirectoryIterationTable::DirectoryIterationTable(): nextIterationHandle(0)
 {
 }
 

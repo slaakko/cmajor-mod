@@ -18,7 +18,7 @@ std::string regName[] =
     ""
 };
 
-Register::Register() : Value(std::string()), kind(), group()
+Register::Register() : Value(std::string()), kind(), group(), size(0)
 {
 }
 

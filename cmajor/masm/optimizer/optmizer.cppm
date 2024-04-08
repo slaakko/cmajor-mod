@@ -5,4 +5,5 @@
 
 export module cmajor.masm.optimizer;
 
+export import cmajor.masm.optimizer.inline_expander; 
 export import cmajor.masm.optimizer.optimize;

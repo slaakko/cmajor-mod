@@ -1,0 +1,90 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public Set<int> MakeSet(const List<int>& x)
+{
+    Set<int> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(x[i]);
+    }
+    return s;
+}
+
+public Set<int> MakeOne()
+{
+    Set<int> s;
+    s.Insert(0);
+    return s;
+}
+
+public Set<int> MakeTwo()
+{
+    Set<int> s;
+    s.Insert(0);
+    s.Insert(1);
+    return s;
+}
+
+public Set<int> MakeEight()
+{
+    Set<int> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public Set<int> MakeKilo()
+{
+    Set<int> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public Set<int> Return(const Set<int>& x)
+{
+    return x;
+}
+
+unit_test void int_set_remove_value_test()
+{
+    Set<int> s0;
+    #assert (!s0.Remove(0));
+    Set<int> s1 = MakeOne();
+    #assert (s1.Remove(0));
+    Set<int> s2 = MakeOne();
+    #assert (!s2.Remove(-1));
+    Set<int> s3 = MakeTwo();
+    #assert (s3.Remove(0));
+    #assert (s3.Remove(1));
+    Set<int> s4 = MakeTwo();
+    #assert (s4.Remove(1));
+    #assert (s4.Remove(0));
+    Set<int> s5 = MakeTwo();
+    #assert (!s5.Remove(-1));
+    List<int> p = MakeList(8);
+    do
+    {
+        Set<int> s6 = MakeEight();
+        for (int i = 0; i < 8; ++i)
+        {
+            #assert (s6.Remove(p[i]));
+        }
+    }
+    while (NextPermutation(p.Begin(), p.End()));
+}

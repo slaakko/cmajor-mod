@@ -1,0 +1,4 @@
+project hashset;
+target=unitTest;
+source <int_hashset.cm>;
+source <string_hashset.cm>;

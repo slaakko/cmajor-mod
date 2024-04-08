@@ -1,0 +1,3 @@
+project max;
+target=unitTest;
+source <max.cm>;

@@ -1,0 +1,4 @@
+project string_insert_char_test;
+target=program;
+source <string_insert_char_test.cm>;
+source <main.cm>;

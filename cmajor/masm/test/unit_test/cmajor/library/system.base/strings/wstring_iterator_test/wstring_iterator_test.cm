@@ -1,0 +1,54 @@
+using System;
+
+unit_test void wstring_iterator_test()
+{
+    wstring empty;
+    #assert (empty.Begin() == empty.End());
+    #assert (empty.CBegin() == empty.CEnd());
+    wstring one('a');
+    #assert (one.Begin() != one.End());
+    #assert (one.Begin() + 1 == one.End());
+    #assert (*one.Begin() == 'a');
+    #assert (one.CBegin() != one.CEnd());
+    #assert (one.CBegin() + 1 == one.CEnd());
+    #assert (*one.CBegin() == 'a');
+    wstring two(w"ab");
+    #assert (two.Begin() != two.End());
+    #assert (two.Begin() + 2 == two.End());
+    #assert (*two.Begin() == 'a');
+    #assert (*(two.Begin() + 1) == 'b');
+    #assert (two.CBegin() != two.CEnd());
+    #assert (two.CBegin() + 2 == two.CEnd());
+    #assert (*two.CBegin() == 'a');
+    #assert (*(two.CBegin() + 1) == 'b');
+    wstring eight(w"12345678");
+    #assert (eight.Begin() != eight.End());
+    #assert (eight.Begin() + 8 == eight.End());
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (*(eight.Begin() + i) == cast<char>(cast<int>('1') + i));
+    }
+    #assert (eight.CBegin() != eight.CEnd());
+    #assert (eight.CBegin() + 8 == eight.CEnd());
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (*(eight.CBegin() + i) == cast<char>(cast<int>('1') + i));
+    }
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.Begin() != kilo.End());
+    #assert (kilo.Begin() + 1024 == kilo.End());
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (*(kilo.Begin() + i) == cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.CBegin() != kilo.CEnd());
+    #assert (kilo.CBegin() + 1024 == kilo.CEnd());
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (*(kilo.CBegin() + i) == cast<char>(cast<int>('0') + (i % 10)));
+    }
+}

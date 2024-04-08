@@ -1,0 +1,66 @@
+using System;
+
+unit_test void wstring_replace_string_test()
+{
+    wstring empty;
+    empty.Replace(w"abc", w"x");
+    #assert (empty.IsEmpty());
+    #assert (empty.Length() == 0);
+    wstring one('a');
+    wstring a('a');
+    wstring x(w"xyz");
+    one.Replace(a, x);
+    #assert (!one.IsEmpty());
+    #assert (one.Length() == 3);
+    #assert (one == w"xyz");
+    wstring oneNot('a');
+    wstring n('n');
+    oneNot.Replace(n, x);
+    #assert (!oneNot.IsEmpty());
+    #assert (oneNot.Length() == 1);
+    #assert (oneNot == w"a");
+    wstring two(w"ab");
+    two.Replace(w"ab", w"xyz");
+    #assert (!two.IsEmpty());
+    #assert (two.Length() == 3);
+    #assert (two == w"xyz");
+    wstring two2(w"ab");
+    two2.Replace(w"a", w"x");
+    #assert (!two2.IsEmpty());
+    #assert (two2.Length() == 2);
+    #assert (two2 == w"xb");
+    wstring twoNot(w"ab");
+    twoNot.Replace(n, x);
+    #assert (!twoNot.IsEmpty());
+    #assert (twoNot.Length() == 2);
+    #assert (twoNot == w"ab");
+    wstring eight(w"12345678");
+    eight.Replace(w"4", w"xyz");
+    #assert (!eight.IsEmpty());
+    #assert (eight.Length() == 8 - 1 + 3);
+    #assert (eight == w"123xyz5678");
+    wstring eightNot(w"12345678");
+    eightNot.Replace(w"x", w"abc");
+    #assert (!eightNot.IsEmpty());
+    #assert (eightNot.Length() == 8);
+    #assert (eightNot == w"12345678");
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Replace(w"123", w"xy");
+    #assert (!kilo.IsEmpty());
+    Console.WriteLine(kilo.Length());
+    #assert (kilo.Length() == 921);
+    for (int i = 0; i < 921; ++i)
+    {
+        if (i % 9 == 0)
+        {
+            wstring s = kilo.Substring(i, 9);
+            wstring t = w"0xy456789";
+            t = t.Substring(0, s.Length());
+            #assert (s == t);
+        }
+    }
+}

@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_list_compare_test();
+    return 0;
+}

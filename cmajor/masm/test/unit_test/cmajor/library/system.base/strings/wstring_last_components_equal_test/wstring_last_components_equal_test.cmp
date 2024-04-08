@@ -1,0 +1,4 @@
+project wstring_last_components_equal_test;
+target=program;
+source <wstring_last_components_equal_test.cm>;
+source <main.cm>;

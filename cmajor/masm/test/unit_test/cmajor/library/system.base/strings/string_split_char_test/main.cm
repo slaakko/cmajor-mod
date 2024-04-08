@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_split_char_test();
+    return 0;
+}

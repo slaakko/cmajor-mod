@@ -1,0 +1,7 @@
+<results>
+    <move_test project="move" solution="">
+        <test count="1" exitCode="0" name="move_test">
+            <assertion index="0" line="23" result="passed"/>
+        </test>
+    </move_test>
+</results>

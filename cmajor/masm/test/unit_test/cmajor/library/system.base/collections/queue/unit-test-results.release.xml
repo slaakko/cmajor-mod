@@ -1,0 +1,54 @@
+<results>
+    <int_queue_test project="queue" solution="">
+        <test count="22" exitCode="0" name="int_queue_test">
+            <assertion index="0" line="7" result="passed"/>
+            <assertion index="1" line="8" result="passed"/>
+            <assertion index="2" line="10" result="passed"/>
+            <assertion index="3" line="11" result="passed"/>
+            <assertion index="4" line="13" result="passed"/>
+            <assertion index="5" line="14" result="passed"/>
+            <assertion index="6" line="15" result="passed"/>
+            <assertion index="7" line="18" result="passed"/>
+            <assertion index="8" line="19" result="passed"/>
+            <assertion index="9" line="21" result="passed"/>
+            <assertion index="10" line="22" result="passed"/>
+            <assertion index="11" line="23" result="passed"/>
+            <assertion index="12" line="25" result="passed"/>
+            <assertion index="13" line="26" result="passed"/>
+            <assertion index="14" line="27" result="passed"/>
+            <assertion index="15" line="32" result="passed"/>
+            <assertion index="16" line="33" result="passed"/>
+            <assertion index="17" line="37" result="passed"/>
+            <assertion index="18" line="40" result="passed"/>
+            <assertion index="19" line="41" result="passed"/>
+            <assertion index="20" line="45" result="passed"/>
+            <assertion index="21" line="46" result="passed"/>
+        </test>
+    </int_queue_test>
+    <string_queue_test project="queue" solution="">
+        <test count="22" exitCode="0" name="string_queue_test">
+            <assertion index="0" line="7" result="passed"/>
+            <assertion index="1" line="8" result="passed"/>
+            <assertion index="2" line="10" result="passed"/>
+            <assertion index="3" line="11" result="passed"/>
+            <assertion index="4" line="13" result="passed"/>
+            <assertion index="5" line="14" result="passed"/>
+            <assertion index="6" line="15" result="passed"/>
+            <assertion index="7" line="18" result="passed"/>
+            <assertion index="8" line="19" result="passed"/>
+            <assertion index="9" line="21" result="passed"/>
+            <assertion index="10" line="22" result="passed"/>
+            <assertion index="11" line="23" result="passed"/>
+            <assertion index="12" line="25" result="passed"/>
+            <assertion index="13" line="26" result="passed"/>
+            <assertion index="14" line="27" result="passed"/>
+            <assertion index="15" line="32" result="passed"/>
+            <assertion index="16" line="33" result="passed"/>
+            <assertion index="17" line="37" result="passed"/>
+            <assertion index="18" line="40" result="passed"/>
+            <assertion index="19" line="41" result="passed"/>
+            <assertion index="20" line="45" result="passed"/>
+            <assertion index="21" line="46" result="passed"/>
+        </test>
+    </string_queue_test>
+</results>

@@ -1,0 +1,75 @@
+using System;
+using System.Collections;
+
+public LinkedList<string> MakeOne()
+{
+    LinkedList<string> one;
+    one.Add(ToString(1));
+    return one;
+}
+
+public LinkedList<string> MakeTwo()
+{
+    LinkedList<string> two;
+    two.Add(ToString(1));
+    two.Add(ToString(2));
+    return two;
+}
+
+public LinkedList<string> MakeEight()
+{
+    LinkedList<string> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(ToString(i));
+    }
+    return eight;
+}
+
+public LinkedList<string> MakeKilo()
+{
+    LinkedList<string> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(ToString(i % 10));
+    }
+    return kilo;
+}
+
+public LinkedList<string> Return(const LinkedList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_linked_list_equal_test()
+{
+    LinkedList<string> x0;
+    #assert (x0 == x0);
+    LinkedList<string> x1 = MakeOne();
+    #assert (x1 == x1);
+    #assert (x1 != x0);
+    LinkedList<string> x2 = MakeTwo();
+    #assert (x2 == x2);
+    #assert (x2 != x1);
+    #assert (x1 != x2);
+    #assert (x2 != x0);
+    #assert (x0 != x2);
+    LinkedList<string> x3 = MakeEight();
+    #assert (x3 == x3);
+    #assert (x3 != x2);
+    #assert (x2 != x3);
+    #assert (x3 != x1);
+    #assert (x1 != x3);
+    #assert (x3 != x0);
+    #assert (x0 != x3);
+    LinkedList<string> x4 = MakeKilo();
+    #assert (x4 == x4);
+    #assert (x4 != x3);
+    #assert (x3 != x4);
+    #assert (x4 != x2);
+    #assert (x2 != x4);
+    #assert (x4 != x1);
+    #assert (x1 != x4);
+    #assert (x4 != x0);
+    #assert (x0 != x4);
+}

@@ -1,0 +1,26 @@
+<results>
+    <swap_test project="swap" solution="">
+        <test count="20" exitCode="0" name="swap_test">
+            <assertion index="0" line="18" result="passed"/>
+            <assertion index="1" line="19" result="passed"/>
+            <assertion index="2" line="21" result="passed"/>
+            <assertion index="3" line="22" result="passed"/>
+            <assertion index="4" line="26" result="passed"/>
+            <assertion index="5" line="27" result="passed"/>
+            <assertion index="6" line="29" result="passed"/>
+            <assertion index="7" line="30" result="passed"/>
+            <assertion index="8" line="34" result="passed"/>
+            <assertion index="9" line="35" result="passed"/>
+            <assertion index="10" line="37" result="passed"/>
+            <assertion index="11" line="38" result="passed"/>
+            <assertion index="12" line="52" result="passed"/>
+            <assertion index="13" line="56" result="passed"/>
+            <assertion index="14" line="61" result="passed"/>
+            <assertion index="15" line="65" result="passed"/>
+            <assertion index="16" line="70" result="passed"/>
+            <assertion index="17" line="71" result="passed"/>
+            <assertion index="18" line="73" result="passed"/>
+            <assertion index="19" line="74" result="passed"/>
+        </test>
+    </swap_test>
+</results>

@@ -1,0 +1,4 @@
+project wstring_insert_char_test;
+target=program;
+source <wstring_insert_char_test.cm>;
+source <main.cm>;

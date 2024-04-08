@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    move_test();
+    return 0;
+}

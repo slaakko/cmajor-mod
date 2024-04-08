@@ -1,0 +1,4 @@
+project ustring_iterator_test;
+target=program;
+source <ustring_iterator_test.cm>;
+source <main.cm>;

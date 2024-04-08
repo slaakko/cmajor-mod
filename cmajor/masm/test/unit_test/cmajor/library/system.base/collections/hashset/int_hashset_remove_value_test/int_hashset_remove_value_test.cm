@@ -1,0 +1,104 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public HashSet<int> MakeSet(const List<int>& x)
+{
+    HashSet<int> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(x[i]);
+    }
+    return s;
+}
+
+public HashSet<int> MakeOne()
+{
+    HashSet<int> s;
+    s.Insert(0);
+    return s;
+}
+
+public HashSet<int> MakeTwo()
+{
+    HashSet<int> s;
+    s.Insert(0);
+    s.Insert(1);
+    return s;
+}
+
+public HashSet<int> MakeEight()
+{
+    HashSet<int> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public HashSet<int> MakeKilo()
+{
+    HashSet<int> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(i);
+    }
+    return s;
+}
+
+public HashSet<int> Return(const HashSet<int>& x)
+{
+    return x;
+}
+
+unit_test void int_hashset_remove_value_test()
+{
+    HashSet<int> s0;
+    s0.Remove(0);
+    #assert (s0.IsEmpty());
+    #assert (s0.Count() == 0);
+    HashSet<int> s1 = MakeOne();
+    s1.Remove(0);
+    #assert (s1.IsEmpty());
+    #assert (s1.Count() == 0);
+    HashSet<int> s2 = MakeOne();
+    s2.Remove(-1);
+    #assert (!s2.IsEmpty());
+    #assert (s2.Count() == 1);
+    HashSet<int> s3 = MakeTwo();
+    s3.Remove(0);
+    s3.Remove(1);
+    #assert (s3.IsEmpty());
+    #assert (s3.Count() == 0);
+    HashSet<int> s4 = MakeTwo();
+    s4.Remove(1);
+    s4.Remove(0);
+    #assert (s4.IsEmpty());
+    #assert (s4.Count() == 0);
+    HashSet<int> s5 = MakeTwo();
+    s5.Remove(-1);
+    #assert (!s5.IsEmpty());
+    #assert (s5.Count() == 2);
+    List<int> p = MakeList(8);
+    do
+    {
+        HashSet<int> s6 = MakeEight();
+        for (int i = 0; i < 8; ++i)
+        {
+            s6.Remove(p[i]);
+        }
+        #assert (s6.IsEmpty());
+        #assert (s6.Count() == 0);
+    }
+    while (NextPermutation(p.Begin(), p.End()));
+}

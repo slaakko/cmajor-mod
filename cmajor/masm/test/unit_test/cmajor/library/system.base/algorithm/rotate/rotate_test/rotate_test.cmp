@@ -1,0 +1,4 @@
+project rotate_test;
+target=program;
+source <rotate_test.cm>;
+source <main.cm>;

@@ -1,0 +1,4 @@
+project move_test;
+target=program;
+source <move_test.cm>;
+source <main.cm>;

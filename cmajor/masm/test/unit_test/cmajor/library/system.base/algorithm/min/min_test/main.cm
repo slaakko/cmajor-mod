@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    min_test();
+    return 0;
+}

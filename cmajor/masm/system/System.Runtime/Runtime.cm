@@ -47,7 +47,7 @@ public extern cdecl bool RtmGetFileError(void* fileHandle, int& errorId);
 public extern cdecl bool RtmSeek(void* fileHandle, long pos, byte origin, int& errorId);
 public extern cdecl long RtmTell(void* fileHandle, int& errorId);
 public extern cdecl bool RtmFlush(void* fileHandle, int& errorId);
-public extern cdecl bool RtmFileExists(const char* filePath);
+public extern cdecl bool RtmFileExists(const char* filePath, int& errorId);
 public extern cdecl bool RtmLastWriteTimeLess(const char* filePath1, const char* filePath2, int& errorId);
 public extern cdecl long RtmGetFileSize(const char* filePath, int& errorId);
 public extern cdecl bool RtmRemoveFile(const char* filePath, int& errorId);

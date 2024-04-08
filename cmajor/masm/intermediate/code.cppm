@@ -22,8 +22,10 @@ class RegValue : public Value
 {
 public:
     RegValue(const soul::ast::Span& span_, Type* type_, int32_t reg_);
+    ~RegValue();
     Value* Clone(CloneContext& cloneContext) const;
     int32_t Reg() const { return reg; }
+    void SetReg(int32_t reg_) { reg = reg_; }
     void SetInst(Instruction* inst_) { inst = inst_; }
     Instruction* Inst() const { return inst; }
     std::string ToString() const override;
@@ -42,6 +44,7 @@ enum class OpCode : int
 };
 
 void AddUser(Instruction* user, Value* value);
+void RemoveUser(Instruction* user, Value* value);
 
 class Instruction : public Value, public util::Component
 {
@@ -68,6 +71,7 @@ public:
     bool IsArgInstruction() const { return opCode == OpCode::arg; }
     bool IsFunctionCallInstruction() const { return opCode == OpCode::function_call; }
     bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
+    bool IsRetInstruction() const { return opCode == OpCode::ret; }
     bool RequiresLocalRegister() const;
     virtual bool IsFloatingPointInstruction() const { return false; }
     std::vector<BasicBlock*> Successors() const;
@@ -77,7 +81,10 @@ public:
     void SetRegValueIndex(int regValueIndex_) { regValueIndex = regValueIndex_; }
     const std::vector<Instruction*>& Users() const { return users; }
     void AddUser(Instruction* user);
+    void RemoveUser(Instruction* user);
     virtual void AddToUses();
+    void ReplaceUsesWith(Value* value);
+    virtual void ReplaceValue(Value* use, Value* value);
     virtual void Write(util::CodeFormatter& formatter) = 0;
 private:
     OpCode opCode;
@@ -97,6 +104,7 @@ public:
     Value* GetPtr() const { return ptr; }
     bool IsFloatingPointInstruction() const override { return value->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* value;
     Value* ptr;
@@ -112,6 +120,7 @@ public:
     Value* Arg() const { return arg; }
     bool IsFloatingPointInstruction() const override { return arg->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* arg;
 };
@@ -146,6 +155,7 @@ public:
     BasicBlock* FalseTargetBasicBlock() const { return falseTargetBasicBlock; }
     void SetFalseTargetBasicBlock(BasicBlock* falseTargetBasicBlock_) { falseTargetBasicBlock = falseTargetBasicBlock_; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* cond;
     int32_t trueTargetLabelId;
@@ -162,9 +172,11 @@ public:
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;
     Value* Callee() const { return callee; }
+    Function* CalleeFn() const;
     const std::vector<Value*>& Args() const { return args; }
     void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -174,12 +186,14 @@ class RetInstruction : public Instruction
 {
 public:
     RetInstruction(const soul::ast::Span& span_, Value* returnValue_);
+    ~RetInstruction();
     void Accept(Visitor& visitor) override;
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;
     Value* ReturnValue() const { return returnValue; }
     bool IsFloatingPointInstruction() const override;
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* returnValue;
 };
@@ -208,6 +222,7 @@ public:
     BasicBlock* DefaultTargetBlock() const { return defaultTargetBlock; }
     void SetDefaultTargetBlock(BasicBlock* defaultTargetBlock_) { defaultTargetBlock = defaultTargetBlock_; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* cond;
     int32_t defaultTargetLabelId;
@@ -219,10 +234,11 @@ class ValueInstruction : public Instruction
 {
 public:
     ValueInstruction(const soul::ast::Span& span_, RegValue* result_, OpCode opCode_);
+    ~ValueInstruction();
     RegValue* Result() const { return result; }
+    void ResetResult() { result = nullptr; }
     void WriteResult(util::CodeFormatter& formatter);
     bool IsFloatingPointInstruction() const override { return result->GetType()->IsFloatingPointType(); }
-    void AddToUses() override;
 private:
     RegValue* result;
 };
@@ -235,6 +251,7 @@ public:
     Value* Operand() const { return operand; }
     void SetOperand(Value* operand_) { operand = operand_; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* operand;
 };
@@ -340,6 +357,7 @@ public:
     Value* Right() const { return right; }
     bool IsFloatingPointInstruction() const override { return Left()->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
     void WriteArgs(util::CodeFormatter& formatter);
 private:
     Value* left;
@@ -486,6 +504,7 @@ public:
     void Write(util::CodeFormatter& formatter) override;
     Value* Ptr() const { return ptr; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* ptr;
 };
@@ -498,17 +517,18 @@ enum class ElemAddrKind
 class ElemAddrInstruction : public ValueInstruction
 {
 public:
-    ElemAddrInstruction(const soul::ast::Span& span_, RegValue* result_, Value* ptr_, Value* index_);
+    ElemAddrInstruction(const soul::ast::Span& span_, RegValue* result_, Value* ptr_, Value* indexValue_);
     void Accept(Visitor& visitor) override;
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;
     Value* Ptr() const { return ptr; }
-    Value* Index() const { return index; }
+    Value* IndexValue() const { return indexValue; }
     ElemAddrKind GetElemAddrKind(Context* context) const;
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* ptr;
-    Value* index;
+    Value* indexValue;
 };
 
 class PtrOffsetInstruction : public ValueInstruction
@@ -521,6 +541,7 @@ public:
     Value* Ptr() const { return ptr; }
     Value* Offset() const { return offset; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* ptr;
     Value* offset;
@@ -536,6 +557,7 @@ public:
     Value* LeftPtr() const { return leftPtr; }
     Value* RightPtr() const { return rightPtr; }
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* leftPtr;
     Value* rightPtr;
@@ -549,9 +571,11 @@ public:
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;
     Value* Callee() const { return callee; }
+    Function* CalleeFn() const;
     const std::vector<Value*>& Args() const { return args; }
     void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
+    void ReplaceValue(Value* use, Value* value) override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -596,7 +620,11 @@ public:
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
     void AddInstruction(Instruction* instruction);
+    void AddInstruction(Instruction* instruction, bool mapInstruction);
+    std::unique_ptr<Instruction> RemoveInstruction(Instruction* instruction);
+    void InsertInstructionAfter(Instruction* instruction, Instruction* after);
     void InsertFront(Instruction* instruction);
+    BasicBlock* SplitAfter(Instruction* instruction);
     bool IsEmpty() const { return instructions.IsEmpty(); }
     bool IsEntryBlock() const { return id == entryBlockId; }
     bool IsExitBlock() const { return id == exitBlockId; }
@@ -662,7 +690,9 @@ public:
     BasicBlock* GetBasicBlock(int32_t id) const;
     BasicBlock* AddBasicBlock(const soul::ast::Span& span, int32_t id, Context* context);
     void AddBasicBlock(BasicBlock* basicBlock);
-    bool RemoveBasicBlock(BasicBlock* block);
+    void InsertBasicBlockBefore(BasicBlock* basicBlockToInsert, BasicBlock* before);
+    void InsertBasicBlockAfter(BasicBlock* basicBlockToInsert, BasicBlock* after);
+    std::unique_ptr<BasicBlock> RemoveBasicBlock(BasicBlock* block);
     BasicBlock* FirstBasicBlock() { return static_cast<BasicBlock*>(basicBlocks.FirstChild()); }
     BasicBlock* LastBasicBlock() { return static_cast<BasicBlock*>(basicBlocks.LastChild()); }
     const soul::ast::Span& Span() const { return span; }
@@ -671,8 +701,12 @@ public:
     RegValue* GetRegValue(int32_t reg) const;
     RegValue* GetRegRef(const soul::ast::Span& span, Type* type, int32_t reg, Context* context) const;
     RegValue* MakeRegValue(const soul::ast::Span& span, Type* type, int32_t reg, Context* context);
+    RegValue* MakeNextRegValue(const soul::ast::Span& span, Type* type, Context* context);
+    void MapRegValue(RegValue* regValue);
+    void RemoveRegValue(int32_t reg);
     Instruction* GetInstruction(int32_t reg) const;
     void MapInstruction(int32_t reg, Instruction* inst, Context* context);
+    void UnmapInstruction(int32_t reg);
     int NumBasicBlocks() const;
     const std::vector<BasicBlock*>& RetBlocks() const { return retBlocks; }
     void AddRetBlock(BasicBlock* retBlock);
@@ -681,7 +715,10 @@ public:
     void WriteXmlDocument(const std::string& filePath);
     void SetNextRegNumber(int32_t nextRegNumber_) { nextRegNumber = nextRegNumber_; }
     int32_t NextRegNumber() const { return nextRegNumber; }
+    int32_t GetNextRegNumber() { return nextRegNumber++; }
+    int32_t GetNextBasicBlockNumber() { return nextBBNumber++; }
     void SetNumbers();
+    void MoveRegValues(Function* toFunction);
     void Write(util::CodeFormatter& formatter);
 private:
     FunctionFlags flags;
@@ -695,6 +732,7 @@ private:
     std::vector<std::unique_ptr<RegValue>> regValues;
     std::vector<BasicBlock*> retBlocks;
     int32_t nextRegNumber;
+    int32_t nextBBNumber;
 };
 
 class Code : public util::Component

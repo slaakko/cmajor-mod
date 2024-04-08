@@ -239,7 +239,7 @@ TypeRef::TypeRef(const soul::ast::Span& span_, int32_t id_) : span(span_), id(id
 }
 
 StructureType::StructureType(const soul::ast::Span& span_, int32_t typeId_, const std::vector<TypeRef>& fieldTypeRefs_) :
-    Type(span_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false)
+    Type(span_, TypeKind::structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false), size(0)
 {
 }
 

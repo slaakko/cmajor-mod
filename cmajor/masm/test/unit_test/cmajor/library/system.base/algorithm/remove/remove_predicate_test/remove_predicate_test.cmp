@@ -1,0 +1,4 @@
+project remove_predicate_test;
+target=program;
+source <remove_predicate_test.cm>;
+source <main.cm>;

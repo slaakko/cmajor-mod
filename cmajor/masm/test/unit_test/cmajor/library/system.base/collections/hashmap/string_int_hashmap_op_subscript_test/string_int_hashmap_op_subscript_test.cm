@@ -1,0 +1,104 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public HashMap<string, int> MakeMap(const List<int>& x)
+{
+    HashMap<string, int> m;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        m.Insert(MakePair(ToString(x[i]), x[i]));
+    }
+    return m;
+}
+
+public HashMap<string, int> MakeOne()
+{
+    HashMap<string, int> m;
+    Pair<string, int> p("0", 0);
+    m.Insert(p);
+    return m;
+}
+
+public HashMap<string, int> MakeTwo()
+{
+    HashMap<string, int> m;
+    Pair<string, int> p0("0", 0);
+    m.Insert(p0);
+    Pair<string, int> p1("1", 1);
+    m.Insert(p1);
+    return m;
+}
+
+public HashMap<string, int> MakeEight()
+{
+    HashMap<string, int> m;
+    for (int i = 0; i < 8; ++i)
+    {
+        Pair<string, int> p(ToString(i), i);
+        m.Insert(p);
+    }
+    return m;
+}
+
+public HashMap<string, int> Return(const HashMap<string, int>& x)
+{
+    return x;
+}
+
+unit_test void string_int_hashmap_op_subscript_test()
+{
+    HashMap<string, int> m0;
+    m0["0"] = 0;
+    auto it0 = m0.Find("0");
+    #assert (it0 != m0.End());
+    #assert (it0->first == "0");
+    #assert (it0->second == 0);
+    HashMap<string, int> m1 = MakeOne();
+    m1["0"] = 10;
+    auto it1 = m1.Find("0");
+    #assert (it1 != m1.End());
+    #assert (it1->first == "0");
+    #assert (it1->second == 10);
+    HashMap<string, int> m2 = MakeTwo();
+    m2["0"] = 10;
+    auto it2 = m2.Find("0");
+    #assert (it2 != m2.End());
+    #assert (it2->first == "0");
+    #assert (it2->second == 10);
+    m2["1"] = 20;
+    auto it3 = m2.Find("1");
+    #assert (it3 != m2.End());
+    #assert (it3->first == "1");
+    #assert (it3->second == 20);
+    HashMap<string, int> m3 = MakeEight();
+    m3["0"] = 10;
+    auto it4 = m3.Find("0");
+    #assert (it4 != m3.End());
+    #assert (it4->first == "0");
+    #assert (it4->second == 10);
+    m3["5"] = 30;
+    auto it5 = m3.Find("5");
+    #assert (it5 != m3.End());
+    #assert (it5->first == "5");
+    #assert (it5->second == 30);
+    m3["7"] = 40;
+    auto it6 = m3.Find("7");
+    #assert (it6 != m3.End());
+    #assert (it6->first == "7");
+    #assert (it6->second == 40);
+    m3["8"] = 50;
+    auto it7 = m3.Find("8");
+    #assert (it7 != m3.End());
+    #assert (it7->first == "8");
+    #assert (it7->second == 50);
+}

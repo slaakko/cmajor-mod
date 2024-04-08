@@ -5,19 +5,19 @@
 
 module cmajor.masm.optimizer.optimize;
 
+import cmajor.masm.optimizer.inline_expander;
+
 namespace cmajor::masm::optimizer {
 
 void Optimize(cmajor::masm::intermediate::Context* intermediateContext)
 {
-/*
     cmajor::masm::intermediate::Code& code = intermediateContext->GetCode();
     cmajor::masm::intermediate::Function* fn = code.FirstFunction();
     while (fn)
     {
-        std::unique_ptr<cmajor::masm::intermediate::Function> clonedFn(fn->Clone());
+        InlineExpand(fn);
         fn = fn->Next();
     }
-*/
 }
 
 } // cmajor::masm::optimizer

@@ -1,0 +1,299 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public HashMap<string, int> MakeMap(const List<int>& x)
+{
+    HashMap<string, int> m;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        m.Insert(MakePair(ToString(x[i]), x[i]));
+    }
+    return m;
+}
+
+public HashMap<string, int> MakeOne()
+{
+    HashMap<string, int> m;
+    Pair<string, int> p("0", 0);
+    m.Insert(p);
+    return m;
+}
+
+public HashMap<string, int> MakeTwo()
+{
+    HashMap<string, int> m;
+    Pair<string, int> p0("0", 0);
+    m.Insert(p0);
+    Pair<string, int> p1("1", 1);
+    m.Insert(p1);
+    return m;
+}
+
+public HashMap<string, int> MakeEight()
+{
+    HashMap<string, int> m;
+    for (int i = 0; i < 8; ++i)
+    {
+        Pair<string, int> p(ToString(i), i);
+        m.Insert(p);
+    }
+    return m;
+}
+
+public HashMap<string, int> Return(const HashMap<string, int>& x)
+{
+    return x;
+}
+
+unit_test void string_int_hashmap_value_test()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        List<int> p = MakeList(i);
+        do
+        {
+            HashMap<string, int> x0 = MakeMap(p);
+            if (i == 0)
+            {
+                #assert(x0.IsEmpty());
+                #assert(x0.Count() == 0);
+            }
+            else
+            {
+                #assert(!x0.IsEmpty());
+                #assert(x0.Count() == i);
+            }
+            #assert(x0 == x0);
+            HashMap<string, int> x1(x0);
+            #assert(x1.IsEmpty() == x0.IsEmpty());
+            #assert(x1.Count() == x0.Count());
+            #assert(x1 == x0);
+            HashMap<string, int> x2;
+            x2 = x0;
+            #assert(x2.IsEmpty() == x0.IsEmpty());
+            #assert(x2.Count() == x0.Count());
+            #assert(x2 == x0);
+            HashMap<string, int> xcopy0(x0);
+            HashMap<string, int> x3(Rvalue(xcopy0));
+            #assert(x3.IsEmpty() == x0.IsEmpty());
+            #assert(x3.Count() == x0.Count());
+            #assert(x3 == x0);
+            HashMap<string, int> xcopy1(x0);
+            HashMap<string, int> x4;
+            x4 = Rvalue(xcopy1);
+            #assert(x4.IsEmpty() == x0.IsEmpty());
+            #assert(x4.Count() == x0.Count());
+            #assert(x4 == x0);
+            HashMap<string, int> x5 = Return(x0);
+            #assert(x5.IsEmpty() == x0.IsEmpty());
+            #assert(x5.Count() == x0.Count());
+            #assert(x5 == x0);
+        }
+        while (NextPermutation(p.Begin(), p.End()));
+    }
+}
+
+unit_test void string_int_hashmap_find_test()
+{
+    HashMap<string, int> s0;
+    auto it0 = s0.Find("0");
+    #assert(it0 == s0.End());
+    auto it1 = s0.CFind("0");
+    #assert(it1 == s0.CEnd());
+    HashMap<string, int> s1 = MakeOne();
+    auto it2 = s1.Find("0");
+    #assert(it2 != s1.End());
+    #assert(it2->first == "0");
+    #assert(it2->second == 0);
+    auto it3 = s1.CFind("0");
+    #assert(it3 != s1.CEnd());
+    #assert(it3->first == "0");
+    #assert(it3->second == 0);
+    auto it4 = s1.Find(string());
+    #assert(it4 == s1.End());
+    HashMap<string, int> s2 = MakeTwo();
+    auto it5 = s2.Find("0");
+    #assert(it5 != s2.End());
+    #assert(it5->first == "0");
+    #assert(it5->second == 0);
+    auto it6 = s2.CFind("0");
+    #assert(it6 != s2.CEnd());
+    #assert(it6->first == "0");
+    #assert(it6->second == 0);
+    auto it7 = s2.Find("1");
+    #assert(it7 != s2.End());
+    #assert(it7->first == "1");
+    #assert(it7->second == 1);
+    auto it8 = s2.CFind("1");
+    #assert(it8 != s2.CEnd());
+    #assert(it8->first == "1");
+    #assert(it8->second == 1);
+    auto it9 = s2.Find(string());
+    #assert(it9 == s2.End());
+    HashMap<string, int> s3 = MakeEight();
+    for (int i = 0; i < 8; ++i)
+    {
+        auto it1 = s3.Find(ToString(i));
+        #assert(it1 != s3.End());
+        #assert(it1->first == ToString(i));
+        #assert(it1->second == i);
+        auto it2 = s3.CFind(ToString(i));
+        #assert(it2 != s3.CEnd());
+        #assert(it2->first == ToString(i));
+        #assert(it2->second == i);
+    }
+    auto it10 = s3.Find(string());
+    #assert(it10 == s3.End());
+}
+
+unit_test void string_int_hashmap_op_subscript_test()
+{
+    HashMap<string, int> m0;
+    m0["0"] = 0;
+    auto it0 = m0.Find("0");
+    #assert(it0 != m0.End());
+    #assert(it0->first == "0");
+    #assert(it0->second == 0);
+    HashMap<string, int> m1 = MakeOne();
+    m1["0"] = 10;
+    auto it1 = m1.Find("0");
+    #assert(it1 != m1.End());
+    #assert(it1->first == "0");
+    #assert(it1->second == 10);
+
+    HashMap<string, int> m2 = MakeTwo();
+    m2["0"] = 10;
+    auto it2 = m2.Find("0");
+    #assert(it2 != m2.End());
+    #assert(it2->first == "0");
+    #assert(it2->second == 10);
+
+    m2["1"] = 20;
+    auto it3 = m2.Find("1");
+    #assert(it3 != m2.End());
+    #assert(it3->first == "1");
+    #assert(it3->second == 20);
+
+    HashMap<string, int> m3 = MakeEight();
+    m3["0"] = 10;
+    auto it4 = m3.Find("0");
+    #assert(it4 != m3.End());
+    #assert(it4->first == "0");
+    #assert(it4->second == 10);
+
+    m3["5"] = 30;
+    auto it5 = m3.Find("5");
+    #assert(it5!= m3.End());
+    #assert(it5->first == "5");
+    #assert(it5->second == 30);
+
+    m3["7"] = 40;
+    auto it6 = m3.Find("7");
+    #assert(it6 != m3.End());
+    #assert(it6->first == "7");
+    #assert(it6->second == 40);
+
+    m3["8"] = 50;
+    auto it7 = m3.Find("8");
+    #assert(it7 != m3.End());
+    #assert(it7->first == "8");
+    #assert(it7->second == 50);
+}
+
+unit_test void string_int_hashmap_remove_value_test()
+{
+    HashMap<string, int> s0;
+    s0.Remove("0");
+    #assert(s0.IsEmpty());
+    #assert(s0.Count() == 0);
+    HashMap<string, int> s1 = MakeOne();
+    s1.Remove("0");
+    #assert(s1.IsEmpty());
+    #assert(s1.Count() == 0);
+    HashMap<string, int> s2 = MakeOne();
+    s2.Remove(string());
+    #assert(!s2.IsEmpty());
+    #assert(s2.Count() == 1);
+    HashMap<string, int> s3 = MakeTwo();
+    s3.Remove("0");
+    s3.Remove("1");
+    #assert(s3.IsEmpty());
+    #assert(s3.Count() == 0);
+    HashMap<string, int> s4 = MakeTwo();
+    s4.Remove("1");
+    s4.Remove("0");
+    #assert(s4.IsEmpty());
+    #assert(s4.Count() == 0);
+    HashMap<string, int> s5 = MakeTwo();
+    s5.Remove(string());
+    #assert(!s5.IsEmpty());
+    #assert(s5.Count() == 2);
+    List<int> p = MakeList(8);
+    do
+    {
+        HashMap<string, int> s6 = MakeEight();
+        for (int i = 0; i < 8; ++i)
+        {
+            s6.Remove(ToString(p[i]));
+        }
+        #assert(s6.IsEmpty());
+        #assert(s6.Count() == 0);
+    }
+    while (NextPermutation(p.Begin(), p.End()));
+}
+
+unit_test void string_int_hashmap_remove_iterator_test()
+{
+    HashMap<string, int> s1 = MakeOne();
+    s1.Remove(s1.Begin());
+    #assert(s1.Count() == 0);
+    HashMap<string, int> s2 = MakeTwo();
+    s2.Remove(s2.Begin());
+    #assert(s2.Count() == 1);
+    s2.Remove(s2.Begin());
+    #assert(s2.Count() == 0);
+    HashMap<string, int> s3 = MakeEight();
+    auto it3 = s3.Begin();
+    int n = 8;
+    for (int i = 0; i < 8; ++i)
+    {
+        s3.Remove(it3);
+        --n;
+        #assert(s3.Count() == n);
+        it3 = s3.Begin();
+    }
+}
+
+unit_test void string_int_hashmap_equal_test()
+{
+    HashMap<string, int> s0;
+    #assert(s0 == s0);
+    HashMap<string, int> s1 = MakeOne();
+    #assert(s1 == s1);
+    #assert(s1 != s0);
+    #assert(s0 != s1);
+    HashMap<string, int> s2 = MakeTwo();
+    #assert(s2 == s2);
+    #assert(s2 != s1);
+    #assert(s1 != s2);
+    #assert(s2 != s0);
+    #assert(s0 != s2);
+    HashMap<string, int> s3 = MakeEight();
+    #assert(s3 == s3);
+    #assert(s3 != s2);
+    #assert(s2 != s3);
+    #assert(s3 != s1);
+    #assert(s1 != s3);
+    #assert(s3 != s0);
+    #assert(s0 != s3);
+}

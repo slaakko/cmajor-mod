@@ -1,0 +1,8 @@
+<results>
+    <rotate_test project="rotate" solution="">
+        <test count="2" exitCode="0" name="rotate_test">
+            <assertion index="0" line="15" result="passed"/>
+            <assertion index="1" line="22" result="passed"/>
+        </test>
+    </rotate_test>
+</results>

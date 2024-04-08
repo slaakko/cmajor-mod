@@ -81,7 +81,7 @@ namespace System.Collections
         {
             return tree.CLowerBound(key);
         }
-        public inline MappedType& operator[](const KeyType& key)
+        public MappedType& operator[](const KeyType& key)
         {
             KeyType keyType(key);
             ValueType valueType(Rvalue(keyType), Rvalue(MappedType()));
@@ -89,7 +89,7 @@ namespace System.Collections
             Iterator i = ib.first;
             return i->second;
         }
-        public inline MappedType& operator[](KeyType&& key)
+        public MappedType& operator[](KeyType&& key)
         {
             ValueType valueType(Rvalue(key), Rvalue(MappedType()));
             Pair<Iterator, bool> ib = Insert(Rvalue(valueType));
@@ -117,13 +117,13 @@ namespace System.Collections
         private TreeType tree;
     }
 
-    public inline bool operator==<Key, Value, KeyCompare>(const Map<Key, Value, KeyCompare>& left, const Map<Key, Value, KeyCompare>& right)
+    public bool operator==<Key, Value, KeyCompare>(const Map<Key, Value, KeyCompare>& left, const Map<Key, Value, KeyCompare>& right)
         where Key is Regular and Value is Regular and KeyCompare is Relation and KeyCompare.Domain is Key
     {
         return left.Count() == right.Count() && Equal(left.CBegin(), left.CEnd(), right.CBegin(), right.CEnd(), EqualTo<Pair<Key, Value>>());
     }
 
-    public inline bool operator<<Key, Value, KeyCompare>(const Map<Key, Value, KeyCompare>& left, const Map<Key, Value, KeyCompare>& right)
+    public bool operator<<Key, Value, KeyCompare>(const Map<Key, Value, KeyCompare>& left, const Map<Key, Value, KeyCompare>& right)
         where Key is TotallyOrdered and Value is TotallyOrdered and KeyCompare is Relation and KeyCompare.Domain is Key
     {
         return LexicographicalCompare(left.CBegin(), left.CEnd(), right.CBegin(), right.CEnd(), Less<Pair<Key, Value>>());

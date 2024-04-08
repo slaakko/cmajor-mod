@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_string_hashmap_op_subscript_test();
+    return 0;
+}

@@ -1,0 +1,45 @@
+using System;
+
+unit_test void ustring_insert_string_test()
+{
+    ustring insert(u"abc");
+    ustring emptyInsert;
+    emptyInsert.Insert(0, insert);
+    #assert (!emptyInsert.IsEmpty());
+    #assert (emptyInsert.Length() == 3);
+    #assert (emptyInsert[0] == 'a');
+    #assert (emptyInsert[1] == 'b');
+    #assert (emptyInsert[2] == 'c');
+    ustring oneInsert('x');
+    oneInsert.Insert(0, insert);
+    #assert (!oneInsert.IsEmpty());
+    #assert (oneInsert.Length() == 4);
+    #assert (oneInsert[0] == 'a');
+    #assert (oneInsert[1] == 'b');
+    #assert (oneInsert[2] == 'c');
+    #assert (oneInsert[3] == 'x');
+    ustring twoInsert(u"xy");
+    twoInsert.Insert(0, insert);
+    #assert (!twoInsert.IsEmpty());
+    #assert (twoInsert.Length() == 5);
+    #assert (twoInsert[0] == 'a');
+    #assert (twoInsert[1] == 'b');
+    #assert (twoInsert[2] == 'c');
+    #assert (twoInsert[3] == 'x');
+    #assert (twoInsert[4] == 'y');
+    ustring kiloInsert;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kiloInsert.Append('x');
+    }
+    kiloInsert.Insert(0, insert);
+    #assert (!kiloInsert.IsEmpty());
+    #assert (kiloInsert.Length() == 1024 + 3);
+    #assert (kiloInsert[0] == 'a');
+    #assert (kiloInsert[1] == 'b');
+    #assert (kiloInsert[2] == 'c');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (kiloInsert[i + 3] == 'x');
+    }
+}

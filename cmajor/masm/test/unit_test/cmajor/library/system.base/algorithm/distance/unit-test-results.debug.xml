@@ -1,0 +1,12 @@
+<results>
+    <distance_ra_iter_test project="distance" solution="">
+        <test count="1" exitCode="0" name="distance_ra_iter_test">
+            <assertion index="0" line="12" result="passed"/>
+        </test>
+    </distance_ra_iter_test>
+    <distance_bi_iter_test project="distance" solution="">
+        <test count="1" exitCode="0" name="distance_bi_iter_test">
+            <assertion index="0" line="12" result="passed"/>
+        </test>
+    </distance_bi_iter_test>
+</results>

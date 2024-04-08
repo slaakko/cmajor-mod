@@ -444,26 +444,33 @@ std::vector<cmajor::info::db::Location> GDBDebugger::Frames(int lowFrame, int hi
     FramesRequest framesRequest(lowFrame, highFrame);
     std::unique_ptr<Reply> framesReply = Execute(&framesRequest);
     ResultRecord* resultRecord = framesReply->GetResultRecord();
-    if (resultRecord && resultRecord->IsError())
+    if (resultRecord)
     {
-        throw std::runtime_error(resultRecord->ErrorMessage());
-    }
-    else if (resultRecord->IsDone())
-    {
-        cmajor::debugger::Results* results = resultRecord->GetResults();
-        if (results)
+        if (resultRecord->IsError())
         {
-            std::vector<cmajor::info::db::Location> frames = GetFrames(results, debugInfo.get(), outputWriter.get());
-            return frames;
+            throw std::runtime_error(resultRecord->ErrorMessage());
+        }
+        else if (resultRecord->IsDone())
+        {
+            cmajor::debugger::Results* results = resultRecord->GetResults();
+            if (results)
+            {
+                std::vector<cmajor::info::db::Location> frames = GetFrames(results, debugInfo.get(), outputWriter.get());
+                return frames;
+            }
+            else
+            {
+                throw std::runtime_error("frames request failed: empty results");
+            }
         }
         else
         {
-            throw std::runtime_error("frames request failed: empty results");
+            throw std::runtime_error("frames request failed: result record kind='" + ResultRecordKindStr(resultRecord->GetResultRecordKind()) + "'");
         }
     }
     else
     {
-        throw std::runtime_error("frames request failed: result record kind='" + ResultRecordKindStr(resultRecord->GetResultRecordKind()) + "'");
+        throw std::runtime_error("resut record is null");
     }
 }
 

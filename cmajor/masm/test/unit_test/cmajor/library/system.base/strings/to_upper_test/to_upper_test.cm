@@ -1,0 +1,27 @@
+using System;
+
+unit_test void to_upper_test()
+{
+    auto result0 = ToUpper(string());
+    #assert (!result0.Error() && result0.Value() == string());
+    auto result1 = ToUpper("alpha");
+    #assert (!result1.Error() && result1.Value() == "ALPHA");
+    auto result2 = ToUpper("Alpha");
+    #assert (!result2.Error() && result2.Value() == "ALPHA");
+    auto result3 = ToUpper("ALPHA");
+    #assert (!result3.Error() && result3.Value() == "ALPHA");
+    auto result4 = ToUpper("a");
+    #assert (!result4.Error() && result4.Value() == "A");
+    auto result5 = ToUpper("A");
+    #assert (!result5.Error() && result5.Value() == "A");
+    auto result6 = ToUpper("ab");
+    #assert (!result6.Error() && result6.Value() == "AB");
+    auto result7 = ToUpper("Ab");
+    #assert (!result7.Error() && result7.Value() == "AB");
+    auto result8 = ToUpper("aB");
+    #assert (!result8.Error() && result8.Value() == "AB");
+    auto result9 = ToUpper("AB");
+    #assert (!result9.Error() && result9.Value() == "AB");
+    auto result10 = ToUpper("12345678");
+    #assert (!result10.Error() && result10.Value() == "12345678");
+}

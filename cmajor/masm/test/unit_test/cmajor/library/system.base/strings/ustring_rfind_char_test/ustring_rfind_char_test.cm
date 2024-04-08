@@ -1,0 +1,52 @@
+using System;
+
+unit_test void ustring_rfind_char_test()
+{
+    ustring empty;
+    long result0 = empty.RFind('x', -1);
+    #assert (result0 == -1);
+    ustring one('a');
+    long result1 = one.RFind('x', 0);
+    #assert (result1 == -1);
+    long result2 = one.RFind('a', 0);
+    #assert (result2 == 0);
+    ustring two(u"ab");
+    long result3 = two.RFind('x', 1);
+    #assert (result3 == -1);
+    long result4 = two.RFind('b', 1);
+    #assert (result4 == 1);
+    long result5 = two.RFind('a', 1);
+    #assert (result5 == 0);
+    long result6 = two.RFind('a', 0);
+    #assert (result6 == 0);
+    long result7 = two.RFind('b', 0);
+    #assert (result7 == -1);
+    ustring eight(u"12345678");
+    long result8 = eight.RFind('x', 7);
+    #assert (result8 == -1);
+    long result9 = eight.RFind('8', 7);
+    #assert (result9 == 7);
+    long result10 = eight.RFind('1', 7);
+    #assert (result10 == 0);
+    long result11 = eight.RFind('6', 5);
+    #assert (result11 == 5);
+    long result12 = eight.RFind('1', 5);
+    #assert (result12 == 0);
+    long result13 = eight.RFind('2', 5);
+    #assert (result13 == 1);
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long result14 = kilo.RFind('x', 1023);
+    #assert (result14 == -1);
+    long result15 = kilo.RFind('3', 1023);
+    #assert (result15 == 1023);
+    long result16 = kilo.RFind('0', 1023);
+    #assert (result16 == 1020);
+    long result17 = kilo.RFind('9', 1000);
+    #assert (result17 == 999);
+    long result18 = kilo.RFind('x', 1000);
+    #assert (result18 == -1);
+}

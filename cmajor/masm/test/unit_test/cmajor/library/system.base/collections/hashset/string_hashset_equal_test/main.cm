@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_hashset_equal_test();
+    return 0;
+}

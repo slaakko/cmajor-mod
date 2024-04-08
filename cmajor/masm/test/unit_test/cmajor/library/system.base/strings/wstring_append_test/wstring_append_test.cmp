@@ -1,0 +1,4 @@
+project wstring_append_test;
+target=program;
+source <wstring_append_test.cm>;
+source <main.cm>;

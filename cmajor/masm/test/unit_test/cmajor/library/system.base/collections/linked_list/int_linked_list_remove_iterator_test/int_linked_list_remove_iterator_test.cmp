@@ -1,0 +1,4 @@
+project int_linked_list_remove_iterator_test;
+target=program;
+source <int_linked_list_remove_iterator_test.cm>;
+source <main.cm>;

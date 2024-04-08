@@ -1,0 +1,3 @@
+project remove;
+target=unitTest;
+source <remove.cm>;

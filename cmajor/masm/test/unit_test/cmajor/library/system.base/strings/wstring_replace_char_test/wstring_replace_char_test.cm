@@ -1,0 +1,56 @@
+using System;
+
+unit_test void wstring_replace_char_test()
+{
+    wstring empty;
+    empty.Replace('a', 'x');
+    #assert (empty.IsEmpty());
+    #assert (empty.Length() == 0);
+    wstring one('a');
+    one.Replace('a', 'x');
+    #assert (!one.IsEmpty());
+    #assert (one.Length() == 1);
+    #assert (one == w"x");
+    wstring oneNot('a');
+    oneNot.Replace('b', 'x');
+    #assert (!oneNot.IsEmpty());
+    #assert (oneNot.Length() == 1);
+    #assert (oneNot == w"a");
+    wstring two(w"ab");
+    two.Replace('a', 'x');
+    #assert (!two.IsEmpty());
+    #assert (two.Length() == 2);
+    #assert (two == w"xb");
+    wstring twoNot(w"ab");
+    twoNot.Replace('c', 'x');
+    #assert (!twoNot.IsEmpty());
+    #assert (twoNot.Length() == 2);
+    #assert (twoNot == w"ab");
+    wstring eight(w"12345678");
+    eight.Replace('4', 'x');
+    #assert (!eight.IsEmpty());
+    #assert (eight.Length() == 8);
+    #assert (eight == w"123x5678");
+    wstring eightNot(w"12345678");
+    eightNot.Replace('y', 'x');
+    #assert (!eightNot.IsEmpty());
+    #assert (eightNot.Length() == 8);
+    #assert (eightNot == w"12345678");
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Replace('4', 'x');
+    for (int i = 0; i < 1024; ++i)
+    {
+        if ((i % 10) == 4)
+        {
+            #assert (kilo[i] == 'x');
+        }
+        else
+        {
+            #assert (kilo[i] == cast<char>(cast<int>('0') + (i % 10)));
+        }
+    }
+}

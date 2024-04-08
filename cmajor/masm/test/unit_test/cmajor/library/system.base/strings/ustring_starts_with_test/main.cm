@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ustring_starts_with_test();
+    return 0;
+}

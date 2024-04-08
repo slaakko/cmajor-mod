@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    list_int_back_insert_iterator_test();
+    return 0;
+}

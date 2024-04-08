@@ -1,0 +1,4 @@
+project ustring_remove_test;
+target=program;
+source <ustring_remove_test.cm>;
+source <main.cm>;

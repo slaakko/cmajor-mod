@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    wstring_compare_test();
+    return 0;
+}

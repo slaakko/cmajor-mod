@@ -1,0 +1,58 @@
+<results>
+    <int_stack_test project="stack" solution="">
+        <test count="24" exitCode="0" name="int_stack_test">
+            <assertion index="0" line="7" result="passed"/>
+            <assertion index="1" line="8" result="passed"/>
+            <assertion index="2" line="10" result="passed"/>
+            <assertion index="3" line="11" result="passed"/>
+            <assertion index="4" line="12" result="passed"/>
+            <assertion index="5" line="14" result="passed"/>
+            <assertion index="6" line="15" result="passed"/>
+            <assertion index="7" line="16" result="passed"/>
+            <assertion index="8" line="19" result="passed"/>
+            <assertion index="9" line="20" result="passed"/>
+            <assertion index="10" line="21" result="passed"/>
+            <assertion index="11" line="23" result="passed"/>
+            <assertion index="12" line="24" result="passed"/>
+            <assertion index="13" line="25" result="passed"/>
+            <assertion index="14" line="27" result="passed"/>
+            <assertion index="15" line="28" result="passed"/>
+            <assertion index="16" line="29" result="passed"/>
+            <assertion index="17" line="34" result="passed"/>
+            <assertion index="18" line="35" result="passed"/>
+            <assertion index="19" line="39" result="passed"/>
+            <assertion index="20" line="42" result="passed"/>
+            <assertion index="21" line="43" result="passed"/>
+            <assertion index="22" line="47" result="passed"/>
+            <assertion index="23" line="48" result="passed"/>
+        </test>
+    </int_stack_test>
+    <string_stack_test project="stack" solution="">
+        <test count="24" exitCode="0" name="string_stack_test">
+            <assertion index="0" line="7" result="passed"/>
+            <assertion index="1" line="8" result="passed"/>
+            <assertion index="2" line="10" result="passed"/>
+            <assertion index="3" line="11" result="passed"/>
+            <assertion index="4" line="12" result="passed"/>
+            <assertion index="5" line="14" result="passed"/>
+            <assertion index="6" line="15" result="passed"/>
+            <assertion index="7" line="16" result="passed"/>
+            <assertion index="8" line="19" result="passed"/>
+            <assertion index="9" line="20" result="passed"/>
+            <assertion index="10" line="21" result="passed"/>
+            <assertion index="11" line="23" result="passed"/>
+            <assertion index="12" line="24" result="passed"/>
+            <assertion index="13" line="25" result="passed"/>
+            <assertion index="14" line="27" result="passed"/>
+            <assertion index="15" line="28" result="passed"/>
+            <assertion index="16" line="29" result="passed"/>
+            <assertion index="17" line="34" result="passed"/>
+            <assertion index="18" line="35" result="passed"/>
+            <assertion index="19" line="39" result="passed"/>
+            <assertion index="20" line="42" result="passed"/>
+            <assertion index="21" line="43" result="passed"/>
+            <assertion index="22" line="47" result="passed"/>
+            <assertion index="23" line="48" result="passed"/>
+        </test>
+    </string_stack_test>
+</results>

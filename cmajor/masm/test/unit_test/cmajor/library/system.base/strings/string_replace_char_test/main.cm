@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_replace_char_test();
+    return 0;
+}

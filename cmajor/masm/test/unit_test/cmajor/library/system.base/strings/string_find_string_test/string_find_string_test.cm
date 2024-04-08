@@ -1,0 +1,74 @@
+using System;
+
+unit_test void string_find_string_test()
+{
+    string empty;
+    long result = empty.Find(empty, 0);
+    #assert (result == 0);
+    long result0 = empty.Find("x", 0);
+    #assert (result0 == -1);
+    string one('a');
+    long resultA = one.Find(string(), 0);
+    #assert (resultA == 0);
+    long result1 = one.Find("a", 0);
+    #assert (result1 == 0);
+    long result2 = one.Find("ab", 0);
+    #assert (result2 == -1);
+    long result3 = one.Find("x", 0);
+    #assert (result3 == -1);
+    long result4 = one.Find("a", 1);
+    #assert (result4 == -1);
+    long result5 = one.Find("ab", 1);
+    #assert (result5 == -1);
+    string two("ab");
+    long resultB = two.Find(string(), 1);
+    #assert (resultB == 1);
+    long result6 = two.Find("a", 0);
+    #assert (result6 == 0);
+    long result7 = two.Find("ab", 0);
+    #assert (result7 == 0);
+    long result8 = two.Find("ac", 0);
+    #assert (result8 == -1);
+    long result9 = two.Find("ba", 0);
+    #assert (result9 == -1);
+    long result10 = two.Find("abc", 0);
+    #assert (result10 == -1);
+    long result11 = two.Find("b", 0);
+    #assert (result11 == 1);
+    long result12 = two.Find("b", 1);
+    #assert (result12 == 1);
+    long result13 = two.Find("b", 2);
+    #assert (result13 == -1);
+    string eight("12345678");
+    long resultC = eight.Find(string(), 0);
+    #assert (resultC == 0);
+    long result14 = eight.Find("x", 0);
+    #assert (result14 == -1);
+    long result15 = eight.Find("1", 0);
+    #assert (result15 == 0);
+    long result16 = eight.Find("123", 0);
+    #assert (result16 == 0);
+    long result17 = eight.Find("124", 0);
+    #assert (result17 == -1);
+    long result18 = eight.Find("345", 0);
+    #assert (result18 == 2);
+    long result19 = eight.Find("12345678", 0);
+    #assert (result19 == 0);
+    long result20 = eight.Find("23456789", 0);
+    #assert (result20 == -1);
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long resultD = kilo.Find(string(), 0);
+    #assert (resultD == 0);
+    long result21 = kilo.Find("x", 0);
+    #assert (result21 == -1);
+    long result22 = kilo.Find("0", 0);
+    #assert (result22 == 0);
+    long result23 = kilo.Find("013", 0);
+    #assert (result23 == -1);
+    long result24 = kilo.Find("0123", 1);
+    #assert (result24 == 10);
+}

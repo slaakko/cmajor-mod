@@ -1,0 +1,4 @@
+project distance_bi_iter_test;
+target=program;
+source <distance_bi_iter_test.cm>;
+source <main.cm>;

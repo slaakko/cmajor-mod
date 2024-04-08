@@ -1,0 +1,4 @@
+project string_linked_list_iterator_test;
+target=program;
+source <string_linked_list_iterator_test.cm>;
+source <main.cm>;

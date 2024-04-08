@@ -1,0 +1,145 @@
+using System;
+using System.Collections;
+
+public LinkedList<string> MakeOne()
+{
+    LinkedList<string> one;
+    one.Add(ToString(1));
+    return one;
+}
+
+public LinkedList<string> MakeTwo()
+{
+    LinkedList<string> two;
+    two.Add(ToString(1));
+    two.Add(ToString(2));
+    return two;
+}
+
+public LinkedList<string> MakeEight()
+{
+    LinkedList<string> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(ToString(i));
+    }
+    return eight;
+}
+
+public LinkedList<string> MakeKilo()
+{
+    LinkedList<string> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(ToString(i % 10));
+    }
+    return kilo;
+}
+
+public LinkedList<string> Return(const LinkedList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_linked_list_remove_value_test()
+{
+    LinkedList<string> x0 = MakeOne();
+    x0.Remove("1");
+    #assert (x0.Count() == 0);
+    LinkedList<string> x1 = MakeOne();
+    x1.Remove("x");
+    #assert (x1.Count() == 1);
+    #assert (*x1.Begin() == "1");
+    LinkedList<string> x2 = MakeTwo();
+    x2.Remove("1");
+    #assert (x2.Count() == 1);
+    #assert (*x2.Begin() == "2");
+    LinkedList<string> x3 = MakeTwo();
+    x3.Remove("2");
+    #assert (x3.Count() == 1);
+    #assert (*x3.Begin() == "1");
+    LinkedList<string> x4 = MakeTwo();
+    x4.Remove("x");
+    #assert (x4.Count() == 2);
+    auto it0 = x4.Begin();
+    #assert (*it0 == "1");
+    ++it0;
+    #assert (*it0 == "2");
+    LinkedList<string> x5 = MakeEight();
+    x5.Remove("0");
+    #assert (x5.Count() == 7);
+    auto it1 = x5.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (*it1 == ToString(i + 1));
+        ++it1;
+    }
+    LinkedList<string> x6 = MakeEight();
+    x6.Remove("1");
+    #assert (x6.Count() == 7);
+    auto it2 = x6.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 1)
+        {
+            #assert (*it2 == ToString(i));
+        }
+        else
+        {
+            #assert (*it2 == ToString(i + 1));
+        }
+        ++it2;
+    }
+    LinkedList<string> x7 = MakeEight();
+    x7.Remove("6");
+    #assert (x7.Count() == 7);
+    auto it3 = x7.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 6)
+        {
+            #assert (*it3 == ToString(i));
+        }
+        else
+        {
+            #assert (*it3 == ToString(i + 1));
+        }
+        ++it3;
+    }
+    LinkedList<string> x8 = MakeEight();
+    x8.Remove("7");
+    #assert (x8.Count() == 7);
+    auto it4 = x8.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (*it4 == ToString(i));
+        ++it4;
+    }
+    LinkedList<string> x9 = MakeEight();
+    x9.Remove("x");
+    #assert (x9.Count() == 8);
+    auto it5 = x9.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (*it5 == ToString(i));
+        ++it5;
+    }
+    LinkedList<string> x10 = MakeKilo();
+    x10.Remove("0");
+    #assert (x10.Count() == 921);
+    int value = 0;
+    auto it6 = x10.Begin();
+    for (int i = 0; i < 921; ++i)
+    {
+        if ((i % 9) == 0)
+        {
+            ++value;
+        }
+        else
+        {
+            #assert (*it6 == ToString((value % 9) + 1));
+            ++value;
+        }
+        ++it6;
+    }
+}

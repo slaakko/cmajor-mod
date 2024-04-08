@@ -1,0 +1,53 @@
+using System;
+
+unit_test void string_starts_with_test()
+{
+    string a('a');
+    string x('x');
+    string abc("abc");
+    string empty;
+    #assert (empty.StartsWith(string()));
+    #assert (empty.StartsWith(empty));
+    #assert (!empty.StartsWith(a));
+    #assert (!empty.StartsWith(x));
+    #assert (!empty.StartsWith(abc));
+    string one('a');
+    #assert (one.StartsWith(string()));
+    #assert (one.StartsWith(a));
+    #assert (!one.StartsWith(x));
+    #assert (!one.StartsWith(abc));
+    string two("ab");
+    #assert (two.StartsWith(string()));
+    #assert (two.StartsWith(a));
+    #assert (two.StartsWith(string("ab")));
+    #assert (!two.StartsWith(x));
+    #assert (!two.StartsWith(abc));
+    string eight("12345678");
+    #assert (eight.StartsWith(string()));
+    #assert (eight.StartsWith(string("1")));
+    #assert (eight.StartsWith(string("12")));
+    #assert (eight.StartsWith(string("123")));
+    #assert (!eight.StartsWith(string("2")));
+    #assert (!eight.StartsWith(string("23")));
+    #assert (!eight.StartsWith(a));
+    #assert (!eight.StartsWith(x));
+    #assert (!eight.StartsWith(abc));
+    #assert (eight.StartsWith(string("12345678")));
+    #assert (!eight.StartsWith(string("123456789")));
+    string kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.StartsWith(string()));
+    #assert (kilo.StartsWith(string("0")));
+    #assert (!kilo.StartsWith(string("1")));
+    #assert (kilo.StartsWith(string("01")));
+    #assert (kilo.StartsWith(string("0123")));
+    #assert (!kilo.StartsWith(a));
+    #assert (!kilo.StartsWith(x));
+    #assert (!kilo.StartsWith(abc));
+    #assert (kilo.StartsWith(kilo));
+    string kiloPlusOne = kilo + "1";
+    #assert (!kilo.StartsWith(kiloPlusOne));
+}

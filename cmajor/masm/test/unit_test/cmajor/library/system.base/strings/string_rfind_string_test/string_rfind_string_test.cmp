@@ -1,0 +1,4 @@
+project string_rfind_string_test;
+target=program;
+source <string_rfind_string_test.cm>;
+source <main.cm>;

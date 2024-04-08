@@ -1,0 +1,108 @@
+using System;
+using System.Collections;
+
+public LinkedList<int> MakeOne()
+{
+    LinkedList<int> one;
+    one.Add(1);
+    return one;
+}
+
+public LinkedList<int> MakeTwo()
+{
+    LinkedList<int> two;
+    two.Add(1);
+    two.Add(2);
+    return two;
+}
+
+public LinkedList<int> MakeEight()
+{
+    LinkedList<int> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(i);
+    }
+    return eight;
+}
+
+public LinkedList<int> MakeKilo()
+{
+    LinkedList<int> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(i % 10);
+    }
+    return kilo;
+}
+
+public LinkedList<int> Return(const LinkedList<int>& x)
+{
+    return x;
+}
+
+unit_test void int_linked_list_compare_test()
+{
+    LinkedList<int> x0;
+    #assert (!(x0 < x0));
+    #assert (!(x0 > x0));
+    #assert ((x0 <= x0));
+    #assert ((x0 >= x0));
+    LinkedList<int> x1 = MakeOne();
+    #assert (!(x1 < x1));
+    #assert (!(x1 > x1));
+    #assert (x1 <= x1);
+    #assert (x1 >= x1);
+    #assert (x0 < x1);
+    #assert (!(x0 > x1));
+    #assert (x0 <= x1);
+    #assert (!(x0 >= x1));
+    #assert (!(x1 < x0));
+    #assert (x1 > x0);
+    #assert (!(x1 <= x0));
+    #assert (x1 >= x0);
+    LinkedList<int> x2 = MakeTwo();
+    #assert (!(x2 < x2));
+    #assert (!(x2 > x2));
+    #assert (x2 <= x2);
+    #assert (x2 >= x2);
+    #assert (!(x2 < x1));
+    #assert (!(x2 < x1));
+    #assert (x1 < x2);
+    #assert (!(x1 > x2));
+    #assert (x1 <= x2);
+    #assert (!(x1 >= x2));
+    #assert (!(x2 < x0));
+    #assert (x2 > x0);
+    #assert (!(x2 <= x0));
+    #assert (x2 >= x0);
+    LinkedList<int> x3 = MakeEight();
+    #assert (!(x3 < x3));
+    #assert (!(x3 > x3));
+    #assert (x3 <= x3);
+    #assert (x3 >= x3);
+    #assert (x3 < x2);
+    #assert (!(x3 > x2));
+    #assert (x3 <= x2);
+    #assert (!(x3 >= x2));
+    #assert (!(x2 < x3));
+    #assert (x2 > x3);
+    #assert (!(x2 <= x3));
+    #assert (x2 >= x3);
+    #assert (x3 < x1);
+    #assert (!(x3 > x1));
+    #assert (x3 <= x1);
+    #assert (!(x3 >= x1));
+    #assert (!(x1 < x3));
+    #assert (x1 > x3);
+    #assert (!(x1 <= x3));
+    #assert (x1 >= x3);
+    #assert (!(x3 < x0));
+    #assert (x3 > x0);
+    #assert (!(x3 <= x0));
+    #assert (x3 >= x0);
+    #assert (x0 < x3);
+    #assert (!(x0 > x3));
+    #assert (x0 <= x3);
+    #assert (!(x0 >= x3));
+}

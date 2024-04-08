@@ -1,0 +1,27 @@
+using System;
+
+unit_test void ustring_to_upper_test()
+{
+    auto result0 = ToUpper(ustring());
+    #assert (!result0.Error() && result0.Value() == ustring());
+    auto result1 = ToUpper(u"alpha");
+    #assert (!result1.Error() && result1.Value() == u"ALPHA");
+    auto result2 = ToUpper(u"Alpha");
+    #assert (!result2.Error() && result2.Value() == u"ALPHA");
+    auto result3 = ToUpper(u"ALPHA");
+    #assert (!result3.Error() && result3.Value() == u"ALPHA");
+    auto result4 = ToUpper(u"a");
+    #assert (!result4.Error() && result4.Value() == u"A");
+    auto result5 = ToUpper(u"A");
+    #assert (!result5.Error() && result5.Value() == u"A");
+    auto result6 = ToUpper(u"ab");
+    #assert (!result6.Error() && result6.Value() == u"AB");
+    auto result7 = ToUpper(u"Ab");
+    #assert (!result7.Error() && result7.Value() == u"AB");
+    auto result8 = ToUpper(u"aB");
+    #assert (!result8.Error() && result8.Value() == u"AB");
+    auto result9 = ToUpper(u"AB");
+    #assert (!result9.Error() && result9.Value() == u"AB");
+    auto result10 = ToUpper(u"12345678");
+    #assert (!result10.Error() && result10.Value() == u"12345678");
+}

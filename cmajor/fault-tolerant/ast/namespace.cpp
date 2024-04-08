@@ -10,7 +10,7 @@ import cmajor.fault.tolerant.ast.visitor;
 namespace cmajor::fault::tolerant::ast {
 
 NamespaceDefinitionNode::NamespaceDefinitionNode(const soul::ast::Span& span, CompletionContext completionContext) : 
-    SyntaxNode(span, completionContext)
+    SyntaxNode(span, completionContext), flags(NsFlags::none)
 {
 }
 

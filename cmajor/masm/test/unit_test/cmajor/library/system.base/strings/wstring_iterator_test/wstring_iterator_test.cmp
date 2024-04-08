@@ -1,0 +1,4 @@
+project wstring_iterator_test;
+target=program;
+source <wstring_iterator_test.cm>;
+source <main.cm>;

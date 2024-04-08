@@ -1,0 +1,42 @@
+<results>
+    <lower_bound_ra_iter_value_test project="lower_bound" solution="">
+        <test count="6" exitCode="0" name="lower_bound_ra_iter_value_test">
+            <assertion index="0" line="20" result="passed"/>
+            <assertion index="1" line="22" result="passed"/>
+            <assertion index="2" line="24" result="passed"/>
+            <assertion index="3" line="26" result="passed"/>
+            <assertion index="4" line="28" result="passed"/>
+            <assertion index="5" line="30" result="passed"/>
+        </test>
+    </lower_bound_ra_iter_value_test>
+    <lower_bound_ra_iter_relation_test project="lower_bound" solution="">
+        <test count="6" exitCode="0" name="lower_bound_ra_iter_relation_test">
+            <assertion index="0" line="49" result="passed"/>
+            <assertion index="1" line="51" result="passed"/>
+            <assertion index="2" line="53" result="passed"/>
+            <assertion index="3" line="55" result="passed"/>
+            <assertion index="4" line="57" result="passed"/>
+            <assertion index="5" line="59" result="passed"/>
+        </test>
+    </lower_bound_ra_iter_relation_test>
+    <lower_bound_bi_iter_value_test project="lower_bound" solution="">
+        <test count="6" exitCode="0" name="lower_bound_bi_iter_value_test">
+            <assertion index="0" line="20" result="passed"/>
+            <assertion index="1" line="22" result="passed"/>
+            <assertion index="2" line="24" result="passed"/>
+            <assertion index="3" line="26" result="passed"/>
+            <assertion index="4" line="28" result="passed"/>
+            <assertion index="5" line="30" result="passed"/>
+        </test>
+    </lower_bound_bi_iter_value_test>
+    <lower_bound_bi_iter_relation_test project="lower_bound" solution="">
+        <test count="6" exitCode="0" name="lower_bound_bi_iter_relation_test">
+            <assertion index="0" line="49" result="passed"/>
+            <assertion index="1" line="51" result="passed"/>
+            <assertion index="2" line="53" result="passed"/>
+            <assertion index="3" line="55" result="passed"/>
+            <assertion index="4" line="57" result="passed"/>
+            <assertion index="5" line="59" result="passed"/>
+        </test>
+    </lower_bound_bi_iter_relation_test>
+</results>

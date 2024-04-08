@@ -1,0 +1,4 @@
+project stack;
+target=unitTest;
+source <int_stack.cm>;
+source <string_stack.cm>;

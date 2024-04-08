@@ -1,0 +1,36 @@
+using System;
+
+unit_test void string_insert_char_test()
+{
+    string emptyInsert;
+    emptyInsert.Insert(0, 'a');
+    #assert (!emptyInsert.IsEmpty());
+    #assert (emptyInsert.Length() == 1);
+    #assert (emptyInsert[0] == 'a');
+    string oneInsert('a');
+    oneInsert.Insert(0, 'b');
+    #assert (!oneInsert.IsEmpty());
+    #assert (oneInsert.Length() == 2);
+    #assert (oneInsert[0] == 'b');
+    #assert (oneInsert[1] == 'a');
+    string twoInsert("ab");
+    twoInsert.Insert(0, 'c');
+    #assert (!twoInsert.IsEmpty());
+    #assert (twoInsert.Length() == 3);
+    #assert (twoInsert[0] == 'c');
+    #assert (twoInsert[1] == 'a');
+    #assert (twoInsert[2] == 'b');
+    string kiloInsert;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kiloInsert.Append('c');
+    }
+    kiloInsert.Insert(0, 'a');
+    #assert (!kiloInsert.IsEmpty());
+    #assert (kiloInsert.Length() == 1025);
+    #assert (kiloInsert[0] == 'a');
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (kiloInsert[i + 1] == 'c');
+    }
+}

@@ -1,0 +1,4 @@
+project string_set_lower_bound_test;
+target=program;
+source <string_set_lower_bound_test.cm>;
+source <main.cm>;

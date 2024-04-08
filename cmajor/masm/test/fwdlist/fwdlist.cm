@@ -1,14 +1,20 @@
 using System;
 using System.Collections;
 
+public ForwardList<int> MakeKilo()
+{
+    ForwardList<int> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, i % 10);
+    }
+    return kilo;
+}
+
 void main()
 {
-    ForwardList<int> list;
-    list.InsertFront(3);
-    list.InsertFront(2);
-    list.InsertFront(1);
-    for (auto x : list)
-    {
-        Console.WriteLine(x);
-    }
+    ForwardList<int> list = MakeKilo();
+    list.Remove(0);
+    Console.WriteLine(list.Count());
 }

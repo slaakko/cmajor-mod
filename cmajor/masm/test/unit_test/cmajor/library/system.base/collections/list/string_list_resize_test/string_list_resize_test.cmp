@@ -1,0 +1,4 @@
+project string_list_resize_test;
+target=program;
+source <string_list_resize_test.cm>;
+source <main.cm>;

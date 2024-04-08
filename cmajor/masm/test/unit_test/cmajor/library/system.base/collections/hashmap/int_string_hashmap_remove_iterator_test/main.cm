@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_string_hashmap_remove_iterator_test();
+    return 0;
+}

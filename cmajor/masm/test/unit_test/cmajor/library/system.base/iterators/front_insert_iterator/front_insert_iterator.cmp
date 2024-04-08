@@ -1,0 +1,3 @@
+project front_insert_iterator;
+target=unitTest;
+source <list_int_front_insert_iterator.cm>;

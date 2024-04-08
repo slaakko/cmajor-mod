@@ -1,0 +1,4 @@
+project wstring_remove_test;
+target=program;
+source <wstring_remove_test.cm>;
+source <main.cm>;

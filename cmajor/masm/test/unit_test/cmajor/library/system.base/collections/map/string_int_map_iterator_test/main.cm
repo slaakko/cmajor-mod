@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_int_map_iterator_test();
+    return 0;
+}

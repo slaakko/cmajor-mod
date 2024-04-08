@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    fill_test();
+    return 0;
+}

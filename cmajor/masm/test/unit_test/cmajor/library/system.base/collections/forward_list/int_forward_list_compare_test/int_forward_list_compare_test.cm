@@ -1,0 +1,112 @@
+using System;
+using System.Collections;
+
+public ForwardList<int> MakeOne()
+{
+    ForwardList<int> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, 1);
+    return one;
+}
+
+public ForwardList<int> MakeTwo()
+{
+    ForwardList<int> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, 1);
+    it = two.InsertAfter(it, 2);
+    return two;
+}
+
+public ForwardList<int> MakeEight()
+{
+    ForwardList<int> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, i);
+    }
+    return eight;
+}
+
+public ForwardList<int> MakeKilo()
+{
+    ForwardList<int> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, i % 10);
+    }
+    return kilo;
+}
+
+public ForwardList<int> Return(const ForwardList<int>& x)
+{
+    return x;
+}
+
+unit_test void int_forward_list_compare_test()
+{
+    ForwardList<int> x0;
+    #assert (!(x0 < x0));
+    #assert (!(x0 > x0));
+    #assert ((x0 <= x0));
+    #assert ((x0 >= x0));
+    ForwardList<int> x1 = MakeOne();
+    #assert (!(x1 < x1));
+    #assert (!(x1 > x1));
+    #assert (x1 <= x1);
+    #assert (x1 >= x1);
+    #assert (x0 < x1);
+    #assert (!(x0 > x1));
+    #assert (x0 <= x1);
+    #assert (!(x0 >= x1));
+    #assert (!(x1 < x0));
+    #assert (x1 > x0);
+    #assert (!(x1 <= x0));
+    #assert (x1 >= x0);
+    ForwardList<int> x2 = MakeTwo();
+    #assert (!(x2 < x2));
+    #assert (!(x2 > x2));
+    #assert (x2 <= x2);
+    #assert (x2 >= x2);
+    #assert (!(x2 < x1));
+    #assert (!(x2 < x1));
+    #assert (x1 < x2);
+    #assert (!(x1 > x2));
+    #assert (x1 <= x2);
+    #assert (!(x1 >= x2));
+    #assert (!(x2 < x0));
+    #assert (x2 > x0);
+    #assert (!(x2 <= x0));
+    #assert (x2 >= x0);
+    ForwardList<int> x3 = MakeEight();
+    #assert (!(x3 < x3));
+    #assert (!(x3 > x3));
+    #assert (x3 <= x3);
+    #assert (x3 >= x3);
+    #assert (x3 < x2);
+    #assert (!(x3 > x2));
+    #assert (x3 <= x2);
+    #assert (!(x3 >= x2));
+    #assert (!(x2 < x3));
+    #assert (x2 > x3);
+    #assert (!(x2 <= x3));
+    #assert (x2 >= x3);
+    #assert (x3 < x1);
+    #assert (!(x3 > x1));
+    #assert (x3 <= x1);
+    #assert (!(x3 >= x1));
+    #assert (!(x1 < x3));
+    #assert (x1 > x3);
+    #assert (!(x1 <= x3));
+    #assert (x1 >= x3);
+    #assert (!(x3 < x0));
+    #assert (x3 > x0);
+    #assert (!(x3 <= x0));
+    #assert (x3 >= x0);
+    #assert (x0 < x3);
+    #assert (!(x0 > x3));
+    #assert (x0 <= x3);
+    #assert (!(x0 >= x3));
+}

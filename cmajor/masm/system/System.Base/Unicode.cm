@@ -2438,14 +2438,18 @@ namespace System.Unicode
                     {
                         return Result<const CharacterInfo*>(ErrorId(pathToUcdBinFileResult.GetErrorId()));
                     }
-                    string pathToUcdBinFile = pathToUcdBinFileResult.Value();
-                    if (!File.Exists(pathToUcdBinFile))
+                    Result<bool> ucdBinFileExistResult = File.Exists(pathToUcdBinFileResult.Value());
+                    if (ucdBinFileExistResult.Error())
                     {
-                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFile + "' does not exist.";
+                        return Result<const CharacterInfo*>(ErrorId(ucdBinFileExistResult.GetErrorId()));
+                    }
+                    if (!ucdBinFileExistResult.Value())
+                    {
+                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFileResult.Value() + "' does not exist.";
                         int errorId = AllocateError(errorMessage);
                         return Result<const CharacterInfo*>(ErrorId(errorId));
                     }
-                    auto binaryReaderResult = File.OpenBinary(pathToUcdBinFile);
+                    auto binaryReaderResult = File.OpenBinary(pathToUcdBinFileResult.Value());
                     if (binaryReaderResult.Error())
                     {
                         return Result<const CharacterInfo*>(ErrorId(binaryReaderResult.GetErrorId()));
@@ -2511,14 +2515,18 @@ namespace System.Unicode
                     {
                         return Result<const ExtendedCharacterInfo*>(ErrorId(pathToUcdBinFileResult.GetErrorId()));
                     }
-                    string pathToUcdBinFile = pathToUcdBinFileResult.Value();
-                    if (!File.Exists(pathToUcdBinFile))
+                    Result<bool> ucdBinFileExistResult = File.Exists(pathToUcdBinFileResult.Value());
+                    if (ucdBinFileExistResult.Error())
                     {
-                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFile + "' does not exist.";
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(ucdBinFileExistResult.GetErrorId()));
+                    }
+                    if (!ucdBinFileExistResult.Value())
+                    {
+                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFileResult.Value() + "' does not exist.";
                         int errorId = AllocateError(errorMessage);
                         return Result<const ExtendedCharacterInfo*>(ErrorId(errorId));
                     }
-                    auto readerResult = File.OpenBinary(pathToUcdBinFile);
+                    auto readerResult = File.OpenBinary(pathToUcdBinFileResult.Value());
                     if (readerResult.Error())
                     {
                         return Result<const ExtendedCharacterInfo*>(ErrorId(readerResult.GetErrorId()));

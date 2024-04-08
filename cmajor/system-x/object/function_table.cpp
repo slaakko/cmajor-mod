@@ -299,7 +299,7 @@ int32_t LineNumberTable::SearchLineNumber(uint32_t offset) const
     return -1;
 }
 
-ExceptionTableRecord::ExceptionTableRecord(ExceptionTableRecordKind kind_) : kind(kind_)
+ExceptionTableRecord::ExceptionTableRecord(ExceptionTableRecordKind kind_) : kind(kind_), table(nullptr)
 {
 }
 

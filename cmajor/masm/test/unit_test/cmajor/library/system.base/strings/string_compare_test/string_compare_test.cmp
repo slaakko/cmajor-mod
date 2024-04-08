@@ -1,0 +1,4 @@
+project string_compare_test;
+target=program;
+source <string_compare_test.cm>;
+source <main.cm>;

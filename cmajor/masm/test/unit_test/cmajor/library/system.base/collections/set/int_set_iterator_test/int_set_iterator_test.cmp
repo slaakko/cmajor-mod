@@ -1,0 +1,4 @@
+project int_set_iterator_test;
+target=program;
+source <int_set_iterator_test.cm>;
+source <main.cm>;

@@ -1,0 +1,4 @@
+project int_list_iterator_test;
+target=program;
+source <int_list_iterator_test.cm>;
+source <main.cm>;

@@ -37,7 +37,8 @@ CppCodeGenerator::CppCodeGenerator(cmajor::ir::Emitter* emitter_) :
     trueBlock(nullptr), falseBlock(nullptr), breakTarget(nullptr), continueTarget(nullptr), sequenceSecond(nullptr), currentFunction(nullptr), currentBlock(nullptr),
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
     generateLineNumbers(false), currentTryBlockId(-1), nextTryBlockId(0), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), inTryBlock(false),
-    prevWasTerminator(false), numTriesInCurrentBlock(0), tryIndex(0), prevLineNumber(0), prevControlFlowGraphNodeId(-1), continueTargetNodeId(-1), loopNodeId(-1)
+    prevWasTerminator(false), numTriesInCurrentBlock(0), tryIndex(0), prevLineNumber(0), prevControlFlowGraphNodeId(-1), continueTargetNodeId(-1), loopNodeId(-1),
+    emittingContext(nullptr)
 {
     emitter->SetEmittingDelegate(this);
 }

@@ -1,0 +1,7 @@
+<results>
+    <list_int_insert_iterator_test project="insert_iterator" solution="">
+        <test count="1" exitCode="0" name="list_int_insert_iterator_test">
+            <assertion index="0" line="17" result="passed"/>
+        </test>
+    </list_int_insert_iterator_test>
+</results>

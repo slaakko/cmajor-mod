@@ -1,0 +1,4 @@
+project string_int_map_op_subscript_test;
+target=program;
+source <string_int_map_op_subscript_test.cm>;
+source <main.cm>;

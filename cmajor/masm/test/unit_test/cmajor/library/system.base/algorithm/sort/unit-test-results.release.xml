@@ -1,0 +1,12 @@
+<results>
+    <sort_test project="sort" solution="">
+        <test count="6" exitCode="0" name="sort_test">
+            <assertion index="0" line="8" result="passed"/>
+            <assertion index="1" line="9" result="passed"/>
+            <assertion index="2" line="17" result="passed"/>
+            <assertion index="3" line="26" result="passed"/>
+            <assertion index="4" line="36" result="passed"/>
+            <assertion index="5" line="46" result="passed"/>
+        </test>
+    </sort_test>
+</results>

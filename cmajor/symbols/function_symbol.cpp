@@ -731,18 +731,8 @@ void FunctionSymbol::ComputeMangledName()
         mangledName.append(1, U'_').append(parentClass->SimpleName());
     }
     }
-    std::string templateArgumentString;
-    for (TypeSymbol* templateArgumentType : templateArgumentTypes)
-    {
-        templateArgumentString.append("_").append(util::ToUtf8(templateArgumentType->FullName()));
-    }
-    std::string constraintString;
-    if (Constraint())
-    {
-        constraintString = " " + Constraint()->ToString();
-    }
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
-        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentString + constraintString + compileUnitId)));
+        util::ToUtf8(FullNameWithSpecifiers()) + compileUnitId)));
     SetMangledName(mangledName);
 }
 

@@ -1,0 +1,3 @@
+project find;
+target=unitTest;
+source <find.cm>;

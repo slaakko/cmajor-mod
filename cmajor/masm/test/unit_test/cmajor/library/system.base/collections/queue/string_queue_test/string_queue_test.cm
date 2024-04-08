@@ -1,0 +1,49 @@
+using System;
+using System.Collections;
+
+unit_test void string_queue_test()
+{
+    Queue<string> q;
+    #assert (q.IsEmpty());
+    #assert (q.Count() == 0);
+    q.Put("1");
+    #assert (!q.IsEmpty());
+    #assert (q.Count() == 1);
+    auto v0 = q.Get();
+    #assert (v0 == "1");
+    #assert (q.IsEmpty());
+    #assert (q.Count() == 0);
+    q.Put("1");
+    q.Put("2");
+    #assert (!q.IsEmpty());
+    #assert (q.Count() == 2);
+    auto v1 = q.Get();
+    #assert (v1 == "1");
+    #assert (!q.IsEmpty());
+    #assert (q.Count() == 1);
+    auto v2 = q.Get();
+    #assert (v2 == "2");
+    #assert (q.IsEmpty());
+    #assert (q.Count() == 0);
+    for (int i = 0; i < 8; ++i)
+    {
+        q.Put(ToString(i));
+    }
+    #assert (!q.IsEmpty());
+    #assert (q.Count() == 8);
+    for (int i = 0; i < 8; ++i)
+    {
+        auto v = q.Get();
+        #assert (v == ToString(i));
+        if (i < 7)
+        {
+            #assert (!q.IsEmpty());
+            #assert (q.Count() == 7 - i);
+        }
+        else
+        {
+            #assert (q.IsEmpty());
+            #assert (q.Count() == 0);
+        }
+    }
+}

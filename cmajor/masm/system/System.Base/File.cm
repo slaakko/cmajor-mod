@@ -10,9 +10,18 @@ namespace System.IO
 {
     public static class File
     {
-        public static bool Exists(const string& filePath)
+        public static Result<bool> Exists(const string& filePath)
         {
-            return RtmFileExists(filePath.Chars());
+            int errorId = 0;
+            bool exists = RtmFileExists(filePath.Chars(), errorId);
+            if (errorId > 0)
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                return Result<bool>(exists);
+            }
         }
         public static Result<long> Size(const string& filePath)
         {

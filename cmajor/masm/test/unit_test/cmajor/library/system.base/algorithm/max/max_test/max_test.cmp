@@ -1,0 +1,4 @@
+project max_test;
+target=program;
+source <max_test.cm>;
+source <main.cm>;

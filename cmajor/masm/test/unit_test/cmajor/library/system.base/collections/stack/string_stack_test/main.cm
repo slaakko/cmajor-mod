@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    string_stack_test();
+    return 0;
+}

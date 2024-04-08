@@ -1,0 +1,7 @@
+<results>
+    <copy_test project="copy" solution="">
+        <test count="1" exitCode="0" name="copy_test">
+            <assertion index="0" line="15" result="passed"/>
+        </test>
+    </copy_test>
+</results>

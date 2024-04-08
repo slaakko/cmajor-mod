@@ -57,11 +57,6 @@ ClassTemplateSpecializationSymbol::~ClassTemplateSpecializationSymbol()
 std::u32string ClassTemplateSpecializationSymbol::SimpleName() const
 {
     std::u32string simpleName = classTemplate->GroupName();
-    int n = templateArgumentTypes.size();
-    for (int i = 0; i < n; ++i)
-    {
-        simpleName.append(U"_").append(templateArgumentTypes[i]->SimpleName());
-    }
     return simpleName;
 }
 

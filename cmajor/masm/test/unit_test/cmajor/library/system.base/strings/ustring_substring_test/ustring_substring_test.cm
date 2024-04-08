@@ -1,0 +1,70 @@
+using System;
+
+unit_test void ustring_substring_test()
+{
+    ustring empty;
+    ustring s0 = empty.Substring(0);
+    #assert (s0.IsEmpty());
+    #assert (s0.Length() == 0);
+    ustring one('a');
+    ustring s1 = one.Substring(0);
+    #assert (!s1.IsEmpty());
+    #assert (s1.Length() == 1);
+    #assert (s1 == one);
+    ustring s2 = one.Substring(1);
+    #assert (s2.IsEmpty());
+    #assert (s2.Length() == 0);
+    ustring two(u"ab");
+    ustring s3 = two.Substring(0, 1);
+    #assert (!s3.IsEmpty());
+    #assert (s3.Length() == 1);
+    #assert (s3 == u"a");
+    ustring s4 = two.Substring(1, 1);
+    #assert (!s4.IsEmpty());
+    #assert (s4.Length() == 1);
+    #assert (s4 == u"b");
+    ustring s5 = two.Substring(1, 3);
+    #assert (!s5.IsEmpty());
+    #assert (s5.Length() == 1);
+    #assert (s5 == u"b");
+    ustring eight(u"12345678");
+    ustring s6 = eight.Substring(10, 100);
+    #assert (s6.IsEmpty());
+    #assert (s6.Length() == 0);
+    ustring s7 = eight.Substring(0, 8);
+    #assert (!s7.IsEmpty());
+    #assert (s7.Length() == 8);
+    #assert (s7 == u"12345678");
+    ustring s8 = eight.Substring(2, 4);
+    #assert (!s8.IsEmpty());
+    #assert (s8.Length() == 4);
+    #assert (s8 == u"3456");
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    ustring s9 = kilo.Substring(0);
+    #assert (!s9.IsEmpty());
+    #assert (s9.Length() == 1024);
+    #assert (s9 == kilo);
+    ustring s10 = kilo.Substring(1, 4);
+    #assert (!s10.IsEmpty());
+    #assert (s10.Length() == 4);
+    #assert (s10 == u"1234");
+    ustring s11 = kilo.Substring(200u, 0);
+    #assert (s11.IsEmpty());
+    #assert (s11.Length() == 0);
+    ustring s12 = kilo.Substring(1024 - 10, 10);
+    #assert (!s12.IsEmpty());
+    #assert (s12.Length() == 10);
+    #assert (s12 == u"4567890123");
+    ustring s13 = kilo.Substring(1024 - 10, 5);
+    #assert (!s13.IsEmpty());
+    #assert (s13.Length() == 5);
+    #assert (s13 == u"45678");
+    ustring s14 = kilo.Substring(1024 - 10, 20);
+    #assert (!s14.IsEmpty());
+    #assert (s14.Length() == 10);
+    #assert (s14 == u"4567890123");
+}

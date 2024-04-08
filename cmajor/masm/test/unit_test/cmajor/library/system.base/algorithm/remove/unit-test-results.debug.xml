@@ -1,0 +1,12 @@
+<results>
+    <remove_value_test project="remove" solution="">
+        <test count="1" exitCode="0" name="remove_value_test">
+            <assertion index="0" line="39" result="passed"/>
+        </test>
+    </remove_value_test>
+    <remove_predicate_test project="remove" solution="">
+        <test count="1" exitCode="0" name="remove_predicate_test">
+            <assertion index="0" line="77" result="passed"/>
+        </test>
+    </remove_predicate_test>
+</results>

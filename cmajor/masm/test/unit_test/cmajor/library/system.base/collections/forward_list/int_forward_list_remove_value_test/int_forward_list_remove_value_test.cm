@@ -1,0 +1,149 @@
+using System;
+using System.Collections;
+
+public ForwardList<int> MakeOne()
+{
+    ForwardList<int> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, 1);
+    return one;
+}
+
+public ForwardList<int> MakeTwo()
+{
+    ForwardList<int> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, 1);
+    it = two.InsertAfter(it, 2);
+    return two;
+}
+
+public ForwardList<int> MakeEight()
+{
+    ForwardList<int> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, i);
+    }
+    return eight;
+}
+
+public ForwardList<int> MakeKilo()
+{
+    ForwardList<int> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, i % 10);
+    }
+    return kilo;
+}
+
+public ForwardList<int> Return(const ForwardList<int>& x)
+{
+    return x;
+}
+
+unit_test void int_forward_list_remove_value_test()
+{
+    ForwardList<int> x0 = MakeOne();
+    x0.Remove(1);
+    #assert (x0.Count() == 0);
+    ForwardList<int> x1 = MakeOne();
+    x1.Remove(1000);
+    #assert (x1.Count() == 1);
+    #assert (*x1.Begin() == 1);
+    ForwardList<int> x2 = MakeTwo();
+    x2.Remove(1);
+    #assert (x2.Count() == 1);
+    #assert (*x2.Begin() == 2);
+    ForwardList<int> x3 = MakeTwo();
+    x3.Remove(2);
+    #assert (x3.Count() == 1);
+    #assert (*x3.Begin() == 1);
+    ForwardList<int> x4 = MakeTwo();
+    x4.Remove(1000);
+    #assert (x4.Count() == 2);
+    auto it0 = x4.Begin();
+    #assert (*it0 == 1);
+    ++it0;
+    #assert (*it0 == 2);
+    ForwardList<int> x5 = MakeEight();
+    x5.Remove(0);
+    #assert (x5.Count() == 7);
+    auto it1 = x5.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (*it1 == i + 1);
+        ++it1;
+    }
+    ForwardList<int> x6 = MakeEight();
+    x6.Remove(1);
+    #assert (x6.Count() == 7);
+    auto it2 = x6.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 1)
+        {
+            #assert (*it2 == i);
+        }
+        else
+        {
+            #assert (*it2 == i + 1);
+        }
+        ++it2;
+    }
+    ForwardList<int> x7 = MakeEight();
+    x7.Remove(6);
+    #assert (x7.Count() == 7);
+    auto it3 = x7.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 6)
+        {
+            #assert (*it3 == i);
+        }
+        else
+        {
+            #assert (*it3 == i + 1);
+        }
+        ++it3;
+    }
+    ForwardList<int> x8 = MakeEight();
+    x8.Remove(7);
+    #assert (x8.Count() == 7);
+    auto it4 = x8.Begin();
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (*it4 == i);
+        ++it4;
+    }
+    ForwardList<int> x9 = MakeEight();
+    x9.Remove(1000);
+    #assert (x9.Count() == 8);
+    auto it5 = x9.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (*it5 == i);
+        ++it5;
+    }
+    ForwardList<int> x10 = MakeKilo();
+    x10.Remove(0);
+    #assert (x10.Count() == 921);
+    int value = 0;
+    auto it6 = x10.Begin();
+    for (int i = 0; i < 921; ++i)
+    {
+        if ((i % 9) == 0)
+        {
+            ++value;
+        }
+        else
+        {
+            #assert (*it6 == (value % 9) + 1);
+            ++value;
+        }
+        ++it6;
+    }
+}

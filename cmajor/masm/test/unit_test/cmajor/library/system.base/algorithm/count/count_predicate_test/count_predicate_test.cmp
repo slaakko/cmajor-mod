@@ -1,0 +1,4 @@
+project count_predicate_test;
+target=program;
+source <count_predicate_test.cm>;
+source <main.cm>;

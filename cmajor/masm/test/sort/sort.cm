@@ -1,0 +1,16 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<int> x4;
+    for (int i = 0; i < 1024; ++i)
+    {
+        x4.Add(cast<int>(Random(1024)));
+    }
+    Sort(x4);
+    for (int i = 0; i < x4.Count(); ++i)
+    {
+        Console.WriteLine(x4[i]);
+    }
+}

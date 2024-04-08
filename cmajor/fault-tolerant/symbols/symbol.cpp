@@ -15,7 +15,7 @@ namespace cmajor::fault::tolerant::symbols {
 
 Symbol::Symbol(SymbolKind kind_, const std::u16string& name_, const soul::ast::Span& span_) : 
     kind(kind_), name(name_), span(span_), specifiers(cmajor::fault::tolerant::ast::Specifiers::none), 
-    parent(nullptr), index(-1), source(nullptr)
+    parent(nullptr), index(-1), source(nullptr), flags(SymbolFlags::none)
 {
 }
 

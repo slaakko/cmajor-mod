@@ -1,0 +1,22 @@
+<results>
+    <count_value_test project="count" solution="">
+        <test count="6" exitCode="0" name="count_value_test">
+            <assertion index="0" line="20" result="passed"/>
+            <assertion index="1" line="22" result="passed"/>
+            <assertion index="2" line="23" result="passed"/>
+            <assertion index="3" line="24" result="passed"/>
+            <assertion index="4" line="26" result="passed"/>
+            <assertion index="5" line="28" result="passed"/>
+        </test>
+    </count_value_test>
+    <count_predicate_test project="count" solution="">
+        <test count="6" exitCode="0" name="count_predicate_test">
+            <assertion index="0" line="46" result="passed"/>
+            <assertion index="1" line="48" result="passed"/>
+            <assertion index="2" line="49" result="passed"/>
+            <assertion index="3" line="50" result="passed"/>
+            <assertion index="4" line="52" result="passed"/>
+            <assertion index="5" line="54" result="passed"/>
+        </test>
+    </count_predicate_test>
+</results>

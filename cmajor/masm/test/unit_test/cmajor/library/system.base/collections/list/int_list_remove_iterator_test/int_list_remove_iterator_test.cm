@@ -1,0 +1,145 @@
+using System;
+using System.Collections;
+
+public List<int> MakeTwo()
+{
+    List<int> two;
+    two.Add(1);
+    two.Add(2);
+    return two;
+}
+
+public List<int> MakeEight()
+{
+    List<int> eight;
+    for (int i = 0; i < 8; ++i)
+    {
+        eight.Add(i);
+    }
+    return eight;
+}
+
+public List<int> MakeKilo()
+{
+    List<int> kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Add(i % 10);
+    }
+    return kilo;
+}
+
+public List<int> Return(const List<int>& x)
+{
+    return x;
+}
+
+unit_test void int_list_remove_iterator_test()
+{
+    List<int> x0(1, 1);
+    int v0 = x0.Remove(x0.Begin());
+    #assert (x0.Count() == 0);
+    #assert (v0 == 1);
+    List<int> x1 = MakeTwo();
+    int v1 = x1.Remove(x1.Begin());
+    #assert (x1.Count() == 1);
+    #assert (v1 == 1);
+    #assert (x1[0] == 2);
+    List<int> x2 = MakeTwo();
+    int v2 = x2.Remove(x2.Begin() + 1);
+    #assert (x2.Count() == 1);
+    #assert (v2 == 2);
+    #assert (x2[0] == 1);
+    List<int> x3 = MakeEight();
+    int v3 = x3.Remove(x3.Begin());
+    #assert (x3.Count() == 7);
+    #assert (v3 == 0);
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (x3[i] == i + 1);
+    }
+    List<int> x4 = MakeEight();
+    int v4 = x4.Remove(x4.Begin() + 1);
+    #assert (x4.Count() == 7);
+    #assert (v4 == 1);
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 1)
+        {
+            #assert (x4[i] == i);
+        }
+        else
+        {
+            #assert (x4[i] == i + 1);
+        }
+    }
+    List<int> x5 = MakeEight();
+    int v5 = x5.Remove(x5.Begin() + 7);
+    #assert (x5.Count() == 7);
+    #assert (v5 == 7);
+    for (int i = 0; i < 7; ++i)
+    {
+        #assert (x5[i] == i);
+    }
+    List<int> x6 = MakeEight();
+    int v6 = x6.Remove(x6.Begin() + 6);
+    #assert (x6.Count() == 7);
+    #assert (v6 == 6);
+    for (int i = 0; i < 7; ++i)
+    {
+        if (i < 6)
+        {
+            #assert (x6[i] == i);
+        }
+        else
+        {
+            #assert (x6[i] == i + 1);
+        }
+    }
+    List<int> x7 = MakeKilo();
+    int v7 = x7.Remove(x7.Begin());
+    #assert (x7.Count() == 1023);
+    #assert (v7 == 0);
+    for (int i = 0; i < 1023; ++i)
+    {
+        #assert (x7[i] == (i + 1) % 10);
+    }
+    List<int> x8 = MakeKilo();
+    int v8 = x8.Remove(x8.Begin() + 1);
+    #assert (x8.Count() == 1023);
+    #assert (v8 == 1);
+    for (int i = 0; i < 1023; ++i)
+    {
+        if (i < 1)
+        {
+            #assert (x8[i] == i % 10);
+        }
+        else
+        {
+            #assert (x8[i] == (i + 1) % 10);
+        }
+    }
+    List<int> x9 = MakeKilo();
+    int v9 = x9.Remove(x9.Begin() + 1022);
+    #assert (x9.Count() == 1023);
+    #assert (v9 == 1022 % 10);
+    for (int i = 0; i < 1023; ++i)
+    {
+        if (i < 1022)
+        {
+            #assert (x9[i] == i % 10);
+        }
+        else
+        {
+            #assert (x9[i] == (i + 1) % 10);
+        }
+    }
+    List<int> x10 = MakeKilo();
+    int v10 = x10.Remove(x10.Begin() + 1023);
+    #assert (x10.Count() == 1023);
+    #assert (v10 == 1023 % 10);
+    for (int i = 0; i < 1023; ++i)
+    {
+        #assert (x10[i] == i % 10);
+    }
+}

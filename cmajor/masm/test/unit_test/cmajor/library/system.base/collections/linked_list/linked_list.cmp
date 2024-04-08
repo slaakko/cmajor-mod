@@ -1,0 +1,4 @@
+project linked_list;
+target=unitTest;
+source <int_linked_list.cm>;
+source <string_linked_list.cm>;

@@ -1,0 +1,115 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+string AlignedValue(int i)
+{
+    string s;
+    s.Append(ToString((i / 1000) % 10));
+    s.Append(ToString((i / 100) % 10));
+    s.Append(ToString((i / 10) % 10));
+    s.Append(ToString(i % 10));
+    return s;
+}
+
+public Set<string> MakeSet(const List<int>& x)
+{
+    Set<string> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(ToString(x[i]));
+    }
+    return s;
+}
+
+public Set<string> MakeOne()
+{
+    Set<string> s;
+    s.Insert("0");
+    return s;
+}
+
+public Set<string> MakeTwo()
+{
+    Set<string> s;
+    s.Insert("0");
+    s.Insert("1");
+    return s;
+}
+
+public Set<string> MakeEight()
+{
+    Set<string> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(ToString(i));
+    }
+    return s;
+}
+
+public Set<string> MakeKilo()
+{
+    Set<string> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(AlignedValue(i));
+    }
+    return s;
+}
+
+public Set<string> Return(const Set<string>& x)
+{
+    return x;
+}
+
+unit_test void string_set_compare_test()
+{
+    Set<string> s0;
+    #assert (!(s0 < s0));
+    #assert (!(s0 > s0));
+    #assert (s0 <= s0);
+    #assert (s0 >= s0);
+    Set<string> s1 = MakeOne();
+    #assert (!(s1 < s1));
+    #assert (!(s1 > s1));
+    #assert (s1 <= s1);
+    #assert (s1 >= s1);
+    #assert (!(s1 < s0));
+    #assert (s1 > s0);
+    #assert (!(s1 <= s0));
+    #assert (s1 >= s0);
+    #assert (s0 < s1);
+    #assert (!(s0 > s1));
+    #assert (s0 <= s1);
+    #assert (!(s0 >= s1));
+    Set<string> s2 = MakeTwo();
+    #assert (!(s2 < s2));
+    #assert (!(s2 > s2));
+    #assert (s2 <= s2);
+    #assert (s2 >= s2);
+    #assert (!(s2 < s1));
+    #assert (s2 > s1);
+    #assert (!(s2 <= s1));
+    #assert (s2 >= s1);
+    #assert (s1 < s2);
+    #assert (!(s1 > s2));
+    #assert (s1 <= s2);
+    #assert (!(s1 >= s2));
+    #assert (!(s2 < s0));
+    #assert (s2 > s0);
+    #assert (!(s2 <= s0));
+    #assert (s2 >= s0);
+    #assert (s0 < s2);
+    #assert (!(s0 > s2));
+    #assert (s0 <= s2);
+    #assert (!(s0 >= s2));
+}

@@ -1,0 +1,4 @@
+project string_remove_test;
+target=program;
+source <string_remove_test.cm>;
+source <main.cm>;

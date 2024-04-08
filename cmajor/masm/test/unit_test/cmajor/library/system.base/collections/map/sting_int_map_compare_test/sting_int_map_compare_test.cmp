@@ -1,0 +1,4 @@
+project sting_int_map_compare_test;
+target=program;
+source <sting_int_map_compare_test.cm>;
+source <main.cm>;

@@ -1,0 +1,4 @@
+project to_upper_test;
+target=program;
+source <to_upper_test.cm>;
+source <main.cm>;

@@ -1,0 +1,16 @@
+using System;
+using System.Collections;
+
+unit_test void list_int_front_insert_iterator_test()
+{
+    List<int> list;
+    auto it = FrontInserter(list);
+    for (int i = 0; i < 8; ++i)
+    {
+        *it++ = i;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        #assert (list[i] == 7 - i);
+    }
+}

@@ -1,0 +1,4 @@
+project wstring_equal_test;
+target=program;
+source <wstring_equal_test.cm>;
+source <main.cm>;

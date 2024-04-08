@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    ustring_rfind_ustring_test();
+    return 0;
+}

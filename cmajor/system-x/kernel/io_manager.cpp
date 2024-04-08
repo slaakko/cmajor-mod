@@ -210,7 +210,7 @@ void IOManager::RunCompletionHandler()
             }
             else
             {
-                ThrowLastHostError(hostFile->FilePath());
+                ThrowLastHostError("");
             }
         }
         OsCloseIoCompletionPort(completionPortHandle);

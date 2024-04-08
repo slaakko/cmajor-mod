@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    next_ra_iter_test();
+    return 0;
+}

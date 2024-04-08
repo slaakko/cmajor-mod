@@ -1,0 +1,31 @@
+using System;
+using System.Collections;
+
+class R : Rel<int>
+{
+    public inline bool operator()(int x, int y) const
+    {
+        return x < y;
+    }
+}
+
+unit_test void lower_bound_ra_iter_relation_test()
+{
+    List<int> l;
+    for (int i = 0; i < 8; ++i)
+    {
+        l.Add(i * 2);
+    }
+    auto it0 = LowerBound(l.Begin(), l.End(), cast<int>(0), R());
+    #assert (it0 == l.Begin());
+    auto it1 = LowerBound(l.Begin(), l.End(), cast<int>(-1), R());
+    #assert (it1 == l.Begin());
+    auto it2 = LowerBound(l.Begin(), l.End(), cast<int>(1), R());
+    #assert (it2 == l.Begin() + 1);
+    auto it3 = LowerBound(l.Begin(), l.End(), cast<int>(2), R());
+    #assert (it3 == l.Begin() + 1);
+    auto it4 = LowerBound(l.Begin(), l.End(), cast<int>(13), R());
+    #assert (it4 == l.Begin() + 7);
+    auto it5 = LowerBound(l.Begin(), l.End(), cast<int>(14), R());
+    #assert (it5 == l.Begin() + 7);
+}

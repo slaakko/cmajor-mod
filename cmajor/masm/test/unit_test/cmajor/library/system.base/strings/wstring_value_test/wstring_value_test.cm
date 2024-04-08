@@ -1,0 +1,107 @@
+using System;
+
+unit_test void wstring_value_test()
+{
+    wstring empty;
+    #assert (empty.IsEmpty());
+    #assert (empty.Length() == 0);
+    wstring emptyCopy = empty;
+    #assert (emptyCopy.IsEmpty());
+    #assert (emptyCopy.Length() == 0);
+    #assert (emptyCopy == empty);
+    wstring emptyCopyAssign;
+    emptyCopyAssign = empty;
+    #assert (emptyCopyAssign.IsEmpty());
+    #assert (emptyCopyAssign.Length() == 0);
+    #assert (emptyCopyAssign == empty);
+    wstring empty2;
+    wstring emptyMove = Rvalue(empty2);
+    #assert (emptyMove.IsEmpty());
+    #assert (emptyMove.Length() == 0);
+    #assert (emptyMove == empty);
+    wstring emptyMoveAssign;
+    wstring empty3;
+    emptyMoveAssign = Rvalue(empty3);
+    #assert (emptyMoveAssign.IsEmpty());
+    #assert (emptyMoveAssign.Length() == 0);
+    #assert (emptyMoveAssign == empty);
+    wstring one(w"a");
+    #assert (!one.IsEmpty());
+    #assert (one.Length() == 1);
+    #assert (one == w"a");
+    wstring oneCopy = one;
+    #assert (!oneCopy.IsEmpty());
+    #assert (oneCopy.Length() == 1);
+    #assert (oneCopy == one);
+    wstring oneCopyAssign;
+    oneCopyAssign = one;
+    #assert (!oneCopyAssign.IsEmpty());
+    #assert (oneCopyAssign.Length() == 1);
+    #assert (oneCopyAssign == one);
+    wstring one2 = one;
+    wstring oneMove = Rvalue(one2);
+    #assert (!oneMove.IsEmpty());
+    #assert (oneMove.Length() == 1);
+    #assert (oneMove == one);
+    wstring oneMoveAssign;
+    wstring one3 = one;
+    oneMoveAssign = Rvalue(one3);
+    #assert (!oneMoveAssign.IsEmpty());
+    #assert (oneMoveAssign.Length() == 1);
+    #assert (oneMoveAssign == one);
+    wstring two(w"ab");
+    #assert (!two.IsEmpty());
+    #assert (two.Length() == 2);
+    #assert (two == w"ab");
+    wstring twoCopy = two;
+    #assert (!twoCopy.IsEmpty());
+    #assert (twoCopy.Length() == 2);
+    #assert (twoCopy == two);
+    wstring twoCopyAssign;
+    twoCopyAssign = two;
+    #assert (!twoCopyAssign.IsEmpty());
+    #assert (twoCopyAssign.Length() == 2);
+    #assert (twoCopyAssign == two);
+    wstring two2 = two;
+    wstring twoMove = Rvalue(two2);
+    #assert (!twoMove.IsEmpty());
+    #assert (twoMove.Length() == 2);
+    #assert (twoMove == two);
+    wstring two3 = two;
+    wstring twoMoveAssign;
+    twoMoveAssign = Rvalue(two3);
+    #assert (!twoMoveAssign.IsEmpty());
+    #assert (twoMoveAssign.Length() == 2);
+    #assert (twoMoveAssign == two);
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append('a');
+    }
+    #assert (!kilo.IsEmpty());
+    #assert (kilo.Length() == 1024);
+    for (int i = 0; i < 1024; ++i)
+    {
+        #assert (kilo[i] == 'a');
+    }
+    wstring kiloCopy = kilo;
+    #assert (!kiloCopy.IsEmpty());
+    #assert (kiloCopy.Length() == 1024);
+    #assert (kiloCopy == kilo);
+    wstring kiloCopyAssign;
+    kiloCopyAssign = kilo;
+    #assert (!kiloCopyAssign.IsEmpty());
+    #assert (kiloCopyAssign.Length() == 1024);
+    #assert (kiloCopyAssign == kilo);
+    wstring kilo2 = kilo;
+    wstring kiloMove = Rvalue(kilo2);
+    #assert (!kiloMove.IsEmpty());
+    #assert (kiloMove.Length() == 1024);
+    #assert (kiloMove == kilo);
+    wstring kilo3 = kilo;
+    wstring kiloMoveAssign;
+    kiloMoveAssign = Rvalue(kilo3);
+    #assert (!kiloMoveAssign.IsEmpty());
+    #assert (kiloMoveAssign.Length() == 1024);
+    #assert (kiloMoveAssign == kilo);
+}

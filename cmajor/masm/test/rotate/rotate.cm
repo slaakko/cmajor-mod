@@ -1,0 +1,24 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<int> x0;
+    for (int i = 0; i < 8; ++i)
+    {
+        x0.Add(i);
+    }
+    auto it = Rotate(x0.Begin(), x0.Begin() + 3, x0.End());
+    auto it1 = it;
+    for (int i = 0; i < 3; ++i)
+    {
+        #assert(*it == i);
+        ++it;
+    }
+    auto it2 = x0.Begin();
+    while (it2 != it1)
+    {
+        Console.WriteLine(*it2);
+        ++it2;
+    }
+}

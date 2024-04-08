@@ -1,0 +1,3 @@
+project move;
+target=unitTest;
+source <move.cm>;

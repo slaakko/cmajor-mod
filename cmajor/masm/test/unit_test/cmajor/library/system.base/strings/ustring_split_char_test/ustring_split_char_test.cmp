@@ -1,0 +1,4 @@
+project ustring_split_char_test;
+target=program;
+source <ustring_split_char_test.cm>;
+source <main.cm>;

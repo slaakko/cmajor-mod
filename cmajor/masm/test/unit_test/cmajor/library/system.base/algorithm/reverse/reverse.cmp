@@ -1,0 +1,4 @@
+project reverse;
+target=unitTest;
+source <reverse_ra_iter.cm>;
+source <reverse_bi_iter.cm>;

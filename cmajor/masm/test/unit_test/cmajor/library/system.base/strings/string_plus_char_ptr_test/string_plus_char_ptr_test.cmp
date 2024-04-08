@@ -1,0 +1,4 @@
+project string_plus_char_ptr_test;
+target=program;
+source <string_plus_char_ptr_test.cm>;
+source <main.cm>;

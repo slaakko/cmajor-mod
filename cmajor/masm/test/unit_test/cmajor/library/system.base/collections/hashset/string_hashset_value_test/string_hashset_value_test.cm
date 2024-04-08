@@ -1,0 +1,120 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+string AlignedValue(int i)
+{
+    string s;
+    s.Append(ToString((i / 1000) % 10));
+    s.Append(ToString((i / 100) % 10));
+    s.Append(ToString((i / 10) % 10));
+    s.Append(ToString(i % 10));
+    return s;
+}
+
+public HashSet<string> MakeSet(const List<int>& x)
+{
+    HashSet<string> s;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        s.Insert(ToString(x[i]));
+    }
+    return s;
+}
+
+public HashSet<string> MakeOne()
+{
+    HashSet<string> s;
+    s.Insert("0");
+    return s;
+}
+
+public HashSet<string> MakeTwo()
+{
+    HashSet<string> s;
+    s.Insert("0");
+    s.Insert("1");
+    return s;
+}
+
+public HashSet<string> MakeEight()
+{
+    HashSet<string> s;
+    for (int i = 0; i < 8; ++i)
+    {
+        s.Insert(ToString(i));
+    }
+    return s;
+}
+
+public HashSet<string> MakeKilo()
+{
+    HashSet<string> s;
+    for (int i = 0; i < 1024; ++i)
+    {
+        s.Insert(AlignedValue(i));
+    }
+    return s;
+}
+
+public HashSet<string> Return(const HashSet<string>& x)
+{
+    return x;
+}
+
+unit_test void string_hashset_value_test()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        List<int> p = MakeList(i);
+        do
+        {
+            HashSet<string> x0 = MakeSet(p);
+            if (i == 0)
+            {
+                #assert (x0.IsEmpty());
+                #assert (x0.Count() == 0);
+            }
+            else
+            {
+                #assert (!x0.IsEmpty());
+                #assert (x0.Count() == i);
+            }
+            #assert (x0 == x0);
+            HashSet<string> x1(x0);
+            #assert (x1.IsEmpty() == x0.IsEmpty());
+            #assert (x1.Count() == x0.Count());
+            #assert (x1 == x0);
+            HashSet<string> x2;
+            x2 = x0;
+            #assert (x2.IsEmpty() == x0.IsEmpty());
+            #assert (x2.Count() == x0.Count());
+            #assert (x2 == x0);
+            HashSet<string> xcopy0(x0);
+            HashSet<string> x3(Rvalue(xcopy0));
+            #assert (x3.IsEmpty() == x0.IsEmpty());
+            #assert (x3.Count() == x0.Count());
+            #assert (x3 == x0);
+            HashSet<string> xcopy1(x0);
+            HashSet<string> x4;
+            x4 = Rvalue(xcopy1);
+            #assert (x4.IsEmpty() == x0.IsEmpty());
+            #assert (x4.Count() == x0.Count());
+            #assert (x4 == x0);
+            HashSet<string> x5 = Return(x0);
+            #assert (x5.IsEmpty() == x0.IsEmpty());
+            #assert (x5.Count() == x0.Count());
+            #assert (x5 == x0);
+        }
+        while (NextPermutation(p.Begin(), p.End()));
+    }
+}

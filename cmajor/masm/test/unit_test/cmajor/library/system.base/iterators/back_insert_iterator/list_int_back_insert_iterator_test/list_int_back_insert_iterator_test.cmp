@@ -1,0 +1,4 @@
+project list_int_back_insert_iterator_test;
+target=program;
+source <list_int_back_insert_iterator_test.cm>;
+source <main.cm>;

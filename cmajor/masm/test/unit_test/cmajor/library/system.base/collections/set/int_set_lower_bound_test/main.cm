@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    int_set_lower_bound_test();
+    return 0;
+}

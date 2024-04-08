@@ -1,0 +1,27 @@
+using System;
+
+unit_test void wstring_to_lower_test()
+{
+    auto result0 = ToLower(wstring());
+    #assert (!result0.Error() && result0.Value() == wstring());
+    auto result1 = ToLower(w"alpha");
+    #assert (!result1.Error() && result1.Value() == w"alpha");
+    auto result2 = ToLower(w"Alpha");
+    #assert (!result2.Error() && result2.Value() == w"alpha");
+    auto result3 = ToLower(w"ALPHA");
+    #assert (!result3.Error() && result3.Value() == w"alpha");
+    auto result4 = ToLower(w"a");
+    #assert (!result4.Error() && result4.Value() == w"a");
+    auto result5 = ToLower(w"A");
+    #assert (!result5.Error() && result5.Value() == w"a");
+    auto result6 = ToLower(w"ab");
+    #assert (!result6.Error() && result6.Value() == w"ab");
+    auto result7 = ToLower(w"Ab");
+    #assert (!result7.Error() && result7.Value() == w"ab");
+    auto result8 = ToLower(w"aB");
+    #assert (!result8.Error() && result8.Value() == w"ab");
+    auto result9 = ToLower(w"AB");
+    #assert (!result9.Error() && result9.Value() == w"ab");
+    auto result10 = ToLower(w"12345678");
+    #assert (!result10.Error() && result10.Value() == w"12345678");
+}

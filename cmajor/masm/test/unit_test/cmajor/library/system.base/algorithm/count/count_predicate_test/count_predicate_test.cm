@@ -1,0 +1,29 @@
+using System;
+using System.Collections;
+
+class P : UnaryPred<int>
+{
+    public inline P(int y_) :
+        y(y_)
+    {
+    }
+    public inline bool operator()(int x) const
+    {
+        return x == y;
+    }
+    private int y;
+}
+
+unit_test void count_predicate_test()
+{
+    List<int> l;
+    #assert (Count(l.Begin(), l.End(), P(0)) == 0);
+    l.Add(1);
+    #assert (Count(l.Begin(), l.End(), P(0)) == 0);
+    #assert (Count(l.Begin(), l.End(), P(1)) == 1);
+    #assert (Count(l.Begin(), l.End(), P(2)) == 0);
+    l.Add(2);
+    #assert (Count(l.Begin(), l.End(), P(2)) == 1);
+    l.Add(1);
+    #assert (Count(l.Begin(), l.End(), P(1)) == 2);
+}

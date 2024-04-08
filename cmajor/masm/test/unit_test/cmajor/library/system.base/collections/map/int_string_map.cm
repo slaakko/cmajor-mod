@@ -339,8 +339,7 @@ unit_test void int_string_map_op_subscript_test()
     #assert(it7->second == "N");
 }
 
-/*
-unit_test void int_set_remove_value_test()
+unit_test void int_string_map_remove_value_test()
 {
     Map<int, string> s0;
     #assert(!s0.Remove(0));
@@ -368,7 +367,7 @@ unit_test void int_set_remove_value_test()
     while (NextPermutation(p.Begin(), p.End()));
 }
 
-unit_test void int_set_remove_iterator_test()
+unit_test void int_string_map_remove_iterator_test()
 {
     Map<int, string> s1 = MakeOne();
     s1.Remove(s1.Begin());
@@ -390,7 +389,7 @@ unit_test void int_set_remove_iterator_test()
     }
 }
 
-unit_test void int_set_equal_test()
+unit_test void int_string_map_equal_test()
 {
     Map<int, string> s0;
     #assert(s0 == s0);
@@ -414,7 +413,7 @@ unit_test void int_set_equal_test()
     #assert(s0 != s3);
 }
 
-unit_test void int_set_compare_test()
+unit_test void int_sting_map_compare_test()
 {
     Map<int, string> s0;
     #assert(!(s0 < s0));
@@ -456,4 +455,3 @@ unit_test void int_set_compare_test()
     #assert(s0 <= s2);
     #assert(!(s0 >= s2));
 }
-*/

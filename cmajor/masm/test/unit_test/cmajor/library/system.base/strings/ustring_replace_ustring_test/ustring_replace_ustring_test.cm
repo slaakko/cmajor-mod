@@ -1,0 +1,66 @@
+using System;
+
+unit_test void ustring_replace_ustring_test()
+{
+    ustring empty;
+    empty.Replace(u"abc", u"x");
+    #assert (empty.IsEmpty());
+    #assert (empty.Length() == 0);
+    ustring one('a');
+    ustring a('a');
+    ustring x(u"xyz");
+    one.Replace(a, x);
+    #assert (!one.IsEmpty());
+    #assert (one.Length() == 3);
+    #assert (one == u"xyz");
+    ustring oneNot('a');
+    ustring n('n');
+    oneNot.Replace(n, x);
+    #assert (!oneNot.IsEmpty());
+    #assert (oneNot.Length() == 1);
+    #assert (oneNot == u"a");
+    ustring two(u"ab");
+    two.Replace(u"ab", u"xyz");
+    #assert (!two.IsEmpty());
+    #assert (two.Length() == 3);
+    #assert (two == u"xyz");
+    ustring two2(u"ab");
+    two2.Replace(u"a", u"x");
+    #assert (!two2.IsEmpty());
+    #assert (two2.Length() == 2);
+    #assert (two2 == u"xb");
+    ustring twoNot(u"ab");
+    twoNot.Replace(n, x);
+    #assert (!twoNot.IsEmpty());
+    #assert (twoNot.Length() == 2);
+    #assert (twoNot == u"ab");
+    ustring eight(u"12345678");
+    eight.Replace(u"4", u"xyz");
+    #assert (!eight.IsEmpty());
+    #assert (eight.Length() == 8 - 1 + 3);
+    #assert (eight == u"123xyz5678");
+    ustring eightNot(u"12345678");
+    eightNot.Replace(u"x", u"abc");
+    #assert (!eightNot.IsEmpty());
+    #assert (eightNot.Length() == 8);
+    #assert (eightNot == u"12345678");
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Replace(u"123", u"xy");
+    #assert (!kilo.IsEmpty());
+    Console.WriteLine(kilo.Length());
+    #assert (kilo.Length() == 921);
+    for (int i = 0; i < 921; ++i)
+    {
+        if (i % 9 == 0)
+        {
+            ustring s = kilo.Substring(i, 9);
+            ustring t = u"0xy456789";
+            t = t.Substring(0, s.Length());
+            #assert (s == t);
+        }
+    }
+}

@@ -1,0 +1,3 @@
+project accumulate;
+target=unitTest;
+source <accumulate.cm>;

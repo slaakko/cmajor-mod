@@ -1,0 +1,4 @@
+project string_substring_test;
+target=program;
+source <string_substring_test.cm>;
+source <main.cm>;

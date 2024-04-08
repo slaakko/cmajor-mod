@@ -1,0 +1,20 @@
+using System;
+
+unit_test void last_components_equal_test()
+{
+    #assert (LastComponentsEqual(string(), string(), '.'));
+    #assert (LastComponentsEqual("a", string(), '.'));
+    #assert (LastComponentsEqual(string(), "a", '.'));
+    #assert (LastComponentsEqual("a.b", "", '.'));
+    #assert (LastComponentsEqual("a.b", "b", '.'));
+    #assert (!LastComponentsEqual("a.b", "a", '.'));
+    #assert (LastComponentsEqual("a.b", "a.b", '.'));
+    #assert (!LastComponentsEqual("a.b", "b.a", '.'));
+    #assert (!LastComponentsEqual("a.b", "x.y", '.'));
+    #assert (LastComponentsEqual("alpha.beta.gamma", "alpha.beta.gamma", '.'));
+    #assert (LastComponentsEqual("alpha.beta.gamma", "beta.gamma", '.'));
+    #assert (LastComponentsEqual("alpha.beta.gamma", "gamma", '.'));
+    #assert (!LastComponentsEqual("alpha.beta.gamma", "alpha.beta.delta", '.'));
+    #assert (!LastComponentsEqual("alpha.beta.gamma", "beta.delta", '.'));
+    #assert (!LastComponentsEqual("alpha.beta.gamma", "delta", '.'));
+}

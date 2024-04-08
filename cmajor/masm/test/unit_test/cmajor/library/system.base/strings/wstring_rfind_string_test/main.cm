@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    wstring_rfind_string_test();
+    return 0;
+}

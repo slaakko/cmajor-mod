@@ -1,0 +1,46 @@
+using System;
+
+class X
+{
+    public X(int id_) :
+        id(id_)
+    {
+    }
+    public int id;
+}
+
+inline bool operator==(const X& left, const X& right)
+{
+    return left.id == right.id;
+}
+
+inline bool operator<(const X& left, const X& right)
+{
+    return left.id < right.id;
+}
+
+unit_test void min_test()
+{
+    #assert (Min(0, 1) == 0);
+    #assert (Min(1, 0) == 0);
+    #assert (Min(0, 0) == 0);
+    #assert (Min(-1, 0) == -1);
+    #assert (Min(0, -1) == -1);
+    #assert (Min(-1, -1) == -1);
+    #assert (Min(1, 1) == 1);
+    auto x0 = X(0);
+    auto x1 = X(1);
+    #assert (Min(x0, x0) == x0);
+    #assert (Min(x0, x1) == x0);
+    #assert (Min(x1, x0) == x0);
+    auto x2 = X(0);
+    #assert (Min(x0, x2) == x0);
+    #assert (Min(x2, x0) == x2);
+    string s0 = "0";
+    string s1 = "1";
+    string s2 = "0";
+    #assert (Min(s0, s1) == s0);
+    #assert (Min(s1, s0) == s0);
+    #assert (Min(s0, s2) == s0);
+    #assert (Min(s2, s0) == s2);
+}

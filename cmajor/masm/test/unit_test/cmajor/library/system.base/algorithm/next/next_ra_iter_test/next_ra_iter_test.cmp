@@ -1,0 +1,4 @@
+project next_ra_iter_test;
+target=program;
+source <next_ra_iter_test.cm>;
+source <main.cm>;

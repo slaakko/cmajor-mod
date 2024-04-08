@@ -1,0 +1,39 @@
+using System;
+
+unit_test void wstring_equal_test()
+{
+    wstring empty;
+    #assert (empty == empty);
+    wstring one('a');
+    #assert (one == one);
+    #assert (one != empty);
+    #assert (empty != one);
+    wstring two(w"ab");
+    #assert (two == two);
+    #assert (two != one);
+    #assert (one != two);
+    #assert (two != empty);
+    #assert (empty != two);
+    wstring eight(w"12345678");
+    #assert (eight == eight);
+    #assert (eight != empty);
+    #assert (empty != eight);
+    #assert (eight != one);
+    #assert (one != eight);
+    #assert (eight != two);
+    #assert (two != eight);
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo == kilo);
+    #assert (kilo != empty);
+    #assert (empty != kilo);
+    #assert (kilo != one);
+    #assert (one != kilo);
+    #assert (kilo != two);
+    #assert (two != kilo);
+    #assert (kilo != eight);
+    #assert (eight != kilo);
+}

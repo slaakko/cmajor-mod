@@ -1,0 +1,54 @@
+using System;
+
+unit_test void ustring_find_char_test()
+{
+    ustring empty;
+    long result0 = empty.Find('x', 0);
+    #assert (result0 == -1);
+    ustring one('a');
+    long result1 = one.Find('x', 0);
+    #assert (result1 == -1);
+    long result2 = one.Find('a', 0);
+    #assert (result2 == 0);
+    long result3 = one.Find('a', 1);
+    #assert (result3 == -1);
+    ustring two(u"ab");
+    long result4 = two.Find('x', 0);
+    #assert (result4 == -1);
+    long result5 = two.Find('a', 0);
+    #assert (result5 == 0);
+    long result6 = two.Find('b', 0);
+    #assert (result6 == 1);
+    long result7 = two.Find('b', 1);
+    #assert (result7 == 1);
+    long result8 = two.Find('b', 2);
+    #assert (result8 == -1);
+    ustring eight(u"12345678");
+    long result9 = eight.Find('x', 0);
+    #assert (result9 == -1);
+    long result10 = eight.Find('1', 0);
+    #assert (result10 == 0);
+    long result11 = eight.Find('2', 0);
+    #assert (result11 == 1);
+    long result12 = eight.Find('3', 0);
+    #assert (result12 == 2);
+    long result13 = eight.Find('8', 0);
+    #assert (result13 == 7);
+    long result14 = eight.Find('1', 1);
+    #assert (result14 == -1);
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    long result15 = kilo.Find('x', 0);
+    #assert (result15 == -1);
+    long result16 = kilo.Find('0', 0);
+    #assert (result16 == 0);
+    long result17 = kilo.Find('1', 0);
+    #assert (result17 == 1);
+    long result18 = kilo.Find('2', 0);
+    #assert (result18 == 2);
+    long result19 = kilo.Find('0', 1);
+    #assert (result19 == 10);
+}

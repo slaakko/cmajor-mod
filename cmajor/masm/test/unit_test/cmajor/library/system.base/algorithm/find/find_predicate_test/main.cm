@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    find_predicate_test();
+    return 0;
+}

@@ -1,0 +1,48 @@
+using System;
+using System.Collections;
+
+unit_test void find_value_test()
+{
+    List<int> l;
+    auto it0 = Find(l.Begin(), l.End(), 0);
+    #assert(it0 == l.End());
+    l.Add(1);
+    auto it1 = Find(l.Begin(), l.End(), 0);
+    #assert(it1 == l.End());
+    auto it2 = Find(l.Begin(), l.End(), 1);
+    #assert(it2 == l.Begin());
+    auto it3 = Find(l.Begin(), l.End(), 2);
+    #assert(it3 == l.End());
+    l.Add(2);
+    auto it4 = Find(l.Begin(), l.End(), 2);
+    #assert(it4 == l.Begin() + 1);
+}
+
+class P : UnaryPred<int>
+{
+    public inline P(int y_) : y(y_)
+    {
+    }
+    public inline bool operator()(int x) const
+    {
+        return x == y;
+    }
+    private int y;
+}
+
+unit_test void find_predicate_test()
+{
+    List<int> l;
+    auto it0 = Find(l.Begin(), l.End(), P(0));
+    #assert(it0 == l.End());
+    l.Add(1);
+    auto it1 = Find(l.Begin(), l.End(), P(0));
+    #assert(it1 == l.End());
+    auto it2 = Find(l.Begin(), l.End(), P(1));
+    #assert(it2 == l.Begin());
+    auto it3 = Find(l.Begin(), l.End(), P(2));
+    #assert(it3 == l.End());
+    l.Add(2);
+    auto it4 = Find(l.Begin(), l.End(), P(2));
+    #assert(it4 == l.Begin() + 1);
+}

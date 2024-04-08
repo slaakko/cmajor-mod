@@ -1,0 +1,26 @@
+using System;
+using System.Collections;
+
+unit_test void rotate_test()
+{
+    List<int> x0;
+    for (int i = 0; i < 8; ++i)
+    {
+        x0.Add(i);
+    }
+    auto it = Rotate(x0.Begin(), x0.Begin() + 3, x0.End());
+    auto it1 = it;
+    for (int i = 0; i < 3; ++i)
+    {
+        #assert(*it1 == i);
+        ++it1;
+    }
+    int value = 3;
+    auto it2 = x0.Begin();
+    while (it2 != it)
+    {
+        #assert(*it2 == value);
+        ++it2;
+        ++value;
+    }
+}

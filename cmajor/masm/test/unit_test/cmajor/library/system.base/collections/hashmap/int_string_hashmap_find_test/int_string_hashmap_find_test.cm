@@ -1,0 +1,109 @@
+using System;
+using System.Collections;
+
+public List<int> MakeList(int n)
+{
+    List<int> x;
+    for (int i = 0; i < n; ++i)
+    {
+        x.Add(i);
+    }
+    return x;
+}
+
+public HashMap<int, string> MakeMap(const List<int>& x)
+{
+    HashMap<int, string> m;
+    for (int i = 0; i < x.Count(); ++i)
+    {
+        m.Insert(MakePair(x[i], ToString(x[i])));
+    }
+    return m;
+}
+
+public HashMap<int, string> MakeOne()
+{
+    HashMap<int, string> m;
+    Pair<int, string> p(0, "0");
+    m.Insert(p);
+    return m;
+}
+
+public HashMap<int, string> MakeTwo()
+{
+    HashMap<int, string> m;
+    Pair<int, string> p0(0, "0");
+    m.Insert(p0);
+    Pair<int, string> p1(1, "1");
+    m.Insert(p1);
+    return m;
+}
+
+public HashMap<int, string> MakeEight()
+{
+    HashMap<int, string> m;
+    for (int i = 0; i < 8; ++i)
+    {
+        Pair<int, string> p(i, ToString(i));
+        m.Insert(p);
+    }
+    return m;
+}
+
+public HashMap<int, string> Return(const HashMap<int, string>& x)
+{
+    return x;
+}
+
+unit_test void int_string_hashmap_find_test()
+{
+    HashMap<int, string> s0;
+    auto it0 = s0.Find(0);
+    #assert (it0 == s0.End());
+    auto it1 = s0.CFind(0);
+    #assert (it1 == s0.CEnd());
+    HashMap<int, string> s1 = MakeOne();
+    auto it2 = s1.Find(0);
+    #assert (it2 != s1.End());
+    #assert (it2->first == 0);
+    #assert (it2->second == "0");
+    auto it3 = s1.CFind(0);
+    #assert (it3 != s1.CEnd());
+    #assert (it3->first == 0);
+    #assert (it3->second == "0");
+    auto it4 = s1.Find(-1);
+    #assert (it4 == s1.End());
+    HashMap<int, string> s2 = MakeTwo();
+    auto it5 = s2.Find(0);
+    #assert (it5 != s2.End());
+    #assert (it5->first == 0);
+    #assert (it5->second == "0");
+    auto it6 = s2.CFind(0);
+    #assert (it6 != s2.CEnd());
+    #assert (it6->first == 0);
+    #assert (it6->second == "0");
+    auto it7 = s2.Find(1);
+    #assert (it7 != s2.End());
+    #assert (it7->first == 1);
+    #assert (it7->second == "1");
+    auto it8 = s2.CFind(1);
+    #assert (it8 != s2.CEnd());
+    #assert (it8->first == 1);
+    #assert (it8->second == "1");
+    auto it9 = s2.Find(-1);
+    #assert (it9 == s2.End());
+    HashMap<int, string> s3 = MakeEight();
+    for (int i = 0; i < 8; ++i)
+    {
+        auto it1 = s3.Find(i);
+        #assert (it1 != s3.End());
+        #assert (it1->first == i);
+        #assert (it1->second == ToString(i));
+        auto it2 = s3.CFind(i);
+        #assert (it2 != s3.CEnd());
+        #assert (it2->first == i);
+        #assert (it2->second == ToString(i));
+    }
+    auto it10 = s3.Find(-1);
+    #assert (it10 == s3.End());
+}

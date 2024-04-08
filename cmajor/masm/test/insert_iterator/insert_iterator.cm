@@ -1,0 +1,19 @@
+using System;
+using System.Collections;
+
+void main()
+{
+    List<int> list;
+    list.Add(0);
+    list.Add(1);
+    list.Add(10);
+    auto it = Inserter(list, list.Begin() + 2);
+    for (int i = 0; i < 8; ++i)
+    {
+        *it++ = i + 2;
+    }
+    for (int i = 0; i < 11; ++i)
+    {
+        Console.WriteLine(list[i]);
+    }
+}

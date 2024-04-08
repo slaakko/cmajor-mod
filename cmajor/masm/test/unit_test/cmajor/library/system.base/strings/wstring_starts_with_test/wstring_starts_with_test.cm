@@ -1,0 +1,53 @@
+using System;
+
+unit_test void wstring_starts_with_test()
+{
+    wstring a('a');
+    wstring x('x');
+    wstring abc(w"abc");
+    wstring empty;
+    #assert (empty.StartsWith(wstring()));
+    #assert (empty.StartsWith(empty));
+    #assert (!empty.StartsWith(a));
+    #assert (!empty.StartsWith(x));
+    #assert (!empty.StartsWith(abc));
+    wstring one('a');
+    #assert (one.StartsWith(wstring()));
+    #assert (one.StartsWith(a));
+    #assert (!one.StartsWith(x));
+    #assert (!one.StartsWith(abc));
+    wstring two(w"ab");
+    #assert (two.StartsWith(wstring()));
+    #assert (two.StartsWith(a));
+    #assert (two.StartsWith(wstring(w"ab")));
+    #assert (!two.StartsWith(x));
+    #assert (!two.StartsWith(abc));
+    wstring eight(w"12345678");
+    #assert (eight.StartsWith(wstring()));
+    #assert (eight.StartsWith(wstring(w"1")));
+    #assert (eight.StartsWith(wstring(w"12")));
+    #assert (eight.StartsWith(wstring(w"123")));
+    #assert (!eight.StartsWith(wstring(w"2")));
+    #assert (!eight.StartsWith(wstring(w"23")));
+    #assert (!eight.StartsWith(a));
+    #assert (!eight.StartsWith(x));
+    #assert (!eight.StartsWith(abc));
+    #assert (eight.StartsWith(wstring(w"12345678")));
+    #assert (!eight.StartsWith(wstring(w"123456789")));
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.StartsWith(wstring()));
+    #assert (kilo.StartsWith(wstring(w"0")));
+    #assert (!kilo.StartsWith(wstring(w"1")));
+    #assert (kilo.StartsWith(wstring(w"01")));
+    #assert (kilo.StartsWith(wstring(w"0123")));
+    #assert (!kilo.StartsWith(a));
+    #assert (!kilo.StartsWith(x));
+    #assert (!kilo.StartsWith(abc));
+    #assert (kilo.StartsWith(kilo));
+    wstring kiloPlusOne = kilo + w"1";
+    #assert (!kilo.StartsWith(kiloPlusOne));
+}

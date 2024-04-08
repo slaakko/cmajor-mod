@@ -1,0 +1,42 @@
+using System;
+
+unit_test void wstring_remove_test()
+{
+    wstring empty;
+    empty.Remove(0, 0);
+    #assert (empty.IsEmpty());
+    #assert (empty.Length() == 0);
+    wstring one('a');
+    one.Remove(0, 1);
+    #assert (one.IsEmpty());
+    #assert (one.Length() == 0);
+    wstring two(w"ab");
+    two.Remove(0, 1);
+    #assert (!two.IsEmpty());
+    #assert (two.Length() == 1);
+    #assert (two[0] == 'b');
+    wstring eight(w"12345678");
+    eight.Remove(2, 4);
+    #assert (!eight.IsEmpty());
+    #assert (eight.Length() == 4);
+    #assert (eight == w"1278");
+    wstring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    kilo.Remove(2, 4);
+    #assert (!kilo.IsEmpty());
+    #assert (kilo.Length() == 1024 - 4);
+    for (int i = 0; i < 1024 - 4; ++i)
+    {
+        if (i < 2)
+        {
+            #assert (kilo[i] == cast<char>(cast<int>('0') + (i % 10)));
+        }
+        else
+        {
+            #assert (kilo[i] == cast<char>(cast<int>('0') + ((i + 4) % 10)));
+        }
+    }
+}

@@ -11,7 +11,7 @@ import cmajor.fault.tolerant.symbols.symbol.factory;
 namespace cmajor::fault::tolerant::symbols {
 
 SymbolReader::SymbolReader(const std::string& filePath_) : 
-    filePath(filePath_), fileStream(filePath, util::OpenMode::read | util::OpenMode::binary), bufferedStream(fileStream), reader(bufferedStream)
+    filePath(filePath_), fileStream(filePath, util::OpenMode::read | util::OpenMode::binary), bufferedStream(fileStream), reader(bufferedStream), symbolTable(nullptr)
 {
 }
 

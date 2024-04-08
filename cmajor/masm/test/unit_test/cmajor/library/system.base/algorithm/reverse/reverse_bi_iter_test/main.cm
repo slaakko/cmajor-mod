@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    reverse_bi_iter_test();
+    return 0;
+}

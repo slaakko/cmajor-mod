@@ -1,0 +1,4 @@
+project ustring_plus_uchar_ptr_test;
+target=program;
+source <ustring_plus_uchar_ptr_test.cm>;
+source <main.cm>;

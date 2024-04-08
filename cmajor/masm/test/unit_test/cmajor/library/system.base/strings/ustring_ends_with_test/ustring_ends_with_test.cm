@@ -1,0 +1,63 @@
+using System;
+
+unit_test void ustring_ends_with_test()
+{
+    ustring a('a');
+    ustring x('x');
+    ustring abc(u"abc");
+    ustring empty;
+    #assert (empty.EndsWith(ustring()));
+    #assert (empty.EndsWith(empty));
+    #assert (!empty.EndsWith(a));
+    #assert (!empty.EndsWith(x));
+    #assert (!empty.EndsWith(abc));
+    ustring one('a');
+    #assert (one.EndsWith(ustring()));
+    #assert (one.EndsWith(empty));
+    #assert (one.EndsWith(a));
+    #assert (one.EndsWith(one));
+    #assert (!one.EndsWith(x));
+    #assert (!one.EndsWith(abc));
+    ustring two(u"ab");
+    #assert (two.EndsWith(ustring()));
+    #assert (two.EndsWith(empty));
+    #assert (!two.EndsWith(a));
+    #assert (two.EndsWith(u"b"));
+    #assert (two.EndsWith(two));
+    #assert (two.EndsWith(u"ab"));
+    #assert (!two.EndsWith(x));
+    #assert (!two.EndsWith(abc));
+    #assert (!two.EndsWith(u"12345678"));
+    ustring eight(u"12345678");
+    #assert (eight.EndsWith(ustring()));
+    #assert (eight.EndsWith(empty));
+    #assert (eight.EndsWith(u"8"));
+    #assert (eight.EndsWith(u"78"));
+    #assert (eight.EndsWith(u"678"));
+    #assert (eight.EndsWith(eight));
+    #assert (!eight.EndsWith(a));
+    #assert (!eight.EndsWith(u"b"));
+    #assert (!eight.EndsWith(two));
+    #assert (!eight.EndsWith(u"ab"));
+    #assert (!eight.EndsWith(x));
+    #assert (!eight.EndsWith(abc));
+    #assert (!eight.EndsWith(u"123456789"));
+    #assert (!eight.EndsWith(u"12"));
+    ustring kilo;
+    for (int i = 0; i < 1024; ++i)
+    {
+        kilo.Append(cast<char>(cast<int>('0') + (i % 10)));
+    }
+    #assert (kilo.EndsWith(ustring()));
+    #assert (kilo.EndsWith(empty));
+    ustring e(u"4567890123");
+    #assert (kilo.EndsWith(e));
+    #assert (kilo.EndsWith(e.Substring(4)));
+    #assert (kilo.EndsWith(kilo));
+    #assert (kilo.EndsWith(kilo.Substring(0, 4)));
+    #assert (!kilo.EndsWith(a));
+    #assert (!kilo.EndsWith(x));
+    #assert (!kilo.EndsWith(abc));
+    ustring kiloPlusOne = kilo + u"1";
+    #assert (!kilo.EndsWith(kiloPlusOne));
+}

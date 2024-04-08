@@ -1,0 +1,4 @@
+project min_test;
+target=program;
+source <min_test.cm>;
+source <main.cm>;

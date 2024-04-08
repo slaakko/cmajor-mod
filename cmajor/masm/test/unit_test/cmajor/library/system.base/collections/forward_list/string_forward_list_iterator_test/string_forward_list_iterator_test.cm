@@ -1,0 +1,99 @@
+using System;
+using System.Collections;
+
+public ForwardList<string> MakeOne()
+{
+    ForwardList<string> one;
+    auto it = one.Begin();
+    it = one.InsertAfter(it, ToString(1));
+    return one;
+}
+
+public ForwardList<string> MakeTwo()
+{
+    ForwardList<string> two;
+    auto it = two.Begin();
+    it = two.InsertAfter(it, ToString(1));
+    it = two.InsertAfter(it, ToString(2));
+    return two;
+}
+
+public ForwardList<string> MakeEight()
+{
+    ForwardList<string> eight;
+    auto it = eight.Begin();
+    for (int i = 0; i < 8; ++i)
+    {
+        it = eight.InsertAfter(it, ToString(i));
+    }
+    return eight;
+}
+
+public ForwardList<string> MakeKilo()
+{
+    ForwardList<string> kilo;
+    auto it = kilo.Begin();
+    for (int i = 0; i < 1024; ++i)
+    {
+        it = kilo.InsertAfter(it, ToString(i % 10));
+    }
+    return kilo;
+}
+
+public ForwardList<string> Return(const ForwardList<string>& x)
+{
+    return x;
+}
+
+unit_test void string_forward_list_iterator_test()
+{
+    ForwardList<string> empty;
+    #assert (empty.Begin() == empty.End());
+    #assert (empty.CBegin() == empty.CEnd());
+    ForwardList<string> one = MakeOne();
+    #assert (one.Begin() != one.End());
+    #assert (*one.Begin() == "1");
+    #assert (one.CBegin() != one.CEnd());
+    #assert (*one.CBegin() == "1");
+    ForwardList<string> two = MakeTwo();
+    #assert (two.Begin() != two.End());
+    auto it0 = two.Begin();
+    #assert (*it0 == "1");
+    ++it0;
+    #assert (*it0 == "2");
+    #assert (two.CBegin() != two.CEnd());
+    auto it1 = two.CBegin();
+    #assert (*it1 == "1");
+    ++it1;
+    #assert (*it1 == "2");
+    ForwardList<string> eight = MakeEight();
+    #assert (eight.Begin() != eight.End());
+    int value = 0;
+    for (auto it = eight.Begin(); it != eight.End(); ++it)
+    {
+        #assert (*it == ToString(value));
+        ++value;
+    }
+    #assert (eight.CBegin() != eight.CEnd());
+    value = 0;
+    for (auto it = eight.CBegin(); it != eight.CEnd(); ++it)
+    {
+        #assert (*it == ToString(value));
+        ++value;
+    }
+    ForwardList<string> kilo = MakeKilo();
+    #assert (kilo.Begin() != kilo.End());
+    value = 0;
+    for (auto it = kilo.Begin(); it != kilo.End(); ++it)
+    {
+        #assert (*it == ToString(value % 10));
+        ++value;
+    }
+    #assert (kilo.CBegin() != kilo.CEnd());
+    value = 0;
+    for (auto it = kilo.CBegin(); it != kilo.CEnd(); ++it)
+    {
+        #assert (*it == ToString(value % 10));
+        ++value;
+    }
+}

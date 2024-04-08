@@ -1,0 +1,4 @@
+project next_bi_iter_test;
+target=program;
+source <next_bi_iter_test.cm>;
+source <main.cm>;

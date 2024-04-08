@@ -1,0 +1,4 @@
+project wstring_plus_wchar_ptr_test;
+target=program;
+source <wstring_plus_wchar_ptr_test.cm>;
+source <main.cm>;

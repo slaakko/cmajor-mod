@@ -1,0 +1,4 @@
+project wstring_to_lower_test;
+target=program;
+source <wstring_to_lower_test.cm>;
+source <main.cm>;
