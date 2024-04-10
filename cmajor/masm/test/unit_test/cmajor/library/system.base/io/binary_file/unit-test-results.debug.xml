@@ -1,0 +1,44 @@
+<results>
+    <binary_file_test project="binary_file" solution="">
+        <test count="38" exitCode="0" name="binary_file_test">
+            <assertion index="0" line="16" result="passed"/>
+            <assertion index="1" line="20" result="passed"/>
+            <assertion index="2" line="23" result="passed"/>
+            <assertion index="3" line="26" result="passed"/>
+            <assertion index="4" line="29" result="passed"/>
+            <assertion index="5" line="32" result="passed"/>
+            <assertion index="6" line="35" result="passed"/>
+            <assertion index="7" line="38" result="passed"/>
+            <assertion index="8" line="41" result="passed"/>
+            <assertion index="9" line="44" result="passed"/>
+            <assertion index="10" line="47" result="passed"/>
+            <assertion index="11" line="50" result="passed"/>
+            <assertion index="12" line="53" result="passed"/>
+            <assertion index="13" line="56" result="passed"/>
+            <assertion index="14" line="59" result="passed"/>
+            <assertion index="15" line="62" result="passed"/>
+            <assertion index="16" line="65" result="passed"/>
+            <assertion index="17" line="68" result="passed"/>
+            <assertion index="18" line="71" result="passed"/>
+            <assertion index="19" line="75" result="passed"/>
+            <assertion index="20" line="78" result="passed"/>
+            <assertion index="21" line="80" result="passed"/>
+            <assertion index="22" line="82" result="passed"/>
+            <assertion index="23" line="84" result="passed"/>
+            <assertion index="24" line="86" result="passed"/>
+            <assertion index="25" line="88" result="passed"/>
+            <assertion index="26" line="90" result="passed"/>
+            <assertion index="27" line="92" result="passed"/>
+            <assertion index="28" line="94" result="passed"/>
+            <assertion index="29" line="96" result="passed"/>
+            <assertion index="30" line="98" result="passed"/>
+            <assertion index="31" line="100" result="passed"/>
+            <assertion index="32" line="102" result="passed"/>
+            <assertion index="33" line="104" result="passed"/>
+            <assertion index="34" line="106" result="passed"/>
+            <assertion index="35" line="108" result="passed"/>
+            <assertion index="36" line="110" result="passed"/>
+            <assertion index="37" line="112" result="passed"/>
+        </test>
+    </binary_file_test>
+</results>

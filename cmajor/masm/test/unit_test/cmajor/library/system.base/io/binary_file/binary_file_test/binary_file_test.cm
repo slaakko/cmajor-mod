@@ -1,0 +1,114 @@
+using System;
+using System.IO;
+
+string ExeDir()
+{
+    string exePath = GetPathToExecutable();
+    string exeDir = Path.GetDirectoryName(exePath);
+    return exeDir;
+}
+
+unit_test void binary_file_test()
+{
+    string binaryFilePath = Path.Combine(ExeDir(), "file.bin");
+    {
+        auto result0 = File.CreateBinary(binaryFilePath);
+        #assert (!result0.Error());
+        BinaryWriter& writer = result0.Value();
+        bool value1 = true;
+        auto result1 = writer.Write(value1);
+        #assert (!result1.Error());
+        char value2 = 'X';
+        auto result2 = writer.Write(value2);
+        #assert (!result2.Error());
+        wchar value3 = w'X';
+        auto result3 = writer.Write(value3);
+        #assert (!result3.Error());
+        uchar value4 = u'X';
+        auto result4 = writer.Write(value4);
+        #assert (!result4.Error());
+        sbyte value5 = 1;
+        auto result5 = writer.Write(value5);
+        #assert (!result5.Error());
+        byte value6 = 1u;
+        auto result6 = writer.Write(value6);
+        #assert (!result6.Error());
+        short value7 = 1;
+        auto result7 = writer.Write(value7);
+        #assert (!result7.Error());
+        ushort value8 = 1u;
+        auto result8 = writer.Write(value8);
+        #assert (!result8.Error());
+        int value9 = 1;
+        auto result9 = writer.Write(value9);
+        #assert (!result9.Error());
+        uint value10 = 1u;
+        auto result10 = writer.Write(value10);
+        #assert (!result10.Error());
+        long value11 = 1;
+        auto result11 = writer.Write(value11);
+        #assert (!result11.Error());
+        ulong value12 = 1u;
+        auto result12 = writer.Write(value12);
+        #assert (!result12.Error());
+        float value13 = 1.000000f;
+        auto result13 = writer.Write(value13);
+        #assert (!result13.Error());
+        double value14 = 1.000000;
+        auto result14 = writer.Write(value14);
+        #assert (!result14.Error());
+        string value15 = "abc";
+        auto result15 = writer.Write(value15);
+        #assert (!result15.Error());
+        wstring value16 = w"abc";
+        auto result16 = writer.Write(value16);
+        #assert (!result16.Error());
+        ustring value17 = u"abc";
+        auto result17 = writer.Write(value17);
+        #assert (!result17.Error());
+        Uuid value18;
+        auto result18 = writer.Write(value18);
+        #assert (!result18.Error());
+    }
+    {
+        auto result19 = File.OpenBinary(binaryFilePath);
+        #assert (!result19.Error());
+        BinaryReader& reader = result19.Value();
+        auto result20 = reader.ReadBool();
+        #assert (!result20.Error() && result20.Value() == true);
+        auto result21 = reader.ReadChar();
+        #assert (!result21.Error() && result21.Value() == 'X');
+        auto result22 = reader.ReadWChar();
+        #assert (!result22.Error() && result22.Value() == w'X');
+        auto result23 = reader.ReadUChar();
+        #assert (!result23.Error() && result23.Value() == u'X');
+        auto result24 = reader.ReadSByte();
+        #assert (!result24.Error() && result24.Value() == 1);
+        auto result25 = reader.ReadByte();
+        #assert (!result25.Error() && result25.Value() == 1u);
+        auto result26 = reader.ReadShort();
+        #assert (!result26.Error() && result26.Value() == 1);
+        auto result27 = reader.ReadUShort();
+        #assert (!result27.Error() && result27.Value() == 1u);
+        auto result28 = reader.ReadInt();
+        #assert (!result28.Error() && result28.Value() == 1);
+        auto result29 = reader.ReadUInt();
+        #assert (!result29.Error() && result29.Value() == 1u);
+        auto result30 = reader.ReadLong();
+        #assert (!result30.Error() && result30.Value() == 1);
+        auto result31 = reader.ReadULong();
+        #assert (!result31.Error() && result31.Value() == 1u);
+        auto result32 = reader.ReadFloat();
+        #assert (!result32.Error() && result32.Value() == 1.000000f);
+        auto result33 = reader.ReadDouble();
+        #assert (!result33.Error() && result33.Value() == 1.000000);
+        auto result34 = reader.ReadString();
+        #assert (!result34.Error() && result34.Value() == "abc");
+        auto result35 = reader.ReadWString();
+        #assert (!result35.Error() && result35.Value() == w"abc");
+        auto result36 = reader.ReadUString();
+        #assert (!result36.Error() && result36.Value() == u"abc");
+        auto result37 = reader.ReadUuid();
+        #assert (!result37.Error() && result37.Value() == Uuid());
+    }
+}

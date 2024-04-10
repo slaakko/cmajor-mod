@@ -2828,6 +2828,34 @@
             <assertion index="14" line="1523" result="passed"/>
         </test>
     </ustring_last_components_equal_test>
-    <ustring_to_lower_test executeError="" project="strings" solution=""/>
-    <ustring_to_upper_test executeError="" project="strings" solution=""/>
+    <ustring_to_lower_test project="strings" solution="">
+        <test count="11" exitCode="0" name="ustring_to_lower_test">
+            <assertion index="0" line="1529" result="passed"/>
+            <assertion index="1" line="1531" result="passed"/>
+            <assertion index="2" line="1533" result="passed"/>
+            <assertion index="3" line="1535" result="passed"/>
+            <assertion index="4" line="1537" result="passed"/>
+            <assertion index="5" line="1539" result="passed"/>
+            <assertion index="6" line="1541" result="passed"/>
+            <assertion index="7" line="1543" result="passed"/>
+            <assertion index="8" line="1545" result="passed"/>
+            <assertion index="9" line="1547" result="passed"/>
+            <assertion index="10" line="1549" result="passed"/>
+        </test>
+    </ustring_to_lower_test>
+    <ustring_to_upper_test project="strings" solution="">
+        <test count="11" exitCode="0" name="ustring_to_upper_test">
+            <assertion index="0" line="1555" result="passed"/>
+            <assertion index="1" line="1557" result="passed"/>
+            <assertion index="2" line="1559" result="passed"/>
+            <assertion index="3" line="1561" result="passed"/>
+            <assertion index="4" line="1563" result="passed"/>
+            <assertion index="5" line="1565" result="passed"/>
+            <assertion index="6" line="1567" result="passed"/>
+            <assertion index="7" line="1569" result="passed"/>
+            <assertion index="8" line="1571" result="passed"/>
+            <assertion index="9" line="1573" result="passed"/>
+            <assertion index="10" line="1575" result="passed"/>
+        </test>
+    </ustring_to_upper_test>
 </results>

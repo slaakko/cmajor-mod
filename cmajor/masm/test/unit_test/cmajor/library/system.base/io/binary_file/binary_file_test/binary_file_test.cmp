@@ -1,0 +1,4 @@
+project binary_file_test;
+target=program;
+source <binary_file_test.cm>;
+source <main.cm>;

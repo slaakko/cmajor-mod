@@ -64,6 +64,8 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
+    uint64_t x = util::ParseHexULong("000000A61F2FFB08");
+    std::cout << (x % 16) << std::endl;
     cmajor::symbols::SetBackEnd(cmajor::symbols::BackEnd::masm);
     cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::masmBackEnd);
     std::set<std::string> builtProjects;

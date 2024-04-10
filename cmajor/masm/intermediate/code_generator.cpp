@@ -106,7 +106,7 @@ void EmitPrologue(CodeGenerator& codeGenerator)
 
     Frame& frame = codeGenerator.RegAllocator()->GetFrame();
 
-    if ((numPushes % 2) == 1)
+    if ((numPushes % 2) == 0)
     {
         cmajor::masm::assembly::Instruction* pushReg = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::PUSH);
         pushReg->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rbx, false));
@@ -123,16 +123,17 @@ void EmitPrologue(CodeGenerator& codeGenerator)
         assemblyContext->GetFile()->GetDeclarationSection().AddFunctionDeclaration(new cmajor::masm::assembly::FunctionDeclaration("__chkstk"));
         cmajor::masm::assembly::Instruction* movEax = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::MOV);
         movEax->AddOperand(assemblyContext->GetGlobalReg(4, cmajor::masm::assembly::RegisterGroupKind::rax));
-        movEax->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 16));
+        movEax->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 8));
         codeGenerator.Emit(movEax);
         cmajor::masm::assembly::Value* chkstk = assemblyContext->MakeSymbol("__chkstk");
         cmajor::masm::assembly::Instruction* checkStackCall = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::CALL);
         checkStackCall->AddOperand(chkstk);
         codeGenerator.Emit(checkStackCall);
     }
+
     cmajor::masm::assembly::Instruction* subRsp = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::SUB);
     subRsp->AddOperand(assemblyContext->GetGlobalReg(8, cmajor::masm::assembly::RegisterGroupKind::rsp));
-    subRsp->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 16));
+    subRsp->AddOperand(assemblyContext->MakeIntegerLiteral(frame.Size(), 8));
     codeGenerator.Emit(subRsp);
 
     if (nxmmregs > 0)
@@ -2768,7 +2769,7 @@ void CodeGenerator::Visit(PtrDiffInstruction& inst)
 
 void CodeGenerator::Visit(TruncateInstruction& inst)
 {
-    if (inst.GetType()->IsIntegerType())
+    if (inst.GetType()->IsIntegerType() || inst.GetType()->IsBooleanType())
     {
         EmitIntegerTruncate(inst, *this);
     }

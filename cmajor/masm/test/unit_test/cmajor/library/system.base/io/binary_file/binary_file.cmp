@@ -1,0 +1,3 @@
+project binary_file;
+target=unitTest;
+source <binary_file.cm>;

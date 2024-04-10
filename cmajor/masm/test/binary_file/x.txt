@@ -1,0 +1,71 @@
+
+public Result<bool> ReadBool()
+{
+	if (Error())
+	{
+		return Result<bool>(false, ErrorId(GetLatestErrorId()));
+	}
+	auto result = ReadByte();
+	if (result.Error())
+	{
+		return Result<bool>(false, ErrorId(result.GetErrorId()));
+	}
+	return Result<bool>(cast<bool>(result.Value()));
+}
+
+@5      int*    $36 = elemaddr $T5* $15, long 2
+        store   int 50, int* $36
+        $T12*   $37 = load $T12** $3
+        arg     $T40* $4
+        byte*   $38 = call $T45* @member_function_Value_Result_BB904DE2BE3486BA70159BB1F256B7AD7ADA015E
+        byte    $39 = load byte* $38
+        bool    $40 = truncate byte $39
+        store   bool $40, bool* $14
+        arg     $T12* $13
+        arg     bool* $14
+        call    $T46* @constructor_Result_C8D4D8A89D702197C0F226A3250BA0EC14C81490
+        arg     $T12* $37
+        arg     $T12* $13
+        call    $T37* @move_constructor_Result_50A4F2204EC2D382D2B3041A175B04C555461DFE
+        arg     $T6* $16
+        call    $T9* @destructor_TraceGuard_14E790A97E319A6E7B45BEF87E70A1BB67210638
+        ret     void
+
+
+@5:     mov             rbx, 000000000000000CH
+        lea             rcx, qword ptr [rbp+0000000000000070H]
+        lea             rsi, qword ptr [rbx+rcx]
+        mov             eax, 00000032H
+        mov             dword ptr [rsi], eax
+        mov             rsi, qword ptr [rbp+0000000000000010H]
+        lea             rdi, byte ptr [rbp+0000000000000018H]
+        mov             rcx, rdi
+        call            member_function_Value_Result_BB904DE2BE3486BA70159BB1F256B7AD7ADA015E
+        mov             rdi, rax
+        mov             r10b, byte ptr [rdi]
+        mov             byte ptr [rbp+0000000000000068H], dil
+        lea             rdi, byte ptr [rbp+0000000000000068H]
+        mov             rdx, rdi
+        lea             r10, byte ptr [rbp+0000000000000060H]
+        mov             rcx, r10
+        call            constructor_Result_C8D4D8A89D702197C0F226A3250BA0EC14C81490
+        lea             rdi, byte ptr [rbp+0000000000000060H]
+        mov             rdx, rdi
+        mov             rcx, rsi
+        call            move_constructor_Result_50A4F2204EC2D382D2B3041A175B04C555461DFE
+        lea             rsi, byte ptr [rbp+0000000000000080H]
+        mov             rcx, rsi
+        call            destructor_TraceGuard_14E790A97E319A6E7B45BEF87E70A1BB67210638
+        jmp             @8
+
+
+        call            member_function_Value_Result_BB904DE2BE3486BA70159BB1F256B7AD7ADA015E
+        mov             rdi, rax
+        mov             r10b, byte ptr [rdi]
+        mov             byte ptr [rbp+0000000000000068H], dil
+        lea             rdi, byte ptr [rbp+0000000000000068H]
+        mov             rdx, rdi
+        lea             r10, byte ptr [rbp+0000000000000060H]
+        mov             rcx, r10
+        call            constructor_Result_C8D4D8A89D702197C0F226A3250BA0EC14C81490
+		

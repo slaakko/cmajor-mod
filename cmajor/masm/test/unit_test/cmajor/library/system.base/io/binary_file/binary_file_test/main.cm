@@ -1,0 +1,7 @@
+using System;
+
+int main()
+{
+    binary_file_test();
+    return 0;
+}

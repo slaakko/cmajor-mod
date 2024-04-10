@@ -1,0 +1,2 @@
+project binary_file;
+source <binary_file.cm>;
