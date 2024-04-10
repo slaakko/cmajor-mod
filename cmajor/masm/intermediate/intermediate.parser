@@ -8,6 +8,7 @@ export module cmajor.masm.intermediate.parser;
 [interface]import cmajor.masm.intermediate.context;
 [interface]import cmajor.masm.intermediate.types;
 [interface]import cmajor.masm.intermediate.code;
+[interface]import cmajor.masm.intermediate.metadata;
 [implementation]import cmajor.masm.intermediate.error;
 [implementation]import cmajor.masm.intermediate.token;
 [implementation]import cmajor.masm.intermediate.lexer;
@@ -22,6 +23,7 @@ parser IntermediateParser
             TypeDeclarations(context):types?
             DataDefinitions(context):data?
             FunctionDefinitions(context):functions?
+            Metadata(context):metadata?
         ;
 
     TypeDeclarations(cmajor::masm::intermediate::Context* context)
@@ -209,7 +211,7 @@ parser IntermediateParser
             (COMMA Constant(context):next{ elements.push_back(next); })*)? 
             RBRACKET
         {
-            return context->MakeArrayValue(span, elements, prefix);
+            return context->MakeArrayValue(span, elements);
         }
         ;
 
@@ -326,9 +328,10 @@ parser IntermediateParser
             FUNCTION{ span = lexer.GetSpan(pos); } 
             TypeRef:typeRef{ functionTypeRef = typeRef; context->ResolveType(functionTypeRef); } 
             ID{ functionId = util::ToUtf8(lexer.GetToken(pos).ToString()); } 
+            MetadataRef(context):mdRef?
         )
         {
-            return context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_);
+            return context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_, mdRef);
         }
         ;
 
@@ -658,4 +661,48 @@ parser IntermediateParser
     NoOperationInstruction(cmajor::masm::intermediate::Context* context, var soul::ast::Span span) : cmajor::masm::intermediate::Instruction*
         ::= NOP{ span = lexer.GetSpan(pos); return new cmajor::masm::intermediate::NoOperationInstruction(span); }
         ;
+
+    Metadata(cmajor::masm::intermediate::Context* context)
+        ::= METADATA LBRACE MetadataStruct(context):mds* RBRACE
+        {
+            context->ResolveMetadataReferences();
+        }
+        ;
+
+    MetadataStruct(cmajor::masm::intermediate::Context* context, var cmajor::masm::intermediate::MetadataStruct* value)
+        ::= EXCLAMATION NUMBER{ value = context->AddMetadataStruct(lexer.GetSpan(pos), lexer.GetToken(pos).ToInt()); }
+            ASSIGN 
+            LBRACE
+            (MetadataField(context, value):first (COMMA MetadataField(context, value):next)*)?
+            RBRACE
+        ;
+
+    MetadataField(cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::MetadataStruct* parent, var std::string fieldName)
+        ::= ID{ fieldName = util::ToUtf8(lexer.GetToken(pos).ToString()); } COLON MetadataItem(context):item{ parent->AddItem(fieldName, item); }
+        ;
+
+    MetadataItem(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::MetadataItem*
+        ::= MetadataBool(context):mdBool{ return mdBool; }
+        |   MetadataLong(context):mdLong{ return mdLong; }
+        |   MetadataString(context):mdString{ return mdString; }
+        |   MetadataRef(context):mdRef{ return mdRef; }
+        ;
+
+    MetadataBool(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::MetadataItem*
+        ::= TRUE{ return context->CreateMetadataBool(true); }
+        |   FALSE{ return context->CreateMetadataBool(false); }
+        ;
+
+    MetadataLong(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::MetadataItem*
+        ::= NUMBER{ return context->CreateMetadataLong(lexer.GetToken(pos).ToLong()); }
+        ;
+
+    MetadataString(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::MetadataItem*
+        ::= STRING{ return context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString()), true); }
+        ;
+
+    MetadataRef(cmajor::masm::intermediate::Context* context) : cmajor::masm::intermediate::MetadataRef*
+        ::= EXCLAMATION NUMBER{ return context->CreateMetadataRef(lexer.GetSpan(pos), lexer.GetToken(pos).ToInt()); }
+        ;
+                
 }

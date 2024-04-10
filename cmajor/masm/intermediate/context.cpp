@@ -18,6 +18,7 @@ Context::Context() : compileUnit(), inlineDepth(4)
     types.SetContext(this);
     data.SetContext(this);
     code.SetContext(this);
+    metadata.SetContext(this);
 }
 
 void Context::SetFilePath(const std::string& filePath_)
@@ -226,7 +227,8 @@ void Context::SetCurrentFunction(Function* function)
     code.SetCurrentFunction(function);
 }
 
-Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_)
+Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, 
+    cmajor::masm::intermediate::MetadataRef* metadataRef)
 {
     if (type->IsPointerType())
     {
@@ -235,7 +237,7 @@ Function* Context::AddFunctionDefinition(const soul::ast::Span& span, Type* type
     if (type->IsFunctionType())
     {
         FunctionType* functionType = static_cast<FunctionType*>(type);
-        return code.AddFunctionDefinition(span, functionType, functionId, inline_, this);
+        return code.AddFunctionDefinition(span, functionType, functionId, inline_, metadataRef, this);
     }
     else
     {
@@ -260,6 +262,36 @@ Function* Context::AddFunctionDeclaration(const soul::ast::Span& span, Type* typ
         Error("error adding function '" + functionId + "' declaration: invalid type '" + type->Name() + "': function type expected", span, this);
     }
     return nullptr;
+}
+
+MetadataStruct* Context::AddMetadataStruct(const soul::ast::Span& span, int32_t id)
+{
+    return metadata.AddMetadataStruct(span, id);
+}
+
+MetadataBool* Context::CreateMetadataBool(bool value)
+{
+    return metadata.CreateMetadataBool(value);
+}
+
+MetadataLong* Context::CreateMetadataLong(int64_t value)
+{
+    return metadata.CreateMetadataLong(value);
+}
+
+MetadataString* Context::CreateMetadataString(const std::string& value, bool crop)
+{
+    return metadata.CreateMetadataString(value, crop);
+}
+
+MetadataRef* Context::CreateMetadataRef(const soul::ast::Span& span, int32_t nodeId)
+{
+    return metadata.CreateMetadataRef(span, nodeId);
+}
+
+void Context::ResolveMetadataReferences()
+{
+    metadata.ResolveMetadataReferences();
 }
 
 void Context::Write(const std::string& intermediateFilePath)

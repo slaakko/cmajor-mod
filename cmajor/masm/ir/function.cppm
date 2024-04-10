@@ -30,6 +30,8 @@ public:
     std::string Name(Context& context) override { return "@" + name; }
     void SetComment(const std::string& comment_);
     void SetInline() { isInline = true; }
+    void SetMdId(int mdId_) { mdId = mdId_; }
+    int MdId() const { return mdId; }
     void Write(util::CodeFormatter& formatter, Context& context);
 private:
     std::string name;
@@ -42,6 +44,7 @@ private:
     int nextBBNumber;
     std::string comment;
     bool isInline;
+    int mdId;
 };
 
 } // namespace cmajor::masm::ir

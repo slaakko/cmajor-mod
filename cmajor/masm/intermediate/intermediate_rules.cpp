@@ -73,7 +73,15 @@ std::map<int64_t, std::string>* GetRuleNameMapPtr()
         { 5911887668215545919, "IntermediateParser.PtrDiffInstruction" },
         { 5911887668215545920, "IntermediateParser.FunctionCallInstruction" },
         { 5911887668215545921, "IntermediateParser.BlockValue" },
-        { 5911887668215545922, "IntermediateParser.NoOperationInstruction" }
+        { 5911887668215545922, "IntermediateParser.NoOperationInstruction" },
+        { 5911887668215545923, "IntermediateParser.Metadata" },
+        { 5911887668215545924, "IntermediateParser.MetadataStruct" },
+        { 5911887668215545925, "IntermediateParser.MetadataField" },
+        { 5911887668215545926, "IntermediateParser.MetadataItem" },
+        { 5911887668215545927, "IntermediateParser.MetadataBool" },
+        { 5911887668215545928, "IntermediateParser.MetadataLong" },
+        { 5911887668215545929, "IntermediateParser.MetadataString" },
+        { 5911887668215545930, "IntermediateParser.MetadataRef" }
     };
     return &ruleNameMap;
 }

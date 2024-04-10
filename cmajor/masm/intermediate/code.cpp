@@ -2045,8 +2045,8 @@ void BasicBlock::Write(util::CodeFormatter& formatter)
     }
 }
 
-Function::Function(const soul::ast::Span& span_, FunctionType* type_, const std::string& name_, bool definition_) :
-    flags(FunctionFlags::none), span(span_), type(type_), name(name_), basicBlocks(this), nextRegNumber(0), nextBBNumber(0)
+Function::Function(const soul::ast::Span& span_, FunctionType* type_, const std::string& name_, bool definition_, MetadataRef* metadataRef_) :
+    flags(FunctionFlags::none), span(span_), type(type_), name(name_), metadataRef(metadataRef_), basicBlocks(this), nextRegNumber(0), nextBBNumber(0), mdId(-1)
 {
     if (definition_)
     {
@@ -2062,7 +2062,13 @@ void Function::Accept(Visitor& visitor)
 Function* Function::Clone() const
 {
     Code* code = Parent();
-    Function* clone = new Function(Span(), type, name, IsDefined());
+    Function* clone = new Function(Span(), type, name, IsDefined(), metadataRef);
+    clone->SetMdId(mdId);
+    std::string fullName = ResolveFullName();
+    if (!fullName.empty())
+    {
+        clone->SetComment(fullName);
+    }
     clone->SetContainer(code->Functions());
     CloneContext cloneContext;
     cloneContext.SetContext(code->GetContext());
@@ -2396,8 +2402,43 @@ void Function::MoveRegValues(Function* toFunction)
     }
 }
 
+void Function::SetComment(const std::string& comment_)
+{
+    comment = comment_;
+}
+
+std::string Function::ResolveFullName() const
+{
+    if (metadataRef)
+    {
+        MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+        if (metadataStruct)
+        {
+            MetadataItem* metadataItem = metadataStruct->GetItem("fullName");
+            if (metadataItem)
+            {
+                if (metadataItem->IsMetadataString())
+                {
+                    MetadataString* metadataString = static_cast<MetadataString*>(metadataItem);
+                    return metadataString->Value();
+                }
+            }
+        }
+    }
+    return std::string();
+}
+
 void Function::Write(util::CodeFormatter& formatter)
 {
+    if (metadataRef)
+    {
+        SetComment(ResolveFullName());
+    }
+    if (!comment.empty())
+    {
+        formatter.WriteLine("// " + comment);
+        formatter.WriteLine();
+    }
     if (basicBlocks.IsEmpty())
     {
         formatter.Write("extern ");
@@ -2408,7 +2449,16 @@ void Function::Write(util::CodeFormatter& formatter)
     }
     Context* context = Parent()->GetContext();
     Type* ptrType = type->AddPointer(context);
-    formatter.WriteLine("function " + ptrType->Name() + " " + name);
+    if (metadataRef)
+    {
+        mdId = metadataRef->NodeId();
+    }
+    std::string mdIdStr;
+    if (mdId != -1)
+    {
+        mdIdStr.append(" !").append(std::to_string(mdId));
+    }
+    formatter.WriteLine("function " + ptrType->Name() + " " + name + mdIdStr);
     if (basicBlocks.IsEmpty())
     {
         return;
@@ -2461,7 +2511,8 @@ Function* Code::GetFunction(const std::string& functionId) const
     }
 }
 
-Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, Context* context)
+Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, MetadataRef* metadataRef, 
+    Context* context)
 {
     Function* prev = GetFunction(functionId);
     if (prev)
@@ -2484,7 +2535,7 @@ Function* Code::AddFunctionDefinition(const soul::ast::Span& span, FunctionType*
             return prev;
         }
     }
-    Function* function = new Function(span, functionType, functionId, true);
+    Function* function = new Function(span, functionType, functionId, true, metadataRef);
     if (inline_)
     {
         function->SetInline();
@@ -2505,7 +2556,7 @@ Function* Code::AddFunctionDeclaration(const soul::ast::Span& span, FunctionType
         }
         return prev;
     }
-    Function* function = new Function(span, functionType, functionId, false);
+    Function* function = new Function(span, functionType, functionId, false, nullptr);
     functions.AddChild(function);
     functionMap[function->Name()] = function;
     return function;

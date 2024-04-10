@@ -15,6 +15,7 @@ namespace code {}
 
 class Instruction;
 class BasicBlock;
+class MetadataRef;
 class Function;
 class Code;
 
@@ -668,7 +669,7 @@ inline FunctionFlags operator~(FunctionFlags flags)
 class Function : public util::Component
 {
 public:
-    Function(const soul::ast::Span& span_, FunctionType* functionType_, const std::string& name_, bool definition_);
+    Function(const soul::ast::Span& span_, FunctionType* functionType_, const std::string& name_, bool definition_, MetadataRef* metadataRef_);
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
     bool GetFlag(FunctionFlags flag) const { return (flags & flag) != FunctionFlags::none; }
@@ -719,12 +720,19 @@ public:
     int32_t GetNextBasicBlockNumber() { return nextBBNumber++; }
     void SetNumbers();
     void MoveRegValues(Function* toFunction);
+    void SetMdId(int mdId_) { mdId = mdId_; }
+    int MdId() const { return mdId; }
+    void SetComment(const std::string& comment_);
+    const std::string& Comment() const { return comment; }
+    std::string ResolveFullName() const;
     void Write(util::CodeFormatter& formatter);
 private:
     FunctionFlags flags;
     soul::ast::Span span;
     FunctionType* type;
     std::string name;
+    MetadataRef* metadataRef;
+    std::string comment;
     util::Container basicBlocks;
     std::map<int32_t, BasicBlock*> basicBlockMap;
     std::map<int32_t, RegValue*> regValueMap;
@@ -733,6 +741,7 @@ private:
     std::vector<BasicBlock*> retBlocks;
     int32_t nextRegNumber;
     int32_t nextBBNumber;
+    int mdId;
 };
 
 class Code : public util::Component
@@ -747,7 +756,8 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     void SetCurrentFunction(Function* function);
     Function* GetFunction(const std::string& functionId) const;
-    Function* AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, Context* context);
+    Function* AddFunctionDefinition(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId, bool inline_, MetadataRef* metadataRef, 
+        Context* context);
     Function* AddFunctionDeclaration(const soul::ast::Span& span, FunctionType* functionType, const std::string& functionId);
     Function* FirstFunction() { return static_cast<Function*>(functions.FirstChild()); }
     Function* LastFunction() { return static_cast<Function*>(functions.LastChild()); }

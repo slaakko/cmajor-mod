@@ -10,6 +10,7 @@ import cmajor.masm.intermediate.compile_unit;
 import cmajor.masm.intermediate.types;
 import cmajor.masm.intermediate.data;
 import cmajor.masm.intermediate.code;
+import cmajor.masm.intermediate.metadata;
 import soul.lexer;
 import soul.ast.span;
 import std.core;
@@ -26,6 +27,7 @@ public:
     Types& GetTypes() { return types; }
     Data& GetData() { return data; }
     Code& GetCode() { return code; }
+    Metadata& GetMetadata() { return metadata; }
     void SetFilePath(const std::string& filePath_);
     const std::string& FilePath() const;
     void SetFileId(int32_t fileId_) { fileId = fileId_; }
@@ -63,8 +65,14 @@ public:
     Value* MakeAddressLiteral(const soul::ast::Span& span, Type* type, const std::string& id);
     Function* CurrentFunction() const;
     void SetCurrentFunction(Function* function);
-    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_);
+    Function* AddFunctionDefinition(const soul::ast::Span& span, Type* type, const std::string& functionId, bool inline_, cmajor::masm::intermediate::MetadataRef* metadataRef);
     Function* AddFunctionDeclaration(const soul::ast::Span& span, Type* type, const std::string& functionId);
+    MetadataStruct* AddMetadataStruct(const soul::ast::Span& span, int32_t id);
+    MetadataBool* CreateMetadataBool(bool value);
+    MetadataLong* CreateMetadataLong(int64_t value);
+    MetadataString* CreateMetadataString(const std::string& value, bool crop);
+    MetadataRef* CreateMetadataRef(const soul::ast::Span& span, int32_t nodeId);
+    void ResolveMetadataReferences();
     soul::lexer::FileMap& GetFileMap() { return fileMap; }
     cmajor::masm::assembly::Context* AssemblyContext() { return &assemblyContext; }
     void Write(const std::string& intermediateFilePath);
@@ -75,10 +83,12 @@ private:
     Types types;
     Data data;
     Code code;
+    Metadata metadata;
     soul::lexer::FileMap fileMap;
     int32_t fileId;
     cmajor::masm::assembly::Context assemblyContext;
     int inlineDepth;
+    std::unique_ptr<cmajor::masm::intermediate::MetadataRef> metadataRef;
 };
 
 } // cmajor::masm::intermediate

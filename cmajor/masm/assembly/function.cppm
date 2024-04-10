@@ -36,6 +36,8 @@ public:
     void Write(util::CodeFormatter& formatter);
     void AddMacro(Macro* macro);
     Macro* GetMacro(const std::string& name) const;
+    const std::string& Comment() const { return comment; }
+    void SetComment(const std::string& comment_);
 private:
     std::string name;
     FunctionPart activeFunctionPart;
@@ -44,6 +46,7 @@ private:
     std::vector<std::unique_ptr<Instruction>> epilogue;
     std::vector<Macro*> macros;
     std::map<std::string, Macro*> macroMap;
+    std::string comment;
 };
 
 } // namespace cmajor::masm::assembly

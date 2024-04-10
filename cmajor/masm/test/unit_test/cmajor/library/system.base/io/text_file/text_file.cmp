@@ -1,0 +1,3 @@
+project text_file;
+target=unitTest;
+source <text_file.cm>;

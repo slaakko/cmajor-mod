@@ -60,6 +60,7 @@ void CompileUnit::Write()
         }
         f->Write(formatter, context);
     }
+    context.GetMetadata().Write(formatter);
 }
 
 } // namespace cmajor::masm::ir

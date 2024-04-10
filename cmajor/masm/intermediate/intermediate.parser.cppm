@@ -9,10 +9,12 @@ import soul.parser;
 import cmajor.masm.intermediate.context;
 import cmajor.masm.intermediate.types;
 import cmajor.masm.intermediate.code;
+import cmajor.masm.intermediate.metadata;
 
 using namespace cmajor::masm::intermediate::context;
 using namespace cmajor::masm::intermediate::types;
 using namespace cmajor::masm::intermediate::code;
+using namespace cmajor::masm::intermediate::metadata;
 
 export namespace cmajor::masm::intermediate::parser {
 
@@ -86,6 +88,14 @@ struct IntermediateParser
     static soul::parser::Match FunctionCallInstruction(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::RegValue* result);
     static soul::parser::Match BlockValue(LexerT& lexer, cmajor::masm::intermediate::Context* context);
     static soul::parser::Match NoOperationInstruction(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match Metadata(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataStruct(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataField(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::MetadataStruct* parent);
+    static soul::parser::Match MetadataItem(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataBool(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataLong(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataString(LexerT& lexer, cmajor::masm::intermediate::Context* context);
+    static soul::parser::Match MetadataRef(LexerT& lexer, cmajor::masm::intermediate::Context* context);
 };
 
 } // namespace cmajor::masm::intermediate::parser

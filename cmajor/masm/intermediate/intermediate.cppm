@@ -10,6 +10,7 @@ export import cmajor.masm.intermediate.lexer;
 export import cmajor.masm.intermediate.parser;
 export import cmajor.masm.intermediate.parser.rules;
 export import cmajor.masm.intermediate.main.parser;
+export import cmajor.masm.intermediate.metadata;
 export import cmajor.masm.intermediate.types;
 export import cmajor.masm.intermediate.verify;
 export import cmajor.masm.intermediate.visitor;

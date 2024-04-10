@@ -77,11 +77,39 @@ soul::parser::Match IntermediateParser<LexerT>::IntermediateFile(LexerT& lexer, 
                 soul::parser::Match match(false);
                 soul::parser::Match* parentMatch3 = &match;
                 {
-                    int64_t pos = lexer.GetPos();
-                    soul::parser::Match match(true);
-                    if (match.hit)
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch4 = &match;
                     {
-                        context->SetFilePath(lexer.FileName());
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(true);
+                        if (match.hit)
+                        {
+                            context->SetFilePath(lexer.FileName());
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch5 = &match;
+                    {
+                        soul::parser::Match match(true);
+                        int64_t save = lexer.GetPos();
+                        soul::parser::Match* parentMatch6 = &match;
+                        {
+                            soul::parser::Match match = IntermediateParser<LexerT>::TypeDeclarations(lexer, context);
+                            if (match.hit)
+                            {
+                                *parentMatch6 = match;
+                            }
+                            else
+                            {
+                                lexer.SetPos(save);
+                            }
+                        }
+                        *parentMatch5 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -90,23 +118,23 @@ soul::parser::Match IntermediateParser<LexerT>::IntermediateFile(LexerT& lexer, 
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch4 = &match;
+                soul::parser::Match* parentMatch7 = &match;
                 {
                     soul::parser::Match match(true);
                     int64_t save = lexer.GetPos();
-                    soul::parser::Match* parentMatch5 = &match;
+                    soul::parser::Match* parentMatch8 = &match;
                     {
-                        soul::parser::Match match = IntermediateParser<LexerT>::TypeDeclarations(lexer, context);
+                        soul::parser::Match match = IntermediateParser<LexerT>::DataDefinitions(lexer, context);
                         if (match.hit)
                         {
-                            *parentMatch5 = match;
+                            *parentMatch8 = match;
                         }
                         else
                         {
                             lexer.SetPos(save);
                         }
                     }
-                    *parentMatch4 = match;
+                    *parentMatch7 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -115,23 +143,23 @@ soul::parser::Match IntermediateParser<LexerT>::IntermediateFile(LexerT& lexer, 
         if (match.hit)
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch6 = &match;
+            soul::parser::Match* parentMatch9 = &match;
             {
                 soul::parser::Match match(true);
                 int64_t save = lexer.GetPos();
-                soul::parser::Match* parentMatch7 = &match;
+                soul::parser::Match* parentMatch10 = &match;
                 {
-                    soul::parser::Match match = IntermediateParser<LexerT>::DataDefinitions(lexer, context);
+                    soul::parser::Match match = IntermediateParser<LexerT>::FunctionDefinitions(lexer, context);
                     if (match.hit)
                     {
-                        *parentMatch7 = match;
+                        *parentMatch10 = match;
                     }
                     else
                     {
                         lexer.SetPos(save);
                     }
                 }
-                *parentMatch6 = match;
+                *parentMatch9 = match;
             }
             *parentMatch1 = match;
         }
@@ -140,23 +168,23 @@ soul::parser::Match IntermediateParser<LexerT>::IntermediateFile(LexerT& lexer, 
     if (match.hit)
     {
         soul::parser::Match match(false);
-        soul::parser::Match* parentMatch8 = &match;
+        soul::parser::Match* parentMatch11 = &match;
         {
             soul::parser::Match match(true);
             int64_t save = lexer.GetPos();
-            soul::parser::Match* parentMatch9 = &match;
+            soul::parser::Match* parentMatch12 = &match;
             {
-                soul::parser::Match match = IntermediateParser<LexerT>::FunctionDefinitions(lexer, context);
+                soul::parser::Match match = IntermediateParser<LexerT>::Metadata(lexer, context);
                 if (match.hit)
                 {
-                    *parentMatch9 = match;
+                    *parentMatch12 = match;
                 }
                 else
                 {
                     lexer.SetPos(save);
                 }
             }
-            *parentMatch8 = match;
+            *parentMatch11 = match;
         }
         *parentMatch0 = match;
     }
@@ -5260,6 +5288,7 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
     std::string functionId = std::string();
     bool inline_ = bool();
     std::unique_ptr<soul::parser::Value<cmajor::masm::intermediate::TypeRef>> typeRef;
+    std::unique_ptr<cmajor::masm::intermediate::MetadataRef> mdRef;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -5276,64 +5305,91 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
                     soul::parser::Match match(false);
                     soul::parser::Match* parentMatch4 = &match;
                     {
-                        soul::parser::Match match(true);
-                        int64_t save = lexer.GetPos();
+                        soul::parser::Match match(false);
                         soul::parser::Match* parentMatch5 = &match;
                         {
-                            soul::parser::Match match(false);
+                            soul::parser::Match match(true);
+                            int64_t save = lexer.GetPos();
                             soul::parser::Match* parentMatch6 = &match;
                             {
                                 soul::parser::Match match(false);
                                 soul::parser::Match* parentMatch7 = &match;
                                 {
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch8 = &match;
+                                    {
+                                        int64_t pos = lexer.GetPos();
+                                        soul::parser::Match match(false);
+                                        if (*lexer == INLINE)
+                                        {
+                                            ++lexer;
+                                            match.hit = true;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            inline_ = true;
+                                        }
+                                        *parentMatch8 = match;
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    *parentMatch6 = match;
+                                }
+                                else
+                                {
+                                    lexer.SetPos(save);
+                                }
+                            }
+                            *parentMatch5 = match;
+                        }
+                        if (match.hit)
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch9 = &match;
+                            {
+                                soul::parser::Match match(false);
+                                soul::parser::Match* parentMatch10 = &match;
+                                {
                                     int64_t pos = lexer.GetPos();
                                     soul::parser::Match match(false);
-                                    if (*lexer == INLINE)
+                                    if (*lexer == FUNCTION)
                                     {
                                         ++lexer;
                                         match.hit = true;
                                     }
                                     if (match.hit)
                                     {
-                                        inline_ = true;
+                                        span = lexer.GetSpan(pos);
                                     }
-                                    *parentMatch7 = match;
+                                    *parentMatch10 = match;
                                 }
-                                *parentMatch6 = match;
+                                *parentMatch9 = match;
                             }
-                            if (match.hit)
-                            {
-                                *parentMatch5 = match;
-                            }
-                            else
-                            {
-                                lexer.SetPos(save);
-                            }
+                            *parentMatch5 = match;
                         }
                         *parentMatch4 = match;
                     }
                     if (match.hit)
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch8 = &match;
+                        soul::parser::Match* parentMatch11 = &match;
                         {
                             soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch9 = &match;
+                            soul::parser::Match* parentMatch12 = &match;
                             {
                                 int64_t pos = lexer.GetPos();
-                                soul::parser::Match match(false);
-                                if (*lexer == FUNCTION)
-                                {
-                                    ++lexer;
-                                    match.hit = true;
-                                }
+                                soul::parser::Match match = IntermediateParser<LexerT>::TypeRef(lexer);
+                                typeRef.reset(static_cast<soul::parser::Value<cmajor::masm::intermediate::TypeRef>*>(match.value));
                                 if (match.hit)
                                 {
-                                    span = lexer.GetSpan(pos);
+                                    functionTypeRef = typeRef->value;
+                                    context->ResolveType(functionTypeRef);
                                 }
-                                *parentMatch9 = match;
+                                *parentMatch12 = match;
                             }
-                            *parentMatch8 = match;
+                            *parentMatch11 = match;
                         }
                         *parentMatch4 = match;
                     }
@@ -5342,22 +5398,25 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch10 = &match;
+                    soul::parser::Match* parentMatch13 = &match;
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch11 = &match;
+                        soul::parser::Match* parentMatch14 = &match;
                         {
                             int64_t pos = lexer.GetPos();
-                            soul::parser::Match match = IntermediateParser<LexerT>::TypeRef(lexer);
-                            typeRef.reset(static_cast<soul::parser::Value<cmajor::masm::intermediate::TypeRef>*>(match.value));
+                            soul::parser::Match match(false);
+                            if (*lexer == ID)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
                             if (match.hit)
                             {
-                                functionTypeRef = typeRef->value;
-                                context->ResolveType(functionTypeRef);
+                                functionId = util::ToUtf8(lexer.GetToken(pos).ToString());
                             }
-                            *parentMatch11 = match;
+                            *parentMatch14 = match;
                         }
-                        *parentMatch10 = match;
+                        *parentMatch13 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -5366,25 +5425,24 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch12 = &match;
+                soul::parser::Match* parentMatch15 = &match;
                 {
-                    soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch13 = &match;
+                    soul::parser::Match match(true);
+                    int64_t save = lexer.GetPos();
+                    soul::parser::Match* parentMatch16 = &match;
                     {
-                        int64_t pos = lexer.GetPos();
-                        soul::parser::Match match(false);
-                        if (*lexer == ID)
-                        {
-                            ++lexer;
-                            match.hit = true;
-                        }
+                        soul::parser::Match match = IntermediateParser<LexerT>::MetadataRef(lexer, context);
+                        mdRef.reset(static_cast<cmajor::masm::intermediate::MetadataRef*>(match.value));
                         if (match.hit)
                         {
-                            functionId = util::ToUtf8(lexer.GetToken(pos).ToString());
+                            *parentMatch16 = match;
                         }
-                        *parentMatch13 = match;
+                        else
+                        {
+                            lexer.SetPos(save);
+                        }
                     }
-                    *parentMatch12 = match;
+                    *parentMatch15 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -5396,7 +5454,7 @@ soul::parser::Match IntermediateParser<LexerT>::FunctionHeader(LexerT& lexer, cm
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "FunctionHeader");
                 #endif
-                return soul::parser::Match(true, context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_));
+                return soul::parser::Match(true, context->AddFunctionDefinition(span, functionTypeRef.GetType(), functionId, inline_, mdRef.release()));
             }
         }
         *parentMatch0 = match;
@@ -10282,6 +10340,821 @@ soul::parser::Match IntermediateParser<LexerT>::NoOperationInstruction(LexerT& l
     {
         if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "NoOperationInstruction");
         else soul::lexer::WriteFailureToLog(lexer, "NoOperationInstruction");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::Metadata(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "Metadata");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545923);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                if (*lexer == METADATA)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    soul::parser::Match match(false);
+                    if (*lexer == LBRACE)
+                    {
+                        ++lexer;
+                        match.hit = true;
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch4 = &match;
+            {
+                soul::parser::Match match(true);
+                soul::parser::Match* parentMatch5 = &match;
+                {
+                    while (true)
+                    {
+                        int64_t save = lexer.GetPos();
+                        {
+                            soul::parser::Match match = IntermediateParser<LexerT>::MetadataStruct(lexer, context);
+                            if (match.hit)
+                            {
+                                *parentMatch5 = match;
+                            }
+                            else
+                            {
+                                lexer.SetPos(save);
+                                break;
+                            }
+                        }
+                    }
+                }
+                *parentMatch4 = match;
+            }
+            *parentMatch1 = match;
+        }
+        *parentMatch0 = match;
+    }
+    if (match.hit)
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch6 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch7 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == RBRACE)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    context->ResolveMetadataReferences();
+                }
+                *parentMatch7 = match;
+            }
+            *parentMatch6 = match;
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Metadata");
+        else soul::lexer::WriteFailureToLog(lexer, "Metadata");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataStruct(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataStruct");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545924);
+    cmajor::masm::intermediate::MetadataStruct* value = nullptr;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch4 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        if (*lexer == EXCLAMATION)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    if (match.hit)
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch5 = &match;
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch6 = &match;
+                            {
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match(false);
+                                if (*lexer == NUMBER)
+                                {
+                                    ++lexer;
+                                    match.hit = true;
+                                }
+                                if (match.hit)
+                                {
+                                    value = context->AddMetadataStruct(lexer.GetSpan(pos), lexer.GetToken(pos).ToInt());
+                                }
+                                *parentMatch6 = match;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch7 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        if (*lexer == ASSIGN)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        *parentMatch7 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch8 = &match;
+                {
+                    soul::parser::Match match(false);
+                    if (*lexer == LBRACE)
+                    {
+                        ++lexer;
+                        match.hit = true;
+                    }
+                    *parentMatch8 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch9 = &match;
+            {
+                soul::parser::Match match(true);
+                int64_t save = lexer.GetPos();
+                soul::parser::Match* parentMatch10 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch11 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch12 = &match;
+                        {
+                            soul::parser::Match match = IntermediateParser<LexerT>::MetadataField(lexer, context, value);
+                            *parentMatch12 = match;
+                        }
+                        if (match.hit)
+                        {
+                            soul::parser::Match match(false);
+                            soul::parser::Match* parentMatch13 = &match;
+                            {
+                                soul::parser::Match match(true);
+                                soul::parser::Match* parentMatch14 = &match;
+                                {
+                                    while (true)
+                                    {
+                                        int64_t save = lexer.GetPos();
+                                        {
+                                            soul::parser::Match match(false);
+                                            soul::parser::Match* parentMatch15 = &match;
+                                            {
+                                                soul::parser::Match match(false);
+                                                soul::parser::Match* parentMatch16 = &match;
+                                                {
+                                                    soul::parser::Match match(false);
+                                                    if (*lexer == COMMA)
+                                                    {
+                                                        ++lexer;
+                                                        match.hit = true;
+                                                    }
+                                                    *parentMatch16 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    soul::parser::Match match(false);
+                                                    soul::parser::Match* parentMatch17 = &match;
+                                                    {
+                                                        soul::parser::Match match = IntermediateParser<LexerT>::MetadataField(lexer, context, value);
+                                                        *parentMatch17 = match;
+                                                    }
+                                                    *parentMatch16 = match;
+                                                }
+                                                *parentMatch15 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                *parentMatch14 = match;
+                                            }
+                                            else
+                                            {
+                                                lexer.SetPos(save);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                *parentMatch13 = match;
+                            }
+                            *parentMatch12 = match;
+                        }
+                        *parentMatch11 = match;
+                    }
+                    if (match.hit)
+                    {
+                        *parentMatch10 = match;
+                    }
+                    else
+                    {
+                        lexer.SetPos(save);
+                    }
+                }
+                *parentMatch9 = match;
+            }
+            *parentMatch1 = match;
+        }
+        *parentMatch0 = match;
+    }
+    if (match.hit)
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch18 = &match;
+        {
+            soul::parser::Match match(false);
+            if (*lexer == RBRACE)
+            {
+                ++lexer;
+                match.hit = true;
+            }
+            *parentMatch18 = match;
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataStruct");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataStruct");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataField(LexerT& lexer, cmajor::masm::intermediate::Context* context, cmajor::masm::intermediate::MetadataStruct* parent)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataField");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545925);
+    std::string fieldName = std::string();
+    std::unique_ptr<cmajor::masm::intermediate::MetadataItem> item;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == ID)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    fieldName = util::ToUtf8(lexer.GetToken(pos).ToString());
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch3 = &match;
+            {
+                soul::parser::Match match(false);
+                if (*lexer == COLON)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                *parentMatch3 = match;
+            }
+            *parentMatch1 = match;
+        }
+        *parentMatch0 = match;
+    }
+    if (match.hit)
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch4 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch5 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateParser<LexerT>::MetadataItem(lexer, context);
+                item.reset(static_cast<cmajor::masm::intermediate::MetadataItem*>(match.value));
+                if (match.hit)
+                {
+                    parent->AddItem(fieldName, item.release());
+                }
+                *parentMatch5 = match;
+            }
+            *parentMatch4 = match;
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataField");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataField");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataItem(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataItem");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545926);
+    std::unique_ptr<cmajor::masm::intermediate::MetadataItem> mdBool;
+    std::unique_ptr<cmajor::masm::intermediate::MetadataItem> mdLong;
+    std::unique_ptr<cmajor::masm::intermediate::MetadataItem> mdString;
+    std::unique_ptr<cmajor::masm::intermediate::MetadataRef> mdRef;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    switch (*lexer)
+    {
+        case FALSE:
+        case TRUE:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch1 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateParser<LexerT>::MetadataBool(lexer, context);
+                mdBool.reset(static_cast<cmajor::masm::intermediate::MetadataItem*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+                        #endif
+                        return soul::parser::Match(true, mdBool.release());
+                    }
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case NUMBER:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateParser<LexerT>::MetadataLong(lexer, context);
+                mdLong.reset(static_cast<cmajor::masm::intermediate::MetadataItem*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+                        #endif
+                        return soul::parser::Match(true, mdLong.release());
+                    }
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case STRING:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch3 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateParser<LexerT>::MetadataString(lexer, context);
+                mdString.reset(static_cast<cmajor::masm::intermediate::MetadataItem*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+                        #endif
+                        return soul::parser::Match(true, mdString.release());
+                    }
+                }
+                *parentMatch3 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case EXCLAMATION:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch4 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = IntermediateParser<LexerT>::MetadataRef(lexer, context);
+                mdRef.reset(static_cast<cmajor::masm::intermediate::MetadataRef*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+                        #endif
+                        return soul::parser::Match(true, mdRef.release());
+                    }
+                }
+                *parentMatch4 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataItem");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataItem");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataBool(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataBool");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545927);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    switch (*lexer)
+    {
+        case TRUE:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch1 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == TRUE)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataBool");
+                        #endif
+                        return soul::parser::Match(true, context->CreateMetadataBool(true));
+                    }
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case FALSE:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == FALSE)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataBool");
+                        #endif
+                        return soul::parser::Match(true, context->CreateMetadataBool(false));
+                    }
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataBool");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataBool");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataLong(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataLong");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545928);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        if (*lexer == NUMBER)
+        {
+            ++lexer;
+            match.hit = true;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataLong");
+                #endif
+                return soul::parser::Match(true, context->CreateMetadataLong(lexer.GetToken(pos).ToLong()));
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataLong");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataLong");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataString(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataString");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545929);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        if (*lexer == STRING)
+        {
+            ++lexer;
+            match.hit = true;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataString");
+                #endif
+                return soul::parser::Match(true, context->CreateMetadataString(util::ToUtf8(lexer.GetToken(pos).ToString()), true));
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataString");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataString");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match IntermediateParser<LexerT>::MetadataRef(LexerT& lexer, cmajor::masm::intermediate::Context* context)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "MetadataRef");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 5911887668215545930);
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        soul::parser::Match match(false);
+        if (*lexer == EXCLAMATION)
+        {
+            ++lexer;
+            match.hit = true;
+        }
+        *parentMatch0 = match;
+    }
+    if (match.hit)
+    {
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == NUMBER)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataRef");
+                        #endif
+                        return soul::parser::Match(true, context->CreateMetadataRef(lexer.GetSpan(pos), lexer.GetToken(pos).ToInt()));
+                    }
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "MetadataRef");
+        else soul::lexer::WriteFailureToLog(lexer, "MetadataRef");
     }
     #endif
     if (!match.hit)

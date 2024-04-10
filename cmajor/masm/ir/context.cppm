@@ -7,10 +7,12 @@ export module cmajor.masm.ir.context;
 
 import cmajor.masm.ir.type;
 import cmajor.masm.ir.data;
+import cmajor.masm.ir.metadata;
 import cmajor.masm.ir.value;
 import cmajor.masm.ir.function;
 import cmajor.masm.ir.basic_block;
 import cmajor.masm.ir.instruction;
+import soul.ast.span;
 import std.core;
 
 export namespace cmajor::masm::ir {
@@ -104,13 +106,22 @@ public:
     Instruction* CreateNop();
     GlobalVariable* GetOrInsertGlobal(const std::string& name, Type* type);
     GlobalVariable* CreateGlobalStringPtr(const std::string& stringValue);
+    MetadataStruct* AddMetadataStruct(const soul::ast::Span& span, int32_t id);
+    MetadataStruct* CreateMetadataStruct();
+    MetadataBool* CreateMetadataBool(bool value);
+    MetadataLong* CreateMetadataLong(int64_t value);
+    MetadataString* CreateMetadataString(const std::string& value, bool crop);
+    MetadataRef* CreateMetadataRef(const soul::ast::Span& span, int32_t nodeId);
+    void AddMetadataStructItem(MetadataStruct* metadataStruct, const std::string& fieldName, MetadataItem* item);
     void SetCompileUnitId(const std::string& compileUnitId_);
     void AddValue(Value* value);
     TypeRepository& GetTypeRepository() { return typeRepository; }
     DataRepository& GetDataRepository() { return dataRepository; }
+    Metadata& GetMetadata() { return metadata; }
 private:
     TypeRepository typeRepository;
     DataRepository dataRepository;
+    Metadata metadata;
     std::vector<std::unique_ptr<Value>> values;
     Function* currentFunction;
     BasicBlock* currentBasicBlock;

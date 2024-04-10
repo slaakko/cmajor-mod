@@ -183,6 +183,8 @@
     <ClCompile Include="linear_scan_register_allocator.cppm" />
     <ClCompile Include="location.cpp" />
     <ClCompile Include="location.cppm" />
+    <ClCompile Include="metadata.cpp" />
+    <ClCompile Include="metadata.cppm" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parser.cppm" />
     <ClCompile Include="register_allocator.cpp" />

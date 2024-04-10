@@ -2628,10 +2628,15 @@ void CodeGenerator::Visit(Function& function)
     }
     else
     {
+        std::string fullFunctionName = function.ResolveFullName();
         file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(function.Name()));
         currentFunction = &function;
         context->AssemblyContext()->ResetRegisterPool();
         assemblyFunction = file.GetCodeSection().CreateFunction(function.Name());
+        if (!fullFunctionName.empty())
+        {
+            assemblyFunction->SetComment(fullFunctionName);
+        }
         context->AssemblyContext()->SetCurrentFunction(assemblyFunction);
         std::unique_ptr<RegisterAllocator> linearScanRregisterAllocator = CreateLinearScanRegisterAllocator(function, Ctx());
         registerAllocator = linearScanRregisterAllocator.get();

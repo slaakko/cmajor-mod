@@ -1703,38 +1703,32 @@ void* MasmEmitter::GetClsIdValue(const std::string& typeId)
 
 void* MasmEmitter::CreateMDBool(bool value)
 {
-    //return context->CreateMDBool(value);
-    return nullptr;
+    return context->CreateMetadataBool(value);
 }
 
 void* MasmEmitter::CreateMDLong(int64_t value)
 {
-    //return context->CreateMDLong(value);
-    return nullptr;
+    return context->CreateMetadataLong(value);
 }
 
 void* MasmEmitter::CreateMDString(const std::string& value)
 {
-    //return context->CreateMDString(value);
-    return nullptr;
+    return context->CreateMetadataString(value, false);
 }
 
 void* MasmEmitter::CreateMDStructRef(int id)
 {
-    //return context->CreateMDStructRef(id);
-    return nullptr;
+    return context->CreateMetadataRef(soul::ast::Span(), id);
 }
 
 int MasmEmitter::GetMDStructId(void* mdStruct)
 {
-    //return static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct)->Id();
-    return 0;
+    return static_cast<cmajor::masm::ir::MetadataStruct*>(mdStruct)->Id();
 }
 
 void* MasmEmitter::CreateMDStruct()
 {
-    //return context->CreateMDStruct();
-    return nullptr;
+    return context->CreateMetadataStruct();
 }
 
 void* MasmEmitter::CreateMDBasicBlockRef(void* bb)
@@ -1745,12 +1739,12 @@ void* MasmEmitter::CreateMDBasicBlockRef(void* bb)
 
 void MasmEmitter::AddMDItem(void* mdStruct, const std::string& fieldName, void* mdItem)
 {
-    //context->AddMDStructItem(static_cast<cmajor::systemx::ir::MDStruct*>(mdStruct), fieldName, static_cast<cmajor::systemx::ir::MDItem*>(mdItem));
+    context->AddMetadataStructItem(static_cast<cmajor::masm::ir::MetadataStruct*>(mdStruct), fieldName, static_cast<cmajor::masm::ir::MetadataItem*>(mdItem));
 }
 
 void MasmEmitter::SetFunctionMdId(void* function, int mdId)
 {
-    //static_cast<cmajor::systemx::ir::Function*>(function)->SetMdId(mdId);
+    static_cast<cmajor::masm::ir::Function*>(function)->SetMdId(mdId);
 }
 
 void* MasmEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName)
@@ -1761,7 +1755,7 @@ void* MasmEmitter::GetMDStructRefForSourceFile(const std::string& sourceFileName
 
 void MasmEmitter::SetMetadataRef(void* inst, void* mdStructRef)
 {
-    //context->SetMetadataRef(static_cast<cmajor::systemx::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
+    //context->SetMetadataRef(static_cast<cmajor::masm::ir::Instruction*>(inst), static_cast<cmajor::systemx::ir::MDStructRef*>(mdStructRef));
 }
 
 void MasmEmitter::FinalizeFunction(void* function, bool hasCleanup)

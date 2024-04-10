@@ -41,6 +41,7 @@ void CompileUnit::Write()
         fn->Write(formatter);
         fn = fn->Next();
     }
+    context->GetMetadata().Write(formatter);
 }
 
 } // cmajor::systemx::intermediate

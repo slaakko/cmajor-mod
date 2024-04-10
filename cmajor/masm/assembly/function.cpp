@@ -49,6 +49,11 @@ void Function::SetActiveFunctionPart(FunctionPart activeFunctionPart_)
     activeFunctionPart = activeFunctionPart_;
 }
 
+void Function::SetComment(const std::string& comment_)
+{
+    comment = comment_;
+}
+
 void Function::Write(util::CodeFormatter& formatter)
 {
     for (const auto& macro : macros)
@@ -57,6 +62,11 @@ void Function::Write(util::CodeFormatter& formatter)
     }
     if (!macros.empty())
     {
+        formatter.WriteLine();
+    }
+    if (!comment.empty())
+    {
+        formatter.WriteLine("; " + comment);
         formatter.WriteLine();
     }
     formatter.WriteLine(name + " PROC");

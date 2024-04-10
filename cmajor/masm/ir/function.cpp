@@ -13,7 +13,7 @@ import util;
 
 namespace cmajor::masm::ir {
 
-Function::Function(const std::string& name_, Type* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false)
+Function::Function(const std::string& name_, Type* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false), mdId(-1)
 {
     Type* t = type;
     if (type->IsPtrType())
@@ -97,7 +97,12 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     {
         formatter.Write("inline ");
     }
-    formatter.WriteLine("function " + type->Name() + " " + name);
+    std::string mdIdStr;
+    if (mdId != -1)
+    {
+        mdIdStr.append(" !").append(std::to_string(mdId));
+    }
+    formatter.WriteLine("function " + type->Name() + " " + name + mdIdStr);
     if (basicBlocks.empty())
     {
         return;

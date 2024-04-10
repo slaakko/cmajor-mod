@@ -1,0 +1,4 @@
+project text_file_test;
+target=program;
+source <text_file_test.cm>;
+source <main.cm>;

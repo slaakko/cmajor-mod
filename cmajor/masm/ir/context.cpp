@@ -392,6 +392,41 @@ GlobalVariable* Context::CreateGlobalStringPtr(const std::string& stringValue)
     return dataRepository.CreateGlobalStringPtr(*this, stringValue);
 }
 
+MetadataStruct* Context::CreateMetadataStruct()
+{
+    return metadata.CreateMetadataStruct();
+}
+
+MetadataStruct* Context::AddMetadataStruct(const soul::ast::Span& span, int32_t id)
+{
+    return metadata.AddMetadataStruct(span, id);
+}
+
+MetadataBool* Context::CreateMetadataBool(bool value)
+{
+    return metadata.CreateMetadataBool(value);
+}
+
+MetadataLong* Context::CreateMetadataLong(int64_t value)
+{
+    return metadata.CreateMetadataLong(value);
+}
+
+MetadataString* Context::CreateMetadataString(const std::string& value, bool crop)
+{
+    return metadata.CreateMetadataString(value, crop);
+}
+
+MetadataRef* Context::CreateMetadataRef(const soul::ast::Span& span, int32_t nodeId)
+{
+    return metadata.CreateMetadataRef(span, nodeId);
+}
+
+void Context::AddMetadataStructItem(MetadataStruct* metadataStruct, const std::string& fieldName, MetadataItem* item)
+{
+    metadataStruct->AddItem(fieldName, item);
+}
+
 void Context::SetCompileUnitId(const std::string& compileUnitId_)
 {
     dataRepository.SetCompileUnitId(compileUnitId_);

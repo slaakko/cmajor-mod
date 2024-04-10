@@ -241,6 +241,10 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         fullSpan = soul::ast::FullSpan();
     }
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
+    void* mdStruct = emitter->CreateMDStruct();
+    void* fullNameItem = emitter->CreateMDString(util::ToUtf8(functionSymbol->FullName()));
+    emitter->AddMDItem(mdStruct, "fullName", fullNameItem);
+    emitter->SetFunctionMdId(function, emitter->GetMDStructId(mdStruct));
     emitter->SetFunctionComment(function, util::ToUtf8(functionSymbol->FullName()));
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
     {
