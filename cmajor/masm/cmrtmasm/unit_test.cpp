@@ -6,6 +6,7 @@
 module cmajor.masm.rt.unit_test;
 
 import cmajor.masm.rt.init_done;
+import cmajor.masm.rt.io;
 import util;
 import soul.xml.dom;
 
@@ -86,7 +87,11 @@ void UnitTestEngine::EndUnitTest(const std::string& testName, int32_t exitCode)
     }
     catch (std::exception& ex)
     {
-        std::cerr << ex.what() << "\n";
+        int32_t errorId = 0;
+        void* stderr = RtmOpenStdFile(2, errorId);
+        std::string errorMessage = "error: ";
+        errorMessage.append(ex.what()).append("\n");
+        RtmPrintToFile(stderr, errorMessage.c_str());
     }
 }
 

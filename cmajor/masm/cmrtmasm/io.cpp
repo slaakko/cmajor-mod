@@ -55,7 +55,7 @@ public:
     virtual int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) = 0;
     virtual bool WriteByte(uint8_t x, int32_t& errorId) = 0;
     virtual int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) = 0;
-    virtual int32_t ReadByte() = 0;
+    virtual int32_t ReadByte(int32_t& errorId) = 0;
     virtual bool Eof() const = 0;
     virtual bool GetError(int32_t& errorId) const = 0;
     virtual bool Seek(int64_t pos, Origin origin, int32_t& errorId) = 0;
@@ -80,7 +80,7 @@ public:
     int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) override;
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
-    int32_t ReadByte() override;
+    int32_t ReadByte(int32_t& errorId) override;
     bool Eof() const override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
@@ -112,42 +112,59 @@ bool StdInputFile::WriteByte(uint8_t x, int32_t& errorId)
 
 int64_t StdInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
 {
-    FlushStdOutAndStdErr();
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        return cmajor::masm::rt::ReadBytesFromCmdbSession(buffer, count);
+        FlushStdOutAndStdErr();
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
+        {
+            return cmajor::masm::rt::ReadBytesFromCmdbSession(buffer, count);
+        }
+        errorId = 0;
+        int64_t result = std::fread(buffer, 1, count, stdin);
+        if (ferror(stdin))
+        {
+            errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+            return -1;
+        }
+        return result;
     }
-    errorId = 0;
-    int64_t result = std::fread(buffer, 1, count, stdin);
-    if (ferror(stdin))
+    catch (const std::exception& ex)
     {
-        errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+        errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(ex.what()));
         return -1;
     }
-    return result;
 }
 
-int32_t StdInputFile::ReadByte()
+int32_t StdInputFile::ReadByte(int32_t& errorId)
 {
-    FlushStdOutAndStdErr();
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    errorId = 0;
+    try
     {
-        uint8_t buffer = '\0';
-        if (cmajor::masm::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
+        FlushStdOutAndStdErr();
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
         {
-            return buffer;
+            uint8_t buffer = '\0';
+            if (cmajor::masm::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
+            {
+                return buffer;
+            }
+            else
+            {
+                return -1;
+            }
         }
-        else
+        int32_t result = std::fgetc(stdin);
+        if (result == EOF)
         {
             return -1;
         }
+        return result;
     }
-    int32_t result = std::fgetc(stdin);
-    if (result == EOF)
+    catch (const std::exception& ex)
     {
+        errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(ex.what()));
         return -1;
     }
-    return result;
 }
 
 bool StdInputFile::Eof() const
@@ -193,7 +210,7 @@ public:
     int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) override;
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
-    int32_t ReadByte() override;
+    int32_t ReadByte(int32_t& errorId) override;
     bool Eof() const override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
@@ -217,37 +234,53 @@ bool StdOutputFile::Close(int32_t& errorId)
 
 int64_t StdOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& errorId)
 {
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        cmajor::masm::rt::WriteBytesToCmdbSession(handle, buffer, count);
-        return count;
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
+        {
+            cmajor::masm::rt::WriteBytesToCmdbSession(handle, buffer, count);
+            return count;
+        }
+        errorId = 0;
+        int64_t result = std::fwrite(buffer, 1, count, file);
+        if (result != count)
+        {
+            errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+            return -1;
+        }
+        return result;
     }
-    errorId = 0;
-    int64_t result = std::fwrite(buffer, 1, count, file);
-    if (result != count)
+    catch (const std::exception& ex)
     {
-        errorId = AllocateError("could not write to : " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(ex.what()));
         return -1;
     }
-    return result;
 }
 
 bool StdOutputFile::WriteByte(uint8_t x, int32_t& errorId)
 {
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        uint8_t buffer = x;
-        cmajor::masm::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
-        return 1;
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
+        {
+            uint8_t buffer = x;
+            cmajor::masm::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
+            return 1;
+        }
+        errorId = 0;
+        int result = std::fputc(x, file);
+        if (result == EOF)
+        {
+            errorId = AllocateError("could not write to '" + name + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+            return false;
+        }
+        return true;
     }
-    errorId = 0;
-    int result = std::fputc(x, file);
-    if (result == EOF)
+    catch (const std::exception& ex)
     {
-        errorId = AllocateError("could not write to '" + name + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        errorId = AllocateError("could not write to ': " + name + "': " + util::PlatformStringToUtf8(ex.what()));
         return false;
     }
-    return true;
 }
 
 int64_t StdOutputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
@@ -256,8 +289,9 @@ int64_t StdOutputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
     return -1;
 }
 
-int32_t StdOutputFile::ReadByte()
+int32_t StdOutputFile::ReadByte(int32_t& errorId)
 {
+    errorId = AllocateError("cannot read from " + name);
     return -1;
 }
 
@@ -310,7 +344,7 @@ public:
     int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) override;
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
-    int32_t ReadByte() override;
+    int32_t ReadByte(int32_t& errorId) override;
     bool Eof() const override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
@@ -356,83 +390,100 @@ bool StdUnicodeInputFile::WriteByte(uint8_t x, int32_t& errorId)
 int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
 {
     errorId = 0;
-    FlushStdOutAndStdErr();
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        return cmajor::masm::rt::ReadBytesFromCmdbSession(buffer, count);
-    }
-    AllocateBuffer();
-    int64_t result = 0;
-    if (stdInBuf.empty())
-    {
-        int64_t utf16result = std::fread(utf16buffer.get(), sizeof(char16_t), bufferSize, stdin);
-        std::u16string utf16Str;
-        for (int i = 0; i < utf16result; ++i)
+        FlushStdOutAndStdErr();
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
         {
-            utf16Str.append(1, utf16buffer[i]);
+            return cmajor::masm::rt::ReadBytesFromCmdbSession(buffer, count);
         }
-        stdInBuf = util::ToUtf8(utf16Str);
-    }
-    if (!stdInBuf.empty())
-    {
-        result = 0;
-        uint8_t* p = buffer;
-        while (result < count && !stdInBuf.empty())
+        AllocateBuffer();
+        int64_t result = 0;
+        if (stdInBuf.empty())
         {
-            uint8_t x = static_cast<uint8_t>(stdInBuf[0]);
-            *p++ = x;
-            stdInBuf.erase(stdInBuf.begin());
-            ++result;
-        }
-    }
-    if (result < count)
-    {
-        if (ferror(stdin))
-        {
-            errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
-            return -1;
-        }
-    }
-    return result;
-}
-
-int32_t StdUnicodeInputFile::ReadByte()
-{
-    FlushStdOutAndStdErr();
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
-    {
-        uint8_t buffer = '\0';
-        if (cmajor::masm::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
-        {
-            return buffer;
-        }
-        else
-        {
-            return -1;
-        }
-    }
-    if (stdInBuf.empty())
-    {
-        uint8_t buffer = '\0';
-        int errorStringHandle = -1;
-        int result = std::fgetwc(stdin);
-        if (result == WEOF)
-        {
-            return -1;
-        }
-        else
-        {
-            std::u16string utf16Str(1, result);
+            int64_t utf16result = std::fread(utf16buffer.get(), sizeof(char16_t), bufferSize, stdin);
+            std::u16string utf16Str;
+            for (int i = 0; i < utf16result; ++i)
+            {
+                utf16Str.append(1, utf16buffer[i]);
+            }
             stdInBuf = util::ToUtf8(utf16Str);
         }
+        if (!stdInBuf.empty())
+        {
+            result = 0;
+            uint8_t* p = buffer;
+            while (result < count && !stdInBuf.empty())
+            {
+                uint8_t x = static_cast<uint8_t>(stdInBuf[0]);
+                *p++ = x;
+                stdInBuf.erase(stdInBuf.begin());
+                ++result;
+            }
+        }
+        if (result < count)
+        {
+            if (ferror(stdin))
+            {
+                errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+                return -1;
+            }
+        }
+        return result;
     }
-    if (!stdInBuf.empty())
+    catch (const std::exception& ex)
     {
-        uint8_t x = static_cast<uint8_t>(stdInBuf[0]);
-        stdInBuf.erase(stdInBuf.begin());
-        return x;
+        errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(ex.what()));
+        return -1;
     }
-    return -1;
+}
+
+int32_t StdUnicodeInputFile::ReadByte(int32_t& errorId)
+{
+    errorId = 0;
+    try
+    {
+        FlushStdOutAndStdErr();
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
+        {
+            uint8_t buffer = '\0';
+            if (cmajor::masm::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
+            {
+                return buffer;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        if (stdInBuf.empty())
+        {
+            uint8_t buffer = '\0';
+            int errorStringHandle = -1;
+            int result = std::fgetwc(stdin);
+            if (result == WEOF)
+            {
+                return -1;
+            }
+            else
+            {
+                std::u16string utf16Str(1, result);
+                stdInBuf = util::ToUtf8(utf16Str);
+            }
+        }
+        if (!stdInBuf.empty())
+        {
+            uint8_t x = static_cast<uint8_t>(stdInBuf[0]);
+            stdInBuf.erase(stdInBuf.begin());
+            return x;
+        }
+        return -1;
+    }
+    catch (const std::exception& ex)
+    {
+        errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(ex.what()));
+        return -1;
+    }
 }
 
 bool StdUnicodeInputFile::Eof() const
@@ -478,7 +529,7 @@ public:
     int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) override;
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
-    int32_t ReadByte() override;
+    int32_t ReadByte(int32_t& errorId) override;
     bool Eof() const override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
@@ -503,45 +554,61 @@ bool StdUnicodeOutputFile::Close(int32_t& errorId)
 
 int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& errorId)
 {
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        cmajor::masm::rt::WriteBytesToCmdbSession(handle, buffer, count);
-        return count;
-    }
-    errorId = 0;
-    std::u32string utf32Chars;
-    const uint8_t* e = buffer + count;
-    for (const uint8_t* p = buffer; p != e; ++p)
-    {
-        engine.Put(*p);
-        if (engine.ResultReady())
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
         {
-            utf32Chars.append(1, engine.Result());
+            cmajor::masm::rt::WriteBytesToCmdbSession(handle, buffer, count);
+            return count;
         }
-    }
-    std::u16string utf16Chars(util::ToUtf16(utf32Chars));
-    if (!utf16Chars.empty())
-    {
-        int64_t utf16result = std::fwrite(utf16Chars.c_str(), sizeof(char16_t), utf16Chars.length(), file);
-        if (utf16result != utf16Chars.length())
+        errorId = 0;
+        std::u32string utf32Chars;
+        const uint8_t* e = buffer + count;
+        for (const uint8_t* p = buffer; p != e; ++p)
         {
-            errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
-            return -1;
+            engine.Put(*p);
+            if (engine.ResultReady())
+            {
+                utf32Chars.append(1, engine.Result());
+            }
         }
+        std::u16string utf16Chars(util::ToUtf16(utf32Chars));
+        if (!utf16Chars.empty())
+        {
+            int64_t utf16result = std::fwrite(utf16Chars.c_str(), sizeof(char16_t), utf16Chars.length(), file);
+            if (utf16result != utf16Chars.length())
+            {
+                errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+                return -1;
+            }
+        }
+        int64_t result = count;
+        return result;
     }
-    int64_t result = count;
-    return result;
+    catch (const std::exception& ex)
+    {
+        errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(ex.what()));
+        return -1;
+    }
 }
 
 bool StdUnicodeOutputFile::WriteByte(uint8_t x, int32_t& errorId)
 {
-    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    try
     {
-        uint8_t buffer = x;
-        cmajor::masm::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
-        return 1;
+        if (cmajor::masm::rt::IsCmdbSessionOpen())
+        {
+            uint8_t buffer = x;
+            cmajor::masm::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
+            return 1;
+        }
+        return Write(&x, 1, errorId) == 1;
     }
-    return Write(&x, 1, errorId) == 1;
+    catch (const std::exception& ex)
+    {
+        errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(ex.what()));
+        return false;
+    }
 }
 
 int64_t StdUnicodeOutputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
@@ -550,8 +617,9 @@ int64_t StdUnicodeOutputFile::Read(uint8_t* buffer, int64_t count, int32_t& erro
     return -1;
 }
 
-int32_t StdUnicodeOutputFile::ReadByte()
+int32_t StdUnicodeOutputFile::ReadByte(int32_t& errorId)
 {
+    errorId = AllocateError("cannot read from " + name);
     return -1;
 }
 
@@ -700,7 +768,7 @@ public:
     int64_t Write(const uint8_t* buffer, int64_t count, int32_t& errorId) override;
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
-    int32_t ReadByte() override;
+    int32_t ReadByte(int32_t& errorId) override;
     bool Eof() const override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
@@ -773,8 +841,9 @@ int64_t RegularFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
     return result;
 }
 
-int32_t RegularFile::ReadByte()
+int32_t RegularFile::ReadByte(int32_t& errorId)
 {
+    errorId = 0;
     int result = std::fgetc(file);
     if (result == EOF)
     {
@@ -977,14 +1046,14 @@ int64_t ReadFile(void* fileHandle, uint8_t* buffer, int64_t bufferSize, int32_t&
     return file->Read(buffer, bufferSize, errorId);
 }
 
-int32_t ReadByte(void* fileHandle)
+int32_t ReadByte(void* fileHandle, int32_t& errorId)
 {
     if (!fileHandle)
     {
         return -1;
     }
     File* file = static_cast<File*>(fileHandle);
-    return file->ReadByte();
+    return file->ReadByte(errorId);
 }
 
 bool Eof(void* fileHandle)
@@ -1099,9 +1168,9 @@ int64_t RtmRead(void* fileHandle, uint8_t* buffer, int64_t bufferSize, int32_t& 
     return cmajor::masm::rt::ReadFile(fileHandle, buffer, bufferSize, errorId);
 }
 
-int32_t RtmReadByte(void* fileHandle)
+int32_t RtmReadByte(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::masm::rt::ReadByte(fileHandle);
+    return cmajor::masm::rt::ReadByte(fileHandle, errorId);
 }
 
 bool RtmEof(void* fileHandle)

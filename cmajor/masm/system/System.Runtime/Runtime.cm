@@ -41,7 +41,7 @@ public extern cdecl bool RtmDisposeFile(void* fileHandle, int& errorId);
 public extern cdecl long RtmWrite(void* fileHandle, const byte* buffer, long count, int& errorId);
 public extern cdecl bool RtmWriteByte(void* fileHandle, byte x, int& errorId);
 public extern cdecl long RtmRead(void* fileHandle, byte* buffer, long bufferSize, int& errorId);
-public extern cdecl int RtmReadByte(void* fileHandle);
+public extern cdecl int RtmReadByte(void* fileHandle, int& errorId);
 public extern cdecl bool RtmEof(void* fileHandle);
 public extern cdecl bool RtmGetFileError(void* fileHandle, int& errorId);
 public extern cdecl bool RtmSeek(void* fileHandle, long pos, byte origin, int& errorId);

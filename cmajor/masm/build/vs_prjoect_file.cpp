@@ -272,13 +272,21 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     std::string xpath_release = "soul.xml.xpath.lib";
     std::string dom_parser_release = "soul.dom.parser.lib";
     std::string dom_release = "soul.xml.dom.lib";
+    std::string xml_parser_release = "soul.xml.parser.lib";
+    std::string xml_processor_release = "soul.xml.processor.lib";
     std::string soul_lexer_release = "soul.lexer.lib";
+    std::string soul_ast_release = "soul.ast.lib";
+    std::string soul_common_release = "soul.common.lib";
     std::string util_release = "util.lib";
     std::string cmrtmasm_debug = "cmrtmasmd.lib";
     std::string xpath_debug = "soul.xml.xpathd.lib";
     std::string dom_parser_debug = "soul.dom.parserd.lib";
     std::string dom_debug = "soul.xml.domd.lib";
+    std::string xml_parser_debug = "soul.xml.parserd.lib";
+    std::string xml_processor_debug = "soul.xml.processord.lib";
     std::string soul_lexer_debug = "soul.lexerd.lib";
+    std::string soul_common_debug = "soul.commond.lib";
+    std::string soul_ast_debug = "soul.astd.lib";
     std::string util_debug = "utild.lib";
     if (project->GetTarget() == cmajor::ast::Target::program)
     {
@@ -288,7 +296,8 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         debugLink->AppendChild(debugLibraryDirs);
         soul::xml::Element* debugDependencies = soul::xml::MakeElement("AdditionalDependencies");
         soul::xml::Text* debugDependenciesText = soul::xml::MakeText(
-            cmrtmasm_debug + ";" + xpath_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" + soul_lexer_debug + ";" + util_debug + ";" + references);
+            cmrtmasm_debug + ";" + xpath_debug + ";" + xml_parser_debug + ";" + xml_processor_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" + 
+            soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
     }
@@ -352,7 +361,8 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         releaseLink->AppendChild(releaseLibraryDirs);
         soul::xml::Element* releaseDependencies = soul::xml::MakeElement("AdditionalDependencies");
         soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(
-            cmrtmasm_release + ";" + xpath_release + ";" + dom_parser_release + ";" + dom_release + ";" + soul_lexer_release + ";" + util_release + ";" + references);
+            cmrtmasm_release + ";" + xpath_release + ";" + xml_parser_release + ";" + xml_processor_release + ";" + dom_parser_release + ";" + dom_release + ";" + 
+            soul_lexer_release + ";" + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
     }

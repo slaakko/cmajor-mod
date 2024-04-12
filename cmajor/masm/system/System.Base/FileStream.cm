@@ -87,7 +87,13 @@ namespace System.IO
         }
         public override Result<int> ReadByte()
         {
-            int result = RtmReadByte(file);
+            int errorId = 0;
+            int result = RtmReadByte(file, errorId);
+            if (errorId > 0)
+            {
+                SetLatestErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
             if (result == -1)
             {
                 if (RtmEof(file))

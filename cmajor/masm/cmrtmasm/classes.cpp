@@ -5,6 +5,8 @@
 
 module cmajor.masm.rt.classes;
 
+import cmajor.masm.rt.io;
+
 import util;
 
 class ClassInfo
@@ -108,7 +110,11 @@ const char* RtmClassName(void* typeId)
     }
     catch (const std::exception& ex)
     {
-        std::cerr << ex.what() << "\n";
+        int32_t errorId = 0;
+        void* stderr = RtmOpenStdFile(2, errorId);
+        std::string errorMessage = "error: ";
+        errorMessage.append(ex.what()).append("\n");
+        RtmPrintToFile(stderr, errorMessage.c_str());
         std::exit(1);
     }
 }
@@ -147,7 +153,11 @@ bool RtmIs(void* typeId, void* baseTypeId)
     }
     catch (const std::exception& ex)
     {
-        std::cerr << ex.what() << "\n";
+        int32_t errorId = 0;
+        void* stderr = RtmOpenStdFile(2, errorId);
+        std::string errorMessage = "error: ";
+        errorMessage.append(ex.what()).append("\n");
+        RtmPrintToFile(stderr, errorMessage.c_str());
         std::exit(1);
     }
 }

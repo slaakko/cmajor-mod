@@ -9,9 +9,11 @@ import cmajor.masm.rt.classes;
 import cmajor.masm.rt.debug;
 import cmajor.masm.rt.io;
 import cmajor.masm.rt.thread;
+import util;
 
 void RtmInit()
 {
+    util::Init();
     cmajor::masm::rt::InitIO();
     cmajor::masm::rt::InitCmdbSession();
     cmajor::masm::rt::StartCmdbSession();
@@ -23,4 +25,5 @@ void RtmDone()
     cmajor::masm::rt::DoneThread();
     cmajor::masm::rt::RunDestructors();
     cmajor::masm::rt::DoneIO();
+    util::Done();
 }

@@ -52,7 +52,7 @@ extern "C" bool RtmDisposeFile(void* fileHandle, int32_t& errorId);
 extern "C" int64_t RtmWrite(void* fileHandle, const uint8_t* buffer, int64_t count, int32_t& errorId);
 extern "C" bool RtmWriteByte(void* fileHandle, uint8_t x, int32_t& errorId);
 extern "C" int64_t RtmRead(void* fileHandle, uint8_t* buffer, int64_t bufferSize, int32_t& errorId);
-extern "C" int32_t RtmReadByte(void* fileHandle);
+extern "C" int32_t RtmReadByte(void* fileHandle, int32_t& errorId);
 extern "C" bool RtmEof(void* fileHandle);
 extern "C" bool RtmGetFileError(void* fileHandle, int32_t& errorId);
 extern "C" bool RtmSeek(void* fileHandle, int64_t pos, cmajor::masm::rt::Origin origin, int32_t& errorId);
