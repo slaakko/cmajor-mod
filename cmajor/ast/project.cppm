@@ -17,6 +17,8 @@ enum class BackEnd : int8_t
     llvm = 0, systemx = 1, cpp = 2, masm = 3
 };
 
+std::string BackEndStr(BackEnd backend);
+
 enum class Config : int8_t
 {
     debug = 0, release = 1, profile = 2, trace = 3

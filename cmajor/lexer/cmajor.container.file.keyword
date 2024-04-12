@@ -9,5 +9,5 @@ keywords cmajor.container.file.keyword
 {
     ("project", PROJECT), ("solution", SOLUTION), ("reference", REFERENCE), ("source", SOURCE), ("resource", RESOURCE), ("text", TEXT), ("action", ACTION), ("target", TARGET),
     ("program", PROGRAM), ("winguiapp", WINGUIAPP), ("winapp", WINAPP), ("library", LIBRARY), ("winlib", WINLIB), ("unitTest", UNITTEST),
-    ("activeProject", ACTIVEPROJECT)
+    ("activeProject", ACTIVEPROJECT), ("activeBackEnd", ACTIVEBACKEND)
 }

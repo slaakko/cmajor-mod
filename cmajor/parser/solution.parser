@@ -50,9 +50,20 @@ parser SolutionParser
         }
         ;
 
+    BackEnd(var std::u32string id) : std::u32string
+        ::= 
+        (
+            ID{ id = lexer.GetToken(pos).ToString(); }
+        )
+        {
+            return id;
+        }
+        ;
+
     Declaration : cmajor::ast::SolutionDeclaration*
         ::= SolutionProjectDeclaration:solutionProjectDeclaration{ return solutionProjectDeclaration; }
         |   ActiveProjectDeclaration:activeProjectDeclaration{ return activeProjectDeclaration; }
+        |   ActiveBackEndDeclaration:activeBackEndDeclaration{ return activeBackEndDeclaration; } 
         ;
 
     SolutionProjectDeclaration(var std::string filePath) : cmajor::ast::SolutionDeclaration*
@@ -76,6 +87,19 @@ parser SolutionParser
         )
         {
             return new cmajor::ast::SolutionActiveProjectDeclaration(activeProjectName);
+        }
+        ;
+
+    ActiveBackEndDeclaration : cmajor::ast::SolutionDeclaration*
+        ::= 
+        (
+            ACTIVEBACKEND
+            ASSIGN
+            BackEnd:backend
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::SolutionActiveBackEndDeclaration(backend);
         }
         ;
 }

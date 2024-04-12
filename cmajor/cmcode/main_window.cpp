@@ -117,6 +117,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     saveAllToolButton(nullptr),
     cppToolButton(nullptr),
     llvmToolButton(nullptr),
+    masmToolButton(nullptr),
     debugToolButton(nullptr),
     releaseToolButton(nullptr),
     buildSolutionToolButton(nullptr),
@@ -947,6 +948,13 @@ void MainWindow::AddToolButtons()
     llvmToolButton->Disable();
     toolBar->AddToolButton(llvmToolButtonPtr.release());
 
+    std::unique_ptr<wing::ToolButton> masmToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("MASM").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
+        SetToolTip("Compile using MASM Backend")));
+    masmToolButton = masmToolButtonPtr.get();
+    masmToolButton->Click().AddHandler(this, &MainWindow::MasmButtonClick);
+    masmToolButton->Disable();
+    toolBar->AddToolButton(masmToolButtonPtr.release());
+
     toolBar->AddToolButton(new wing::ToolButtonSeparator());
 
     std::unique_ptr<wing::ToolButton> debugToolButtonPtr(new wing::TextToolButton(wing::TextToolButtonCreateParams("Debug").Style(wing::ToolButtonStyle::manual).SetSize(textButtonSize).SetPadding(wing::Padding(8, 8, 8, 8)).
@@ -1572,6 +1580,7 @@ void MainWindow::OpenProject(const std::string& filePath)
             AddRecentSolution(util::ToUtf8(sln->Name()), sln->FilePath());
             SaveConfiguration();
             LoadEditModule();
+            backend = cmajor::ast::BackEndStr(sln->ActiveBackEnd());
         }
         SetState(MainWindowState::idle);
     }
@@ -2320,6 +2329,7 @@ void MainWindow::SetState(MainWindowState state_)
     saveAllToolButton->Disable();
     cppToolButton->Disable();
     llvmToolButton->Disable();
+    masmToolButton->Disable();
     debugToolButton->Disable();
     releaseToolButton->Disable();
     buildSolutionToolButton->Disable();
@@ -2336,12 +2346,21 @@ void MainWindow::SetState(MainWindowState state_)
     {
         cppToolButton->SetState(wing::ToolButtonState::pressed);
         llvmToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::normal);
     }
     if (backend == "llvm")
     {
         llvmToolButton->SetState(wing::ToolButtonState::pressed);
         cppToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::normal);
     }
+    if (backend == "masm")
+    {
+        llvmToolButton->SetState(wing::ToolButtonState::normal);
+        cppToolButton->SetState(wing::ToolButtonState::normal);
+        masmToolButton->SetState(wing::ToolButtonState::pressed);
+    }
+
     if (config == "debug")
     {
         debugToolButton->SetState(wing::ToolButtonState::pressed);
@@ -2403,12 +2422,13 @@ void MainWindow::SetState(MainWindowState state_)
             saveAllToolButton->Enable();
             cppToolButton->Enable();
             llvmToolButton->Enable();
+            masmToolButton->Enable();
             debugToolButton->Enable();
             releaseToolButton->Enable();
             buildSolutionToolButton->Enable();
             buildActiveProjectToolButton->Enable();
             toggleBreakpointMenuItem->Enable();
-            if (config == "debug")
+            if (config == "debug" && backend == "cpp")
             {
                 startDebuggingMenuItem->Enable();
                 startDebuggingToolButton->Enable();
@@ -4737,16 +4757,39 @@ void MainWindow::CppButtonClick()
 {
     backend = "cpp";
     llvmToolButton->SetState(wing::ToolButtonState::normal);
+    masmToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::cpp);
+    }
 }
 
 void MainWindow::LlvmButtonClick()
 {
     backend = "llvm";
     cppToolButton->SetState(wing::ToolButtonState::normal);
+    masmToolButton->SetState(wing::ToolButtonState::normal);
     SetState(state);
     LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::llvm);
+    }
+}
+
+void MainWindow::MasmButtonClick()
+{
+    backend = "masm";
+    cppToolButton->SetState(wing::ToolButtonState::normal);
+    llvmToolButton->SetState(wing::ToolButtonState::normal);
+    SetState(state);
+    LoadEditModuleForCurrentFile();
+    if (solutionData && solutionData->GetSolution())
+    {
+        solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::masm);
+    }
 }
 
 void MainWindow::DebugButtonClick()

@@ -351,6 +351,70 @@ soul::parser::Match SolutionParser<LexerT>::QualifiedId(LexerT& lexer)
 }
 
 template<typename LexerT>
+soul::parser::Match SolutionParser<LexerT>::BackEnd(LexerT& lexer)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "BackEnd");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117123);
+    std::u32string id = std::u32string();
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match(false);
+                if (*lexer == ID)
+                {
+                    ++lexer;
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    id = lexer.GetToken(pos).ToString();
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BackEnd");
+                #endif
+                return soul::parser::Match(true, new soul::parser::Value<std::u32string>(id));
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "BackEnd");
+        else soul::lexer::WriteFailureToLog(lexer, "BackEnd");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
 soul::parser::Match SolutionParser<LexerT>::Declaration(LexerT& lexer)
 {
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
@@ -362,9 +426,10 @@ soul::parser::Match SolutionParser<LexerT>::Declaration(LexerT& lexer)
         soul::lexer::WriteBeginRuleToLog(lexer, "Declaration");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117123);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117124);
     std::unique_ptr<cmajor::ast::SolutionDeclaration> solutionProjectDeclaration;
     std::unique_ptr<cmajor::ast::SolutionDeclaration> activeProjectDeclaration;
+    std::unique_ptr<cmajor::ast::SolutionDeclaration> activeBackEndDeclaration;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     switch (*lexer)
@@ -419,6 +484,31 @@ soul::parser::Match SolutionParser<LexerT>::Declaration(LexerT& lexer)
             }
             break;
         }
+        case ACTIVEBACKEND:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch3 = &match;
+            {
+                int64_t pos = lexer.GetPos();
+                soul::parser::Match match = SolutionParser<LexerT>::ActiveBackEndDeclaration(lexer);
+                activeBackEndDeclaration.reset(static_cast<cmajor::ast::SolutionDeclaration*>(match.value));
+                if (match.hit)
+                {
+                    {
+                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Declaration");
+                        #endif
+                        return soul::parser::Match(true, activeBackEndDeclaration.release());
+                    }
+                }
+                *parentMatch3 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
     }
     #ifdef SOUL_PARSER_DEBUG_SUPPORT
     if (parser_debug_write_to_log)
@@ -446,7 +536,7 @@ soul::parser::Match SolutionParser<LexerT>::SolutionProjectDeclaration(LexerT& l
         soul::lexer::WriteBeginRuleToLog(lexer, "SolutionProjectDeclaration");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117124);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117125);
     std::string filePath = std::string();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -550,7 +640,7 @@ soul::parser::Match SolutionParser<LexerT>::ActiveProjectDeclaration(LexerT& lex
         soul::lexer::WriteBeginRuleToLog(lexer, "ActiveProjectDeclaration");
     }
     #endif
-    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117125);
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117126);
     std::unique_ptr<soul::parser::Value<std::u32string>> activeProjectName;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
@@ -619,6 +709,116 @@ soul::parser::Match SolutionParser<LexerT>::ActiveProjectDeclaration(LexerT& lex
     {
         if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ActiveProjectDeclaration");
         else soul::lexer::WriteFailureToLog(lexer, "ActiveProjectDeclaration");
+    }
+    #endif
+    if (!match.hit)
+    {
+        match.value = nullptr;
+    }
+    return match;
+}
+
+template<typename LexerT>
+soul::parser::Match SolutionParser<LexerT>::ActiveBackEndDeclaration(LexerT& lexer)
+{
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    int64_t parser_debug_match_pos = 0;
+    bool parser_debug_write_to_log = lexer.Log() != nullptr;
+    if (parser_debug_write_to_log)
+    {
+        parser_debug_match_pos = lexer.GetPos();
+        soul::lexer::WriteBeginRuleToLog(lexer, "ActiveBackEndDeclaration");
+    }
+    #endif
+    soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 981978645130117127);
+    std::unique_ptr<soul::parser::Value<std::u32string>> backend;
+    soul::parser::Match match(false);
+    soul::parser::Match* parentMatch0 = &match;
+    {
+        int64_t pos = lexer.GetPos();
+        soul::parser::Match match(false);
+        soul::parser::Match* parentMatch1 = &match;
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch2 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch4 = &match;
+                    {
+                        soul::parser::Match match(false);
+                        if (*lexer == ACTIVEBACKEND)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    if (match.hit)
+                    {
+                        soul::parser::Match match(false);
+                        soul::parser::Match* parentMatch5 = &match;
+                        {
+                            soul::parser::Match match(false);
+                            if (*lexer == ASSIGN)
+                            {
+                                ++lexer;
+                                match.hit = true;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch4 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch6 = &match;
+                    {
+                        soul::parser::Match match = SolutionParser<LexerT>::BackEnd(lexer);
+                        backend.reset(static_cast<soul::parser::Value<std::u32string>*>(match.value));
+                        *parentMatch6 = match;
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch2 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch7 = &match;
+                {
+                    soul::parser::Match match(false);
+                    if (*lexer == SEMICOLON)
+                    {
+                        ++lexer;
+                        match.hit = true;
+                    }
+                    *parentMatch7 = match;
+                }
+                *parentMatch2 = match;
+            }
+            *parentMatch1 = match;
+        }
+        if (match.hit)
+        {
+            {
+                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ActiveBackEndDeclaration");
+                #endif
+                return soul::parser::Match(true, new cmajor::ast::SolutionActiveBackEndDeclaration(backend->value));
+            }
+        }
+        *parentMatch0 = match;
+    }
+    #ifdef SOUL_PARSER_DEBUG_SUPPORT
+    if (parser_debug_write_to_log)
+    {
+        if (match.hit) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ActiveBackEndDeclaration");
+        else soul::lexer::WriteFailureToLog(lexer, "ActiveBackEndDeclaration");
     }
     #endif
     if (!match.hit)

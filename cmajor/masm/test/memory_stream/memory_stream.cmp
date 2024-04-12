@@ -1,0 +1,2 @@
+project memory_stream;
+source <memory_stream.cm>;

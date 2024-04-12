@@ -43,6 +43,18 @@ std::string TargetStr(Target target)
     return "library";
 }
 
+std::string BackEndStr(BackEnd backend)
+{
+    switch (backend)
+    {
+        case BackEnd::llvm: return "llvm";
+        case BackEnd::systemx: return "systemx";
+        case BackEnd::cpp: return "cpp";
+        case BackEnd::masm: return "masm";
+    }
+    return std::string();
+}
+
 Target ParseTarget(const std::string& targetStr)
 {
     if (targetStr == "program")

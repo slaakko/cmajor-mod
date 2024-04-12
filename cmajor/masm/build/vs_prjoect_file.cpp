@@ -19,7 +19,8 @@ void MakeResourceFile(const std::string& resourceFilePath, const std::string& cl
 }
 
 std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, 
-    const std::vector<std::string> cppFilePaths, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
+    const std::vector<std::string> cppFilePaths, const std::vector<std::string>& resourceFiles, 
+    const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
 {
     std::string vsProjectFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".vcxproj");
 
@@ -268,10 +269,14 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     debugGenDebugInfo->AppendChild(debugGenDebugInfoText);
     debugLink->AppendChild(debugGenDebugInfo);
     std::string cmrtmasm_release = "cmrtmasm.lib";
+    std::string xpath_release = "soul.xml.xpath.lib";
+    std::string dom_parser_release = "soul.dom.parser.lib";
     std::string dom_release = "soul.xml.dom.lib";
     std::string soul_lexer_release = "soul.lexer.lib";
     std::string util_release = "util.lib";
     std::string cmrtmasm_debug = "cmrtmasmd.lib";
+    std::string xpath_debug = "soul.xml.xpathd.lib";
+    std::string dom_parser_debug = "soul.dom.parserd.lib";
     std::string dom_debug = "soul.xml.domd.lib";
     std::string soul_lexer_debug = "soul.lexerd.lib";
     std::string util_debug = "utild.lib";
@@ -282,7 +287,8 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         debugLibraryDirs->AppendChild(debugLibraryDirsText);
         debugLink->AppendChild(debugLibraryDirs);
         soul::xml::Element* debugDependencies = soul::xml::MakeElement("AdditionalDependencies");
-        soul::xml::Text* debugDependenciesText = soul::xml::MakeText(cmrtmasm_debug + ";" + dom_debug + ";" + soul_lexer_debug + ";" + util_debug + ";" + references);
+        soul::xml::Text* debugDependenciesText = soul::xml::MakeText(
+            cmrtmasm_debug + ";" + xpath_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" + soul_lexer_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
     }
@@ -345,7 +351,8 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         releaseLibraryDirs->AppendChild(releaseLibraryDirsText);
         releaseLink->AppendChild(releaseLibraryDirs);
         soul::xml::Element* releaseDependencies = soul::xml::MakeElement("AdditionalDependencies");
-        soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(cmrtmasm_release + ";" + dom_release + ";" + soul_lexer_release + ";" + util_release + ";" + references);
+        soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(
+            cmrtmasm_release + ";" + xpath_release + ";" + dom_parser_release + ";" + dom_release + ";" + soul_lexer_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
     }
@@ -380,14 +387,12 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
             rcCompile->SetAttribute("Include", "runtime_info.rc");
             rcItemGroup->AppendChild(rcCompile);
         }
-/*
         for (const auto& resourceFile : resourceFiles)
         {
             soul::xml::Element* rcCompile = soul::xml::MakeElement("ResourceCompile");
             rcCompile->SetAttribute("Include", resourceFile);
             rcItemGroup->AppendChild(rcCompile);
         }
-*/
         rootElement->AppendChild(rcItemGroup);
     }
 

@@ -39,6 +39,15 @@ private:
     std::u32string activeProjectName;
 };
 
+class SolutionActiveBackEndDeclaration : public SolutionDeclaration
+{
+public:
+    SolutionActiveBackEndDeclaration(const std::u32string& backend_);
+    const std::u32string& ActiveBackEnd() const { return backend; }
+private:
+    std::u32string backend;
+};
+
 class ProjectDependencyDeclaration : public SolutionDeclaration
 {
 public:
@@ -73,6 +82,8 @@ public:
     void ResolveDeclarations();
     Project* ActiveProject() const { return activeProject; }
     void SetActiveProject(Project* activeProject_) { activeProject = activeProject_; }
+    BackEnd ActiveBackEnd() const { return activeBackEnd; }
+    void SetActiveBackEnd(BackEnd activeBackEnd_) { activeBackEnd = activeBackEnd_; }
     void SortByProjectName();
     void Save();
     void RemoveProject(Project* project);
@@ -85,6 +96,7 @@ private:
     std::vector<std::string> relativeProjectFilePaths;
     std::vector<std::unique_ptr<Project>> projects;
     Project* activeProject;
+    BackEnd activeBackEnd;
     std::u32string activeProjectName;
     std::vector<std::unique_ptr<ProjectDependencyDeclaration>> additionalDependencyDeclarations;
     std::unordered_map<std::u32string, ProjectDependencyDeclaration*> dependencyMap;

@@ -23,6 +23,12 @@ void RunProgram(const std::string& backend, const std::string& config, cmajor::a
         executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(util::Path::Combine(executableName, "cpp"), config),
             util::Path::GetFileName(project->FilePath())), ".exe"));
     }
+    else if (backend == "masm")
+    {
+        executableName = util::Path::Combine(project->OutdirBasePath().generic_string(), "lib");
+        executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(util::Path::Combine(executableName, "masm"), config),
+            util::Path::GetFileName(project->FilePath())), ".exe"));
+    }
     cmajor::service::PutRequest(new cmajor::service::StartProgramRequest(executableName, programArguments, "cmcode"));
 }
 

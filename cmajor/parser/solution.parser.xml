@@ -13,10 +13,10 @@
        </sequence>
        <token first="{SEMICOLON}" name="SEMICOLON"/>
       </sequence>
-      <kleene first="{#, ACTIVEPROJECT, PROJECT}">
-       <group first="{ACTIVEPROJECT, PROJECT}">
-        <action first="{ACTIVEPROJECT, PROJECT}">
-         <nonterminal first="{ACTIVEPROJECT, PROJECT}" ruleName="Declaration"/>
+      <kleene first="{#, ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
+       <group first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
+        <action first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
+         <nonterminal first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}" ruleName="Declaration"/>
         </action>
        </group>
       </kleene>
@@ -45,13 +45,27 @@
     </group>
    </action>
   </rule>
-  <rule first="{ACTIVEPROJECT, PROJECT}" name="Declaration">
-   <choice first="{ACTIVEPROJECT, PROJECT}">
-    <action first="{PROJECT}">
-     <nonterminal first="{PROJECT}" ruleName="SolutionProjectDeclaration"/>
-    </action>
-    <action first="{ACTIVEPROJECT}">
-     <nonterminal first="{ACTIVEPROJECT}" ruleName="ActiveProjectDeclaration"/>
+  <rule first="{ID}" name="BackEnd">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}" name="Declaration">
+   <choice first="{ACTIVEBACKEND, ACTIVEPROJECT, PROJECT}">
+    <choice first="{ACTIVEPROJECT, PROJECT}">
+     <action first="{PROJECT}">
+      <nonterminal first="{PROJECT}" ruleName="SolutionProjectDeclaration"/>
+     </action>
+     <action first="{ACTIVEPROJECT}">
+      <nonterminal first="{ACTIVEPROJECT}" ruleName="ActiveProjectDeclaration"/>
+     </action>
+    </choice>
+    <action first="{ACTIVEBACKEND}">
+     <nonterminal first="{ACTIVEBACKEND}" ruleName="ActiveBackEndDeclaration"/>
     </action>
    </choice>
   </rule>
@@ -77,6 +91,22 @@
       <sequence first="{ACTIVEPROJECT}">
        <token first="{ACTIVEPROJECT}" name="ACTIVEPROJECT"/>
        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ACTIVEBACKEND}" name="ActiveBackEndDeclaration">
+   <action first="{ACTIVEBACKEND}">
+    <group first="{ACTIVEBACKEND}">
+     <sequence first="{ACTIVEBACKEND}">
+      <sequence first="{ACTIVEBACKEND}">
+       <sequence first="{ACTIVEBACKEND}">
+        <token first="{ACTIVEBACKEND}" name="ACTIVEBACKEND"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="BackEnd"/>
       </sequence>
       <token first="{SEMICOLON}" name="SEMICOLON"/>
      </sequence>

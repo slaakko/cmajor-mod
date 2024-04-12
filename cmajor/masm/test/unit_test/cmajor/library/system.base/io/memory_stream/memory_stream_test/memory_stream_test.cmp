@@ -1,0 +1,4 @@
+project memory_stream_test;
+target=program;
+source <memory_stream_test.cm>;
+source <main.cm>;

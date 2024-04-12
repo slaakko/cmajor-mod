@@ -1,3 +1,4 @@
 solution Hello;
 project <Hello.cmp>;
 activeProject Hello;
+activeBackEnd=masm;

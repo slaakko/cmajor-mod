@@ -1,0 +1,23 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Parsing
+{
+    public class Match
+    {
+        public inline Match(bool hit_) : hit(hit_), value(null)
+        {
+        }
+        public inline Match(bool hit_, void* value_) : hit(hit_), value(value_)
+        {
+        }
+        public bool hit;
+        public void* value;
+    }
+
+} // namespace System.Parsing

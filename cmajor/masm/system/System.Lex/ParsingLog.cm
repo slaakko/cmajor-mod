@@ -1,0 +1,34 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Lex
+{
+    public abstract class ParsingLog
+    {
+        public ParsingLog() : maxLineLength(80)
+        {
+        }
+        public ParsingLog(int maxLineLength_) : maxLineLength(maxLineLength_)
+        {
+        }
+        public default virtual ~ParsingLog();
+        public abstract void IncIndent();
+        public abstract void DecIndent();
+        public abstract Result<bool> WriteBeginRule(const ustring& ruleName);
+        public abstract Result<bool> WriteEndRule(const ustring& ruleName);
+        public abstract Result<bool> WriteTry(const ustring& s);
+        public abstract Result<bool> WriteSuccess(const ustring& match);
+        public abstract Result<bool> WriteFail();
+        public virtual int MaxLineLength() const
+        {
+            return maxLineLength;
+        }
+        private int maxLineLength;
+    }
+
+} // namespace System.Lex

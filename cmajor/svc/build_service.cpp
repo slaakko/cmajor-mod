@@ -129,6 +129,10 @@ void BuildService::ExecuteCommand()
         {
             backend = cmajor::symbols::BackEnd::llvm;
         }
+        else if (buildCommand->backend == "masm")
+        {
+            backend = cmajor::symbols::BackEnd::masm;
+        }
         else
         {
             throw std::runtime_error("unsupported backend '" + buildCommand->backend + "'");
@@ -221,6 +225,12 @@ void BuildService::ExecuteCommand()
             {
                 cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::cppBackEnd);
                 util::LogMessage(-1, "Cmajor with C++ backend compiler version " + cmajor::symbols::GetCompilerVersion() + " for Windows x64");
+                break;
+            }
+            case cmajor::symbols::BackEnd::masm:
+            {
+                cmajor::backend::SetCurrentBackEnd(cmajor::backend::BackEndKind::masmBackEnd);
+                util::LogMessage(-1, "Cmajor with MASM backend compiler version " + cmajor::symbols::GetCompilerVersion() + " for Windows x64");
                 break;
             }
         }

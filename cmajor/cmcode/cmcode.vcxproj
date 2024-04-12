@@ -276,6 +276,7 @@
     <ResourceCompile Include="..\debugger\cmajor.debugger.reply.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.container.file.lexer.classmap.rc" />
     <ResourceCompile Include="..\lexer\cmajor.lexer.classmap.rc" />
+    <ResourceCompile Include="..\masm\intermediate\cmajor.masm.intermediate.lexer.classmap.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

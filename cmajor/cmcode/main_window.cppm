@@ -220,6 +220,7 @@ private:
     void GotoNextLocationClick();
     void CppButtonClick();
     void LlvmButtonClick();
+    void MasmButtonClick();
     void DebugButtonClick();
     void ReleaseButtonClick();
     void StopBuildClick();
@@ -302,6 +303,7 @@ private:
     wing::ToolButton* saveAllToolButton;
     wing::ToolButton* cppToolButton;
     wing::ToolButton* llvmToolButton;
+    wing::ToolButton* masmToolButton;
     wing::ToolButton* debugToolButton;
     wing::ToolButton* releaseToolButton;
     wing::ToolButton* buildSolutionToolButton;

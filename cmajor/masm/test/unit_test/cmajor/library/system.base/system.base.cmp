@@ -46,3 +46,4 @@ source <algorithm/accumulate/accumulate.cm>;
 source <algorithm/sort/sort.cm>;
 source <io/binary_file/binary_file.cm>;
 source <io/text_file/text_file.cm>;
+source <io/memory_stream/memory_stream.cm>;

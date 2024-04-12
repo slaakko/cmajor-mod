@@ -27,6 +27,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(WINLIB, "WINLIB", "'winlib'"));
         tokens.AddToken(new soul::ast::slg::Token(UNITTEST, "UNITTEST", "'unittest'"));
         tokens.AddToken(new soul::ast::slg::Token(ACTIVEPROJECT, "ACTIVEPROJECT", "'activeproject'"));
+        tokens.AddToken(new soul::ast::slg::Token(ACTIVEBACKEND, "ACTIVEBACKEND", "'activebackend'"));
         tokens.AddToken(new soul::ast::slg::Token(ID, "ID", "identifier"));
         tokens.AddToken(new soul::ast::slg::Token(FILEPATH, "FILEPATH", "file path"));
         tokens.AddToken(new soul::ast::slg::Token(ASSIGN, "ASSIGN", "'='"));
@@ -63,6 +64,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "winlib", WINLIB },
          { "unitTest", UNITTEST },
          { "activeProject", ACTIVEPROJECT },
+         { "activeBackEnd", ACTIVEBACKEND },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char> keywordMap(keywords);
@@ -88,6 +90,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"winlib", WINLIB },
          { u8"unitTest", UNITTEST },
          { u8"activeProject", ACTIVEPROJECT },
+         { u8"activeBackEnd", ACTIVEBACKEND },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char8_t> keywordMap(keywords);
@@ -113,6 +116,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"winlib", WINLIB },
          { u"unitTest", UNITTEST },
          { u"activeProject", ACTIVEPROJECT },
+         { u"activeBackEnd", ACTIVEBACKEND },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char16_t> keywordMap(keywords);
@@ -138,6 +142,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"winlib", WINLIB },
          { U"unitTest", UNITTEST },
          { U"activeProject", ACTIVEPROJECT },
+         { U"activeBackEnd", ACTIVEBACKEND },
          { nullptr, -1 }
     };
     static soul::lexer::KeywordMap<char32_t> keywordMap(keywords);

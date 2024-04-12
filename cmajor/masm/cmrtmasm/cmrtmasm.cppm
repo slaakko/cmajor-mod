@@ -8,6 +8,7 @@ export module cmajor.masm.rt;
 export import cmajor.masm.rt.ascii;
 export import cmajor.masm.rt.classes;
 export import cmajor.masm.rt.condition_variable;
+export import cmajor.masm.rt.debug;
 export import cmajor.masm.rt.directory;
 export import cmajor.masm.rt.env;
 export import cmajor.masm.rt.error;

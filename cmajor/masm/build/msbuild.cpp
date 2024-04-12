@@ -45,7 +45,7 @@ void MSBuild(const std::string& vsProjectFilePath, const std::string& config, in
     startupInfo.cb = sizeof(startupInfo);
     PROCESS_INFORMATION processInfo;
     ZeroMemory(&processInfo, sizeof(processInfo));
-    bool succeeded = CreateProcessA(NULL, (LPSTR)commandLine.c_str(), NULL, NULL, false, 0, NULL, NULL, &startupInfo, &processInfo);
+    bool succeeded = CreateProcessA(NULL, (LPSTR)commandLine.c_str(), NULL, NULL, false, CREATE_NO_WINDOW, NULL, NULL, &startupInfo, &processInfo);
     if (!succeeded)
     {
         throw std::runtime_error("could not run build.bat");

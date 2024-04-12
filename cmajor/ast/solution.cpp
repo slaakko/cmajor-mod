@@ -34,6 +34,10 @@ SolutionActiveProjectDeclaration::SolutionActiveProjectDeclaration(const std::u3
 {
 }
 
+SolutionActiveBackEndDeclaration::SolutionActiveBackEndDeclaration(const std::u32string& backend_) : backend(backend_)
+{
+}
+
 ProjectDependencyDeclaration::ProjectDependencyDeclaration(const std::u32string& projectName_) : projectName(projectName_)
 {
 }
@@ -43,7 +47,8 @@ void ProjectDependencyDeclaration::AddDependency(const std::u32string& dependsOn
     dependsOnProjects.push_back(dependsOn);
 }
 
-Solution::Solution(const std::u32string& name_, const std::string& filePath_) : name(name_), filePath(filePath_), basePath(filePath), activeProject(nullptr)
+Solution::Solution(const std::u32string& name_, const std::string& filePath_) :
+    name(name_), filePath(filePath_), basePath(filePath), activeProject(nullptr), activeBackEnd(BackEnd::cpp)
 {
     basePath.remove_filename();
 }
@@ -82,6 +87,29 @@ void Solution::ResolveDeclarations()
         else if (SolutionActiveProjectDeclaration* activeProjectDeclaration = dynamic_cast<SolutionActiveProjectDeclaration*>(declaration.get()))
         {
             activeProjectName = activeProjectDeclaration->ActiveProjectName();
+        }
+        else if (SolutionActiveBackEndDeclaration* activeBackEndDeclaration = dynamic_cast<SolutionActiveBackEndDeclaration*>(declaration.get()))
+        {
+            if (activeBackEndDeclaration->ActiveBackEnd() == U"cpp")
+            {
+                activeBackEnd = BackEnd::cpp;
+            }
+            else if (activeBackEndDeclaration->ActiveBackEnd() == U"systemx")
+            {
+                activeBackEnd = BackEnd::systemx;
+            }
+            else if (activeBackEndDeclaration->ActiveBackEnd() == U"llvm")
+            {
+                activeBackEnd = BackEnd::llvm;
+            }
+            else if (activeBackEndDeclaration->ActiveBackEnd() == U"masm")
+            {
+                activeBackEnd = BackEnd::masm;
+            }
+            else
+            {
+                throw std::runtime_error("unknown backend '" + util::ToUtf8(activeBackEndDeclaration->ActiveBackEnd()) + "'");
+            }
         }
         else if (ProjectDependencyDeclaration* projectDependencyDeclaration = dynamic_cast<ProjectDependencyDeclaration*>(declaration.get()))
         {
@@ -122,6 +150,7 @@ void Solution::Save()
     {
         formatter.WriteLine("activeProject " + util::ToUtf8(activeProject->Name()) + ";");
     }
+    formatter.WriteLine("activeBackEnd=" + BackEndStr(activeBackEnd) + ";");
     for (const std::unique_ptr<Project>& project : projects)
     {
         project->Save();

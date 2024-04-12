@@ -238,6 +238,8 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 AddResources(project, rootModule.get(), objectFilePaths);
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
+                    std::vector<std::string> resourceFiles;
+                    resourceFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
                     std::string classIndexFilePath;
                     std::string traceDataFilePath;
                     if (project->GetTarget() == cmajor::ast::Target::program)
@@ -247,7 +249,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
                         rootModule->WriteTraceData(traceDataFilePath);
                     }
-                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, classIndexFilePath, traceDataFilePath,
+                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceFiles, classIndexFilePath, traceDataFilePath,
                         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
                 }
                 if (!objectFilePaths.empty())
