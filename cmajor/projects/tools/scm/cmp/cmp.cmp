@@ -1,0 +1,6 @@
+project cmp;
+target=program;
+reference <../cm.ast/cm.ast.cmp>;
+reference <../cm.lexer/cm.lexer.cmp>;
+reference <../cm.parser/cm.parser.cmp>;
+source <main.cm>;

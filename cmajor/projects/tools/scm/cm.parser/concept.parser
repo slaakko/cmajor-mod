@@ -1,0 +1,333 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser ConceptParser
+{
+    lexer CmajorLexer;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using IdentifierParser.QualifiedId;
+    using ParameterParser.ParameterList;
+    using ExpressionParser.Expression;
+    using ExpressionParser.InvokeExpr;
+    using TypeExprParser.TypeExpr;
+    using FunctionParser.FunctionGroupId;
+
+    Concept(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConceptNode> conceptNode, var UniquePtr<cm.ast.WhereConstraintNode> constraintNode) :  cm.ast.ConceptNode*
+        ::= empty{ context->BeginParsingConcept(); }
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            CONCEPT
+            Identifier:conceptName{ conceptNode.Reset(new cm.ast.ConceptNode(span, specifiers, conceptName)); }
+            LANGLE
+            (
+                Identifier:typeParam{ conceptNode->AddTypeParameter(typeParam); } % COMMA
+            )
+            RANGLE
+            (
+                Refinement(context):refinement{ conceptNode->SetRefinement(refinement); }
+            )?
+            (
+                WhereConstraint(context):whereConstraint
+                { 
+                    constraintNode.Reset(whereConstraint); 
+                    constraintNode->SetHeaderConstraint(); 
+                    conceptNode->AddConstraint(constraintNode.Release());
+                }
+            )?
+            LBRACE
+            ConceptBody(context, conceptNode.Get()):body
+            RBRACE
+        )
+        {
+            context->EndParsingConcept();
+            return conceptNode.Release();
+        }
+        /
+        {
+            context->EndParsingConcept();
+        }
+        ;
+
+    Refinement(cm.parser.Context* context, var UniquePtr<cm.ast.ConceptIdNode> conceptIdNode) : cm.ast.ConceptIdNode*
+        ::= 
+        (
+            COLON 
+            QualifiedId:refinedConcept{ conceptIdNode.Reset(new cm.ast.ConceptIdNode(lexer.GetSpan(pos), refinedConcept)); }
+            LANGLE
+            (
+                Identifier:typeParam{ conceptIdNode->AddTypeParameter(typeParam); } % COMMA
+            )
+            RANGLE
+        )
+        {
+            return conceptIdNode.Release();
+        }
+        ;
+
+    ConceptBody(cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
+        ::=
+        (   ConceptBodyConstraint(context, conceptNode):bodyConstraint
+        |   Axiom(context, conceptNode):axiom
+        )*
+        ;
+
+    ConceptBodyConstraint(cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
+        ::= TypeNameConstraint(context):typeNameConstraint{ conceptNode->AddConstraint(typeNameConstraint); }
+        |   SignatureConstraint(context, conceptNode->TypeParameters()[0]):signatureConstraint{ conceptNode->AddConstraint(signatureConstraint); }
+        |   EmbeddedConstraint(context):embeddedConstraint{ conceptNode->AddConstraint(embeddedConstraint); }
+        ;
+
+    TypeNameConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            TYPENAME{ span = lexer.GetSpan(pos); }
+            TypeExpr(context):type
+            SEMICOLON
+        )
+        {
+            return new cm.ast.TypeNameConstraintNode(span, type);
+        }
+        ;
+
+    SignatureConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter) : cm.ast.ConstraintNode*
+        ::=
+        (   ConstructorConstraint(context, firstTypeParameter):constructorConstraint{ return constructorConstraint; }
+        |   DestructorConstraint(context, firstTypeParameter):destructorConstraint{ return destructorConstraint; }
+        |   MemberFunctionConstraint(context):memberFunctionConstraint{ return memberFunctionConstraint; }
+        |   FunctionConstraint(context):functionConstraint{ return functionConstraint; }
+        )
+        ;
+
+    ConstructorConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter, var UniquePtr<cm.ast.ConstraintNode> ctorConstraintNode) : cm.ast.ConstraintNode*
+        ::=
+        (
+            EXPLICIT?
+            Identifier:id
+            { 
+                ustring className = lexer.GetToken(pos).ToString(); 
+                pass = className == firstTypeParameter->Str();
+                if (pass)
+                {
+                    ctorConstraintNode.Reset(new cm.ast.ConstructorConstraintNode(lexer.GetSpan(pos), id));
+                }
+            }
+            ParameterList(context, ctorConstraintNode.Get()):paramList
+            SEMICOLON
+        )
+        {
+            return ctorConstraintNode.Release();
+        }
+        ;
+
+    DestructorConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter, var System.Lex.Span span) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            TILDE{ span = lexer.GetSpan(pos); }
+            Identifier:id
+            {
+                ustring className = lexer.GetToken(pos).ToString(); 
+                pass = className == firstTypeParameter->Str();
+            }
+            LPAREN
+            RPAREN
+            SEMICOLON
+        )
+        {
+            return new cm.ast.DestructorConstraintNode(span, id);
+        }
+        ;
+
+    MemberFunctionConstraint(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> memberFunctionConstraintNode) : cm.ast.ConstraintNode*
+        ::=
+        (
+            TypeExpr(context):returnType{ span = lexer.GetSpan(pos); }
+            Identifier:typeParam
+            DOT
+            FunctionGroupId(context):functionGroupId
+            {
+                memberFunctionConstraintNode.Reset(new cm.ast.MemberFunctionConstraintNode(span, returnType, typeParam, functionGroupId));
+            }
+            ParameterList(context, memberFunctionConstraintNode.Get()):paramList
+            SEMICOLON
+        )
+        {
+            return memberFunctionConstraintNode.Release();
+        }
+        ;
+
+    FunctionConstraint(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> functionConstraintNode) : cm.ast.ConstraintNode*
+        ::=
+        (
+            TypeExpr(context):returnType{ span = lexer.GetSpan(pos); }
+            FunctionGroupId(context):functionGroupId
+            {
+                functionConstraintNode.Reset(new cm.ast.FunctionConstraintNode(span, returnType, functionGroupId));
+            }
+            ParameterList(context, functionConstraintNode.Get()):paramList
+            SEMICOLON
+        )
+        {
+            return functionConstraintNode.Release();
+        }
+        ;
+
+    EmbeddedConstraint(cm.parser.Context* context) : cm.ast.WhereConstraintNode*
+        ::= 
+        (
+            WhereConstraint(context):constraint
+            SEMICOLON
+        )
+        {
+            return constraint;
+        }
+        ;
+
+    WhereConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.WhereConstraintNode*
+        ::= 
+        (
+            WHERE{ span = lexer.GetSpan(pos); }
+            ConstraintExpr(context):constraint
+        )
+        {
+            return new cm.ast.WhereConstraintNode(span, constraint);
+        }
+        ;
+
+    ConstraintExpr(cm.parser.Context* context) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            DisjunctiveConstraintExpr(context):disjunctiveConstraint
+        )
+        {
+            return disjunctiveConstraint;
+        }
+        ;
+
+    DisjunctiveConstraintExpr(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> constraintNode) : cm.ast.ConstraintNode*
+        ::=
+        (
+            ConjunctiveConstraintExpr(context):left{ constraintNode.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                OR
+                ConjunctiveConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.DisjunctiveConstraintNode(span, constraintNode.Release(), right)); }
+            )*
+        )
+        {
+            return constraintNode.Release();
+        }
+        ;
+
+    ConjunctiveConstraintExpr(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> constraintNode) : cm.ast.ConstraintNode*
+        ::=
+        (
+            PrimaryConstraintExpr(context):left{ constraintNode.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                AND
+                PrimaryConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.ConjunctiveConstraintNode(span, constraintNode.Release(), right)); }
+            )*
+        )
+        {
+            return constraintNode.Release();
+        }
+        ;
+
+    PrimaryConstraintExpr(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> constraintNode) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            LPAREN{ span = lexer.GetSpan(pos); }
+            ConstraintExpr(context):constraint
+            RPAREN
+            {
+                return new cm.ast.ParenthesizedConstraintNode(span, constraint);
+            }
+        |   AtomicConstraintExpr(context):atomicConstraint{ return atomicConstraint; }
+        )
+        ;
+
+    AtomicConstraintExpr(cm.parser.Context* context) : cm.ast.ConstraintNode*
+        ::= 
+        (   PredicateConstraint(context):predicateConstraint{ return predicateConstraint; }
+        |   IsConstraint(context):isConstraint{ return isConstraint; }
+        |   MultiParamConstraint(context):multiParamConstraint{ return multiParamConstraint; }
+        )
+        ;
+
+    PredicateConstraint(cm.parser.Context* context) : cm.ast.ConstraintNode*
+        ::= InvokeExpr(context):invokeExpr{ return new cm.ast.PredicateConstraintNode(lexer.GetSpan(pos), invokeExpr); }
+        ;
+
+    IsConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            TypeExpr(context):type{ span = lexer.GetSpan(pos); }
+            IS
+            ConceptOrTypeName(context):conceptOrTypeName
+        )
+        {
+            return new cm.ast.IsConstraintNode(span, type, conceptOrTypeName);
+        }
+        ;
+
+    ConceptOrTypeName(cm.parser.Context* context) : cm.ast.Node*
+        ::= TypeExpr(context):conceptOrTypeName{ return conceptOrTypeName; }
+        ;
+
+
+    MultiParamConstraint(cm.parser.Context* context, var UniquePtr<cm.ast.MultiParamConstraintNode> constraintNode) : cm.ast.ConstraintNode*
+        ::= 
+        (
+            QualifiedId:id{ constraintNode.Reset(new cm.ast.MultiParamConstraintNode(lexer.GetSpan(pos), id)); }
+            LANGLE 
+            (
+                TypeExpr(context):typeExpr{ constraintNode->AddTypeExpr(typeExpr); } % COMMA
+            )
+            RANGLE
+        )
+        {
+            return constraintNode.Release();
+        }
+        ;
+
+    Axiom(cm.parser.Context* context, cm.ast.ConceptNode* conceptNode, var System.Lex.Span span, var UniquePtr<cm.ast.AxiomNode> axiomNode)
+        ::= 
+        (
+            AXIOM{ span = lexer.GetSpan(pos); }
+            Identifier:id?
+            empty{ axiomNode.Reset(new cm.ast.AxiomNode(span, id)); }
+            ParameterList(context, axiomNode.Get()):paramList?
+            LBRACE
+            AxiomBody(context, axiomNode.Get()):axiomBody
+            RBRACE
+        )
+        {
+            conceptNode->AddAxiom(axiomNode.Release());
+        }
+        ;
+
+    AxiomBody(cm.parser.Context* context, cm.ast.AxiomNode* axiomNode)
+        ::= 
+        (
+            AxiomStatement(context):axiomStatement{ axiomNode->AddStatement(axiomStatement); }
+        )*
+        ;
+
+    AxiomStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.AxiomStatementNode*
+        ::= 
+        (
+            Expression(context):expr{ span = lexer.GetSpan(pos); }
+            SEMICOLON
+        )
+        {
+            return new cm.ast.AxiomStatementNode(span, expr);            
+        }
+        ;
+}

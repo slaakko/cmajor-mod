@@ -90,6 +90,7 @@ void Frame::SetMacroValues(cmajor::masm::assembly::Context* assemblyContext)
         {
             int64_t value = (paramLocation.index - 4) * 8 + paramOffset + frameSize;
             value -= XMMSaveRegSize();
+            value -= calleeParamAreaSize - 4 * 8;
             macro->SetValue(assemblyContext->MakeIntegerLiteral(value, 8));
         }
     }

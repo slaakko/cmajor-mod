@@ -11,9 +11,9 @@ import cmajor.masm.build.msbuild;
 namespace cmajor::masm::build {
 
 void VSBuild(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, const std::vector<std::string> cppFilePaths, 
-    const std::vector<std::string>& resourceFiles, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
+    const std::vector<std::string>& resourceScriptFiles, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
 {
-    std::string vsProjectFilePath = MakeVSProjectFile(project, module, asmFilePaths, cppFilePaths, resourceFiles, classIndexFilePath, traceDataFilePath, verbose);
+    std::string vsProjectFilePath = MakeVSProjectFile(project, module, asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath, verbose);
     MSBuild(vsProjectFilePath, cmajor::symbols::GetConfig(), project->LogStreamId());
 }
    

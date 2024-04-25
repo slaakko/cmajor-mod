@@ -83,7 +83,7 @@ public:
     void Accept(SymbolCollector* collector) override;
     void Dump(util::CodeFormatter& formatter) override;
     std::string TypeString() const override { return "member_variable"; }
-    std::string Syntax() const override;
+    std::string Syntax() override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     int32_t LayoutIndex() const { return layoutIndex; }
     void SetLayoutIndex(int32_t layoutIndex_) { layoutIndex = layoutIndex_; }
@@ -135,7 +135,7 @@ public:
     void Dump(util::CodeFormatter& formatter) override;
     std::string TypeString() const override { return "global_variable"; }
     void ComputeMangledName() override;
-    std::string Syntax() const override;
+    std::string Syntax() override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     const char* ClassName() const override { return "GlobalVariableSymbol"; }
     void SetInitializer(std::unique_ptr<Value>&& initializer_);

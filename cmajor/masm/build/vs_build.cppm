@@ -12,6 +12,6 @@ import std.core;
 export namespace cmajor::masm::build {
 
 void VSBuild(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, const std::vector<std::string> cppFilePaths, 
-    const std::vector<std::string>& resourceFiles, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose);
+    const std::vector<std::string>& resourceScriptFiles, const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose);
 
 } // namespace cmajor::masm::build

@@ -85,12 +85,12 @@ void BoundSequenceStatement::SetForLoopStatementNode()
 }
 
 BoundCompoundStatement::BoundCompoundStatement(const soul::ast::Span& span_) : 
-    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan()
+    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan(), destroyed(false)
 {
 }
 
 BoundCompoundStatement::BoundCompoundStatement(const soul::ast::Span& span_, const soul::ast::Span& endSpan_) :
-    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan(endSpan_)
+    BoundStatement(span_, BoundNodeType::boundCompoundStatement), endSpan(endSpan_), destroyed(false)
 {
 }
 

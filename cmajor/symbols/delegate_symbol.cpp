@@ -70,7 +70,7 @@ void DelegateTypeSymbol::AddMember(Symbol* member)
     }
 }
 
-std::string DelegateTypeSymbol::Syntax() const
+std::string DelegateTypeSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -826,7 +826,7 @@ void ClassDelegateTypeSymbol::AddMember(Symbol* member)
     }
 }
 
-std::string ClassDelegateTypeSymbol::Syntax() const
+std::string ClassDelegateTypeSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

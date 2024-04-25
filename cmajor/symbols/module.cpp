@@ -404,10 +404,13 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             reader.SetRootModule(rootModule);
             module->GetSymbolTable().Read(reader);
             module->ReadFunctionTraceData(reader.GetBinaryStreamReader());
+            module->ReadClassTypeFlagMap(reader);
             for (Module* referencedModule : module->ReferencedModules())
             {
                 module->GetSymbolTable().Import(referencedModule->GetSymbolTable());
                 rootModule->ImportTraceData(referencedModule);
+                rootModule->ImportResourceScriptFilePaths(referencedModule);
+                rootModule->ImportClassTypeFlagMap(referencedModule->GetClassTypeFlagMap());
             }
             module->GetSymbolTable().FinishRead(arrayTypes, derivedTypes, classTemplateSpecializations, typeAndConceptRequests, functionRequests, conversions);
             module->SetImmutable();
@@ -417,6 +420,8 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
             if (rootModule == module) continue;
             rootModule->GetSymbolTable().Import(module->GetSymbolTable());
             rootModule->ImportTraceData(module);
+            rootModule->ImportResourceScriptFilePaths(module);
+            rootModule->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
         }
         else
         {
@@ -425,6 +430,8 @@ void FinishReads(Module* rootModule, std::vector<Module*>& finishReadOrder, bool
 #endif 
             rootModule->GetSymbolTable().Import(module->GetSymbolTable());
             rootModule->ImportTraceData(module);
+            rootModule->ImportResourceScriptFilePaths(module);
+            rootModule->ImportClassTypeFlagMap(module->GetClassTypeFlagMap());
         }
     }
 #ifdef MODULE_READING_DEBUG
@@ -785,6 +792,26 @@ void Module::SetResourceFilePath(const std::string& resourceFilePath_)
     resourceFilePath = resourceFilePath_;
 }
 
+void Module::ImportResourceScriptFilePaths(Module* module)
+{
+    for (const auto& resourceScriptFilePath : module->allResourceScriptFilePaths)
+    {
+        if (std::find(allResourceScriptFilePaths.begin(), allResourceScriptFilePaths.end(), resourceScriptFilePath) == allResourceScriptFilePaths.end())
+        {
+            allResourceScriptFilePaths.push_back(resourceScriptFilePath);
+        }
+    }
+}
+
+void Module::AddResourceScriptFilePath(const std::string& resourceScriptFilePath)
+{
+    resourceScriptFilePaths.push_back(util::GetFullPath(resourceScriptFilePath));
+    if (std::find(allResourceScriptFilePaths.begin(), allResourceScriptFilePaths.end(), resourceScriptFilePath) == allResourceScriptFilePaths.end())
+    {
+        allResourceScriptFilePaths.push_back(resourceScriptFilePath);
+    }
+}
+
 void Module::PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
     cmajor::ast::CompileUnitNode* rootCompileUnit)
 {
@@ -1031,6 +1058,12 @@ void Module::Write(SymbolWriter& writer)
     }
 #ifdef _WIN32
     resourceTable.Write(writer.GetBinaryStreamWriter());
+    int32_t nrc = resourceScriptFilePaths.size();
+    writer.GetBinaryStreamWriter().Write(nrc);
+    for (const auto& resourceScriptFilePath : resourceScriptFilePaths)
+    {
+        writer.GetBinaryStreamWriter().Write(resourceScriptFilePath);
+    }
 #ifdef RESOURCE_DEBUG
     int nres = resourceTable.Resources().size();
     for (int i = 0; i < nres; ++i)
@@ -1055,6 +1088,7 @@ void Module::Write(SymbolWriter& writer)
     }
     symbolTable->Write(writer);
     WriteFunctionTraceData(writer.GetBinaryStreamWriter());
+    WriteClassTypeFlagMap(writer);
 }
 
 void Module::WriteFunctionTraceData(util::BinaryStreamWriter& writer)
@@ -1074,6 +1108,21 @@ void Module::WriteFunctionTraceData(util::BinaryStreamWriter& writer)
     {
         traceInfo->Write(writer);
     }
+}
+
+void Module::ImportClassTypeFlagMap(ClassTypeFlagMap& that)
+{
+    classTypeFlagMap.Import(that);
+}
+
+void Module::ReadClassTypeFlagMap(SymbolReader& reader)
+{
+    classTypeFlagMap.Read(reader);
+}
+
+void Module::WriteClassTypeFlagMap(SymbolWriter& writer)
+{
+    classTypeFlagMap.Write(writer);
 }
 
 void Module::ReadFunctionTraceData(util::BinaryStreamReader& reader)
@@ -1184,6 +1233,15 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
             if (!rootModule->globalResourceTable.Contains(resource.name))
             {
                 rootModule->globalResourceTable.AddResource(resource);
+            }
+        }
+        int nrc = resourceScriptFilePaths.size();
+        for (int i = 0; i < nrc; ++i)
+        {
+            const std::string& resourceScriptFilePath = resourceScriptFilePaths[i];
+            if (std::find(allResourceScriptFilePaths.begin(), allResourceScriptFilePaths.end(), resourceScriptFilePath) == allResourceScriptFilePaths.end())
+            {
+                allResourceScriptFilePaths.push_back(resourceScriptFilePath);
             }
         }
 #endif
@@ -1324,6 +1382,16 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
         if (!rootModule->globalResourceTable.Contains(resource.name))
         {
             rootModule->globalResourceTable.AddResource(resource);
+        }
+    }
+    int nrc = reader.GetBinaryStreamReader().ReadInt();
+    for (int i = 0; i < nrc; ++i)
+    {
+        std::string resourceScriptFilePath = reader.GetBinaryStreamReader().ReadUtf8String();
+        resourceScriptFilePaths.push_back(resourceScriptFilePath);
+        if (std::find(allResourceScriptFilePaths.begin(), allResourceScriptFilePaths.end(), resourceScriptFilePath) == allResourceScriptFilePaths.end())
+        {
+            allResourceScriptFilePaths.push_back(resourceScriptFilePath);
         }
     }
 #endif

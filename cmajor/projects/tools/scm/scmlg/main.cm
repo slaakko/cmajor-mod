@@ -1,0 +1,76 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+void PrintHelp()
+{
+    
+}
+
+int main(int argc, const char** argv)
+{
+    List<string> files;
+    bool verbose = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg.StartsWith("--"))
+        {
+            if (arg == "--verbose")
+            {
+                verbose = true;
+            }
+            else if (arg == "--help")
+            {
+                PrintHelp();
+                return 0;
+            }   
+            else
+            {
+                Console.Error() << "unknown option '" << arg << "'" << endl();
+                return 1;
+            }
+        }
+        else if (arg.StartsWith("-"))
+        {
+            string options = arg.Substring(1);
+            for (char o : options)
+            {
+                switch (o)
+                {
+                    case 'v':
+                    {
+                        verbose = true;
+                        break;
+                    }
+                    case 'h':
+                    {
+                        PrintHelp();
+                        return 0;
+                    }
+                    default:
+                    {
+                        Console.Error() << "unknown option '-" << string(o) << "'" << endl();
+                        return 1;
+                    }
+                }
+            }
+        }
+        else
+        {
+            auto fullPathResult = GetFullPath(arg);
+            if (fullPathResult.Error())
+            {
+                Console.Error() << fullPathResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            files.Add(fullPathResult.Value());
+        }
+    }
+    return 0;
+}
+

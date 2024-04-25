@@ -731,8 +731,13 @@ void FunctionSymbol::ComputeMangledName()
         mangledName.append(1, U'_').append(parentClass->SimpleName());
     }
     }
+    std::string templateArgumentStr;
+    for (const auto& templateArgumentType : TemplateArgumentTypes())
+    {
+        templateArgumentStr.append(".").append(util::ToUtf8(templateArgumentType->FullName()));
+    }
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
-        util::ToUtf8(FullNameWithSpecifiers()) + compileUnitId)));
+        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentStr + compileUnitId)));
     SetMangledName(mangledName);
 }
 
@@ -868,7 +873,7 @@ std::u32string FunctionSymbol::DocName() const
     return docName;
 }
 
-std::string FunctionSymbol::GetSpecifierStr() const
+std::string FunctionSymbol::GetSpecifierStr() 
 {
     std::string specifierStr = SymbolFlagStr(GetStableSymbolFlags());
     std::string f = FunctionSymbolFlagStr(flags);
@@ -883,7 +888,7 @@ std::string FunctionSymbol::GetSpecifierStr() const
     return specifierStr;
 }
 
-std::string FunctionSymbol::Syntax() const
+std::string FunctionSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

@@ -109,6 +109,7 @@ void MasmCodeGenerator::ExitBlocks(cmajor::binder::BoundCompoundStatement* targe
             int nd = destructorCallVec.size();
             for (int i = nd - 1; i >= 0; --i)
             {
+                block->SetDestroyed();
                 std::unique_ptr<cmajor::binder::BoundFunctionCall>& destructorCall = destructorCallVec[i];
                 if (destructorCall)
                 {
@@ -420,6 +421,12 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
     {
         cmajor::binder::BoundStatement* statement = boundCompoundStatement.Statements()[i].get();
         statement->Accept(*this);
+    }
+    if (currentBlock->IsDestroyed() && n > 0 && boundCompoundStatement.Statements().back()->IsBreakStatement())
+    {
+        void* nextBlock = emitter->CreateBasicBlock("next");
+        emitter->SetCurrentBasicBlock(nextBlock);
+        basicBlockOpen = true;
     }
     ExitBlocks(prevBlock);
     blocks.pop_back();

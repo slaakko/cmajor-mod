@@ -220,6 +220,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 std::vector<std::string> asmFilePaths;
                 std::vector<std::string> cppFilePaths;
                 Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+                for (const auto& rcFilePath : project->ResourceScriptFilePaths())
+                {
+                    rootModule->AddResourceScriptFilePath(rcFilePath);
+                }
                 GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
@@ -238,8 +242,12 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 AddResources(project, rootModule.get(), objectFilePaths);
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
-                    std::vector<std::string> resourceFiles;
-                    resourceFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
+                    std::vector<std::string> resourceScriptFiles;
+                    resourceScriptFiles.push_back(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "rc"), "soul.xml.xpath.lexer.classmap.rc")));
+                    for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
+                    {
+                        resourceScriptFiles.push_back(rcFilePath);
+                    }
                     std::string classIndexFilePath;
                     std::string traceDataFilePath;
                     if (project->GetTarget() == cmajor::ast::Target::program)
@@ -249,7 +257,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
                         rootModule->WriteTraceData(traceDataFilePath);
                     }
-                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceFiles, classIndexFilePath, traceDataFilePath,
+                    cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
                         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
                 }
                 if (!objectFilePaths.empty())

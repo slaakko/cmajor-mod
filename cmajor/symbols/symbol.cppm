@@ -33,6 +33,7 @@ class FunctionSymbol;
 class SymbolTable;
 class Module;
 class SymbolCollector;
+class ClassTypeFlagMap;
 
 enum class SymbolType : uint8_t
 {
@@ -160,8 +161,8 @@ public:
     virtual void* IrObject(cmajor::ir::Emitter& emitter);
     virtual void ComputeMangledName();
     virtual void Dump(util::CodeFormatter& formatter) {}
-    virtual std::string GetSpecifierStr() const;
-    virtual std::string Syntax() const;
+    virtual std::string GetSpecifierStr();
+    virtual std::string Syntax();
     virtual void CopyFrom(const Symbol* that);
     virtual void Check();
     bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
@@ -225,6 +226,7 @@ public:
     ContainerScope* ClassInterfaceOrNsScope();
     const ContainerScope* ClassInterfaceEnumDelegateOrNsScope() const;
     ContainerScope* ClassInterfaceEnumDelegateOrNsScope();
+    ClassTypeFlagMap& GetClassTypeFlagMap();
     Module* GetModule() const { return module; }
     Module* GetModule() { return module; }
     void SetModule(Module* module_) { module = module_; }

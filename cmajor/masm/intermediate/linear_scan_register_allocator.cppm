@@ -73,9 +73,10 @@ public:
     const std::vector<Instruction*>& GetInstructions(const LiveRange& range) const;
     RegisterAllocationAction Run(Instruction* inst) override;
     Locations GetLocations(Instruction* inst) const override;
-    virtual void AddRegisterLocation(Instruction* inst, cmajor::masm::assembly::RegisterGroup* regGroup) override;
+    void AddRegisterLocation(Instruction* inst, cmajor::masm::assembly::RegisterGroup* regGroup) override;
     int LastActiveLocalRegGroup() const override;
     const std::vector<SpillData>& GetSpillData() const override;
+    void RemoveFromRegisterGroups(Instruction* inst) override;
 private:
     void ComputeLiveRanges(Function& function);
     void ExpireOldRanges(const LiveRange& range);

@@ -26,7 +26,7 @@ public:
     void Read(SymbolReader& reader) override;
     void EmplaceType(TypeSymbol* typeSymbol, int index) override;
     std::string TypeString() const override { return "enumerated_type"; }
-    std::string Syntax() const override;
+    std::string Syntax() override;
     bool IsEnumeratedType() const override { return true; }
     bool IsParentSymbol() const override { return true; }
     void Accept(SymbolCollector* collector) override;

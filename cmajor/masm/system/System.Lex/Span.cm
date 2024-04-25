@@ -10,10 +10,10 @@ namespace System.Lex
 {
     public class Span
     {
-        public inline Span() : pos(-1), len(-1)
+        public Span() : pos(-1), len(-1)
         {
         }
-        public inline Span(int pos_, int len_) : pos(pos_), len(len_)
+        public Span(int pos_, int len_) : pos(pos_), len(len_)
         {
         }
         public inline bool IsValid() const
@@ -101,6 +101,20 @@ namespace System.Lex
         }
         int pos = lineStarts[lineColLen.line] + lineColLen.col - 1;
         return pos;
+    }
+
+    public class FullSpan
+    {
+        public FullSpan() : moduleId(), fileIndex(-1), span() {}
+        public FullSpan(const Uuid& moduleId_, int fileIndex_, const Span& span_) : moduleId(moduleId_), fileIndex(fileIndex_), span(span_) {}
+        public Uuid moduleId;
+        public int fileIndex;
+        public Span span;
+    }
+
+    public bool operator==(const FullSpan& left, const FullSpan& right)
+    {
+        return left.moduleId == right.moduleId && left.fileIndex == right.fileIndex && left.span == right.span;
     }
 
 } // namespace System.Lex

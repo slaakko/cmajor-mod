@@ -66,7 +66,7 @@ void AliasTypeSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("type: " + util::ToUtf8(type->FullName()));
 }
 
-std::string AliasTypeSymbol::Syntax() const
+std::string AliasTypeSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

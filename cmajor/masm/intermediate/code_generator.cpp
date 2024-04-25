@@ -505,7 +505,7 @@ cmajor::masm::assembly::Register* MakeIntegerRegOperand(Value* value, cmajor::ma
                 if (frameLocation.Valid())
                 {
                     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
-                    cmajor::masm::assembly::RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetGlobalRegisterGroup(reg->Group(), true);
+                    cmajor::masm::assembly::RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetRegisterGroup(reg->Group(), true);
                     EmitIntegerLoad(size, frameLocation, regGroup, codeGenerator);
                 }
                 else
@@ -651,7 +651,7 @@ cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmaj
                 if (frameLocation.Valid())
                 {
                     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
-                    cmajor::masm::assembly::RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetGlobalRegisterGroup(reg->Group(), true);
+                    cmajor::masm::assembly::RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetRegisterGroup(reg->Group(), true);
                     EmitIntegerLoad(size, frameLocation, regGroup, codeGenerator);
                 }
                 else
@@ -2088,6 +2088,7 @@ void EmitIntegerArg(ArgInstruction& inst, CallFrame* callFrame, int32_t index, C
         for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
         {
             EmitIntegerStore(8, spillData.spillToFrameLocation, spillData.registerGroupToSpill, codeGenerator);
+            codeGenerator.RegAllocator()->RemoveFromRegisterGroups(spillData.instToSpill);
         }
     }
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -2159,6 +2160,7 @@ void EmitFloatingPointArg(ArgInstruction& inst, CallFrame* callFrame, int32_t in
         for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
         {
             EmitFloatingPointStore(8, spillData.spillToFrameLocation, spillData.registerGroupToSpill, codeGenerator);
+            codeGenerator.RegAllocator()->RemoveFromRegisterGroups(spillData.instToSpill);
         }
     }
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -2299,6 +2301,7 @@ void EmitProcedureCall(ProcedureCallInstruction& inst, const std::vector<ArgInst
             {
                 EmitIntegerStore(8, spillData.spillToFrameLocation, spillData.registerGroupToSpill, codeGenerator); 
             }
+            codeGenerator.RegAllocator()->RemoveFromRegisterGroups(spillData.instToSpill);
         }
     }
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -2325,6 +2328,7 @@ void EmitFunctionCall(FunctionCallInstruction& inst, const std::vector<ArgInstru
             {
                 EmitIntegerStore(8, spillData.spillToFrameLocation, spillData.registerGroupToSpill, codeGenerator);
             }
+            codeGenerator.RegAllocator()->RemoveFromRegisterGroups(spillData.instToSpill);
         }
     }
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -2583,6 +2587,13 @@ void CodeGenerator::EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmaj
                 return;
             }
         }
+        else
+        {
+            data->AddInstruction(dataInstruction);
+            dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
+            dataInstruction->SetNoColon();
+            break;
+        }
         data->AddInstruction(dataInstruction);
         dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
         dataInstruction->SetNoColon();
@@ -2674,6 +2685,7 @@ void CodeGenerator::Visit(BasicBlock& basicBlock)
                     {
                         EmitIntegerStore(8, spillData.spillToFrameLocation, spillData.registerGroupToSpill, *this);
                     }
+                    registerAllocator->RemoveFromRegisterGroups(spillData.instToSpill);
                 }
             }
             inst->Accept(*this);

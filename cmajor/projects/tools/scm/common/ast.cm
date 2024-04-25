@@ -1,0 +1,104 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Lex;
+
+namespace scm.common
+{
+    public class Import
+    {
+        public Import(const ustring& moduleName_) : moduleName(moduleName_) {}
+        public const ustring& ModuleName() const { return moduleName; }
+        private ustring moduleName;
+    }
+
+    public Result<ustring> MakeExprStringValue(const string& fileName, const System.Lex.Token& token)
+    {
+        ustring strValue;
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        while (p != e && *p != '\r' && *p != '\n' && *p != '"')
+        {
+            if (*p == '\\')
+            {
+                ++p;
+                if (p != e && *p == '"')
+                {
+                    strValue.Append('"');
+                    ++p;
+                }
+                else
+                {
+                    strValue.Append('\\');
+                    strValue.Append(*p);
+                    ++p;
+                }
+            }
+            else
+            {
+                strValue.Append(*p);
+                ++p;
+            }
+        }
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        if (p != e)
+        {
+            auto utf8Result = ToUtf8(token.match.ToString());
+            if (utf8Result.Error())
+            {
+                return Result<ustring>(ErrorId(utf8Result.GetErrorId()));
+            }
+            string errorMessage = "invalid expression string literal at " + fileName + ":" + ToString(token.line) + ": " + utf8Result.Value();
+            int errorId = AllocateError(errorMessage);
+            return Result<ustring>(ErrorId(errorId));
+        }
+        return Result<ustring>(strValue);
+    }
+
+    public Result<string> MakeFilePath(const string& fileName, const System.Lex.Token& token)
+    {
+        ustring strValue;
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        if (p != e && *p == '<')
+        {
+            ++p;
+        }
+        while (p != e && *p != '>')
+        {
+            strValue.Append(*p);
+            ++p;
+        }
+        if (p != e && *p == '>')
+        {
+            ++p;
+        }
+        if (p != e)
+        {
+            auto utf8Result = ToUtf8(token.match.ToString());
+            if (utf8Result.Error())
+            {
+                return Result<string>(ErrorId(utf8Result.GetErrorId()));
+            }
+            string errorMessage = "invalid file path at " + fileName + ":" + ToString(token.line) + ": " + utf8Result.Value();
+            int errorId = AllocateError(errorMessage);
+            return Result<string>(ErrorId(errorId));
+        }
+        auto utf8Result = ToUtf8(strValue);
+        if (utf8Result.Error())
+        {
+            return Result<string>(ErrorId(utf8Result.GetErrorId()));
+        }
+        return Result<string>(utf8Result.Value());
+    }
+}

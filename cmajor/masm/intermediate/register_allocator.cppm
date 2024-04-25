@@ -18,6 +18,7 @@ struct SpillData
     SpillData();
     cmajor::masm::assembly::RegisterGroup* registerGroupToSpill;
     FrameLocation spillToFrameLocation;
+    Instruction* instToSpill;
 };
 
 enum class RegisterAllocationAction
@@ -38,6 +39,7 @@ public:
     virtual Frame& GetFrame() = 0;
     virtual FrameLocation GetFrameLocation(Instruction* inst) const = 0;
     virtual int LastActiveLocalRegGroup() const = 0;
+    virtual void RemoveFromRegisterGroups(Instruction* inst) = 0;
 };
 
 } // cmajor::masm::intermediate

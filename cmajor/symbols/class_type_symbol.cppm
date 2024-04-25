@@ -106,6 +106,21 @@ const int32_t functionVmtIndexOffset = 6;   // virtual method table
 
 */
 
+
+class ClassTypeFlagMap
+{
+public:
+    ClassTypeFlagMap();
+    void Import(ClassTypeFlagMap& that);
+    void Write(SymbolWriter& writer);
+    void Read(SymbolReader& reader);
+    bool GetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
+    void SetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
+    void ResetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag);
+private:
+    std::map<std::u32string, ClassTypeSymbolFlags> flagMap;
+};
+
 class ClassTypeSymbol : public TypeSymbol
 {
 public:
@@ -122,8 +137,8 @@ public:
     bool IsParentSymbol() const override { return true; }
     std::string TypeString() const override { return "class"; }
     std::u32string SimpleName() const override { return groupName; }
-    std::string GetSpecifierStr() const override;
-    bool HasNontrivialDestructor() const override;
+    std::string GetSpecifierStr() override;
+    bool HasNontrivialDestructor() override;
     void Accept(SymbolCollector* collector) override;
     const ContainerScope* GetArrowScope() const override;
     ContainerScope* GetArrowScope() override;
@@ -132,7 +147,7 @@ public:
     // TODO
     bool IsRecursive(TypeSymbol* type, std::unordered_set<util::uuid, util::UuidHash>& tested) override;
     virtual bool IsPrototypeTemplateSpecialization() const { return false; }
-    bool CompletelyBound() const override { return IsBound() && !StatementsNotBound(); }
+    bool CompletelyBound() override { return IsBound() && !StatementsNotBound(); }
     void CreateDestructorSymbol();
     const std::u32string& GroupName() const { return groupName; }
     void SetGroupName(const std::u32string& groupName_);
@@ -153,10 +168,10 @@ public:
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     void ComputeName();
     void ComputeMangledName() override;
-    bool IsPolymorphicType() const override { return IsPolymorphic(); }
+    bool IsPolymorphicType() override { return IsPolymorphic(); }
     void SetConstraint(cmajor::ast::ConstraintNode* constraint_) { constraint.reset(constraint_); }
     cmajor::ast::ConstraintNode* Constraint() { return constraint.get(); }
-    bool IsLiteralClassType() const;
+    bool IsLiteralClassType();
     StaticConstructorSymbol* StaticConstructor() { return staticConstructor; }
     ConstructorSymbol* DefaultConstructor() { return defaultConstructor; }
     void SetDefaultConstructor(ConstructorSymbol* defaultConstructor_) { defaultConstructor = defaultConstructor_; }
@@ -175,34 +190,34 @@ public:
     const std::vector<MemberFunctionSymbol*>& MemberFunctions() const { return memberFunctions; }
     MemberVariableSymbol* InitializedVar() { return initializedVar.get(); }
     void SetInitializedVar(MemberVariableSymbol* initializedVar_);
-    bool IsAbstract() const { return GetFlag(ClassTypeSymbolFlags::abstract_); }
+    bool IsAbstract() { return GetFlag(ClassTypeSymbolFlags::abstract_); }
     void SetAbstract() { SetFlag(ClassTypeSymbolFlags::abstract_); }
-    bool IsPolymorphic() const { return GetFlag(ClassTypeSymbolFlags::polymorphic); }
+    bool IsPolymorphic() { return GetFlag(ClassTypeSymbolFlags::polymorphic); }
     void SetPolymorphic() { SetFlag(ClassTypeSymbolFlags::polymorphic); }
-    bool IsVmtInitialized() const { return GetFlag(ClassTypeSymbolFlags::vmtInitialized); }
+    bool IsVmtInitialized() { return GetFlag(ClassTypeSymbolFlags::vmtInitialized); }
     void SetVmtInitialized() { SetFlag(ClassTypeSymbolFlags::vmtInitialized); }
-    bool IsImtsInitialized() const { return GetFlag(ClassTypeSymbolFlags::imtsInitialized); }
+    bool IsImtsInitialized() { return GetFlag(ClassTypeSymbolFlags::imtsInitialized); }
     void SetImtsInitialized() { SetFlag(ClassTypeSymbolFlags::imtsInitialized); }
-    bool IsLayoutsComputed() const { return GetFlag(ClassTypeSymbolFlags::layoutsComputed); }
+    bool IsLayoutsComputed() { return GetFlag(ClassTypeSymbolFlags::layoutsComputed); }
     void SetLayoutsComputed() { SetFlag(ClassTypeSymbolFlags::layoutsComputed); }
-    bool StatementsNotBound() const { return GetFlag(ClassTypeSymbolFlags::statementsNotBound); }
+    bool StatementsNotBound() { return GetFlag(ClassTypeSymbolFlags::statementsNotBound); }
     void SetStatementsNotBound() { SetFlag(ClassTypeSymbolFlags::statementsNotBound); }
     void ResetStatementsNotBound() { ResetFlag(ClassTypeSymbolFlags::statementsNotBound); }
-    bool RecursiveComputed() const { return GetFlag(ClassTypeSymbolFlags::recursiveComputed); }
+    bool RecursiveComputed() { return GetFlag(ClassTypeSymbolFlags::recursiveComputed); }
     void SetRecursiveComputed() { SetFlag(ClassTypeSymbolFlags::recursiveComputed); }
-    bool HasXmlAttribute() const { return GetFlag(ClassTypeSymbolFlags::hasXmlAttribute); }
+    bool HasXmlAttribute() { return GetFlag(ClassTypeSymbolFlags::hasXmlAttribute); }
     void SetHasXmlAttribute() { SetFlag(ClassTypeSymbolFlags::hasXmlAttribute); }
     bool IsRecursive();
-    bool Recursive() const { return GetFlag(ClassTypeSymbolFlags::recursive); }
+    bool Recursive() { return GetFlag(ClassTypeSymbolFlags::recursive); }
     void SetRecursive() { SetFlag(ClassTypeSymbolFlags::recursive); }
-    bool VmtEmitted() const { return GetFlag(ClassTypeSymbolFlags::vmtEmitted); }
+    bool VmtEmitted() { return GetFlag(ClassTypeSymbolFlags::vmtEmitted); }
     void SetVmtEmitted() { SetFlag(ClassTypeSymbolFlags::vmtEmitted); }
-    bool StaticsEmitted() const { return GetFlag(ClassTypeSymbolFlags::staticsEmitted); }
+    bool StaticsEmitted() { return GetFlag(ClassTypeSymbolFlags::staticsEmitted); }
     void SetStaticsEmitted() { SetFlag(ClassTypeSymbolFlags::staticsEmitted); }
     ClassTypeSymbolFlags GetClassTypeSymbolFlags() const { return flags; }
-    bool GetFlag(ClassTypeSymbolFlags flag) const { return (flags & flag) != ClassTypeSymbolFlags::none; }
-    void SetFlag(ClassTypeSymbolFlags flag) { flags = flags | flag; }
-    void ResetFlag(ClassTypeSymbolFlags flag) { flags = flags & (~flag); }
+    bool GetFlag(ClassTypeSymbolFlags flag);
+    void SetFlag(ClassTypeSymbolFlags flag);
+    void ResetFlag(ClassTypeSymbolFlags flag);
     void InitVmt();
     void InitImts();
     void CreateLayouts();

@@ -6,6 +6,7 @@
 module cmajor.masm.assembly.function;
 
 import cmajor.masm.assembly.instruction;
+import cmajor.masm.assembly.literal;
 
 namespace cmajor::masm::assembly {
 
@@ -66,7 +67,29 @@ void Function::Write(util::CodeFormatter& formatter)
     }
     if (!comment.empty())
     {
-        formatter.WriteLine("; " + comment);
+        std::vector<std::string> commentLines;
+        while (comment.length() > maxAssemblyLineLength - 2)
+        {
+            int splitPos = maxAssemblyLineLength - 2;
+            for (int i = splitPos; i >= 0; --i)
+            {
+                if (!std::isalnum(comment[i]))
+                {
+                    splitPos = i;
+                    break;
+                }
+            }
+            commentLines.push_back(comment.substr(0, splitPos));
+            comment = comment.substr(splitPos);
+        }
+        if (!comment.empty())
+        {
+            commentLines.push_back(comment);
+        }
+        for (const auto& commentLine : commentLines)
+        {
+            formatter.WriteLine("; " + commentLine);
+        }
         formatter.WriteLine();
     }
     formatter.WriteLine(name + " PROC");

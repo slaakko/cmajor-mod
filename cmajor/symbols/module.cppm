@@ -11,6 +11,7 @@ import cmajor.symbols.warning;
 import cmajor.symbols.function.index;
 import cmajor.symbols.type.index;
 import cmajor.symbols.sources;
+import cmajor.symbols.classes;
 import cmajor.ast.project;
 import soul.lexer.file.map;
 import soul.lexer.base;
@@ -269,6 +270,14 @@ public:
     void ReadFunctionTraceData(util::BinaryStreamReader& reader);
     void ImportTraceData(Module* module);
     void WriteTraceData(const std::string& traceDataFilePath);
+    ClassTypeFlagMap& GetClassTypeFlagMap() { return classTypeFlagMap; }
+    void ImportClassTypeFlagMap(ClassTypeFlagMap& that);
+    void ReadClassTypeFlagMap(SymbolReader& reader);
+    void WriteClassTypeFlagMap(SymbolWriter& writer);
+    void AddResourceScriptFilePath(const std::string& resourceScriptFilePath);
+    void ImportResourceScriptFilePaths(Module* module);
+    const std::vector<std::string>& ResourceScriptFilePaths() const { return resourceScriptFilePaths; }
+    const std::vector<std::string>& AllResourceScriptFilePaths() const { return allResourceScriptFilePaths; }
 private:
     uint8_t format;
     ModuleFlags flags;
@@ -287,6 +296,8 @@ private:
 #ifdef _WIN32
     ResourceTable resourceTable;
     ResourceTable globalResourceTable;
+    std::vector<std::string> resourceScriptFilePaths;
+    std::vector<std::string> allResourceScriptFilePaths;
 #endif
     std::vector<FileTable*> fileTables;
     std::unordered_map<std::string, int32_t> filePathFileIndexMap;
@@ -330,6 +341,7 @@ private:
     std::map<std::string, FunctionTraceInfo*> traceInfoMap;
     std::vector<FunctionTraceInfo*> allTraceInfoVec;
     std::set<std::u32string> traceDataImported;
+    ClassTypeFlagMap classTypeFlagMap;
     void CheckUpToDate();
 };
 

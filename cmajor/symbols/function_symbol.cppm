@@ -171,8 +171,8 @@ public:
     std::u32string FullNameWithSpecifiers() const override;
     std::u32string DocName() const override;
     std::u32string CodeName() const override { return groupName; }
-    std::string GetSpecifierStr() const override;
-    std::string Syntax() const override;
+    std::string GetSpecifierStr() override;
+    std::string Syntax() override;
     int32_t GetIndex() const { return index; }
     void SetIndex(int32_t index_) { index = index_; }
     virtual ConversionType GetConversionType() const { return ConversionType::implicit_; }

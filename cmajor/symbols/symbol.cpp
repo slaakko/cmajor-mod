@@ -289,12 +289,12 @@ void Symbol::ComputeMangledName()
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()))));
 }
 
-std::string Symbol::GetSpecifierStr() const
+std::string Symbol::GetSpecifierStr() 
 {
     return SymbolFlagStr(flags);
 }
 
-std::string Symbol::Syntax() const
+std::string Symbol::Syntax() 
 {
     std::string syntax;
     syntax.append(GetSpecifierStr());
@@ -1030,6 +1030,11 @@ ContainerScope* Symbol::ClassInterfaceEnumDelegateOrNsScope()
     {
         throw Exception("class, interface, enumeration, delegate, class delegate or namespace scope not found", GetFullSpan());
     }
+}
+
+ClassTypeFlagMap& Symbol::GetClassTypeFlagMap()
+{
+    return GetModule()->GetClassTypeFlagMap();
 }
 
 void Symbol::SetAttributes(std::unique_ptr<cmajor::ast::AttributesNode>&& attributes_)

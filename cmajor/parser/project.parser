@@ -55,6 +55,7 @@ parser ProjectParser
         ::= ReferenceDeclaration:referenceDeclaration{ return referenceDeclaration; }
         |   SourceFileDeclaration:sourceFileDeclaration{ return sourceFileDeclaration; }
         |   ResourceFileDeclaration:resourceFileDeclaration{ return resourceFileDeclaration; }
+        |   ResourceScriptFileDeclaration:resourceScriptFileDeclaration{ return resourceScriptFileDeclaration; }
         |   TextFileDeclaration:textFileDeclaration{ return textFileDeclaration; }
         |   ActionFileDeclaration:actionFileDeclaration{ return actionFileDeclaration; }
         |   TargetDeclaration:targetDeclaration{ return targetDeclaration; }
@@ -93,6 +94,18 @@ parser ProjectParser
         )
         {
             return new cmajor::ast::ResourceFileDeclaration(filePath);
+        }
+        ;
+
+    ResourceScriptFileDeclaration(var std::string filePath) : cmajor::ast::ProjectDeclaration*
+        ::=
+        (
+            RC 
+            FILEPATH{ filePath = ParseFilePath(lexer.FileName(), lexer.GetToken(pos)); }
+            SEMICOLON
+        )
+        {
+            return new cmajor::ast::ResourceScriptFileDeclaration(filePath);
         }
         ;
 

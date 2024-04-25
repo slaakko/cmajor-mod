@@ -195,7 +195,7 @@ void ConstantSymbol::ComputeMangledName()
 }
 
 
-std::string ConstantSymbol::Syntax() const
+std::string ConstantSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

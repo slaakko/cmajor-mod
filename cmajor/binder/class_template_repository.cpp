@@ -258,6 +258,11 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
             instantiatedMemberFunctions.insert(memberFunction);
             return memberFunction;
         }
+        if (classTemplateSpecialization->HasFullInstantiation())
+        {
+            instantiatedMemberFunctions.insert(memberFunction);
+            return memberFunction;
+        }
         Assert(classTemplateSpecialization->IsBound(), "class template specialization not bound"); 
         cmajor::ast::Node* memberFunctionNode = symbolTable.GetNodeNoThrow(memberFunction);
         if (!memberFunctionNode)

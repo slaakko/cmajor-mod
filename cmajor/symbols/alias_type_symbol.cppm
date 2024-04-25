@@ -25,7 +25,7 @@ public:
     void Accept(SymbolCollector* collector) override;
     void Dump(util::CodeFormatter& formatter) override;
     std::string TypeString() const override { return "aliasType"; }
-    std::string Syntax() const override;
+    std::string Syntax() override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     const TypeSymbol* GetType() const { return type; }
     TypeSymbol* GetType() { return type; }

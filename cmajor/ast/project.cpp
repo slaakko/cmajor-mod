@@ -302,6 +302,16 @@ void ActionFileDeclaration::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("action <" + filePath + ">;");
 }
 
+ResourceScriptFileDeclaration::ResourceScriptFileDeclaration(const std::string& filePath_) : 
+    ProjectDeclaration(ProjectDeclarationType::resourceScriptFileDeclaration), filePath(filePath_)
+{
+}
+
+void ResourceScriptFileDeclaration::Write(util::CodeFormatter& formatter)
+{
+    formatter.WriteLine("rc <" + filePath + ">;");
+}
+
 TargetDeclaration::TargetDeclaration(Target target_) : ProjectDeclaration(ProjectDeclarationType::targetDeclaration), target(target_)
 {
 }
@@ -539,6 +549,30 @@ void Project::ResolveDeclarations()
             if (std::find(resourceFilePaths.cbegin(), resourceFilePaths.cend(), resourceFilePath) == resourceFilePaths.cend())
             {
                 resourceFilePaths.push_back(resourceFilePath);
+            }
+            break;
+        }
+        case ProjectDeclarationType::resourceScriptFileDeclaration:
+        {
+            ResourceScriptFileDeclaration* resourceScriptFileDeclaration = static_cast<ResourceScriptFileDeclaration*>(declaration.get());
+            std::filesystem::path rsfp(resourceScriptFileDeclaration->FilePath());
+            relativeResourceScriptFilePaths.push_back(rsfp.generic_string());
+            if (rsfp.is_relative())
+            {
+                rsfp = sourceBasePath / rsfp;
+            }
+            if (rsfp.extension() != ".rc")
+            {
+                throw std::runtime_error("invalid resource script file extension '" + rsfp.generic_string() + "' (not .rc)");
+            }
+            if (!std::filesystem::exists(rsfp))
+            {
+                throw std::runtime_error("resource script file path '" + util::GetFullPath(rsfp.generic_string()) + "' not found");
+            }
+            std::string resourceScriptFilePath = util::GetFullPath(rsfp.generic_string());
+            if (std::find(resourceScriptFilePaths.cbegin(), resourceScriptFilePaths.cend(), resourceScriptFilePath) == resourceScriptFilePaths.cend())
+            {
+                resourceScriptFilePaths.push_back(resourceScriptFilePath);
             }
             break;
         }

@@ -1,0 +1,31 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser IdentifierParser
+{
+    lexer CmajorLexer;
+
+    Identifier : cm.ast.IdentifierNode*
+        ::= ID{ return new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()); }
+        ;
+
+    QualifiedId(var ustring value) : cm.ast.IdentifierNode*
+        ::= 
+        (
+            ID{ value = lexer.GetToken(pos).ToString(); }
+            (
+                DOT ID{ value.Append('.').Append(lexer.GetToken(pos).ToString()); }
+            )*
+        )
+        {
+            return new cm.ast.IdentifierNode(lexer.GetSpan(pos), value); 
+        }
+        ;
+}

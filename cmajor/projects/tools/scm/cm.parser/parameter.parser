@@ -1,0 +1,42 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser ParameterParser
+{
+    lexer CmajorLexer;
+
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ExpressionParser.Expression;
+
+    ParameterList(cm.parser.Context* context, cm.ast.Node* owner) 
+        ::= 
+        (
+            LPAREN
+            (
+                Parameter(context):parameter{ owner->AddParameter(parameter); } % COMMA
+            )?
+        )
+        ;
+
+    Parameter(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ParameterNode*
+        ::= 
+        (
+            TypeExpr(context):type{ span = lexer.GetSpan(pos); }
+            (
+                Identifier:id
+            )?
+        )
+        {
+            return new cm.ast.ParameterNode(span, type, id);
+        }
+        ;
+}

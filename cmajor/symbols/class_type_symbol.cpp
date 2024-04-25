@@ -15,6 +15,7 @@ import cmajor.ir.emitter;
 import cmajor.symbols.exception;
 import cmajor.symbols.function.symbol;
 import cmajor.symbols.symbol.writer;
+import cmajor.symbols.symbol.reader;
 import cmajor.symbols.symbol.table;
 import cmajor.symbols.modules;
 import cmajor.symbols.class_template_specializations;
@@ -37,6 +38,58 @@ import util;
 import std.core;
 
 namespace cmajor::symbols {
+
+ClassTypeFlagMap::ClassTypeFlagMap()
+{
+}
+
+void ClassTypeFlagMap::Import(ClassTypeFlagMap& that)
+{
+    for (const auto& clsFlags : that.flagMap)
+    {
+        SetFlag(clsFlags.first, clsFlags.second);
+    }
+}
+
+void ClassTypeFlagMap::Write(SymbolWriter& writer)
+{
+    int32_t n = flagMap.size();
+    writer.GetBinaryStreamWriter().Write(n);
+    for (const auto& clsFlags : flagMap)
+    {
+        writer.GetBinaryStreamWriter().Write(clsFlags.first);
+        writer.GetBinaryStreamWriter().Write(static_cast<uint16_t>(clsFlags.second));
+    }
+}
+
+void ClassTypeFlagMap::Read(SymbolReader& reader)
+{
+    int32_t n = reader.GetBinaryStreamReader().ReadInt();
+    for (int32_t i = 0; i < n; ++i)
+    {
+        std::u32string className = reader.GetBinaryStreamReader().ReadUtf32String();
+        uint16_t flags = reader.GetBinaryStreamReader().ReadUShort();
+        flagMap[className] = static_cast<ClassTypeSymbolFlags>(flags);
+    }
+}
+
+bool ClassTypeFlagMap::GetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag) 
+{
+    ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
+    return (flags & flag) != ClassTypeSymbolFlags::none;
+}
+
+void ClassTypeFlagMap::SetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag)
+{
+    ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
+    flags = flags | flag;
+}
+
+void ClassTypeFlagMap::ResetFlag(const std::u32string& classTypeMangledName, ClassTypeSymbolFlags flag)
+{
+    ClassTypeSymbolFlags& flags = flagMap[classTypeMangledName];
+    flags = flags & ~flag;
+}
 
 int32_t GetClassIdVmtIndexOffset()
 {
@@ -301,6 +354,45 @@ ClassTypeSymbol::ClassTypeSymbol(SymbolType symbolType_, const soul::ast::Span& 
     staticConstructor(nullptr), defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr), moveAssignment(nullptr),
     constructors(), destructor(nullptr), memberFunctions(), vmtPtrIndex(-1), prototype(nullptr), classGroup(nullptr)
 {
+}
+
+bool ClassTypeSymbol::GetFlag(ClassTypeSymbolFlags flag) 
+{
+    bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
+    if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
+    {
+        return GetClassTypeFlagMap().GetFlag(MangledName(), flag);
+    }
+    else
+    {
+        return (flags & flag) != ClassTypeSymbolFlags::none;
+    }
+}
+
+void ClassTypeSymbol::SetFlag(ClassTypeSymbolFlags flag)
+{
+    bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
+    if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
+    {
+        GetClassTypeFlagMap().SetFlag(MangledName(), flag);
+    }
+    else
+    {
+        flags = flags | flag;
+    }
+}
+
+void ClassTypeSymbol::ResetFlag(ClassTypeSymbolFlags flag)
+{
+    bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
+    if (specialization && flag == ClassTypeSymbolFlags::vmtEmitted)
+    {
+        GetClassTypeFlagMap().ResetFlag(MangledName(), flag);
+    }
+    else
+    {
+        flags = flags & ~flag;
+    }
 }
 
 void ClassTypeSymbol::Write(SymbolWriter& writer)
@@ -630,7 +722,7 @@ void ClassTypeSymbol::AddMember(Symbol* member)
     }
 }
 
-std::string ClassTypeSymbol::GetSpecifierStr() const
+std::string ClassTypeSymbol::GetSpecifierStr() 
 {
     std::string specifierStr;
     if (IsAbstract())
@@ -646,7 +738,7 @@ std::string ClassTypeSymbol::GetSpecifierStr() const
     return specifierStr;
 }
 
-bool ClassTypeSymbol::HasNontrivialDestructor() const
+bool ClassTypeSymbol::HasNontrivialDestructor() 
 {
     if (destructor || IsPolymorphic()) return true;
     if (baseClass && baseClass->Destructor()) return true;
@@ -1099,7 +1191,7 @@ void ClassTypeSymbol::SetSpecialMemberFunctions()
     }
 }
 
-bool ClassTypeSymbol::IsLiteralClassType() const
+bool ClassTypeSymbol::IsLiteralClassType() 
 {
     if (IsPolymorphic()) return false;
     if (HasNontrivialDestructor()) return false;
@@ -1615,19 +1707,12 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         }
     }
     void* vmtObject = emitter.GetOrInsertGlobal(VmtObjectName(emitter), localVmtObjectType);
-    if (!emitter.IsVmtObjectCreated(this) && create)
+    if (!emitter.IsVmtObjectCreated(this) && create && !VmtEmitted())
     {
+        SetVmtEmitted();
         emitter.SetVmtObjectCreated(this);
         bool specialization = GetSymbolType() == SymbolType::classTemplateSpecializationSymbol;
-        if (!specialization)
-        {
-            if (VmtEmitted())
-            {
-                return vmtObject;
-            }
-            SetVmtEmitted();
-        }
-        else
+        if (specialization)
         {
             std::string vmtObjectName = VmtObjectName(emitter);
             void* comdat = emitter.GetOrInsertAnyComdat(vmtObjectName, vmtObject);

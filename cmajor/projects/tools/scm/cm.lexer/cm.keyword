@@ -1,0 +1,23 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+import cm.token;
+
+keywords cm.keyword
+{ 
+    ("auto", AUTO), ("assert", ASSERT), ("elif", ELIF), ("endif", ENDIF), ("bool", BOOL), ("true", TRUE), ("false", FALSE),
+    ("sbyte", SBYTE), ("byte", BYTE), ("short", SHORT), ("ushort", USHORT), ("int", INT), ("uint", UINT), ("long", LONG), ("ulong", ULONG),
+    ("float", FLOAT), ("double", DOUBLE), ("char", CHAR), ("wchar", WCHAR), ("uchar", UCHAR), ("void", VOID), ("enum", ENUM), ("cast", CAST), ("interface", INTERFACE),
+    ("namespace", NAMESPACE), ("using", USING), ("static", STATIC), ("extern", EXTERN), ("as", AS), ("is", IS), ("explicit", EXPLICIT), ("delegate", DELEGATE), 
+    ("inline", INLINE), ("cdecl", CDECL), ("nothrow", NOTHROW),
+    ("public", PUBLIC), ("protected", PROTECTED), ("private", PRIVATE), ("internal", INTERNAL), ("virtual", VIRTUAL), 
+    ("abstract", ABSTRACT), ("override", OVERRIDE), ("suppress", SUPPRESS),
+    ("winapi", WINAPI), ("operator", OPERATOR), ("class", CLASS), ("return", RETURN), ("if", IF), ("else", ELSE), 
+    ("switch", SWITCH), ("case", CASE), ("default", DEFAULT), ("while", WHILE), ("do", DO), ("for", FOR), 
+    ("break", BREAK), ("continue", CONTINUE), ("goto", GOTO), ("typedef", TYPEDEF), ("typename", TYPENAME), ("typeid", TYPEID), ("const", CONST), 
+    ("constexpr", CONSTEXPR), ("null", NULL_LITERAL), ("this", THIS), ("base", BASE),
+    ("construct", CONSTRUCT), ("destroy", DESTROY), ("new", NEW), ("delete", DELETE), ("sizeof", SIZEOF), ("try", TRY), ("catch", CATCH), ("throw", THROW), 
+    ("concept", CONCEPT), ("where", WHERE), ("axiom", AXIOM), ("and", AND), ("or", OR), ("unit_test", UNIT_TEST)
+}

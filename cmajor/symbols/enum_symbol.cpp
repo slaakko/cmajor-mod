@@ -49,7 +49,7 @@ void EnumTypeSymbol::EmplaceType(TypeSymbol* typeSymbol, int index)
     underlyingType = typeSymbol;
 }
 
-std::string EnumTypeSymbol::Syntax() const
+std::string EnumTypeSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

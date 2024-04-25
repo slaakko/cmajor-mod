@@ -7,7 +7,7 @@ namespace System
 {
     public class ErrorId
     {
-        public inline ErrorId(int value_) : value(value_) {}
+        public ErrorId(int value_) : value(value_) {}
         public int value;
     }
 

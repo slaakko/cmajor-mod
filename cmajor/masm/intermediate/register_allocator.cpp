@@ -15,7 +15,7 @@ RegisterAllocator::~RegisterAllocator()
 {
 }
 
-SpillData::SpillData() : registerGroupToSpill(nullptr)
+SpillData::SpillData() : registerGroupToSpill(nullptr), instToSpill(nullptr)
 {
 }
 

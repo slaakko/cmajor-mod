@@ -1,0 +1,59 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser AttributeParser
+{
+    lexer CmajorLexer;
+
+    Attributes(cm.parser.Context* context, var UniquePtr<cm.ast.AttributesNode> attributesNode) : cm.ast.AttributesNode*
+        ::= 
+        (
+            LBRACKET
+            {
+                attributesNode.Reset(new cm.ast.AttributesNode(lexer.GetSpan(pos)));
+            }
+            (
+                Attribute(context, attributesNode.Get()):first
+                (
+                    COMMA
+                    Attribute(context, attributesNode.Get()):next
+                )*
+            )?
+            RBRACKET
+        )
+        {
+            return attributesNode.Release();
+        }
+        ;
+
+    Attribute(cm.parser.Context* context, cm.ast.AttributesNode* attributes, var ustring name, var ustring value, var System.Lex.Span span) : bool
+        ::= 
+        (
+            empty{ value = u"true"; }
+            ID{ span = lexer.GetSpan(pos); name = lexer.GetToken(pos).ToString(); }
+            (
+                ASSIGN STRING_LITERAL
+                {
+                    cm.ast.StringLiteralPrefix prefix = cm.ast.StringLiteralPrefix.none;
+                    auto result = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                    if (result.Error())
+                    {
+                        return ErrorId(result.GetErrorId());
+                    }
+                    value = result.Value();
+                }
+            )?
+        )
+        {
+            attributes->AddAttribute(span, name, value);
+            return true;
+        }
+        ;
+}

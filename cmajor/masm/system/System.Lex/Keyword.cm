@@ -13,26 +13,27 @@ namespace System.Lex
         public Keyword() : str(null), tokenID(INVALID_TOKEN)
         {
         }
-        public Keyword(const uchar* str_, int tokenID_) : str(str_), tokenID(tokenID_)
+        public Keyword(const uchar* str_, long tokenID_) : str(str_), tokenID(tokenID_)
         {
         }
         public const uchar* str;
-        public int tokenID;
+        public long tokenID;
     }
 
     public class KeywordMap
     {
-        public KeywordMap(const Keyword* keywords_) : keywords(keywords_)
+        public KeywordMap()
         {
-            const Keyword* kw = keywords;
-            while (kw->str != null)
+        }
+        public void SetKeywords(const List<Keyword>& keywords)
+        {
+            for (const auto& kw : keywords)
             {
-                Lexeme lexeme(kw->str, StrEnd(kw->str));
-                keywordMap[lexeme] = kw->tokenID;
-                ++kw;
+                Lexeme lexeme(kw.str, StrEnd(kw.str));
+                keywordMap[lexeme] = kw.tokenID;
             }
         }
-        public int GetKeywordToken(const Lexeme& lexeme) const
+        public long GetKeywordToken(const Lexeme& lexeme) const
         {
             auto it = keywordMap.CFind(lexeme);
             if (it != keywordMap.CEnd())
@@ -44,8 +45,7 @@ namespace System.Lex
                 return INVALID_TOKEN;
             }
         }
-        private const Keyword* keywords;
-        private Map<Lexeme, int> keywordMap;
+        private Map<Lexeme, long> keywordMap;
     }
 
     public inline const uchar* StrEnd(const uchar* s)

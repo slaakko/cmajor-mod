@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Security;
 
 namespace System.Lex
 {
@@ -14,22 +15,41 @@ namespace System.Lex
         none = 0, farthestError = 1 << 0
     }
 
+    public Result<int*> GetClassMap(const string& classMapName)
+    {
+        int errorId = 0;
+        int* classMap = RtmGetClassMap(classMapName.Chars(), errorId);
+        if (errorId > 0)
+        {
+            return Result<int*>(ErrorId(errorId));
+        }
+        return Result<int*>(classMap);
+    }
+
     public class Lexer : IOBase
     {
-        public Lexer(const ustring& content_, const string& fileName_) :
-            content(content_), fileName(fileName_), line(1), keywordMap(null), start(content.Chars()), end(content.Chars() + content.Length()), pos(start), current(tokens.End()), log(null), countLines(true), 
-            separatorChar('\0'), commentTokenId(-1), farthestPos(GetPos())
-        {
-            ComputeLineStarts();
-        }
-        public Lexer(const uchar* start_, const uchar* end_, const string& fileName_) :
+        public Lexer(const uchar* start_, const uchar* end_, const string& fileName_, const string& classMapName_) :
             content(), fileName(fileName_), line(1), keywordMap(null), start(start_), end(end_), pos(start), current(tokens.End()), log(null), countLines(true), separatorChar('\0'),
-            commentTokenId(-1), farthestPos(GetPos())
+            commentTokenId(-1), farthestPos(GetPos()), classMapName(classMapName_), classMap(null)
         {
             ComputeLineStarts();
         }
         suppress Lexer(const Lexer&);
         suppress void operator=(const Lexer&);
+        public string FullName() const
+        {
+            return typename(*this);
+        }
+        public string CommonName() const
+        {
+            string fullName = FullName();
+            List<string> components = fullName.Split('.');
+            return components.Back();
+        }
+        public inline const string& ClassMapName() 
+        {
+            return classMapName;
+        }
         public void SetBlockCommentStates(const Set<int>& blockCommentStates_) const
         {
             blockCommentStates = blockCommentStates_;
@@ -46,7 +66,7 @@ namespace System.Lex
         {
             return -1;
         }
-        public inline int operator*() const
+        public inline long operator*() const
         {
             return current->id;
         }
@@ -66,15 +86,10 @@ namespace System.Lex
         {
             return fileName;
         }
-        public Result<Span> GetSpan(long pos) const
+        public Span GetSpan(long pos) const
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<Span>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
-            return Result<Span>(Span(cast<int>(token.match.begin - start), cast<int>(token.match.Length())));
+            Token token = GetToken(pos);
+            return Span(cast<int>(token.match.begin - start), cast<int>(token.match.Length()));
         }
         public void SetLine(int line_)
         {
@@ -111,6 +126,10 @@ namespace System.Lex
         }
         public Result<bool> operator++()
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             if (current != tokens.End())
             {
                 ++current;
@@ -150,6 +169,10 @@ namespace System.Lex
         }
         public Result<bool> NextToken()
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetLatestErrorId()));
+            }
             int state = 0;
             while (true)
             {
@@ -225,7 +248,6 @@ namespace System.Lex
                     ++line;
                 }
                 ++pos;
-                return Result<bool>(true);
             }
             token.id = INVALID_TOKEN;
             state = NextState(state, '\0');
@@ -248,7 +270,7 @@ namespace System.Lex
             SetPos(p);
             return Result<bool>(true);
         }
-        public int GetKeywordToken(const Lexeme& lexeme) const
+        public long GetKeywordToken(const Lexeme& lexeme) const
         {
             if ((keywordMap != null))
             {
@@ -259,68 +281,35 @@ namespace System.Lex
                 return INVALID_TOKEN;
             }
         }
-        public Result<Token> GetToken(long pos) 
+        public Token GetToken(long pos) 
         {
             int tokenIndex = cast<int>(pos);
-            if (tokenIndex >= 0 && tokenIndex < tokens.Count())
-            {
-                return Result<Token>(tokens[tokenIndex]);
-            }
-            else
-            {
-                int errorId = AllocateError("invalid token index " + ToString(tokenIndex));
-                SetLatestErrorId(errorId);
-                return Result<Token>(ErrorId(errorId));
-            }
+            #assert(tokenIndex >= 0 && tokenIndex < tokens.Count());
+            return tokens[tokenIndex];
         }
-        public Result<ustring> GetMatch(long pos) 
+        public ustring GetMatch(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<ustring>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
-            return Result<ustring>(token.match.ToString());
+            Token token = GetToken(pos);
+            return token.match.ToString();
         }
-        public Result<char> GetChar(long pos) 
+        public char GetChar(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<char>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
-            return Result<char>(cast<char>(*token.match.begin));
+            Token token = GetToken(pos);
+            return cast<char>(*token.match.begin);
         }
-        public Result<wchar> GetWChar(long pos) 
+        public wchar GetWChar(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<wchar>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
-            return Result<wchar>(cast<wchar>(*token.match.begin));
+            Token token = GetToken(pos);
+            return cast<wchar>(*token.match.begin);
         }
-        public Result<uchar> GetUChar(long pos) 
+        public uchar GetUChar(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<uchar>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
-            return Result<uchar>(*token.match.begin);
+            Token token = GetToken(pos);
+            return *token.match.begin;
         }
         public Result<int> GetInt(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<int>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
+            Token token = GetToken(pos);
             auto utf8 = ToUtf8(token.match.ToString());
             if (utf8.Error())
             {
@@ -331,12 +320,7 @@ namespace System.Lex
         }
         public Result<double> GetDouble(long pos) 
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                return Result<double>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
+            Token token = GetToken(pos);
             auto utf8 = ToUtf8(token.match.ToString());
             if (utf8.Error())
             {
@@ -362,15 +346,9 @@ namespace System.Lex
             tokens.Add(Token(END_TOKEN, Lexeme(end, end), 1));
             current = tokens.Begin();
         }
-        public Result<ustring> ErrorLines(long pos)
+        public ustring ErrorLines(long pos)
         {
-            auto tokenResult = GetToken(pos);
-            if (tokenResult.Error())
-            {
-                SetLatestErrorId(tokenResult.GetErrorId());
-                return Result<ustring>(ErrorId(tokenResult.GetErrorId()));
-            }
-            Token token = tokenResult.Value();
+            Token token = GetToken(pos);
             ustring lines;
             const uchar* lineStart = LineStart(start, token.match.begin);
             const uchar* lineEnd = LineEnd(end, token.match.end);
@@ -382,24 +360,21 @@ namespace System.Lex
             lines.Append('^', Max(cast<long>(1), token.match.end - token.match.begin));
             lines.Append(' ', lineEnd - token.match.end);
             lines.Append('\n', 1);
-            return Result<ustring>(lines);
+            return lines;
         }
-        public Result<string> GetFarthestError()
+        public ErrorId GetFarthestError()
         {
-            auto errorLines = ErrorLines(farthestPos);
-            if (errorLines.Error())
-            {
-                SetLatestErrorId(errorLines.GetErrorId());
-                return Result<string>(ErrorId(errorLines.GetErrorId()));
-            }
-            auto utf8 = ToUtf8(errorLines.Value());
+            ustring errorLines = ErrorLines(farthestPos);
+            auto utf8 = ToUtf8(errorLines);
             if (utf8.Error())
             {
                 SetLatestErrorId(utf8.GetErrorId());
-                return Result<string>(ErrorId(utf8.GetErrorId()));
+                return ErrorId(utf8.GetErrorId());
             }
             string parserStateStr = GetParserStateStr();
-            return Result<string>("parsing error at '" + fileName + ":" + ToString(token.line) + "':\n" + utf8.Value() + parserStateStr);
+            string errorMessage = "parsing error at '" + fileName + ":" + ToString(token.line) + "':\n" + utf8.Value() + parserStateStr;
+            int errorId = AllocateError(errorMessage);
+            return ErrorId(errorId);
         }
         public ustring RestOfLine(int maxLineLength)
         {
@@ -501,38 +476,39 @@ namespace System.Lex
         {
             flags = cast<LexerFlags>(flags & ~flag);
         }
-        public const List<int>& RuleContext() const
+        public const List<long>& RuleContext() const
         {
             return ruleContext;
         }
-        public const List<int>& FarthestRuleContext() const
+        public const List<long>& FarthestRuleContext() const
         {
             return farthestRuleContext;
         }
-        public void SetRuleNameListPtr(List<string>* ruleNameListPtr_)
+        public void SetRuleNameMapPtr(Map<long, string>* ruleNameMapPtr_)
         {
-            ruleNameListPtr = ruleNameListPtr_;
+            ruleNameMapPtr = ruleNameMapPtr_;
         }
         public string GetParserStateStr() const
         {
             string parserStateStr;
             long n = farthestRuleContext.Count();
-            if (ruleNameListPtr != null && n > 0)
+            if (ruleNameMapPtr != null && n > 0)
             {
                 parserStateStr.Append("\nParser state:\n");
                 for (long i = 0; i < n; ++i)
                 {
-                    int ruleId = farthestRuleContext[i];
-                    if (ruleId >= 0 && ruleId < ruleNameListPtr->Count())
+                    long ruleId = farthestRuleContext[i];
+                    auto it = ruleNameMapPtr->CFind(ruleId);
+                    if (it != ruleNameMapPtr->CEnd())
                     {
-                        string ruleName = (*ruleNameListPtr)[ruleId];
+                        string ruleName = it->second;
                         parserStateStr.Append(ruleName).Append("\n");
                     }
                 }
             }
             return parserStateStr;
         }
-        public void PushRule(int ruleId)
+        public void PushRule(long ruleId)
         {
             ruleContext.Add(ruleId);
         }
@@ -548,6 +524,22 @@ namespace System.Lex
                 lineStartIndeces.Add(cast<int>(lineStarts[i] - start));
             }
             return lineStartIndeces;
+        }
+        public void SetClassMap(int* classMap_)
+        {
+            classMap = classMap_;
+        }
+        public int GetClass(uchar c) const
+        {
+            if (classMap != null)
+            {
+                int i = cast<int>(c);
+                if (i < 1114112)
+                {
+                    return classMap[i];
+                }
+            }
+            return -1;
         }
         private void ComputeLineStarts()
         {
@@ -582,10 +574,12 @@ namespace System.Lex
         private int commentTokenId;
         private LexerFlags flags;
         private long farthestPos;
-        private List<int> ruleContext;
-        private List<int> farthestRuleContext;
-        private List<string>* ruleNameListPtr;
+        private List<long> ruleContext;
+        private List<long> farthestRuleContext;
+        private Map<long, string>* ruleNameMapPtr;
         private List<const uchar*> lineStarts;
+        private string classMapName;
+        private int* classMap;
     }
 
     public const uchar* LineStart(const uchar* start, const uchar* p)
@@ -630,12 +624,8 @@ namespace System.Lex
     public Result<bool> WriteSuccessToLog(Lexer& lexer, long pos, const ustring& ruleName)
     {
         lexer.Log()->DecIndent();
-        auto match = lexer.GetMatch(pos);
-        if (match.Error())
-        {
-            return Result<bool>(ErrorId(match.GetErrorId()));
-        }
-        auto result0 = lexer.Log()->WriteSuccess(match.Value());
+        ustring match = lexer.GetMatch(pos);
+        auto result0 = lexer.Log()->WriteSuccess(match);
         if (result0.Error())
         {
             return Result<bool>(ErrorId(result0.GetErrorId()));
@@ -656,9 +646,9 @@ namespace System.Lex
         return lexer.Log()->WriteEndRule(ruleName);
     }
 
-    public class RuleGuard
+    public class RuleGuard<LexerT>
     {
-        public RuleGuard(Lexer& lexer_, int ruleId_) : lexer(lexer_)
+        public RuleGuard(LexerT& lexer_, long ruleId_) : lexer(lexer_)
         {
             lexer.PushRule(ruleId_);
         }
@@ -666,7 +656,7 @@ namespace System.Lex
         {
             lexer.PopRule();
         }
-        private Lexer& lexer;
+        private LexerT& lexer;
     }
 
 } // namespace System.Lex

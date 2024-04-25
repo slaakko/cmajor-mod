@@ -13,10 +13,10 @@
         <token first="{SEMICOLON}" name="SEMICOLON"/>
        </action>
       </sequence>
-      <kleene first="{#, ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
-       <group first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
-        <action first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
-         <nonterminal first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" ruleName="Declaration"/>
+      <kleene first="{#, ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+       <group first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+        <action first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+         <nonterminal first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" ruleName="Declaration"/>
         </action>
        </group>
       </kleene>
@@ -45,21 +45,26 @@
     </group>
    </action>
   </rule>
-  <rule first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" name="Declaration">
-   <choice first="{ACTION, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
-    <choice first="{ACTION, REFERENCE, RESOURCE, SOURCE, TEXT}">
-     <choice first="{REFERENCE, RESOURCE, SOURCE, TEXT}">
-      <choice first="{REFERENCE, RESOURCE, SOURCE}">
-       <choice first="{REFERENCE, SOURCE}">
-        <action first="{REFERENCE}">
-         <nonterminal first="{REFERENCE}" ruleName="ReferenceDeclaration"/>
-        </action>
-        <action first="{SOURCE}">
-         <nonterminal first="{SOURCE}" ruleName="SourceFileDeclaration"/>
+  <rule first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}" name="Declaration">
+   <choice first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TARGET, TEXT}">
+    <choice first="{ACTION, RC, REFERENCE, RESOURCE, SOURCE, TEXT}">
+     <choice first="{RC, REFERENCE, RESOURCE, SOURCE, TEXT}">
+      <choice first="{RC, REFERENCE, RESOURCE, SOURCE}">
+       <choice first="{REFERENCE, RESOURCE, SOURCE}">
+        <choice first="{REFERENCE, SOURCE}">
+         <action first="{REFERENCE}">
+          <nonterminal first="{REFERENCE}" ruleName="ReferenceDeclaration"/>
+         </action>
+         <action first="{SOURCE}">
+          <nonterminal first="{SOURCE}" ruleName="SourceFileDeclaration"/>
+         </action>
+        </choice>
+        <action first="{RESOURCE}">
+         <nonterminal first="{RESOURCE}" ruleName="ResourceFileDeclaration"/>
         </action>
        </choice>
-       <action first="{RESOURCE}">
-        <nonterminal first="{RESOURCE}" ruleName="ResourceFileDeclaration"/>
+       <action first="{RC}">
+        <nonterminal first="{RC}" ruleName="ResourceScriptFileDeclaration"/>
        </action>
       </choice>
       <action first="{TEXT}">
@@ -111,6 +116,21 @@
      <sequence first="{RESOURCE}">
       <sequence first="{RESOURCE}">
        <token first="{RESOURCE}" name="RESOURCE"/>
+       <action first="{FILEPATH}">
+        <token first="{FILEPATH}" name="FILEPATH"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{RC}" name="ResourceScriptFileDeclaration">
+   <action first="{RC}">
+    <group first="{RC}">
+     <sequence first="{RC}">
+      <sequence first="{RC}">
+       <token first="{RC}" name="RC"/>
        <action first="{FILEPATH}">
         <token first="{FILEPATH}" name="FILEPATH"/>
        </action>

@@ -19,7 +19,7 @@ void MakeResourceFile(const std::string& resourceFilePath, const std::string& cl
 }
 
 std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Module* module, const std::vector<std::string> asmFilePaths, 
-    const std::vector<std::string> cppFilePaths, const std::vector<std::string>& resourceFiles, 
+    const std::vector<std::string> cppFilePaths, const std::vector<std::string>& resourceScriptFiles,
     const std::string& classIndexFilePath, const std::string& traceDataFilePath, bool verbose)
 {
     std::string vsProjectFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".vcxproj");
@@ -362,7 +362,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         soul::xml::Element* releaseDependencies = soul::xml::MakeElement("AdditionalDependencies");
         soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(
             cmrtmasm_release + ";" + xpath_release + ";" + xml_parser_release + ";" + xml_processor_release + ";" + dom_parser_release + ";" + dom_release + ";" + 
-            soul_lexer_release + ";" + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
+            soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
     }
@@ -397,10 +397,10 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
             rcCompile->SetAttribute("Include", "runtime_info.rc");
             rcItemGroup->AppendChild(rcCompile);
         }
-        for (const auto& resourceFile : resourceFiles)
+        for (const auto& resourceScriptFile : resourceScriptFiles)
         {
             soul::xml::Element* rcCompile = soul::xml::MakeElement("ResourceCompile");
-            rcCompile->SetAttribute("Include", resourceFile);
+            rcCompile->SetAttribute("Include", resourceScriptFile);
             rcItemGroup->AppendChild(rcCompile);
         }
         rootElement->AppendChild(rcItemGroup);

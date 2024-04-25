@@ -100,7 +100,7 @@ void AttributesNode::Accept(Visitor& visitor)
 void AttributesNode::Write(AstWriter& writer)
 {
     Node::Write(writer);
-    writer.GetBinaryStreamWriter().WriteULEB128UInt(static_cast<uint32_t>(attributes.size()));
+    writer.GetBinaryStreamWriter().Write(static_cast<int32_t>(attributes.size()));
     for (const std::unique_ptr<AttributeNode>& attribute : attributes)
     {
         writer.Write(attribute.get());
@@ -110,8 +110,8 @@ void AttributesNode::Write(AstWriter& writer)
 void AttributesNode::Read(AstReader& reader)
 {
     Node::Read(reader);
-    uint32_t n = reader.GetBinaryStreamReader().ReadULEB128UInt();
-    for (uint32_t i = 0u; i < n; ++i)
+    int32_t n = reader.GetBinaryStreamReader().ReadInt();
+    for (int32_t i = 0; i < n; ++i)
     {
         AttributeNode* attribute = reader.ReadAttributeNode();
         AddAttribute(attribute);

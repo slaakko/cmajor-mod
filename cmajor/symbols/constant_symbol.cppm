@@ -25,7 +25,7 @@ public:
     void Accept(SymbolCollector* collector) override;
     void Dump(util::CodeFormatter& formatter) override;
     std::string TypeString() const override { return "constant"; }
-    std::string Syntax() const override;
+    std::string Syntax() override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     void ComputeMangledName() override;
     bool Evaluating() const { return evaluating; }

@@ -14,6 +14,10 @@ namespace cmajor::masm::intermediate {
 
 LiveRange GetLiveRange(Instruction* inst)
 {
+    if (inst->RegValueIndex() == 52)
+    {
+        int x = 0;
+    }
     if (inst->RequiresLocalRegister())
     {
         int lastUserIndex = inst->Index();
@@ -92,6 +96,10 @@ void LinearScanRegisterAllocator::RemoveFromActive(const LiveRange& range)
     active.erase(range);
     for (Instruction* inst : GetInstructions(range))
     {
+        if (inst->RegValueIndex() == 52)
+        {
+            int x = 0;
+        }
         locations[inst] = locations[inst] & ~Locations::reg;
     }
 }
@@ -198,8 +206,14 @@ void LinearScanRegisterAllocator::Spill(Instruction* inst)
         SpillData spillData;
         spillData.registerGroupToSpill = registerGroups[instToSpill];
         spillData.spillToFrameLocation = frameLocations[instToSpill];
+        spillData.instToSpill = instToSpill;
         spillDataVec.push_back(spillData);
     }
+}
+
+void LinearScanRegisterAllocator::RemoveFromRegisterGroups(Instruction* inst)
+{
+    registerGroups.erase(inst);
 }
 
 LiveRange LinearScanRegisterAllocator::GetLiveRange(Instruction* inst) const
@@ -301,6 +315,10 @@ int LinearScanRegisterAllocator::LastActiveLocalRegGroup() const
 
 RegisterAllocationAction LinearScanRegisterAllocator::Run(Instruction* inst)
 {
+    if (inst->RegValueIndex() == 52)
+    {
+        int x = 0;
+    }
     LiveRange liveRange = GetLiveRange(inst);
     ExpireOldRanges(liveRange);
     if (inst->RequiresLocalRegister())

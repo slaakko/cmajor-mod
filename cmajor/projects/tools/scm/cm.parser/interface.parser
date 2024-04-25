@@ -1,0 +1,67 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser InterfaceParser
+{
+    lexer CmajorLexer;
+
+    using AttributeParser.Attributes;
+    using SpecifierParser.Specifiers;
+    using IdentifierParser.Identifier;
+    using TypeExprParser.TypeExpr;
+    using ParameterParser.ParameterList;
+
+    Interface(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.InterfaceNode> interfaceNode) : cm.ast.InterfaceNode*
+        ::= 
+        (
+            Attributes(context):attrs?
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            INTERFACE 
+            Identifier:id
+            {
+                interfaceNode.Reset(new cm.ast.InterfaceNode(span, specifiers, id, attrs));
+            }
+            LBRACE
+            InterfaceContent(context, interfaceNode.Get()):interfaceContent
+            RBRACE
+        )
+        {
+            return interfaceNode.Release();
+        }
+        ;
+
+    InterfaceContent(cm.parser.Context* context, cm.ast.InterfaceNode* interfaceNode)
+        ::=
+        (
+            InterfaceMemberFunction(context):interfaceMemberFunction{ interfaceNode->AddMember(interfaceMemberFunction); }
+        )*
+        ;
+
+    InterfaceMemberFunction(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.MemberFunctionNode> memberFunctionNode) : cm.ast.MemberFunctionNode*
+        ::=
+        (
+            Attributes(context):attrs?
+            TypeExpr(context):returnType{ span = lexer.GetSpan(pos); }
+            InterfaceFunctionGroupId:groupId
+            {
+                memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, cm.ast.Specifiers(), returnType, groupId, attrs));
+            }
+            ParameterList(context, memberFunctionNode.Get()):paramList 
+            SEMICOLON
+        )
+        {
+            return memberFunctionNode.Release();
+        }
+        ;
+
+    InterfaceFunctionGroupId : ustring
+        ::= ID{ return lexer.GetToken(pos).ToString(); }
+        ;
+}

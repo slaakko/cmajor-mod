@@ -170,6 +170,8 @@
     <ClCompile Include="init_done.cppm" />
     <ClCompile Include="io.cpp" />
     <ClCompile Include="io.cppm" />
+    <ClCompile Include="lex.cpp" />
+    <ClCompile Include="lex.cppm" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="math.cppm" />
     <ClCompile Include="memory.cpp" />

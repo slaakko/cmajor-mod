@@ -806,10 +806,6 @@ bool BoundReferenceToPointerExpression::ContainsExceptionCapture() const
 BoundFunctionCall::BoundFunctionCall(const soul::ast::Span& span_, cmajor::symbols::FunctionSymbol* functionSymbol_) :
     BoundExpression(span_, BoundNodeType::boundFunctionCall, functionSymbol_->ReturnType()), functionSymbol(functionSymbol_)
 {
-    if (functionSymbol->MangledName() == U"destructor_StreamWriter_02990247D3304A4400334719A9E9EE4B50B98681")
-    {
-        int x = 0;
-    }
 }
 
 BoundExpression* BoundFunctionCall::Clone()

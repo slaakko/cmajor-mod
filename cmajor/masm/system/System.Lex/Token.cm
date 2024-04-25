@@ -8,22 +8,26 @@ using System.Collections;
 
 namespace System.Lex
 {
-    public const int CONTINUE_TOKEN = -2;
-    public const int INVALID_TOKEN = -1;
-    public const int END_TOKEN = 0;
+    public const long CONTINUE_TOKEN = -2;
+    public const long INVALID_TOKEN = -1;
+    public const long END_TOKEN = 0;
 
     public class Token
     {
         public Token() : id(INVALID_TOKEN), match(), line(1)
         {
         }
-        public Token(int id_) : id(id_), match(), line(1)
+        public Token(long id_) : id(id_), match(), line(1)
         {
         }
-        public Token(int id_, const Lexeme& match_, int line_) : id(id_), match(match_), line(line_)
+        public Token(long id_, const Lexeme& match_, int line_) : id(id_), match(match_), line(line_)
         {
         }
-        public int id;
+        public inline ustring ToString() const
+        {
+            return match.ToString();
+        }
+        public long id;
         public Lexeme match;
         public int line;
     }

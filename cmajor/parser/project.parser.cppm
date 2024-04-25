@@ -24,6 +24,7 @@ struct ProjectParser
     static soul::parser::Match ReferenceDeclaration(LexerT& lexer);
     static soul::parser::Match SourceFileDeclaration(LexerT& lexer);
     static soul::parser::Match ResourceFileDeclaration(LexerT& lexer);
+    static soul::parser::Match ResourceScriptFileDeclaration(LexerT& lexer);
     static soul::parser::Match TextFileDeclaration(LexerT& lexer);
     static soul::parser::Match ActionFileDeclaration(LexerT& lexer);
     static soul::parser::Match TargetDeclaration(LexerT& lexer);

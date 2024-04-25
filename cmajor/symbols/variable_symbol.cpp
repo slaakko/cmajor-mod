@@ -220,7 +220,7 @@ void MemberVariableSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("layout index: " + util::ToString(layoutIndex));
 }
 
-std::string MemberVariableSymbol::Syntax() const
+std::string MemberVariableSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())
@@ -535,7 +535,7 @@ void GlobalVariableSymbol::Dump(util::CodeFormatter& formatter)
     formatter.WriteLine("type: " + util::ToUtf8(GetType()->FullName()));
 }
 
-std::string GlobalVariableSymbol::Syntax() const
+std::string GlobalVariableSymbol::Syntax() 
 {
     std::string syntax = GetSpecifierStr();
     if (!syntax.empty())

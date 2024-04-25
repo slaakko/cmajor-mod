@@ -94,9 +94,12 @@ public:
     void AddStatement(std::unique_ptr<BoundStatement>&& statement);
     const std::vector<std::unique_ptr<BoundStatement>>& Statements() const { return statements; }
     const soul::ast::Span& EndSpan() const { return endSpan; }
+    bool IsDestroyed() const { return destroyed; }
+    void SetDestroyed() { destroyed = true; }
 private:
     std::vector<std::unique_ptr<BoundStatement>> statements;
     soul::ast::Span endSpan;
+    bool destroyed;
 };
 
 class BoundReturnStatement : public BoundStatement

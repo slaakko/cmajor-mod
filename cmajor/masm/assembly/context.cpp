@@ -47,7 +47,11 @@ Register* Context::GetGlobalReg(int64_t size, RegisterGroupKind regGroupKind)
 Register* Context::GetGlobalReg(int64_t size, RegisterGroupKind regGroupKind, bool used)
 {
     CheckSize(size, "cmajor.masm.assembly.GetGlobalReg: invalid size: " + std::to_string(size));
-    RegisterGroup* regGroup = registerPool->GetGlobalRegisterGroup(regGroupKind, used);
+    RegisterGroup* regGroup = registerPool->GetRegisterGroup(regGroupKind, used);
+    if (regGroup->IsLocal())
+    {
+        throw std::runtime_error("global reg group kind expected");
+    }
     return regGroup->GetReg(static_cast<int>(size));
 }
 

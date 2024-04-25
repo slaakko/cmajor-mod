@@ -72,7 +72,7 @@ void RegisterGroup::SetReg(int64_t size, const Register& reg)
 
 bool RegisterGroup::IsLocal() const
 {
-    if (kind >= RegisterGroupKind::r8 && kind <= RegisterGroupKind::r15)
+    if (kind == RegisterGroupKind::rsi || kind == RegisterGroupKind::rdi || kind >= RegisterGroupKind::r12 && kind <= RegisterGroupKind::r15)
     {
         return true;
     }
@@ -324,12 +324,10 @@ Registers::Registers()
     regGroups.push_back(std::unique_ptr<RegisterGroup>(xmm15));
 }
 
-RegisterPool::RegisterPool(Registers& registers) : localRegisterCount(0), localXMMRegisterCount(0)
+RegisterPool::RegisterPool(Registers& registers_) : registers(registers_), localRegisterCount(0), localXMMRegisterCount(0)
 {
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::rsi));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::rdi));
-    AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r10));
-    AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r11));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r12));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r13));
     AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind::r14));
@@ -352,6 +350,8 @@ RegisterPool::RegisterPool(Registers& registers) : localRegisterCount(0), localX
     globalRegisterMap[RegisterGroupKind::rdx] = registers.GetRegisterGroup(RegisterGroupKind::rdx);
     globalRegisterMap[RegisterGroupKind::r8] = registers.GetRegisterGroup(RegisterGroupKind::r8);
     globalRegisterMap[RegisterGroupKind::r9] = registers.GetRegisterGroup(RegisterGroupKind::r9);
+    globalRegisterMap[RegisterGroupKind::r10] = registers.GetRegisterGroup(RegisterGroupKind::r10);
+    globalRegisterMap[RegisterGroupKind::r11] = registers.GetRegisterGroup(RegisterGroupKind::r11);
     globalRegisterMap[RegisterGroupKind::rbp] = registers.GetRegisterGroup(RegisterGroupKind::rbp);
     globalRegisterMap[RegisterGroupKind::rsp] = registers.GetRegisterGroup(RegisterGroupKind::rsp);
     globalRegisterMap[RegisterGroupKind::xmm0] = registers.GetRegisterGroup(RegisterGroupKind::xmm0);
@@ -396,22 +396,14 @@ RegisterGroup* RegisterPool::GetLocalXMMRegisterGroup()
     return regGroup;
 }
 
-RegisterGroup* RegisterPool::GetGlobalRegisterGroup(RegisterGroupKind regGroupKind, bool used)
+RegisterGroup* RegisterPool::GetRegisterGroup(RegisterGroupKind regGroupKind, bool used)
 {
-    auto it = globalRegisterMap.find(regGroupKind);
-    if (it != globalRegisterMap.cend())
+    RegisterGroup* regGroup = registers.GetRegisterGroup(regGroupKind);
+    if (used && !regGroup->IsLocal() && regGroup->IsNonvolatile())
     {
-        RegisterGroup* regGroup = it->second;
-        if (used && regGroup->IsNonvolatile())
-        {
-            usedNonvolatileRegs.insert(regGroup);
-        }
-        return regGroup;
+        usedNonvolatileRegs.insert(regGroup);
     }
-    else
-    {
-        throw std::runtime_error("invalid global register");
-    }
+    return regGroup;
 }
 
 bool RegisterGroupLess::operator()(RegisterGroup* left, RegisterGroup* right) const

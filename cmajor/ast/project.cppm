@@ -53,7 +53,7 @@ const std::string& OutDir();
 
 enum class ProjectDeclarationType : uint8_t
 {
-    referenceDeclaration, sourceFileDeclaration, resourceFileDeclaration, textFileDeclaration, actionFileDeclaration, targetDeclaration
+    referenceDeclaration, sourceFileDeclaration, resourceFileDeclaration, resourceScriptFileDeclaration, textFileDeclaration, actionFileDeclaration, targetDeclaration
 };
 
 class ProjectDeclaration
@@ -119,6 +119,16 @@ private:
     std::string filePath;
 };
 
+class ResourceScriptFileDeclaration : public ProjectDeclaration
+{
+public:
+    ResourceScriptFileDeclaration(const std::string& filePath_);
+    const std::string& FilePath() const { return filePath; }
+    void Write(util::CodeFormatter& formatter) override;
+private:
+    std::string filePath;
+};
+
 enum class Target
 {
     program, winguiapp, winapp, library, winlib, unitTest
@@ -161,6 +171,8 @@ public:
     const std::vector<std::string>& RelativeSourceFilePaths() const { return relativeSourceFilePaths; }
     const std::vector<std::string>& ResourceFilePaths() const { return resourceFilePaths; }
     const std::vector<std::string>& RelativeResourceFilePaths() const { return relativeResourceFilePaths; }
+    const std::vector<std::string>& ResourceScriptFilePaths() const { return resourceScriptFilePaths; }
+    const std::vector<std::string>& RelativeResourceScriptFilePaths() const { return relativeResourceScriptFilePaths; }
     const std::vector<std::string>& RelativeTextFilePaths() const { return relativeTextFilePaths; }
     const std::vector<std::string>& TextFilePaths() const { return textFilePaths; }
     const std::vector<std::string>& RelativeActionFilePaths() const { return relativeActionFilePaths; }
@@ -230,6 +242,8 @@ private:
     std::vector<std::string> relativeSourceFilePaths;
     std::vector<std::string> resourceFilePaths;
     std::vector<std::string> relativeResourceFilePaths;
+    std::vector<std::string> resourceScriptFilePaths;
+    std::vector<std::string> relativeResourceScriptFilePaths;
     std::vector<std::string> relativeReferencedProjectFilePaths;
     std::vector<std::string> relativeTextFilePaths;
     std::vector<std::string> textFilePaths;

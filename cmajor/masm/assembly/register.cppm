@@ -83,12 +83,12 @@ struct RegisterGroupLess
 class RegisterPool
 {
 public:
-    RegisterPool(Registers& registers);
+    RegisterPool(Registers& registers_);
     void AddLocalRegisterGroup(RegisterGroup* regGroup);
     void AddLocalXMMRegisterGroup(RegisterGroup* regGroup);
     RegisterGroup* GetLocalRegisterGroup();
     RegisterGroup* GetLocalXMMRegisterGroup();
-    RegisterGroup* GetGlobalRegisterGroup(RegisterGroupKind regGroupKind, bool used);
+    RegisterGroup* GetRegisterGroup(RegisterGroupKind regGroupKind, bool used);
     int LocalRegisterCount() const { return localRegisterCount; }
     int LocalXMMRegisterCount() const { return localXMMRegisterCount; }
     int NumFreeLocalRegisters() const { return localRegisterPool.size(); }
@@ -98,6 +98,7 @@ public:
     const std::set<RegisterGroup*, RegisterGroupLess>& UsedLocalXMMRegs() const { return usedLocalXMMRegs; }
     const std::set<RegisterGroup*, RegisterGroupLess>& UsedNonvolatileXMMRegs() const { return usedNonvolatileXMMRegs; }
 private:
+    Registers& registers;
     int localRegisterCount;
     int localXMMRegisterCount;
     std::set<RegisterGroup*, RegisterGroupLess> localRegisterPool;

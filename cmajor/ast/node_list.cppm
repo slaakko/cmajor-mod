@@ -77,17 +77,17 @@ public:
     }
     void Write(AstWriter& writer)
     {
-        uint32_t n = static_cast<uint32_t>(nodes.size());
-        writer.GetBinaryStreamWriter().WriteULEB128UInt(n);
-        for (uint32_t i = 0u; i < n; ++i)
+        int32_t n = static_cast<int32_t>(nodes.size());
+        writer.GetBinaryStreamWriter().Write(n);
+        for (int32_t i = 0; i < n; ++i)
         {
             writer.Write(nodes[i].get());
         }
     }
     void Read(AstReader& reader)
     {
-        uint32_t n = reader.GetBinaryStreamReader().ReadULEB128UInt();
-        for (uint32_t i = 0u; i < n; ++i)
+        int32_t n = reader.GetBinaryStreamReader().ReadInt();
+        for (int32_t i = 0; i < n; ++i)
         {
             Node* node = reader.ReadNode();
             T* asTPtrNode = dynamic_cast<T*>(node);

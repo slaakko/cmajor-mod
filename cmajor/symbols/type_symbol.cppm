@@ -66,12 +66,12 @@ public:
     virtual bool IsPointerType() const { return false; }
     virtual bool IsNullPtrType() const { return false; }
     virtual bool IsVoidPtrType() const { return false; }
-    virtual bool IsPolymorphicType() const { return false; }
+    virtual bool IsPolymorphicType() { return false; }
     virtual bool IsSwitchConditionType() const { return false; }
     virtual int PointerCount() const { return 0; }
-    virtual bool HasNontrivialDestructor() const { return false; }
+    virtual bool HasNontrivialDestructor() { return false; }
     virtual bool ContainsTemplateParameter() const { return false; }
-    virtual bool CompletelyBound() const { return IsBound(); }
+    virtual bool CompletelyBound() { return IsBound(); }
     void SetTypeId(const util::uuid& typeId_) { typeId = typeId_; }
     const util::uuid& TypeId() const { Assert(!typeId.is_nil(), "type id not initialized"); return typeId; }
     bool TypeIdNotSet() const { return typeId.is_nil(); }

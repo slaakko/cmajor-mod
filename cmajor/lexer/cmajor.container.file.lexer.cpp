@@ -17,6 +17,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(REFERENCE, "REFERENCE", "'reference'"));
         tokens.AddToken(new soul::ast::slg::Token(SOURCE, "SOURCE", "'source'"));
         tokens.AddToken(new soul::ast::slg::Token(RESOURCE, "RESOURCE", "'resource'"));
+        tokens.AddToken(new soul::ast::slg::Token(RC, "RC", "'rc'"));
         tokens.AddToken(new soul::ast::slg::Token(TEXT, "TEXT", "'text'"));
         tokens.AddToken(new soul::ast::slg::Token(ACTION, "ACTION", "'action'"));
         tokens.AddToken(new soul::ast::slg::Token(TARGET, "TARGET", "'target'"));
@@ -54,6 +55,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "reference", REFERENCE },
          { "source", SOURCE },
          { "resource", RESOURCE },
+         { "rc", RC },
          { "text", TEXT },
          { "action", ACTION },
          { "target", TARGET },
@@ -80,6 +82,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"reference", REFERENCE },
          { u8"source", SOURCE },
          { u8"resource", RESOURCE },
+         { u8"rc", RC },
          { u8"text", TEXT },
          { u8"action", ACTION },
          { u8"target", TARGET },
@@ -106,6 +109,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"reference", REFERENCE },
          { u"source", SOURCE },
          { u"resource", RESOURCE },
+         { u"rc", RC },
          { u"text", TEXT },
          { u"action", ACTION },
          { u"target", TARGET },
@@ -132,6 +136,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"reference", REFERENCE },
          { U"source", SOURCE },
          { U"resource", RESOURCE },
+         { U"rc", RC },
          { U"text", TEXT },
          { U"action", ACTION },
          { U"target", TARGET },

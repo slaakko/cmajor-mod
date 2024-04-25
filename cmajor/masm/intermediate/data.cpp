@@ -605,10 +605,6 @@ void GlobalVariable::Accept(Visitor& visitor)
 
 void GlobalVariable::Write(util::CodeFormatter& formatter)
 {
-    if (name == "vmt_UnicodeEngine_4BA56D0BC89EA412C5D44E2EAC43EF3D52AA83DE")
-    {
-        int x = 0;
-    }
     formatter.Write(GetType()->Name());
     formatter.Write(" ");
     formatter.Write(name);

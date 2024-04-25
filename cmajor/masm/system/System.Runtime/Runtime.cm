@@ -119,3 +119,4 @@ public extern cdecl bool RtmProcessEof(void* process, int handle, int& errorId);
 public extern cdecl int RtmProcessReadLine(void* process, int handle, int& errorId);
 public extern cdecl int RtmProcessReadToEnd(void* process, int handle, int& errorId);
 public extern cdecl bool RtmProcessWriteLine(void* process, const char* line, int& errorId);
+public extern cdecl int* RtmGetClassMap(const char* classMapName, int& errorId);
