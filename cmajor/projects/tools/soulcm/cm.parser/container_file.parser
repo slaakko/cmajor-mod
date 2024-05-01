@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser ContainerFileParser
+{
+    lexer CmajorLexer;
+
+	QualifiedId(var ustring str) : ustring
+		::= 
+        (
+            ID{ str.Append(lexer.GetToken(pos).ToString()); } 
+            (
+                DOT ID{ str.Append('.').Append(lexer.GetToken(pos).ToString()); }
+            )*
+        )
+        { 
+            return str; 
+        }
+		;
+
+	FilePath : string
+		::=	FILE_PATH
+			{ 
+				auto result = ParseFilePath(lexer.FileName(), lexer.GetToken(pos));
+				if (result.Error())
+				{
+					return ErrorId(result.GetErrorId());
+				}
+				return result.Value();
+			}
+		;
+
+	ProjectKeyword
+		::= ID{ pass = lexer.GetToken(pos).ToString() == u"project"; }
+		;
+
+	SolutionKeyword
+		::= ID{ pass = lexer.GetToken(pos).ToString() == u"solution"; }
+		;
+}

@@ -347,6 +347,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     {
         throw cmajor::symbols::Exception("class template expected", templateIdNode.GetFullSpan(), templateIdNode.Primary()->GetFullSpan());
     }
+/*  TODO
     cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
     boundCompileUnit.SetLatestIdentifier(prevId);
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
@@ -357,6 +358,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     {
         cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, classTemplate);
     }
+*/
     if (classTemplate->IsProject() && !classTemplate->IsBound())
     {
         TypeBinder typeBinder(boundCompileUnit);
@@ -374,6 +376,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
         boundCompileUnit.SetLatestIdentifier(nullptr);
         cmajor::symbols::TypeSymbol* templateArgumentType = ResolveType(templateIdNode.TemplateArguments()[i], boundCompileUnit, containerScope, currentClass);
         templateArgumentTypes.push_back(templateArgumentType);
+/*      TODO
         cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
         if (idNode && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
@@ -384,6 +387,7 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
             cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, templateArgumentType);
         }
         boundCompileUnit.SetLatestIdentifier(prevId);
+*/
     }
     int m = classTemplate->TemplateParameters().size();
     if (n < m)

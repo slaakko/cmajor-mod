@@ -1,6 +1,14 @@
 solution soulcm;
-project <../../cm/ast/Cm.Ast.cmp>;
-project <scm2html/scm2html.cmp>;
+project <cm.ast/cm.ast.cmp>;
+project <cm.lexer/cm.lexer.cmp>;
+project <cm.parser/cm.parser.cmp>;
+project <cmp/cmp.cmp>;
+project <common.parser/common.parser.cmp>;
+project <scmlg.ast/scmlg.ast.cmp>;
+project <re.ast/re.ast.cmp>;
+project <re.lexer/re.lexer.cmp>;
+project <re.parser/re.parser.cmp>;
+project <scmlg.parser/scmlg.parser.cmp>;
 project <scmlg/scmlg.cmp>;
-project <scmpg/scmpg.cmp>;
-activeProject scmpg;
+activeProject scmlg.parser;
+activeBackEnd=masm;

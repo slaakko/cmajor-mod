@@ -181,6 +181,7 @@ void SymbolTable::Write(SymbolWriter& writer)
     {
         if (derivedType->IsProject())
         {
+            if (derivedType->BaseType()->IsClassTemplateSpecializationSymbol() && !derivedType->BaseType()->IsBound()) continue;
             derivedTypeMap[derivedType->TypeId()] = derivedType.get(); // last wins
         }
     }
@@ -198,7 +199,7 @@ void SymbolTable::Write(SymbolWriter& writer)
     std::map<util::uuid, TypeSymbol*> specializationMap;
     for (const auto& classTemplateSpecialization : classTemplateSpecializations)
     {
-        if (classTemplateSpecialization->IsProject())
+        if (classTemplateSpecialization->IsProject() && classTemplateSpecialization->IsBound())
         {
             specializationMap[classTemplateSpecialization->TypeId()] = classTemplateSpecialization.get(); // last wins
         }

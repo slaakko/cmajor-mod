@@ -1,0 +1,16 @@
+project scmlg.parser;
+target=library;
+reference <../cm.ast/cm.ast.cmp>;
+reference <../cm.lexer/cm.lexer.cmp>;
+reference <../cm.parser/cm.parser.cmp>;
+reference <../common.parser/common.parser.cmp>;
+reference <../scmlg.ast/scmlg.ast.cmp>;
+source <expression_file.parser.cm>;
+source <keyword_file.parser.cm>;
+source <parser.cm>;
+source <scmlg_file.parser.cm>;
+source <token_file.parser.cm>;
+source <token_value_parser.cm>;
+text <scmlg.parser.scmpg>;
+text <scmlg_file.parser>;
+text <token_file.parser>;

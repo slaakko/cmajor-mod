@@ -1,8 +1,0 @@
-project token;
-target=library;
-source <cm.token.cm>;
-source <punctuation.token.cm>;
-source <scm.token.cm>;
-text <cm.token>;
-text <punctuation.token>;
-text <tokens.scmlg>;

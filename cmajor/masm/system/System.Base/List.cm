@@ -217,6 +217,22 @@ namespace System.Collections
                 ++p;
             }
         }
+        public void Remove(Iterator first, Iterator last)
+        {
+            if (first == last) return;
+            Iterator p = first;
+            Iterator e = End();
+            while (first != last)
+            {
+                destroy(first.Ptr());
+                --count;
+                ++first;
+            }
+            while (first != e)
+            {
+                *p++ = *first++;
+            }
+        }
         public inline const ValueType& operator[](long index) const
         {
             #assert(index >= 0 && index < count);

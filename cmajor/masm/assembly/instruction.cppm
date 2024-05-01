@@ -53,6 +53,7 @@ public:
     const std::string& Label() const { return label; }
     void SetNoColon() { nocolon = true; }
     void AddOperand(Value* operand);
+    bool HasOperands() const { return !operands.empty(); }
     OpCode GetOpCode() const { return opCode; }
     const std::vector<Value*>& Operands() const { return operands; }
     void Write(util::CodeFormatter& formatter);

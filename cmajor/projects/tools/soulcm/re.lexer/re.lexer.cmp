@@ -1,0 +1,9 @@
+project re.lexer;
+target=library;
+source <re.lexer.cm>;
+source <re.token.cm>;
+rc <re.lexer.classmap.rc>;
+text <re.expr>;
+text <re.lexer>;
+text <re.scmlg>;
+text <re.token>;

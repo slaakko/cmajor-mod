@@ -251,12 +251,15 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class template specialization expected"); 
         cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(parent);
         std::pair<util::uuid, int> classIdMemFunIndexPair = std::make_pair(classTemplateSpecialization->TypeId(), memberFunction->GetIndex());
-        if (classIdMemberFunctionIndexSet.find(classIdMemFunIndexPair) != classIdMemberFunctionIndexSet.cend())
+        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm)
         {
-//          If <parent class id, member function index> pair is found from the classIdMemberFunctionIndexSet, the member function is already instantiated 
-//          for this compile unit, so return true.
-            instantiatedMemberFunctions.insert(memberFunction);
-            return memberFunction;
+            if (classIdMemberFunctionIndexSet.find(classIdMemFunIndexPair) != classIdMemberFunctionIndexSet.cend())
+            {
+                //          If <parent class id, member function index> pair is found from the classIdMemberFunctionIndexSet, the member function is already instantiated 
+                //          for this compile unit, so return it.
+                instantiatedMemberFunctions.insert(memberFunction);
+                return memberFunction;
+            }
         }
         if (classTemplateSpecialization->HasFullInstantiation())
         {
@@ -433,7 +436,10 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         statementBinder.GenerateEnterAndExitFunctionCode(boundFunction.get());
         std::u32string instantiatedMemberFunctionMangledName = boundFunction->GetFunctionSymbol()->MangledName();
         boundClass->AddMember(std::move(boundFunction));
-        classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);
+        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm)
+        {
+            classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);
+        }
         boundCompileUnit.AddBoundNode(std::move(boundClass));
         boundCompileUnit.RemoveLastFileScope();
         bool succeeded = InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, node);
@@ -493,7 +499,7 @@ void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpeci
         {
             if (!Instantiate(memberFunction, containerScope, currentFunction, node))
             {
-                throw cmajor::symbols::Exception("instantation of member function '" + util::ToUtf8(memberFunction->Name()) + "' failed", memberFunction->GetFullSpan());
+                throw cmajor::symbols::Exception("instantiation of member function '" + util::ToUtf8(memberFunction->Name()) + "' failed", memberFunction->GetFullSpan());
             }
         }
     }

@@ -62,7 +62,14 @@ void Instruction::SetLabel(const std::string& label_)
 
 void Instruction::AddOperand(Value* operand)
 {
-    operands.push_back(operand);
+    if (!operand->IsEmpty())
+    {
+        operands.push_back(operand);
+    }
+    else
+    {
+        int x = 0;
+    }
 }
 
 void Instruction::Write(util::CodeFormatter& formatter)

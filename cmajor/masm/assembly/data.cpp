@@ -13,9 +13,12 @@ Data::Data()
 {
 }
 
-void Data::AddInstruction(Instruction* instruction)
+void Data::AddInstruction(std::unique_ptr<Instruction>&& instruction)
 {
-    instructions.push_back(std::unique_ptr<Instruction>(instruction));
+    if (instruction->HasOperands())
+    {
+        instructions.push_back(std::move(instruction));
+    }
 }
 
 void Data::Write(util::CodeFormatter& formatter)

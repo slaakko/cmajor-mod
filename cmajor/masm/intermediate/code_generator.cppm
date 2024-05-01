@@ -25,7 +25,7 @@ public:
     Function* CurrentFunction() const { return currentFunction; }
     const soul::ast::Span& Span() const;
     void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction);
-    void EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmajor::masm::assembly::OpCode dataOpCode);
+    void EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>&& dataValue, cmajor::masm::assembly::OpCode dataOpCode);
     void Visit(GlobalVariable& globalVariable) override;
     void Visit(Function& function) override;
     void Visit(BasicBlock& basicBlock) override;
@@ -83,7 +83,6 @@ public:
     void Visit(StringValue& value) override;
     void Visit(StringArrayValue& value) override;
     void Visit(ConversionValue& value) override;
-    void Visit(ClsIdValue& value) override;
     void Visit(SymbolValue& value) override;
     void Error(const std::string& message);
     void WriteOutputFile();
@@ -98,7 +97,7 @@ private:
     bool leader;
     cmajor::masm::assembly::Data* data;
     std::string label;
-    cmajor::masm::assembly::Instruction* dataInstruction;
+    std::unique_ptr<cmajor::masm::assembly::Instruction> dataInstruction;
     cmajor::masm::assembly::OpCode prevDataOpCode;
     int64_t currentOffset;
 };

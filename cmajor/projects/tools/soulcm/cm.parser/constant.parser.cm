@@ -1,0 +1,198 @@
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/constant.parser' using soul parser generator spg version 5.0.0
+
+using System;
+using System.Lex;
+using System.Parsing;
+using cm.ast;
+using cm.token;
+
+namespace cm.parser
+{
+    public static class ConstantParser<LexerT>
+    {
+        public static Result<System.Parsing.Match> Constant(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6144467603357171713);
+            System.Lex.Span span = System.Lex.Span();
+            UniquePtr<System.Parsing.Value<cm.ast.Specifiers>> specifiers;
+            UniquePtr<cm.ast.Node> type;
+            UniquePtr<cm.ast.IdentifierNode> id;
+            UniquePtr<cm.ast.Node> expr;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch5 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch6 = &match;
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch7 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch8 = &match;
+                                            {
+                                                long pos = lexer.GetPos();
+                                                Result<System.Parsing.Match> matchResult = SpecifierParser<LexerT>.Specifiers(lexer);
+                                                if (matchResult.Error())
+                                                {
+                                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                }
+                                                System.Parsing.Match match = matchResult.Value();
+                                                specifiers.Reset(cast<System.Parsing.Value<cm.ast.Specifiers>*>(match.value));
+                                                if (match.hit)
+                                                {
+                                                    span = lexer.GetSpan(pos);
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch9 = &match;
+                                            {
+                                                System.Parsing.Match match(false);
+                                                if (*lexer == CONST)
+                                                {
+                                                    auto incResult0 = ++lexer; 
+                                                    if (incResult0.Error())
+                                                    {
+                                                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                                    }
+                                                    match.hit = true;
+                                                }
+                                                *parentMatch9 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch10 = &match;
+                                        {
+                                            Result<System.Parsing.Match> matchResult = TypeExprParser<LexerT>.TypeExpr(lexer, context);
+                                            if (matchResult.Error())
+                                            {
+                                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            }
+                                            System.Parsing.Match match = matchResult.Value();
+                                            type.Reset(cast<cm.ast.Node*>(match.value));
+                                            *parentMatch10 = match;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch11 = &match;
+                                    {
+                                        Result<System.Parsing.Match> matchResult = IdentifierParser<LexerT>.Identifier(lexer);
+                                        if (matchResult.Error())
+                                        {
+                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                        }
+                                        System.Parsing.Match match = matchResult.Value();
+                                        id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
+                                        *parentMatch11 = match;
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch12 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    if (*lexer == ASSIGN)
+                                    {
+                                        auto incResult1 = ++lexer; 
+                                        if (incResult1.Error())
+                                        {
+                                            return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                                        }
+                                        match.hit = true;
+                                    }
+                                    *parentMatch12 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch13 = &match;
+                            {
+                                Result<System.Parsing.Match> matchResult = ExpressionParser<LexerT>.Expression(lexer, context);
+                                if (matchResult.Error())
+                                {
+                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                expr.Reset(cast<cm.ast.Node*>(match.value));
+                                *parentMatch13 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch14 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            if (*lexer == SEMICOLON)
+                            {
+                                auto incResult2 = ++lexer; 
+                                if (incResult2.Error())
+                                {
+                                    return Result<System.Parsing.Match>(ErrorId(incResult2.GetErrorId()));
+                                }
+                                match.hit = true;
+                            }
+                            *parentMatch14 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstantNode(span, specifiers->value, type.Release(), id.Release(), expr.Release())));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return Result<System.Parsing.Match>(match);
+        }
+    }
+
+    new class ConstantParser<CmajorLexer>;
+
+} // namespace cm.parser

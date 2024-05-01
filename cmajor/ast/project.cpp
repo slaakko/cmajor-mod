@@ -844,6 +844,10 @@ void Project::Save()
     {
         formatter.WriteLine("resource <" + relativeResourceFilePath + ">;");
     }
+    for (const std::string & relativeResourceScriptFilePath : relativeResourceScriptFilePaths)
+    {
+        formatter.WriteLine("rc <" + relativeResourceScriptFilePath + ">;");
+    }
     for (const std::string& relativeTextFilePath : relativeTextFilePaths)
     {
         formatter.WriteLine("text <" + relativeTextFilePath + ">;");

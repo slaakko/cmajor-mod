@@ -36,6 +36,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
     {
         inlineFunction = inlineFunction->Master();
     }
+    cmajor::symbols::FunctionSymbol* master = inlineFunction;
     auto it = inlineFunctionMap.find(inlineFunction);
     if (it != inlineFunctionMap.cend())
     {
@@ -118,16 +119,6 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         {
             functionSymbol->SetSystemDefault();
         }
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-        {
-            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
-            if (compileUnitNode)
-            {
-                functionSymbol->SetCompileUnitId(compileUnitNode->Id());
-                functionSymbol->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
-                boundCompileUnit.SetCanReuse(functionSymbol.get());
-            }
-        }
         TypeBinder typeBinder(boundCompileUnit);
         typeBinder.SetContainerScope(functionSymbol->GetContainerScope());
         typeBinder.SetCurrentFunctionSymbol(functionSymbol.get());
@@ -149,6 +140,18 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         cmajor::symbols::FunctionSymbol* result = functionSymbol.get();
         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::move(functionSymbol));
         boundCompileUnit.AddGlobalNs(std::move(globalNs));
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                result->SetCompileUnitId(compileUnitNode->Id());
+                result->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
+                result->ComputeMangledName();
+                master->SetInstantiatedName(result->MangledName());
+                boundCompileUnit.SetCanReuse(result);
+            }
+        }
         inlineFunctionMap[inlineFunction] = result;
         result->SetFunctionId(inlineFunction->FunctionId());
         result->SetMaster(inlineFunction);
@@ -175,16 +178,6 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         if (inlineFunction->IsSystemDefault())
         {
             functionSymbol->SetSystemDefault();
-        }
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
-        {
-            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
-            if (compileUnitNode)
-            {
-                functionSymbol->SetCompileUnitId(compileUnitNode->Id());
-                functionSymbol->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
-                boundCompileUnit.SetCanReuse(functionSymbol.get());
-            }
         }
         TypeBinder typeBinder(boundCompileUnit);
         typeBinder.SetContainerScope(functionSymbol->GetContainerScope());
@@ -233,6 +226,18 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         if (fileScopeAdded)
         {
             boundCompileUnit.RemoveLastFileScope();
+        }
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        {
+            cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
+            if (compileUnitNode)
+            {
+                result->SetCompileUnitId(compileUnitNode->Id());
+                result->SetFlag(cmajor::symbols::FunctionSymbolFlags::dontReuse);
+                result->ComputeMangledName();
+                master->SetInstantiatedName(result->MangledName());
+                boundCompileUnit.SetCanReuse(result);
+            }
         }
         inlineFunctionMap[inlineFunction] = result;
         result->SetFunctionId(inlineFunction->FunctionId());

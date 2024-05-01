@@ -1,0 +1,172 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module re.parser;
+
+import re.ast;
+import re.token;
+
+parser RegExParser
+{
+    lexer RegExLexer;
+    main;
+
+    RegularExpression(Context* context) : Nfa
+        ::= Alternative(context):alternative{ return alternative; }
+        ;
+
+    Alternative(Context* context, var Nfa value) : Nfa
+        ::= 
+        (
+            Catenation(context):left{ value = left; } 
+            (
+                PIPE Catenation(context):right{ value = Alt(*context, value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Catenation(Context* context, var Nfa value) : Nfa
+        ::= 
+        (
+            Repetition(context):left{ value = left; } 
+            (
+                Repetition(context):right{ value = Cat(value, right); }
+            )*
+        )
+        {
+            return value;
+        }
+        ;
+
+    Repetition(Context* context, var Nfa value) : Nfa
+        ::= 
+        (
+            Primary(context):left{ value = left; }
+            (   STAR{ value = Kleene(*context, value); }
+            |   PLUS{ value = Pos(*context, value); }
+            |   QUEST{ value = Opt(*context, value); }
+            )?
+        )
+        {
+            return value;
+        }
+        ;
+
+    Primary(Context* context, var Nfa value) : Nfa
+        ::= 
+        (   LPAREN Alternative(context):alt{ value = alt; } RPAREN
+        |   ESCAPE
+            { 
+                auto escapeResult = MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos));
+                if (escapeResult.Error())
+                {
+                    return ErrorId(escapeResult.GetErrorId());
+                }
+                uchar escape = escapeResult.Value();
+                value = MakeNfa(*context, context->MakeChar(escape)); 
+            }
+        |   CARET{ value = MakeNfa(*context, context->MakeChar('^')); }
+        |   MINUS{ value = MakeNfa(*context, context->MakeChar('-')); }
+        |   CHARACTER{ auto match = lexer.GetToken(pos).ToString(); value = MakeNfa(*context, context->MakeChar(match[0])); }
+        |   DOT{ value = MakeNfa(*context, context->MakeAny()); }
+        |   Class(context):cls{ value = MakeNfa(*context, cls); }
+        |   ExpressionReference:ref
+            { 
+                auto nfaResult = context->MakeExpr(ref); 
+                if (nfaResult.Error())
+                {
+                    return ErrorId(nfaResult.GetErrorId());
+                }
+                value = Rvalue(nfaResult.Value());
+            }
+        )
+        {
+            return value;
+        }
+        ;
+
+    Class(Context* context, var re.ast.Class* cls) : re.ast.Class*
+        ::= 
+        (
+            LBRACKET{ cls = context->MakeClass(); } 
+            (
+                (
+                    CARET{ cls->SetInverse(); }
+                )? 
+                (
+                    Range(context):r{ cls->AddSymbol(r); }
+                )*
+            ) 
+            RBRACKET
+        )
+        {
+            return cls;
+        }
+        ;
+
+    Range(Context* context, var re.ast.Symbol* symbol) : re.ast.Symbol*
+        ::= 
+        (
+            Char:s 
+            (   MINUS Char:e{ symbol = context->MakeRange(s, e); } 
+            |   empty{ symbol = context->MakeChar(s); }
+            )
+        )
+        {
+            return symbol;
+        }
+        ;
+
+    Char : uchar
+        ::= LPAREN{ return '('; }
+        |   RPAREN{ return ')'; }
+        |   LBRACKET{ return '['; }
+        |   LBRACE{ return '{'; }
+        |   RBRACE{ return '}'; }
+        |   PIPE{ return '|'; }
+        |   STAR{ return '*'; }
+        |   PLUS{ return '+'; }
+        |   QUEST{ return '?'; }
+        |   DOT{ return '.'; }
+        |   ESCAPE
+            { 
+                auto escapeResult = MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos));
+                if (escapeResult.Error())
+                {
+                    return ErrorId(escapeResult.GetErrorId());
+                }
+                uchar escape = escapeResult.Value();
+                return escape;
+            }
+        |   CARET{ return '^'; }
+        |   MINUS{ return '-'; }
+        |   CHARACTER{ auto match = lexer.GetToken(pos).ToString(); return match[0]; }
+        ;
+
+    ExpressionReference(var string s) : string
+        ::= 
+        (
+            LBRACE
+            (
+                CHARACTER
+                { 
+                    auto utf8Result = ToUtf8(lexer.GetToken(pos).ToString());
+                    if (utf8Result.Error())
+                    {
+                        return ErrorId(utf8Result.GetErrorId());
+                    }
+                    s.Append(utf8Result.Value()); 
+                }
+            )+
+            RBRACE
+        )
+        {
+            return s;
+        }
+        ;
+}

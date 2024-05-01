@@ -1,0 +1,4 @@
+project re.lexer;
+tokens <re.token>;
+expressions <re.expr>;
+lexer <re.lexer>;

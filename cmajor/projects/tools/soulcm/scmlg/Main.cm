@@ -1,153 +1,122 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-using System.IO;
+using scmlg;
 
-// this file has been semiautomatically generated from 'D:/work/soulngcm/soulngcm/sngcmlg/Main.cpp' using cpp2cm version 1.0.0
-
-public void PrintUsage()
+string Version()
 {
-    Console.Out() << "Soul CM Lexer Generator version " << soulcm.scmlg.LexerGeneratorVersionStr() << endl();
-    Console.Out() << "Usage: scmlg [options] <file.lexer>" << endl();
+    return "5.0.0";
+}
+
+void PrintHelp()
+{
+    Console.Out() << "SoulCm lexer generator scmlg version " << Version() << endl();
+    Console.Out() << "Usage: scmlg [OPTIONS] { FILE.scmlg }" << endl();
     Console.Out() << "Options:" << endl();
-    Console.Out() << "--help | -h" << endl();
-    Console.Out() << "  Print help and exit." << endl();
     Console.Out() << "--verbose | -v" << endl();
     Console.Out() << "  Be verbose." << endl();
-    Console.Out() << "--debug | -d" << endl();
-    Console.Out() << "  Print character class partition to stdout" << endl();
-    Console.Out() << "--use-ascii-identifier-classes | -a" << endl();
-    Console.Out() << "  Use ASCII identifier classes." << endl();
-    Console.Out() << "  By default uses Unicode identifier classes." << endl();
-    Console.Out() << "--no-identifier-classes | -n" << endl();
-    Console.Out() << "  No predefined identifier classes" << endl();
-    Console.Out() << "--no-class-map-compression | -c" << endl();
-    Console.Out() << "  Do not compress class maps." << endl();
-    Console.Out() << "--system-x | -x" << endl();
-    Console.Out() << "  Generate System X compatible lexer." << endl();
+    Console.Out() << "--help | -h." << endl();
+    Console.Out() << "  Print help and exit." << endl();
 }
-public int main(int argc, const char** argv)
+
+Result<bool> ProcessFiles(const List<string>& files, bool verbose)
 {
-    try
+    if (files.IsEmpty())
     {
-        bool verbose = false;
-        bool debug = false;
-        bool noClassMapCompression = false;
-        bool systemX = false;
-        soulcm.scmlg.IdentifierClassKind identifierClassKind = soulcm.scmlg.IdentifierClassKind.unicode;
-        string fileName;
-        for (int i = 1; i < argc; ++i)
+        string errorMessage = "no files given";
+        int errorId = AllocateError(errorMessage);
+        return Result<bool>(ErrorId(errorId));
+    }
+    for (const auto& file : files)
+    {
+        if (file.EndsWith(".scmlg"))
         {
-            string arg = argv[i];
-            if (arg.StartsWith("--"))
+            auto result = GenerateLexers(file, Version(), verbose);
+            if (result.Error())
             {
-                if (arg == "--help")
-                {
-                    PrintUsage();
-                    return 1;
-                }
-                else if (arg == "--verbose")
-                {
-                    verbose = true;
-                }
-                else if (arg == "--debug")
-                {
-                    debug = true;
-                }
-                else if (arg == "--use-ascii-identifier-classes")
-                {
-                    identifierClassKind = soulcm.scmlg.IdentifierClassKind.ascii;
-                }
-                else if (arg == "--no-identifier-classes")
-                {
-                    identifierClassKind = soulcm.scmlg.IdentifierClassKind.none;
-                }
-                else if (arg == "--no-class-map-compression")
-                {
-                    noClassMapCompression = true;
-                }
-                else if (arg == "--system-x")
-                {
-                    systemX = true;
-                }
-                else
-                {
-                    throw Exception("unknown option \'" + arg + "\'");
-                }
+                return Result<bool>(ErrorId(result.GetErrorId()));
             }
-            else if (arg.StartsWith("-"))
+        }
+        else
+        {
+            string errorMessage = "unknown file extension '" + System.IO.Path.GetExtension(file) + "', not .scmlg";
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
+        }
+    }
+    return Result<bool>(true);
+}
+
+int main(int argc, const char** argv)
+{
+    List<string> files;
+    bool verbose = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg.StartsWith("--"))
+        {
+            if (arg == "--verbose")
             {
-                string options = arg.Substring(1);
-                if (options.IsEmpty())
-                {
-                    throw Exception("unknown option \'-" + arg + "\'");
-                }
-                for (char o : options)
-                {
-                    if (o == 'h')
-                    {
-                        PrintUsage();
-                        return 1;
-                    }
-                    else if (o == 'v')
-                    {
-                        verbose = true;
-                    }
-                    else if (o == 'd')
-                    {
-                        debug = true;
-                    }
-                    else if (o == 'a')
-                    {
-                        identifierClassKind = soulcm.scmlg.IdentifierClassKind.ascii;
-                    }
-                    else if (o == 'n')
-                    {
-                        identifierClassKind = soulcm.scmlg.IdentifierClassKind.none;
-                    }
-                    else if (o == 'c')
-                    {
-                        noClassMapCompression = true;
-                    }
-                    else if (o == 'x')
-                    {
-                        systemX = true;
-                    }
-                    else
-                    {
-                        throw Exception("unknown option \'-" + string(o, 1) + "\'");
-                    }
-                }
+                verbose = true;
             }
+            else if (arg == "--help")
+            {
+                PrintHelp();
+                return 0;
+            }   
             else
             {
-                fileName = GetFullPath(arg);
+                Console.Error() << "unknown option '" << arg << "'" << endl();
+                return 1;
             }
         }
-        if (fileName.IsEmpty())
+        else if (arg.StartsWith("-"))
         {
-            PrintUsage();
-            return 1;
+            string options = arg.Substring(1);
+            for (char o : options)
+            {
+                switch (o)
+                {
+                    case 'v':
+                    {
+                        verbose = true;
+                        break;
+                    }
+                    case 'h':
+                    {
+                        PrintHelp();
+                        return 0;
+                    }
+                    default:
+                    {
+                        Console.Error() << "unknown option '-" << string(o) << "'" << endl();
+                        return 1;
+                    }
+                }
+            }
         }
-        if (verbose)
+        else
         {
-            Console.Out() << "> " << fileName << endl();
+            auto fullPathResult = GetFullPath(arg);
+            if (fullPathResult.Error())
+            {
+                Console.Error() << fullPathResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            files.Add(fullPathResult.Value());
         }
-        string s = File.ReadAllText(fileName);
-        ustring content = ToUtf32(s);
-        LexerFileLexer lexer(content, fileName, 0);
-        ParsingContext ctx;
-        UniquePtr<soulcm.scmlg.LexerFile> lexerFile = LexerFileParser.Parse(lexer, &ctx);
-        soulcm.scmlg.LexerContext lexerContext(identifierClassKind);
-        lexerContext.SetFileName(fileName);
-        soulcm.scmlg.RegularExpressionParser regularExpressionParser;
-        lexerContext.SetParser(&regularExpressionParser);
-        string root = Path.GetDirectoryName(fileName);
-        lexerFile->Process(root, verbose, debug, noClassMapCompression, systemX, lexerContext);
     }
-    catch (const Exception& ex)
+    auto result = ProcessFiles(files, verbose);
+    if (result.Error())
     {
-        Console.Error() << ex.Message() << endl();
+        Console.Error() << result.GetErrorMessage() << endl();
         return 1;
     }
     return 0;
 }
+

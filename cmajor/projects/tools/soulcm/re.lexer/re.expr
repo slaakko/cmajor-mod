@@ -1,0 +1,14 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions re.expr
+{
+    dec_digit="[0-9]";
+    octal_digit="[0-7]";
+    hex_digit="[0-9a-fA-F]";
+    hex4 = "{hex_digit}{hex_digit}{hex_digit}{hex_digit}";
+    hex8 = "{hex4}{hex4}";
+    escape = "\\((x|X){hex_digit}+|(d|D){dec_digit}+|{octal_digit}+|u{hex4}|U{hex8}|(a|b|f|n|r|t|v|.))";
+}

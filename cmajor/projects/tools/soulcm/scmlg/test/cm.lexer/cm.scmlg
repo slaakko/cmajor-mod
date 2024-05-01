@@ -1,0 +1,5 @@
+project cm.lexer;
+tokens <cm.token>;
+keywords <cm.keyword>;
+expressions <cm.expr>;
+//lexer <cm.lexer>;

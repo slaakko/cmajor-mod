@@ -2547,19 +2547,19 @@ void CodeGenerator::Emit(cmajor::masm::assembly::Instruction* assemblyInstructio
     assemblyFunction->AddInstruction(assemblyInstruction);
 }
 
-void CodeGenerator::EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmajor::masm::assembly::OpCode dataOpCode)
+void CodeGenerator::EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>&& dataValue, cmajor::masm::assembly::OpCode dataOpCode)
 {
     if (prevDataOpCode != dataOpCode)
     {
         if (dataInstruction)
         {
-            data->AddInstruction(dataInstruction);
-            dataInstruction = nullptr;
+            data->AddInstruction(std::move(dataInstruction));
+            dataInstruction.reset();
         }
     }
     if (!dataInstruction)
     {
-        dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
+        dataInstruction.reset(new cmajor::masm::assembly::Instruction(dataOpCode));
         dataInstruction->SetNoColon();
     }
     if (leader)
@@ -2567,38 +2567,26 @@ void CodeGenerator::EmitDataValue(cmajor::masm::assembly::Value* dataValue, cmaj
         leader = false;
         if (!dataInstruction->Label().empty())
         {
-            data->AddInstruction(dataInstruction);
-            dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
+            data->AddInstruction(std::move(dataInstruction));
+            dataInstruction.reset(new cmajor::masm::assembly::Instruction(dataOpCode));
             dataInstruction->SetNoColon();
         }
         dataInstruction->SetLabel(label);
         label.clear();
     }
-    while (dataInstruction->Length() + dataValue->Length() > cmajor::masm::assembly::maxAssemblyLineLength)
+    while (dataInstruction->Length() + dataValue->Length() > cmajor::masm::assembly::maxAssemblyLineLength && dataValue->CanSplit())
     {
-        if (dataValue->CanSplit())
-        {
-            cmajor::masm::assembly::Value* next = dataValue->Split(cmajor::masm::assembly::maxAssemblyLineLength - dataInstruction->Length());
-            dataInstruction->AddOperand(dataValue);
-            dataValue = next;
-            if (dataValue->IsEmpty())
-            {
-                delete dataValue;
-                return;
-            }
-        }
-        else
-        {
-            data->AddInstruction(dataInstruction);
-            dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
-            dataInstruction->SetNoColon();
-            break;
-        }
-        data->AddInstruction(dataInstruction);
-        dataInstruction = new cmajor::masm::assembly::Instruction(dataOpCode);
+        std::unique_ptr<cmajor::masm::assembly::Value> next(dataValue->Split(cmajor::masm::assembly::maxAssemblyLineLength - dataInstruction->Length()));
+        dataInstruction->AddOperand(dataValue.release());
+        data->AddInstruction(std::move(dataInstruction));
+        dataInstruction.reset(new cmajor::masm::assembly::Instruction(dataOpCode));
         dataInstruction->SetNoColon();
+        dataValue.reset(next.release());
     }
-    dataInstruction->AddOperand(dataValue);
+    dataInstruction->AddOperand(dataValue.release());
+    data->AddInstruction(std::move(dataInstruction));
+    dataInstruction.reset(new cmajor::masm::assembly::Instruction(dataOpCode));
+    dataInstruction->SetNoColon();
     prevDataOpCode = dataOpCode;
 }
 
@@ -2606,8 +2594,8 @@ void CodeGenerator::Visit(GlobalVariable& globalVariable)
 {
     if (data && dataInstruction)
     {
-        data->AddInstruction(dataInstruction);
-        dataInstruction = nullptr;
+        data->AddInstruction(std::move(dataInstruction));
+        dataInstruction.reset();
     }
     if (globalVariable.Initializer())
     {
@@ -2962,79 +2950,79 @@ void CodeGenerator::Visit(SwitchInstruction& inst)
 
 void CodeGenerator::Visit(BoolValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.ToInteger(), 1), cmajor::masm::assembly::OpCode::DB);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.ToInteger(), 1)), cmajor::masm::assembly::OpCode::DB);
     currentOffset += 1;
 }
 
 void CodeGenerator::Visit(SByteValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1), cmajor::masm::assembly::OpCode::DB);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1)), cmajor::masm::assembly::OpCode::DB);
     currentOffset += 1;
 }
 
 void CodeGenerator::Visit(ByteValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1), cmajor::masm::assembly::OpCode::DB);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 1)), cmajor::masm::assembly::OpCode::DB);
     currentOffset += 1;
 }
 
 void CodeGenerator::Visit(ShortValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2), cmajor::masm::assembly::OpCode::DW);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2)), cmajor::masm::assembly::OpCode::DW);
     currentOffset += 2;
 }
 
 void CodeGenerator::Visit(UShortValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2), cmajor::masm::assembly::OpCode::DW);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 2)), cmajor::masm::assembly::OpCode::DW);
     currentOffset += 2;
 }
 
 void CodeGenerator::Visit(IntValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4), cmajor::masm::assembly::OpCode::DD);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4)), cmajor::masm::assembly::OpCode::DD);
     currentOffset += 4;
 }
 
 void CodeGenerator::Visit(UIntValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4), cmajor::masm::assembly::OpCode::DD);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 4)), cmajor::masm::assembly::OpCode::DD);
     currentOffset += 4;
 }
 
 void CodeGenerator::Visit(LongValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8), cmajor::masm::assembly::OpCode::DQ);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8)), cmajor::masm::assembly::OpCode::DQ);
     currentOffset += 8;
 }
 
 void CodeGenerator::Visit(ULongValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8), cmajor::masm::assembly::OpCode::DQ);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value.GetValue(), 8)), cmajor::masm::assembly::OpCode::DQ);
     currentOffset += 8;
 }
 
 void CodeGenerator::Visit(FloatValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::FloatLiteral(value.GetValue()), cmajor::masm::assembly::OpCode::REAL4);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::FloatLiteral(value.GetValue())), cmajor::masm::assembly::OpCode::REAL4);
     currentOffset += 4;
 }
 
 void CodeGenerator::Visit(DoubleValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::DoubleLiteral(value.GetValue()), cmajor::masm::assembly::OpCode::REAL8);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::DoubleLiteral(value.GetValue())), cmajor::masm::assembly::OpCode::REAL8);
     currentOffset += 8;
 }
 
 void CodeGenerator::Visit(NullValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(0, 8), cmajor::masm::assembly::OpCode::DQ);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(0, 8)), cmajor::masm::assembly::OpCode::DQ);
     currentOffset += 8;
 }
 
 void CodeGenerator::Visit(AddressValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::Symbol(value.GetValue()->Name()), cmajor::masm::assembly::OpCode::DQ);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::Symbol(value.GetValue()->Name())), cmajor::masm::assembly::OpCode::DQ);
     currentOffset += 8;
 }
 
@@ -3069,7 +3057,7 @@ void CodeGenerator::Visit(StringValue& value)
                 {
                     if (!stringValue.empty())
                     {
-                        EmitDataValue(new cmajor::masm::assembly::StringLiteral(stringValue), cmajor::masm::assembly::OpCode::DB);
+                        EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::StringLiteral(stringValue)), cmajor::masm::assembly::OpCode::DB);
                         stringValue.clear();
                     }
                     state = 1;
@@ -3091,7 +3079,7 @@ void CodeGenerator::Visit(StringValue& value)
             {
                 hexByteStr.append(1, c);
                 uint8_t value = util::ParseHexByte(hexByteStr);
-                EmitDataValue(new cmajor::masm::assembly::IntegerLiteral(value, 1), cmajor::masm::assembly::OpCode::DB);
+                EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::IntegerLiteral(value, 1)), cmajor::masm::assembly::OpCode::DB);
                 currentOffset += 1;
                 hexByteStr.clear();
                 state = 0;
@@ -3101,7 +3089,7 @@ void CodeGenerator::Visit(StringValue& value)
     }
     if (!stringValue.empty())
     {
-        EmitDataValue(new cmajor::masm::assembly::StringLiteral(stringValue), cmajor::masm::assembly::OpCode::DB);
+        EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::StringLiteral(stringValue)), cmajor::masm::assembly::OpCode::DB);
         stringValue.clear();
     }
 }
@@ -3119,14 +3107,9 @@ void CodeGenerator::Visit(ConversionValue& value)
     value.From()->Accept(*this);
 }
 
-void CodeGenerator::Visit(ClsIdValue& value)
-{
-    int x = 0; // TODO
-}
-
 void CodeGenerator::Visit(SymbolValue& value)
 {
-    EmitDataValue(new cmajor::masm::assembly::Symbol(value.Symbol()), cmajor::masm::assembly::OpCode::DQ);
+    EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>(new cmajor::masm::assembly::Symbol(value.Symbol())), cmajor::masm::assembly::OpCode::DQ);
 }
 
 void CodeGenerator::Error(const std::string& message)
@@ -3138,7 +3121,7 @@ void CodeGenerator::WriteOutputFile()
 {
     if (data && dataInstruction)
     {
-        data->AddInstruction(dataInstruction);
+        data->AddInstruction(std::move(dataInstruction));
     }
     file.Write();
 }

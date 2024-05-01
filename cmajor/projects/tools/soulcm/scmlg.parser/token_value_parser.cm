@@ -1,0 +1,66 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmlg.parser
+{
+    public Result<string> MakeExprStringValue(const string& fileName, const System.Lex.Token& token)
+    {
+        ustring strValue;
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        while (p != e && *p != '\r' && *p != '\n' && *p != '"')
+        {
+            if (*p == '\\')
+            {
+                ++p;
+                if (p != e && *p == '"')
+                {
+                    strValue.Append('"');
+                    ++p;
+                }
+                else
+                {
+                    strValue.Append('\\');
+                    strValue.Append(*p);
+                    ++p;
+                }
+            }
+            else
+            {
+                strValue.Append(*p);
+                ++p;
+            }
+        }
+        if (p != e && *p == '"')
+        {
+            ++p;
+        }
+        if (p != e)
+        {
+            ustring u32literal = token.match.ToString();
+            string literal;
+            auto utf8Result = ToUtf8(u32literal);
+            if (!utf8Result.Error())
+            {
+                literal = utf8Result.Value();
+            }            
+            string errorMessage = "invalid expression string literal at " + fileName + ":" + ToString(token.line) + ": " + literal;
+            int errorId = AllocateError(errorMessage);
+            return Result<string>(ErrorId(errorId));
+        }
+        auto utf8Result = ToUtf8(strValue);
+        if (utf8Result.Error())
+        {
+            return Result<string>(utf8Result.GetErrorId());
+        }
+        return Result<string>(utf8Result.Value());
+    }
+}

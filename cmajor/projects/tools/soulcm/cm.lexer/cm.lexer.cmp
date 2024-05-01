@@ -1,0 +1,6 @@
+project cm.lexer;
+target=library;
+reference <../cm.ast/cm.ast.cmp>;
+rc <cm.lexer.classmap.rc>;
+source <cm.token.cm>;
+source <cm.lexer.cm>;

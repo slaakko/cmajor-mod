@@ -1,3 +1,0 @@
-project scmlg;
-target=program;
-source <main.cm>;

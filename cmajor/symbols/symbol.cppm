@@ -167,6 +167,7 @@ public:
     virtual void Check();
     bool IsAliasTypeSymbol() const { return symbolType == SymbolType::aliasTypeSymbol; }
     bool IsDeclarationBlock() const { return symbolType == SymbolType::declarationBlock; }
+    bool IsClassTemplateSpecializationSymbol() const { return symbolType == SymbolType::classTemplateSpecializationSymbol; }
     void SetMangledName(const std::u32string& mangledName_);
     SymbolAccess Access() const { return SymbolAccess(flags & SymbolFlags::access); }
     void SetAccess(SymbolAccess access_) { flags = flags | SymbolFlags(access_); }

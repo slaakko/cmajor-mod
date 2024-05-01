@@ -17,7 +17,7 @@ class Data
 {
 public:
     Data();
-    void AddInstruction(Instruction* instruction);
+    void AddInstruction(std::unique_ptr<Instruction>&& instruction);
     void Write(util::CodeFormatter& formatter);
 private:
     std::vector<std::unique_ptr<Instruction>> instructions;

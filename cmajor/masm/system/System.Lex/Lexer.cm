@@ -10,11 +10,6 @@ using System.Security;
 
 namespace System.Lex
 {
-    public enum LexerFlags : sbyte
-    {
-        none = 0, farthestError = 1 << 0
-    }
-
     public Result<int*> GetClassMap(const string& classMapName)
     {
         int errorId = 0;
@@ -146,14 +141,11 @@ namespace System.Lex
             {
                 line = current->line;
             }
-            if (GetFlag(LexerFlags.farthestError))
+            long p = GetPos();
+            if (p > farthestPos)
             {
-                long p = GetPos();
-                if (p > farthestPos)
-                {
-                    farthestPos = p;
-                    farthestRuleContext = ruleContext;
-                }
+                farthestPos = p;
+                farthestRuleContext = ruleContext;
             }
             return Result<bool>(true);
         }
@@ -199,6 +191,7 @@ namespace System.Lex
                 {
                     lexeme.end = pos + 1;
                 }
+                int prevState = state;
                 state = NextState(state, c);
                 if (state == -1)
                 {
@@ -229,7 +222,8 @@ namespace System.Lex
                                 SetLatestErrorId(utf8.GetErrorId());
                                 return Result<bool>(ErrorId(utf8.GetErrorId()));
                             }
-                            string errorMessage = "System.Lex.Lexer.NextToken(): error: invalid character \'" + utf8.Value() + "\' in file \'" + fileName + "\' at line " + ToString(line);
+                            string errorMessage = "System.Lex.Lexer.NextToken(): error: invalid character \'" + utf8.Value() + "\' in file \'" + fileName + "\' at line " + ToString(line) + 
+                                ", state=" + ToString(prevState) + ", class=" + ToString(GetClass(c));
                             int errorId = AllocateError(errorMessage);
                             SetLatestErrorId(errorId);
                             return Result<bool>(ErrorId(errorId));
@@ -460,22 +454,6 @@ namespace System.Lex
             tokenLine.endState = state;
             return tokenLine;
         }
-        public inline LexerFlags Flags() const
-        {
-            return flags;
-        }
-        public inline bool GetFlag(LexerFlags flag) const
-        {
-            return (flags & flag) != LexerFlags.none;
-        }
-        public inline void SetFlag(LexerFlags flag)
-        {
-            flags = cast<LexerFlags>(flags | flag);
-        }
-        public inline void ResetFlag(LexerFlags flag)
-        {
-            flags = cast<LexerFlags>(flags & ~flag);
-        }
         public const List<long>& RuleContext() const
         {
             return ruleContext;
@@ -572,7 +550,6 @@ namespace System.Lex
         private uchar separatorChar;
         private Set<int> blockCommentStates;
         private int commentTokenId;
-        private LexerFlags flags;
         private long farthestPos;
         private List<long> ruleContext;
         private List<long> farthestRuleContext;

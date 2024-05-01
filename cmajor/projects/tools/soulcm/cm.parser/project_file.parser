@@ -1,0 +1,194 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cm.parser;
+
+import cm.ast;
+import cm.token;
+
+parser ProjectFileParser
+{
+    lexer CmajorLexer;
+    main;
+
+    using ContainerFileParser.QualifiedId;
+    using ContainerFileParser.FilePath;
+    using ContainerFileParser.ProjectKeyword;
+
+    ProjectFile(var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
+        ::= 
+        (
+            empty{ lexer.vars.matchFilePath = true; }
+            ProjectKeyword:projectKeyword
+            QualifiedId:projectName
+            SEMICOLON
+            {
+                projectFile.Reset(new cm.ast.Project(projectName, lexer.FileName(), "debug", cm.ast.BackEnd.masm, "gcc"));
+            }
+            (
+                Declaration:declaration{ projectFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return projectFile.Release();
+        }
+        ;
+
+    Declaration : cm.ast.ProjectDeclaration*
+        ::= ReferenceDeclaration:referenceDeclaration{ return referenceDeclaration; }
+        |   SourceFileDeclaration:sourceFileDeclaration{ return sourceFileDeclaration; }
+        |   ResourceFileDeclaration:resourceFileDeclaration{ return resourceFileDeclaration; }
+        |   ResourceScriptFileDeclaration:resourceScriptFileDeclaration{ return resourceScriptFileDeclaration; }
+        |   TextFileDeclaration:textFileDeclaration{ return textFileDeclaration; }
+        |   ActionFileDeclaration:actionFileDeclaration{ return actionFileDeclaration; }
+        |   TargetDeclaration:targetDeclaration{ return targetDeclaration; }
+        ;
+
+    ReferenceDeclaration : cm.ast.ProjectDeclaration*
+        ::= 
+        (
+            ReferenceKeyword:referenceKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ReferenceDeclaration(filePath);
+        }
+        ;
+
+    SourceFileDeclaration : cm.ast.ProjectDeclaration*
+        ::= 
+        (
+            SourceKeyword:sourceKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SourceFileDeclaration(filePath);
+        }
+        ;
+
+    ResourceFileDeclaration : cm.ast.ProjectDeclaration*
+        ::=
+        (
+            ResourceKeyword:resourceKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ResourceFileDeclaration(filePath);
+        }
+        ;
+
+    ResourceScriptFileDeclaration : cm.ast.ProjectDeclaration*
+        ::=
+        (
+            RcKeyword:rcKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ResourceScriptFileDeclaration(filePath);
+        }
+        ;
+
+    TextFileDeclaration : cm.ast.ProjectDeclaration*
+        ::=
+        (
+            TextKeyword:textKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.TextFileDeclaration(filePath);
+        }
+        ;
+
+    ActionFileDeclaration : cm.ast.ProjectDeclaration*
+        ::= 
+        (
+            ActionKeyword:actionKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ActionFileDeclaration(filePath);
+        }
+        ;
+
+    TargetDeclaration : cm.ast.ProjectDeclaration*
+        ::=
+        (
+            TargetKeyword:targetKeyword
+            ASSIGN
+            Target:target
+            SEMICOLON
+        )
+        {
+            return new cm.ast.TargetDeclaration(target);
+        }
+        ;
+
+    Target: cm.ast.Target
+        ::= ProgramKeyword:programKeyword{ return cm.ast.Target.program; }
+        |   WinGuiAppKeyword:winGuiAppKeyword{ return cm.ast.Target.winguiapp; }
+        |   WinAppKeyword:winAppKeyword{ return cm.ast.Target.winapp; }
+        |   LibraryKeyword:libraryKeyword{ return cm.ast.Target.library; }
+        |   WinLibKeyword:winLibKeyword{ return cm.ast.Target.winlib; }
+        |   UnitTestKeyword:uniTestKeyword{ return cm.ast.Target.unitTest; }
+        ;
+
+    ReferenceKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"reference"; }
+        ;
+
+    SourceKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"source"; }
+        ;
+
+    ResourceKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"resource"; }
+        ;
+
+    RcKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"rc"; }
+        ;
+
+    TextKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"text"; }
+        ;
+
+    ActionKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"action"; }
+        ;
+
+    TargetKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"target"; }
+        ;
+
+    ProgramKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"program"; }
+        ;
+
+    WinGuiAppKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"winguiapp"; }
+        ;
+
+    WinAppKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"winapp"; }
+        ;
+
+    LibraryKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"library"; }
+        ;
+
+    WinLibKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"winlib"; }
+        ;
+
+    UnitTestKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"unitTest"; }
+        ;
+}

@@ -224,17 +224,17 @@ namespace System
     {
         switch (c)
         {
-            case '\\': return "\\\\";
-            case '"':  return "\\\"";
-            case '\'': return "\\'";
-            case '\a': return "\\a";
-            case '\b': return "\\b";
-            case '\f': return "\\f";
-            case '\n': return "\\n";
-            case '\r': return "\\r";
-            case '\t': return "\\t";
-            case '\v': return "\\v";
-            case '\0': return "\\0";
+            case '\\': return Result<string>("\\\\");
+            case '"':  return Result<string>("\\\"");
+            case '\'': return Result<string>("\\'");
+            case '\a': return Result<string>("\\a");
+            case '\b': return Result<string>("\\b");
+            case '\f': return Result<string>("\\f");
+            case '\n': return Result<string>("\\n");
+            case '\r': return Result<string>("\\r");
+            case '\t': return Result<string>("\\t");
+            case '\v': return Result<string>("\\v");
+            case '\0': return Result<string>("\\0");
             default:
             {
                 if (IsPrintable(c))
@@ -267,19 +267,20 @@ namespace System
 
     public Result<wstring> CharStr(wchar c)
     {
+        Result<string> hexEscapeResult;
         switch (c)
         {
-            case w'\\': return w"\\\\";
-            case w'"':  return w"\\\"";
-            case w'\'': return w"\\'";
-            case w'\a': return w"\\a";
-            case w'\b': return w"\\b";
-            case w'\f': return w"\\f";
-            case w'\n': return w"\\n";
-            case w'\r': return w"\\r";
-            case w'\t': return w"\\t";
-            case w'\v': return w"\\v";
-            case w'\0': return w"\\0";
+            case w'\\': return Result<wstring>(w"\\\\");
+            case w'"':  return Result<wstring>(w"\\\"");
+            case w'\'': return Result<wstring>(w"\\'");
+            case w'\a': return Result<wstring>(w"\\a");
+            case w'\b': return Result<wstring>(w"\\b");
+            case w'\f': return Result<wstring>(w"\\f");
+            case w'\n': return Result<wstring>(w"\\n");
+            case w'\r': return Result<wstring>(w"\\r");
+            case w'\t': return Result<wstring>(w"\\t");
+            case w'\v': return Result<wstring>(w"\\v");
+            case w'\0': return Result<wstring>(w"\\0");
             default:
             {
                 if (cast<ushort>(c) < 256u && IsPrintable(cast<char>(c)))
@@ -288,12 +289,12 @@ namespace System
                 }
                 else
                 {
-                    auto result = HexEscape(c);
-                    if (result.Error())
+                    hexEscapeResult = HexEscape(c);
+                    if (hexEscapeResult.Error())
                     {
-                        return Result<wstring>(ErrorId(result.GetErrorId()));
+                        return Result<wstring>(ErrorId(hexEscapeResult.GetErrorId()));
                     }
-                    return ToUtf16(result.Value());
+                    return ToUtf16(hexEscapeResult.Value());
                 }
             }
         }
@@ -302,19 +303,20 @@ namespace System
 
     public Result<ustring> CharStr(uchar c)
     {
+        Result<string> hexEscapeResult;
         switch (c)
         {
-            case u'\\': return u"\\\\";
-            case u'"':  return u"\\\"";
-            case u'\'': return u"\\'";
-            case u'\a': return u"\\a";
-            case u'\b': return u"\\b";
-            case u'\f': return u"\\f";
-            case u'\n': return u"\\n";
-            case u'\r': return u"\\r";
-            case u'\t': return u"\\t";
-            case u'\v': return u"\\v";
-            case u'\0': return u"\\0";
+            case u'\\': return Result<ustring>(u"\\\\");
+            case u'"':  return Result<ustring>(u"\\\"");
+            case u'\'': return Result<ustring>(u"\\'");
+            case u'\a': return Result<ustring>(u"\\a");
+            case u'\b': return Result<ustring>(u"\\b");
+            case u'\f': return Result<ustring>(u"\\f");
+            case u'\n': return Result<ustring>(u"\\n");
+            case u'\r': return Result<ustring>(u"\\r");
+            case u'\t': return Result<ustring>(u"\\t");
+            case u'\v': return Result<ustring>(u"\\v");
+            case u'\0': return Result<ustring>(u"\\0");
             default:
             {
                 if (cast<uint>(c) < 256u && IsPrintable(cast<char>(c)))
@@ -323,12 +325,12 @@ namespace System
                 }
                 else
                 {
-                    auto result = HexEscape(c);
-                    if (result.Error())
+                    hexEscapeResult = HexEscape(c);
+                    if (hexEscapeResult.Error())
                     {
-                        return Result<ustring>(ErrorId(result.GetErrorId()));
+                        return Result<ustring>(ErrorId(hexEscapeResult.GetErrorId()));
                     }
-                    return ToUtf32(result.Value());
+                    return ToUtf32(hexEscapeResult.Value());
                 }
             }
         }

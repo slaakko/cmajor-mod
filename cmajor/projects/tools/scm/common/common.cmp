@@ -1,6 +1,0 @@
-project common;
-target=library;
-reference <../lex/lex.cmp>;
-source <ast.cm>;
-source <common.parser.cm>;
-text <common.parser>;

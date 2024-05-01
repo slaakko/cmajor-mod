@@ -73,7 +73,7 @@ Value* Context::MakeFloatLiteralSymbol(float value)
     inst->SetNoColon();
     inst->SetLabel(symbol->Name());
     inst->AddOperand(literal);
-    data->AddInstruction(inst);
+    data->AddInstruction(std::unique_ptr<Instruction>(inst));
     file->GetDataSection().AddData(data);
     return expr;
 }
@@ -89,7 +89,7 @@ Value* Context::MakeDoubleLiteralSymbol(double value)
     inst->SetNoColon();
     inst->SetLabel(symbol->Name());
     inst->AddOperand(literal);
-    data->AddInstruction(inst);
+    data->AddInstruction(std::unique_ptr<Instruction>(inst));
     file->GetDataSection().AddData(data);
     return expr;
 }
