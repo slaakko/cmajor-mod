@@ -1,0 +1,224 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+
+namespace System.IO.Compression
+{
+    public enum CompressionMode : int
+    {
+        compress = 0, decompress = 1
+    }
+    
+    public const int defaultDeflateCompressionLevel = -1; // equal to level 6 according to zlib documentation
+    public const int noDeflateCompression = 0;
+    public const int fastestDeflateCompression = 1;
+    public const int optimalDeflateCompression = 9;
+    public const int Z_NO_FLUSH = 0;
+    public const int Z_STREAM_END = 1;
+    public const int Z_FINISH = 4;
+    public const int Z_STREAM_ERROR = -2;
+    
+    public class DeflateStream : Stream
+    {
+        public DeflateStream(Stream* underlyingStream_, int compressionLevel_) : this(underlyingStream_, compressionLevel_, 16384)
+        {
+        }
+        public DeflateStream(Stream* underlyingStream_, CompressionMode mode_) : this(underlyingStream_, mode_, 16384)
+        {
+        }
+        public DeflateStream(Stream* underlyingStream_, int compressionLevel_, long bufferSize_) : 
+            underlyingStream(underlyingStream_), mode(CompressionMode.compress), handle(null), inAvail(0u), bufferSize(bufferSize_),
+            in(bufferSize), outAvail(0u), outPos(0), outHave(0u), endOfInput(false), endOfStream(false), out(bufferSize)
+        {
+            int errorId = 0;
+            RtmInitZlib(mode, compressionLevel_, &handle, errorId);
+            if (errorId != 0)
+            {
+                SetLatestErrorId(errorId);
+            }
+        }
+        public DeflateStream(Stream* underlyingStream_, CompressionMode mode_, long bufferSize_) : 
+            underlyingStream(underlyingStream_), mode(mode_), handle(null), inAvail(0u), bufferSize(bufferSize_),
+            in(bufferSize), outAvail(0u), outPos(0), outHave(0u), endOfInput(false), endOfStream(false), out(bufferSize)
+        {
+            int errorId = 0;
+            RtmInitZlib(mode, defaultDeflateCompressionLevel, &handle, errorId);
+            if (errorId != 0)
+            {
+                SetLatestErrorId(errorId);
+            }
+        }
+        suppress DeflateStream(DeflateStream&&);
+        suppress void operator=(DeflateStream&&);
+        suppress DeflateStream(const DeflateStream&);
+        suppress void operator=(const DeflateStream&);
+        public inline CompressionMode Mode() const 
+        {
+            return mode;
+        }
+        public ~DeflateStream()
+        {
+            if (handle != null)
+            {
+                if (mode == CompressionMode.compress)
+                {
+                    Finish();
+                }        
+                RtmDoneZlib(mode, handle);
+            }
+        }
+        public override Result<int> ReadByte()
+        {
+            byte x = 0u;
+            auto readResult = this->Read(&x, 1); 
+            if (readResult.Error())
+            {
+                return Result<int>(ErrorId(readResult.GetErrorId()));
+            }
+            long bytesRead = readResult.Value();
+            if (bytesRead == 0)
+            {
+                return Result<int>(-1);
+            }
+            return Result<int>(x);
+        }
+        public override Result<long> Read(byte* buf, long count)
+        {
+            if (mode != CompressionMode.decompress)
+            {
+                string errorMessage = "Cannot read from DeflateStream in CompressionMode.compress";
+                int errorId = AllocateError(errorMessage);
+                return Result<long>(ErrorId(errorId));
+            }
+            long bytesRead = 0;
+            do
+            {
+                if (inAvail == 0u && !endOfInput)
+                {
+                    auto readResult = underlyingStream->Read(cast<byte*>(in.Mem()), bufferSize);
+                    if (readResult.Error())
+                    {
+                        return Result<long>(ErrorId(readResult.GetErrorId()));
+                    }
+                    inAvail = cast<uint>(readResult.Value());
+                    if (inAvail == 0u)
+                    {
+                        endOfInput = true;
+                    }
+                    RtmSetInputZlib(in.Mem(), inAvail, handle);
+                }
+                do
+                {
+                    if (outHave == 0u && !endOfStream)
+                    {
+                        int errorId = 0;
+                        int ret = RtmInflateZlib(out.Mem(), cast<uint>(bufferSize), &outHave, &outAvail, &inAvail, handle, errorId);
+                        if (errorId != 0)
+                        {
+                            return Result<long>(ErrorId(errorId));
+                        }
+                        if (ret == Z_STREAM_END)
+                        {
+                            endOfStream = true;
+                        }
+                        outPos = 0;
+                    }                    
+                    while (count > 0 && outHave > 0u)
+                    {
+                        *buf++ = out[outPos++];
+                        --count;
+                        --outHave;
+                        ++bytesRead;
+                    }        
+                }
+                while (count > 0 && outAvail == 0u);
+            }
+            while (count > 0 && !endOfStream && !endOfInput);
+            if (endOfInput && !endOfStream)
+            {
+                string errorMessage = "DeflateStream: unexpected end of input";
+                int errorId = AllocateError(errorMessage);
+                return Result<long>(ErrorId(errorId));
+            }
+            return Result<long>(bytesRead);
+        }
+        public override Result<bool> Write(byte x)
+        {
+            return this->Write(&x, 1);
+        }
+        public override Result<bool> Write(byte* buf, long count)
+        {
+            if (mode != CompressionMode.compress)
+            {
+                string errorMessage = "Cannot write to DeflateStream in CompressionMode.decompress";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            while (count > 0)
+            {
+                byte* inP = cast<byte*>(in.Mem());
+                inAvail = 0u;
+                while (count > 0 && inAvail < cast<uint>(bufferSize))
+                {
+                    *inP++ = *buf++;
+                    --count;
+                    ++inAvail;
+                }
+                RtmSetInputZlib(in.Mem(), inAvail, handle);
+                do
+                {
+                    uint have = 0u;
+                    int errorId = 0;
+                    int ret = RtmDeflateZlib(out.Mem(), cast<uint>(bufferSize), &have, &outAvail, handle, Z_NO_FLUSH, errorId);
+                    if (errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto result = underlyingStream->Write(cast<byte*>(out.Mem()), cast<long>(have));
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+                while (outAvail == 0u);
+            }
+            return Result<bool>(true);
+        }
+        private Result<bool> Finish()
+        {
+            do
+            {
+                uint have = 0u;
+                int errorId = 0;
+                int ret = RtmDeflateZlib(out.Mem(), cast<uint>(bufferSize), &have, &outAvail, handle, Z_FINISH, errorId);
+                if (errorId != 0)
+                {
+                    return Result<bool>(ErrorId(errorId));
+                }
+                auto result = underlyingStream->Write(cast<byte*>(out.Mem()), cast<long>(have));
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            while (outAvail == 0);
+            return Result<bool>(true);
+        }
+        private Stream* underlyingStream;
+        private CompressionMode mode;
+        private long bufferSize;
+        private uint inAvail;
+        private IOBuffer in;
+        private uint outAvail;
+        private long outPos;
+        private uint outHave;
+        private bool endOfInput;
+        private bool endOfStream;
+        private IOBuffer out;
+        private void* handle;
+    }
+}

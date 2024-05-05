@@ -21,9 +21,11 @@ void PrintHelp()
     Console.Out() << "  Be verbose." << endl();
     Console.Out() << "--help | -h." << endl();
     Console.Out() << "  Print help and exit." << endl();
+    Console.Out() << "--debug | -d." << endl();
+    Console.Out() << "  Write debug output files." << endl();
 }
 
-Result<bool> ProcessFiles(const List<string>& files, bool verbose)
+Result<bool> ProcessFiles(const List<string>& files, bool verbose, bool debug)
 {
     if (files.IsEmpty())
     {
@@ -35,7 +37,7 @@ Result<bool> ProcessFiles(const List<string>& files, bool verbose)
     {
         if (file.EndsWith(".scmlg"))
         {
-            auto result = GenerateLexers(file, Version(), verbose);
+            auto result = GenerateLexers(file, Version(), verbose, debug);
             if (result.Error())
             {
                 return Result<bool>(ErrorId(result.GetErrorId()));
@@ -55,6 +57,7 @@ int main(int argc, const char** argv)
 {
     List<string> files;
     bool verbose = false;
+    bool debug = false;
     for (int i = 1; i < argc; ++i)
     {
         string arg = argv[i];
@@ -68,7 +71,11 @@ int main(int argc, const char** argv)
             {
                 PrintHelp();
                 return 0;
-            }   
+            }
+            else if (arg == "--debug")
+            {
+                debug = true;
+            }
             else
             {
                 Console.Error() << "unknown option '" << arg << "'" << endl();
@@ -92,6 +99,11 @@ int main(int argc, const char** argv)
                         PrintHelp();
                         return 0;
                     }
+                    case 'd':
+                    {
+                        debug = true;
+                        break;
+                    }
                     default:
                     {
                         Console.Error() << "unknown option '-" << string(o) << "'" << endl();
@@ -111,7 +123,7 @@ int main(int argc, const char** argv)
             files.Add(fullPathResult.Value());
         }
     }
-    auto result = ProcessFiles(files, verbose);
+    auto result = ProcessFiles(files, verbose, debug);
     if (result.Error())
     {
         Console.Error() << result.GetErrorMessage() << endl();

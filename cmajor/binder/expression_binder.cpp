@@ -2373,13 +2373,16 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             expression->SetFlag(BoundExpressionFlags::exceptionCapture);
         }
     }
-    if (GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && functionSymbol->HasSource())
+    if (invokeId) // TODO
     {
-        symbolTable.MapInvoke(invokeId, functionSymbol);
-    }
-    if (functionSymbol->HasSource())
-    {
-        cmajor::symbols::MapIdentifierToSymbolDefinition(invokeId, functionSymbol);
+        if (GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc) && functionSymbol->HasSource())
+        {
+            symbolTable.MapInvoke(invokeId, functionSymbol);
+        }
+        if (functionSymbol->HasSource())
+        {
+            cmajor::symbols::MapIdentifierToSymbolDefinition(invokeId, functionSymbol);
+        }
     }
 }
 

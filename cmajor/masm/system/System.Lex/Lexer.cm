@@ -31,16 +31,6 @@ namespace System.Lex
         }
         suppress Lexer(const Lexer&);
         suppress void operator=(const Lexer&);
-        public string FullName() const
-        {
-            return typename(*this);
-        }
-        public string CommonName() const
-        {
-            string fullName = FullName();
-            List<string> components = fullName.Split('.');
-            return components.Back();
-        }
         public inline const string& ClassMapName() 
         {
             return classMapName;

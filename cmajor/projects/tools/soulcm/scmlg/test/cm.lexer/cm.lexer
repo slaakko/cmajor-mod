@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.token;
+using cm.keyword;
+using cm.expr;
+
+lexer cm.lexer.CmajorLexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{id}" { long kw = GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return kw; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{floating_literal}" { return FLOATING_LITERAL; }
+        "{char_literal}" { return CHAR_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+		"::=" { return PRODUCES; }
+		"$" { return DOLLAR; }
+        "<=>" { return EQUIVALENCE; }
+        "=>" { return IMPLICATION; }
+        "\|\|" { return DISJUNCTION; }
+        "&&" { return AMP_AMP; }
+        "\|" { return PIPE; }
+        "^" { return CARET; }
+        "&" { return AMP; }
+        "==" { return EQ; }
+        "!=" { return NEQ; }
+        "<=" { return LEQ; }
+        ">=" { return GEQ; }
+        "<" { return LANGLE; }
+        ">" { return RANGLE; }
+        "<<" $(0) { return SHIFT_LEFT; }
+        ">>" $(1) { return SHIFT_RIGHT; }
+        "\+" { return PLUS; }
+        "-" { return MINUS; }
+        "\*" { return STAR; }
+        "/" { return DIV; }
+        "%" { return REM; }
+        "\+\+" { return PLUS_PLUS; }
+        "--" { return MINUS_MINUS; }
+        "!" { return EXCLAMATION; }
+        "~" { return TILDE; }
+        "\." { return DOT; }
+        "->" { return ARROW; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "," { return COMMA; }
+        "=" { return ASSIGN; }
+        ":" { return COLON; }
+        ";" { return SEMICOLON; }
+        "#" { return HASH; }
+        "<[^\n>]*>" $(2) { return FILE_PATH; }
+    }
+
+    variables
+    {
+        bool parsingOperatorFunctionGroupId;
+        int leftAngleCount;
+        bool matchFilePath;
+    }
+
+    actions
+    {
+        $(0)={ if (vars.parsingOperatorFunctionGroupId) return System.Lex.INVALID_TOKEN; }
+        $(1)={ if (vars.leftAngleCount > 0) return System.Lex.INVALID_TOKEN; }
+        $(2)={ if (!vars.matchFilePath) return System.Lex.INVALID_TOKEN; }
+    }
+}

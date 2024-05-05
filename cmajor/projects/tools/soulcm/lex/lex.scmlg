@@ -1,8 +1,0 @@
-project scm.lex;
-extern tokens <../token/cm.token>;
-extern tokens <../token/punctuation.token>;
-extern tokens <../token/scm.token>;
-expressions <scm.expr>;
-keywords <cm.keyword>;
-lexer <scmlg.lexer>;
-lexer <scmpg.lexer>;

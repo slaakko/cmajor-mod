@@ -10,7 +10,7 @@ using scmlg.ast;
 
 namespace scmlg
 {
-    Result<bool> ProcessScmlgFile(scmlg.ast.ScmlgFile* scmlgFile, const string& scmlgVersion, bool verbose)
+    public Result<bool> ProcessScmlgFile(scmlg.ast.ScmlgFile* scmlgFile, const string& scmlgVersion, bool verbose, bool debug)
     {
         if (verbose)
         {
@@ -79,12 +79,41 @@ namespace scmlg
                     }
                     break;
                 }
+                case ScmlgFileDeclarationKind.lexerFileDeclaration:
+                {
+                    LexerFileDeclaration* lexerFileDeclaration = cast<LexerFileDeclaration*>(declaration.Get());
+                    auto lexerFilePathResult = GetFullPath(Path.Combine(directory, lexerFileDeclaration->FilePath()));
+                    if (lexerFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lexerFilePathResult.GetErrorId()));
+                    }
+                    const string& lexerFilePath = lexerFilePathResult.Value();
+                    auto result = ParseLexerFile(lexerFilePath);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    scmlgFile->AddLexerFile(result.Value().Release());
+                    if (verbose)
+                    {
+                        Console.Out() << "lexer file '" << lexerFilePath << "' parsed" << endl();
+                    }
+                    break;
+                }
+            }
+        }
+        for (const auto& lexerFile : scmlgFile->LexerFiles())
+        {
+            auto result = GenerateLexer(scmlgFile, lexerFile.Get(), scmlgVersion, verbose, debug);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
             }
         }
         return Result<bool>(true);
     }
 
-    Result<bool> GenerateLexers(const string& scmlgFilePath, const string& scmlgVersion, bool verbose)
+    public Result<bool> GenerateLexers(const string& scmlgFilePath, const string& scmlgVersion, bool verbose, bool debug)
     {
         if (verbose)
         {
@@ -96,7 +125,7 @@ namespace scmlg
             return Result<bool>(ErrorId(result.GetErrorId()));
         }
         UniquePtr<scmlg.ast.ScmlgFile>& scmlgFile = result.Value();
-        auto processResult = ProcessScmlgFile(scmlgFile.Get(), scmlgVersion, verbose);
+        auto processResult = ProcessScmlgFile(scmlgFile.Get(), scmlgVersion, verbose, debug);
         if (processResult.Error())
         {
             return Result<bool>(ErrorId(processResult.GetErrorId()));

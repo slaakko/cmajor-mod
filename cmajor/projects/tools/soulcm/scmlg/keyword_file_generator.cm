@@ -4,12 +4,13 @@
 // =================================
 
 using System;
+using System.Collections;
 using scmlg.parser;
 using scmlg.ast;
 
 namespace scmlg
 {
-    Result<bool> GenerateKeywordFile(scmlg.ast.KeywordFile* keywordFile, const string& scmlgVersion, bool verbose)
+    public Result<bool> GenerateKeywordFile(scmlg.ast.KeywordFile* keywordFile, const string& scmlgVersion, bool verbose)
     {
         string cmFilePath = keywordFile->FilePath() + ".cm";
         auto cmFileResult = System.IO.File.CreateText(cmFilePath);
@@ -22,7 +23,12 @@ namespace scmlg
         System.Text.CodeFormatter formatter(writer);
         formatter << "// this file has been automatically generated from '" << keywordFile->FilePath() << "' using SoulCm lexer generator scmlg version " << scmlgVersion << endl() << endl();
         formatter << "using System;" << endl();
-        formatter << "using System.Collections;" << endl() << endl();
+        formatter << "using System.Collections;" << endl();
+        for (const auto& u : keywordFile->Usings())
+        {
+            formatter << "using " << u << ";" << endl();
+        }
+        formatter << endl();
         formatter << "namespace " << keywordCollection->Name() << endl();
         formatter << "{" << endl();
         formatter.IncIndent();
@@ -65,7 +71,7 @@ namespace scmlg
             {
                 return Result<bool>(ErrorId(utf8Result.GetErrorId()));
             }
-            formatter << "keywords.Add(System.Lex.Keyword(\"" + utf8Result.Value() + "\", " + keyword->TokenName() + ");" << endl();
+            formatter << "keywords.Add(System.Lex.Keyword(u\"" + utf8Result.Value() + "\", " + keyword->TokenName() + "));" << endl();
         }
         formatter << "keywordMap.SetKeywords(keywords);" << endl();
         formatter.DecIndent();
@@ -75,7 +81,7 @@ namespace scmlg
         formatter << "private static UniquePtr<Keywords> instance;" << endl();
         formatter.DecIndent();
         formatter << "}" << endl() << endl();
-        formatter << "public System.Lex.KeywordMap* GetKeywordMap() const" << endl();
+        formatter << "public System.Lex.KeywordMap* GetKeywordMap()" << endl();
         formatter << "{" << endl();
         formatter.IncIndent();
         formatter << "return Keywords.Instance().GetKeywordMap();" << endl();
@@ -89,8 +95,8 @@ namespace scmlg
         }
         return Result<bool>(true);
     }
-    
-    Result<bool> ProcessKeywordFile(scmlg.ast.ScmlgFile* scmlgFile, const string& keywordFilePath, const string& scmlgVersion, bool verbose)
+
+    public Result<bool> ProcessKeywordFile(scmlg.ast.ScmlgFile* scmlgFile, const string& keywordFilePath, const string& scmlgVersion, bool verbose)
     {
         if (verbose)
         {

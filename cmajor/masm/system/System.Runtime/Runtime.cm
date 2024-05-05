@@ -120,3 +120,8 @@ public extern cdecl int RtmProcessReadLine(void* process, int handle, int& error
 public extern cdecl int RtmProcessReadToEnd(void* process, int handle, int& errorId);
 public extern cdecl bool RtmProcessWriteLine(void* process, const char* line, int& errorId);
 public extern cdecl int* RtmGetClassMap(const char* classMapName, int& errorId);
+public extern cdecl int RtmInitZlib(int mode, int level, void** handle, int& errorId);
+public extern cdecl void RtmDoneZlib(int mode, void* handle);
+public extern cdecl void RtmSetInputZlib(void* inChunk, uint inAvail, void* handle);
+public extern cdecl int RtmInflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle, int& errorId);
+public extern cdecl int RtmDeflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int flush, int& errorId);

@@ -1,7 +1,15 @@
 project scmlg.parser;
 parser <expression_file.parser>;
 parser <keyword_file.parser>;
+parser <lexer_file.parser>;
 parser <scmlg_file.parser>;
 parser <token_file.parser>;
 extern parser <../common.parser/common.parser>;
 extern parser <../cm.parser/container_file.parser>;
+extern parser <../cm.parser/statement.parser>;
+extern parser <../cm.parser/type_expr.parser>;
+extern parser <../cm.parser/expression.parser>;
+extern parser <../cm.parser/identifier.parser>;
+extern parser <../cm.parser/fundamental_type.parser>;
+extern parser <../cm.parser/template.parser>;
+extern parser <../cm.parser/literal.parser>;

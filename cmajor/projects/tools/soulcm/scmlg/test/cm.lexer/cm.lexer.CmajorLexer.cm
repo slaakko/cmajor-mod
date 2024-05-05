@@ -1,0 +1,3514 @@
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg/test/cm.lexer/cm.lexer' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+using System.Collections;
+using cm.token;
+using cm.keyword;
+
+namespace cm.lexer
+{
+    public class CmajorLexer : System.Lex.Lexer
+    {
+        public CmajorLexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
+            base(start_, end_, fileName_, "cm.lexer.CmajorLexer.classmap")
+        {
+            auto classMapResult = System.Lex.GetClassMap(ClassMapName());
+            if (classMapResult.Error())
+            {
+                SetLatestErrorId(classMapResult.GetErrorId());
+                return;
+            }
+            SetClassMap(classMapResult.Value());
+            SetKeywordMap(GetKeywordMap());
+        }
+        public override int NextState(int state, uchar c)
+        {
+            int cls = GetClass(c);
+            switch (state)
+            {
+                case 0:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 16:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        {
+                            return 1;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 2;
+                        }
+                        case 6:
+                        {
+                            return 3;
+                        }
+                        case 37:
+                        {
+                            return 4;
+                        }
+                        case 38:
+                        {
+                            return 5;
+                        }
+                        case 39:
+                        {
+                            return 6;
+                        }
+                        case 40:
+                        {
+                            return 7;
+                        }
+                        case 42:
+                        {
+                            return 8;
+                        }
+                        case 43:
+                        {
+                            return 9;
+                        }
+                        case 49:
+                        {
+                            return 10;
+                        }
+                        case 50:
+                        {
+                            return 11;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(36);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 10:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(35);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 9:
+                {
+                    switch (cls)
+                    {
+                        case 43:
+                        {
+                            return 12;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(11);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 8:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(12);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 42:
+                        {
+                            return 13;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(10);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 7:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 39:
+                        case 40:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 14;
+                        }
+                        case 38:
+                        {
+                            return 15;
+                        }
+                        case 41:
+                        {
+                            return 16;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(45);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 15:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 14;
+                        }
+                        case 41:
+                        {
+                            return 17;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(8);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 14:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 14;
+                        }
+                        case 41:
+                        {
+                            return 16;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(7);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 5:
+                {
+                    switch (cls)
+                    {
+                        case 41:
+                        {
+                            return 18;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(9);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 4:
+                {
+                    switch (cls)
+                    {
+                        case 37:
+                        {
+                            return 19;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    switch (cls)
+                    {
+                        case 38:
+                        {
+                            return 20;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 20:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(6);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 3:
+                {
+                    switch (cls)
+                    {
+                        case 6:
+                        {
+                            return 21;
+                        }
+                        case 8:
+                        {
+                            return 22;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 22:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 24:
+                {
+                    switch (cls)
+                    {
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 25;
+                        }
+                        case 6:
+                        {
+                            return 26;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 26:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 28;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 28:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 6:
+                        {
+                            return 29;
+                        }
+                        case 8:
+                        {
+                            return 30;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 30:
+                {
+                    switch (cls)
+                    {
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 25;
+                        }
+                        case 6:
+                        {
+                            return 26;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 29:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 2:
+                        {
+                            return 32;
+                        }
+                        case 3:
+                        {
+                            return 33;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 34:
+                {
+                    switch (cls)
+                    {
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 35;
+                        }
+                        case 2:
+                        {
+                            return 36;
+                        }
+                        case 3:
+                        {
+                            return 37;
+                        }
+                        case 6:
+                        {
+                            return 38;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 38:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        case 2:
+                        {
+                            return 39;
+                        }
+                        case 3:
+                        {
+                            return 40;
+                        }
+                        case 4:
+                        case 5:
+                        {
+                            return 41;
+                        }
+                        case 6:
+                        {
+                            return 42;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 42:
+                {
+                    switch (cls)
+                    {
+                        case 6:
+                        {
+                            return 29;
+                        }
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 2:
+                        {
+                            return 32;
+                        }
+                        case 3:
+                        {
+                            return 33;
+                        }
+                        case 8:
+                        {
+                            return 43;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 43:
+                {
+                    switch (cls)
+                    {
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 35;
+                        }
+                        case 2:
+                        {
+                            return 36;
+                        }
+                        case 3:
+                        {
+                            return 37;
+                        }
+                        case 6:
+                        {
+                            return 38;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 41:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        case 2:
+                        {
+                            return 39;
+                        }
+                        case 3:
+                        {
+                            return 40;
+                        }
+                        case 4:
+                        case 5:
+                        {
+                            return 41;
+                        }
+                        case 6:
+                        {
+                            return 44;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 44:
+                {
+                    switch (cls)
+                    {
+                        case 6:
+                        {
+                            return 29;
+                        }
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 2:
+                        {
+                            return 32;
+                        }
+                        case 3:
+                        {
+                            return 33;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 40:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 2:
+                        {
+                            return 45;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 46:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 6:
+                        {
+                            return 29;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 45:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 39:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 37:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 2:
+                        {
+                            return 45;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 36:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 35:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 2:
+                        {
+                            return 32;
+                        }
+                        case 3:
+                        {
+                            return 33;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 33:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 2:
+                        {
+                            return 45;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 32:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 46;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 31:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 31;
+                        }
+                        case 2:
+                        {
+                            return 32;
+                        }
+                        case 3:
+                        {
+                            return 33;
+                        }
+                        case 8:
+                        {
+                            return 34;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 27:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 27;
+                        }
+                        case 6:
+                        {
+                            return 28;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 25:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 23:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 23;
+                        }
+                        case 8:
+                        {
+                            return 24;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 21:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 47;
+                        }
+                        case 2:
+                        {
+                            return 48;
+                        }
+                        case 3:
+                        {
+                            return 49;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 49:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 2;
+                        }
+                        case 6:
+                        {
+                            return 3;
+                        }
+                        case 2:
+                        {
+                            return 50;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 50:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 2;
+                        }
+                        case 6:
+                        {
+                            return 3;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 48:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 2;
+                        }
+                        case 6:
+                        {
+                            return 3;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 47:
+                {
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 13:
+                        case 14:
+                        case 15:
+                        case 16:
+                        case 17:
+                        case 18:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 23:
+                        case 24:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        case 37:
+                        case 38:
+                        case 39:
+                        case 40:
+                        case 41:
+                        case 42:
+                        case 43:
+                        case 44:
+                        case 45:
+                        case 46:
+                        case 47:
+                        case 48:
+                        case 49:
+                        case 50:
+                        case 51:
+                        case 52:
+                        case 53:
+                        case 54:
+                        case 55:
+                        case 56:
+                        {
+                            return 47;
+                        }
+                        case 2:
+                        {
+                            return 48;
+                        }
+                        case 3:
+                        {
+                            return 49;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 2;
+                        }
+                        case 6:
+                        {
+                            return 3;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 16:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        {
+                            return 51;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 51:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 0:
+                        case 1:
+                        case 9:
+                        case 10:
+                        case 11:
+                        case 12:
+                        case 16:
+                        case 19:
+                        case 20:
+                        case 21:
+                        case 22:
+                        case 25:
+                        case 26:
+                        case 27:
+                        case 28:
+                        case 29:
+                        case 30:
+                        case 31:
+                        case 32:
+                        case 33:
+                        case 34:
+                        case 35:
+                        case 36:
+                        {
+                            return 51;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+            }
+            return -1;
+        }
+        public long GetTokenId(int ruleIndex)
+        {
+            switch (ruleIndex)
+            {
+                case 0:
+                {
+                    Retract();
+                    break;
+                }
+                case 1:
+                {
+                    Retract();
+                    long kw = GetKeywordToken(token.match);
+                    if (kw == INVALID_TOKEN) return ID;
+                    else return kw;
+                    break;
+                }
+                case 2:
+                {
+                    Retract();
+                    return INTEGER_LITERAL;
+                    break;
+                }
+                case 3:
+                {
+                    Retract();
+                    return FLOATING_LITERAL;
+                    break;
+                }
+                case 4:
+                {
+                    Retract();
+                    return CHAR_LITERAL;
+                    break;
+                }
+                case 5:
+                {
+                    Retract();
+                    return STRING_LITERAL;
+                    break;
+                }
+                case 6:
+                {
+                    Retract();
+                    return PRODUCES;
+                    break;
+                }
+                case 7:
+                {
+                    Retract();
+                    return DOLLAR;
+                    break;
+                }
+                case 8:
+                {
+                    Retract();
+                    return EQUIVALENCE;
+                    break;
+                }
+                case 9:
+                {
+                    Retract();
+                    return IMPLICATION;
+                    break;
+                }
+                case 10:
+                {
+                    Retract();
+                    return DISJUNCTION;
+                    break;
+                }
+                case 11:
+                {
+                    Retract();
+                    return AMP_AMP;
+                    break;
+                }
+                case 12:
+                {
+                    Retract();
+                    return PIPE;
+                    break;
+                }
+                case 13:
+                {
+                    Retract();
+                    return CARET;
+                    break;
+                }
+                case 14:
+                {
+                    Retract();
+                    return AMP;
+                    break;
+                }
+                case 15:
+                {
+                    Retract();
+                    return EQ;
+                    break;
+                }
+                case 16:
+                {
+                    Retract();
+                    return NEQ;
+                    break;
+                }
+                case 17:
+                {
+                    Retract();
+                    return LEQ;
+                    break;
+                }
+                case 18:
+                {
+                    Retract();
+                    return GEQ;
+                    break;
+                }
+                case 19:
+                {
+                    Retract();
+                    return LANGLE;
+                    break;
+                }
+                case 20:
+                {
+                    Retract();
+                    return RANGLE;
+                    break;
+                }
+                case 21:
+                {
+                    if (vars.parsingOperatorFunctionGroupId) return System.Lex.INVALID_TOKEN;
+                    Retract();
+                    return SHIFT_LEFT;
+                    break;
+                }
+                case 22:
+                {
+                    if (vars.leftAngleCount > 0) return System.Lex.INVALID_TOKEN;
+                    Retract();
+                    return SHIFT_RIGHT;
+                    break;
+                }
+                case 23:
+                {
+                    Retract();
+                    return PLUS;
+                    break;
+                }
+                case 24:
+                {
+                    Retract();
+                    return MINUS;
+                    break;
+                }
+                case 25:
+                {
+                    Retract();
+                    return STAR;
+                    break;
+                }
+                case 26:
+                {
+                    Retract();
+                    return DIV;
+                    break;
+                }
+                case 27:
+                {
+                    Retract();
+                    return REM;
+                    break;
+                }
+                case 28:
+                {
+                    Retract();
+                    return PLUS_PLUS;
+                    break;
+                }
+                case 29:
+                {
+                    Retract();
+                    return MINUS_MINUS;
+                    break;
+                }
+                case 30:
+                {
+                    Retract();
+                    return EXCLAMATION;
+                    break;
+                }
+                case 31:
+                {
+                    Retract();
+                    return TILDE;
+                    break;
+                }
+                case 32:
+                {
+                    Retract();
+                    return DOT;
+                    break;
+                }
+                case 33:
+                {
+                    Retract();
+                    return ARROW;
+                    break;
+                }
+                case 34:
+                {
+                    Retract();
+                    return LBRACKET;
+                    break;
+                }
+                case 35:
+                {
+                    Retract();
+                    return RBRACKET;
+                    break;
+                }
+                case 36:
+                {
+                    Retract();
+                    return LPAREN;
+                    break;
+                }
+                case 37:
+                {
+                    Retract();
+                    return RPAREN;
+                    break;
+                }
+                case 38:
+                {
+                    Retract();
+                    return LBRACE;
+                    break;
+                }
+                case 39:
+                {
+                    Retract();
+                    return RBRACE;
+                    break;
+                }
+                case 40:
+                {
+                    Retract();
+                    return COMMA;
+                    break;
+                }
+                case 41:
+                {
+                    Retract();
+                    return ASSIGN;
+                    break;
+                }
+                case 42:
+                {
+                    Retract();
+                    return COLON;
+                    break;
+                }
+                case 43:
+                {
+                    Retract();
+                    return SEMICOLON;
+                    break;
+                }
+                case 44:
+                {
+                    Retract();
+                    return HASH;
+                    break;
+                }
+                case 45:
+                {
+                    if (!vars.matchFilePath) return System.Lex.INVALID_TOKEN;
+                    Retract();
+                    return FILE_PATH;
+                    break;
+                }
+            }
+            return System.Lex.CONTINUE_TOKEN;
+        }
+        public CmajorLexer_Variables vars;
+    }
+
+    public class CmajorLexer_Variables
+    {
+        public CmajorLexer_Variables()
+        {
+        }
+        public bool parsingOperatorFunctionGroupId;
+        public int leftAngleCount;
+        public bool matchFilePath;
+    }
+
+} // cm.lexer

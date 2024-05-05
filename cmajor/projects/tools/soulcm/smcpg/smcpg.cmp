@@ -1,3 +1,0 @@
-project smcpg;
-target=program;
-source <main.cm>;

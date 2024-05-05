@@ -9,7 +9,7 @@ using scmlg.ast;
 
 namespace scmlg
 {
-    Result<bool> GenerateTokenFile(scmlg.ast.TokenFile* tokenFile, const string& scmlgVersion, bool verbose)
+    public Result<bool> GenerateTokenFile(scmlg.ast.TokenFile* tokenFile, const string& scmlgVersion, bool verbose)
     {
         if (tokenFile->IsExternal())
         {
@@ -50,7 +50,7 @@ namespace scmlg
         return Result<bool>(true);
     }
 
-    Result<bool> ProcessTokenFile(scmlg.ast.ScmlgFile* scmlgFile, const string& tokenFilePath, bool external, const string& scmlgVersion, bool verbose)
+    public Result<bool> ProcessTokenFile(scmlg.ast.ScmlgFile* scmlgFile, const string& tokenFilePath, bool external, const string& scmlgVersion, bool verbose)
     {
         if (verbose)
         {

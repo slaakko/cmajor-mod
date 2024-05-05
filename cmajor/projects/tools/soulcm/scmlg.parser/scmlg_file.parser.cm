@@ -16,10 +16,10 @@ namespace scmlg.parser
         public static Result<UniquePtr<scmlg.ast.ScmlgFile>> Parse(LexerT& lexer)
         {
             UniquePtr<scmlg.ast.ScmlgFile> value;
-            auto incResult5 = ++lexer; 
-            if (incResult5.Error())
+            auto incResult1 = ++lexer; 
+            if (incResult1.Error())
             {
-                return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(incResult5.GetErrorId())); 
+                return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(incResult1.GetErrorId())); 
             }
             Result<System.Parsing.Match> matchResult = ScmlgFileParser<LexerT>.ScmlgFile(lexer);
             if (matchResult.Error())

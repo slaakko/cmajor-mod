@@ -117,6 +117,8 @@
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
       <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>.;..;../..;../../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -137,6 +139,7 @@
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
       <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>.;..;../..;../../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -194,6 +197,8 @@
     <ClCompile Include="unit_test.cppm" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="util.cppm" />
+    <ClCompile Include="zlib.cpp" />
+    <ClCompile Include="zlib.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\soul\xml\dom\dom.vcxproj">

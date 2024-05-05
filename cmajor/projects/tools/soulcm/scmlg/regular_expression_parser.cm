@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using re.ast;
+using re.parser;
+
+namespace scmlg
+{
+    public class RegularExpressionParser : ExpressionParser
+    {
+        public override Result<Nfa> Parse(const string& expression, Context* context, const string& fileName, int line)
+        {
+            auto exprResult = ToUtf32(expression);
+            if (exprResult.Error())
+            {
+                return Result<Nfa>(ErrorId(exprResult.GetErrorId()));
+            }
+            const ustring& expr = exprResult.Value();
+            RegExLexer lexer(expr.Chars(), expr.Chars() + expr.Length(), fileName);
+            auto parseResult = RegExParser<RegExLexer>.Parse(lexer, context);
+            if (parseResult.Error())
+            {
+                string errorMessage = "error parsing regular expression at " + fileName + ":" + ToString(line) + ": " + parseResult.GetErrorMessage();
+                int errorId = AllocateError(errorMessage);
+                return Result<Nfa>(ErrorId(errorId));
+            }
+            return Result<Nfa>(Rvalue(parseResult.Value()));
+        }
+    }
+}

@@ -108,4 +108,30 @@ namespace scmlg.parser
         }
         return Result<UniquePtr<scmlg.ast.ExpressionFile>>(Rvalue(parseResult.Value()));
     }
+
+    public Result<UniquePtr<scmlg.ast.LexerFile>> ParseLexerFile(const string& lexerFilePath)
+    {
+        auto lexerFileContentResult = System.IO.File.ReadAllText(lexerFilePath);
+        if (lexerFileContentResult.Error())
+        {
+            return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(lexerFileContentResult.GetErrorId()));
+        }
+        const string& lexerFileContent = lexerFileContentResult.Value();
+        auto utf32Result = ToUtf32(lexerFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        CmajorLexer lexer(start, end, lexerFilePath);
+        cm.parser.Context context;
+        auto parseResult = LexerFileParser<CmajorLexer>.Parse(lexer, &context);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(parseResult.GetErrorId()));
+        }
+        return Result<UniquePtr<scmlg.ast.LexerFile>>(Rvalue(parseResult.Value()));
+    }
 }

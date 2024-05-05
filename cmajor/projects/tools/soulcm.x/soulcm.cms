@@ -1,6 +1,0 @@
-solution soulcm;
-project <../../cm/ast/Cm.Ast.cmp>;
-project <scm2html/scm2html.cmp>;
-project <scmlg/scmlg.cmp>;
-project <scmpg/scmpg.cmp>;
-activeProject scmpg;
