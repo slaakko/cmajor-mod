@@ -82,7 +82,7 @@ Value* Function::GetParam(int index) const
     return params[index];
 }
 
-void Function::Write(util::CodeFormatter& formatter, Context& context)
+void Function::Write(util::CodeFormatter& formatter, Context& context, util::CodeFormatter& linesFormatter)
 {
     if (!comment.empty())
     {
@@ -102,6 +102,7 @@ void Function::Write(util::CodeFormatter& formatter, Context& context)
     {
         mdIdStr.append(" !").append(std::to_string(mdId));
     }
+    linesFormatter << name << " : " << formatter.Line() << "\n";
     formatter.WriteLine("function " + type->Name() + " " + name + mdIdStr);
     if (basicBlocks.empty())
     {

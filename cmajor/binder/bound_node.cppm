@@ -45,6 +45,10 @@ public:
     void SetParent(BoundNode* parent_) { parent = parent_; }
     virtual bool IsBoundStatement() const { return false; }
     bool IsBreakStatement() const { return boundNodeType == BoundNodeType::boundBreakStatement; }
+    bool IsSwitchStatement() const { return boundNodeType == BoundNodeType::boundSwitchStatement;  }
+    bool IsWhileStatement() const { return boundNodeType == BoundNodeType::boundWhileStatement; }
+    bool IsDoStatement() const { return boundNodeType == BoundNodeType::boundDoStatement; }
+    bool IsForStatement() const { return boundNodeType == BoundNodeType::boundForStatement; }
 private:
     soul::ast::Span span;
     BoundNodeType boundNodeType;

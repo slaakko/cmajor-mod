@@ -88,7 +88,7 @@ namespace cm.parser
                             return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
                         }
                         {
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), true)));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), true)));
                         }
                         break;
                     }
@@ -100,7 +100,7 @@ namespace cm.parser
                             return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
                         }
                         {
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), false)));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), false)));
                         }
                         break;
                     }
@@ -118,7 +118,7 @@ namespace cm.parser
                             {
                                 return Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                             }
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateFloatingLiteralNode(lexer.GetSpan(pos), result.Value(), floatLiteral)));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateFloatingLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), floatLiteral)));
                         }
                         break;
                     }
@@ -136,7 +136,7 @@ namespace cm.parser
                             {
                                 return Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                             }
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateIntegerLiteralNode(lexer.GetSpan(pos), result.Value(), unsignedSuffix)));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateIntegerLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), unsignedSuffix)));
                         }
                         break;
                     }
@@ -154,7 +154,7 @@ namespace cm.parser
                             {
                                 return Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                             }
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateCharacterLiteralNode(lexer.GetSpan(pos), result.Value(), prefix)));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, cm.ast.CreateCharacterLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix)));
                         }
                         break;
                     }
@@ -172,7 +172,7 @@ namespace cm.parser
                             {
                                 return Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                             }
-                            auto createResult = cm.ast.CreateStringLiteralNode(lexer.GetSpan(pos), result.Value(), prefix);
+                            auto createResult = cm.ast.CreateStringLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix);
                             if (createResult.Error())
                             {
                                 return Result<System.Parsing.Match>(ErrorId(createResult.GetErrorId()));
@@ -189,7 +189,7 @@ namespace cm.parser
                             return Result<System.Parsing.Match>(ErrorId(incResult6.GetErrorId()));
                         }
                         {
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.NullLiteralNode(lexer.GetSpan(pos))));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.NullLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         break;
                     }
@@ -297,7 +297,7 @@ namespace cm.parser
                                 }
                                 if (match.hit)
                                 {
-                                    literalNode.Reset(new cm.ast.ArrayLiteralNode(lexer.GetSpan(pos)));
+                                    literalNode.Reset(new cm.ast.ArrayLiteralNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                 }
                                 *parentMatch4 = match;
                             }
@@ -490,7 +490,7 @@ namespace cm.parser
                                 }
                                 if (match.hit)
                                 {
-                                    literalNode.Reset(new cm.ast.StructuredLiteralNode(lexer.GetSpan(pos)));
+                                    literalNode.Reset(new cm.ast.StructuredLiteralNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                 }
                                 *parentMatch4 = match;
                             }

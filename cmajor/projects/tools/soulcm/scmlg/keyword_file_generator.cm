@@ -21,7 +21,7 @@ namespace scmlg
         scmlg.ast.KeywordCollection* keywordCollection = keywordFile->GetKeywordCollection();
         System.IO.StreamWriter& writer = cmFileResult.Value();
         System.Text.CodeFormatter formatter(writer);
-        formatter << "// this file has been automatically generated from '" << keywordFile->FilePath() << "' using SoulCm lexer generator scmlg version " << scmlgVersion << endl() << endl();
+        formatter << "// this file has been generated from '" << keywordFile->FilePath() << "' using SoulCm lexer generator scmlg version " << scmlgVersion << endl() << endl();
         formatter << "using System;" << endl();
         formatter << "using System.Collections;" << endl();
         for (const auto& u : keywordFile->Usings())

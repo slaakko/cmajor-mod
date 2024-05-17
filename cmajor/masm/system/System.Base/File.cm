@@ -51,19 +51,19 @@ namespace System.IO
             UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.write);
             if (fileStream->Error())
             {
-                return Result<StreamWriter>(ErrorId(fileStream->GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(fileStream->GetErrorId()));
             }
             UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
             if (bufferedStream->Error())
             {
-                return Result<StreamWriter>(ErrorId(bufferedStream->GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(bufferedStream->GetErrorId()));
             }
             StreamWriter writer(bufferedStream.Get());
             writer.Own(fileStream.Release());
             writer.Own(bufferedStream.Release());
             if (writer.Error())
             {
-                return Result<StreamWriter>(ErrorId(writer.GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(writer.GetErrorId()));
             }
             return Result<StreamWriter>(Rvalue(writer));
         }
@@ -72,19 +72,19 @@ namespace System.IO
             UniquePtr<FileStream> fileStream = new FileStream(filePath, cast<OpenMode>(OpenMode.write | OpenMode.binary));
             if (fileStream->Error())
             {
-                return Result<BinaryWriter>(ErrorId(fileStream->GetLatestErrorId()));
+                return Result<BinaryWriter>(ErrorId(fileStream->GetErrorId()));
             }
             UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
             if (bufferedStream->Error())
             {
-                return Result<BinaryWriter>(ErrorId(bufferedStream->GetLatestErrorId()));
+                return Result<BinaryWriter>(ErrorId(bufferedStream->GetErrorId()));
             }
             BinaryWriter writer(bufferedStream.Get());
             writer.Own(fileStream.Release());
             writer.Own(bufferedStream.Release());
             if (writer.Error())
             {
-                return Result<BinaryWriter>(ErrorId(writer.GetLatestErrorId()));
+                return Result<BinaryWriter>(ErrorId(writer.GetErrorId()));
             }
             return Result<BinaryWriter>(Rvalue(writer));
         }
@@ -93,19 +93,19 @@ namespace System.IO
             UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.append);
             if (fileStream->Error())
             {
-                return Result<StreamWriter>(ErrorId(fileStream->GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(fileStream->GetErrorId()));
             }
             UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
             if (bufferedStream->Error())
             {
-                return Result<StreamWriter>(ErrorId(bufferedStream->GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(bufferedStream->GetErrorId()));
             }
             StreamWriter writer(bufferedStream.Get());
             writer.Own(fileStream.Release());
             writer.Own(bufferedStream.Release());
             if (writer.Error())
             {
-                return Result<StreamWriter>(ErrorId(writer.GetLatestErrorId()));
+                return Result<StreamWriter>(ErrorId(writer.GetErrorId()));
             }
             return Result<StreamWriter>(Rvalue(writer));
         }
@@ -114,19 +114,19 @@ namespace System.IO
             UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.read);
             if (fileStream->Error())
             {
-                return Result<StreamReader>(ErrorId(fileStream->GetLatestErrorId()));
+                return Result<StreamReader>(ErrorId(fileStream->GetErrorId()));
             }
             UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
             if (bufferedStream->Error())
             {
-                return Result<StreamReader>(ErrorId(bufferedStream->GetLatestErrorId()));
+                return Result<StreamReader>(ErrorId(bufferedStream->GetErrorId()));
             }
             StreamReader reader(bufferedStream.Get());
             reader.Own(fileStream.Release());
             reader.Own(bufferedStream.Release());
             if (reader.Error())
             {
-                return Result<StreamReader>(ErrorId(reader.GetLatestErrorId()));
+                return Result<StreamReader>(ErrorId(reader.GetErrorId()));
             }
             return Result<StreamReader>(Rvalue(reader));
         }
@@ -135,19 +135,19 @@ namespace System.IO
             UniquePtr<FileStream> fileStream = new FileStream(filePath, cast<OpenMode>(OpenMode.read | OpenMode.binary));
             if (fileStream->Error())
             {
-                return Result<BinaryReader>(ErrorId(fileStream->GetLatestErrorId()));
+                return Result<BinaryReader>(ErrorId(fileStream->GetErrorId()));
             }
             UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
             if (bufferedStream->Error())
             {
-                return Result<BinaryReader>(ErrorId(bufferedStream->GetLatestErrorId()));
+                return Result<BinaryReader>(ErrorId(bufferedStream->GetErrorId()));
             }
             BinaryReader reader(bufferedStream.Get());
             reader.Own(fileStream.Release());
             reader.Own(bufferedStream.Release());
             if (reader.Error())
             {
-                return Result<BinaryReader>(ErrorId(reader.GetLatestErrorId()));
+                return Result<BinaryReader>(ErrorId(reader.GetErrorId()));
             }
             return Result<BinaryReader>(Rvalue(reader));
         }

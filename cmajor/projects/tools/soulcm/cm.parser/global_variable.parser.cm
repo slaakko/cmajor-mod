@@ -175,7 +175,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GlobalVariableNode(span, specifiers->value, type.Release(), id.Release(), initializer.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GlobalVariableNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), initializer.Release())));
                 }
                 *parentMatch0 = match;
             }

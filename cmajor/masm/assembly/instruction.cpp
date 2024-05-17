@@ -66,10 +66,6 @@ void Instruction::AddOperand(Value* operand)
     {
         operands.push_back(operand);
     }
-    else
-    {
-        int x = 0;
-    }
 }
 
 void Instruction::Write(util::CodeFormatter& formatter)

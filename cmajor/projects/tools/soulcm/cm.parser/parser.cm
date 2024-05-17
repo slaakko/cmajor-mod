@@ -9,7 +9,7 @@ using cm.ast;
 
 namespace cm.parser
 {
-    public Result<UniquePtr<cm.ast.SourceFileNode>> ParseSourceFile(const string& sourceFilePath)
+    public Result<UniquePtr<cm.ast.SourceFileNode>> ParseSourceFile(const string& sourceFilePath, System.Lex.FileMap& fileMap)
     {
         auto sourceFileContentResult = File.ReadAllText(sourceFilePath);
         if (sourceFileContentResult.Error())
@@ -26,12 +26,19 @@ namespace cm.parser
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         CmajorLexer lexer(start, end, sourceFilePath);
+        if (lexer.Error())
+        {
+            return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(lexer.GetErrorId()));
+        }
+        int fileIndex = fileMap.MapFileName(sourceFilePath);
+        lexer.SetFileIndex(fileIndex);
         cm.parser.Context context;
         auto parseResult = SourceFileParser<CmajorLexer>.Parse(lexer, &context);
         if (parseResult.Error())
         {
             return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(parseResult.GetErrorId()));
         }
+        fileMap.AddSourceFile(fileIndex, Rvalue(utf32Result.Value()), lexer.GetLineStartIndeces());
         return Result<UniquePtr<cm.ast.SourceFileNode>>(Rvalue(parseResult.Value()));
     }
 
@@ -52,6 +59,10 @@ namespace cm.parser
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         CmajorLexer lexer(start, end, projectFilePath);
+        if (lexer.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(lexer.GetErrorId()));
+        }
         auto parseResult = ProjectFileParser<CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {

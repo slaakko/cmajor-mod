@@ -25,8 +25,12 @@ public:
     std::string Name(Context& context) override;
     void WriteResult(util::CodeFormatter& formatter, Function& function, Context& context);
     virtual bool IsNoOperation() const { return false; }
+    void SetSourceLineNumber(int sourceLineNumber_) { sourceLineNumber = sourceLineNumber_; }
+    int SourceLineNumber() const { return sourceLineNumber; }
+    void WriteSourceLineNumber(util::CodeFormatter& formatter);
 private:
     int32_t resultId;
+    int sourceLineNumber;
 };
 
 class UnaryInstruction : public Instruction

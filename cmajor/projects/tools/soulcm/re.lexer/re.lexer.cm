@@ -12,7 +12,7 @@ public class RegExLexer : System.Lex.Lexer
         auto classMapResult = System.Lex.GetClassMap(ClassMapName());
         if (classMapResult.Error())
         {
-            SetLatestErrorId(classMapResult.GetErrorId());
+            SetErrorId(classMapResult.GetErrorId());
             return;
         }
         SetClassMap(classMapResult.Value());

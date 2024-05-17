@@ -1,0 +1,28 @@
+using System;
+
+void foo(int x)
+{
+    switch (x)
+    {
+        case 0:
+        {
+            string s = "foo";
+            return;
+        }
+        case 1:
+        {
+            string t = "bar";
+            return;
+        }
+        default:
+        {
+            string u = "baz";
+            return;
+        }
+    }
+}
+
+void main()
+{
+    foo(2);
+}

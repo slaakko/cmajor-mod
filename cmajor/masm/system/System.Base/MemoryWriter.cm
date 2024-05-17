@@ -16,7 +16,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -24,12 +24,12 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             if (pos - ptr >= count)
             {
                 int errorId = AllocateError("memory writer: end of space");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
             *pos++ = x;
@@ -39,7 +39,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -47,7 +47,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             byte b0 = cast<byte>(x >> 8u);
             byte b1 = cast<byte>(x);
@@ -62,7 +62,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<ushort>(x));
         }
@@ -70,7 +70,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             byte b0 = cast<byte>(x >> 24u);
             byte b1 = cast<byte>(x >> 16u);
@@ -97,7 +97,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<uint>(x));
         }
@@ -105,7 +105,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             byte b0 = cast<byte>(x >> 56u);
             byte b1 = cast<byte>(x >> 48u);
@@ -156,7 +156,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<ulong>(x));
         }
@@ -164,7 +164,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             uint* u = cast<uint*>(cast<void*>(&x));
             return Write(*u);
@@ -173,7 +173,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             ulong* u = cast<ulong*>(cast<void*>(&x));
             return Write(*u);
@@ -182,7 +182,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -190,7 +190,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<ushort>(x));
         }
@@ -198,7 +198,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             return Write(cast<uint>(x));
         }
@@ -206,7 +206,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             auto result = Write(date.Year());
             if (result.Error())
@@ -224,7 +224,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             Date date = dt.GetDate();
             auto result = Write(date);
@@ -238,7 +238,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             for (char c : s)
             {
@@ -254,7 +254,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             for (byte b : x)
             {

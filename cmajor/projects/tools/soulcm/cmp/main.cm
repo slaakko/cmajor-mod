@@ -8,7 +8,7 @@ using System.Collections;
 using System.IO;
 using cm.parser;
 
-Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose)
+Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose, System.Lex.FileMap& fileMap)
 {
     for (const auto& sourceFile : project->SourceFilePaths())
     {
@@ -16,7 +16,7 @@ Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose)
         {
             Console.Out() << ">> " << sourceFile << endl();
         }
-        auto result = ParseSourceFile(sourceFile);
+        auto result = ParseSourceFile(sourceFile, fileMap);
         if (result.Error())
         {
             return Result<bool>(ErrorId(result.GetErrorId()));
@@ -25,7 +25,7 @@ Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose)
     return Result<bool>(true);
 }
 
-Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose)
+Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose, System.Lex.FileMap& fileMap)
 {
     for (const auto& projectFile : solution->ProjectFilePaths())
     {
@@ -39,7 +39,7 @@ Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose)
             return Result<bool>(ErrorId(result.GetErrorId()));
         }
         cm.ast.Project* project = result.Value().Get();
-        auto parseResult = ParseSourceFiles(project, verbose);
+        auto parseResult = ParseSourceFiles(project, verbose, fileMap);
         if (parseResult.Error())
         {
             return Result<bool>(ErrorId(parseResult.GetErrorId()));
@@ -51,6 +51,7 @@ Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose)
 int main(int argc, const char** argv)
 {
     List<string> files;
+    System.Lex.FileMap fileMap;
     bool verbose = false;
     for (int i = 1; i < argc; ++i)
     {
@@ -107,7 +108,7 @@ int main(int argc, const char** argv)
         }
         if (file.EndsWith(".cm"))
         {
-            auto result = ParseSourceFile(file);
+            auto result = ParseSourceFile(file, fileMap);
             if (result.Error())
             {
                 Console.Error() << result.GetErrorMessage() << endl();
@@ -123,7 +124,7 @@ int main(int argc, const char** argv)
                 return 1;
             }
             cm.ast.Project* project = result.Value().Get();
-            auto parseResult = ParseSourceFiles(project, verbose);
+            auto parseResult = ParseSourceFiles(project, verbose, fileMap);
             if (parseResult.Error())
             {
                 Console.Error() << parseResult.GetErrorMessage() << endl();
@@ -139,7 +140,7 @@ int main(int argc, const char** argv)
                 return 1;
             }
             cm.ast.Solution* solution = result.Value().Get();
-            auto parseResult = ParseProjectFiles(solution, verbose);
+            auto parseResult = ParseProjectFiles(solution, verbose, fileMap);
             if (parseResult.Error())
             {
                 Console.Error() << parseResult.GetErrorMessage() << endl();

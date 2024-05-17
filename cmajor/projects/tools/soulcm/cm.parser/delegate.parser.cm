@@ -116,7 +116,7 @@ namespace cm.parser
                                         id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            delegateNode.Reset(new cm.ast.DelegateNode(span, specifiers->value, type.Release(), id.Release()));
+                                            delegateNode.Reset(new cm.ast.DelegateNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release()));
                                         }
                                         *parentMatch11 = match;
                                     }
@@ -306,7 +306,7 @@ namespace cm.parser
                                         id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            classDelegateNode.Reset(new cm.ast.ClassDelegateNode(span, specifiers->value, type.Release(), id.Release()));
+                                            classDelegateNode.Reset(new cm.ast.ClassDelegateNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release()));
                                         }
                                         *parentMatch13 = match;
                                     }

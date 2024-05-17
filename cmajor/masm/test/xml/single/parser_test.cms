@@ -1,0 +1,4 @@
+solution parser_test;
+project <parser_test.cmp>;
+activeProject parser_test;
+activeBackEnd=masm;

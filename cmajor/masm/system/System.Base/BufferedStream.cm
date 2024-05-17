@@ -71,17 +71,17 @@ namespace System.IO
         public override Result<int> ReadByte()
         {
             auto flushResult = Flush();
-            if (flushResult.Error()) 
+            if (flushResult.Error())
             {
-                SetLatestErrorId(flushResult.GetErrorId());
+                SetErrorId(flushResult.GetErrorId());
                 return Result<int>(-1, ErrorId(flushResult.GetErrorId()));
             }
             if (bytesAvailable == 0)
             {
                 auto fillResult = FillBuf();
-                if (fillResult.Error()) 
+                if (fillResult.Error())
                 {
-                    SetLatestErrorId(fillResult.GetErrorId());
+                    SetErrorId(fillResult.GetErrorId());
                     return Result<int>(-1, ErrorId(fillResult.GetErrorId()));
                 }
                 if (bytesAvailable == 0)
@@ -98,21 +98,21 @@ namespace System.IO
             if (count < 0)
             {
                 int errorId = RtmAllocateError("BufferedStream.Read: count less than zero");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             auto flushResult = Flush();
-            if (flushResult.Error()) 
+            if (flushResult.Error())
             {
-                SetLatestErrorId(flushResult.GetErrorId());
+                SetErrorId(flushResult.GetErrorId());
                 return Result<long>(-1, ErrorId(flushResult.GetErrorId()));
             }
             if (bytesAvailable == 0)
             {
                 auto fillResult = FillBuf();
-                if (fillResult.Error()) 
+                if (fillResult.Error())
                 {
-                    SetLatestErrorId(fillResult.GetErrorId());
+                    SetErrorId(fillResult.GetErrorId());
                     return Result<long>(-1, ErrorId(fillResult.GetErrorId()));
                 }
             }
@@ -131,9 +131,9 @@ namespace System.IO
             if (end >= buffer.Size())
             {
                 auto flushResult = Flush();
-                if (flushResult.Error()) 
+                if (flushResult.Error())
                 {
-                    SetLatestErrorId(flushResult.GetErrorId());
+                    SetErrorId(flushResult.GetErrorId());
                     return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
                 }
             }
@@ -145,15 +145,15 @@ namespace System.IO
             if (count < 0)
             {
                 int errorId = RtmAllocateError("BufferedStream.Write: count less than zero");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             for (long i = 0; i < count; ++i)
             {
                 auto result = Write(buf[i]);
-                if (result.Error()) 
+                if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return result;
                 }
             }
@@ -166,19 +166,19 @@ namespace System.IO
                 if (baseStream == null)
                 {
                     int errorId = RtmAllocateError("BufferedStream.Flush: base stream is null");
-                    SetLatestErrorId(errorId);
+                    SetErrorId(errorId);
                     return Result<bool>(false, ErrorId(errorId));
                 }
                 auto writeResult = baseStream->Write(cast<byte*>(buffer.Mem()), end);
                 if (writeResult.Error())
                 {
-                    SetLatestErrorId(writeResult.GetErrorId());
+                    SetErrorId(writeResult.GetErrorId());
                     return Result<bool>(false, ErrorId(writeResult.GetErrorId()));
                 }
                 auto flushResult = baseStream->Flush();
-                if (flushResult.Error()) 
+                if (flushResult.Error())
                 {
-                    SetLatestErrorId(flushResult.GetErrorId());
+                    SetErrorId(flushResult.GetErrorId());
                     return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
                 }
                 end = 0;
@@ -188,22 +188,22 @@ namespace System.IO
         public override Result<bool> Seek(long pos, Origin origin)
         {
             auto flushResult = Flush();
-            if (flushResult.Error()) 
+            if (flushResult.Error())
             {
-                SetLatestErrorId(flushResult.GetErrorId());
+                SetErrorId(flushResult.GetErrorId());
                 return Result<bool>(false, ErrorId(flushResult.GetErrorId()));
             }
             bytesAvailable = 0;
             if (baseStream == null)
             {
                 int errorId = RtmAllocateError("BufferedStream.Seek: base stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             auto seekResult = baseStream->Seek(pos, origin);
             if (seekResult.Error())
             {
-                SetLatestErrorId(seekResult.GetErrorId());
+                SetErrorId(seekResult.GetErrorId());
                 return seekResult;
             }
             return Result<bool>(true);
@@ -211,21 +211,21 @@ namespace System.IO
         public override Result<long> Tell()
         {
             auto flushResult = Flush();
-            if (flushResult.Error()) 
+            if (flushResult.Error())
             {
-                SetLatestErrorId(flushResult.GetErrorId());
+                SetErrorId(flushResult.GetErrorId());
                 return Result<long>(-1, ErrorId(flushResult.GetErrorId()));
             }
             if (baseStream == null)
             {
                 int errorId = RtmAllocateError("BufferedStream.Tell: base stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             Result<long> tellResult = baseStream->Tell();
-            if (tellResult.Error()) 
+            if (tellResult.Error())
             {
-                SetLatestErrorId(tellResult.GetErrorId());
+                SetErrorId(tellResult.GetErrorId());
                 return tellResult;
             }
             return Result<long>(tellResult.Value() - bytesAvailable);
@@ -235,13 +235,13 @@ namespace System.IO
             if (baseStream == null)
             {
                 int errorId = RtmAllocateError("BufferedStream.FillBuf: base stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             Result<long> readResult = baseStream->Read(cast<byte*>(buffer.Mem()), buffer.Size());
-            if (readResult.Error()) 
+            if (readResult.Error())
             {
-                SetLatestErrorId(readResult.GetErrorId());
+                SetErrorId(readResult.GetErrorId());
                 return Result<bool>(false, ErrorId(readResult.GetErrorId()));
             }
             bytesAvailable = readResult.Value();

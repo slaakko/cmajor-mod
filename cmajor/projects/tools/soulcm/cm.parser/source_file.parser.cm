@@ -55,7 +55,7 @@ namespace cm.parser
                     System.Parsing.Match match(true);
                     if (match.hit)
                     {
-                        sourceFileNode.Reset(new cm.ast.SourceFileNode(lexer.GetSpan(pos), lexer.FileName()));
+                        sourceFileNode.Reset(new cm.ast.SourceFileNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.FileName()));
                     }
                     *parentMatch1 = match;
                 }
@@ -219,7 +219,7 @@ namespace cm.parser
                                         }
                                         if (match.hit)
                                         {
-                                            ns->AddMember(new cm.ast.NamespaceImportNode(span, usingNs.Release()));
+                                            ns->AddMember(new cm.ast.NamespaceImportNode(span, lexer.FileIndex(), usingNs.Release()));
                                         }
                                         *parentMatch7 = match;
                                     }
@@ -810,7 +810,7 @@ namespace cm.parser
                                                     nsName.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                     if (match.hit)
                                                     {
-                                                        namespaceNode.Reset(new cm.ast.NamespaceNode(span, nsName.Release()));
+                                                        namespaceNode.Reset(new cm.ast.NamespaceNode(span, lexer.FileIndex(), nsName.Release()));
                                                     }
                                                     *parentMatch10 = match;
                                                 }
@@ -828,7 +828,7 @@ namespace cm.parser
                                                             System.Parsing.Match match(true);
                                                             if (match.hit)
                                                             {
-                                                                namespaceNode.Reset(new cm.ast.NamespaceNode(span, null));
+                                                                namespaceNode.Reset(new cm.ast.NamespaceNode(span, lexer.FileIndex(), null));
                                                             }
                                                             *parentMatch12 = match;
                                                         }

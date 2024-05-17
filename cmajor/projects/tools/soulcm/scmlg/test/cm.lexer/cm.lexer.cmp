@@ -1,6 +1,0 @@
-project cm.lexer;
-target=library;
-source <cm.keyword.cm>;
-source <cm.lexer.CmajorLexer.cm>;
-source <cm.token.cm>;
-rc <cm.lexer.CmajorLexer.classmap.rc>;

@@ -1,0 +1,16 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public abstract class NodeOperation
+    {
+        public default virtual ~NodeOperation();
+        public abstract void Apply(Node* node);
+    }
+}
+

@@ -17,7 +17,7 @@ parser AliasParser
     using TypeExprParser.TypeExpr;
 
     UsingAlias(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             USING
@@ -27,12 +27,12 @@ parser AliasParser
             SEMICOLON
         )
         {
-            return new cm.ast.AliasNode(span, specifiers, id, typeExpr);
+            return new cm.ast.AliasNode(span, lexer.FileIndex(), specifiers, id, typeExpr);
         }
         ;
 
     Typedef(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             TYPEDEF
@@ -41,7 +41,7 @@ parser AliasParser
             SEMICOLON
         )
         {
-            return new cm.ast.TypedefNode(span, specifiers, typeExpr, id);
+            return new cm.ast.TypedefNode(span, lexer.FileIndex(), specifiers, typeExpr, id);
         }
         ;
 }

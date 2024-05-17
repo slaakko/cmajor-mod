@@ -142,7 +142,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.EquivalenceNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.EquivalenceNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -279,7 +279,7 @@ namespace cm.parser
                                                 right.Reset(cast<cm.ast.Node*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    expr.Reset(new cm.ast.ImplicationNode(span, expr.Release(), right.Release()));
+                                                    expr.Reset(new cm.ast.ImplicationNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                 }
                                                 *parentMatch10 = match;
                                             }
@@ -416,7 +416,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.DisjunctionNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.DisjunctionNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -556,7 +556,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.ConjunctionNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.ConjunctionNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -696,7 +696,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.BitOrNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.BitOrNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -836,7 +836,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.BitXorNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.BitXorNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -976,7 +976,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.Node*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.BitAndNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.BitAndNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch10 = match;
                                                     }
@@ -1117,11 +1117,11 @@ namespace cm.parser
                                                             switch (op->value)
                                                             {
                                                                 case cm.parser.Operator.eq: {
-                                                                    expr.Reset(new cm.ast.EqualNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.EqualNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.neq: {
-                                                                    expr.Reset(new cm.ast.NotEqualNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.NotEqualNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                             }
@@ -1497,27 +1497,27 @@ namespace cm.parser
                                                             switch (op)
                                                             {
                                                                 case cm.parser.Operator.lessOrEq: {
-                                                                    expr.Reset(new cm.ast.LessOrEqualNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.LessOrEqualNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.greaterOrEq: {
-                                                                    expr.Reset(new cm.ast.GreaterOrEqualNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.GreaterOrEqualNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.less: {
-                                                                    expr.Reset(new cm.ast.LessNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.LessNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.greater: {
-                                                                    expr.Reset(new cm.ast.GreaterNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.GreaterNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.is_: {
-                                                                    expr.Reset(new cm.ast.IsNode(span, expr.Release(), isType.Release()));
+                                                                    expr.Reset(new cm.ast.IsNode(span, lexer.FileIndex(), expr.Release(), isType.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.as_: {
-                                                                    expr.Reset(new cm.ast.AsNode(span, expr.Release(), asType.Release()));
+                                                                    expr.Reset(new cm.ast.AsNode(span, lexer.FileIndex(), expr.Release(), asType.Release()));
                                                                     break;
                                                                 }
                                                             }
@@ -1748,11 +1748,11 @@ namespace cm.parser
                                                             switch (op->value)
                                                             {
                                                                 case cm.parser.Operator.shiftLeft: {
-                                                                    expr.Reset(new cm.ast.ShiftLeftNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.ShiftLeftNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.shiftRight: {
-                                                                    expr.Reset(new cm.ast.ShiftRightNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.ShiftRightNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                             }
@@ -1939,11 +1939,11 @@ namespace cm.parser
                                                             switch (op->value)
                                                             {
                                                                 case cm.parser.Operator.plus: {
-                                                                    expr.Reset(new cm.ast.AddNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.AddNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.minus: {
-                                                                    expr.Reset(new cm.ast.SubNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.SubNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                             }
@@ -2125,15 +2125,15 @@ namespace cm.parser
                                                             switch (op->value)
                                                             {
                                                                 case cm.parser.Operator.mul: {
-                                                                    expr.Reset(new cm.ast.MulNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.MulNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.div: {
-                                                                    expr.Reset(new cm.ast.DivNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.DivNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                                 case cm.parser.Operator.rem: {
-                                                                    expr.Reset(new cm.ast.RemNode(span, expr.Release(), right.Release()));
+                                                                    expr.Reset(new cm.ast.RemNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                                     break;
                                                                 }
                                                             }
@@ -2293,28 +2293,28 @@ namespace cm.parser
                                     switch (op)
                                     {
                                         case cm.parser.Operator.plusPlus: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.PrefixIncrementNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.PrefixIncrementNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.minusMinus: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.PrefixDecrementNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.PrefixDecrementNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.plus: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UnaryPlusNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UnaryPlusNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.minus: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UnaryMinusNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UnaryMinusNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.not_: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.NotNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.NotNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.complement: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ComplementNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ComplementNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.deref: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DerefNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DerefNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                         case cm.parser.Operator.addrOf: {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AddrOfNode(span, prefix.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AddrOfNode(span, lexer.FileIndex(), prefix.Release())));
                                         }
                                     }
                                 }
@@ -2561,7 +2561,7 @@ namespace cm.parser
                                                                     }
                                                                     if (match.hit)
                                                                     {
-                                                                        expr.Reset(new cm.ast.PostfixIncrementNode(span, expr.Release()));
+                                                                        expr.Reset(new cm.ast.PostfixIncrementNode(span, lexer.FileIndex(), expr.Release()));
                                                                     }
                                                                     *parentMatch12 = match;
                                                                 }
@@ -2588,7 +2588,7 @@ namespace cm.parser
                                                                             }
                                                                             if (match.hit)
                                                                             {
-                                                                                expr.Reset(new cm.ast.PostfixDecrementNode(span, expr.Release()));
+                                                                                expr.Reset(new cm.ast.PostfixDecrementNode(span, lexer.FileIndex(), expr.Release()));
                                                                             }
                                                                             *parentMatch14 = match;
                                                                         }
@@ -2637,7 +2637,7 @@ namespace cm.parser
                                                                                 dotMember.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                                                 if (match.hit)
                                                                                 {
-                                                                                    expr.Reset(new cm.ast.DotNode(span, expr.Release(), dotMember.Release()));
+                                                                                    expr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), expr.Release(), dotMember.Release()));
                                                                                 }
                                                                                 *parentMatch18 = match;
                                                                             }
@@ -2690,7 +2690,7 @@ namespace cm.parser
                                                                             arrowMember.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                                             if (match.hit)
                                                                             {
-                                                                                expr.Reset(new cm.ast.ArrowNode(span, expr.Release(), arrowMember.Release()));
+                                                                                expr.Reset(new cm.ast.ArrowNode(span, lexer.FileIndex(), expr.Release(), arrowMember.Release()));
                                                                             }
                                                                             *parentMatch22 = match;
                                                                         }
@@ -2789,7 +2789,7 @@ namespace cm.parser
                                                                         }
                                                                         if (match.hit)
                                                                         {
-                                                                            expr.Reset(new cm.ast.IndexingNode(span, expr.Release(), index.Release()));
+                                                                            expr.Reset(new cm.ast.IndexingNode(span, lexer.FileIndex(), expr.Release(), index.Release()));
                                                                         }
                                                                         *parentMatch30 = match;
                                                                     }
@@ -2831,7 +2831,7 @@ namespace cm.parser
                                                                     }
                                                                     if (match.hit)
                                                                     {
-                                                                        expr.Reset(new cm.ast.InvokeNode(span, expr.Release()));
+                                                                        expr.Reset(new cm.ast.InvokeNode(span, lexer.FileIndex(), expr.Release()));
                                                                     }
                                                                     *parentMatch34 = match;
                                                                 }
@@ -3043,7 +3043,7 @@ namespace cm.parser
                                                                             }
                                                                             if (match.hit)
                                                                             {
-                                                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ParenthesizedExpressionNode(span, expr.Release())));
+                                                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ParenthesizedExpressionNode(span, lexer.FileIndex(), expr.Release())));
                                                                             }
                                                                             *parentMatch18 = match;
                                                                         }
@@ -3190,7 +3190,7 @@ namespace cm.parser
                                                             }
                                                             if (match.hit)
                                                             {
-                                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ThisNode(lexer.GetSpan(pos))));
+                                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ThisNode(lexer.GetSpan(pos), lexer.FileIndex())));
                                                             }
                                                             *parentMatch28 = match;
                                                         }
@@ -3222,7 +3222,7 @@ namespace cm.parser
                                                         }
                                                         if (match.hit)
                                                         {
-                                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BaseNode(lexer.GetSpan(pos))));
+                                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BaseNode(lexer.GetSpan(pos), lexer.FileIndex())));
                                                         }
                                                         *parentMatch30 = match;
                                                     }
@@ -3696,7 +3696,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SizeOfNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SizeOfNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -3811,7 +3811,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypeNameNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypeNameNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -3926,7 +3926,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypeIdNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypeIdNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4111,7 +4111,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CastNode(span, typeExpr.Release(), expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CastNode(span, lexer.FileIndex(), typeExpr.Release(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4239,7 +4239,7 @@ namespace cm.parser
                                             }
                                             if (match.hit)
                                             {
-                                                expr.Reset(new cm.ast.ConstructNode(span, typeExpr.Release()));
+                                                expr.Reset(new cm.ast.ConstructNode(span, lexer.FileIndex(), typeExpr.Release()));
                                             }
                                             *parentMatch8 = match;
                                         }
@@ -4379,7 +4379,7 @@ namespace cm.parser
                                     typeExpr.Reset(cast<cm.ast.Node*>(match.value));
                                     if (match.hit)
                                     {
-                                        expr.Reset(new cm.ast.NewNode(span, typeExpr.Release()));
+                                        expr.Reset(new cm.ast.NewNode(span, lexer.FileIndex(), typeExpr.Release()));
                                     }
                                     *parentMatch6 = match;
                                 }
@@ -4605,7 +4605,7 @@ namespace cm.parser
                                                     dotMemberId.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                     if (match.hit)
                                                     {
-                                                        expr.Reset(new cm.ast.DotNode(span, expr.Release(), dotMemberId.Release()));
+                                                        expr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), expr.Release(), dotMemberId.Release()));
                                                     }
                                                     *parentMatch12 = match;
                                                 }
@@ -4667,7 +4667,7 @@ namespace cm.parser
                                         }
                                         if (match.hit)
                                         {
-                                            expr.Reset(new cm.ast.InvokeNode(span, expr.Release()));
+                                            expr.Reset(new cm.ast.InvokeNode(span, lexer.FileIndex(), expr.Release()));
                                         }
                                         *parentMatch18 = match;
                                     }

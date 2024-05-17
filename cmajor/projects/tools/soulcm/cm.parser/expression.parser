@@ -19,19 +19,19 @@ parser ExpressionParser
     using IdentifierParser.Identifier;
 
     Expression(cm.parser.Context* context) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Equivalence(context):equivalence{ return equivalence; }
         )
         ;
 
     Equivalence(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Implication(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 EQUIVALENCE{ if (!context->ParsingConcept() || context->ParsingTemplateId()) pass = false; }
-                Implication(context):right{ expr.Reset(new cm.ast.EquivalenceNode(span, expr.Release(), right)); }
+                Implication(context):right{ expr.Reset(new cm.ast.EquivalenceNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -40,12 +40,12 @@ parser ExpressionParser
         ;
 
     Implication(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Disjunction(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 IMPLICATION{ if (!context->ParsingConcept() || context->ParsingTemplateId()) pass = false; }
-                Implication(context):right{ expr.Reset(new cm.ast.ImplicationNode(span, expr.Release(), right)); }
+                Implication(context):right{ expr.Reset(new cm.ast.ImplicationNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )?
         )
         {
@@ -59,7 +59,7 @@ parser ExpressionParser
             Conjunction(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 DISJUNCTION{ if (context->ParsingLValueOrExprStatementAndNotArgs()) pass = false; }
-                Conjunction(context):right{ expr.Reset(new cm.ast.DisjunctionNode(span, expr.Release(), right)); }
+                Conjunction(context):right{ expr.Reset(new cm.ast.DisjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -68,12 +68,12 @@ parser ExpressionParser
         ;
 
     Conjunction(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             BitOr(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 AMP_AMP{ if (context->ParsingLValueOrExprStatementAndNotArgs()) pass = false; }
-                BitOr(context):right{ expr.Reset(new cm.ast.ConjunctionNode(span, expr.Release(), right)); }
+                BitOr(context):right{ expr.Reset(new cm.ast.ConjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -82,12 +82,12 @@ parser ExpressionParser
         ;
 
     BitOr(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             BitXor(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 PIPE{ if (context->ParsingLValueOrExprStatementAndNotArgs()) pass = false; }
-                BitXor(context):right{ expr.Reset(new cm.ast.BitOrNode(span, expr.Release(), right)); }
+                BitXor(context):right{ expr.Reset(new cm.ast.BitOrNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -96,12 +96,12 @@ parser ExpressionParser
         ;
 
     BitXor(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             BitAnd(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 CARET{ if (context->ParsingLValueOrExprStatementAndNotArgs()) pass = false; }
-                BitAnd(context):right{ expr.Reset(new cm.ast.BitXorNode(span, expr.Release(), right)); }
+                BitAnd(context):right{ expr.Reset(new cm.ast.BitXorNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -110,12 +110,12 @@ parser ExpressionParser
         ;
 
     BitAnd(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Equality(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 AMP{ if (context->ParsingLValueOrExprStatementAndNotArgs()) pass = false; }
-                Equality(context):right{ expr.Reset(new cm.ast.BitAndNode(span, expr.Release(), right)); }
+                Equality(context):right{ expr.Reset(new cm.ast.BitAndNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -124,7 +124,7 @@ parser ExpressionParser
         ;
 
     Equality(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Relational(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
@@ -135,12 +135,12 @@ parser ExpressionParser
                     {
                         case cm.parser.Operator.eq:
                         {
-                            expr.Reset(new cm.ast.EqualNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.EqualNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                         case cm.parser.Operator.neq:
                         {
-                            expr.Reset(new cm.ast.NotEqualNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.NotEqualNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                     }
@@ -158,15 +158,15 @@ parser ExpressionParser
         ;
 
     Relational(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span, var cm.parser.Operator op) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Shift(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 (
                     RelationalOp:relOp
-                    { 
-                        op = relOp; 
-                        if (context->ParsingLValueOrExprStatementAndNotArgs()) 
+                    {
+                        op = relOp;
+                        if (context->ParsingLValueOrExprStatementAndNotArgs())
                         {
                             pass = false;
                         }
@@ -177,7 +177,7 @@ parser ExpressionParser
                     }
                 |   IS
                     {
-                        if (context->ParsingLValueOrExprStatementAndNotArgs()) 
+                        if (context->ParsingLValueOrExprStatementAndNotArgs())
                         {
                             pass = false;
                         }
@@ -190,7 +190,7 @@ parser ExpressionParser
                     TypeExpr(context):isType
                 |   AS
                     {
-                        if (context->ParsingLValueOrExprStatementAndNotArgs()) 
+                        if (context->ParsingLValueOrExprStatementAndNotArgs())
                         {
                             pass = false;
                         }
@@ -207,34 +207,34 @@ parser ExpressionParser
                     context->PopParsingIsOrAs();
                     switch (op)
                     {
-                        case cm.parser.Operator.lessOrEq: 
+                        case cm.parser.Operator.lessOrEq:
                         {
-                            expr.Reset(new cm.ast.LessOrEqualNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.LessOrEqualNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
-                        case cm.parser.Operator.greaterOrEq: 
+                        case cm.parser.Operator.greaterOrEq:
                         {
-                            expr.Reset(new cm.ast.GreaterOrEqualNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.GreaterOrEqualNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
-                        case cm.parser.Operator.less: 
+                        case cm.parser.Operator.less:
                         {
-                            expr.Reset(new cm.ast.LessNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.LessNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
-                        case cm.parser.Operator.greater: 
+                        case cm.parser.Operator.greater:
                         {
-                            expr.Reset(new cm.ast.GreaterNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.GreaterNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
-                        case cm.parser.Operator.is_: 
+                        case cm.parser.Operator.is_:
                         {
-                            expr.Reset(new cm.ast.IsNode(span, expr.Release(), isType)); 
+                            expr.Reset(new cm.ast.IsNode(span, lexer.FileIndex(), expr.Release(), isType));
                             break;
                         }
-                        case cm.parser.Operator.as_: 
+                        case cm.parser.Operator.as_:
                         {
-                            expr.Reset(new cm.ast.AsNode(span, expr.Release(), asType)); 
+                            expr.Reset(new cm.ast.AsNode(span, lexer.FileIndex(), expr.Release(), asType));
                             break;
                         }
                     }
@@ -254,24 +254,24 @@ parser ExpressionParser
         ;
 
     Shift(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Additive(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 ShiftOp:op{ if (context->ParsingLValue()) pass = false; }
-                empty{ context->BeginParsingArguments(); } 
+                empty{ context->BeginParsingArguments(); }
                 Additive(context):right
                 {
                     switch (op)
                     {
                         case cm.parser.Operator.shiftLeft:
                         {
-                            expr.Reset(new cm.ast.ShiftLeftNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.ShiftLeftNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                         case cm.parser.Operator.shiftRight:
                         {
-                            expr.Reset(new cm.ast.ShiftRightNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.ShiftRightNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                     }
@@ -294,7 +294,7 @@ parser ExpressionParser
         ;
 
     Additive(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Multiplicative(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
@@ -305,12 +305,12 @@ parser ExpressionParser
                     {
                         case cm.parser.Operator.plus:
                         {
-                            expr.Reset(new cm.ast.AddNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.AddNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                         case cm.parser.Operator.minus:
                         {
-                            expr.Reset(new cm.ast.SubNode(span, expr.Release(), right));
+                            expr.Reset(new cm.ast.SubNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                     }
@@ -328,7 +328,7 @@ parser ExpressionParser
         ;
 
     Multiplicative(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Prefix(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
@@ -339,17 +339,17 @@ parser ExpressionParser
                     {
                         case cm.parser.Operator.mul:
                         {
-                            expr.Reset(new cm.ast.MulNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.MulNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                         case cm.parser.Operator.div:
                         {
-                            expr.Reset(new cm.ast.DivNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.DivNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                         case cm.parser.Operator.rem:
                         {
-                            expr.Reset(new cm.ast.RemNode(span, expr.Release(), right)); 
+                            expr.Reset(new cm.ast.RemNode(span, lexer.FileIndex(), expr.Release(), right));
                             break;
                         }
                     }
@@ -368,13 +368,13 @@ parser ExpressionParser
         ;
 
     Prefix(cm.parser.Context* context, var UniquePtr<cm.ast.Node> prefix, var System.Lex.Span span, var cm.parser.Operator op) : cm.ast.Node*
-        ::= 
+        ::=
         (
             PrefixOp:prefixOp
-            { 
-                op = prefixOp; 
+            {
+                op = prefixOp;
                 span = lexer.GetSpan(pos);
-                if (op != cm.parser.Operator.plusPlus && op != cm.parser.Operator.minusMinus && context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false; 
+                if (op != cm.parser.Operator.plusPlus && op != cm.parser.Operator.minusMinus && context->ParsingExpressionStatement() && !context->ParsingArguments()) pass = false;
             }
             Prefix(context):p
             {
@@ -383,35 +383,35 @@ parser ExpressionParser
                 {
                     case cm.parser.Operator.plusPlus:
                     {
-                        return new cm.ast.PrefixIncrementNode(span, prefix.Release());
+                        return new cm.ast.PrefixIncrementNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.minusMinus:
                     {
-                        return new cm.ast.PrefixDecrementNode(span, prefix.Release());
+                        return new cm.ast.PrefixDecrementNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.plus:
                     {
-                        return new cm.ast.UnaryPlusNode(span, prefix.Release());
+                        return new cm.ast.UnaryPlusNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.minus:
                     {
-                        return new cm.ast.UnaryMinusNode(span, prefix.Release());
+                        return new cm.ast.UnaryMinusNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.not_:
                     {
-                        return new cm.ast.NotNode(span, prefix.Release());
+                        return new cm.ast.NotNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.complement:
                     {
-                        return new cm.ast.ComplementNode(span, prefix.Release());
+                        return new cm.ast.ComplementNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.deref:
                     {
-                        return new cm.ast.DerefNode(span, prefix.Release());
+                        return new cm.ast.DerefNode(span, lexer.FileIndex(), prefix.Release());
                     }
                     case cm.parser.Operator.addrOf:
                     {
-                        return new cm.ast.AddrOfNode(span, prefix.Release());
+                        return new cm.ast.AddrOfNode(span, lexer.FileIndex(), prefix.Release());
                     }
                 }
             }
@@ -431,17 +431,17 @@ parser ExpressionParser
         ;
 
     Postfix(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             Primary(context):primary{ span = lexer.GetSpan(pos); expr.Reset(primary); }
-            (   PLUS_PLUS{ expr.Reset(new cm.ast.PostfixIncrementNode(span, expr.Release())); }
-            |   MINUS_MINUS{ expr.Reset(new cm.ast.PostfixDecrementNode(span, expr.Release())); }
-            |   DOT Identifier:dotMember{ expr.Reset(new cm.ast.DotNode(span, expr.Release(), dotMember)); }
-            |   ARROW  Identifier:arrowMember{ expr.Reset(new cm.ast.ArrowNode(span, expr.Release(), arrowMember)); }
+            (   PLUS_PLUS{ expr.Reset(new cm.ast.PostfixIncrementNode(span, lexer.FileIndex(), expr.Release())); }
+            |   MINUS_MINUS{ expr.Reset(new cm.ast.PostfixDecrementNode(span, lexer.FileIndex(), expr.Release())); }
+            |   DOT Identifier:dotMember{ expr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), expr.Release(), dotMember)); }
+            |   ARROW  Identifier:arrowMember{ expr.Reset(new cm.ast.ArrowNode(span, lexer.FileIndex(), expr.Release(), arrowMember)); }
             |   LBRACKET{ context->PushParsingLValue(false); context->PushParsingExpressionStatement(false); }
                 Expression(context):index{ context->PopParsingExpressionStatement(); context->PopParsingLValue(); }
-                RBRACKET{ expr.Reset(new cm.ast.IndexingNode(span, expr.Release(), index)); }
-            |   LPAREN{ expr.Reset(new cm.ast.InvokeNode(span, expr.Release())); } ArgumentList(context, expr.Get()):args RPAREN
+                RBRACKET{ expr.Reset(new cm.ast.IndexingNode(span, lexer.FileIndex(), expr.Release(), index)); }
+            |   LPAREN{ expr.Reset(new cm.ast.InvokeNode(span, lexer.FileIndex(), expr.Release())); } ArgumentList(context, expr.Get()):args RPAREN
             )*
         )
         {
@@ -450,14 +450,14 @@ parser ExpressionParser
         ;
 
     Primary(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
-        (   LPAREN{ span = lexer.GetSpan(pos); } Expression(context):expr RPAREN{ return new cm.ast.ParenthesizedExpressionNode(span, expr); }
+        ::=
+        (   LPAREN{ span = lexer.GetSpan(pos); } Expression(context):expr RPAREN{ return new cm.ast.ParenthesizedExpressionNode(span, lexer.FileIndex(), expr); }
         |   Literal(context):literal{ return literal; }
         |   FundamentalType:fundamentalType{ return fundamentalType; }
         |   TemplateId(context):templateId{ return templateId; }
         |   Identifier:id{ return id; }
-        |   THIS{ return new cm.ast.ThisNode(lexer.GetSpan(pos)); }
-        |   BASE{ return new cm.ast.BaseNode(lexer.GetSpan(pos)); }
+        |   THIS{ return new cm.ast.ThisNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   BASE{ return new cm.ast.BaseNode(lexer.GetSpan(pos), lexer.FileIndex()); }
         |   SizeOfExpr(context):sizeOf{ return sizeOf; }
         |   TypeNameExpr(context):typeName{ return typeName; }
         |   TypeIdExpr(context):typeId{ return typeId; }
@@ -472,72 +472,72 @@ parser ExpressionParser
         ;
 
     ExpressionList(cm.parser.Context* context, cm.ast.Node* owner)
-        ::= 
+        ::=
         (
             empty{ context->BeginParsingArguments(); }
             (
                 Expression(context):arg{ owner->AddArgument(arg); } % COMMA
             )
             {
-                context->EndParsingArguments(); 
+                context->EndParsingArguments();
             }
             /
             {
-                context->EndParsingArguments(); 
+                context->EndParsingArguments();
             }
         )
         ;
 
     SizeOfExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             SIZEOF{ span = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
         )
         {
-            return new cm.ast.SizeOfNode(span, expr);
+            return new cm.ast.SizeOfNode(span, lexer.FileIndex(), expr);
         }
         ;
 
     TypeNameExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             TYPENAME{ span = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
         )
         {
-            return new cm.ast.TypeNameNode(span, expr);
+            return new cm.ast.TypeNameNode(span, lexer.FileIndex(), expr);
         }
         ;
 
     TypeIdExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             TYPEID{ span = lexer.GetSpan(pos); } LPAREN Expression(context):expr RPAREN
         )
         {
-            return new cm.ast.TypeIdNode(span, expr);
+            return new cm.ast.TypeIdNode(span, lexer.FileIndex(), expr);
         }
         ;
 
     CastExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             CAST{ span = lexer.GetSpan(pos); }
             LANGLE TypeExpr(context):typeExpr RANGLE LPAREN Expression(context):expr RPAREN
         )
         {
-            return new cm.ast.CastNode(span, typeExpr, expr);
+            return new cm.ast.CastNode(span, lexer.FileIndex(), typeExpr, expr);
         }
         ;
 
     ConstructExpr(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             CONSTRUCT{ span = lexer.GetSpan(pos); }
             (
                 LANGLE TypeExpr(context):typeExpr RANGLE
             )
             {
-                expr.Reset(new cm.ast.ConstructNode(span, typeExpr));
+                expr.Reset(new cm.ast.ConstructNode(span, lexer.FileIndex(), typeExpr));
             }
             LPAREN ExpressionList(context, expr.Get()):exprList RPAREN
         )
@@ -547,10 +547,10 @@ parser ExpressionParser
         ;
 
     NewExpr(cm.parser.Context* context, var UniquePtr<cm.ast.Node> expr, var System.Lex.Span span) : cm.ast.Node*
-        ::= 
+        ::=
         (
             NEW{ span = lexer.GetSpan(pos); }
-            TypeExpr(context):typeExpr{ expr.Reset(new cm.ast.NewNode(span, typeExpr)); }
+            TypeExpr(context):typeExpr{ expr.Reset(new cm.ast.NewNode(span, lexer.FileIndex(), typeExpr)); }
             (
                 LPAREN ArgumentList(context, expr.Get()):args RPAREN
             )?
@@ -566,10 +566,10 @@ parser ExpressionParser
         |   Identifier:id{ span = lexer.GetSpan(pos); expr.Reset(id); }
         )
         (
-            DOT Identifier:dotMemberId{ expr.Reset(new cm.ast.DotNode(span, expr.Release(), dotMemberId)); }
+            DOT Identifier:dotMemberId{ expr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), expr.Release(), dotMemberId)); }
         )*
         (
-            LPAREN{ expr.Reset(new cm.ast.InvokeNode(span, expr.Release())); }
+            LPAREN{ expr.Reset(new cm.ast.InvokeNode(span, lexer.FileIndex(), expr.Release())); }
             ArgumentList(context, expr.Get()):args
             RPAREN
         )

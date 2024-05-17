@@ -477,7 +477,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LabelNode(span, label)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LabelNode(span, lexer.FileIndex(), label)));
                 }
                 *parentMatch0 = match;
             }
@@ -542,7 +542,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LabeledStatementNode(span, lbl.Release(), stmt.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LabeledStatementNode(span, lexer.FileIndex(), lbl.Release(), stmt.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -1026,7 +1026,7 @@ namespace cm.parser
                                 }
                                 if (match.hit)
                                 {
-                                    compoundStatementNode.Reset(new cm.ast.CompoundStatementNode(lexer.GetSpan(pos)));
+                                    compoundStatementNode.Reset(new cm.ast.CompoundStatementNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                 }
                                 *parentMatch4 = match;
                             }
@@ -1221,7 +1221,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ReturnStatementNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ReturnStatementNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -1422,7 +1422,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IfStatementNode(span, cond.Release(), thenS.Release(), elseS.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IfStatementNode(span, lexer.FileIndex(), cond.Release(), thenS.Release(), elseS.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -1559,7 +1559,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.WhileStatementNode(span, cond.Release(), stmt.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.WhileStatementNode(span, lexer.FileIndex(), cond.Release(), stmt.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -1744,7 +1744,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DoStatementNode(span, stmt.Release(), cond.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DoStatementNode(span, lexer.FileIndex(), stmt.Release(), cond.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -1949,7 +1949,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.RangeForStatementNode(span, type.Release(), id.Release(), container.Release(), stmt.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.RangeForStatementNode(span, lexer.FileIndex(), type.Release(), id.Release(), container.Release(), stmt.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -2167,7 +2167,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ForStatementNode(span, init.Release(), cond.Release(), loop.Release(), stmt.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ForStatementNode(span, lexer.FileIndex(), init.Release(), cond.Release(), loop.Release(), stmt.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -2330,7 +2330,7 @@ namespace cm.parser
                                     expr.Reset(cast<cm.ast.Node*>(match.value));
                                     if (match.hit)
                                     {
-                                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ExpressionStatementNode(lexer.GetSpan(pos), expr.Release())));
+                                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ExpressionStatementNode(lexer.GetSpan(pos), lexer.FileIndex(), expr.Release())));
                                     }
                                     *parentMatch5 = match;
                                 }
@@ -2353,7 +2353,7 @@ namespace cm.parser
                                 System.Parsing.Match match(true);
                                 if (match.hit)
                                 {
-                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EmptyStatementNode(lexer.GetSpan(pos))));
+                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EmptyStatementNode(lexer.GetSpan(pos), lexer.FileIndex())));
                                 }
                                 *parentMatch7 = match;
                             }
@@ -2429,7 +2429,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BreakStatementNode(span)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BreakStatementNode(span, lexer.FileIndex())));
                 }
                 *parentMatch0 = match;
             }
@@ -2498,7 +2498,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ContinueStatementNode(span)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ContinueStatementNode(span, lexer.FileIndex())));
                 }
                 *parentMatch0 = match;
             }
@@ -2602,7 +2602,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoStatementNode(span, target)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoStatementNode(span, lexer.FileIndex(), target)));
                 }
                 *parentMatch0 = match;
             }
@@ -2727,7 +2727,7 @@ namespace cm.parser
                                             }
                                             if (match.hit)
                                             {
-                                                switchStatementNode.Reset(new cm.ast.SwitchStatementNode(span, cond.Release()));
+                                                switchStatementNode.Reset(new cm.ast.SwitchStatementNode(span, lexer.FileIndex(), cond.Release()));
                                             }
                                             *parentMatch12 = match;
                                         }
@@ -2902,7 +2902,7 @@ namespace cm.parser
                                 System.Parsing.Match match(true);
                                 if (match.hit)
                                 {
-                                    caseStatementNode.Reset(new cm.ast.CaseStatementNode(lexer.GetSpan(pos)));
+                                    caseStatementNode.Reset(new cm.ast.CaseStatementNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                 }
                                 *parentMatch4 = match;
                             }
@@ -3210,7 +3210,7 @@ namespace cm.parser
                                     }
                                     if (match.hit)
                                     {
-                                        defaultStatementNode.Reset(new cm.ast.DefaultStatementNode(span));
+                                        defaultStatementNode.Reset(new cm.ast.DefaultStatementNode(span, lexer.FileIndex()));
                                     }
                                     *parentMatch6 = match;
                                 }
@@ -3389,7 +3389,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoCaseStatementNode(span, caseExpr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoCaseStatementNode(span, lexer.FileIndex(), caseExpr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -3482,7 +3482,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoDefaultStatementNode(span)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.GotoDefaultStatementNode(span, lexer.FileIndex())));
                 }
                 *parentMatch0 = match;
             }
@@ -3575,7 +3575,7 @@ namespace cm.parser
                 if (match.hit)
                 {
                     context->PopParsingExpressionStatement();
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ExpressionStatementNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ExpressionStatementNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 else
                 {
@@ -3754,7 +3754,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AssignmentStatementNode(span, target.Release(), source.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AssignmentStatementNode(span, lexer.FileIndex(), target.Release(), source.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -3825,7 +3825,7 @@ namespace cm.parser
                                         id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            constructionStatementNode.Reset(new cm.ast.ConstructionStatementNode(span, type.Release(), id.Release()));
+                                            constructionStatementNode.Reset(new cm.ast.ConstructionStatementNode(span, lexer.FileIndex(), type.Release(), id.Release()));
                                         }
                                         *parentMatch7 = match;
                                     }
@@ -4104,7 +4104,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DeleteStatementNode(span, ptr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DeleteStatementNode(span, lexer.FileIndex(), ptr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4195,7 +4195,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DestroyStatementNode(span, ptr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DestroyStatementNode(span, lexer.FileIndex(), ptr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4240,7 +4240,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EmptyStatementNode(span)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EmptyStatementNode(span, lexer.FileIndex())));
                 }
                 *parentMatch0 = match;
             }
@@ -4344,7 +4344,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ThrowStatementNode(span, exception.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ThrowStatementNode(span, lexer.FileIndex(), exception.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4414,7 +4414,7 @@ namespace cm.parser
                                     tryBlock.Reset(cast<cm.ast.CompoundStatementNode*>(match.value));
                                     if (match.hit)
                                     {
-                                        tryStatementNode.Reset(new cm.ast.TryStatementNode(span, tryBlock.Release()));
+                                        tryStatementNode.Reset(new cm.ast.TryStatementNode(span, lexer.FileIndex(), tryBlock.Release()));
                                     }
                                     *parentMatch6 = match;
                                 }
@@ -4678,7 +4678,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CatchNode(span, catchType.Release(), catchId.Release(), catchBlock.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CatchNode(span, lexer.FileIndex(), catchType.Release(), catchId.Release(), catchBlock.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4793,7 +4793,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AssertStatementNode(span, expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AssertStatementNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -4928,7 +4928,7 @@ namespace cm.parser
                                                     ifExpr.Reset(cast<cm.ast.ConditionalCompilationExpressionNode*>(match.value));
                                                     if (match.hit)
                                                     {
-                                                        condCompStmt.Reset(new cm.ast.ConditionalCompilationStatementNode(span, ifExpr.Release()));
+                                                        condCompStmt.Reset(new cm.ast.ConditionalCompilationStatementNode(span, lexer.FileIndex(), ifExpr.Release()));
                                                     }
                                                     *parentMatch14 = match;
                                                 }
@@ -5123,7 +5123,7 @@ namespace cm.parser
                                                                         elifExpr.Reset(cast<cm.ast.ConditionalCompilationExpressionNode*>(match.value));
                                                                         if (match.hit)
                                                                         {
-                                                                            condCompStmt->AddElifExpr(elifSpan, elifExpr.Release());
+                                                                            condCompStmt->AddElifExpr(elifSpan, lexer.FileIndex(), elifExpr.Release());
                                                                         }
                                                                         *parentMatch32 = match;
                                                                     }
@@ -5313,7 +5313,7 @@ namespace cm.parser
                                                                     elses.Reset(cast<cm.ast.StatementNode*>(match.value));
                                                                     if (match.hit)
                                                                     {
-                                                                        condCompStmt->AddElseStatement(elseSpan, elses.Release());
+                                                                        condCompStmt->AddElseStatement(elseSpan, lexer.FileIndex(), elses.Release());
                                                                     }
                                                                     *parentMatch48 = match;
                                                                 }
@@ -5531,7 +5531,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.ConditionalCompilationExpressionNode*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.ConditionalCompilationDisjunctionNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.ConditionalCompilationDisjunctionNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch9 = match;
                                                     }
@@ -5656,7 +5656,7 @@ namespace cm.parser
                                                         right.Reset(cast<cm.ast.ConditionalCompilationExpressionNode*>(match.value));
                                                         if (match.hit)
                                                         {
-                                                            expr.Reset(new cm.ast.ConditionalCompilationConjunctionNode(span, expr.Release(), right.Release()));
+                                                            expr.Reset(new cm.ast.ConditionalCompilationConjunctionNode(span, lexer.FileIndex(), expr.Release(), right.Release()));
                                                         }
                                                         *parentMatch9 = match;
                                                     }
@@ -5760,7 +5760,7 @@ namespace cm.parser
                                         prefix.Reset(cast<cm.ast.ConditionalCompilationExpressionNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            expr.Reset(new cm.ast.ConditionalCompilationNotNode(span, prefix.Release()));
+                                            expr.Reset(new cm.ast.ConditionalCompilationNotNode(span, lexer.FileIndex(), prefix.Release()));
                                         }
                                         *parentMatch7 = match;
                                     }
@@ -5841,7 +5841,7 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
-                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString())));
+                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                         }
                         *parentMatch2 = match;
                     }
@@ -5919,7 +5919,7 @@ namespace cm.parser
                                         }
                                         if (match.hit)
                                         {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ParenthesizedConditionalCompilationExpressionNode(span, expr.Release())));
+                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ParenthesizedConditionalCompilationExpressionNode(span, lexer.FileIndex(), expr.Release())));
                                         }
                                         *parentMatch9 = match;
                                     }

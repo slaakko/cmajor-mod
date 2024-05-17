@@ -125,3 +125,14 @@ public extern cdecl void RtmDoneZlib(int mode, void* handle);
 public extern cdecl void RtmSetInputZlib(void* inChunk, uint inAvail, void* handle);
 public extern cdecl int RtmInflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle, int& errorId);
 public extern cdecl int RtmDeflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, void* handle, int flush, int& errorId);
+public extern cdecl void* RtmCreateSocket(int& errorId);
+public extern cdecl void RtmBindSocket(void* socketHandle, int port, int& errorId);
+public extern cdecl void RtmListenSocket(void* socketHandle, int backlog, int& errorId);
+public extern cdecl void* RtmAcceptSocket(void* socketHandle, int& errorId);
+public extern cdecl void RtmCloseSocket(void* socketHandle, int& errorId);
+public extern cdecl void RtmShutdownSocket(void* socketHandle, int mode, int& errorId);
+public extern cdecl void* RtmConnectSocket(const char* node, const char* service, int& errorId);
+public extern cdecl int RtmSendSocket(void* socketHandle, byte* buf, int len, int flags, int& errorId);
+public extern cdecl int RtmReceiveSocket(void* socketHandle, byte* buf, int len, int flags, int& errorId);
+public extern cdecl void RtmDestroySocket(void* socketHandle);
+

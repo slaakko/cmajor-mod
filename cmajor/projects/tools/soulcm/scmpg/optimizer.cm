@@ -1,0 +1,384 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmpg
+{
+    public class OptimizationFlagSetter : scmpg.ast.DefaultVisitor
+    {
+        public OptimizationFlagSetter() : count(0)
+        {
+        }
+        public override void Visit(scmpg.ast.ChoiceParser& parser)
+        {
+            base->Visit(parser);
+            parser.SetOptimizationFlag(count);
+        }
+        public inline int Count() const
+        {
+            return count;
+        }
+        private int count;
+    }
+
+    public void SetOptimizationFlags(scmpg.ast.ScmpgFile* scmpgFile, bool verbose)
+    {
+        if (verbose)
+        {
+            Console.Out() << "setting optimization flags..." << endl();
+        }
+        OptimizationFlagSetter flagSetter;
+        scmpgFile->Accept(flagSetter);
+        if (verbose)
+        {
+            Console.Out() << flagSetter.Count() << " choice parsers can be optimized" << endl();
+        }
+    }
+
+    public scmpg.ast.Parser* GenerateOptimizedParser(scmpg.ast.Parser* from, scmpg.ast.SwitchParser* switchParser)
+    {
+        Optimizer optimizer(switchParser);
+        from->Accept(optimizer);
+        return optimizer.GetOptimizedParser();
+    }
+
+    public scmpg.ast.SwitchParser* GenerateSwitch(scmpg.ast.ChoiceParser& fromChoice)
+    {
+        scmpg.ast.SwitchParser* switchParser = new scmpg.ast.SwitchParser(fromChoice.Span(), fromChoice.FileIndex());
+        scmpg.ast.Parser* left = GenerateOptimizedParser(fromChoice.Left(), switchParser);
+        if (left != null)
+        {
+            switchParser->AddCaseParser(new scmpg.ast.CaseParser(fromChoice.Span(), fromChoice.FileIndex(), left));
+        }
+        scmpg.ast.Parser* right = GenerateOptimizedParser(fromChoice.Right(), switchParser);
+        if (right != null)
+        {
+            switchParser->AddCaseParser(new scmpg.ast.CaseParser(fromChoice.Span(), fromChoice.FileIndex(), right));
+        }
+        return switchParser;
+    }
+
+    public class Optimizer : scmpg.ast.DefaultVisitor
+    {
+        public Optimizer(scmpg.ast.SwitchParser* switchParser_) :
+            switchParser(switchParser_), optimizedScmpgFile(null), optimizedParserFile(null), optimizedGrammar(null), optimizedRule(null), optimizedParser(null)
+        {
+        }
+        public scmpg.ast.Parser* GetOptimizedParser() const
+        {
+            return optimizedParser;
+        }
+        public scmpg.ast.ScmpgFile* GetOptimizedScmpgFile() const
+        {
+            return optimizedScmpgFile;
+        }
+        public override void Visit(scmpg.ast.ChoiceParser& choiceParser)
+        {
+            if (choiceParser.Optimize())
+            {
+                if (switchParser != null)
+                {
+                    scmpg.ast.Parser* left = GenerateOptimizedParser(choiceParser.Left(), switchParser);
+                    if (left != null)
+                    {
+                        switchParser->AddCaseParser(new scmpg.ast.CaseParser(choiceParser.Span(), choiceParser.FileIndex(), left));
+                    }
+                    scmpg.ast.Parser* right = GenerateOptimizedParser(choiceParser.Right(), switchParser);
+                    if (right != null)
+                    {
+                        switchParser->AddCaseParser(new scmpg.ast.CaseParser(choiceParser.Span(), choiceParser.FileIndex(), right));
+                    }
+                    optimizedParser = null;
+                }
+                else
+                {
+                    optimizedParser = GenerateSwitch(choiceParser);
+                }
+            }
+            else
+            {
+                scmpg.ast.Parser* left = GenerateOptimizedParser(choiceParser.Left(), null);
+                scmpg.ast.Parser* right = GenerateOptimizedParser(choiceParser.Right(), null);
+                if (left != null && right != null)
+                {
+                    optimizedParser = new scmpg.ast.ChoiceParser(choiceParser.Span(), choiceParser.FileIndex(), left, right);
+                }
+                else if (left != null)
+                {
+                    optimizedParser = left;
+                }
+                else if (right != null)
+                {
+                    optimizedParser = right;
+                }
+                else
+                {
+                    optimizedParser = null;
+                }
+            }
+        }
+        public override void Visit(scmpg.ast.SequenceParser& sequenceParser)
+        {
+            scmpg.ast.Parser* left = GenerateOptimizedParser(sequenceParser.Left(), null);
+            scmpg.ast.Parser* right = GenerateOptimizedParser(sequenceParser.Right(), null);
+            if (left != null && right != null)
+            {
+                optimizedParser = new scmpg.ast.SequenceParser(sequenceParser.Span(), sequenceParser.FileIndex(), left, right);
+            }
+            else if (left != null)
+            {
+                optimizedParser = left;
+            }
+            else if (right != null)
+            {
+                optimizedParser = right;
+            }
+            else
+            {
+                optimizedParser = null;
+            }
+        }
+        public override void Visit(scmpg.ast.DifferenceParser& differenceParser)
+        {
+            scmpg.ast.Parser* left = GenerateOptimizedParser(differenceParser.Left(), null);
+            scmpg.ast.Parser* right = GenerateOptimizedParser(differenceParser.Right(), null);
+            if (left != null && right != null)
+            {
+                optimizedParser = new scmpg.ast.DifferenceParser(differenceParser.Span(), differenceParser.FileIndex(), left, right);
+            }
+            else if (left != null)
+            {
+                optimizedParser = left;
+            }
+            else if (right != null)
+            {
+                optimizedParser = right;
+            }
+            else
+            {
+                optimizedParser = null;
+            }
+        }
+        public override void Visit(scmpg.ast.ListParser& listParser)
+        {
+            scmpg.ast.Parser* left = GenerateOptimizedParser(listParser.Left(), null);
+            scmpg.ast.Parser* right = GenerateOptimizedParser(listParser.Right(), null);
+            if (left != null && right != null)
+            {
+                optimizedParser = new scmpg.ast.ListParser(listParser.Span(), listParser.FileIndex(), left, right);
+            }
+            else if (left != null)
+            {
+                optimizedParser = left;
+            }
+            else if (right != null)
+            {
+                optimizedParser = right;
+            }
+            else
+            {
+                optimizedParser = null;
+            }
+        }
+        public override void Visit(scmpg.ast.LookaheadParser& lookaheadParser)
+        {
+            lookaheadParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                optimizedParser = new scmpg.ast.LookaheadParser(lookaheadParser.Span(), lookaheadParser.FileIndex(), optimizedParser);
+            }
+        }
+        public override void Visit(scmpg.ast.KleeneParser& kleeneParser)
+        {
+            kleeneParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                optimizedParser = new scmpg.ast.KleeneParser(kleeneParser.Span(), kleeneParser.FileIndex(), optimizedParser);
+            }
+        }
+        public override void Visit(scmpg.ast.PositiveParser& positiveParser)
+        {
+            positiveParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                optimizedParser = new scmpg.ast.PositiveParser(positiveParser.Span(), positiveParser.FileIndex(), optimizedParser);
+            }
+        }
+        public override void Visit(scmpg.ast.OptionalParser& optionalParser)
+        {
+            optionalParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                optimizedParser = new scmpg.ast.OptionalParser(optionalParser.Span(), optionalParser.FileIndex(), optimizedParser);
+            }
+        }
+        public override void Visit(scmpg.ast.ActionParser& actionParser)
+        {
+            actionParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                cm.ast.CloneContext cloneContext;
+                cm.ast.CompoundStatementNode* clonedSuccessCode = cast<cm.ast.CompoundStatementNode*>(actionParser.SuccessCode()->Clone(cloneContext));
+                cm.ast.CompoundStatementNode* clonedFailureCode = null;
+                if (actionParser.FailureCode() != null)
+                {
+                    clonedFailureCode = cast<cm.ast.CompoundStatementNode*>(actionParser.FailureCode()->Clone(cloneContext));
+                }
+                optimizedParser = new scmpg.ast.ActionParser(actionParser.Span(), actionParser.FileIndex(), optimizedParser, clonedSuccessCode, clonedFailureCode);
+            }
+        }
+        public override void Visit(scmpg.ast.NonterminalParser& nonterminalParser)
+        {
+            optimizedParser = nonterminalParser.Clone();
+        }
+        public override void Visit(scmpg.ast.EmptyParser& emptyParser)
+        {
+            optimizedParser = emptyParser.Clone();
+        }
+        public override void Visit(scmpg.ast.AnyParser& anyParser)
+        {
+            optimizedParser = anyParser.Clone();
+        }
+        public override void Visit(scmpg.ast.TokenParser& tokenParser)
+        {
+            optimizedParser = tokenParser.Clone();
+        }
+        public override void Visit(scmpg.ast.CharParser& charParser)
+        {
+            optimizedParser = charParser.Clone();
+        }
+        public override void Visit(scmpg.ast.StringParser& stringParser)
+        {
+            optimizedParser = stringParser.Clone();
+        }
+        public override void Visit(scmpg.ast.CharSetParser& charSetParser)
+        {
+            optimizedParser = charSetParser.Clone();
+        }
+        public override void Visit(scmpg.ast.GroupParser& groupParser)
+        {
+            groupParser.Child()->Accept(*this);
+            if (optimizedParser != null)
+            {
+                optimizedParser = new scmpg.ast.GroupParser(groupParser.Span(), groupParser.FileIndex(), optimizedParser);
+            }
+        }
+        public override void Visit(scmpg.ast.RuleParser& rule)
+        {
+            optimizedRule = new scmpg.ast.RuleParser(rule.Span(), rule.FileIndex(), rule.Name());
+            for (const auto& param : rule.Parameters())
+            {
+                scmpg.ast.Parameter* clonedParam = cast<scmpg.ast.Parameter*>(param->Clone());
+                optimizedRule->AddParameter(clonedParam);
+            }
+            for (const auto& var : rule.Variables())
+            {
+                scmpg.ast.Variable* clonedVar = cast<scmpg.ast.Variable*>(var->Clone());
+                optimizedRule->AddVariable(clonedVar);
+            }
+            if (rule.ReturnType() != null)
+            {
+                cm.ast.CloneContext cloneContext;
+                optimizedRule->SetReturnType(cast<cm.ast.Node*>(rule.ReturnType()->Clone(cloneContext)));
+            }
+            if (rule.HasReturn())
+            {
+                optimizedRule->SetHasReturn();
+            }
+            rule.Definition()->Accept(*this);
+            optimizedRule->SetDefinition(optimizedParser);
+        }
+        public override void Visit(scmpg.ast.GrammarParser& grammar)
+        {
+            optimizedGrammar = new scmpg.ast.GrammarParser(grammar.Span(), grammar.FileIndex(), grammar.Name());
+            if (grammar.Main())
+            {
+                optimizedGrammar->SetMain();
+            }
+            optimizedGrammar->SetId(grammar.Id());
+            for (const auto& lexer : grammar.Lexers())
+            {
+                cm.ast.CloneContext cloneContext;
+                optimizedGrammar->AddLexer(cast<cm.ast.Node*>(lexer->Clone(cloneContext)));
+            }
+            for (const auto& u : grammar.Usings())
+            {
+                optimizedGrammar->AddUsing(u);
+            }
+            for (const auto& rule : grammar.Rules())
+            {
+                rule->Accept(*this);
+                optimizedGrammar->AddRule(optimizedRule);
+            }
+        }
+        public override void Visit(scmpg.ast.ParserFile& parserFile)
+        {
+            optimizedParserFile = new scmpg.ast.ParserFile(parserFile.FilePath());
+            if (parserFile.IsExternal())
+            {
+                optimizedParserFile->SetExternal();
+            }
+            for (const auto& u : parserFile.Usings())
+            {
+                optimizedParserFile->AddUsing(u);
+            }
+            for (const auto& grammar : parserFile.Grammars())
+            {
+                grammar->Accept(*this);
+                optimizedParserFile->AddGrammar(optimizedGrammar);
+            }
+        }
+        public override void Visit(scmpg.ast.ScmpgFile& scmpgFile)
+        {
+            optimizedScmpgFile = new scmpg.ast.ScmpgFile(scmpgFile.FilePath(), scmpgFile.ProjectName());
+            for (const auto& parserFile : scmpgFile.ParserFiles())
+            {
+                parserFile->Accept(*this);
+                optimizedScmpgFile->AddParserFile(optimizedParserFile);
+            }
+        }
+        private scmpg.ast.SwitchParser* switchParser;
+        private scmpg.ast.ScmpgFile* optimizedScmpgFile;
+        private scmpg.ast.ParserFile* optimizedParserFile;
+        private scmpg.ast.GrammarParser* optimizedGrammar;
+        private scmpg.ast.RuleParser* optimizedRule;
+        private scmpg.ast.Parser* optimizedParser;
+    }
+
+    public scmpg.ast.ScmpgFile* GenerateOptimizedSpg(scmpg.ast.ScmpgFile* scmpgFile, bool verbose)
+    {
+        if (verbose)
+        {
+            Console.Out() << "generating optimized parsers..." << endl();
+        }
+        Optimizer optimizer(null);
+        scmpgFile->Accept(optimizer);
+        return optimizer.GetOptimizedScmpgFile();
+    }
+
+    public Result<UniquePtr<scmpg.ast.ScmpgFile>> Optimize(scmpg.ast.ScmpgFile* scmpgFile, bool verbose, bool xml, System.Lex.FileMap& fileMap)
+    {
+        if (verbose)
+        {
+            Console.Out() << "optimizing..." << endl();
+        }
+        ComputeFirstSets(scmpgFile, verbose);
+        if (xml)
+        {
+            auto result = PrintXml(scmpgFile, verbose, false);
+            if (result.Error())
+            {
+                return Result<UniquePtr<scmpg.ast.ScmpgFile>>(ErrorId(result.GetErrorId()));
+            }
+        }
+        SetOptimizationFlags(scmpgFile, verbose);
+        scmpg.ast.ScmpgFile* optimizedSpg = GenerateOptimizedSpg(scmpgFile, verbose);
+        Link(optimizedSpg, verbose, fileMap);
+        ComputeFirstSets(optimizedSpg, verbose);
+        return Result<UniquePtr<scmpg.ast.ScmpgFile>>(UniquePtr<scmpg.ast.ScmpgFile>(optimizedSpg));
+    }
+}
+

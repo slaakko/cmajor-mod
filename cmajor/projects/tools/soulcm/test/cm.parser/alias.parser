@@ -1,0 +1,45 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.AliasParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+
+    UsingAlias(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            USING
+            Identifier:id
+            ASSIGN
+            TypeExpr(context):typeExpr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.AliasNode(span, lexer.FileIndex(), specifiers, id, typeExpr);
+        }
+        ;
+
+    Typedef(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            TYPEDEF
+            TypeExpr(context):typeExpr
+            Identifier:id
+            SEMICOLON
+        )
+        {
+            return new cm.ast.TypedefNode(span, lexer.FileIndex(), specifiers, typeExpr, id);
+        }
+        ;
+}

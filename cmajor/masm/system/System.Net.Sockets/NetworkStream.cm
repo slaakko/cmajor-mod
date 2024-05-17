@@ -1,0 +1,59 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+
+namespace System.Net.Sockets
+{
+    public class NetworkStream : Stream
+    {
+        public NetworkStream(TcpSocket&& socket_) : socket(socket_)
+        {
+        }
+        public override Result<int> ReadByte()
+        {
+            byte buf;
+            auto readResult = Read(&buf, 1);
+            if (readResult.Error())
+            {
+                return Result<int>(ErrorId(readResult.GetErrorId()));
+            }
+            long bytesRead = readResult.Value();
+            if (bytesRead == 0)
+            {
+                return Result<int>(-1);
+            }
+            else
+            {
+                return Result<int>(buf);
+            }
+        }
+        public override Result<long> Read(byte* buf, long count)
+        {
+            auto receiveResult = socket.Receive(buf, cast<int>(count));
+            if (receiveResult.Error())
+            {
+                return Result<long>(ErrorId(receiveResult.GetErrorId()));
+            }
+            int bytesReceived = receiveResult.Value();
+            return Result<long>(bytesReceived);
+        }
+        public override Result<bool> Write(byte x)
+        {
+            return Write(&x, 1);
+        }
+        public override Result<bool> Write(byte* buf, long count)
+        {
+            return socket.SendAll(buf, cast<int>(count));
+        }
+        public TcpSocket& Socket()
+        {
+            return socket;
+        }
+        private TcpSocket socket;
+    }
+}
+

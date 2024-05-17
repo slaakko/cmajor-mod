@@ -24,14 +24,15 @@ namespace System.Lex
     public class Lexer : IOBase
     {
         public Lexer(const uchar* start_, const uchar* end_, const string& fileName_, const string& classMapName_) :
-            content(), fileName(fileName_), line(1), keywordMap(null), start(start_), end(end_), pos(start), current(tokens.End()), log(null), countLines(true), separatorChar('\0'),
-            commentTokenId(-1), farthestPos(GetPos()), classMapName(classMapName_), classMap(null)
+            content(), fileName(fileName_), line(1), keywordMap(null), start(start_), end(end_), pos(start),
+            current(tokens.End()), log(null), countLines(true), separatorChar('\0'),
+            commentTokenId(-1), farthestPos(GetPos()), classMapName(classMapName_), classMap(null), fileIndex(-1)
         {
             ComputeLineStarts();
         }
         suppress Lexer(const Lexer&);
         suppress void operator=(const Lexer&);
-        public inline const string& ClassMapName() 
+        public inline const string& ClassMapName()
         {
             return classMapName;
         }
@@ -76,6 +77,14 @@ namespace System.Lex
             Token token = GetToken(pos);
             return Span(cast<int>(token.match.begin - start), cast<int>(token.match.Length()));
         }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public void SetFileIndex(int fileIndex_)
+        {
+            fileIndex = fileIndex_;
+        }
         public void SetLine(int line_)
         {
             line = line_;
@@ -113,7 +122,7 @@ namespace System.Lex
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             if (current != tokens.End())
             {
@@ -153,7 +162,7 @@ namespace System.Lex
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             int state = 0;
             while (true)
@@ -209,13 +218,13 @@ namespace System.Lex
                             auto utf8 = ToUtf8(ustring(c, 1));
                             if (utf8.Error())
                             {
-                                SetLatestErrorId(utf8.GetErrorId());
+                                SetErrorId(utf8.GetErrorId());
                                 return Result<bool>(ErrorId(utf8.GetErrorId()));
                             }
-                            string errorMessage = "System.Lex.Lexer.NextToken(): error: invalid character \'" + utf8.Value() + "\' in file \'" + fileName + "\' at line " + ToString(line) + 
+                            string errorMessage = "System.Lex.Lexer.NextToken(): error: invalid character \'" + utf8.Value() + "\' in file \'" + fileName + "\' at line " + ToString(line) +
                                 ", state=" + ToString(prevState) + ", class=" + ToString(GetClass(c));
                             int errorId = AllocateError(errorMessage);
-                            SetLatestErrorId(errorId);
+                            SetErrorId(errorId);
                             return Result<bool>(ErrorId(errorId));
                         }
                     }
@@ -265,50 +274,50 @@ namespace System.Lex
                 return INVALID_TOKEN;
             }
         }
-        public Token GetToken(long pos) 
+        public Token GetToken(long pos)
         {
             int tokenIndex = cast<int>(pos);
             #assert(tokenIndex >= 0 && tokenIndex < tokens.Count());
             return tokens[tokenIndex];
         }
-        public ustring GetMatch(long pos) 
+        public ustring GetMatch(long pos)
         {
             Token token = GetToken(pos);
             return token.match.ToString();
         }
-        public char GetChar(long pos) 
+        public char GetChar(long pos)
         {
             Token token = GetToken(pos);
             return cast<char>(*token.match.begin);
         }
-        public wchar GetWChar(long pos) 
+        public wchar GetWChar(long pos)
         {
             Token token = GetToken(pos);
             return cast<wchar>(*token.match.begin);
         }
-        public uchar GetUChar(long pos) 
+        public uchar GetUChar(long pos)
         {
             Token token = GetToken(pos);
             return *token.match.begin;
         }
-        public Result<int> GetInt(long pos) 
+        public Result<int> GetInt(long pos)
         {
             Token token = GetToken(pos);
             auto utf8 = ToUtf8(token.match.ToString());
             if (utf8.Error())
             {
-                SetLatestErrorId(utf8.GetErrorId());
+                SetErrorId(utf8.GetErrorId());
                 return Result<int>(ErrorId(utf8.GetErrorId()));
             }
             return ParseInt(utf8.Value());
         }
-        public Result<double> GetDouble(long pos) 
+        public Result<double> GetDouble(long pos)
         {
             Token token = GetToken(pos);
             auto utf8 = ToUtf8(token.match.ToString());
             if (utf8.Error())
             {
-                SetLatestErrorId(utf8.GetErrorId());
+                SetErrorId(utf8.GetErrorId());
                 return Result<double>(ErrorId(utf8.GetErrorId()));
             }
             return ParseDouble(utf8.Value());
@@ -352,9 +361,10 @@ namespace System.Lex
             auto utf8 = ToUtf8(errorLines);
             if (utf8.Error())
             {
-                SetLatestErrorId(utf8.GetErrorId());
+                SetErrorId(utf8.GetErrorId());
                 return ErrorId(utf8.GetErrorId());
             }
+            Console.Out() << utf8.Value() << endl();
             string parserStateStr = GetParserStateStr();
             string errorMessage = "parsing error at '" + fileName + ":" + ToString(token.line) + "':\n" + utf8.Value() + parserStateStr;
             int errorId = AllocateError(errorMessage);
@@ -484,7 +494,7 @@ namespace System.Lex
         {
             ruleContext.RemoveLast();
         }
-        public List<int> GetLineStartIndeces() const 
+        public List<int> GetLineStartIndeces() const
         {
             List<int> lineStartIndeces;
             for (long i = 0; i < lineStarts.Count(); ++i)
@@ -547,6 +557,7 @@ namespace System.Lex
         private List<const uchar*> lineStarts;
         private string classMapName;
         private int* classMap;
+        private int fileIndex;
     }
 
     public const uchar* LineStart(const uchar* start, const uchar* p)

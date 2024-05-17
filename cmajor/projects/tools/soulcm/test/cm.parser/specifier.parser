@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.SpecifierParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    Specifiers(var cm.ast.Specifiers specifiers) : cm.ast.Specifiers
+        ::= 
+        (
+            (
+                Specifier:specifier{ specifiers = specifiers | specifier; }
+            )*
+        )
+        {
+            return specifiers;
+        }
+        ;
+
+    Specifier : cm.ast.Specifiers
+        ::= PUBLIC{ return cm.ast.Specifiers.public_; }
+        |   PROTECTED{ return cm.ast.Specifiers.protected_; }
+        |   PRIVATE{ return cm.ast.Specifiers.private_; }
+        |   INTERNAL{ return cm.ast.Specifiers.internal_; }
+        |   STATIC{ return cm.ast.Specifiers.static_; }
+        |   VIRTUAL{ return cm.ast.Specifiers.virtual_; }
+        |   OVERRIDE{ return cm.ast.Specifiers.override_; }
+        |   ABSTRACT{ return cm.ast.Specifiers.abstract_; }
+        |   INLINE{ return cm.ast.Specifiers.inline_; }
+        |   EXPLICIT{ return cm.ast.Specifiers.explicit_; }
+        |   EXTERN{ return cm.ast.Specifiers.external_; }
+        |   SUPPRESS{ return cm.ast.Specifiers.suppress_; }
+        |   DEFAULT{ return cm.ast.Specifiers.default_; }
+        |   CONSTEXPR{ return cm.ast.Specifiers.constexpr_; }
+        |   CDECL{ return cm.ast.Specifiers.cdecl_; }
+        |   NOTHROW{ return cm.ast.Specifiers.nothrow_; }
+        |   THROW{ return cm.ast.Specifiers.throw_; }
+        |   NEW{ return cm.ast.Specifiers.new_; }
+        |   UNIT_TEST{ return cm.ast.Specifiers.unit_test_; }
+        |   WINAPI{ return cm.ast.Specifiers.winapi_; }
+        ;
+}

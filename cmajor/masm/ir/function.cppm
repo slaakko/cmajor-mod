@@ -32,7 +32,7 @@ public:
     void SetInline() { isInline = true; }
     void SetMdId(int mdId_) { mdId = mdId_; }
     int MdId() const { return mdId; }
-    void Write(util::CodeFormatter& formatter, Context& context);
+    void Write(util::CodeFormatter& formatter, Context& context, util::CodeFormatter& linesFormatter);
 private:
     std::string name;
     Type* type;

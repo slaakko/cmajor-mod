@@ -28,7 +28,7 @@ namespace System.Lex
         {
             if (formatter.Error())
             {
-                return Result<bool>(ErrorId(formatter.GetLatestErrorId()));
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
             }
             auto convertedResult = XmlEscape(elementContent);
             if (convertedResult.Error())
@@ -50,7 +50,7 @@ namespace System.Lex
         {
             if (formatter.Error())
             {
-                return Result<bool>(ErrorId(formatter.GetLatestErrorId()));
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
             }
             auto utf8Result = ToUtf8(s);
             if (utf8Result.Error())
@@ -101,7 +101,7 @@ namespace System.Lex
         writer << "&#x" << hex.Value() << ";";
         if (writer.Error())
         {
-            return Result<ustring>(ErrorId(writer.GetLatestErrorId()));
+            return Result<ustring>(ErrorId(writer.GetErrorId()));
         }
         auto result = ToUtf32(writer.GetString());
         if (result.Error())
@@ -125,7 +125,7 @@ namespace System.Lex
             case '\r': return Result<ustring>(u"\\r");
             case '\t': return Result<ustring>(u"\\t");
             case '\v': return Result<ustring>(u"\\v");
-            default: 
+            default:
             {
                 if (cast<int>(c) >= 32 && cast<int>(c) <= 126)
                 {

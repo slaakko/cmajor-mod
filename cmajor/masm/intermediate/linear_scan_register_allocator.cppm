@@ -66,7 +66,7 @@ public:
     cmajor::masm::assembly::RegisterGroup* GetRegisterGroup(Instruction* inst) const override;
     void RemoveRegisterGroup(Instruction* inst);
     void AllocateRegister(Instruction* inst);
-    void AllocateFrameLocation(Instruction* inst);
+    void AllocateFrameLocation(Instruction* inst, bool spill);
     void Spill(Instruction* inst);
     LiveRange GetLiveRange(Instruction* inst) const;
     Frame& GetFrame() override { return frame; }

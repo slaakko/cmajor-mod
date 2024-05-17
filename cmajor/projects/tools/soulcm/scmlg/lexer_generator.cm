@@ -311,7 +311,7 @@ namespace scmlg
         FileStream outputFileStream(compressedClassMapFileName, cast<OpenMode>(OpenMode.write | OpenMode.binary));
         if (outputFileStream.Error())
         {
-            return Result<bool>(ErrorId(outputFileStream.GetLatestErrorId()));
+            return Result<bool>(ErrorId(outputFileStream.GetErrorId()));
         }
         BinaryWriter rawWriter(&outputFileStream);
         auto rawWriteResult = rawWriter.Write(size);
@@ -481,7 +481,7 @@ namespace scmlg
         }
         StreamWriter& writer = lexerFileResult.Value();
         System.Text.CodeFormatter formatter(writer);
-        formatter << "// this file has been automatically generated from '" << context.FileName() << "' using SoulCm lexer generator scmlg version " << scmlgVersion <<
+        formatter << "// this file has been generated from '" << context.FileName() << "' using SoulCm lexer generator scmlg version " << scmlgVersion <<
             endl() << endl();
         formatter << "using System;" << endl();
         formatter << "using System.Collections;" << endl();
@@ -520,7 +520,7 @@ namespace scmlg
         formatter << "if (classMapResult.Error())" << endl();
         formatter << "{" << endl();
         formatter.IncIndent();
-        formatter << "SetLatestErrorId(classMapResult.GetErrorId());" << endl();
+        formatter << "SetErrorId(classMapResult.GetErrorId());" << endl();
         formatter << "return;" << endl();
         formatter.DecIndent();
         formatter << "}" << endl();
@@ -625,8 +625,8 @@ namespace scmlg
         {
             formatter << "case " << rule->Index() << ":" << endl();
             System.Lex.Span span;
-            rule->Code()->InsertFront(new cm.ast.ExpressionStatementNode(span,
-                new cm.ast.InvokeNode(span, new cm.ast.IdentifierNode(span, u"Retract"))));
+            rule->Code()->InsertFront(new cm.ast.ExpressionStatementNode(span, -1,
+                new cm.ast.InvokeNode(span, -1, new cm.ast.IdentifierNode(span, -1, u"Retract"))));
             if (rule->Action() != -1)
             {
                 Action* action = lexer->GetActions().GetAction(rule->Action());
@@ -648,8 +648,8 @@ namespace scmlg
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            rule->Code()->AddStatement(new cm.ast.BreakStatementNode(span));
-            cm.ast.SourceWriter sourceWriter(formatter);
+            rule->Code()->AddStatement(new cm.ast.BreakStatementNode(span, -1));
+            cm.ast.SourceWriter sourceWriter(&formatter);
             rule->Code()->Accept(sourceWriter);
         }
         formatter.DecIndent();

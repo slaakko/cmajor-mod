@@ -1,0 +1,90 @@
+<parserFile>
+ <grammar name="cm.parser.EnumerationParser">
+  <rule first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RBRACE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" name="EnumType">
+   <action first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RBRACE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+    <group first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RBRACE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+     <sequence first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RBRACE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+      <sequence first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+       <sequence first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+        <sequence first="{#, ABSTRACT, CDECL, COLON, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+         <sequence first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+          <sequence first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, ENUM, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+           <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+            <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+           </action>
+           <token first="{ENUM}" name="ENUM"/>
+          </sequence>
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="Identifier"/>
+          </action>
+         </sequence>
+         <optional first="{#, COLON}">
+          <group first="{COLON}">
+           <action first="{COLON}">
+            <nonterminal first="{COLON}" ruleName="UnderlyingType"/>
+           </action>
+          </group>
+         </optional>
+        </sequence>
+        <token first="{LBRACE}" name="LBRACE"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="EnumConstants"/>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{COLON}" name="UnderlyingType">
+   <action first="{COLON}">
+    <group first="{COLON}">
+     <sequence first="{COLON}">
+      <token first="{COLON}" name="COLON"/>
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="EnumConstants">
+   <group first="{ID}">
+    <list first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="EnumConstant"/>
+      </action>
+      <kleene first="{#, COMMA}">
+       <sequence first="{COMMA}">
+        <token first="{COMMA}" name="COMMA"/>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="EnumConstant"/>
+        </action>
+       </sequence>
+      </kleene>
+     </sequence>
+    </list>
+   </group>
+  </rule>
+  <rule first="{ID}" name="EnumConstant">
+   <group first="{ID}">
+    <sequence first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="Identifier"/>
+     </action>
+     <group first="{#, ASSIGN}">
+      <choice first="{#, ASSIGN}">
+       <sequence first="{ASSIGN}">
+        <token first="{ASSIGN}" name="ASSIGN"/>
+        <action first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <nonterminal first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
+        </action>
+       </sequence>
+       <action first="{#}">
+        <empty first="{#}"/>
+       </action>
+      </choice>
+     </group>
+    </sequence>
+   </group>
+  </rule>
+ </grammar>
+</parserFile>

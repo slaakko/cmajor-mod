@@ -13,11 +13,11 @@ parser IdentifierParser
     lexer CmajorLexer;
 
     Identifier : cm.ast.IdentifierNode*
-        ::= ID{ return new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()); }
+        ::= ID{ return new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString()); }
         ;
 
     QualifiedId(var ustring value) : cm.ast.IdentifierNode*
-        ::= 
+        ::=
         (
             ID{ value = lexer.GetToken(pos).ToString(); }
             (
@@ -25,7 +25,7 @@ parser IdentifierParser
             )*
         )
         {
-            return new cm.ast.IdentifierNode(lexer.GetSpan(pos), value); 
+            return new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), value);
         }
         ;
 }

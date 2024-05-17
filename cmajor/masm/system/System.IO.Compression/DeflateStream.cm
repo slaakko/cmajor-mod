@@ -12,7 +12,7 @@ namespace System.IO.Compression
     {
         compress = 0, decompress = 1
     }
-    
+
     public const int defaultDeflateCompressionLevel = -1; // equal to level 6 according to zlib documentation
     public const int noDeflateCompression = 0;
     public const int fastestDeflateCompression = 1;
@@ -21,7 +21,7 @@ namespace System.IO.Compression
     public const int Z_STREAM_END = 1;
     public const int Z_FINISH = 4;
     public const int Z_STREAM_ERROR = -2;
-    
+
     public class DeflateStream : Stream
     {
         public DeflateStream(Stream* underlyingStream_, int compressionLevel_) : this(underlyingStream_, compressionLevel_, 16384)
@@ -30,7 +30,7 @@ namespace System.IO.Compression
         public DeflateStream(Stream* underlyingStream_, CompressionMode mode_) : this(underlyingStream_, mode_, 16384)
         {
         }
-        public DeflateStream(Stream* underlyingStream_, int compressionLevel_, long bufferSize_) : 
+        public DeflateStream(Stream* underlyingStream_, int compressionLevel_, long bufferSize_) :
             underlyingStream(underlyingStream_), mode(CompressionMode.compress), handle(null), inAvail(0u), bufferSize(bufferSize_),
             in(bufferSize), outAvail(0u), outPos(0), outHave(0u), endOfInput(false), endOfStream(false), out(bufferSize)
         {
@@ -38,10 +38,10 @@ namespace System.IO.Compression
             RtmInitZlib(mode, compressionLevel_, &handle, errorId);
             if (errorId != 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
             }
         }
-        public DeflateStream(Stream* underlyingStream_, CompressionMode mode_, long bufferSize_) : 
+        public DeflateStream(Stream* underlyingStream_, CompressionMode mode_, long bufferSize_) :
             underlyingStream(underlyingStream_), mode(mode_), handle(null), inAvail(0u), bufferSize(bufferSize_),
             in(bufferSize), outAvail(0u), outPos(0), outHave(0u), endOfInput(false), endOfStream(false), out(bufferSize)
         {
@@ -49,14 +49,14 @@ namespace System.IO.Compression
             RtmInitZlib(mode, defaultDeflateCompressionLevel, &handle, errorId);
             if (errorId != 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
             }
         }
         suppress DeflateStream(DeflateStream&&);
         suppress void operator=(DeflateStream&&);
         suppress DeflateStream(const DeflateStream&);
         suppress void operator=(const DeflateStream&);
-        public inline CompressionMode Mode() const 
+        public inline CompressionMode Mode() const
         {
             return mode;
         }
@@ -67,14 +67,14 @@ namespace System.IO.Compression
                 if (mode == CompressionMode.compress)
                 {
                     Finish();
-                }        
+                }
                 RtmDoneZlib(mode, handle);
             }
         }
         public override Result<int> ReadByte()
         {
             byte x = 0u;
-            auto readResult = this->Read(&x, 1); 
+            auto readResult = this->Read(&x, 1);
             if (readResult.Error())
             {
                 return Result<int>(ErrorId(readResult.GetErrorId()));
@@ -126,14 +126,14 @@ namespace System.IO.Compression
                             endOfStream = true;
                         }
                         outPos = 0;
-                    }                    
+                    }
                     while (count > 0 && outHave > 0u)
                     {
                         *buf++ = out[outPos++];
                         --count;
                         --outHave;
                         ++bytesRead;
-                    }        
+                    }
                 }
                 while (count > 0 && outAvail == 0u);
             }

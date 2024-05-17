@@ -1,0 +1,73 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.EnumerationParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.Expression;
+
+    EnumType(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.EnumTypeNode> enumType) : cm.ast.EnumTypeNode*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            ENUM
+            Identifier:id{ enumType.Reset(new cm.ast.EnumTypeNode(span, lexer.FileIndex(), specifiers, id)); }
+            (
+                UnderlyingType(context):underlyingType{ enumType->SetUnderlyingType(underlyingType); }
+            )?
+            LBRACE
+            EnumConstants(context, enumType.Get()):enumConstants
+            RBRACE
+        )
+        {
+            return enumType.Release();
+        }
+        ;
+
+    UnderlyingType(cm.parser.Context* context) : cm.ast.Node*
+        ::=
+        (
+            COLON
+            TypeExpr(context):underlyingType
+        )
+        {
+            return underlyingType;
+        }
+        ;
+
+    EnumConstants(cm.parser.Context* context, cm.ast.EnumTypeNode* enumType, var System.Lex.Span span)
+        ::=
+        (
+            EnumConstant(context, enumType):enumConstant{ enumType->AddConstant(enumConstant); } % COMMA
+        )
+        ;
+
+    EnumConstant(cm.parser.Context* context, cm.ast.EnumTypeNode* enumType, var System.Lex.Span span) : cm.ast.EnumConstantNode*
+        ::=
+        (
+            Identifier:id{ span = lexer.GetSpan(pos); }
+            (
+                ASSIGN Expression(context):value
+                {
+                    cm.ast.EnumConstantNode* enumConstant = new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id, value);
+                    enumConstant->SetHasValue();
+                    return enumConstant;
+                }
+                |
+                empty
+                {
+                    return new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id, cm.ast.MakeNextEnumConstantValue(span, lexer.FileIndex(), enumType));
+                }
+            )
+        )
+        ;
+}

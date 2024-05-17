@@ -13,11 +13,11 @@ parser AttributeParser
     lexer CmajorLexer;
 
     Attributes(cm.parser.Context* context, var UniquePtr<cm.ast.AttributesNode> attributesNode) : cm.ast.AttributesNode*
-        ::= 
+        ::=
         (
             LBRACKET
             {
-                attributesNode.Reset(new cm.ast.AttributesNode(lexer.GetSpan(pos)));
+                attributesNode.Reset(new cm.ast.AttributesNode(lexer.GetSpan(pos), lexer.FileIndex()));
             }
             (
                 Attribute(context, attributesNode.Get()):first
@@ -34,7 +34,7 @@ parser AttributeParser
         ;
 
     Attribute(cm.parser.Context* context, cm.ast.AttributesNode* attributes, var ustring name, var ustring value, var System.Lex.Span span) : bool
-        ::= 
+        ::=
         (
             empty{ value = u"true"; }
             ID{ span = lexer.GetSpan(pos); name = lexer.GetToken(pos).ToString(); }
@@ -52,7 +52,7 @@ parser AttributeParser
             )?
         )
         {
-            attributes->AddAttribute(span, name, value);
+            attributes->AddAttribute(span, lexer.FileIndex(), name, value);
             return true;
         }
         ;

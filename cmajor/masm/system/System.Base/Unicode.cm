@@ -20,9 +20,9 @@ namespace System.Unicode
         }
         return Result<string>(Path.Combine(cmajorRoot, "unicode"));
     }
-    
+
     public Result<string> PathToUcdBinFile()
-    {        
+    {
         auto unicodeDir = PathToUnicodeDirectory();
         if (unicodeDir.Error())
         {
@@ -30,7 +30,7 @@ namespace System.Unicode
         }
         return Result<string>(Path.Combine(unicodeDir.Value(), "cmajor_ucd.bin"));
     }
-    
+
     public Result<string> MakeCanonicalPropertyName(const string& s)
     {
         string result;
@@ -43,7 +43,7 @@ namespace System.Unicode
         }
         return ToLower(result);
     }
-    
+
     public enum BinaryPropertyId : byte
     {
         asciiHexDigit,
@@ -107,7 +107,7 @@ namespace System.Unicode
         expandsOnNFKC,
         expandsOnNFKD
     }
-    
+
     public class BinaryProperty
     {
         public BinaryProperty(BinaryPropertyId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
@@ -129,7 +129,7 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
+
     public class BinaryPropertyTable : IOBase
     {
         static BinaryPropertyTable() : instance(new BinaryPropertyTable())
@@ -143,7 +143,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BinaryProperty*>(ErrorId(GetLatestErrorId()));
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
             }
             auto it = binaryPropertyIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != binaryPropertyIdMap.CEnd())
@@ -157,7 +157,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BinaryProperty*>(ErrorId(GetLatestErrorId()));
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -175,7 +175,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BinaryProperty*>(ErrorId(GetLatestErrorId()));
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -257,14 +257,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(binaryProperty->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = binaryProperty;
                 result = MakeCanonicalPropertyName(binaryProperty->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = binaryProperty;
@@ -282,8 +282,8 @@ namespace System.Unicode
         private Map<string, void*> shortNameMap;
         private Map<string, void*> longNameMap;
         private static UniquePtr<BinaryPropertyTable> instance;
-    }    
-    
+    }
+
     public Result<const BinaryProperty*> GetBinaryProperty(BinaryPropertyId id)
     {
         return BinaryPropertyTable.Instance().GetBinaryProperty(id);
@@ -298,7 +298,7 @@ namespace System.Unicode
     {
         return BinaryPropertyTable.Instance().GetBinaryPropertyByLongName(longName);
     }
-    
+
     public enum BlockId : ushort
     {
         none = 0u,
@@ -333,9 +333,9 @@ namespace System.Unicode
         ucas, ucasExt, ugaritic, vai, vedicExt, verticalForms, vs, vsSup, wancho, warangCiti, yiRadicals, yiSyllables, yijing, zanabazarSquare
     }
 
-    public class Block 
+    public class Block
     {
-        public Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) : 
+        public Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) :
             id(id_), shortName(shortName_), longName(longName_), start(start_), end(end_)
         {
         }
@@ -365,7 +365,7 @@ namespace System.Unicode
         private uchar start;
         private uchar end;
     }
-    
+
     public class BlockTable : IOBase
     {
         static BlockTable() : instance(new BlockTable())
@@ -379,7 +379,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Block*>(ErrorId(GetLatestErrorId()));
+                return Result<const Block*>(ErrorId(GetErrorId()));
             }
             auto it = blockIdMap.CFind(cast<uint>(cast<ushort>(id)));
             if (it != blockIdMap.CEnd())
@@ -393,7 +393,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Block*>(ErrorId(GetLatestErrorId()));
+                return Result<const Block*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -411,7 +411,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Block*>(ErrorId(GetLatestErrorId()));
+                return Result<const Block*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -683,7 +683,7 @@ namespace System.Unicode
             blocks.Add(new Block(BlockId.kanaSup, "Kana Sup", "Kana Supplement", cast<uchar>(0x1B000u), cast<uchar>(0x1B0FFu)));
             blocks.Add(new Block(BlockId.kanaExtA, "Kana Ext A", "Kana Extended-A", cast<uchar>(0x1B100u), cast<uchar>(0x1B12Fu)));
             blocks.Add(new Block(BlockId.smallKanaExt, "Small Kana Ext", "Small Kana Extension", cast<uchar>(0x1B130), cast<uchar>(0x1B16F))); // 12.0
-            blocks.Add(new Block(BlockId.nushu, "Nushu", "Nushu", cast<uchar>(0x1B170u), cast<uchar>(0x1B2FFu))); 
+            blocks.Add(new Block(BlockId.nushu, "Nushu", "Nushu", cast<uchar>(0x1B170u), cast<uchar>(0x1B2FFu)));
             blocks.Add(new Block(BlockId.duployan, "Duployan", "Duployan", cast<uchar>(0x1BC00u), cast<uchar>(0x1BC9Fu)));
             blocks.Add(new Block(BlockId.shorthandFormatControls, "Shorthand Format Controls", "Shorthand Format Controls", cast<uchar>(0x1BCA0u), cast<uchar>(0x1BCAFu)));
             blocks.Add(new Block(BlockId.byzantineMusic, "Byzantine Music", "Byzantine Musical Symbols", cast<uchar>(0x1D000u), cast<uchar>(0x1D0FFu)));
@@ -733,14 +733,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(block->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = block;
                 result = MakeCanonicalPropertyName(block->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = block;
@@ -759,7 +759,7 @@ namespace System.Unicode
         private Map<string, void*> shortNameMap;
         private Map<string, void*> longNameMap;
     }
-    
+
     public Result<const Block*> GetBlock(BlockId id)
     {
         return BlockTable.Instance().GetBlock(id);
@@ -767,18 +767,18 @@ namespace System.Unicode
 
     public Result<const Block*> GetBlockByShortName(const string& shortName)
     {
-        return BlockTable.Instance().GetBlockByShortName(shortName); 
+        return BlockTable.Instance().GetBlockByShortName(shortName);
     }
 
     public Result<const Block*> GetBlockByLongName(const string& longName)
     {
-        return BlockTable.Instance().GetBlockByLongName(longName); 
+        return BlockTable.Instance().GetBlockByLongName(longName);
     }
 
     public enum GeneralCategoryId : uint
     {
         none = 0u,
-        Lu = 1u << 0u, Ll = 1u << 1u, Lt = 1u << 2u, Lm = 1u << 3u, Lo = 1u << 4u, 
+        Lu = 1u << 0u, Ll = 1u << 1u, Lt = 1u << 2u, Lm = 1u << 3u, Lo = 1u << 4u,
         LC = Lu | Ll | Lt,
         L = Lu | Ll | Lt | Lm | Lo,
         Mn = 1u << 5u, Mc = 1u << 6u, Me = 1u << 7u,
@@ -832,7 +832,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const GeneralCategory*>(ErrorId(GetLatestErrorId()));
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
             }
             auto it = generalCategoryIdMap.CFind(cast<uint>(id));
             if (it != generalCategoryIdMap.CEnd())
@@ -846,7 +846,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const GeneralCategory*>(ErrorId(GetLatestErrorId()));
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -864,7 +864,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const GeneralCategory*>(ErrorId(GetLatestErrorId()));
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -926,14 +926,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(generalCategory->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = generalCategory;
                 result = MakeCanonicalPropertyName(generalCategory->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = generalCategory;
@@ -957,21 +957,21 @@ namespace System.Unicode
     {
         return GeneralCategoryTable.Instance().GetGeneralCategory(id);
     }
-    
+
     public Result<const GeneralCategory*> GetGeneralCategoryByShortName(const string& shortName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByShortName(shortName);
     }
-    
+
     public Result<const GeneralCategory*> GetGeneralCategoryByLongName(const string& longName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByLongName(longName);
     }
-    
+
     public enum AgeId : byte
     {
         age_unassigned = 0u,
-        age_1_1, 
+        age_1_1,
         age_2_0, age_2_1,
         age_3_0, age_3_1, age_3_2,
         age_4_0, age_4_1,
@@ -996,7 +996,7 @@ namespace System.Unicode
         }
         public inline const string& Version() const
         {
-            return version; 
+            return version;
         }
         private AgeId id;
         private string version;
@@ -1092,13 +1092,13 @@ namespace System.Unicode
         elba, elym, egyp, ethi,
         geor, glag, gong, gonm, goth, gran, grek, gujr, guru,
         hang, hani, hano, hatr, hebr, hira, hluw, hmng, hmnp, hrkt, hung,
-        ital, 
+        ital,
         java,
-        kali, kana, khar, khmr, khoj, knda, kthi, 
+        kali, kana, khar, khmr, khoj, knda, kthi,
         lana, laoo, latn, lepc, limb, lina, linb, lisu, lyci, lydi,
         mahj, maka, mand, mani, marc, medf, mend, merc, mero, mlym, modi, mong, mroo, mtei, mult, mymr,
         nand, narb, nbat, newa, nkoo, nshu,
-        ogam, olck, orkh, orya, osge, osma, 
+        ogam, olck, orkh, orya, osge, osma,
         palm, pauc, perm, phag, phli, phlp, phnx, plrd, prti,
         qaai,
         rjng, rohg, runr,
@@ -1112,7 +1112,7 @@ namespace System.Unicode
         yiii, zanb,
         zinh, zyyy, zzzz
     }
-    
+
     public class Script
     {
         public Script(ScriptId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
@@ -1134,7 +1134,7 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
+
     public class ScriptTable : IOBase
     {
         static ScriptTable() : instance(new ScriptTable())
@@ -1148,7 +1148,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Script*>(ErrorId(GetLatestErrorId()));
+                return Result<const Script*>(ErrorId(GetErrorId()));
             }
             auto it = scriptIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != scriptIdMap.CEnd())
@@ -1162,7 +1162,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Script*>(ErrorId(GetLatestErrorId()));
+                return Result<const Script*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -1180,7 +1180,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const Script*>(ErrorId(GetLatestErrorId()));
+                return Result<const Script*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -1206,7 +1206,7 @@ namespace System.Unicode
             scripts.Add(new Script(ScriptId.bali, "Bali", "Balinese"));
             scripts.Add(new Script(ScriptId.bamu, "Bamu", "Bamum"));
             scripts.Add(new Script(ScriptId.bass, "Bass", "Bassa Vah"));
-            scripts.Add(new Script(ScriptId.batk, "Batk", "Batak")); 
+            scripts.Add(new Script(ScriptId.batk, "Batk", "Batak"));
             scripts.Add(new Script(ScriptId.beng, "Beng", "Bengali"));
             scripts.Add(new Script(ScriptId.bhks, "Bhks", "Bhaisuki"));
             scripts.Add(new Script(ScriptId.bopo, "Bopo", "Bopomofo"));
@@ -1356,14 +1356,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(script->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = script;
                 result = MakeCanonicalPropertyName(script->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = script;
@@ -1381,7 +1381,7 @@ namespace System.Unicode
         private Map<uint, void*> scriptIdMap;
         private Map<string, void*> shortNameMap;
         private Map<string, void*> longNameMap;
-    }            
+    }
 
     public Result<const Script*> GetScript(ScriptId id)
     {
@@ -1397,11 +1397,11 @@ namespace System.Unicode
     {
         return ScriptTable.Instance().GetScriptByLongName(longName);
     }
-    
+
     public class CharacterInfo
     {
-        public CharacterInfo() : 
-            binaryProperties(0u), generalCategory(GeneralCategoryId.none), upper(cast<uchar>(0u)), lower(cast<uchar>(0u)), title(cast<uchar>(0u)), 
+        public CharacterInfo() :
+            binaryProperties(0u), generalCategory(GeneralCategoryId.none), upper(cast<uchar>(0u)), lower(cast<uchar>(0u)), title(cast<uchar>(0u)),
             folding(cast<uchar>(0u)), block(BlockId.none), age(AgeId.age_unassigned), script(ScriptId.none)
         {
         }
@@ -1546,7 +1546,7 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
+
     public class NumericTypeTable : IOBase
     {
         static NumericTypeTable() : instance(new NumericTypeTable())
@@ -1560,7 +1560,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const NumericType*>(ErrorId(GetLatestErrorId()));
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
             }
             auto it = numericTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != numericTypeIdMap.CEnd())
@@ -1574,7 +1574,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const NumericType*>(ErrorId(GetLatestErrorId()));
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -1592,7 +1592,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const NumericType*>(ErrorId(GetLatestErrorId()));
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -1618,14 +1618,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(numericType->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = numericType;
                 result = MakeCanonicalPropertyName(numericType->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = numericType;
@@ -1665,7 +1665,7 @@ namespace System.Unicode
         none = 0u,
         al, an, b, bn, cs, en, es, et, fsi, l, lre, lri, lro, nsm, on, pdf, pdi, r, rle, rli, rlo, s, ws
     }
-    
+
     public class BidiClass
     {
         public BidiClass(BidiClassId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
@@ -1687,13 +1687,13 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
+
     public class BidiClassTable : IOBase
     {
         static BidiClassTable() : instance(new BidiClassTable())
         {
         }
-        public static BidiClassTable& Instance() 
+        public static BidiClassTable& Instance()
         {
             return *instance;
         }
@@ -1701,7 +1701,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BidiClass*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
             }
             auto it = bidiClassIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != bidiClassIdMap.CEnd())
@@ -1715,7 +1715,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BidiClass*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -1733,7 +1733,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BidiClass*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -1778,14 +1778,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(bidiClass->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = bidiClass;
                 result = MakeCanonicalPropertyName(bidiClass->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = bidiClass;
@@ -1804,7 +1804,7 @@ namespace System.Unicode
         private Map<string, void*> shortNameMap;
         private Map<string, void*> longNameMap;
     }
-     
+
     public Result<const BidiClass*> GetBidiClass(BidiClassId id)
     {
         return BidiClassTable.Instance().GetBidiClass(id);
@@ -1828,11 +1828,11 @@ namespace System.Unicode
 
     public class BidiPairedBracketType
     {
-        public BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) : 
+        public BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) :
             id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline BidiPairedBracketTypeId Id() const 
+        public inline BidiPairedBracketTypeId Id() const
         {
             return id;
         }
@@ -1848,7 +1848,7 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
+
     public class BidiPairedBracketTypeTable : IOBase
     {
         static BidiPairedBracketTypeTable() : instance(new BidiPairedBracketTypeTable())
@@ -1856,13 +1856,13 @@ namespace System.Unicode
         }
         public static BidiPairedBracketTypeTable& Instance()
         {
-            return *instance; 
+            return *instance;
         }
         public Result<const BidiPairedBracketType*> GetBidiPairedBracketType(BidiPairedBracketTypeId id) const
         {
             if (Error())
             {
-                return Result<const BidiPairedBracketType*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
             }
             auto it = bidiPairedBracketTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != bidiPairedBracketTypeIdMap.CEnd())
@@ -1876,7 +1876,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BidiPairedBracketType*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(shortName);
             if (result.Error())
@@ -1894,7 +1894,7 @@ namespace System.Unicode
         {
             if (Error())
             {
-                return Result<const BidiPairedBracketType*>(ErrorId(GetLatestErrorId()));
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
             }
             auto result = MakeCanonicalPropertyName(longName);
             if (result.Error())
@@ -1919,14 +1919,14 @@ namespace System.Unicode
                 auto result = MakeCanonicalPropertyName(bidiPairedBracketType->ShortName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 shortNameMap[result.Value()] = bidiPairedBracketType;
                 result = MakeCanonicalPropertyName(bidiPairedBracketType->LongName());
                 if (result.Error())
                 {
-                    SetLatestErrorId(result.GetErrorId());
+                    SetErrorId(result.GetErrorId());
                     return;
                 }
                 longNameMap[result.Value()] = bidiPairedBracketType;
@@ -1983,13 +1983,13 @@ namespace System.Unicode
         private AliasTypeId id;
         private string name;
     }
-    
+
     public class AliasTypeTable
     {
         static AliasTypeTable() : instance(new AliasTypeTable())
         {
         }
-        public static AliasTypeTable& Instance() 
+        public static AliasTypeTable& Instance()
         {
             return *instance;
         }
@@ -2085,9 +2085,9 @@ namespace System.Unicode
 
     public class ExtendedCharacterInfo
     {
-        public ExtendedCharacterInfo() : 
+        public ExtendedCharacterInfo() :
             characterName(), unicode1Name(), canonicalCombiningClass(0u), fullUpper(), fullLower(), fullTitle(), fullFolding(), bidiClass(BidiClassId.none),
-            numericType(NumericTypeId.none), numericValue(), aliases(), bidiMirroringGlyph(cast<uchar>(0u)), bidiPairedBracketType(BidiPairedBracketTypeId.none), 
+            numericType(NumericTypeId.none), numericValue(), aliases(), bidiMirroringGlyph(cast<uchar>(0u)), bidiPairedBracketType(BidiPairedBracketTypeId.none),
             bidiPairedBracket(cast<uchar>(0u))
         {
         }
@@ -2296,7 +2296,7 @@ namespace System.Unicode
         private BidiPairedBracketTypeId bidiPairedBracketType;
         private uchar bidiPairedBracket;
     }
-    
+
     public class CharacterInfoPage
     {
         public CharacterInfoPage() : characterInfos()
@@ -2327,7 +2327,7 @@ namespace System.Unicode
         }
         private List<UniquePtr<CharacterInfo>> characterInfos;
     }
-    
+
     public class ExtendedCharacterInfoPage
     {
         public ExtendedCharacterInfoPage() : extendedCharacterInfos()
@@ -2358,7 +2358,7 @@ namespace System.Unicode
         }
         private List<UniquePtr<ExtendedCharacterInfo>> extendedCharacterInfos;
     }
-    
+
     public class ExtendedCharacterInfoHeader
     {
         public ExtendedCharacterInfoHeader() : extendedPageStarts()
@@ -2366,7 +2366,7 @@ namespace System.Unicode
         }
         public uint operator[](long index) const
         {
-            return extendedPageStarts[index]; 
+            return extendedPageStarts[index];
         }
         public Result<bool> Read(BinaryReader& reader)
         {
@@ -2390,12 +2390,12 @@ namespace System.Unicode
         }
         private List<uint> extendedPageStarts;
     }
-    
+
     public const byte cmajor_ucd_version_1 = cast<byte>('1');
     public const byte cmajor_ucd_version_2 = cast<byte>('2');
     public const byte cmajor_ucd_version_3 = cast<byte>('3');
     public const byte current_cmajor_ucd_version = cmajor_ucd_version_3;
-    
+
     public class CharacterTable
     {
         static CharacterTable() : instance(new CharacterTable())
@@ -2612,8 +2612,8 @@ namespace System.Unicode
             }
             if (magic[7] != headerMagic[7])
             {
-                string errorMessage = "invalid cmajor_ucd.bin version: version " + 
-                    string(cast<char>(headerMagic[7]), 1) + " expected, version " + 
+                string errorMessage = "invalid cmajor_ucd.bin version: version " +
+                    string(cast<char>(headerMagic[7]), 1) + " expected, version " +
                     string(cast<char>(magic[7]), 1) + " read";
                 int errorId = AllocateError(errorMessage);
                 return Result<bool>(ErrorId(errorId));
@@ -2661,13 +2661,13 @@ namespace System.Unicode
     {
         return CharacterTable.Instance().GetCharacterInfo(codePoint);
     }
-    
+
     public Result<const ExtendedCharacterInfo*> GetExtendedCharacterInfo(uchar codePoint)
     {
         return CharacterTable.Instance().GetExtendedCharacterInfo(codePoint);
     }
-    
-    public Result<GeneralCategoryId> GetGeneralCategory(uchar c) 
+
+    public Result<GeneralCategoryId> GetGeneralCategory(uchar c)
     {
         auto result = GetCharacterInfo(c);
         if (result.Error())
@@ -2677,7 +2677,7 @@ namespace System.Unicode
         const CharacterInfo* characterInfo = result.Value();
         return Result<GeneralCategoryId>(characterInfo->GeneralCategoryValue());
     }
-    
+
     public Result<bool> HasGeneralCategory(uchar c, GeneralCategoryId generalCategory)
     {
         auto result = GetCharacterInfo(c);

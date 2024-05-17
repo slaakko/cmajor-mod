@@ -1,0 +1,59 @@
+<parserFile>
+ <grammar name="cm.parser.AttributeParser">
+  <rule first="{LBRACKET}" name="Attributes">
+   <action first="{LBRACKET}">
+    <group first="{LBRACKET}">
+     <sequence first="{LBRACKET}">
+      <sequence first="{LBRACKET}">
+       <action first="{LBRACKET}">
+        <token first="{LBRACKET}" name="LBRACKET"/>
+       </action>
+       <optional first="{#, ASSIGN, COMMA, ID}">
+        <group first="{#, ASSIGN, COMMA, ID}">
+         <sequence first="{#, ASSIGN, COMMA, ID}">
+          <nonterminal first="{#, ASSIGN, ID}" ruleName="Attribute"/>
+          <kleene first="{#, COMMA}">
+           <group first="{COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <nonterminal first="{#, ASSIGN, ID}" ruleName="Attribute"/>
+            </sequence>
+           </group>
+          </kleene>
+         </sequence>
+        </group>
+       </optional>
+      </sequence>
+      <token first="{RBRACKET}" name="RBRACKET"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, ASSIGN, ID}" name="Attribute">
+   <action first="{#, ASSIGN, ID}">
+    <group first="{#, ASSIGN, ID}">
+     <sequence first="{#, ASSIGN, ID}">
+      <sequence first="{#, ID}">
+       <action first="{#}">
+        <empty first="{#}"/>
+       </action>
+       <action first="{ID}">
+        <token first="{ID}" name="ID"/>
+       </action>
+      </sequence>
+      <optional first="{#, ASSIGN}">
+       <group first="{ASSIGN}">
+        <sequence first="{ASSIGN}">
+         <token first="{ASSIGN}" name="ASSIGN"/>
+         <action first="{STRING_LITERAL}">
+          <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+         </action>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

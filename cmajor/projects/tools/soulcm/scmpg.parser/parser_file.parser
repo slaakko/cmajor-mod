@@ -1,0 +1,373 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module scmpg.parser;
+
+import cm.token;
+import cm.parser;
+import common.parser;
+import scmpg.ast;
+
+parser ParserFileParser
+{
+    lexer CmajorLexer;
+    main;
+
+    using CommonParser.QualifiedUtf8Id;
+    using CommonParser.LexerKeyword;
+    using CommonParser.ParserKeyword;
+    using StatementParser.CompoundStatement;
+    using TypeExprParser.TypeExpr;
+    using ExpressionParser.ExpressionList;
+
+    ParserFile(cm.parser.Context* context, var UniquePtr<scmpg.ast.ParserFile> parserFile) : scmpg.ast.ParserFile*
+        ::=
+        (
+            empty{ parserFile.Reset(new scmpg.ast.ParserFile(lexer.FileName())); }
+            Usings(parserFile.Get()):usings
+            (
+                Grammar(context):grammar{ parserFile->AddGrammar(grammar); }
+            )*
+        )
+        {
+            return parserFile.Release();
+        }
+        ;
+
+    Usings(scmpg.ast.ParserFile* parserFile, var System.Lex.Span span)
+        ::=
+        (
+            USING{ span = lexer.GetSpan(pos); }
+            QualifiedUtf8Id:nsName
+            SEMICOLON
+            {
+                parserFile->AddUsing(scmpg.ast.Using(nsName, span, lexer.FileIndex()));
+            }
+        )*
+        ;
+
+    Grammar(cm.parser.Context* context, var UniquePtr<scmpg.ast.GrammarParser> grammar) : scmpg.ast.GrammarParser*
+        ::=
+        (
+            ParserKeyword:parserKeyword
+            QualifiedUtf8Id:grammarName
+            {
+                grammar.Reset(new scmpg.ast.GrammarParser(lexer.GetSpan(pos), lexer.FileIndex(), grammarName));
+            }
+            LBRACE
+            (
+                GrammarStatement(context, grammar.Get()):content
+            )*
+            RBRACE
+        )
+        {
+            return grammar.Release();
+        }
+        ;
+
+    GrammarStatement(cm.parser.Context* context, scmpg.ast.GrammarParser* grammar)
+        ::=
+        (   LexerStatement(context, grammar):lexerStatement
+        |   MainStatement(grammar):mainStatement
+        |   UsingStatement(grammar):usingStatement
+        |   RuleStatement(context, grammar):ruleStatement
+        )
+        ;
+
+    LexerStatement(cm.parser.Context* context, scmpg.ast.GrammarParser* grammar)
+        ::=
+        (
+            LexerKeyword:lexerKeyword
+            TypeExpr(context):lxr
+            SEMICOLON
+        )
+        {
+            grammar->AddLexer(lxr);
+        }
+        ;
+
+    MainStatement(scmpg.ast.GrammarParser* grammar)
+        ::=
+        (
+            MainKeyword:mainKeyword
+            SEMICOLON
+        )
+        {
+            grammar->SetMain();
+        }
+        ;
+
+    UsingStatement(scmpg.ast.GrammarParser* grammar, var System.Lex.Span span)
+        ::=
+        (
+            USING{ span = lexer.GetSpan(pos); }
+            QualifiedUtf8Id:grammarRuleId
+            SEMICOLON
+        )
+        {
+            grammar->AddUsing(Using(grammarRuleId, span, lexer.FileIndex()));
+        }
+        ;
+
+    RuleStatement(cm.parser.Context* context, scmpg.ast.GrammarParser* grammar, var UniquePtr<scmpg.ast.RuleParser> rule) : bool
+        ::=
+        (
+            ID
+            {
+                auto ruleNameResult = ToUtf8(lexer.GetToken(pos).ToString());
+                if (ruleNameResult.Error())
+                {
+                    return ErrorId(ruleNameResult.GetErrorId());
+                }
+                rule.Reset(new scmpg.ast.RuleParser(lexer.GetSpan(pos), lexer.FileIndex(), ruleNameResult.Value()));
+            }
+            ParametersAndVariables(context, rule.Get()):paramsAndVars?
+            ReturnType(context):returnType?
+            PRODUCES
+            RuleBody(context):body
+            SEMICOLON
+        )
+        {
+            rule->SetDefinition(body);
+            rule->SetReturnType(returnType);
+            scmpg.ast.RuleParser* ruleParser = rule.Get();
+            bool succeeded = grammar->AddRule(rule.Release());
+            if (!succeeded)
+            {
+                string errorMessage = "rule name '" + ruleParser->Name() + "' not unique";
+                int errorId = AllocateError(errorMessage);
+                return ErrorId(errorId);
+            }
+            return true;
+        }
+        ;
+
+    ParametersAndVariables(cm.parser.Context* context, scmpg.ast.RuleParser* rule)
+        ::=
+        (
+            LPAREN
+            (
+                ParamOrVariable(context, rule):paramOrVariable % COMMA
+            )?
+            RPAREN
+        )
+        ;
+
+    ParamOrVariable(cm.parser.Context* context, scmpg.ast.RuleParser* rule)
+        ::=
+        (   VarKeyword:varKeyword TypeExpr(context):varType Name:varName{ rule->AddVariable(new scmpg.ast.Variable(lexer.GetSpan(pos), lexer.FileIndex(), varType, varName)); }
+        |   TypeExpr(context):paramType Name:paramName{ rule->AddParameter(new scmpg.ast.Parameter(lexer.GetSpan(pos), lexer.FileIndex(), paramType, paramName)); }
+        )
+        ;
+
+    Name : string
+        ::=
+        (
+            ID
+            {
+                auto nameResult = ToUtf8(lexer.GetToken(pos).ToString());
+                if (nameResult.Error())
+                {
+                    return ErrorId(nameResult.GetErrorId());
+                }
+                return nameResult.Value();
+            }
+        )
+        ;
+
+    ReturnType(cm.parser.Context* context) : cm.ast.Node*
+        ::= COLON TypeExpr(context):type{ return type; }
+        ;
+
+    RuleBody(cm.parser.Context* context) : scmpg.ast.Parser*
+        ::= Choice(context):choice{ return choice; }
+        ;
+
+    Choice(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            Sequence(context):left{ value.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                PIPE
+                Sequence(context):right{ value.Reset(new scmpg.ast.ChoiceParser(span, lexer.FileIndex(), value.Release(), right)); }
+            )*
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    Sequence(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            Difference(context):left{ value.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                Difference(context):right{ value.Reset(new scmpg.ast.SequenceParser(span, lexer.FileIndex(), value.Release(), right)); }
+            )*
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    Difference(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            List(context):left{ value.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                MINUS List(context):right{ value.Reset(new scmpg.ast.DifferenceParser(span, lexer.FileIndex(), value.Release(), right)); }
+            )*
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    List(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            Prefix(context):left{ value.Reset(left); span = lexer.GetSpan(pos); }
+            (
+                REM Prefix(context):right{ value.Reset(new scmpg.ast.ListParser(span, lexer.FileIndex(), value.Release(), right)); }
+            )?
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    Prefix(cm.parser.Context* context, var System.Lex.Span span) : scmpg.ast.Parser*
+        ::=
+        (   AMP { span = lexer.GetSpan(pos); }
+            Postfix(context):lookaheadp{ return new scmpg.ast.LookaheadParser(span, lexer.FileIndex(), lookaheadp); }
+        |   Postfix(context):postfix{ return postfix; }
+        )
+        ;
+
+    Postfix(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            Primary(context):primary{ value.Reset(primary); span = lexer.GetSpan(pos); }
+            (   STAR{ value.Reset(new scmpg.ast.KleeneParser(span, lexer.FileIndex(), value.Release())); }
+            |   PLUS{ value.Reset(new scmpg.ast.PositiveParser(span, lexer.FileIndex(), value.Release())); }
+            |   QUEST{ value.Reset(new scmpg.ast.OptionalParser(span, lexer.FileIndex(), value.Release())); }
+            )?
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    Primary(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<scmpg.ast.Parser> value) : scmpg.ast.Parser*
+        ::=
+        (
+            (   RuleCall(context):ruleCall{ value.Reset(ruleCall); span = lexer.GetSpan(pos); }
+            |   Primitive:primitive{ value.Reset(primitive); span = lexer.GetSpan(pos); }
+            |   Grouping(context):group{ value.Reset(group); span = lexer.GetSpan(pos); }
+            )
+            (
+                (
+                    CompoundStatement(context):successCode
+                    (
+                        DIV CompoundStatement(context):failureCode
+                    )?
+                )
+                {
+                    value.Reset(new scmpg.ast.ActionParser(span, lexer.FileIndex(), value.Release(), successCode, failureCode));
+                }
+            )?
+        )
+        {
+            return value.Release();
+        }
+        ;
+
+    RuleCall(cm.parser.Context* context, var System.Lex.Span span, var string ruleName, var long nonterminalPos, var UniquePtr<cm.ast.ArgumentListNode> args) : scmpg.ast.Parser*
+        ::=
+        (
+            Nonterminal:nt{ span = lexer.GetSpan(pos); ruleName = nt; nonterminalPos = pos; }
+            (
+                LPAREN
+                {
+                    pass = System.Lex.NoWhiteSpaceBetweenTokens(lexer.GetToken(nonterminalPos), lexer.GetToken(pos));
+                    args.Reset(new cm.ast.ArgumentListNode());
+                }
+                ExpressionList(context, args.Get()):arguments
+                RPAREN
+            )?
+            COLON
+            Name:instanceName
+            {
+                return new scmpg.ast.NonterminalParser(span, lexer.FileIndex(), ruleName, instanceName, args.Release());
+            }
+        )
+        ;
+
+    Nonterminal : string
+        ::= Name:name{ return name; }
+        ;
+
+    Primitive : scmpg.ast.Parser*
+        ::=
+        (   EmptyKeyword:emptyKeyword{ return new scmpg.ast.EmptyParser(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   AnyKeyword:anyKeyword{ return new scmpg.ast.AnyParser(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   Name:tokenName{ return new scmpg.ast.TokenParser(lexer.GetSpan(pos), lexer.FileIndex(), tokenName); }
+        |   Char:chr{ return new scmpg.ast.CharParser(lexer.GetSpan(pos), lexer.FileIndex(), chr); }
+        |   StringOrCharSet:parser{ return parser; }
+        )
+        ;
+
+    Grouping(cm.parser.Context* context, var System.Lex.Span span) : scmpg.ast.Parser*
+        ::=
+        (
+            LPAREN{ span = lexer.GetSpan(pos); }
+            Choice(context):choice
+            RPAREN
+        )
+        {
+            return new scmpg.ast.GroupParser(span, lexer.FileIndex(), choice);
+        }
+        ;
+
+    Char : uchar
+        ::= CHAR_LITERAL
+        {
+            auto result = ParseCharLiteral(lexer.FileName(), lexer.GetToken(pos));
+            if (result.Error())
+            {
+                return ErrorId(result.GetErrorId());
+            }
+            return result.Value();
+        }
+        ;
+
+    StringOrCharSet : scmpg.ast.Parser*
+        ::= STRING_LITERAL
+        {
+            auto result = ParseStrLiteralOrCharSet(lexer.GetSpan(pos), lexer.FileIndex(), lexer.FileName(), lexer.GetToken(pos));
+            if (result.Error())
+            {
+                return ErrorId(result.GetErrorId());
+            }
+            return result.Value().Release();
+        }
+        ;
+
+    MainKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"main"; }
+        ;
+
+    EmptyKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"empty"; }
+        ;
+
+    AnyKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"any"; }
+        ;
+
+    VarKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"var"; }
+        ;
+}

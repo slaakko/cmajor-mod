@@ -11,14 +11,14 @@ import cm.token;
 parser ConstantParser
 {
     lexer CmajorLexer;
-    
+
     using SpecifierParser.Specifiers;
     using IdentifierParser.Identifier;
     using TypeExprParser.TypeExpr;
     using ExpressionParser.Expression;
 
     Constant(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstantNode*
-        ::= 
+        ::=
         (
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             CONST
@@ -29,7 +29,7 @@ parser ConstantParser
             SEMICOLON
         )
         {
-            return new cm.ast.ConstantNode(span, specifiers, type, id, expr);
+            return new cm.ast.ConstantNode(span, lexer.FileIndex(), specifiers, type, id, expr);
         }
         ;
 }

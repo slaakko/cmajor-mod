@@ -7,17 +7,17 @@ using System;
 
 namespace System.IO
 {
-    public class IOBase 
+    public class IOBase
     {
-        public IOBase() {}
+        public IOBase() : errorId(0) {}
         public default virtual ~IOBase();
         suppress IOBase(const IOBase&);
         suppress void operator=(const IOBase&);
-        public inline bool Error() const { return latestErrorId != 0; }
-        public inline void ResetError() { latestErrorId = 0; }
-        public inline int GetLatestErrorId() const { return latestErrorId; }
-        public inline void SetLatestErrorId(int errorId_) { latestErrorId = errorId_; }
-        public string GetErrorMessage() const { return RtmGetErrorMessage(latestErrorId); }
-        private int latestErrorId;
+        public inline bool Error() const { return errorId != 0; }
+        public inline void ResetError() { errorId = 0; }
+        public inline int GetErrorId() const { return errorId; }
+        public inline void SetErrorId(int errorId_) { errorId = errorId_; }
+        public string GetErrorMessage() const { return RtmGetErrorMessage(errorId); }
+        private int errorId;
     }
 }

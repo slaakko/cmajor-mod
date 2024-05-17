@@ -57,6 +57,7 @@ lexer CmajorLexer
         "=" { return ASSIGN; }
         ":" { return COLON; }
         ";" { return SEMICOLON; }
+        "\?" { return QUEST; }
         "#" { return HASH; }
         "<[^\n>]*>" $(2) { return FILE_PATH; }
     }

@@ -27,6 +27,10 @@ namespace System.Lex
         {
             return match.ToString();
         }
+        public inline uchar Chr() const
+        {
+            return *match.begin;
+        }
         public long id;
         public Lexeme match;
         public int line;

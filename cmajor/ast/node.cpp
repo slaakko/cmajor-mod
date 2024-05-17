@@ -151,6 +151,7 @@ UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::Span& span_) :
 UnaryNode::UnaryNode(NodeType nodeType_, const soul::ast::Span& span_, Node* subject_) : 
     Node(nodeType_, span_), subject(subject_)
 {
+    subject->SetParent(this);
 }
 
 void UnaryNode::Write(AstWriter& writer)

@@ -44,21 +44,21 @@ namespace System.IO
         }
         public Result<bool> Write(const char* x, long length)
         {
-            if (Error()) 
+            if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             if (stream == null)
             {
                 int errorId = RtmAllocateError("StreamWriter.Write: stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             void* buf = x;
             auto result = stream->Write(cast<byte*>(buf), length);
-            if (result.Error()) 
+            if (result.Error())
             {
-                SetLatestErrorId(result.GetErrorId());
+                SetErrorId(result.GetErrorId());
             }
             return result;
         }
@@ -262,7 +262,7 @@ namespace System.IO
             if (stream == null)
             {
                 int errorId = RtmAllocateError("StreamWriter.Flush: stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             return stream->Flush();

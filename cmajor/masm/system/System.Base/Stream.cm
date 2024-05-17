@@ -32,7 +32,7 @@ namespace System.IO
             string streamClassName = typename(*this);
             string errorMessage = streamClassName + " stream does not support seek";
             int errorId = RtmAllocateError(errorMessage.Chars());
-            SetLatestErrorId(errorId);
+            SetErrorId(errorId);
             return Result<bool>(false, ErrorId(errorId));
         }
         public virtual Result<long> Tell()
@@ -40,7 +40,7 @@ namespace System.IO
             string streamClassName = typename(*this);
             string errorMessage = streamClassName + " stream does not support tell";
             int errorId = RtmAllocateError(errorMessage.Chars());
-            SetLatestErrorId(errorId);
+            SetErrorId(errorId);
             return Result<long>(-1, ErrorId(errorId));
         }
     }

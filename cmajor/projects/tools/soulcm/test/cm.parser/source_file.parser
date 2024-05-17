@@ -1,0 +1,99 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.SourceFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.IdentifierParser.QualifiedId;
+    using cm.parser.ConceptParser.Concept;
+    using cm.parser.FunctionParser.Function;
+    using cm.parser.ClassParser.Class;
+    using cm.parser.InterfaceParser.Interface;
+    using cm.parser.AliasParser.UsingAlias;
+    using cm.parser.AliasParser.Typedef;
+    using cm.parser.EnumerationParser.EnumType;
+    using cm.parser.ConstantParser.Constant;
+    using cm.parser.DelegateParser.Delegate;
+    using cm.parser.DelegateParser.ClassDelegate;
+    using cm.parser.GlobalVariableParser.GlobalVariable;
+    using cm.parser.TemplateParser.InstantiationRequest;
+
+    SourceFile(cm.parser.Context* context, var UniquePtr<cm.ast.SourceFileNode> sourceFileNode) : cm.ast.SourceFileNode*
+        ::= empty{ sourceFileNode.Reset(new cm.ast.SourceFileNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.FileName())); }
+        (
+            NamespaceContent(context, sourceFileNode->GlobalNs()):content
+        )
+        {
+            return sourceFileNode.Release();
+        }
+        ;
+
+    NamespaceContent(cm.parser.Context* context, cm.ast.NamespaceNode* ns)
+        ::=
+        (
+            UsingDirectives(context, ns):usingDirectives
+            Definitions(context, ns):definitions
+        )
+        ;
+
+    UsingDirectives(cm.parser.Context* context, cm.ast.NamespaceNode* ns, var System.Lex.Span span)
+        ::=
+        (
+            USING{ span = lexer.GetSpan(pos); }
+            QualifiedId:usingNs
+            SEMICOLON
+            {
+                ns->AddMember(new cm.ast.NamespaceImportNode(span, lexer.FileIndex(), usingNs));
+            }
+        )*
+        ;
+
+    Definitions(cm.parser.Context* context, cm.ast.NamespaceNode* ns)
+        ::=
+        (
+            Definition(context):definition{ ns->AddMember(definition); }
+        )*
+        ;
+
+    Definition(cm.parser.Context* context) : cm.ast.Node*
+        ::=
+        (   Namespace(context):nsDefinition{ return nsDefinition; }
+        |   UsingAlias(context):usingAlias{ return usingAlias; }
+        |   Typedef(context):typedefDeclaration{ return typedefDeclaration; }
+        |   Concept(context):conceptDefinition{ return conceptDefinition; }
+        |   Function(context):functionDefinition{ return functionDefinition; }
+        |   Class(context):classDefinition{ return classDefinition; }
+        |   Interface(context):interfaceDefinition{ return interfaceDefinition; }
+        |   EnumType(context):enumTypeDefinition{ return enumTypeDefinition; }
+        |   Constant(context):constantDefinition{ return constantDefinition; }
+        |   Delegate(context):delegateDefinition{ return delegateDefinition; }
+        |   ClassDelegate(context):classDelegateDefinition{ return classDelegateDefinition; }
+        |   GlobalVariable(context):globalVariableDefinition{ return globalVariableDefinition; }
+        |   InstantiationRequest(context):instantiationRequest{ return instantiationRequest; }
+        )
+        ;
+
+    Namespace(cm.parser.Context* context, var UniquePtr<cm.ast.NamespaceNode> namespaceNode, var System.Lex.Span span) : cm.ast.NamespaceNode*
+        ::=
+        (
+            NAMESPACE{ span = lexer.GetSpan(pos); }
+            (   QualifiedId:nsName{ namespaceNode.Reset(new cm.ast.NamespaceNode(span, lexer.FileIndex(), nsName)); }
+            |   empty{ namespaceNode.Reset(new cm.ast.NamespaceNode(span, lexer.FileIndex(), null)); }
+            )
+            LBRACE
+            NamespaceContent(context, namespaceNode.Get()):namespaceContent
+            RBRACE
+        )
+        {
+            return namespaceNode.Release();
+        }
+        ;
+}

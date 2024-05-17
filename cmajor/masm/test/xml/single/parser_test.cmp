@@ -1,0 +1,3 @@
+project parser_test;
+target=program;
+source <parser_test.cm>;

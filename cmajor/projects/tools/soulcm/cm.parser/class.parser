@@ -32,7 +32,7 @@ parser ClassParser
     using DelegateParser.ClassDelegate;
 
     Class(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ClassNode> classNode) : cm.ast.ClassNode*
-        ::= 
+        ::=
         (
             Attributes(context):attrs?
             (Specifiers:specifiers - NEW)
@@ -40,7 +40,7 @@ parser ClassParser
             Identifier:id
             {
                 span = lexer.GetSpan(pos);
-                classNode.Reset(new cm.ast.ClassNode(span, specifiers, id, attrs));
+                classNode.Reset(new cm.ast.ClassNode(span, lexer.FileIndex(), specifiers, id, attrs));
             }
             TemplateParameterList(context, classNode.Get()):templateParams?
             InheritanceAndInterfaces(context, classNode.Get()):inheritance?
@@ -61,8 +61,8 @@ parser ClassParser
             (
                 empty{ context->BeginParsingTypeExpr(); }
                 BaseClassOrInterface(context):baseOrInterface
-                { 
-                    classNode->AddBaseClassOrInterface(baseOrInterface); 
+                {
+                    classNode->AddBaseClassOrInterface(baseOrInterface);
                     context->EndParsingTypeExpr();
                 }
                 /
@@ -74,21 +74,21 @@ parser ClassParser
         ;
 
     BaseClassOrInterface(cm.parser.Context* context) : cm.ast.Node*
-        ::= 
+        ::=
         (   TemplateId(context):templateId{ return templateId; }
         |   QualifiedId:qualifiedId{ return qualifiedId; }
         )
         ;
 
     ClassContent(cm.parser.Context* context, cm.ast.ClassNode* classNode)
-        ::= 
+        ::=
         (
             ClassMember(context, classNode):classMember{ classNode->AddMember(classMember); }
         )*
         ;
 
     ClassMember(cm.parser.Context* context, cm.ast.ClassNode* classNode) : cm.ast.Node*
-        ::= 
+        ::=
         (   StaticConstructor(context, classNode):staticConstructor{ return staticConstructor; }
         |   Constructor(context, classNode):constructor{ return constructor; }
         |   Destructor(context, classNode):destructor{ return destructor; }
@@ -106,7 +106,7 @@ parser ClassParser
         ;
 
     StaticConstructor(cm.parser.Context* context, cm.ast.ClassNode* classNode, var System.Lex.Span span, var UniquePtr<cm.ast.StaticConstructorNode> staticConstructorNode, var ustring className) : cm.ast.StaticConstructorNode*
-        ::= 
+        ::=
         (
             Attributes(context):attrs?
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
@@ -120,12 +120,12 @@ parser ClassParser
                 }
                 else
                 {
-                    staticConstructorNode.Reset(new cm.ast.StaticConstructorNode(span, specifiers, attrs));
+                    staticConstructorNode.Reset(new cm.ast.StaticConstructorNode(span, lexer.FileIndex(), specifiers, attrs));
                     staticConstructorNode->SetClassId(id);
                 }
             }
             (
-                COLON 
+                COLON
                 (
                     Initializer(context):initializer{ staticConstructorNode->AddInitializer(initializer); } % COMMA
                 )
@@ -133,7 +133,7 @@ parser ClassParser
             (
                 WhereConstraint(context):constraint{ staticConstructorNode->SetConstraint(constraint); }
             )?
-            (   CompoundStatement(context):body{ staticConstructorNode->SetBody(body); } 
+            (   CompoundStatement(context):body{ staticConstructorNode->SetBody(body); }
             |   SEMICOLON
             )
         )
@@ -148,21 +148,21 @@ parser ClassParser
             Attributes(context):attrs?
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             Identifier:id
-            { 
-                ustring className = lexer.GetToken(pos).ToString(); 
+            {
+                ustring className = lexer.GetToken(pos).ToString();
                 if (className != classNode->Id()->Str())
                 {
                     pass = false;
                 }
                 else
                 {
-                    constructorNode.Reset(new cm.ast.ConstructorNode(span, specifiers, attrs));
+                    constructorNode.Reset(new cm.ast.ConstructorNode(span, lexer.FileIndex(), specifiers, attrs));
                     constructorNode->SetClassId(id);
                 }
             }
             ParameterList(context, constructorNode.Get()):paramList
             (
-                COLON 
+                COLON
                 (
                     Initializer(context):initializer{ constructorNode->AddInitializer(initializer); } % COMMA
                 )
@@ -170,7 +170,7 @@ parser ClassParser
             (
                 WhereConstraint(context):constraint{ constructorNode->SetConstraint(constraint); }
             )?
-            (   CompoundStatement(context):body{ constructorNode->SetBody(body); } 
+            (   CompoundStatement(context):body{ constructorNode->SetBody(body); }
             |   SEMICOLON
             )
         )
@@ -179,8 +179,9 @@ parser ClassParser
         }
         ;
 
-    Destructor(cm.parser.Context* context, cm.ast.ClassNode* classNode, var System.Lex.Span span, var UniquePtr<cm.ast.DestructorNode> destructorNode, var ustring className) : cm.ast.DestructorNode*
-        ::= 
+    Destructor(cm.parser.Context* context, cm.ast.ClassNode* classNode, var System.Lex.Span span,
+        var UniquePtr<cm.ast.DestructorNode> destructorNode, var ustring className) : cm.ast.DestructorNode*
+        ::=
         (
             Attributes(context):attrs?
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
@@ -192,20 +193,20 @@ parser ClassParser
             LPAREN
             RPAREN
             {
-                if (className != classNode->Id()->Str()) 
+                if (className != classNode->Id()->Str())
                 {
-                    pass = false; 
+                    pass = false;
                 }
                 else
                 {
-                    destructorNode.Reset(new cm.ast.DestructorNode(span, specifiers, attrs));
+                    destructorNode.Reset(new cm.ast.DestructorNode(span, lexer.FileIndex(), specifiers, attrs));
                     destructorNode->SetClassId(id);
                 }
             }
             (
                 WhereConstraint(context):contraint{ destructorNode->SetConstraint(contraint); }
             )?
-            (   CompoundStatement(context):body{ destructorNode->SetBody(body); } 
+            (   CompoundStatement(context):body{ destructorNode->SetBody(body); }
             |   SEMICOLON
             )
         )
@@ -217,15 +218,15 @@ parser ClassParser
     Initializer(cm.parser.Context* context, var UniquePtr<cm.ast.InitializerNode> initializerNode) : cm.ast.InitializerNode*
         ::=
         (
-            THIS{ initializerNode.Reset(new cm.ast.ThisInitializerNode(lexer.GetSpan(pos))); }
+            THIS{ initializerNode.Reset(new cm.ast.ThisInitializerNode(lexer.GetSpan(pos), lexer.FileIndex())); }
             LPAREN
             ArgumentList(context, initializerNode.Get()):thisArgs
             RPAREN
-        |   BASE{ initializerNode.Reset(new cm.ast.BaseInitializerNode(lexer.GetSpan(pos))); }
+        |   BASE{ initializerNode.Reset(new cm.ast.BaseInitializerNode(lexer.GetSpan(pos), lexer.FileIndex())); }
             LPAREN
             ArgumentList(context, initializerNode.Get()):baseArgs
             RPAREN
-        |   Identifier:id{ initializerNode.Reset(new cm.ast.MemberInitializerNode(lexer.GetSpan(pos), id)); }
+        |   Identifier:id{ initializerNode.Reset(new cm.ast.MemberInitializerNode(lexer.GetSpan(pos), lexer.FileIndex(), id)); }
             LPAREN
             ArgumentList(context, initializerNode.Get()):memberArgs
             RPAREN
@@ -236,23 +237,23 @@ parser ClassParser
         ;
 
     MemberFunction(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.MemberFunctionNode> memberFunctionNode) : cm.ast.MemberFunctionNode*
-        ::= 
+        ::=
         (
             Attributes(context):attrs?
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             TypeExpr(context):returnType
             FunctionGroupId(context):groupId
             {
-                memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, specifiers, returnType, groupId, attrs));
+                memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, lexer.FileIndex(), specifiers, returnType, groupId, attrs));
             }
-            ParameterList(context, memberFunctionNode.Get()):paramList 
+            ParameterList(context, memberFunctionNode.Get()):paramList
             (
                 CONST{ memberFunctionNode->SetConst(); }
             )?
             (
                 WhereConstraint(context):constraint{ memberFunctionNode->SetConstraint(constraint); }
             )?
-            (   CompoundStatement(context):body{ memberFunctionNode->SetBody(body); } 
+            (   CompoundStatement(context):body{ memberFunctionNode->SetBody(body); }
             |   SEMICOLON
             )
         )
@@ -271,7 +272,7 @@ parser ClassParser
             LPAREN
             RPAREN
             {
-                conversionFunctionNode.Reset(new cm.ast.ConversionFunctionNode(span, specifiers, type, attrs));
+                conversionFunctionNode.Reset(new cm.ast.ConversionFunctionNode(span, lexer.FileIndex(), specifiers, type, attrs));
             }
             (
                 CONST{ conversionFunctionNode->SetConst(); }
@@ -279,7 +280,7 @@ parser ClassParser
             (
                 WhereConstraint(context):constraint{ conversionFunctionNode->SetConstraint(constraint); }
             )?
-            (   CompoundStatement(context):body{ conversionFunctionNode->SetBody(body); } 
+            (   CompoundStatement(context):body{ conversionFunctionNode->SetBody(body); }
             |   SEMICOLON
             )
         )
@@ -298,7 +299,7 @@ parser ClassParser
             SEMICOLON
         )
         {
-            return new cm.ast.MemberVariableNode(span, specifiers, type, id, attrs);
+            return new cm.ast.MemberVariableNode(span, lexer.FileIndex(), specifiers, type, id, attrs);
         }
         ;
 }

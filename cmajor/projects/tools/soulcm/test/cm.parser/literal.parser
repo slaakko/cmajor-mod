@@ -1,0 +1,108 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.LiteralParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.ExpressionParser.Expression;
+
+    Literal(cm.parser.Context* context) : cm.ast.LiteralNode*
+        ::= SimpleLiteral(context):simpleLiteral{ return simpleLiteral; }
+        |   ComplexLiteral(context):complexLiteral{ return complexLiteral; }
+        ;
+
+    SimpleLiteral(cm.parser.Context* context) : cm.ast.LiteralNode*
+        ::=
+        (   TRUE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), true); }
+        |   FALSE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), false); }
+        |   FLOATING_LITERAL
+            {
+                bool floatLiteral = false;
+                Result<double> result = ParseFloatingLiteral(lexer.FileName(), lexer.GetToken(pos), floatLiteral);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                return cm.ast.CreateFloatingLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), floatLiteral);
+            }
+        |   INTEGER_LITERAL
+            {
+                bool unsignedSuffix = false;
+                Result<ulong> result = ParseIntegerLiteral(lexer.FileName(), lexer.GetToken(pos), unsignedSuffix);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                return cm.ast.CreateIntegerLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), unsignedSuffix);
+            }
+        |   CHAR_LITERAL
+            {
+                cm.ast.CharLiteralPrefix prefix;
+                Result<uchar> result = ParseCharacterLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                return cm.ast.CreateCharacterLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix);
+            }
+        |   STRING_LITERAL
+            {
+                cm.ast.StringLiteralPrefix prefix;
+                Result<ustring> result = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                auto createResult = cm.ast.CreateStringLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix);
+                if (createResult.Error())
+                {
+                    return ErrorId(createResult.GetErrorId());
+                }
+                return createResult.Value();
+            }
+        |   NULL_LITERAL
+            {
+                return new cm.ast.NullLiteralNode(lexer.GetSpan(pos), lexer.FileIndex());
+            }
+        )
+        ;
+
+    ComplexLiteral(cm.parser.Context* context) : cm.ast.LiteralNode*
+        ::= ArrayLiteral(context):arrayLiteral{ return arrayLiteral; }
+        |   StructuredLiteral(context):structuredLiteral{ return structuredLiteral; }
+        ;
+
+    ArrayLiteral(cm.parser.Context* context, var UniquePtr<cm.ast.ArrayLiteralNode> literalNode) : cm.ast.LiteralNode*
+        ::=
+        (
+            LBRACKET{ literalNode.Reset(new cm.ast.ArrayLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())); }
+            (
+                Expression(context):expr{ literalNode->AddValue(expr); } % COMMA
+            )?
+            RBRACKET
+        )
+        {
+            return literalNode.Release();
+        }
+        ;
+
+    StructuredLiteral(cm.parser.Context* context, var UniquePtr<cm.ast.StructuredLiteralNode> literalNode) : cm.ast.LiteralNode*
+        ::=
+        (
+            LBRACE{ literalNode.Reset(new cm.ast.StructuredLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())); }
+            (
+                Expression(context):expr{ literalNode->AddMember(expr); } % COMMA
+            )?
+            RBRACE
+        )
+        {
+            return literalNode.Release();
+        }
+        ;
+}

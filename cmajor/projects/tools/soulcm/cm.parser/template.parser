@@ -19,7 +19,7 @@ parser TemplateParser
     TemplateId(cm.parser.Context* context, var UniquePtr<cm.ast.TemplateIdNode> templateId) : cm.ast.TemplateIdNode*
         ::= empty{ context->BeginParsingTemplateId(); }
             (
-                QualifiedId:primary{ templateId.Reset(new cm.ast.TemplateIdNode(lexer.GetSpan(pos), primary)); }
+                QualifiedId:primary{ templateId.Reset(new cm.ast.TemplateIdNode(lexer.GetSpan(pos), lexer.FileIndex(), primary)); }
                 LANGLE{ ++lexer.vars.leftAngleCount; }
                 (
                     (
@@ -27,12 +27,12 @@ parser TemplateParser
                     )
                     RANGLE
                 )
-                { 
-                    --lexer.vars.leftAngleCount; 
+                {
+                    --lexer.vars.leftAngleCount;
                 }
-                / 
-                { 
-                    --lexer.vars.leftAngleCount; 
+                /
+                {
+                    --lexer.vars.leftAngleCount;
                 }
             )
             {
@@ -46,36 +46,36 @@ parser TemplateParser
         ;
 
     TemplateParameterList(cm.parser.Context* context, cm.ast.Node* owner)
-        ::= 
+        ::=
         (
-            LANGLE 
+            LANGLE
             (
                 TemplateParameter(context):tp{ owner->AddTemplateParameter(tp); } % COMMA
-            ) 
+            )
             RANGLE
         )
         ;
 
     TemplateParameter(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.TemplateParameterNode*
-        ::= 
+        ::=
         (
             Identifier:id{ span = lexer.GetSpan(pos); }
             (
-                ASSIGN 
+                ASSIGN
                 TypeExpr(context):type
             )?
         )
         {
-            return new cm.ast.TemplateParameterNode(span, id, type);
+            return new cm.ast.TemplateParameterNode(span, lexer.FileIndex(), id, type);
         }
         ;
 
     InstantiationRequest(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.FullInstantiationRequestNode> requestNode) : cm.ast.FullInstantiationRequestNode*
-        ::= 
+        ::=
         (
             NEW{ span = lexer.GetSpan(pos); }
             CLASS
-            TemplateId(context):templateId{ requestNode.Reset(new cm.ast.FullInstantiationRequestNode(span, templateId)); }
+            TemplateId(context):templateId{ requestNode.Reset(new cm.ast.FullInstantiationRequestNode(span, lexer.FileIndex(), templateId)); }
             SEMICOLON
         )
         {

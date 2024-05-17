@@ -132,7 +132,7 @@ namespace cm.parser
                                             id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                             if (match.hit)
                                             {
-                                                interfaceNode.Reset(new cm.ast.InterfaceNode(span, specifiers->value, id.Release(), attrs.Release()));
+                                                interfaceNode.Reset(new cm.ast.InterfaceNode(span, lexer.FileIndex(), specifiers->value, id.Release(), attrs.Release()));
                                             }
                                             *parentMatch13 = match;
                                         }
@@ -359,7 +359,7 @@ namespace cm.parser
                                         groupId.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
                                         if (match.hit)
                                         {
-                                            memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, cm.ast.Specifiers(), returnType.Release(), groupId->value, attrs.Release()));
+                                            memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, lexer.FileIndex(), cm.ast.Specifiers(), returnType.Release(), groupId->value, attrs.Release()));
                                         }
                                         *parentMatch10 = match;
                                     }

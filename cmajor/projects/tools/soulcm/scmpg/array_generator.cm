@@ -1,0 +1,105 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using scmpg.ast;
+
+namespace scmpg
+{
+    public class ArrayGenerator : scmpg.ast.DefaultVisitor
+    {
+        public ArrayGenerator(System.Text.CodeFormatter& formatter_, int& sn_) : formatter(formatter_), sn(sn_), namespaceEmitted(false), inNamespace(false)
+        {
+        }
+        public inline bool InNamespace() const
+        {
+            return inNamespace;
+        }
+        public override void Visit(StringParser& parser)
+        {
+            if (!namespaceEmitted)
+            {
+                EmitNamespace();
+            }
+            string s = "s" + ToString(sn++);
+            parser.SetArrayName(s);
+            formatter << "public const int[] " + s + " = [";
+            if (parser.Str().IsEmpty())
+            {
+                formatter << 0;
+            }
+            else
+            {
+                bool first = true;
+                for (uchar c : parser.Str())
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        formatter << ", ";
+                    }
+                    formatter << cast<int>(c);
+                }
+            }
+            formatter << "];" << endl() << endl();
+        }
+        public override void Visit(CharSetParser& parser)
+        {
+            if (!namespaceEmitted)
+            {
+                EmitNamespace();
+            }
+            string s = "s" + ToString(sn++);
+            parser.SetArrayName(s);
+            formatter << "public const System.Parsing.Range[] " + s + " = [";
+            bool first = true;
+            for (const auto& range : parser.GetCharSet()->Ranges())
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    formatter << ", ";
+                }
+                formatter << "{ " << range.first << ", " << range.last << " }";
+            }
+            formatter << "];" << endl() << endl();
+        }
+        private void EmitNamespace()
+        {
+            namespaceEmitted = true;
+            formatter << "namespace" << endl();
+            formatter << "{" << endl();
+            formatter.IncIndent();
+            inNamespace = true;
+        }
+        private System.Text.CodeFormatter& formatter;
+        private int& sn;
+        private bool namespaceEmitted;
+        private bool inNamespace;
+    }
+
+    public Result<bool> GenerateArrays(ParserFile& parserFile, System.Text.CodeFormatter& formatter, int& sn)
+    {
+        ArrayGenerator arrayGenerator(formatter, sn);
+        parserFile.Accept(arrayGenerator);
+        if (formatter.Error())
+        {
+            return Result<bool>(ErrorId(formatter.GetErrorId()));
+        }
+        if (arrayGenerator.InNamespace())
+        {
+            formatter.DecIndent();
+            formatter << "}" << endl() << endl();
+        }
+        return Result<bool>(true);
+    }
+}
+

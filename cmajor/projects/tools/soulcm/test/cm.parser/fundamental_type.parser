@@ -1,0 +1,31 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.FundamentalTypeParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    FundamentalType : cm.ast.Node*
+        ::= AUTO{ return new cm.ast.AutoNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   BOOL{ return new cm.ast.BoolNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   SBYTE{ return new cm.ast.SByteNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   BYTE{ return new cm.ast.ByteNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   SHORT{ return new cm.ast.ShortNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   USHORT{ return new cm.ast.UShortNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   INT{ return new cm.ast.IntNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   UINT{ return new cm.ast.UIntNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   LONG{ return new cm.ast.LongNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   ULONG{ return new cm.ast.ULongNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   FLOAT{ return new cm.ast.FloatNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   DOUBLE{ return new cm.ast.DoubleNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   CHAR{ return new cm.ast.CharNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   WCHAR{ return new cm.ast.WCharNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   UCHAR{ return new cm.ast.UCharNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        |   VOID{ return new cm.ast.VoidNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        ;
+}

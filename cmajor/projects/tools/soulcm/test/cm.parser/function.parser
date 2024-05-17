@@ -1,0 +1,84 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.FunctionParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.AttributeParser.Attributes;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.TemplateParser.TemplateParameterList;
+    using cm.parser.ConceptParser.WhereConstraint;
+    using cm.parser.ParameterParser.ParameterList;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.StatementParser.CompoundStatement;
+
+    Function(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.FunctionNode> functionNode) : cm.ast.FunctionNode*
+        ::=
+        (
+            empty{ span = lexer.GetSpan(pos); }
+            Attributes(context):attributes?
+            Specifiers:specifiers
+            TypeExpr(context):returnType
+            FunctionGroupId(context):functionGroupId
+            {
+                functionNode.Reset(new cm.ast.FunctionNode(span, lexer.FileIndex(), specifiers, returnType, functionGroupId, attributes));
+            }
+        )
+        TemplateParameterList(context, functionNode.Get()):templateParameterList?
+        ParameterList(context, functionNode.Get()):parameterList
+        (WhereConstraint(context):constraint{ functionNode->SetConstraint(constraint); })?
+        (   CompoundStatement(context):body{ functionNode->SetBody(body); }
+        |   SEMICOLON
+        )
+        {
+            return functionNode.Release();
+        }
+        ;
+
+    FunctionGroupId(cm.parser.Context* context) : ustring
+        ::= ID{ return lexer.GetToken(pos).ToString(); }
+        |   OperatorFunctionGroupId(context):operatorFunctionGroupId{ return operatorFunctionGroupId; }
+        ;
+
+    OperatorFunctionGroupId(cm.parser.Context* context) : ustring
+        ::= empty{ lexer.vars.parsingOperatorFunctionGroupId = true; }
+        (
+            OPERATOR
+            (   ((LANGLE LANGLE) - (LANGLE LANGLE (TypeExpr(context):typeExpr % COMMA) RANGLE)){ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator<<"; }
+            |   SHIFT_RIGHT{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator>>"; }
+            |   EQ{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator=="; }
+            |   ASSIGN{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator="; }
+            |   LANGLE{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator<"; }
+            |   ARROW{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator->"; }
+            |   PLUS_PLUS{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator++"; }
+            |   MINUS_MINUS{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator--"; }
+            |   PLUS{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator+"; }
+            |   MINUS{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator-"; }
+            |   STAR{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator*"; }
+            |   DIV{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator/"; }
+            |   REM{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator%"; }
+            |   AMP{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator&"; }
+            |   PIPE{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator|"; }
+            |   CARET{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator^"; }
+            |   EXCLAMATION{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator!"; }
+            |   TILDE{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator~"; }
+            |   LBRACKET RBRACKET{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator[]"; }
+            |   LPAREN RPAREN{ lexer.vars.parsingOperatorFunctionGroupId = false; return u"operator()"; }
+            )
+        )
+        {
+            lexer.vars.parsingOperatorFunctionGroupId = false;
+        }
+        /
+        {
+            lexer.vars.parsingOperatorFunctionGroupId = false;
+        }
+        ;
+}

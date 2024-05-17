@@ -185,6 +185,8 @@
     <ClCompile Include="process.cppm" />
     <ClCompile Include="random.cpp" />
     <ClCompile Include="random.cppm" />
+    <ClCompile Include="socket.cpp" />
+    <ClCompile Include="socket.cppm" />
     <ClCompile Include="strings.cpp" />
     <ClCompile Include="strings.cppm" />
     <ClCompile Include="thread.cpp" />

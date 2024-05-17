@@ -33,7 +33,7 @@ namespace System.IO
             file = RtmOpenStdFile(handle, errorId);
             if (file == null)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
             }
         }
         public FileStream(const string& filePath, OpenMode openMode) : file(null)
@@ -66,7 +66,7 @@ namespace System.IO
             file = RtmOpenFile(filePath.Chars(), openMode, errorId);
             if (file == null)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
@@ -78,7 +78,7 @@ namespace System.IO
                 int errorId = 0;
                 if (!RtmClose(file, errorId))
                 {
-                    SetLatestErrorId(errorId);
+                    SetErrorId(errorId);
                     return Result<bool>(ErrorId(errorId));
                 }
                 file = null;
@@ -91,7 +91,7 @@ namespace System.IO
             int result = RtmReadByte(file, errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<int>(ErrorId(errorId));
             }
             if (result == -1)
@@ -105,7 +105,7 @@ namespace System.IO
                     int errorId = 0;
                     if (RtmGetFileError(file, errorId))
                     {
-                        SetLatestErrorId(errorId);
+                        SetErrorId(errorId);
                         return Result<int>(ErrorId(errorId));
                     }
                 }
@@ -117,14 +117,14 @@ namespace System.IO
             if (count < 0)
             {
                 int errorId = RtmAllocateError("FileStream.Read: count less than zero");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             int errorId = 0;
             long result = RtmRead(file, buffer, count, errorId);
             if (result == -1)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             return Result<long>(result);
@@ -134,7 +134,7 @@ namespace System.IO
             int errorId = 0;
             if (!RtmWriteByte(file, x, errorId))
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             return Result<bool>(true);
@@ -144,14 +144,14 @@ namespace System.IO
             if (count < 0)
             {
                 int errorId = RtmAllocateError("FileStream.Write: count less than zero");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             int errorId = 0;
             long result = RtmWrite(file, buffer, count, errorId);
             if (result == -1)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             return Result<bool>(true);
@@ -161,7 +161,7 @@ namespace System.IO
             int errorId = 0;
             if (!RtmSeek(file, pos, origin, errorId))
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             return Result<bool>(true);
@@ -172,7 +172,7 @@ namespace System.IO
             long result = RtmTell(file, errorId);
             if (result == -1)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             return Result<long>(result);
@@ -182,7 +182,7 @@ namespace System.IO
             int errorId = 0;
             if (!RtmFlush(file, errorId))
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             return Result<bool>(true);

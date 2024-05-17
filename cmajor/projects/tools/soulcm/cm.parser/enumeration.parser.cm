@@ -101,7 +101,7 @@ namespace cm.parser
                                                 id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    enumType.Reset(new cm.ast.EnumTypeNode(span, specifiers->value, id.Release()));
+                                                    enumType.Reset(new cm.ast.EnumTypeNode(span, lexer.FileIndex(), specifiers->value, id.Release()));
                                                 }
                                                 *parentMatch11 = match;
                                             }
@@ -467,7 +467,7 @@ namespace cm.parser
                                             value.Reset(cast<cm.ast.Node*>(match.value));
                                             if (match.hit)
                                             {
-                                                cm.ast.EnumConstantNode *enumConstant = new cm.ast.EnumConstantNode(span, id.Release(), value.Release());
+                                                cm.ast.EnumConstantNode *enumConstant = new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id.Release(), value.Release());
                                                 enumConstant->SetHasValue();
                                                 return Result<System.Parsing.Match>(System.Parsing.Match(true, enumConstant));
                                             }
@@ -491,7 +491,7 @@ namespace cm.parser
                                             System.Parsing.Match match(true);
                                             if (match.hit)
                                             {
-                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EnumConstantNode(span, id.Release(), cm.ast.MakeNextEnumConstantValue(span, enumType))));
+                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id.Release(), cm.ast.MakeNextEnumConstantValue(span, lexer.FileIndex(), enumType))));
                                             }
                                             *parentMatch10 = match;
                                         }

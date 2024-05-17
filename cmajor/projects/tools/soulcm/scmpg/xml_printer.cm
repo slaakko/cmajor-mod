@@ -1,0 +1,252 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmpg
+{
+    public class XmlPrinter : scmpg.ast.DefaultVisitor
+    {
+        public XmlPrinter(bool verbose_, bool optimize_) : verbose(verbose_), optimize(optimize_)
+        {
+        }
+        public override void Visit(ChoiceParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("choice");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(SwitchParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("switch");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            for (const auto& caseParser : parser.CaseParsers())
+            {
+                caseParser->Accept(*this);
+            }
+            currentElement = parentElement;
+        }
+        public override void Visit(CaseParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("case");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(SequenceParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("sequence");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(DifferenceParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("difference");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(ListParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("list");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(LookaheadParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("lookahead");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(KleeneParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("kleene");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(PositiveParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("positive");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(OptionalParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("optional");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(ActionParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("action");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(NonterminalParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("nonterminal");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("ruleName", parser.RuleName());
+            currentElement->SetAttribute("first", parser.First().ToString());
+            currentElement = parentElement;
+        }
+        public override void Visit(EmptyParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("empty");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            currentElement = parentElement;
+        }
+        public override void Visit(AnyParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("any");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            currentElement = parentElement;
+        }
+        public override void Visit(TokenParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("token");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("name", parser.TokenName());
+            currentElement->SetAttribute("first", parser.First().ToString());
+            currentElement = parentElement;
+        }
+        public override void Visit(GroupParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("group");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Child()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(RuleParser& parser)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("rule");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("name", parser.Name());
+            currentElement->SetAttribute("first", parser.First().ToString());
+            parser.Definition()->Accept(*this);
+            currentElement = parentElement;
+        }
+        public override void Visit(GrammarParser& grammar)
+        {
+            System.Xml.Element* parentElement = currentElement;
+            currentElement = System.Xml.MakeElement("grammar");
+            parentElement->AppendChild(currentElement);
+            currentElement->SetAttribute("name", grammar.Name());
+            for (const auto& rule : grammar.Rules())
+            {
+                rule->Accept(*this);
+            }
+            currentElement = parentElement;
+        }
+        public override void Visit(ParserFile& parserFile)
+        {
+            System.Xml.Document doc;
+            string xmlFilePath;
+            if (optimize)
+            {
+                xmlFilePath = parserFile.FilePath() + ".opt.xml";
+            }
+            else
+            {
+                xmlFilePath = parserFile.FilePath() + ".xml";
+            }
+            auto result = System.IO.File.CreateText(xmlFilePath);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            System.Text.CodeFormatter formatter(result.Value());
+            formatter.SetIndentSize(1);
+            currentElement = System.Xml.MakeElement("parserFile");
+            doc.AppendChild(currentElement);
+            for (const auto& grammar : parserFile.Grammars())
+            {
+                grammar->Accept(*this);
+                if (formatter.Error())
+                {
+                    errorId = formatter.GetErrorId();
+                    return;
+                }
+            }
+            doc.Write(formatter);
+            if (formatter.Error())
+            {
+                errorId = formatter.GetErrorId();
+                return;
+            }
+            if (verbose)
+            {
+                Console.Out() << "==> " << xmlFilePath << endl();
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private bool verbose;
+        private bool optimize;
+        private System.Xml.Element* currentElement;
+        private int errorId;
+    }
+    
+    public Result<bool> PrintXml(scmpg.ast.ScmpgFile* scmpgFile, bool verbose, bool optimize)
+    {
+        XmlPrinter printer(verbose, optimize);
+        scmpgFile->Accept(printer);
+        if (printer.Error())
+        {
+            return Result<bool>(ErrorId(printer.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}
+

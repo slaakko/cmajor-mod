@@ -1,0 +1,48 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.DelegateParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ParameterParser.ParameterList;
+
+    Delegate(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.DelegateNode> delegateNode) : cm.ast.DelegateNode*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            DELEGATE
+            TypeExpr(context):type
+            Identifier:id{ delegateNode.Reset(new cm.ast.DelegateNode(span, lexer.FileIndex(), specifiers, type, id)); }
+            ParameterList(context, delegateNode.Get()):parameters
+            SEMICOLON
+        )
+        {
+            return delegateNode.Release();
+        }
+        ;
+
+    ClassDelegate(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ClassDelegateNode> classDelegateNode) : cm.ast.ClassDelegateNode*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            CLASS
+            DELEGATE
+            TypeExpr(context):type
+            Identifier:id{ classDelegateNode.Reset(new cm.ast.ClassDelegateNode(span, lexer.FileIndex(), specifiers, type, id)); }
+            ParameterList(context, classDelegateNode.Get()):parameters
+            SEMICOLON
+        )
+        {
+            return classDelegateNode.Release();
+        }
+        ;
+}

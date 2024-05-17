@@ -10,7 +10,7 @@ namespace System.IO
 {
     public class StreamReader : IOBase
     {
-        public StreamReader() : base(), stream(null), buffered(false), eos(false) 
+        public StreamReader() : base(), stream(null), buffered(false), eos(false)
         {
         }
         public StreamReader(Stream* stream_) : base(), stream(stream_), buffered(false), eos(false)
@@ -26,7 +26,7 @@ namespace System.IO
                 streams[i].Reset();
             }
         }
-        public Stream* GetStream() 
+        public Stream* GetStream()
         {
             return stream;
         }
@@ -143,13 +143,13 @@ namespace System.IO
                 if (stream == null)
                 {
                     int errorId = RtmAllocateError("StreamReader.Get: stream is null");
-                    SetLatestErrorId(errorId);
+                    SetErrorId(errorId);
                     return Result<int>(-1, ErrorId(errorId));
                 }
                 auto x = stream->ReadByte();
                 if (x.Error())
                 {
-                    SetLatestErrorId(x.GetErrorId());
+                    SetErrorId(x.GetErrorId());
                     return Result<int>(-1, x.GetErrorId());
                 }
                 if (peek)

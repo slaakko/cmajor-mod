@@ -1,0 +1,469 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace cm.parser
+{
+    public Result<bool> ParseHexChar(const string& fileName, uchar& value, const uchar*& p, const uchar* e, const System.Lex.Token& token)
+    {
+        if (p != e)
+        {
+            bool notHex = false;
+            uchar c = *p;
+            switch (c)
+            {
+                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                {
+                    value = cast<uchar>(16 * cast<int>(value) + cast<int>(c) - cast<int>('0'));
+                    break;
+                }
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                {
+                    value = cast<uchar>(16 * cast<int>(value) + 10 + cast<int>(c) - cast<int>('A'));
+                    break;
+                }
+                case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+                {
+                    value = cast<uchar>(16 * cast<int>(value) + 10 + cast<int>(c) - cast<int>('a'));
+                    break;
+                }
+                default:
+                {
+                    notHex = true;
+                    break;
+                }
+            }
+            if (notHex)
+            {
+                string errorMessage = "hex character expected at " + fileName + ":" + ToString(token.line);
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            ++p;
+        }
+        else
+        {
+            string errorMessage = "hex character expected at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<uchar> ParseEscape(const string& fileName, const uchar*& p, const uchar* e, const System.Lex.Token& token)
+    {
+        uchar value;
+        if (p != e && (*p == 'x' || *p == 'X'))
+        {
+            ++p;
+            while (p != e && ((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'f') || (*p >= 'A' && *p <= 'F')))
+            {
+                auto hexCharResult = ParseHexChar(fileName, value, p, e, token);
+                if (hexCharResult.Error())
+                {
+                    return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+                }
+            }
+        }
+        else if (p != e && (*p == 'd' || *p == 'D'))
+        {
+            ++p;
+            while (p != e && *p >= '0' && *p <= '9')
+            {
+                value = cast<uchar>(10 * cast<int>(value) + (cast<int>(*p) - cast<int>('0')));
+                ++p;
+            }
+        }
+        else if (p != e && (*p >= '0' && *p <= '7'))
+        {
+            while (p != e && *p >= '0' && *p <= '7')
+            {
+                value = cast<uchar>(8 * cast<int>(value) + (cast<int>(*p) - cast<int>('0')));
+                ++p;
+            }
+        }
+        else if (p != e && *p == 'u')
+        {
+            ++p;
+            auto hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+        }
+        else if (p != e && *p == 'U')
+        {
+            ++p;
+            auto hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+            hexCharResult = ParseHexChar(fileName, value, p, e, token);
+            if (hexCharResult.Error())
+            {
+                return Result<uchar>(ErrorId(hexCharResult.GetErrorId()));
+            }
+        }
+        else if (p != e)
+        {
+            uchar c = *p;
+            switch (c)
+            {
+                case 'a': value = '\a'; break;
+                case 'b': value = '\b'; break;
+                case 'f': value = '\f'; break;
+                case 'n': value = '\n'; break;
+                case 'r': value = '\r'; break;
+                case 't': value = '\t'; break;
+                case 'v': value = '\v'; break;
+                default: value = c; break;
+            }
+            ++p;
+        }
+        return Result<uchar>(value);
+    }
+
+    public Result<uchar> ParseCharacterLiteral(const string& fileName, const System.Lex.Token& token, cm.ast.CharLiteralPrefix& prefix)
+    {
+        prefix = cm.ast.CharLiteralPrefix.none;
+        Result<uchar> value;
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == 'w')
+        {
+            prefix = cm.ast.CharLiteralPrefix.wcharPrefix;
+            ++p;
+        }
+        else if (p != e && *p == 'u')
+        {
+            prefix = cm.ast.CharLiteralPrefix.ucharPrefix;
+            ++p;
+        }
+        if (p != e && *p == '\'')
+        {
+            ++p;
+            if (p != e && *p == '\\')
+            {
+                ++p;
+                value = ParseEscape(fileName, p, e, token);
+            }
+            else
+            {
+                ustring s;
+                while (p != e && *p != '\r' && *p != '\n' && *p != '\'')
+                {
+                    s.Append(*p);
+                    ++p;
+                }
+                ustring u = s;
+                if (u.Length() != 1)
+                {
+                    string errorMessage = "invalid character literal at " + fileName + ":" + ToString(token.line);
+                    int errorId = AllocateError(errorMessage);
+                    return Result<uchar>(ErrorId(errorId));
+                }
+                value = Result<uchar>(u[0]);
+            }
+            if (p != e && *p == '\'')
+            {
+                ++p;
+            }
+            if (p != e)
+            {
+                string errorMessage = "invalid character literal at " + fileName + ":" + ToString(token.line);
+                int errorId = AllocateError(errorMessage);
+                return Result<uchar>(ErrorId(errorId));
+            }
+        }
+        else
+        {
+            string errorMessage = "invalid character literal at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<uchar>(ErrorId(errorId));
+        }
+        return value;
+    }
+    
+    public Result<ustring> ParseStringLiteral(const string& fileName, const System.Lex.Token& token, cm.ast.StringLiteralPrefix& prefix)
+    {
+        prefix = cm.ast.StringLiteralPrefix.none;
+        ustring value;
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == 'w')
+        {
+            prefix = cm.ast.StringLiteralPrefix.wstringPrefix;
+            ++p;
+        }
+        else if (p != e && *p == 'u')
+        {
+            prefix = cm.ast.StringLiteralPrefix.ustringPrefix;
+            ++p;
+        }
+        if (p != e && *p == '@')
+        {
+            ++p;
+            if (p != e && *p == '"')
+            {
+                ++p;
+                while (p != e && *p != '"')
+                {
+                    value.Append(*p);
+                    ++p;
+                }
+                if (p != e && *p == '"')
+                {
+                    ++p;
+                }
+                if (p != e)
+                {
+                    ustring u32literal = token.match.ToString();
+                    string literal;
+                    auto utf8Result = ToUtf8(u32literal);
+                    if (!utf8Result.Error())
+                    {
+                        literal = utf8Result.Value();
+                    }
+                    string errorMessage = "invalid string literal at " + fileName + ":" + ToString(token.line) + ": " + literal;
+                    int errorId = AllocateError(errorMessage);
+                    return Result<ustring>(ErrorId(errorId));
+                }
+            }
+        }
+        else
+        {
+            if (p != e && *p == '"')
+            {
+                ++p;
+                while (p != e && *p != '\r' && *p != '\n' && *p != '"')
+                {
+                    if (*p == '\\')
+                    {
+                        ++p;
+                        auto escapeResult = ParseEscape(fileName, p, e, token);
+                        if (escapeResult.Error())
+                        {
+                            return Result<ustring>(ErrorId(escapeResult.GetErrorId()));
+                        }
+                        value.Append(escapeResult.Value());
+                    }
+                    else
+                    {
+                        value.Append(*p);
+                        ++p;
+                    }
+                }
+                if (p != e && *p == '"')
+                {
+                    ++p;
+                }
+                if (p != e)
+                {
+                    ustring u32literal = token.match.ToString();
+                    string literal;
+                    auto utf8Result = ToUtf8(u32literal);
+                    if (!utf8Result.Error())
+                    {
+                        literal = utf8Result.Value();
+                    }
+                    string errorMessage = "invalid string literal at " + fileName + ":" + ToString(token.line) + ": " + literal;
+                    int errorId = AllocateError(errorMessage);
+                    return Result<ustring>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                ustring u32literal = token.match.ToString();
+                string literal;
+                auto utf8Result = ToUtf8(u32literal);
+                if (!utf8Result.Error())
+                {
+                    literal = utf8Result.Value();
+                }
+                string errorMessage = "invalid string literal at " + fileName + ":" + ToString(token.line) + ": " + literal;
+                int errorId = AllocateError(errorMessage);
+                return Result<ustring>(ErrorId(errorId));
+            }
+        }
+        return Result<ustring>(value);
+    }
+
+    public Result<double> ParseFloatingLiteral(const string& fileName, const System.Lex.Token& token, bool& floatLiteral)
+    {
+        floatLiteral = false;
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        string str;
+        while (p != e && ((*p >= '0' && *p <= '9') || *p == '.' || *p == 'e' || *p == 'E' || *p == '-' || *p == '+'))
+        {
+            char c = cast<char>(*p);
+            str.Append(c);
+            ++p;
+        }
+        if (p != e && (*p == 'f' || *p == 'F'))
+        {
+            ++p;
+            floatLiteral = true;
+        }
+        if (p != e)
+        {
+            string errorMessage = "invalid floating-point literal at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<double>(ErrorId(errorId));
+        }
+        return ParseDouble(str);
+    }
+
+    public Result<ulong> ParseIntegerLiteral(const string& fileName, const System.Lex.Token& token, bool& unsignedSuffix)
+    {
+        unsignedSuffix = false;
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        ulong value = 0u;
+        if (p != e && *p == '0')
+        {
+            ++p;
+            if (p != e && (*p == 'x' || *p == 'X'))
+            {
+                ++p;
+                while (p != e && ((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'f') || (*p >= 'A' && *p <= 'F')))
+                {
+                    char c = cast<char>(*p);
+                    switch (c)
+                    {
+                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+                        {
+                            value = 16u * value + cast<ulong>(c) - cast<ulong>('0');
+                            break;
+                        }
+                        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                        {
+                            value = 16u * value + 10u + cast<ulong>(c) - cast<ulong>('A');
+                            break;
+                        }
+                        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+                        {
+                            value = 16u * value + 10u + cast<ulong>(c) - cast<ulong>('a');
+                            break;
+                        }
+                    }
+                    ++p;
+                }
+            }
+            else
+            {
+                while (p != e && *p >= '0' && *p <= '7')
+                {
+                    char c = cast<char>(*p);
+                    value = 8u * value + (cast<ulong>(c) - cast<ulong>('0'));
+                    ++p;
+                }
+            }
+        }
+        else if (p != e && *p >= '1' && *p <= '9')
+        {
+            while (p != e && *p >= '0' && *p <= '9')
+            {
+                char c = cast<char>(*p);
+                value = 10u * value + (cast<ulong>(c) - cast<ulong>('0'));
+                ++p;
+            }
+        }
+        else
+        {
+            string errorMessage = "invalid integer literal at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<ulong>(ErrorId(errorId));
+        }
+        if (p != e && (*p == 'u' || *p == 'U'))
+        {
+            ++p;
+            unsignedSuffix = true;
+        }
+        if (p != e)
+        {
+            string errorMessage = "invalid integer literal at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<ulong>(ErrorId(errorId));
+        }
+        return Result<ulong>(value);
+    }
+
+    public Result<string> ParseFilePath(const string& fileName, const System.Lex.Token& token)
+    {
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        const uchar* begin = null;
+        const uchar* end = null;
+        if (p != e && *p == '<')
+        {
+            ++p;
+            begin = p;
+            while (p != e && *p != '>')
+            {
+                ++p;
+            }
+        }
+        if (p != e && *p == '>')
+        {
+            end = p;
+            ++p;
+        }
+        if (p != e)
+        {
+            string errorMessage = "invalid file path at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<string>(ErrorId(errorId));
+        }
+        return ToUtf8(ustring(begin, end));
+    }
+}

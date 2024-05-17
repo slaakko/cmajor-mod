@@ -20,9 +20,9 @@ parser LiteralParser
         ;
 
     SimpleLiteral(cm.parser.Context* context) : cm.ast.LiteralNode*
-        ::= 
-        (   TRUE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), true); }
-        |   FALSE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), false); }
+        ::=
+        (   TRUE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), true); }
+        |   FALSE{ return new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), false); }
         |   FLOATING_LITERAL
             {
                 bool floatLiteral = false;
@@ -31,7 +31,7 @@ parser LiteralParser
                 {
                     return ErrorId(result.GetErrorId());
                 }
-                return cm.ast.CreateFloatingLiteralNode(lexer.GetSpan(pos), result.Value(), floatLiteral);
+                return cm.ast.CreateFloatingLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), floatLiteral);
             }
         |   INTEGER_LITERAL
             {
@@ -41,7 +41,7 @@ parser LiteralParser
                 {
                     return ErrorId(result.GetErrorId());
                 }
-                return cm.ast.CreateIntegerLiteralNode(lexer.GetSpan(pos), result.Value(), unsignedSuffix);
+                return cm.ast.CreateIntegerLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), unsignedSuffix);
             }
         |   CHAR_LITERAL
             {
@@ -51,7 +51,7 @@ parser LiteralParser
                 {
                     return ErrorId(result.GetErrorId());
                 }
-                return cm.ast.CreateCharacterLiteralNode(lexer.GetSpan(pos), result.Value(), prefix);
+                return cm.ast.CreateCharacterLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix);
             }
         |   STRING_LITERAL
             {
@@ -61,7 +61,7 @@ parser LiteralParser
                 {
                     return ErrorId(result.GetErrorId());
                 }
-                auto createResult = cm.ast.CreateStringLiteralNode(lexer.GetSpan(pos), result.Value(), prefix);
+                auto createResult = cm.ast.CreateStringLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), result.Value(), prefix);
                 if (createResult.Error())
                 {
                     return ErrorId(createResult.GetErrorId());
@@ -70,7 +70,7 @@ parser LiteralParser
             }
         |   NULL_LITERAL
             {
-                return new cm.ast.NullLiteralNode(lexer.GetSpan(pos));
+                return new cm.ast.NullLiteralNode(lexer.GetSpan(pos), lexer.FileIndex());
             }
         )
         ;
@@ -81,9 +81,9 @@ parser LiteralParser
         ;
 
     ArrayLiteral(cm.parser.Context* context, var UniquePtr<cm.ast.ArrayLiteralNode> literalNode) : cm.ast.LiteralNode*
-        ::= 
+        ::=
         (
-            LBRACKET{ literalNode.Reset(new cm.ast.ArrayLiteralNode(lexer.GetSpan(pos))); }
+            LBRACKET{ literalNode.Reset(new cm.ast.ArrayLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())); }
             (
                 Expression(context):expr{ literalNode->AddValue(expr); } % COMMA
             )?
@@ -95,9 +95,9 @@ parser LiteralParser
         ;
 
     StructuredLiteral(cm.parser.Context* context, var UniquePtr<cm.ast.StructuredLiteralNode> literalNode) : cm.ast.LiteralNode*
-        ::= 
+        ::=
         (
-            LBRACE{ literalNode.Reset(new cm.ast.StructuredLiteralNode(lexer.GetSpan(pos))); }
+            LBRACE{ literalNode.Reset(new cm.ast.StructuredLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())); }
             (
                 Expression(context):expr{ literalNode->AddMember(expr); } % COMMA
             )?

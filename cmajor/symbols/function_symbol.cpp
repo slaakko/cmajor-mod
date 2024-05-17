@@ -2339,8 +2339,10 @@ std::unique_ptr<soul::xml::Element> ConversionFunctionSymbol::CreateDomElement(T
     return element;
 }
 
-FunctionGroupTypeSymbol::FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_) :
-    TypeSymbol(SymbolType::functionGroupTypeSymbol, functionGroup_->GetSpan(), functionGroup_->Name()), functionGroup(functionGroup_), boundFunctionGroup(boundFunctionGroup_)
+FunctionGroupTypeSymbol::FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_, 
+    const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_) :
+    TypeSymbol(SymbolType::functionGroupTypeSymbol, span_, functionGroup_->Name()), functionGroup(functionGroup_), boundFunctionGroup(boundFunctionGroup_),
+    fileIndex(fileIndex_), moduleId(moduleId_)
 {
     SetModule(functionGroup->GetModule());
 }

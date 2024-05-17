@@ -1,0 +1,22 @@
+using System;
+using System.Xml;
+
+int main(int argc, const char** argv)
+{
+    System.Lex.FileMap fileMap;
+    for (int i = 1; i < argc; ++i)
+    {
+        string file = argv[i];
+        auto result = ParseXmlDocument(file, fileMap);
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << endl();
+            return 1;
+        }
+        Document* doc = result.Value().Get();
+        System.Text.CodeFormatter formatter(Console.Out());
+        formatter.SetIndentSize(1);
+        doc->Write(formatter);
+    }
+    return 0;
+}

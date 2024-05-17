@@ -29,7 +29,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                 }
                 *parentMatch0 = match;
             }
@@ -156,7 +156,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), value)));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), value)));
                 }
                 *parentMatch0 = match;
             }

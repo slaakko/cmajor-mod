@@ -1,0 +1,562 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.StatementParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.ExpressionParser.Expression;
+    using cm.parser.ExpressionParser.ArgumentList;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.IdentifierParser.Identifier;
+
+    Statement(cm.parser.Context* context) : cm.ast.StatementNode*
+        ::=
+        (   LabeledStatement(context):labeledStatement{ return labeledStatement; }
+        |   ControlStatement(context):controlStatement{ return controlStatement; }
+        |   ExpressionStatement(context):expressionStatement{ return expressionStatement; }
+        |   AssignmentStatement(context):assignmentStatement{ return assignmentStatement; }
+        |   ConstructionStatement(context):constructionStatement{ return constructionStatement; }
+        |   DeleteStatement(context):deleteStatement{ return deleteStatement; }
+        |   DestroyStatement(context):destroyStatement{ return destroyStatement; }
+        |   EmptyStatement(context):emptyStatement{ return emptyStatement; }
+        |   ThrowStatement(context):throwStatement{ return throwStatement; }
+        |   TryStatement(context):tryStatement{ return tryStatement; }
+        |   AssertStatement(context):assertStatement{ return assertStatement; }
+        |   ConditionalCompilationStatement(context):condCompStatement{ return condCompStatement; }
+        )
+        ;
+
+    Label(var System.Lex.Span span, var ustring label) : cm.ast.LabelNode*
+        ::=
+        (
+            ID{ span = lexer.GetSpan(pos); label = lexer.GetToken(pos).ToString(); }
+            COLON
+        )
+        {
+            return new cm.ast.LabelNode(span, lexer.FileIndex(), label);
+        }
+        ;
+
+    LabeledStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            Label:lbl{ span = lexer.GetSpan(pos); }
+            Statement(context):stmt
+        )
+        {
+            return new cm.ast.LabeledStatementNode(span, lexer.FileIndex(), lbl, stmt);
+        }
+        ;
+
+    ControlStatement(cm.parser.Context* context) : cm.ast.StatementNode*
+        ::=
+        (   CompoundStatement(context):compoundStatement{ return compoundStatement; }
+        |   ReturnStatement(context):returnStatement{ return returnStatement; }
+        |   IfStatement(context):ifStatement{ return ifStatement; }
+        |   WhileStatement(context):whileStatement{ return whileStatement; }
+        |   DoStatement(context):doStatement{ return doStatement; }
+        |   RangeForStatement(context):rangeForStatement{ return rangeForStatement; }
+        |   ForStatement(context):forStatement{ return forStatement; }
+        |   BreakStatement(context):breakStatement{ return breakStatement; }
+        |   ContinueStatement(context):continueStatement{ return continueStatement; }
+        |   GotoStatement(context):gotoStatement{ return gotoStatement; }
+        |   SwitchStatement(context):switchStatement{ return switchStatement; }
+        |   GotoCaseStatement(context):gotoCaseStatement{ return gotoCaseStatement; }
+        |   GotoDefaultStatement(context):gotoDefaultStatement{ return gotoDefaultStatement; }
+        )
+        ;
+
+    CompoundStatement(cm.parser.Context* context, var UniquePtr<cm.ast.CompoundStatementNode> compoundStatementNode) : cm.ast.CompoundStatementNode*
+        ::=
+        (
+            LBRACE
+            {
+                compoundStatementNode.Reset(new cm.ast.CompoundStatementNode(lexer.GetSpan(pos), lexer.FileIndex()));
+            }
+            (
+                Statement(context):stmt{ compoundStatementNode->AddStatement(stmt); }
+            )*
+            RBRACE
+            {
+                compoundStatementNode->SetEndSpan(lexer.GetSpan(pos));
+            }
+        )
+        {
+            return compoundStatementNode.Release();
+        }
+        ;
+
+    ReturnStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            RETURN{ span = lexer.GetSpan(pos); }
+            Expression(context):expr?
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ReturnStatementNode(span, lexer.FileIndex(), expr);
+        }
+        ;
+
+    IfStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            IF{ span = lexer.GetSpan(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            Statement(context):thenS
+            (
+                ELSE
+                Statement(context):elseS
+            )?
+        )
+        {
+            return new cm.ast.IfStatementNode(span, lexer.FileIndex(), cond, thenS, elseS);
+        }
+        ;
+
+    WhileStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            WHILE{ span = lexer.GetSpan(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cm.ast.WhileStatementNode(span, lexer.FileIndex(), cond, stmt);
+        }
+        ;
+
+    DoStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            DO{ span = lexer.GetSpan(pos); }
+            Statement(context):stmt
+            WHILE
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            SEMICOLON
+        )
+        {
+            return new cm.ast.DoStatementNode(span, lexer.FileIndex(), stmt, cond);
+        }
+        ;
+
+    RangeForStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            FOR{ span = lexer.GetSpan(pos); }
+            LPAREN
+            TypeExpr(context):type
+            Identifier:id
+            COLON
+            Expression(context):container
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cm.ast.RangeForStatementNode(span, lexer.FileIndex(), type, id, container, stmt);
+        }
+        ;
+
+    ForStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            FOR{ span = lexer.GetSpan(pos); }
+            LPAREN
+            ForInitStatement(context):init
+            Expression(context):cond?
+            SEMICOLON
+            ForLoopStatementExpr(context):loop
+            RPAREN
+            Statement(context):stmt
+        )
+        {
+            return new cm.ast.ForStatementNode(span, lexer.FileIndex(), init, cond, loop, stmt);
+        }
+        ;
+
+    ForInitStatement(cm.parser.Context* context) : cm.ast.StatementNode*
+        ::=
+        (   AssignmentStatement(context):assignmentStatement{ return assignmentStatement; }
+        |   ConstructionStatement(context):constructionStatement{ return constructionStatement; }
+        |   EmptyStatement(context):emptyStatement{ return emptyStatement; }
+        )
+        ;
+
+    ForLoopStatementExpr(cm.parser.Context* context) : cm.ast.StatementNode*
+        ::=
+        (   AssignmentStatementExpr(context):assignmentStatementExpr{ return assignmentStatementExpr; }
+        |   Expression(context):expr{ return new cm.ast.ExpressionStatementNode(lexer.GetSpan(pos), lexer.FileIndex(), expr); }
+        |   empty{ return new cm.ast.EmptyStatementNode(lexer.GetSpan(pos), lexer.FileIndex()); }
+        )
+        ;
+
+    BreakStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            BREAK{ span = lexer.GetSpan(pos); }
+            SEMICOLON
+        )
+        {
+            return new cm.ast.BreakStatementNode(span, lexer.FileIndex());
+        }
+        ;
+
+    ContinueStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            CONTINUE{ span = lexer.GetSpan(pos); }
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ContinueStatementNode(span, lexer.FileIndex());
+        }
+        ;
+
+    GotoStatement(cm.parser.Context* context, var System.Lex.Span span, var ustring target) : cm.ast.StatementNode*
+        ::=
+        (
+            GOTO{ span = lexer.GetSpan(pos); }
+            ID{ target = lexer.GetToken(pos).ToString(); }
+            SEMICOLON
+        )
+        {
+            return new cm.ast.GotoStatementNode(span, lexer.FileIndex(), target);
+        }
+        ;
+
+    SwitchStatement(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.SwitchStatementNode> switchStatementNode) : cm.ast.StatementNode*
+        ::=
+        (
+            SWITCH{ span = lexer.GetSpan(pos); }
+            LPAREN
+            Expression(context):cond
+            RPAREN
+            {
+                switchStatementNode.Reset(new cm.ast.SwitchStatementNode(span, lexer.FileIndex(), cond));
+            }
+            LBRACE
+            (   CaseStatement(context):caseStatement{ switchStatementNode->AddCase(caseStatement); }
+            |   DefaultStatement(context):defaultStatement{ switchStatementNode->SetDefault(defaultStatement); }
+            )*
+            RBRACE
+        )
+        {
+            return switchStatementNode.Release();
+        }
+        ;
+
+    CaseStatement(cm.parser.Context* context, var UniquePtr<cm.ast.CaseStatementNode> caseStatementNode) : cm.ast.CaseStatementNode*
+        ::=
+        (
+            empty{ caseStatementNode.Reset(new cm.ast.CaseStatementNode(lexer.GetSpan(pos), lexer.FileIndex())); }
+            (   CASE
+                Expression(context):caseExpr{ caseStatementNode->AddCaseExpr(caseExpr); }
+                COLON
+            )+
+            (
+                Statement(context):stmt{ caseStatementNode->AddStatement(stmt); }
+            )*
+        )
+        {
+            return caseStatementNode.Release();
+        }
+        ;
+
+    DefaultStatement(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.DefaultStatementNode> defaultStatementNode) : cm.ast.DefaultStatementNode*
+        ::=
+        (
+            DEFAULT{ span = lexer.GetSpan(pos); }
+            COLON{ defaultStatementNode.Reset(new cm.ast.DefaultStatementNode(span, lexer.FileIndex())); }
+            (
+                Statement(context):stmt{ defaultStatementNode->AddStatement(stmt); }
+            )*
+        )
+        {
+            return defaultStatementNode.Release();
+        }
+        ;
+
+    GotoCaseStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            GOTO{ span = lexer.GetSpan(pos); }
+            CASE
+            Expression(context):caseExpr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.GotoCaseStatementNode(span, lexer.FileIndex(), caseExpr);
+        }
+        ;
+
+    GotoDefaultStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            GOTO{ span = lexer.GetSpan(pos); }
+            DEFAULT
+            SEMICOLON
+        )
+        {
+            return new cm.ast.GotoDefaultStatementNode(span, lexer.FileIndex());
+        }
+        ;
+
+    ExpressionStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            empty{ context->PushParsingExpressionStatement(true); }
+            Expression(context):expr{ span = lexer.GetSpan(pos); }
+            SEMICOLON
+        )
+        {
+            context->PopParsingExpressionStatement();
+            return new cm.ast.ExpressionStatementNode(span, lexer.FileIndex(), expr);
+        }
+        /
+        {
+            context->PopParsingExpressionStatement();
+        }
+        ;
+
+    AssignmentStatement(cm.parser.Context* context) : cm.ast.StatementNode*
+        ::=
+        (
+            AssignmentStatementExpr(context):stmt
+            SEMICOLON
+        )
+        {
+            return stmt;
+        }
+        ;
+
+    AssignmentStatementExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            empty{ context->PushParsingLValue(true); }
+            Expression(context):target{ span = lexer.GetSpan(pos); context->PopParsingLValue(); } / { context->PopParsingLValue(); }
+            ASSIGN
+            Expression(context):source
+        )
+        {
+            return new cm.ast.AssignmentStatementNode(span, lexer.FileIndex(), target, source);
+        }
+        ;
+
+    ConstructionStatement(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstructionStatementNode> constructionStatementNode) : cm.ast.StatementNode*
+        ::=
+        (
+            TypeExpr(context):type{ span = lexer.GetSpan(pos); }
+            Identifier:id
+            {
+                constructionStatementNode.Reset(new cm.ast.ConstructionStatementNode(span, lexer.FileIndex(), type, id));
+            }
+            (   ASSIGN Expression(context):value{ constructionStatementNode->AddArgument(value); constructionStatementNode->SetAssignment(); }
+            |   LPAREN ArgumentList(context, constructionStatementNode.Get()):args RPAREN
+            |   empty{ constructionStatementNode->SetEmpty(); }
+            )
+            SEMICOLON
+        )
+        {
+            return constructionStatementNode.Release();
+        }
+        ;
+
+    DeleteStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            DELETE{ span = lexer.GetSpan(pos); }
+            Expression(context):ptr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.DeleteStatementNode(span, lexer.FileIndex(), ptr);
+        }
+        ;
+
+    DestroyStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            DESTROY{ span = lexer.GetSpan(pos); }
+            Expression(context):ptr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.DestroyStatementNode(span, lexer.FileIndex(), ptr);
+        }
+        ;
+
+    EmptyStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            SEMICOLON{ span = lexer.GetSpan(pos); }
+        )
+        {
+            return new cm.ast.EmptyStatementNode(span, lexer.FileIndex());
+        }
+        ;
+
+    ThrowStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            THROW{ span = lexer.GetSpan(pos); }
+            Expression(context):exception?
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ThrowStatementNode(span, lexer.FileIndex(), exception);
+        }
+        ;
+
+    TryStatement(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<TryStatementNode> tryStatementNode) : cm.ast.StatementNode*
+        ::=
+        (
+            TRY{ span = lexer.GetSpan(pos); }
+            CompoundStatement(context):tryBlock{ tryStatementNode.Reset(new cm.ast.TryStatementNode(span, lexer.FileIndex(), tryBlock)); }
+            (
+                Catch(context):handler{ tryStatementNode->AddCatch(handler); }
+            )+
+        )
+        {
+            return tryStatementNode.Release();
+        }
+        ;
+
+    Catch(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.CatchNode*
+        ::=
+        (
+            CATCH{ span = lexer.GetSpan(pos); }
+            LPAREN
+            TypeExpr(context):catchType
+            Identifier:catchId?
+            RPAREN
+            CompoundStatement(context):catchBlock
+        )
+        {
+            return new cm.ast.CatchNode(span, lexer.FileIndex(), catchType, catchId, catchBlock);
+        }
+        ;
+
+    AssertStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
+        ::=
+        (
+            HASH{ span = lexer.GetSpan(pos); }
+            ASSERT
+            Expression(context):expr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.AssertStatementNode(span, lexer.FileIndex(), expr);
+        }
+        ;
+
+    ConditionalCompilationStatement(cm.parser.Context* context, var System.Lex.Span span, var System.Lex.Span elifSpan, var System.Lex.Span elseSpan,
+        var UniquePtr<ConditionalCompilationStatementNode> condCompStmt) : cm.ast.StatementNode*
+        ::=
+        (
+            HASH{ span = lexer.GetSpan(pos); }
+            IF
+            LPAREN
+            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.Reset(new cm.ast.ConditionalCompilationStatementNode(span, lexer.FileIndex(), ifExpr)); }
+            RPAREN
+            (
+                Statement(context):ifs{ condCompStmt->AddIfStatement(ifs); }
+            )*
+            (
+                HASH{ elifSpan = lexer.GetSpan(pos); }
+                ELIF
+                LPAREN
+                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifSpan, lexer.FileIndex(), elifExpr); }
+                RPAREN
+                (
+                    Statement(context):elifs{ condCompStmt->AddElifStatement(elifs); }
+                )*
+            )*
+            (
+                HASH{ elseSpan = lexer.GetSpan(pos); }
+                ELSE
+                (
+                    Statement(context):elses{ condCompStmt->AddElseStatement(elseSpan, lexer.FileIndex(), elses); }
+                )*
+            )?
+            (
+                HASH
+                ENDIF
+            )
+        )
+        {
+            return condCompStmt.Release();
+        }
+        ;
+
+    ConditionalCompilationExpression(cm.parser.Context* context) : cm.ast.ConditionalCompilationExpressionNode*
+        ::=
+        (
+            ConditionalCompilationDisjunction(context):disjunction
+        )
+        {
+            return disjunction;
+        }
+        ;
+
+    ConditionalCompilationDisjunction(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConditionalCompilationExpressionNode> expr) : cm.ast.ConditionalCompilationExpressionNode*
+        ::=
+        (
+            ConditionalCompilationConjunction(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
+            (
+                DISJUNCTION
+                ConditionalCompilationConjunction(context):right{ expr.Reset(new cm.ast.ConditionalCompilationDisjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
+            )*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    ConditionalCompilationConjunction(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConditionalCompilationExpressionNode> expr) : cm.ast.ConditionalCompilationExpressionNode*
+        ::=
+        (
+            ConditionalCompilationPrefix(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
+            (
+                AMP_AMP
+                ConditionalCompilationPrefix(context):right{ expr.Reset(new cm.ast.ConditionalCompilationConjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
+            )*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    ConditionalCompilationPrefix(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConditionalCompilationExpressionNode> expr) : cm.ast.ConditionalCompilationExpressionNode*
+        ::=
+        (
+            (   EXCLAMATION{ span = lexer.GetSpan(pos); }
+                ConditionalCompilationPrefix(context):prefix{ expr.Reset(new cm.ast.ConditionalCompilationNotNode(span, lexer.FileIndex(), prefix)); }
+            |   ConditionalCompilationPrimary(context):primary{ expr.Reset(primary); }
+            )
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    ConditionalCompilationPrimary(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConditionalCompilationExpressionNode*
+        ::=
+        (   ID{ return new cm.ast.ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString()); }
+        |   LPAREN{ span = lexer.GetSpan(pos); }
+            ConditionalCompilationExpression(context):expr
+            RPAREN{ return new cm.ast.ParenthesizedConditionalCompilationExpressionNode(span, lexer.FileIndex(), expr); }
+        )
+        ;
+}

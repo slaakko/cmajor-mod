@@ -21,12 +21,13 @@ parser ConceptParser
     using TypeExprParser.TypeExpr;
     using FunctionParser.FunctionGroupId;
 
-    Concept(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConceptNode> conceptNode, var UniquePtr<cm.ast.WhereConstraintNode> constraintNode) :  cm.ast.ConceptNode*
+    Concept(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConceptNode> conceptNode,
+        var UniquePtr<cm.ast.WhereConstraintNode> constraintNode) :  cm.ast.ConceptNode*
         ::= empty{ context->BeginParsingConcept(); }
         (
             Specifiers:specifiers{ span = lexer.GetSpan(pos); }
             CONCEPT
-            Identifier:conceptName{ conceptNode.Reset(new cm.ast.ConceptNode(span, specifiers, conceptName)); }
+            Identifier:conceptName{ conceptNode.Reset(new cm.ast.ConceptNode(span, lexer.FileIndex(), specifiers, conceptName)); }
             LANGLE
             (
                 Identifier:typeParam{ conceptNode->AddTypeParameter(typeParam); } % COMMA
@@ -37,9 +38,9 @@ parser ConceptParser
             )?
             (
                 WhereConstraint(context):whereConstraint
-                { 
-                    constraintNode.Reset(whereConstraint); 
-                    constraintNode->SetHeaderConstraint(); 
+                {
+                    constraintNode.Reset(whereConstraint);
+                    constraintNode->SetHeaderConstraint();
                     conceptNode->AddConstraint(constraintNode.Release());
                 }
             )?
@@ -58,10 +59,10 @@ parser ConceptParser
         ;
 
     Refinement(cm.parser.Context* context, var UniquePtr<cm.ast.ConceptIdNode> conceptIdNode) : cm.ast.ConceptIdNode*
-        ::= 
+        ::=
         (
-            COLON 
-            QualifiedId:refinedConcept{ conceptIdNode.Reset(new cm.ast.ConceptIdNode(lexer.GetSpan(pos), refinedConcept)); }
+            COLON
+            QualifiedId:refinedConcept{ conceptIdNode.Reset(new cm.ast.ConceptIdNode(lexer.GetSpan(pos), lexer.FileIndex(), refinedConcept)); }
             LANGLE
             (
                 Identifier:typeParam{ conceptIdNode->AddTypeParameter(typeParam); } % COMMA
@@ -76,7 +77,7 @@ parser ConceptParser
     ConceptBody(cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
         ::=
         (   ConceptBodyConstraint(context, conceptNode):bodyConstraint
-        |   Axiom(context, conceptNode):axiom
+        |   Axiom(context, conceptNode):a
         )*
         ;
 
@@ -87,14 +88,14 @@ parser ConceptParser
         ;
 
     TypeNameConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
             TYPENAME{ span = lexer.GetSpan(pos); }
             TypeExpr(context):type
             SEMICOLON
         )
         {
-            return new cm.ast.TypeNameConstraintNode(span, type);
+            return new cm.ast.TypeNameConstraintNode(span, lexer.FileIndex(), type);
         }
         ;
 
@@ -107,17 +108,18 @@ parser ConceptParser
         )
         ;
 
-    ConstructorConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter, var UniquePtr<cm.ast.ConstraintNode> ctorConstraintNode) : cm.ast.ConstraintNode*
+    ConstructorConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter,
+        var UniquePtr<cm.ast.ConstraintNode> ctorConstraintNode) : cm.ast.ConstraintNode*
         ::=
         (
             EXPLICIT?
             Identifier:id
-            { 
-                ustring className = lexer.GetToken(pos).ToString(); 
+            {
+                ustring className = lexer.GetToken(pos).ToString();
                 pass = className == firstTypeParameter->Str();
                 if (pass)
                 {
-                    ctorConstraintNode.Reset(new cm.ast.ConstructorConstraintNode(lexer.GetSpan(pos), id));
+                    ctorConstraintNode.Reset(new cm.ast.ConstructorConstraintNode(lexer.GetSpan(pos), lexer.FileIndex(), id));
                 }
             }
             ParameterList(context, ctorConstraintNode.Get()):paramList
@@ -129,12 +131,12 @@ parser ConceptParser
         ;
 
     DestructorConstraint(cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter, var System.Lex.Span span) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
             TILDE{ span = lexer.GetSpan(pos); }
             Identifier:id
             {
-                ustring className = lexer.GetToken(pos).ToString(); 
+                ustring className = lexer.GetToken(pos).ToString();
                 pass = className == firstTypeParameter->Str();
             }
             LPAREN
@@ -142,7 +144,7 @@ parser ConceptParser
             SEMICOLON
         )
         {
-            return new cm.ast.DestructorConstraintNode(span, id);
+            return new cm.ast.DestructorConstraintNode(span, lexer.FileIndex(), id);
         }
         ;
 
@@ -154,7 +156,7 @@ parser ConceptParser
             DOT
             FunctionGroupId(context):functionGroupId
             {
-                memberFunctionConstraintNode.Reset(new cm.ast.MemberFunctionConstraintNode(span, returnType, typeParam, functionGroupId));
+                memberFunctionConstraintNode.Reset(new cm.ast.MemberFunctionConstraintNode(span, lexer.FileIndex(), returnType, typeParam, functionGroupId));
             }
             ParameterList(context, memberFunctionConstraintNode.Get()):paramList
             SEMICOLON
@@ -170,7 +172,7 @@ parser ConceptParser
             TypeExpr(context):returnType{ span = lexer.GetSpan(pos); }
             FunctionGroupId(context):functionGroupId
             {
-                functionConstraintNode.Reset(new cm.ast.FunctionConstraintNode(span, returnType, functionGroupId));
+                functionConstraintNode.Reset(new cm.ast.FunctionConstraintNode(span, lexer.FileIndex(), returnType, functionGroupId));
             }
             ParameterList(context, functionConstraintNode.Get()):paramList
             SEMICOLON
@@ -181,7 +183,7 @@ parser ConceptParser
         ;
 
     EmbeddedConstraint(cm.parser.Context* context) : cm.ast.WhereConstraintNode*
-        ::= 
+        ::=
         (
             WhereConstraint(context):constraint
             SEMICOLON
@@ -192,18 +194,18 @@ parser ConceptParser
         ;
 
     WhereConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.WhereConstraintNode*
-        ::= 
+        ::=
         (
             WHERE{ span = lexer.GetSpan(pos); }
             ConstraintExpr(context):constraint
         )
         {
-            return new cm.ast.WhereConstraintNode(span, constraint);
+            return new cm.ast.WhereConstraintNode(span, lexer.FileIndex(), constraint);
         }
         ;
 
     ConstraintExpr(cm.parser.Context* context) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
             DisjunctiveConstraintExpr(context):disjunctiveConstraint
         )
@@ -218,7 +220,7 @@ parser ConceptParser
             ConjunctiveConstraintExpr(context):left{ constraintNode.Reset(left); span = lexer.GetSpan(pos); }
             (
                 OR
-                ConjunctiveConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.DisjunctiveConstraintNode(span, constraintNode.Release(), right)); }
+                ConjunctiveConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.DisjunctiveConstraintNode(span, lexer.FileIndex(), constraintNode.Release(), right)); }
             )*
         )
         {
@@ -232,7 +234,7 @@ parser ConceptParser
             PrimaryConstraintExpr(context):left{ constraintNode.Reset(left); span = lexer.GetSpan(pos); }
             (
                 AND
-                PrimaryConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.ConjunctiveConstraintNode(span, constraintNode.Release(), right)); }
+                PrimaryConstraintExpr(context):right{ constraintNode.Reset(new cm.ast.ConjunctiveConstraintNode(span, lexer.FileIndex(), constraintNode.Release(), right)); }
             )*
         )
         {
@@ -241,20 +243,20 @@ parser ConceptParser
         ;
 
     PrimaryConstraintExpr(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConstraintNode> constraintNode) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
             LPAREN{ span = lexer.GetSpan(pos); }
             ConstraintExpr(context):constraint
             RPAREN
             {
-                return new cm.ast.ParenthesizedConstraintNode(span, constraint);
+                return new cm.ast.ParenthesizedConstraintNode(span, lexer.FileIndex(), constraint);
             }
         |   AtomicConstraintExpr(context):atomicConstraint{ return atomicConstraint; }
         )
         ;
 
     AtomicConstraintExpr(cm.parser.Context* context) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (   PredicateConstraint(context):predicateConstraint{ return predicateConstraint; }
         |   IsConstraint(context):isConstraint{ return isConstraint; }
         |   MultiParamConstraint(context):multiParamConstraint{ return multiParamConstraint; }
@@ -262,18 +264,18 @@ parser ConceptParser
         ;
 
     PredicateConstraint(cm.parser.Context* context) : cm.ast.ConstraintNode*
-        ::= InvokeExpr(context):invokeExpr{ return new cm.ast.PredicateConstraintNode(lexer.GetSpan(pos), invokeExpr); }
+        ::= InvokeExpr(context):invokeExpr{ return new cm.ast.PredicateConstraintNode(lexer.GetSpan(pos), lexer.FileIndex(), invokeExpr); }
         ;
 
     IsConstraint(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
             TypeExpr(context):type{ span = lexer.GetSpan(pos); }
             IS
             ConceptOrTypeName(context):conceptOrTypeName
         )
         {
-            return new cm.ast.IsConstraintNode(span, type, conceptOrTypeName);
+            return new cm.ast.IsConstraintNode(span, lexer.FileIndex(), type, conceptOrTypeName);
         }
         ;
 
@@ -283,10 +285,10 @@ parser ConceptParser
 
 
     MultiParamConstraint(cm.parser.Context* context, var UniquePtr<cm.ast.MultiParamConstraintNode> constraintNode) : cm.ast.ConstraintNode*
-        ::= 
+        ::=
         (
-            QualifiedId:id{ constraintNode.Reset(new cm.ast.MultiParamConstraintNode(lexer.GetSpan(pos), id)); }
-            LANGLE 
+            QualifiedId:id{ constraintNode.Reset(new cm.ast.MultiParamConstraintNode(lexer.GetSpan(pos), lexer.FileIndex(), id)); }
+            LANGLE
             (
                 TypeExpr(context):typeExpr{ constraintNode->AddTypeExpr(typeExpr); } % COMMA
             )
@@ -298,11 +300,11 @@ parser ConceptParser
         ;
 
     Axiom(cm.parser.Context* context, cm.ast.ConceptNode* conceptNode, var System.Lex.Span span, var UniquePtr<cm.ast.AxiomNode> axiomNode)
-        ::= 
+        ::=
         (
             AXIOM{ span = lexer.GetSpan(pos); }
             Identifier:id?
-            empty{ axiomNode.Reset(new cm.ast.AxiomNode(span, id)); }
+            empty{ axiomNode.Reset(new cm.ast.AxiomNode(span, lexer.FileIndex(), id)); }
             ParameterList(context, axiomNode.Get()):paramList?
             LBRACE
             AxiomBody(context, axiomNode.Get()):axiomBody
@@ -314,20 +316,20 @@ parser ConceptParser
         ;
 
     AxiomBody(cm.parser.Context* context, cm.ast.AxiomNode* axiomNode)
-        ::= 
+        ::=
         (
             AxiomStatement(context):axiomStatement{ axiomNode->AddStatement(axiomStatement); }
         )*
         ;
 
     AxiomStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.AxiomStatementNode*
-        ::= 
+        ::=
         (
             Expression(context):expr{ span = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
-            return new cm.ast.AxiomStatementNode(span, expr);            
+            return new cm.ast.AxiomStatementNode(span, lexer.FileIndex(), expr);
         }
         ;
 }

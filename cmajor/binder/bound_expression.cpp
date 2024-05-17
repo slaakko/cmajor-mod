@@ -2275,16 +2275,19 @@ void BoundNamespaceExpression::Accept(BoundNodeVisitor& visitor)
     throw cmajor::symbols::Exception("cannot visit a namespace", GetFullSpan(), ns->GetFullSpan());
 }
 
-cmajor::symbols::TypeSymbol* CreateFunctionGroupTypeSymbol(cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol, void* boundFunctionGroupExpression)
+cmajor::symbols::TypeSymbol* CreateFunctionGroupTypeSymbol(cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol, void* boundFunctionGroupExpression,
+    const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_)
 {
-    cmajor::symbols::TypeSymbol* functionGroupTypeSymbol = new cmajor::symbols::FunctionGroupTypeSymbol(functionGroupSymbol, boundFunctionGroupExpression);
+    cmajor::symbols::TypeSymbol* functionGroupTypeSymbol = new cmajor::symbols::FunctionGroupTypeSymbol(functionGroupSymbol, boundFunctionGroupExpression,
+        span_, fileIndex_, moduleId_);
     functionGroupTypeSymbol->SetModule(functionGroupSymbol->GetModule());
     functionGroupSymbol->GetModule()->GetSymbolTable().SetTypeIdFor(functionGroupTypeSymbol);
     return functionGroupTypeSymbol;
 }
 
-BoundFunctionGroupExpression::BoundFunctionGroupExpression(const soul::ast::Span& span_, cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_) :
-    BoundExpression(span_, BoundNodeType::boundFunctionGroupExpression, CreateFunctionGroupTypeSymbol(functionGroupSymbol_, this)),
+BoundFunctionGroupExpression::BoundFunctionGroupExpression(const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_, 
+    cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_) :
+    BoundExpression(span_, BoundNodeType::boundFunctionGroupExpression, CreateFunctionGroupTypeSymbol(functionGroupSymbol_, this, span_, fileIndex_, moduleId_)),
     functionGroupSymbol(functionGroupSymbol_), scopeQualified(false), qualifiedScope(nullptr)
 {
     functionGroupType.reset(GetType());
@@ -2292,7 +2295,7 @@ BoundFunctionGroupExpression::BoundFunctionGroupExpression(const soul::ast::Span
 
 BoundExpression* BoundFunctionGroupExpression::Clone()
 {
-    BoundFunctionGroupExpression* clone = new BoundFunctionGroupExpression(GetSpan(), functionGroupSymbol);
+    BoundFunctionGroupExpression* clone = new BoundFunctionGroupExpression(functionGroupType->GetSpan(), functionGroupType->FileIndex(), functionGroupType->ModuleId(), functionGroupSymbol);
     if (classPtr)
     {
         clone->classPtr.reset(classPtr->Clone());

@@ -26,6 +26,10 @@ parser CommonParser
         ::= ID{ pass = lexer.GetToken(pos).ToString() == u"expressions"; }
         ;
 
+    ParserKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"parser"; }
+        ;
+
     LexerKeyword
         ::= ID{ pass = lexer.GetToken(pos).ToString() == u"lexer"; }
         ;

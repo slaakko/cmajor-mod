@@ -1831,7 +1831,7 @@ void MasmEmitter::EndSubstituteLineNumber()
 
 void MasmEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
-    //context->SetCurrentLineNumber(lineNumber);
+    context->SetCurrentLineNumber(lineNumber);
 }
 
 void MasmEmitter::SetSpan(const soul::ast::Span& span)

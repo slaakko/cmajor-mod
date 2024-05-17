@@ -25,62 +25,8 @@ cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmaj
 FrameLocation GetFrameLocation(Value* value, CodeGenerator& codeGenerator);
 void EmitFrameLocationOperand(int64_t size, const FrameLocation& frameLocation, cmajor::masm::assembly::Instruction* instruction, CodeGenerator& codeGenerator);
 
-void StoreParamToHome(ParamInstruction* inst, CodeGenerator& codeGenerator)
-{
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release)) return;
-    Type* type = inst->GetType();
-    int64_t size = type->Size();
-    cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
-    cmajor::masm::assembly::Register* paramReg = nullptr;
-    if (!inst->IsFloatingPointInstruction())
-    {
-        switch (inst->Index())
-        {
-            case 0: paramReg = assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::rcx); break;
-            case 1: paramReg = assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::rdx); break;
-            case 2: paramReg = assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::r8); break;
-            case 3: paramReg = assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::r9); break;
-        }
-    }
-    if (paramReg)
-    {
-        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::MOV;
-        cmajor::masm::assembly::Instruction* movToHomeInst = new cmajor::masm::assembly::Instruction(opCode);
-        FrameLocation home = GetFrameLocation(inst, codeGenerator);
-        if (home.Valid())
-        {
-            EmitFrameLocationOperand(size, home, movToHomeInst, codeGenerator);
-            movToHomeInst->AddOperand(paramReg);
-            codeGenerator.Emit(movToHomeInst);
-        }
-        else
-        {
-            codeGenerator.Error("error store to home: invalid home location for 'param' instruction");
-        }
-    }
-}
-
 void EmitPrologue(CodeGenerator& codeGenerator)
 {
-    Function* function = codeGenerator.CurrentFunction();
-    if (!function) return;
-    BasicBlock* entryBlock = function->FirstBasicBlock();
-    if (!entryBlock) return;
-    Instruction* inst = entryBlock->FirstInstruction();
-    if (!inst) return;
-    while (inst)
-    {
-        if (inst->IsParamInstruction())
-        {
-            StoreParamToHome(static_cast<ParamInstruction*>(inst), codeGenerator);
-        }
-        else
-        {
-            break;
-        }
-        inst = inst->Next();
-    }
-
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
 
     int numPushes = 0;

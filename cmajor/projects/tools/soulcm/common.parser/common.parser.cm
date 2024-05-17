@@ -112,9 +112,43 @@ namespace common.parser
             }
             return Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> LexerKeyword(LexerT& lexer)
+        public static Result<System.Parsing.Match> ParserKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088324);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer; 
+                    if (incResult0.Error())
+                    {
+                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"parser";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return Result<System.Parsing.Match>(match);
+        }
+        public static Result<System.Parsing.Match> LexerKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088325);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -148,7 +182,7 @@ namespace common.parser
         }
         public static Result<System.Parsing.Match> ProjectKeyword(LexerT& lexer)
         {
-            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088325);
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088326);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -182,7 +216,7 @@ namespace common.parser
         }
         public static Result<System.Parsing.Match> QualifiedUtf8Id(LexerT& lexer)
         {
-            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088326);
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 7440832391356088327);
             UniquePtr<System.Parsing.Value<ustring>> qid;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;

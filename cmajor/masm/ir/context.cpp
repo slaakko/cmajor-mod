@@ -9,7 +9,7 @@ import std.core;
 
 namespace cmajor::masm::ir {
 
-Context::Context() : currentFunction(nullptr), currentBasicBlock(nullptr)
+Context::Context() : currentFunction(nullptr), currentBasicBlock(nullptr), currentSourceLineNumber(-1)
 {
 }
 
@@ -133,6 +133,7 @@ ClsIdValue* Context::GetClsIdValue(const std::string& typeId)
 Instruction* Context::CreateNot(Value* arg)
 {
     Instruction* inst = new NotInstruction(arg);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -140,6 +141,7 @@ Instruction* Context::CreateNot(Value* arg)
 Instruction* Context::CreateNeg(Value* arg)
 {
     Instruction* inst = new NegInstruction(arg);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -147,6 +149,7 @@ Instruction* Context::CreateNeg(Value* arg)
 Instruction* Context::CreateAdd(Value* left, Value* right)
 {
     Instruction* inst = new AddInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -154,6 +157,7 @@ Instruction* Context::CreateAdd(Value* left, Value* right)
 Instruction* Context::CreateSub(Value* left, Value* right)
 {
     Instruction* inst = new SubInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -161,6 +165,7 @@ Instruction* Context::CreateSub(Value* left, Value* right)
 Instruction* Context::CreateMul(Value* left, Value* right)
 {
     Instruction* inst = new MulInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -168,6 +173,7 @@ Instruction* Context::CreateMul(Value* left, Value* right)
 Instruction* Context::CreateDiv(Value* left, Value* right)
 {
     Instruction* inst = new DivInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -175,6 +181,7 @@ Instruction* Context::CreateDiv(Value* left, Value* right)
 Instruction* Context::CreateMod(Value* left, Value* right)
 {
     Instruction* inst = new ModInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -182,6 +189,7 @@ Instruction* Context::CreateMod(Value* left, Value* right)
 Instruction* Context::CreateAnd(Value* left, Value* right)
 {
     Instruction* inst = new AndInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -189,6 +197,7 @@ Instruction* Context::CreateAnd(Value* left, Value* right)
 Instruction* Context::CreateOr(Value* left, Value* right)
 {
     Instruction* inst = new OrInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -196,6 +205,7 @@ Instruction* Context::CreateOr(Value* left, Value* right)
 Instruction* Context::CreateXor(Value* left, Value* right)
 {
     Instruction* inst = new XorInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -203,6 +213,7 @@ Instruction* Context::CreateXor(Value* left, Value* right)
 Instruction* Context::CreateShl(Value* left, Value* right)
 {
     Instruction* inst = new ShlInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -210,6 +221,7 @@ Instruction* Context::CreateShl(Value* left, Value* right)
 Instruction* Context::CreateShr(Value* left, Value* right)
 {
     Instruction* inst = new ShrInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -217,6 +229,7 @@ Instruction* Context::CreateShr(Value* left, Value* right)
 Instruction* Context::CreateEqual(Value* left, Value* right)
 {
     Instruction* inst = new EqualInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -224,6 +237,7 @@ Instruction* Context::CreateEqual(Value* left, Value* right)
 Instruction* Context::CreateLess(Value* left, Value* right)
 {
     Instruction* inst = new LessInstruction(left, right);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -231,6 +245,7 @@ Instruction* Context::CreateLess(Value* left, Value* right)
 Instruction* Context::CreateSignExtend(Value* arg, Type* destType)
 {
     Instruction* inst = new SignExtendInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -238,6 +253,7 @@ Instruction* Context::CreateSignExtend(Value* arg, Type* destType)
 Instruction* Context::CreateZeroExtend(Value* arg, Type* destType)
 {
     Instruction* inst = new ZeroExtendInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -245,6 +261,7 @@ Instruction* Context::CreateZeroExtend(Value* arg, Type* destType)
 Instruction* Context::CreateTruncate(Value* arg, Type* destType)
 {
     Instruction* inst = new TruncateInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -252,6 +269,7 @@ Instruction* Context::CreateTruncate(Value* arg, Type* destType)
 Instruction* Context::CreateBitCast(Value* arg, Type* destType)
 {
     Instruction* inst = new BitCastInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -259,6 +277,7 @@ Instruction* Context::CreateBitCast(Value* arg, Type* destType)
 Instruction* Context::CreateIntToFloat(Value* arg, Type* destType)
 {
     Instruction* inst = new IntToFloatInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -266,6 +285,7 @@ Instruction* Context::CreateIntToFloat(Value* arg, Type* destType)
 Instruction* Context::CreateFloatToInt(Value* arg, Type* destType)
 {
     Instruction* inst = new FloatToIntInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -273,6 +293,7 @@ Instruction* Context::CreateFloatToInt(Value* arg, Type* destType)
 Instruction* Context::CreateIntToPtr(Value* arg, Type* destType)
 {
     Instruction* inst = new IntToPtrInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -280,6 +301,7 @@ Instruction* Context::CreateIntToPtr(Value* arg, Type* destType)
 Instruction* Context::CreatePtrToInt(Value* arg, Type* destType)
 {
     Instruction* inst = new PtrToIntInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -287,6 +309,7 @@ Instruction* Context::CreatePtrToInt(Value* arg, Type* destType)
 Instruction* Context::CreateParam(Type* type)
 {
     Instruction* inst = new ParamInstruction(type);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -294,6 +317,7 @@ Instruction* Context::CreateParam(Type* type)
 Instruction* Context::CreateLocal(Type* type)
 {
     Instruction* inst = new LocalInstruction(type);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -301,6 +325,7 @@ Instruction* Context::CreateLocal(Type* type)
 Instruction* Context::CreateLoad(Value* ptr)
 {
     Instruction* inst = new LoadInstruction(ptr);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -308,6 +333,7 @@ Instruction* Context::CreateLoad(Value* ptr)
 Instruction* Context::CreateStore(Value* value, Value* ptr)
 {
     Instruction* inst = new StoreInstruction(value, ptr);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -315,6 +341,7 @@ Instruction* Context::CreateStore(Value* value, Value* ptr)
 Instruction* Context::CreateArg(Value* arg)
 {
     Instruction* inst = new ArgInstruction(arg);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -322,6 +349,7 @@ Instruction* Context::CreateArg(Value* arg)
 Instruction* Context::CreateElemAddr(Value* ptr, Value* index)
 {
     Instruction* inst = new ElemAddrInstruction(ptr, index);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -329,6 +357,7 @@ Instruction* Context::CreateElemAddr(Value* ptr, Value* index)
 Instruction* Context::CreatePtrOffset(Value* ptr, Value* offset)
 {
     Instruction* inst = new PtrOffsetInstruction(ptr, offset);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -336,6 +365,7 @@ Instruction* Context::CreatePtrOffset(Value* ptr, Value* offset)
 Instruction* Context::CreatePtrDiff(Value* leftPtr, Value* rightPtr)
 {
     Instruction* inst = new PtrDiffInstruction(leftPtr, rightPtr);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -343,6 +373,7 @@ Instruction* Context::CreatePtrDiff(Value* leftPtr, Value* rightPtr)
 Instruction* Context::CreateCall(Value* function)
 {
     Instruction* inst = new CallInstruction(function);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -350,6 +381,7 @@ Instruction* Context::CreateCall(Value* function)
 Instruction* Context::CreateRet(Value* value)
 {
     Instruction* inst = new RetInstruction(value);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -357,6 +389,7 @@ Instruction* Context::CreateRet(Value* value)
 Instruction* Context::CreateJump(BasicBlock* dest)
 {
     Instruction* inst = new JumpInstruction(dest);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -364,6 +397,7 @@ Instruction* Context::CreateJump(BasicBlock* dest)
 Instruction* Context::CreateBranch(Value* cond, BasicBlock* trueDest, BasicBlock* falseDest)
 {
     Instruction* inst = new BranchInstruction(cond, trueDest, falseDest);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -371,6 +405,7 @@ Instruction* Context::CreateBranch(Value* cond, BasicBlock* trueDest, BasicBlock
 Instruction* Context::CreateSwitch(Value* cond, BasicBlock* defaultDest)
 {
     Instruction* inst = new SwitchInstruction(cond, defaultDest);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }
@@ -378,6 +413,7 @@ Instruction* Context::CreateSwitch(Value* cond, BasicBlock* defaultDest)
 Instruction* Context::CreateNop()
 {
     Instruction* inst = new NoOperationInstruction();
+    inst->SetSourceLineNumber(currentSourceLineNumber);
     currentBasicBlock->AddInstruction(inst);
     return inst;
 }

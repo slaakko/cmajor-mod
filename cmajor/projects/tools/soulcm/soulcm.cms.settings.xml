@@ -2,18 +2,10 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/re.ast/dfa.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg.ast/collection.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg.ast/keyword.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg.ast/scmlg_file.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg/keyword_file_generator.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg/lexer_generator.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg.parser/token_parser.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg/lexer_generator.cm"/>
-    <currentCursorLine value="657"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg.parser/token_parser.cm"/>
+    <currentCursorLine value="109"/>
     <breakpoints/>
-    <expandedProjects>
-        <item value="scmlg"/>
-        <item value="scmlg.ast"/>
-    </expandedProjects>
+    <expandedProjects/>
 </solutionSettings>

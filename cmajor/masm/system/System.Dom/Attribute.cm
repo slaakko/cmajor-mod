@@ -1,0 +1,139 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public class AttributeNode : Node
+    {
+        public AttributeNode(const System.Lex.Span& span_, int fileIndex_, const string& name_, const string& value_) :
+            base(NodeKind.attributeNode, span_, fileIndex_, name_), value(value_)
+        {
+        }
+        public const string& Value() const
+        {
+            return value;
+        }
+        public void SetValue(const string& value_)
+        {
+            value = value_;
+        }
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            auto result = MakeXmlAttrValue(value);
+            if (result.Error())
+            {
+                formatter.SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            formatter << " " << Name() << "=" << result.Value();
+            return Result<bool>(true);
+        }
+        private string value;
+    }
+
+    public AttributeNode* MakeAttribute(const string& name, const string& value)
+    {
+        return new AttributeNode(System.Lex.Span(), -1, name, value);
+    }
+
+    public Result<string> AttrValueEscape(const string& attributeValue, char delimiter)
+    {
+        string result;
+        auto attValueResult = ToUtf32(attributeValue);
+        if (attValueResult.Error())
+        {
+            return Result<string>(ErrorId(attValueResult.GetErrorId()));
+        }
+        ustring attValue = attValueResult.Value();
+        for (uchar c : attValue)
+        {
+            switch (c)
+            {
+                case '<':
+                {
+                    result.Append("&lt;");
+                    break;
+                }
+                case '&':
+                {
+                    result.Append("&amp;");
+                    break;
+                }
+                case '"':
+                {
+                    if (delimiter == '"') result.Append("&quot;"); else result.Append('"');
+                    break;
+                }
+                case '\'':
+                {
+                    if (delimiter == '\'') result.Append("&apos;"); else result.Append('\'');
+                    break;
+                }
+                default:
+                {
+                    if (cast<int>(c) >= 32 && cast<int>(c) < 127)
+                    {
+                        result.Append(cast<char>(c));
+                    }
+                    else
+                    {
+                        int codePoint = cast<int>(c);
+                        string charText = "&#";
+                        charText.Append(ToString(codePoint)).Append(';');
+                        result.Append(charText);
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<string>(result);
+    }
+
+    public Result<string> MakeXmlAttrValue(const string& value)
+    {
+        string result;
+        if (value.Find('"') == -1)
+        {
+            result.Append('"');
+            auto escapeResult = AttrValueEscape(value, '"');
+            if (escapeResult.Error())
+            {
+                return Result<string>(ErrorId(escapeResult.GetErrorId()));
+            }
+            result.Append(escapeResult.Value());
+            result.Append('"');
+        }
+        else if (value.Find('\'') == -1)
+        {
+            result.Append('\'');
+            auto escapeResult = AttrValueEscape(value, '\'');
+            if (escapeResult.Error())
+            {
+                return Result<string>(ErrorId(escapeResult.GetErrorId()));
+            }
+            result.Append(escapeResult.Value());
+            result.Append('\'');
+        }
+        else
+        {
+            result.Append('"');
+            auto escapeResult = AttrValueEscape(value, '"');
+            if (escapeResult.Error())
+            {
+                return Result<string>(ErrorId(escapeResult.GetErrorId()));
+            }
+            result.Append(escapeResult.Value());
+            result.Append('"');
+        }
+        return Result<string>(result);
+    }
+}
+

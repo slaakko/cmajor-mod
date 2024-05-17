@@ -93,7 +93,7 @@ namespace cm.parser
                                 constTypeExpr.Reset(cast<cm.ast.Node*>(match.value));
                                 if (match.hit)
                                 {
-                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstNode(span, constTypeExpr.Release())));
+                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstNode(span, lexer.FileIndex(), constTypeExpr.Release())));
                                 }
                                 *parentMatch5 = match;
                             }
@@ -242,7 +242,7 @@ namespace cm.parser
                                                                         }
                                                                         if (match.hit)
                                                                         {
-                                                                            typeExpr.Reset(new cm.ast.DotNode(span, typeExpr.Release(), new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString())));
+                                                                            typeExpr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), typeExpr.Release(), new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                                                                         }
                                                                         *parentMatch13 = match;
                                                                     }
@@ -273,7 +273,7 @@ namespace cm.parser
                                                                         }
                                                                         if (match.hit)
                                                                         {
-                                                                            typeExpr.Reset(new cm.ast.PointerNode(span, typeExpr.Release()));
+                                                                            typeExpr.Reset(new cm.ast.PointerNode(span, lexer.FileIndex(), typeExpr.Release()));
                                                                         }
                                                                         *parentMatch15 = match;
                                                                     }
@@ -305,7 +305,7 @@ namespace cm.parser
                                                                     }
                                                                     if (match.hit)
                                                                     {
-                                                                        typeExpr.Reset(new cm.ast.RValueRefNode(span, typeExpr.Release()));
+                                                                        typeExpr.Reset(new cm.ast.RValueRefNode(span, lexer.FileIndex(), typeExpr.Release()));
                                                                     }
                                                                     *parentMatch17 = match;
                                                                 }
@@ -337,7 +337,7 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
-                                                                    typeExpr.Reset(new cm.ast.LValueRefNode(span, typeExpr.Release()));
+                                                                    typeExpr.Reset(new cm.ast.LValueRefNode(span, lexer.FileIndex(), typeExpr.Release()));
                                                                 }
                                                                 *parentMatch19 = match;
                                                             }
@@ -423,7 +423,7 @@ namespace cm.parser
                                                                     }
                                                                     if (match.hit)
                                                                     {
-                                                                        typeExpr.Reset(new cm.ast.ArrayNode(span, typeExpr.Release(), size.Release()));
+                                                                        typeExpr.Reset(new cm.ast.ArrayNode(span, lexer.FileIndex(), typeExpr.Release(), size.Release()));
                                                                     }
                                                                     *parentMatch26 = match;
                                                                 }
@@ -550,7 +550,7 @@ namespace cm.parser
                             }
                             if (match.hit)
                             {
-                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString())));
+                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                             }
                             *parentMatch6 = match;
                         }

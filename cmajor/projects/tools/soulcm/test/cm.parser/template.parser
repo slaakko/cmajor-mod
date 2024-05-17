@@ -1,0 +1,83 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.TemplateParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.IdentifierParser.QualifiedId;
+
+    TemplateId(cm.parser.Context* context, var UniquePtr<cm.ast.TemplateIdNode> templateId) : cm.ast.TemplateIdNode*
+        ::= empty{ context->BeginParsingTemplateId(); }
+            (
+                QualifiedId:primary{ templateId.Reset(new cm.ast.TemplateIdNode(lexer.GetSpan(pos), lexer.FileIndex(), primary)); }
+                LANGLE{ ++lexer.vars.leftAngleCount; }
+                (
+                    (
+                        TypeExpr(context):templateArg{ templateId->AddTemplateArgument(templateArg); } % COMMA
+                    )
+                    RANGLE
+                )
+                {
+                    --lexer.vars.leftAngleCount;
+                }
+                /
+                {
+                    --lexer.vars.leftAngleCount;
+                }
+            )
+            {
+                context->EndParsingTemplateId();
+                return templateId.Release();
+            }
+            /
+            {
+                context->EndParsingTemplateId();
+            }
+        ;
+
+    TemplateParameterList(cm.parser.Context* context, cm.ast.Node* owner)
+        ::=
+        (
+            LANGLE
+            (
+                TemplateParameter(context):tp{ owner->AddTemplateParameter(tp); } % COMMA
+            )
+            RANGLE
+        )
+        ;
+
+    TemplateParameter(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.TemplateParameterNode*
+        ::=
+        (
+            Identifier:id{ span = lexer.GetSpan(pos); }
+            (
+                ASSIGN
+                TypeExpr(context):type
+            )?
+        )
+        {
+            return new cm.ast.TemplateParameterNode(span, lexer.FileIndex(), id, type);
+        }
+        ;
+
+    InstantiationRequest(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.FullInstantiationRequestNode> requestNode) : cm.ast.FullInstantiationRequestNode*
+        ::=
+        (
+            NEW{ span = lexer.GetSpan(pos); }
+            CLASS
+            TemplateId(context):templateId{ requestNode.Reset(new cm.ast.FullInstantiationRequestNode(span, lexer.FileIndex(), templateId)); }
+            SEMICOLON
+        )
+        {
+            return requestNode.Release();
+        }
+        ;
+}

@@ -1,0 +1,121 @@
+using System;
+using System.IO;
+using System.Threading;
+using System.Xml;
+using System.Net.Sockets;
+
+public class EchoServer : IOBase
+{
+    public EchoServer(int port_) : port(port_), thread(), listener(), exiting(false)
+    {
+    }
+    public void Start()
+    {
+        thread = Thread.StartMethod(Run);
+    }
+    public void Stop()
+    {
+        exiting = true;
+        TcpSocket client("127.0.0.1", port);
+    }
+    private void Run()
+    {
+        System.Lex.FileMap fileMap;
+        int documentId = 0;
+        listener.Reset(new TcpListener(port));
+        auto result = listener->Start();
+        if (result.Error())
+        {
+            SetErrorId(result.GetErrorId());
+        }
+        while (!exiting)
+        {
+            Result<TcpSocket> socketResult = listener->AcceptSocket();
+            if (socketResult.Error())
+            {
+                SetErrorId(socketResult.GetErrorId());
+            }
+            if (exiting) break;
+            TcpSocket& socket = socketResult.Value();
+            auto receiveResult = ReceiveDocument(socket, fileMap, documentId);
+            if (receiveResult.Error())
+            {
+                SetErrorId(receiveResult.GetErrorId());
+                return;
+            }
+            Document* document = receiveResult.Value().Get();
+            auto sendResult = SendDocument(socket, document);
+            if (sendResult.Error())
+            {
+                SetErrorId(receiveResult.GetErrorId());
+                return;
+            }
+        }
+        listener->Stop();
+    }
+    private int port;
+    private Thread thread;
+    private UniquePtr<TcpListener> listener;
+    private bool exiting;
+}
+
+int main(int argc, const char** argv)
+{
+    System.Lex.FileMap fileMap;
+    int documentId = 0;
+    string xmlFile;
+    for (int i = 1; i < argc; ++i)
+    {
+        xmlFile = argv[i];
+    }
+    if (xmlFile.IsEmpty())
+    {
+        Console.Error() << "no XML file given" << endl();
+        return 1;
+    }
+    auto parseResult = ParseXmlDocument(xmlFile, fileMap);
+    if (parseResult.Error())
+    {
+        Console.Error() << parseResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    Document* document = parseResult.Value().Get();
+    EchoServer server(12345);
+    server.Start();
+    if (server.Error())
+    {
+        Console.Error() << server.GetErrorMessage() << endl();
+        return 1;
+    }
+    Sleep(Duration.FromMilliseconds(250));
+    TcpSocket clientSocket("127.0.0.1", 12345);
+    auto sendResult = SendDocument(clientSocket, document);
+    if (sendResult.Error())
+    {
+        Console.Error() << sendResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    auto receiveResult = ReceiveDocument(clientSocket, fileMap, documentId);
+    if (receiveResult.Error())
+    {
+        Console.Error() << receiveResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    Document* documentReceived = receiveResult.Value().Get();
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    auto printResult = documentReceived->Write(formatter);
+    if (printResult.Error())
+    {
+        Console.Error() << printResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    server.Stop();
+    if (server.Error())
+    {
+        Console.Error() << server.GetErrorMessage() << endl();
+        return 1;
+    }
+    return 0;
+}
+

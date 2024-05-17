@@ -6,27 +6,32 @@
 using System;
 using System.Collections;
 
-public class TrivialLexer : System.Lex.Lexer
+namespace System.Lex
 {
-    public TrivialLexer(const uchar* start_, const uchar* end_, const string& fileName_) : base(start_, end_, fileName_, string())
+    public class TrivialLexer : System.Lex.Lexer
     {
-    }
-    public override int NextState(int state, uchar c)
-    {
-        token.id = cast<int>(c);
-        token.match = lexeme;
-        if (c == '\n')
+        public TrivialLexer(const uchar* start_, const uchar* end_, const string& fileName_) : base(start_, end_, fileName_, string())
         {
-            ++line;
         }
-        return -1;
+        public override int NextState(int state, uchar c)
+        {
+            token.id = cast<int>(c);
+            token.match = lexeme;
+            if (c == '\n')
+            {
+                ++line;
+            }
+            return -1;
+        }
     }
-}
-public string GetTrivialTokenInfo(int tokenId)
-{
-    if (tokenId == System.Lex.END_TOKEN)
+    
+    public string GetTrivialTokenInfo(int tokenId)
     {
-        return "end of file";
+        if (tokenId == System.Lex.END_TOKEN)
+        {
+            return "end of file";
+        }
+        return ToString(tokenId);
     }
-    return ToString(tokenId);
 }
+

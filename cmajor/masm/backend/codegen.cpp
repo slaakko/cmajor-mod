@@ -566,7 +566,8 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakSta
         basicBlockOpen = true;
     }
 */
-    if (!currentCaseMap || (latestRet && !latestRet->IsConditionalStatementInBlock(latestRet->Block()))) // not in switch or last was unconditional return in its block
+//  if not in direct switch or last was unconditional return in its block:
+    if (!InDirectSwitchStatement(&boundBreakStatement) || (latestRet && !latestRet->IsConditionalStatementInBlock(latestRet->Block()))) 
     {
         void* nextBlock = emitter->CreateBasicBlock("next");
         emitter->SetCurrentBasicBlock(nextBlock);
@@ -1556,6 +1557,7 @@ void MasmCodeGenerator::SetSpan(const soul::ast::Span& span)
 void MasmCodeGenerator::SetLineNumber(int32_t lineNumber)
 {
     if (prevLineNumber == lineNumber) return;
+    emitter->SetCurrentSourcePos(lineNumber, 0, 0);
     prevLineNumber = lineNumber;
     cmajor::binder::BoundStatement* setLineNumberStatement = currentFunction->GetLineCode();
     if (setLineNumberStatement)

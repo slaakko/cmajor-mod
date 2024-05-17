@@ -66,7 +66,7 @@ void LinearScanRegisterAllocator::AddLiveRange(const LiveRange& liveRange, Instr
     rangeInstructionMap[liveRange].push_back(inst);
     if (inst->IsParamInstruction() || inst->IsLocalInstruction())
     {
-        AllocateFrameLocation(inst);
+        AllocateFrameLocation(inst, false);
     }
 }
 
@@ -154,7 +154,7 @@ void LinearScanRegisterAllocator::AllocateRegister(Instruction* inst)
     locations[inst] = locations[inst] | Locations::reg;
 }
 
-void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst)
+void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst, bool spill)
 {
     if (inst->IsParamInstruction())
     {
@@ -165,8 +165,16 @@ void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst)
             alignment = 16;
         }
         int64_t size = util::Align(paramInst->GetType()->Size(), alignment);
-        frameLocations[paramInst] = frame.GetParamLocation(size, context->AssemblyContext());
-        locations[paramInst] = locations[paramInst] | Locations::frame;
+        if (spill)
+        {
+            frameLocations[paramInst] = frame.GetFrameLocation(size);
+            locations[paramInst] = locations[paramInst] | Locations::frame;
+        }
+        else
+        {
+            frameLocations[paramInst] = frame.GetParamLocation(size, context->AssemblyContext());
+            locations[paramInst] = locations[paramInst] | Locations::frame;
+        }
     }
     else if (inst->IsLocalInstruction())
     {
@@ -190,7 +198,7 @@ void LinearScanRegisterAllocator::Spill(Instruction* inst)
     for (Instruction* instToSpill : GetInstructions(spill))
     {
         registerGroups[inst] = registerGroups[instToSpill];
-        AllocateFrameLocation(instToSpill);
+        AllocateFrameLocation(instToSpill, true);
         locations[instToSpill] = Locations::frame;
         locations[inst] = locations[inst] | Locations::reg;
         active.erase(spill);

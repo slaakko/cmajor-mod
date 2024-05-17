@@ -450,4 +450,16 @@ void BoundCatchStatement::Accept(BoundNodeVisitor& visitor)
     visitor.Visit(*this);
 }
 
+bool InDirectSwitchStatement(BoundStatement* statement)
+{
+    BoundStatement* parent = statement->StatementParent();
+    while (parent)
+    {
+        if (parent->IsSwitchStatement()) return true;
+        if (parent->IsWhileStatement() || parent->IsDoStatement() || parent->IsForStatement()) return false;
+        parent = parent->StatementParent();
+    }
+    return false;
+}
+
 } // namespace cmajor::binder

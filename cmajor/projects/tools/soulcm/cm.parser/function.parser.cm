@@ -146,7 +146,7 @@ namespace cm.parser
                                             functionGroupId.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
                                             if (match.hit)
                                             {
-                                                functionNode.Reset(new cm.ast.FunctionNode(span, specifiers->value, returnType.Release(), functionGroupId->value, attributes.Release()));
+                                                functionNode.Reset(new cm.ast.FunctionNode(span, lexer.FileIndex(), specifiers->value, returnType.Release(), functionGroupId->value, attributes.Release()));
                                             }
                                             *parentMatch15 = match;
                                         }

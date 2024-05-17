@@ -22,7 +22,7 @@ parser FunctionParser
     using StatementParser.CompoundStatement;
 
     Function(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.FunctionNode> functionNode) : cm.ast.FunctionNode*
-        ::= 
+        ::=
         (
             empty{ span = lexer.GetSpan(pos); }
             Attributes(context):attributes?
@@ -30,10 +30,10 @@ parser FunctionParser
             TypeExpr(context):returnType
             FunctionGroupId(context):functionGroupId
             {
-                functionNode.Reset(new cm.ast.FunctionNode(span, specifiers, returnType, functionGroupId, attributes));
+                functionNode.Reset(new cm.ast.FunctionNode(span, lexer.FileIndex(), specifiers, returnType, functionGroupId, attributes));
             }
         )
-        TemplateParameterList(context, functionNode.Get()):templateParameterList? 
+        TemplateParameterList(context, functionNode.Get()):templateParameterList?
         ParameterList(context, functionNode.Get()):parameterList
         (WhereConstraint(context):constraint{ functionNode->SetConstraint(constraint); })?
         (   CompoundStatement(context):body{ functionNode->SetBody(body); }

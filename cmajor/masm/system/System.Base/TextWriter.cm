@@ -36,9 +36,9 @@ namespace System.IO
         public abstract Result<bool> WriteLine(const wstring& x);
         public abstract Result<bool> WriteLine(const ustring& x);
         public abstract Result<bool> WriteLine(bool x);
-		public abstract Result<bool> WriteLine(char x);
-		public abstract Result<bool> WriteLine(wchar x);
-		public abstract Result<bool> WriteLine(uchar x);
+    		  public abstract Result<bool> WriteLine(char x);
+    		  public abstract Result<bool> WriteLine(wchar x);
+    		  public abstract Result<bool> WriteLine(uchar x);
         public abstract Result<bool> WriteLine(sbyte x);
         public abstract Result<bool> WriteLine(byte x);
         public abstract Result<bool> WriteLine(short x);
@@ -51,12 +51,6 @@ namespace System.IO
         public abstract Result<bool> WriteLine(double x);
         public abstract Result<bool> WriteLine(const Date& date);
         public abstract Result<bool> WriteLine(const DateTime& dateTime);
-        public bool Error() const { return latestErrorId != 0; }
-        public void ResetError() { latestErrorId = 0; }
-        public int GetLatestErrorId() const { return latestErrorId; }
-        public void SetLatestErrorId(int errorId_) { latestErrorId = errorId_; }
-        public string GetErrorMessage() const { return RtmGetErrorMessage(latestErrorId); }
-        private int latestErrorId;
     }
 
     public TextWriter& operator<<(TextWriter& writer, const char* x)
@@ -177,14 +171,14 @@ namespace System.IO
         writer.Write(x);
         return writer;
     }
-    
+
     public TextWriter& operator<<(TextWriter& writer, const Date& date)
     {
         if (writer.Error()) return writer;
         writer.Write(date);
         return writer;
     }
-    
+
     public TextWriter& operator<<(TextWriter& writer, const DateTime& dateTime)
     {
         if (writer.Error()) return writer;
@@ -198,14 +192,14 @@ namespace System.IO
         writer.Write(x);
         return writer;
     }
-    
+
     public TextWriter& operator<<(TextWriter& writer, wchar x)
     {
         if (writer.Error()) return writer;
         writer.Write(x);
         return writer;
     }
-    
+
     public TextWriter& operator<<(TextWriter& writer, uchar x)
     {
         if (writer.Error()) return writer;

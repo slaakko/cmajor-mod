@@ -1,0 +1,2 @@
+project switch_test;
+source <switch_test.cm>;

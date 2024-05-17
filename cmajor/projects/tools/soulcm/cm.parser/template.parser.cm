@@ -63,7 +63,7 @@ namespace cm.parser
                                         primary.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                         if (match.hit)
                                         {
-                                            templateId.Reset(new cm.ast.TemplateIdNode(lexer.GetSpan(pos), primary.Release()));
+                                            templateId.Reset(new cm.ast.TemplateIdNode(lexer.GetSpan(pos), lexer.FileIndex(), primary.Release()));
                                         }
                                         *parentMatch7 = match;
                                     }
@@ -527,7 +527,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TemplateParameterNode(span, id.Release(), type.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TemplateParameterNode(span, lexer.FileIndex(), id.Release(), type.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -620,7 +620,7 @@ namespace cm.parser
                                     templateId.Reset(cast<cm.ast.TemplateIdNode*>(match.value));
                                     if (match.hit)
                                     {
-                                        requestNode.Reset(new cm.ast.FullInstantiationRequestNode(span, templateId.Release()));
+                                        requestNode.Reset(new cm.ast.FullInstantiationRequestNode(span, lexer.FileIndex(), templateId.Release()));
                                     }
                                     *parentMatch8 = match;
                                 }

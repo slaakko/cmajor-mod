@@ -18,7 +18,7 @@ parser StatementParser
     using IdentifierParser.Identifier;
 
     Statement(cm.parser.Context* context) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (   LabeledStatement(context):labeledStatement{ return labeledStatement; }
         |   ControlStatement(context):controlStatement{ return controlStatement; }
         |   ExpressionStatement(context):expressionStatement{ return expressionStatement; }
@@ -35,29 +35,29 @@ parser StatementParser
         ;
 
     Label(var System.Lex.Span span, var ustring label) : cm.ast.LabelNode*
-        ::= 
+        ::=
         (
             ID{ span = lexer.GetSpan(pos); label = lexer.GetToken(pos).ToString(); }
             COLON
         )
         {
-            return new cm.ast.LabelNode(span, label);
+            return new cm.ast.LabelNode(span, lexer.FileIndex(), label);
         }
         ;
 
     LabeledStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             Label:lbl{ span = lexer.GetSpan(pos); }
             Statement(context):stmt
         )
         {
-            return new cm.ast.LabeledStatementNode(span, lbl, stmt);
+            return new cm.ast.LabeledStatementNode(span, lexer.FileIndex(), lbl, stmt);
         }
         ;
 
     ControlStatement(cm.parser.Context* context) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (   CompoundStatement(context):compoundStatement{ return compoundStatement; }
         |   ReturnStatement(context):returnStatement{ return returnStatement; }
         |   IfStatement(context):ifStatement{ return ifStatement; }
@@ -75,11 +75,11 @@ parser StatementParser
         ;
 
     CompoundStatement(cm.parser.Context* context, var UniquePtr<cm.ast.CompoundStatementNode> compoundStatementNode) : cm.ast.CompoundStatementNode*
-        ::= 
+        ::=
         (
             LBRACE
             {
-                compoundStatementNode.Reset(new cm.ast.CompoundStatementNode(lexer.GetSpan(pos)));
+                compoundStatementNode.Reset(new cm.ast.CompoundStatementNode(lexer.GetSpan(pos), lexer.FileIndex()));
             }
             (
                 Statement(context):stmt{ compoundStatementNode->AddStatement(stmt); }
@@ -95,14 +95,14 @@ parser StatementParser
         ;
 
     ReturnStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             RETURN{ span = lexer.GetSpan(pos); }
             Expression(context):expr?
             SEMICOLON
         )
         {
-            return new cm.ast.ReturnStatementNode(span, expr);
+            return new cm.ast.ReturnStatementNode(span, lexer.FileIndex(), expr);
         }
         ;
 
@@ -120,7 +120,7 @@ parser StatementParser
             )?
         )
         {
-            return new cm.ast.IfStatementNode(span, cond, thenS, elseS);
+            return new cm.ast.IfStatementNode(span, lexer.FileIndex(), cond, thenS, elseS);
         }
         ;
 
@@ -134,7 +134,7 @@ parser StatementParser
             Statement(context):stmt
         )
         {
-            return new cm.ast.WhileStatementNode(span, cond, stmt);
+            return new cm.ast.WhileStatementNode(span, lexer.FileIndex(), cond, stmt);
         }
         ;
 
@@ -150,12 +150,12 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.DoStatementNode(span, stmt, cond);
+            return new cm.ast.DoStatementNode(span, lexer.FileIndex(), stmt, cond);
         }
         ;
 
     RangeForStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             FOR{ span = lexer.GetSpan(pos); }
             LPAREN
@@ -167,7 +167,7 @@ parser StatementParser
             Statement(context):stmt
         )
         {
-            return new cm.ast.RangeForStatementNode(span, type, id, container, stmt);
+            return new cm.ast.RangeForStatementNode(span, lexer.FileIndex(), type, id, container, stmt);
         }
         ;
 
@@ -184,7 +184,7 @@ parser StatementParser
             Statement(context):stmt
         )
         {
-            return new cm.ast.ForStatementNode(span, init, cond, loop, stmt);
+            return new cm.ast.ForStatementNode(span, lexer.FileIndex(), init, cond, loop, stmt);
         }
         ;
 
@@ -197,21 +197,21 @@ parser StatementParser
         ;
 
     ForLoopStatementExpr(cm.parser.Context* context) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (   AssignmentStatementExpr(context):assignmentStatementExpr{ return assignmentStatementExpr; }
-        |   Expression(context):expr{ return new cm.ast.ExpressionStatementNode(lexer.GetSpan(pos), expr); }
-        |   empty{ return new cm.ast.EmptyStatementNode(lexer.GetSpan(pos)); }
+        |   Expression(context):expr{ return new cm.ast.ExpressionStatementNode(lexer.GetSpan(pos), lexer.FileIndex(), expr); }
+        |   empty{ return new cm.ast.EmptyStatementNode(lexer.GetSpan(pos), lexer.FileIndex()); }
         )
         ;
 
     BreakStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             BREAK{ span = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
-            return new cm.ast.BreakStatementNode(span);
+            return new cm.ast.BreakStatementNode(span, lexer.FileIndex());
         }
         ;
 
@@ -222,7 +222,7 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.ContinueStatementNode(span);
+            return new cm.ast.ContinueStatementNode(span, lexer.FileIndex());
         }
         ;
 
@@ -234,7 +234,7 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.GotoStatementNode(span, target);
+            return new cm.ast.GotoStatementNode(span, lexer.FileIndex(), target);
         }
         ;
 
@@ -246,7 +246,7 @@ parser StatementParser
             Expression(context):cond
             RPAREN
             {
-                switchStatementNode.Reset(new cm.ast.SwitchStatementNode(span, cond));
+                switchStatementNode.Reset(new cm.ast.SwitchStatementNode(span, lexer.FileIndex(), cond));
             }
             LBRACE
             (   CaseStatement(context):caseStatement{ switchStatementNode->AddCase(caseStatement); }
@@ -262,12 +262,12 @@ parser StatementParser
     CaseStatement(cm.parser.Context* context, var UniquePtr<cm.ast.CaseStatementNode> caseStatementNode) : cm.ast.CaseStatementNode*
         ::=
         (
-            empty{ caseStatementNode.Reset(new cm.ast.CaseStatementNode(lexer.GetSpan(pos))); }
+            empty{ caseStatementNode.Reset(new cm.ast.CaseStatementNode(lexer.GetSpan(pos), lexer.FileIndex())); }
             (   CASE
                 Expression(context):caseExpr{ caseStatementNode->AddCaseExpr(caseExpr); }
                 COLON
             )+
-            (   
+            (
                 Statement(context):stmt{ caseStatementNode->AddStatement(stmt); }
             )*
         )
@@ -280,8 +280,8 @@ parser StatementParser
         ::=
         (
             DEFAULT{ span = lexer.GetSpan(pos); }
-            COLON{ defaultStatementNode.Reset(new cm.ast.DefaultStatementNode(span)); }
-            (   
+            COLON{ defaultStatementNode.Reset(new cm.ast.DefaultStatementNode(span, lexer.FileIndex())); }
+            (
                 Statement(context):stmt{ defaultStatementNode->AddStatement(stmt); }
             )*
         )
@@ -291,7 +291,7 @@ parser StatementParser
         ;
 
     GotoCaseStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             GOTO{ span = lexer.GetSpan(pos); }
             CASE
@@ -299,7 +299,7 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.GotoCaseStatementNode(span, caseExpr);
+            return new cm.ast.GotoCaseStatementNode(span, lexer.FileIndex(), caseExpr);
         }
         ;
 
@@ -311,7 +311,7 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.GotoDefaultStatementNode(span);
+            return new cm.ast.GotoDefaultStatementNode(span, lexer.FileIndex());
         }
         ;
 
@@ -324,7 +324,7 @@ parser StatementParser
         )
         {
             context->PopParsingExpressionStatement();
-            return new cm.ast.ExpressionStatementNode(span, expr);
+            return new cm.ast.ExpressionStatementNode(span, lexer.FileIndex(), expr);
         }
         /
         {
@@ -335,7 +335,7 @@ parser StatementParser
     AssignmentStatement(cm.parser.Context* context) : cm.ast.StatementNode*
         ::=
         (
-            AssignmentStatementExpr(context):stmt 
+            AssignmentStatementExpr(context):stmt
             SEMICOLON
         )
         {
@@ -352,7 +352,7 @@ parser StatementParser
             Expression(context):source
         )
         {
-            return new cm.ast.AssignmentStatementNode(span, target, source);
+            return new cm.ast.AssignmentStatementNode(span, lexer.FileIndex(), target, source);
         }
         ;
 
@@ -362,7 +362,7 @@ parser StatementParser
             TypeExpr(context):type{ span = lexer.GetSpan(pos); }
             Identifier:id
             {
-                constructionStatementNode.Reset(new cm.ast.ConstructionStatementNode(span, type, id));
+                constructionStatementNode.Reset(new cm.ast.ConstructionStatementNode(span, lexer.FileIndex(), type, id));
             }
             (   ASSIGN Expression(context):value{ constructionStatementNode->AddArgument(value); constructionStatementNode->SetAssignment(); }
             |   LPAREN ArgumentList(context, constructionStatementNode.Get()):args RPAREN
@@ -383,19 +383,19 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.DeleteStatementNode(span, ptr);
+            return new cm.ast.DeleteStatementNode(span, lexer.FileIndex(), ptr);
         }
         ;
 
     DestroyStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             DESTROY{ span = lexer.GetSpan(pos); }
             Expression(context):ptr
             SEMICOLON
         )
         {
-            return new cm.ast.DestroyStatementNode(span, ptr);
+            return new cm.ast.DestroyStatementNode(span, lexer.FileIndex(), ptr);
         }
         ;
 
@@ -405,7 +405,7 @@ parser StatementParser
             SEMICOLON{ span = lexer.GetSpan(pos); }
         )
         {
-            return new cm.ast.EmptyStatementNode(span);
+            return new cm.ast.EmptyStatementNode(span, lexer.FileIndex());
         }
         ;
 
@@ -417,15 +417,15 @@ parser StatementParser
             SEMICOLON
         )
         {
-            return new cm.ast.ThrowStatementNode(span, exception);
+            return new cm.ast.ThrowStatementNode(span, lexer.FileIndex(), exception);
         }
         ;
 
     TryStatement(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<TryStatementNode> tryStatementNode) : cm.ast.StatementNode*
-        ::= 
+        ::=
         (
             TRY{ span = lexer.GetSpan(pos); }
-            CompoundStatement(context):tryBlock{ tryStatementNode.Reset(new cm.ast.TryStatementNode(span, tryBlock)); }
+            CompoundStatement(context):tryBlock{ tryStatementNode.Reset(new cm.ast.TryStatementNode(span, lexer.FileIndex(), tryBlock)); }
             (
                 Catch(context):handler{ tryStatementNode->AddCatch(handler); }
             )+
@@ -436,7 +436,7 @@ parser StatementParser
         ;
 
     Catch(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.CatchNode*
-        ::= 
+        ::=
         (
             CATCH{ span = lexer.GetSpan(pos); }
             LPAREN
@@ -446,40 +446,40 @@ parser StatementParser
             CompoundStatement(context):catchBlock
         )
         {
-            return new cm.ast.CatchNode(span, catchType, catchId, catchBlock);
+            return new cm.ast.CatchNode(span, lexer.FileIndex(), catchType, catchId, catchBlock);
         }
         ;
 
     AssertStatement(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.StatementNode*
         ::=
         (
-            HASH{ span = lexer.GetSpan(pos); } 
+            HASH{ span = lexer.GetSpan(pos); }
             ASSERT
             Expression(context):expr
             SEMICOLON
         )
         {
-            return new cm.ast.AssertStatementNode(span, expr);
+            return new cm.ast.AssertStatementNode(span, lexer.FileIndex(), expr);
         }
         ;
 
-    ConditionalCompilationStatement(cm.parser.Context* context, var System.Lex.Span span, var System.Lex.Span elifSpan, var System.Lex.Span elseSpan, 
+    ConditionalCompilationStatement(cm.parser.Context* context, var System.Lex.Span span, var System.Lex.Span elifSpan, var System.Lex.Span elseSpan,
         var UniquePtr<ConditionalCompilationStatementNode> condCompStmt) : cm.ast.StatementNode*
         ::=
         (
             HASH{ span = lexer.GetSpan(pos); }
             IF
             LPAREN
-            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.Reset(new cm.ast.ConditionalCompilationStatementNode(span, ifExpr)); }
+            ConditionalCompilationExpression(context):ifExpr{ condCompStmt.Reset(new cm.ast.ConditionalCompilationStatementNode(span, lexer.FileIndex(), ifExpr)); }
             RPAREN
             (
                 Statement(context):ifs{ condCompStmt->AddIfStatement(ifs); }
             )*
             (
-                HASH{ elifSpan = lexer.GetSpan(pos); } 
+                HASH{ elifSpan = lexer.GetSpan(pos); }
                 ELIF
                 LPAREN
-                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifSpan, elifExpr); }
+                ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifSpan, lexer.FileIndex(), elifExpr); }
                 RPAREN
                 (
                     Statement(context):elifs{ condCompStmt->AddElifStatement(elifs); }
@@ -489,11 +489,11 @@ parser StatementParser
                 HASH{ elseSpan = lexer.GetSpan(pos); }
                 ELSE
                 (
-                    Statement(context):elses{ condCompStmt->AddElseStatement(elseSpan, elses); }
+                    Statement(context):elses{ condCompStmt->AddElseStatement(elseSpan, lexer.FileIndex(), elses); }
                 )*
             )?
             (
-                HASH 
+                HASH
                 ENDIF
             )
         )
@@ -517,8 +517,8 @@ parser StatementParser
         (
             ConditionalCompilationConjunction(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
-                DISJUNCTION 
-                ConditionalCompilationConjunction(context):right{ expr.Reset(new cm.ast.ConditionalCompilationDisjunctionNode(span, expr.Release(), right)); }
+                DISJUNCTION
+                ConditionalCompilationConjunction(context):right{ expr.Reset(new cm.ast.ConditionalCompilationDisjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -532,7 +532,7 @@ parser StatementParser
             ConditionalCompilationPrefix(context):left{ span = lexer.GetSpan(pos); expr.Reset(left); }
             (
                 AMP_AMP
-                ConditionalCompilationPrefix(context):right{ expr.Reset(new cm.ast.ConditionalCompilationConjunctionNode(span, expr.Release(), right)); }
+                ConditionalCompilationPrefix(context):right{ expr.Reset(new cm.ast.ConditionalCompilationConjunctionNode(span, lexer.FileIndex(), expr.Release(), right)); }
             )*
         )
         {
@@ -543,8 +543,8 @@ parser StatementParser
     ConditionalCompilationPrefix(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConditionalCompilationExpressionNode> expr) : cm.ast.ConditionalCompilationExpressionNode*
         ::=
         (
-            (   EXCLAMATION{ span = lexer.GetSpan(pos); } 
-                ConditionalCompilationPrefix(context):prefix{ expr.Reset(new cm.ast.ConditionalCompilationNotNode(span, prefix)); }
+            (   EXCLAMATION{ span = lexer.GetSpan(pos); }
+                ConditionalCompilationPrefix(context):prefix{ expr.Reset(new cm.ast.ConditionalCompilationNotNode(span, lexer.FileIndex(), prefix)); }
             |   ConditionalCompilationPrimary(context):primary{ expr.Reset(primary); }
             )
         )
@@ -555,10 +555,10 @@ parser StatementParser
 
     ConditionalCompilationPrimary(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConditionalCompilationExpressionNode*
         ::=
-        (   ID{ return new cm.ast.ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.GetToken(pos).ToString()); }
+        (   ID{ return new cm.ast.ConditionalCompilationPrimaryNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString()); }
         |   LPAREN{ span = lexer.GetSpan(pos); }
             ConditionalCompilationExpression(context):expr
-            RPAREN{ return new cm.ast.ParenthesizedConditionalCompilationExpressionNode(span, expr); }
+            RPAREN{ return new cm.ast.ParenthesizedConditionalCompilationExpressionNode(span, lexer.FileIndex(), expr); }
         )
         ;
 }

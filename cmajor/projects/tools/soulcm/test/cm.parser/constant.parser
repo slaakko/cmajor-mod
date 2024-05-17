@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.ConstantParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.Expression;
+
+    Constant(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ConstantNode*
+        ::=
+        (
+            Specifiers:specifiers{ span = lexer.GetSpan(pos); }
+            CONST
+            TypeExpr(context):type
+            Identifier:id
+            ASSIGN
+            Expression(context):expr
+            SEMICOLON
+        )
+        {
+            return new cm.ast.ConstantNode(span, lexer.FileIndex(), specifiers, type, id, expr);
+        }
+        ;
+}

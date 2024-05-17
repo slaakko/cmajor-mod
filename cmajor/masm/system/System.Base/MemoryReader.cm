@@ -16,7 +16,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             auto result = ReadByte();
             if (result.Error())
@@ -29,12 +29,12 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<byte>(ErrorId(GetLatestErrorId()));
+                return Result<byte>(ErrorId(GetErrorId()));
             }
             if (pos - ptr >= count)
             {
                 int errorId = AllocateError("memory reader: unexpected end of data");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<byte>(ErrorId(errorId));
             }
             return Result<byte>(*pos++);
@@ -43,7 +43,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<sbyte>(ErrorId(GetLatestErrorId()));
+                return Result<sbyte>(ErrorId(GetErrorId()));
             }
             auto result = ReadByte();
             if (result.Error())
@@ -56,7 +56,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<ushort>(ErrorId(GetLatestErrorId()));
+                return Result<ushort>(ErrorId(GetErrorId()));
             }
             auto b0 = ReadByte();
             if (b0.Error())
@@ -74,7 +74,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<short>(ErrorId(GetLatestErrorId()));
+                return Result<short>(ErrorId(GetErrorId()));
             }
             auto result = ReadUShort();
             if (result.Error())
@@ -87,7 +87,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<uint>(ErrorId(GetLatestErrorId()));
+                return Result<uint>(ErrorId(GetErrorId()));
             }
             auto b0 = ReadByte();
             if (b0.Error())
@@ -115,7 +115,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<int>(ErrorId(GetLatestErrorId()));
+                return Result<int>(ErrorId(GetErrorId()));
             }
             auto result = ReadUInt();
             if (result.Error())
@@ -128,7 +128,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<ulong>(ErrorId(GetLatestErrorId()));
+                return Result<ulong>(ErrorId(GetErrorId()));
             }
             auto b0 = ReadByte();
             if (b0.Error())
@@ -177,7 +177,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<long>(ErrorId(GetLatestErrorId()));
+                return Result<long>(ErrorId(GetErrorId()));
             }
             auto result = ReadULong();
             if (result.Error())
@@ -190,7 +190,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<float>(ErrorId(GetLatestErrorId()));
+                return Result<float>(ErrorId(GetErrorId()));
             }
             auto result = ReadUInt();
             if (result.Error())
@@ -204,7 +204,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<double>(ErrorId(GetLatestErrorId()));
+                return Result<double>(ErrorId(GetErrorId()));
             }
             auto result = ReadULong();
             if (result.Error())
@@ -218,7 +218,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<char>(ErrorId(GetLatestErrorId()));
+                return Result<char>(ErrorId(GetErrorId()));
             }
             auto result = ReadByte();
             if (result.Error())
@@ -231,7 +231,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<wchar>(ErrorId(GetLatestErrorId()));
+                return Result<wchar>(ErrorId(GetErrorId()));
             }
             auto result = ReadUShort();
             if (result.Error())
@@ -244,7 +244,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<uchar>(ErrorId(GetLatestErrorId()));
+                return Result<uchar>(ErrorId(GetErrorId()));
             }
             auto result = ReadUInt();
             if (result.Error())
@@ -257,7 +257,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<Date>(ErrorId(GetLatestErrorId()));
+                return Result<Date>(ErrorId(GetErrorId()));
             }
             auto year = ReadShort();
             if (year.Error())
@@ -282,7 +282,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<DateTime>(ErrorId(GetLatestErrorId()));
+                return Result<DateTime>(ErrorId(GetErrorId()));
             }
             auto date = ReadDate();
             if (date.Error())
@@ -301,7 +301,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<string>(ErrorId(GetLatestErrorId()));
+                return Result<string>(ErrorId(GetErrorId()));
             }
             string result;
             auto b = ReadByte();
@@ -324,7 +324,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<Uuid>(ErrorId(GetLatestErrorId()));
+                return Result<Uuid>(ErrorId(GetErrorId()));
             }
             Uuid x;
             for (byte& b : x)

@@ -43,7 +43,9 @@ Function* CompileUnit::GetOrInsertFunction(const std::string& name, FunctionType
 void CompileUnit::Write()
 {
     std::ofstream file(filePath);
+    std::ofstream linesFile(filePath + ".lns");
     util::CodeFormatter formatter(file);
+    util::CodeFormatter linesFormatter(linesFile);
     formatter.SetIndentSize(8);
     context.GetTypeRepository().Write(formatter);
     context.GetDataRepository().Write(context, formatter);
@@ -58,7 +60,7 @@ void CompileUnit::Write()
         {
             formatter.WriteLine();
         }
-        f->Write(formatter, context);
+        f->Write(formatter, context, linesFormatter);
     }
     context.GetMetadata().Write(formatter);
 }

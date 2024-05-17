@@ -382,4 +382,6 @@ private:
     int catchTypeUuidId;
 };
 
+bool InDirectSwitchStatement(BoundStatement* statement);
+
 } // namespace cmajor::binder

@@ -963,7 +963,7 @@ const ContainerScope* Symbol::ClassOrNsScope() const
     }
     else
     {
-        throw Exception("class or namespace scope not found", GetFullSpan());
+        throw Exception("class or namespace scope '" + util::ToUtf8(Name()) + "' not found", GetFullSpan());
     }
 }
 
@@ -976,7 +976,7 @@ ContainerScope* Symbol::ClassOrNsScope()
     }
     else
     {
-        throw Exception("class or namespace scope not found", GetFullSpan());
+        throw Exception("class or namespace scope '" + util::ToUtf8(Name()) + "' not found", GetFullSpan());
     }
 }
 

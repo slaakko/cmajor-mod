@@ -297,16 +297,20 @@ void ExpressionBinder::BindBinaryOp(BoundExpression* left, BoundExpression* righ
 void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::IdentifierNode* idNode)
 {
     soul::ast::Span span;
+    int fileIndex = symbol->FileIndex();
+    util::uuid moduleId = symbol->ModuleId();
     if (idNode)
     {
         span = idNode->GetSpan();
+        fileIndex = idNode->FileIndex();
+        moduleId = idNode->ModuleId();
     }
     switch (symbol->GetSymbolType())
     {
     case cmajor::symbols::SymbolType::functionGroupSymbol:
     {
         cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol = static_cast<cmajor::symbols::FunctionGroupSymbol*>(symbol);
-        BoundFunctionGroupExpression* boundFunctionGroupExpression = new BoundFunctionGroupExpression(symbol->GetSpan(), functionGroupSymbol);
+        BoundFunctionGroupExpression* boundFunctionGroupExpression = new BoundFunctionGroupExpression(span, fileIndex, moduleId, functionGroupSymbol);
         cmajor::symbols::ParameterSymbol* thisParam = boundFunction->GetFunctionSymbol()->GetThisParam();
         if (thisParam)
         {

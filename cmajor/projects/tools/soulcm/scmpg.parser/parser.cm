@@ -1,0 +1,65 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+using scmpg.ast;
+
+namespace scmpg.parser
+{
+    public Result<UniquePtr<scmpg.ast.ScmpgFile>> ParseScmpgFile(const string& scmpgFilePath)
+    {
+        auto scmpgFileContentResult = System.IO.File.ReadAllText(scmpgFilePath);
+        if (scmpgFileContentResult.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ScmpgFile>>(ErrorId(scmpgFileContentResult.GetErrorId()));
+        }
+        const string& scmpgFileContent = scmpgFileContentResult.Value();
+        auto utf32Result = ToUtf32(scmpgFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ScmpgFile>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        CmajorLexer lexer(start, end, scmpgFilePath);
+        auto parseResult = ScmpgFileParser<CmajorLexer>.Parse(lexer);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ScmpgFile>>(ErrorId(parseResult.GetErrorId()));
+        }
+        return Result<UniquePtr<scmpg.ast.ScmpgFile>>(Rvalue(parseResult.Value()));
+    }
+
+    public Result<UniquePtr<scmpg.ast.ParserFile>> ParseParserFile(const string& parserFilePath, System.Lex.FileMap& fileMap)
+    {
+        auto parserFileContentResult = System.IO.File.ReadAllText(parserFilePath);
+        if (parserFileContentResult.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ParserFile>>(ErrorId(parserFileContentResult.GetErrorId()));
+        }
+        const string& parserFileContent = parserFileContentResult.Value();
+        auto utf32Result = ToUtf32(parserFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ParserFile>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        CmajorLexer lexer(start, end, parserFilePath);
+        int fileIndex = fileMap.MapFileName(parserFilePath);
+        lexer.SetFileIndex(fileIndex);
+        cm.parser.Context context;
+        auto parseResult = ParserFileParser<CmajorLexer>.Parse(lexer, &context);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<scmpg.ast.ParserFile>>(ErrorId(parseResult.GetErrorId()));
+        }
+        fileMap.AddSourceFile(fileIndex, Rvalue(utf32Result.Value()), lexer.GetLineStartIndeces());
+        return Result<UniquePtr<scmpg.ast.ParserFile>>(Rvalue(parseResult.Value()));
+    }
+}

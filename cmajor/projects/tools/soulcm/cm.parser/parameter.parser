@@ -17,8 +17,8 @@ parser ParameterParser
     using TypeExprParser.TypeExpr;
     using ExpressionParser.Expression;
 
-    ParameterList(cm.parser.Context* context, cm.ast.Node* owner) 
-        ::= 
+    ParameterList(cm.parser.Context* context, cm.ast.Node* owner)
+        ::=
         (
             LPAREN
             (
@@ -29,7 +29,7 @@ parser ParameterParser
         ;
 
     Parameter(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.ParameterNode*
-        ::= 
+        ::=
         (
             TypeExpr(context):type{ span = lexer.GetSpan(pos); }
             (
@@ -37,7 +37,7 @@ parser ParameterParser
             )?
         )
         {
-            return new cm.ast.ParameterNode(span, type, id);
+            return new cm.ast.ParameterNode(span, lexer.FileIndex(), type, id);
         }
         ;
 }

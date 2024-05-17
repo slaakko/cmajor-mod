@@ -1,0 +1,40 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public class CDataSection : Text
+    {
+        public CDataSection(const System.Lex.Span& span_, int fileIndex_) : base(NodeKind.cdataSectionNode, span_, fileIndex_, "cdata_section")
+        {
+        }
+        public CDataSection(const System.Lex.Span& span_, int fileIndex_, const string& text_) : base(NodeKind.cdataSectionNode, span_, fileIndex_, "cdata_section", text_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            formatter.Write("<![CDATA[");
+            formatter.Write(Data());
+            formatter.Write("]]>");
+            return Result<bool>(true);
+        }
+    }
+
+    public CDataSection* MakeCDataSection(const string& text)
+    {
+        return new CDataSection(System.Lex.Span(), -1, text);
+    }
+}
+

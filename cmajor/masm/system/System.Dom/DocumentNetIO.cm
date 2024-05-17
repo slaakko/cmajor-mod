@@ -1,0 +1,42 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+using System.Net.Sockets;
+
+namespace System.Xml
+{
+    public Result<bool> SendDocument(TcpSocket& socket, Document* document)
+    {
+        StringWriter writer;
+        System.Text.CodeFormatter formatter(writer);
+        formatter.SetIndentSize(1);
+        auto writeResult = document->Write(formatter);
+        if (writeResult.Error())
+        {
+            return Result<bool>(ErrorId(writeResult.GetErrorId()));
+        }
+        string s = writer.GetString();
+        auto sendResult = SendString(socket, s);
+        if (sendResult.Error())
+        {
+            return Result<bool>(ErrorId(sendResult.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<UniquePtr<Document>> ReceiveDocument(TcpSocket& socket, System.Lex.FileMap& fileMap, int& documentCount)
+    {
+        auto receiveResult = ReceiveString(socket);
+        if (receiveResult.Error())
+        {
+            return Result<UniquePtr<Document>>(ErrorId(receiveResult.GetErrorId()));
+        }
+        string s = Rvalue(receiveResult.Value());
+        string systemId = "socket." + ToString(documentCount++);
+        return ParseXmlDocumentContent(s, systemId, fileMap);
+    }
+}

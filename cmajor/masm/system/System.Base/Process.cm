@@ -27,7 +27,7 @@ namespace System.Threading
             nativeProcess = RtmCreateProcess(command.Chars(), cast<int>(redirections), errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
             }
         }
         public ~Process()
@@ -41,7 +41,7 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             if (RtmProcessRunning(nativeProcess, errorId))
@@ -50,7 +50,7 @@ namespace System.Threading
             }
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(false);
@@ -59,13 +59,13 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             bool result = RtmProcessWaitForExit(nativeProcess, errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
@@ -74,13 +74,13 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<int>(ErrorId(GetLatestErrorId()));
+                return Result<int>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             int exitCode = RtmProcessExitCode(nativeProcess, errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<int>(ErrorId(errorId));
             }
             return Result<int>(exitCode);
@@ -89,14 +89,14 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             if (!RtmProcessTerminate(nativeProcess, errorId))
             {
                 if (errorId > 0)
                 {
-                    SetLatestErrorId(errorId);
+                    SetErrorId(errorId);
                     return Result<bool>(ErrorId(errorId));
                 }
             }
@@ -106,13 +106,13 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             bool eof = RtmProcessEof(nativeProcess, cast<int>(handle), errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(eof);
@@ -121,13 +121,13 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<string>(ErrorId(GetLatestErrorId()));
+                return Result<string>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             int stringHandle = RtmProcessReadLine(nativeProcess, cast<int>(handle), errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<string>(ErrorId(errorId));
             }
             string line = RtmGetString(stringHandle);
@@ -138,13 +138,13 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<string>(ErrorId(GetLatestErrorId()));
+                return Result<string>(ErrorId(GetErrorId()));
             }
             int errorId = 0;
             int stringHandle = RtmProcessReadToEnd(nativeProcess, cast<int>(handle), errorId);
             if (errorId > 0)
             {
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<string>(ErrorId(errorId));
             }
             string content = RtmGetString(stringHandle);
@@ -155,14 +155,14 @@ namespace System.Threading
         {
             if (Error())
             {
-                return Result<bool>(ErrorId(GetLatestErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             if ((redirections & Redirections.processStdIn) != Redirections.none)
             {
                 int errorId = 0;
                 if (!RtmProcessWriteLine(nativeProcess, line.Chars(), errorId))
                 {
-                    SetLatestErrorId(errorId);
+                    SetErrorId(errorId);
                     return Result<bool>(ErrorId(errorId));
                 }
             }
@@ -170,7 +170,7 @@ namespace System.Threading
             {
                 string errorMessage = "process stdin not redirected";
                 int errorId = AllocateError(errorMessage);
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(ErrorId(errorId));
             }
         }

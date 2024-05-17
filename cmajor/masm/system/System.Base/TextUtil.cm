@@ -5,6 +5,26 @@
 
 namespace System
 {
+    public string TrimEnd(const string& s)
+    {
+        long i = s.Length();
+        while (i > 0 && IsSpace(s[i - 1]))
+        {
+            --i;
+        }
+        return s.Substring(0, i);
+    }
+
+    public ustring TrimEnd(const ustring& s)
+    {
+        long i = s.Length();
+        while (i > 0 && IsSpace(cast<char>(s[i - 1])))
+        {
+            --i;
+        }
+        return s.Substring(0, i);
+    }
+    
     public string Trim(const string& s)
     {
         long b = 0;

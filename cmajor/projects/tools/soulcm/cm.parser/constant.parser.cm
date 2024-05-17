@@ -181,7 +181,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstantNode(span, specifiers->value, type.Release(), id.Release(), expr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstantNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }

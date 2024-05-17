@@ -159,7 +159,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AliasNode(span, specifiers->value, id.Release(), typeExpr.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AliasNode(span, lexer.FileIndex(), specifiers->value, id.Release(), typeExpr.Release())));
                 }
                 *parentMatch0 = match;
             }
@@ -294,7 +294,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypedefNode(span, specifiers->value, typeExpr.Release(), id.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypedefNode(span, lexer.FileIndex(), specifiers->value, typeExpr.Release(), id.Release())));
                 }
                 *parentMatch0 = match;
             }

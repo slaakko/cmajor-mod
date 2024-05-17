@@ -1,0 +1,222 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmpg
+{
+    public enum LinkingStage
+    {
+        addParsers, resolveRules
+    }
+
+    public class Linker : scmpg.ast.DefaultVisitor
+    {
+        public Linker(scmpg.ast.ScmpgFile* scmpgFile_, System.Lex.FileMap& fileMap_) :
+            scmpgFile(scmpgFile_), fileMap(fileMap_), currentGrammar(null), currentRule(null), stage(LinkingStage.addParsers), errorId(0)
+        {
+        }
+        public void SetStage(LinkingStage stage_)
+        {
+            stage = stage_;
+        }
+        public override void Visit(NonterminalParser& parser)
+        {
+            if (Error()) return;
+            if (stage != LinkingStage.resolveRules) return;
+            if (currentRule == null)
+            {
+                string errorMessage = "current rule not set";
+                errorId = AllocateError(errorMessage);
+                return;
+            }
+            currentRule->AddNonterminal(&parser);
+            if (currentGrammar == null)
+            {
+                string errorMessage = "current grammar not set";
+                errorId = AllocateError(errorMessage);
+                return;
+            }
+            scmpg.ast.RuleParser* rule = currentGrammar->GetRule(parser.RuleName());
+            if (rule == null)
+            {
+                auto errorMessageResult = System.Lex.MakeMessage("error: rule '" + parser.RuleName() + "' not found from parser '" + currentGrammar->Name() + "'",
+                    parser.Span(), parser.FileIndex(), fileMap);
+                if (errorMessageResult.Error())
+                {
+                    errorId = errorMessageResult.GetErrorId();
+                    return;
+                }
+                string errorMessage = errorMessageResult.Value();
+                errorId = AllocateError(errorMessage);
+                return;
+            }
+            parser.SetRule(rule);
+            long argCount = 0;
+            if (parser.Args() != null)
+            {
+                argCount = parser.Args()->Count();
+            }
+            if (rule->Parameters().Count() != argCount)
+            {
+                auto errorMessageResult = System.Lex.MakeMessage("error: rule '" + rule->Name() + "' takes " + ToString(rule->Parameters().Count()) + " parameters (" +
+                    ToString(argCount) + " arguments supplied). Detected in parser '" + currentGrammar->Name() + "." + currentRule->Name() + "'.",
+                    parser.Span(), parser.FileIndex(), fileMap);
+                if (errorMessageResult.Error())
+                {
+                    errorId = errorMessageResult.GetErrorId();
+                    return;
+                }
+                string errorMessage = errorMessageResult.Value();
+                auto referenceMessage = System.Lex.MakeMessage("see reference", rule->Span(), rule->FileIndex(), fileMap);
+                if (referenceMessage.Error())
+                {
+                    errorId = referenceMessage.GetErrorId();
+                    return;
+                }
+                errorMessage.Append("\n").Append(referenceMessage.Value());
+                errorId = AllocateError(errorMessage);
+                return;
+            }
+        }
+        public override void Visit(RuleParser& rule)
+        {
+            if (Error()) return;
+            currentRule = &rule;
+            if (stage == LinkingStage.resolveRules)
+            {
+                long ruleId = (rule.Grammar()->Id() << 32) | cast<long>(rule.Index() + 1);
+                rule.SetId(ruleId);
+                scmpgFile->AddRule(&rule);
+            }
+            base->Visit(rule);
+        }
+        public override void Visit(GrammarParser& grammar)
+        {
+            if (Error()) return;
+            currentGrammar = &grammar;
+            if (grammar.Lexers().IsEmpty())
+            {
+                auto errorMessageResult = System.Lex.MakeMessage("error: parser '" + grammar.Name() + "' has no lexer statements.",
+                    grammar.Span(), grammar.FileIndex(), fileMap);
+                if (errorMessageResult.Error())
+                {
+                    errorId = errorMessageResult.GetErrorId();
+                    return;
+                }
+                string errorMessage = errorMessageResult.Value();
+                errorId = AllocateError(errorMessage);
+                return;
+            }
+            if (grammar.Id() == -1)
+            {
+                long grammarId = cast<long>(GetHashCode(grammar.Name()) & 0x7FFFFFFFu);
+                grammar.SetId(grammarId);
+            }
+            if (stage == LinkingStage.addParsers)
+            {
+                if (!scmpgFile->AddGrammar(&grammar))
+                {
+                    auto errorMessageResult = System.Lex.MakeMessage("error: parser name '" + grammar.Name() + "' not unique. Detected in scmpg file '" +
+                        scmpgFile->FilePath() + "'.", grammar.Span(), grammar.FileIndex(), fileMap);
+                    if (errorMessageResult.Error())
+                    {
+                        errorId = errorMessageResult.GetErrorId();
+                        return;
+                    }
+                    string errorMessage = errorMessageResult.Value();
+                    errorId = AllocateError(errorMessage);
+                    return;
+                }
+            }
+            else if (stage == LinkingStage.resolveRules)
+            {
+                for (const auto& u : grammar.Usings())
+                {
+                    string grammarName = u.GrammarName();
+                    string ruleName = u.RuleName();
+                    scmpg.ast.GrammarParser* targetGrammar = scmpgFile->GetGrammar(grammarName);
+                    if (targetGrammar == null)
+                    {
+                        auto errorMessageResult = System.Lex.MakeMessage("error: parser '" + grammarName + "' not found. See usings in parser '" + grammar.Name() + "'.",
+                            u.Span(), u.FileIndex(), fileMap);
+                        if (errorMessageResult.Error())
+                        {
+                            errorId = errorMessageResult.GetErrorId();
+                            return;
+                        }
+                        string errorMessage = errorMessageResult.Value();
+                        errorId = AllocateError(errorMessage);
+                        return;
+                    }
+                    scmpg.ast.RuleParser* targetRule = targetGrammar->GetRule(ruleName);
+                    if (targetRule == null)
+                    {
+                        auto errorMessageResult = System.Lex.MakeMessage("error: rule '" + ruleName + "' not found from parser '" + targetGrammar->Name() + "'" +
+                            "See usings in parser '" + grammar.Name() + "'.", u.Span(), u.FileIndex(), fileMap);
+                        if (errorMessageResult.Error())
+                        {
+                            errorId = errorMessageResult.GetErrorId();
+                            return;
+                        }
+                        string errorMessage = errorMessageResult.Value();
+                        errorId = AllocateError(errorMessage);
+                        return;
+                    }
+                    if (!grammar.MapRule(targetRule))
+                    {
+                        auto errorMessageResult = System.Lex.MakeMessage("error: rule '" + ruleName + "' already imported to parser '" + grammar.Name() + "'" +
+                            "See usings in parser '" + grammar.Name() + "'.", u.Span(), u.FileIndex(), fileMap);
+                        if (errorMessageResult.Error())
+                        {
+                            errorId = errorMessageResult.GetErrorId();
+                            return;
+                        }
+                        string errorMessage = errorMessageResult.Value();
+                        errorId = AllocateError(errorMessage);
+                        return;
+                    }
+                }
+            }
+            base->Visit(grammar);
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private scmpg.ast.ScmpgFile* scmpgFile;
+        private System.Lex.FileMap& fileMap;
+        private scmpg.ast.GrammarParser* currentGrammar;
+        private scmpg.ast.RuleParser* currentRule;
+        private LinkingStage stage;
+        private int errorId;
+    }
+
+    public Result<bool> Link(scmpg.ast.ScmpgFile* scmpgFile, bool verbose, System.Lex.FileMap& fileMap)
+    {
+        if (verbose)
+        {
+            Console.Out() << "linking..." << endl();
+        }
+        Linker linker(scmpgFile, fileMap);
+        linker.SetStage(LinkingStage.addParsers);
+        scmpgFile->Accept(linker);
+        if (linker.Error())
+        {
+            return Result<bool>(ErrorId(linker.GetErrorId()));
+        }
+        linker.SetStage(LinkingStage.resolveRules);
+        scmpgFile->Accept(linker);
+        if (linker.Error())
+        {
+            return Result<bool>(ErrorId(linker.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}

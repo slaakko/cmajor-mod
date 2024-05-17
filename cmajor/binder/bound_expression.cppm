@@ -582,7 +582,7 @@ private:
 class BoundFunctionGroupExpression : public BoundExpression
 {
 public:
-    BoundFunctionGroupExpression(const soul::ast::Span& span_, cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_);
+    BoundFunctionGroupExpression(const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_, cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol_);
     BoundExpression* Clone() override;
     bool IsComplete() const override { return false; }
     void Load(cmajor::ir::Emitter& emitter, cmajor::ir::OperationFlags flags) override;

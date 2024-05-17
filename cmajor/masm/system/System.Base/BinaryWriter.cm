@@ -30,7 +30,7 @@ namespace System.IO
         }
         suppress BinaryWriter(const BinaryWriter&);
         suppress void operator=(const BinaryWriter&);
-        public Stream* GetStream() 
+        public Stream* GetStream()
         {
             return stream;
         }
@@ -46,7 +46,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -54,7 +54,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -62,7 +62,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<ushort>(x));
         }
@@ -70,7 +70,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<uint>(x));
         }
@@ -78,7 +78,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<byte>(x));
         }
@@ -86,18 +86,18 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             if (stream == null)
             {
                 int errorId = RtmAllocateError("BinaryWriter.Write(byte): stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             auto result = stream->Write(x);
             if (result.Error())
             {
-                SetLatestErrorId(result.GetErrorId());
+                SetErrorId(result.GetErrorId());
             }
             return result;
         }
@@ -105,7 +105,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<ushort>(x));
         }
@@ -113,7 +113,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             byte x0 = cast<byte>(x >> 8u);
             byte x1 = cast<byte>(x);
@@ -133,7 +133,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<uint>(x));
         }
@@ -141,7 +141,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             byte x0 = cast<byte>(x >> 24u);
             byte x1 = cast<byte>(x >> 16u);
@@ -173,7 +173,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             return Write(cast<ulong>(x));
         }
@@ -181,7 +181,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             byte x0 = cast<byte>(x >> 56u);
             byte x1 = cast<byte>(x >> 48u);
@@ -237,7 +237,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             void* v = &x;
             uint* u = cast<uint*>(v);
@@ -247,7 +247,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             void* v = &x;
             ulong* u = cast<ulong*>(v);
@@ -257,7 +257,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             for (char c : x)
             {
@@ -278,7 +278,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             auto result = ToUtf8(x);
             if (result.Error())
@@ -291,7 +291,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             auto result = ToUtf8(x);
             if (result.Error())
@@ -304,7 +304,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             for (byte b : uuid)
             {
@@ -320,7 +320,7 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             for (int i = 0; i < size; ++i)
             {
@@ -336,18 +336,18 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetLatestErrorId()));
+                return Result<bool>(false, ErrorId(GetErrorId()));
             }
             if (stream == null)
             {
                 int errorId = RtmAllocateError("BinaryWriter.Seek: stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<bool>(false, ErrorId(errorId));
             }
             auto result = stream->Seek(pos, origin);
             if (result.Error())
             {
-                SetLatestErrorId(result.GetErrorId());
+                SetErrorId(result.GetErrorId());
             }
             return result;
         }
@@ -355,18 +355,18 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<long>(-1, ErrorId(GetLatestErrorId()));
+                return Result<long>(-1, ErrorId(GetErrorId()));
             }
             if (stream == null)
             {
                 int errorId = RtmAllocateError("BinaryWriter.Tell: stream is null");
-                SetLatestErrorId(errorId);
+                SetErrorId(errorId);
                 return Result<long>(-1, ErrorId(errorId));
             }
             auto result = stream->Tell();
             if (result.Error())
             {
-                SetLatestErrorId(result.GetErrorId());
+                SetErrorId(result.GetErrorId());
             }
             return result;
         }

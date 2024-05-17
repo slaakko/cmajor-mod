@@ -1,0 +1,98 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.SolutionFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using cm.parser.ContainerFileParser.QualifiedId;
+    using cm.parser.ContainerFileParser.FilePath;
+    using cm.parser.ContainerFileParser.ProjectKeyword;
+    using cm.parser.ContainerFileParser.SolutionKeyword;
+
+    SolutionFile(var UniquePtr<cm.ast.Solution> solutionFile) : cm.ast.Solution*
+        ::= 
+        (
+            empty{ lexer.vars.matchFilePath = true; }
+            SolutionKeyword:solutionKeyword
+            QualifiedId:solutionName
+            SEMICOLON
+            {
+                solutionFile.Reset(new cm.ast.Solution(solutionName, lexer.FileName()));
+            }
+            (
+                Declaration:declaration{ solutionFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return solutionFile.Release();
+        }
+        ;
+
+    BackEnd(var ustring id) : ustring
+        ::= 
+        (
+            ID{ id = lexer.GetToken(pos).ToString(); }
+        )
+        {
+            return id;
+        }
+        ;
+
+    Declaration : cm.ast.SolutionDeclaration*
+        ::= SolutionProjectDeclaration:solutionProjectDeclaration{ return solutionProjectDeclaration; }
+        |   ActiveProjectDeclaration:activeProjectDeclaration{ return activeProjectDeclaration; }
+        |   ActiveBackEndDeclaration:activeBackEndDeclaration{ return activeBackEndDeclaration; } 
+        ;
+
+    SolutionProjectDeclaration : cm.ast.SolutionDeclaration*
+        ::= 
+        (
+            ProjectKeyword:projectKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SolutionProjectDeclaration(filePath);
+        }
+        ;
+
+    ActiveProjectDeclaration : cm.ast.SolutionDeclaration*
+        ::=
+        (
+            ActiveProjectKeyword:activeProjectKeyword
+            QualifiedId:activeProjectName 
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SolutionActiveProjectDeclaration(activeProjectName);
+        }
+        ;
+
+    ActiveBackEndDeclaration : cm.ast.SolutionDeclaration*
+        ::=
+        (
+            ActiveBackEndKeyword:activeBackEndKeyword
+            ASSIGN
+            BackEnd:backend
+            SEMICOLON
+        )
+        {
+            return new cm.ast.SolutionActiveBackEndDeclaration(backend);
+        }
+        ;
+
+    ActiveProjectKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeProject"; }
+        ;
+
+    ActiveBackEndKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"activeBackEnd"; }
+        ;
+}

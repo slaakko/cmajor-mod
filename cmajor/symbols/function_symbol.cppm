@@ -436,7 +436,7 @@ public:
 class FunctionGroupTypeSymbol : public TypeSymbol
 {
 public:
-    FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_);
+    FunctionGroupTypeSymbol(FunctionGroupSymbol* functionGroup_, void* boundFunctionGroup_, const soul::ast::Span& span_, int fileIndex_, const util::uuid& moduleId_);
     bool IsExportSymbol() const override { return false; }
     void* IrType(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get ir type of function group type"); return nullptr; }
     void* CreateDefaultIrValue(cmajor::ir::Emitter& emitter) override { Assert(false, "tried to get default ir value of function group type"); return nullptr; }
@@ -444,9 +444,13 @@ public:
     FunctionGroupSymbol* FunctionGroup() { return functionGroup; }
     void* BoundFunctionGroup() const { return boundFunctionGroup; }
     const char* ClassName() const override { return "FunctionGroupTypeSymbol"; }
+    int FileIndex() const override { return fileIndex; }
+    const util::uuid& ModuleId() const override { return moduleId; }
 private:
     FunctionGroupSymbol* functionGroup;
     void* boundFunctionGroup;
+    int fileIndex;
+    util::uuid moduleId;
 };
 
 class MemberExpressionTypeSymbol : public TypeSymbol

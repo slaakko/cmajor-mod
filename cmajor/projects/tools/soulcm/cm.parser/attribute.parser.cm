@@ -45,7 +45,7 @@ namespace cm.parser
                                 }
                                 if (match.hit)
                                 {
-                                    attributesNode.Reset(new cm.ast.AttributesNode(lexer.GetSpan(pos)));
+                                    attributesNode.Reset(new cm.ast.AttributesNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                 }
                                 *parentMatch4 = match;
                             }
@@ -334,7 +334,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    attributes->AddAttribute(span, name, value);
+                    attributes->AddAttribute(span, lexer.FileIndex(), name, value);
                     return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<bool>(true)));
                 }
                 *parentMatch0 = match;

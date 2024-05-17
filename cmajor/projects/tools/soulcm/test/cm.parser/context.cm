@@ -1,0 +1,126 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.parser
+{
+    public class Context
+    {
+        public Context()
+        {
+        }
+        public inline bool ParsingTemplateId() const
+        {
+            return parsingTemplateId;
+        }
+        public void BeginParsingTemplateId()
+        {
+            parsingTemplateIdStack.Push(parsingTemplateId);
+            parsingTemplateId = true;
+        }
+        public void EndParsingTemplateId()
+        {
+            parsingTemplateId = parsingTemplateIdStack.Pop();
+        }
+        public inline bool ParsingConcept() const
+        {
+            return parsingConcept;
+        }
+        public void BeginParsingConcept()
+        {
+            parsingConceptStack.Push(parsingConcept);
+            parsingConcept = true;
+        }
+        public void EndParsingConcept()
+        {
+            parsingConcept = parsingConceptStack.Pop();
+        }
+        public inline bool ParsingExpressionStatement() const
+        {
+            return parsingExpressionStatement;
+        }
+        public void PushParsingExpressionStatement(bool enable)
+        {
+            parsingExpressionStatementStack.Push(parsingExpressionStatement);
+            parsingExpressionStatement = enable;
+        }
+        public void PopParsingExpressionStatement()
+        {
+            parsingExpressionStatement = parsingExpressionStatementStack.Pop();
+        }
+        public inline bool ParsingLValue() const
+        {
+            return parsingLValue;
+        }
+        public void PushParsingLValue(bool enable)
+        {
+            parsingLValueStack.Push(parsingLValue);
+            parsingLValue = enable;
+        }
+        public void PopParsingLValue()
+        {
+            parsingLValue = parsingLValueStack.Pop();
+        }
+        public inline bool ParsingArguments() const
+        {
+            return parsingArguments;
+        }
+        public void BeginParsingArguments()
+        {
+            parsingArgumentsStack.Push(parsingArguments);
+            parsingArguments = true;
+        }
+        public void EndParsingArguments()
+        {
+            parsingArguments = parsingArgumentsStack.Pop();
+        }
+        public inline bool ParsingIsOrAs() const
+        {
+            return parsingIsOrAs;
+        }
+        public void PushParsingIsOrAs(bool enable)
+        {
+            parsingIsOrAsStack.Push(parsingIsOrAs);
+            parsingIsOrAs = enable;
+        }
+        public void PopParsingIsOrAs()
+        {
+            parsingIsOrAs = parsingIsOrAsStack.Pop();
+        }
+        public inline bool ParsingTypeExpr() const
+        {
+            return parsingTypeExpr;
+        }
+        public void BeginParsingTypeExpr()
+        {
+            parsingTypeExprStack.Push(parsingTypeExpr);
+            parsingTypeExpr = true;
+        }
+        public void EndParsingTypeExpr()
+        {
+            parsingTypeExpr = parsingTypeExprStack.Pop();
+        }
+        public inline bool ParsingLValueOrExprStatementAndNotArgs() const
+        {
+            return ParsingLValue() || ParsingExpressionStatement() && !ParsingArguments(); 
+        }
+        private bool parsingTemplateId;
+        private Stack<bool> parsingTemplateIdStack;
+        private bool parsingConcept;
+        private Stack<bool> parsingConceptStack;
+        private bool parsingExpressionStatement;
+        private Stack<bool> parsingExpressionStatementStack;
+        private bool parsingLValue;
+        private Stack<bool> parsingLValueStack;
+        private bool parsingArguments;
+        private Stack<bool> parsingArgumentsStack;
+        private bool parsingIsOrAs;
+        private Stack<bool> parsingIsOrAsStack;
+        private bool parsingTypeExpr;
+        private Stack<bool> parsingTypeExprStack;
+    }
+}

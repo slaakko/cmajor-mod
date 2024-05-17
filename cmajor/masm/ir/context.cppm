@@ -118,6 +118,7 @@ public:
     TypeRepository& GetTypeRepository() { return typeRepository; }
     DataRepository& GetDataRepository() { return dataRepository; }
     Metadata& GetMetadata() { return metadata; }
+    void SetCurrentLineNumber(int lineNumber) { currentSourceLineNumber = lineNumber; }
 private:
     TypeRepository typeRepository;
     DataRepository dataRepository;
@@ -125,6 +126,7 @@ private:
     std::vector<std::unique_ptr<Value>> values;
     Function* currentFunction;
     BasicBlock* currentBasicBlock;
+    int currentSourceLineNumber;
 };
 
 } // namespace cmajor::masm::ir

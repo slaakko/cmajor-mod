@@ -1,0 +1,253 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Xml
+{
+    public class DocumentHandler : XmlContentHandler
+    {
+        public DocumentHandler() : textFileIndex(-1)
+        {
+        }
+        public Document* GetDocument()
+        {
+            return document.Release();
+        }
+        public override Result<bool> StartDocument(const System.Lex.Span& span, int fileIndex)
+        {
+            document.Reset(new Document(span, fileIndex));
+            currentParentNode = document.Get();
+            return Result<bool>(true);
+        }
+        public override Result<bool> EndDocument()
+        {
+            return Result<bool>(true);
+        }
+        public override Result<bool> Version(const ustring& xmlVersion)
+        {
+            auto result = ToUtf8(xmlVersion);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            document->SetXmlVersion(result.Value());
+            return Result<bool>(true);
+        }
+        public override Result<bool> Standalone(bool standalone)
+        {
+            document->SetXmlStandalone(standalone);
+            return Result<bool>(true);
+        }
+        public override Result<bool> Encoding(const ustring& encoding)
+        {
+            auto result = ToUtf8(encoding);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            document->SetXmlEncoding(result.Value());
+            return Result<bool>(true);
+        }
+        public override Result<bool> HandleText(const System.Lex.Span& span, int fileIndex, const ustring& text)
+        {
+            if (!textSpan.IsValid())
+            {
+                textSpan = span;
+            }
+            else
+            {
+                textSpan.Union(span);
+            }
+            textFileIndex = fileIndex;
+            auto result = ToUtf8(text);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            textContent.Append(result.Value());
+            return Result<bool>(true);
+        }
+        public override Result<bool> HandleComment(const System.Lex.Span& span, int fileIndex, const ustring& comment)
+        {
+            auto result = AddTextContent();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto commentResult = ToUtf8(comment);
+            if (commentResult.Error())
+            {
+                return Result<bool>(ErrorId(commentResult.GetErrorId()));
+            }
+            currentParentNode->AppendChild(new Comment(span, fileIndex, commentResult.Value()));
+            return Result<bool>(true);
+        }
+        public override Result<bool> HandlePI(const System.Lex.Span& span, int fileIndex, const ustring& target, const ustring& data)
+        {
+            auto result = AddTextContent();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto targetResult = ToUtf8(target);
+            if (targetResult.Error())
+            {
+                return Result<bool>(ErrorId(targetResult.GetErrorId()));
+            }
+            auto dataResult = ToUtf8(data);
+            if (dataResult.Error())
+            {
+                return Result<bool>(ErrorId(dataResult.GetErrorId()));
+            }
+            currentParentNode->AppendChild(new ProcessingInstruction(span, fileIndex, targetResult.Value(), dataResult.Value()));
+            return Result<bool>(true);
+        }
+        public override Result<bool> HandleCDataSection(const System.Lex.Span& span, int fileIndex, const ustring& cdata)
+        {
+            auto result = AddTextContent();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto cdataResult = ToUtf8(cdata);
+            if (cdataResult.Error())
+            {
+                return Result<bool>(ErrorId(cdataResult.GetErrorId()));
+            }
+            currentParentNode->AppendChild(new CDataSection(span, fileIndex, cdataResult.Value()));
+            return Result<bool>(true);
+        }
+        public override Result<bool> StartElement(const System.Lex.Span& span, int fileIndex,
+            const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
+        {
+            auto result = AddTextContent(true);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            parentNodeStack.Push(currentParentNode);
+            elementStack.Push(Rvalue(currentElement));
+            auto qualifiedNameResult = ToUtf8(qualifiedName);
+            if (qualifiedNameResult.Error())
+            {
+                return Result<bool>(ErrorId(qualifiedNameResult.GetErrorId()));
+            }
+            currentElement.Reset(new Element(span, fileIndex, qualifiedNameResult.Value()));
+            currentParentNode = currentElement.Get();
+            for (const auto& attribute : attributes)
+            {
+                auto qualifiedNameResult = ToUtf8(attribute.QualifiedName());
+                if (qualifiedNameResult.Error())
+                {
+                    return Result<bool>(ErrorId(qualifiedNameResult.GetErrorId()));
+                }
+                auto valueResult = ToUtf8(attribute.Value());
+                if (valueResult.Error())
+                {
+                    return Result<bool>(ErrorId(valueResult.GetErrorId()));
+                }
+                currentElement->SetAttribute(attribute.Span(), fileIndex, qualifiedNameResult.Value(), valueResult.Value());
+            }
+            currentElement->SetOwnerDocument(document.Get());
+            if (!namespaceUri.IsEmpty())
+            {
+                auto namespaceUriResult = ToUtf8(namespaceUri);
+                if (namespaceUriResult.Error())
+                {
+                    return Result<bool>(ErrorId(namespaceUriResult.GetErrorId()));
+                }
+                currentElement->SetNamespaceUri(namespaceUriResult.Value());
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> EndElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName)
+        {
+            auto result = AddTextContent();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            if (parentNodeStack.IsEmpty())
+            {
+                string errorMessage = "parent node stack is empty";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            currentParentNode = parentNodeStack.Pop();
+            currentParentNode->AppendChild(currentElement.Release());
+            if (elementStack.IsEmpty())
+            {
+                string errorMessage = "element stack is empty";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            currentElement = elementStack.Pop();
+            return Result<bool>(true);
+        }
+        public override Result<bool> SkippedEntity(const ustring& entityName)
+        {
+            auto result = AddTextContent();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto entityNameResult = ToUtf8(entityName);
+            if (entityNameResult.Error())
+            {
+                return Result<bool>(ErrorId(entityNameResult.GetErrorId()));
+            }
+            currentParentNode->AppendChild(MakeEntityReference(entityNameResult.Value()));
+            return Result<bool>(true);
+        }
+        private Result<bool> AddTextContent()
+        {
+            return AddTextContent(false);
+        }
+        private Result<bool> AddTextContent(bool addSpace)
+        {
+            if (currentElement != null)
+            {
+                auto utf32Result = ToUtf32(textContent);
+                if (utf32Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+                }
+                auto trimResult = TrimAll(utf32Result.Value());
+                if (trimResult.Error())
+                {
+                    return Result<bool>(ErrorId(trimResult.GetErrorId()));
+                }
+                auto utf8Result = ToUtf8(trimResult.Value());
+                if (utf8Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                }
+                textContent = utf8Result.Value();
+                if (!textContent.IsEmpty())
+                {
+                    if (addSpace)
+                    {
+                        textContent.Append(' ');
+                    }
+                    currentElement->AppendChild(new Text(textSpan, textFileIndex, textContent));
+                    textSpan = System.Lex.Span();
+                }
+            }
+            textContent.Clear();
+            return Result<bool>(true);
+        }
+        private UniquePtr<Document> document;
+        private ParentNode* currentParentNode;
+        private Stack<ParentNode*> parentNodeStack;
+        private UniquePtr<Element> currentElement;
+        private Stack<UniquePtr<Element>> elementStack;
+        private System.Lex.Span textSpan;
+        private int textFileIndex;
+        private string textContent;
+    }
+}
+

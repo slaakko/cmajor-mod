@@ -1,0 +1,51 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+
+parser cm.parser.TypeExprParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.FundamentalTypeParser.FundamentalType;
+    using cm.parser.ExpressionParser.Expression;
+    using cm.parser.TemplateParser.TemplateId;
+
+    TypeExpr(cm.parser.Context* context) : cm.ast.Node*
+        ::= PrefixTypeExpr(context):prefixTypeExpr{ return prefixTypeExpr; }
+        ;
+
+    PrefixTypeExpr(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
+        ::=
+        (   CONST{ span = lexer.GetSpan(pos); }
+            PostfixTypeExpr(context):constTypeExpr{ return new cm.ast.ConstNode(span, lexer.FileIndex(), constTypeExpr); }
+        |   PostfixTypeExpr(context):postfixTypeExpr{ return postfixTypeExpr; }
+        )
+        ;
+
+    PostfixTypeExpr(cm.parser.Context* context, var UniquePtr<cm.ast.Node> typeExpr, var System.Lex.Span span) : cm.ast.Node*
+        ::=
+        (
+            PrimaryTypeExpr(context):primaryTypeExpr{ span = lexer.GetSpan(pos); typeExpr.Reset(primaryTypeExpr); }
+            (   DOT ID{ typeExpr.Reset(new cm.ast.DotNode(span, lexer.FileIndex(), typeExpr.Release(),
+                    new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString()))); }
+            |   STAR{ typeExpr.Reset(new cm.ast.PointerNode(span, lexer.FileIndex(), typeExpr.Release())); }
+            |   AMP_AMP{ typeExpr.Reset(new cm.ast.RValueRefNode(span, lexer.FileIndex(), typeExpr.Release())); }
+            |   AMP{ typeExpr.Reset(new cm.ast.LValueRefNode(span, lexer.FileIndex(), typeExpr.Release())); }
+            |   LBRACKET Expression(context):size? RBRACKET{ typeExpr.Reset(new cm.ast.ArrayNode(span, lexer.FileIndex(), typeExpr.Release(), size)); }
+            )*
+        )
+        {
+            return typeExpr.Release();
+        }
+        ;
+
+    PrimaryTypeExpr(cm.parser.Context* context) : cm.ast.Node*
+        ::= FundamentalType:fundamentalType{ return fundamentalType; }
+        |   TemplateId(context):templateId{ return templateId; }
+        |   ID{ return new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString()); }
+        ;
+}

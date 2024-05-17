@@ -1,0 +1,4 @@
+solution echo;
+project <echo.cmp>;
+activeProject echo;
+activeBackEnd=masm;

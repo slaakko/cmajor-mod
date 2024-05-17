@@ -170,7 +170,7 @@ namespace cm.parser
                                                         if (match.hit)
                                                         {
                                                             span = lexer.GetSpan(pos);
-                                                            classNode.Reset(new cm.ast.ClassNode(span, specifiers->value, id.Release(), attrs.Release()));
+                                                            classNode.Reset(new cm.ast.ClassNode(span, lexer.FileIndex(), specifiers->value, id.Release(), attrs.Release()));
                                                         }
                                                         *parentMatch18 = match;
                                                     }
@@ -1281,7 +1281,7 @@ namespace cm.parser
                                                 }
                                                 else
                                                 {
-                                                    staticConstructorNode.Reset(new cm.ast.StaticConstructorNode(span, specifiers->value, attrs.Release()));
+                                                    staticConstructorNode.Reset(new cm.ast.StaticConstructorNode(span, lexer.FileIndex(), specifiers->value, attrs.Release()));
                                                     staticConstructorNode->SetClassId(id.Release());
                                                 }
                                             }
@@ -1676,7 +1676,7 @@ namespace cm.parser
                                                     }
                                                     else
                                                     {
-                                                        constructorNode.Reset(new cm.ast.ConstructorNode(span, specifiers->value, attrs.Release()));
+                                                        constructorNode.Reset(new cm.ast.ConstructorNode(span, lexer.FileIndex(), specifiers->value, attrs.Release()));
                                                         constructorNode->SetClassId(id.Release());
                                                     }
                                                 }
@@ -2162,7 +2162,7 @@ namespace cm.parser
                                             }
                                             else
                                             {
-                                                destructorNode.Reset(new cm.ast.DestructorNode(span, specifiers->value, attrs.Release()));
+                                                destructorNode.Reset(new cm.ast.DestructorNode(span, lexer.FileIndex(), specifiers->value, attrs.Release()));
                                                 destructorNode->SetClassId(id.Release());
                                             }
                                         }
@@ -2340,7 +2340,7 @@ namespace cm.parser
                                             }
                                             if (match.hit)
                                             {
-                                                initializerNode.Reset(new cm.ast.ThisInitializerNode(lexer.GetSpan(pos)));
+                                                initializerNode.Reset(new cm.ast.ThisInitializerNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                             }
                                             *parentMatch7 = match;
                                         }
@@ -2435,7 +2435,7 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
-                                                        initializerNode.Reset(new cm.ast.BaseInitializerNode(lexer.GetSpan(pos)));
+                                                        initializerNode.Reset(new cm.ast.BaseInitializerNode(lexer.GetSpan(pos), lexer.FileIndex()));
                                                     }
                                                     *parentMatch15 = match;
                                                 }
@@ -2532,7 +2532,7 @@ namespace cm.parser
                                                 id.Reset(cast<cm.ast.IdentifierNode*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    initializerNode.Reset(new cm.ast.MemberInitializerNode(lexer.GetSpan(pos), id.Release()));
+                                                    initializerNode.Reset(new cm.ast.MemberInitializerNode(lexer.GetSpan(pos), lexer.FileIndex(), id.Release()));
                                                 }
                                                 *parentMatch23 = match;
                                             }
@@ -2739,7 +2739,7 @@ namespace cm.parser
                                                 groupId.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, specifiers->value, returnType.Release(), groupId->value, attrs.Release()));
+                                                    memberFunctionNode.Reset(new cm.ast.MemberFunctionNode(span, lexer.FileIndex(), specifiers->value, returnType.Release(), groupId->value, attrs.Release()));
                                                 }
                                                 *parentMatch14 = match;
                                             }
@@ -3104,7 +3104,7 @@ namespace cm.parser
                                             }
                                             if (match.hit)
                                             {
-                                                conversionFunctionNode.Reset(new cm.ast.ConversionFunctionNode(span, specifiers->value, type.Release(), attrs.Release()));
+                                                conversionFunctionNode.Reset(new cm.ast.ConversionFunctionNode(span, lexer.FileIndex(), specifiers->value, type.Release(), attrs.Release()));
                                             }
                                             *parentMatch17 = match;
                                         }
@@ -3416,7 +3416,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.MemberVariableNode(span, specifiers->value, type.Release(), id.Release(), attrs.Release())));
+                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.MemberVariableNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), attrs.Release())));
                 }
                 *parentMatch0 = match;
             }

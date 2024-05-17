@@ -1,0 +1,115 @@
+<parserFile>
+ <grammar name="cm.parser.TemplateParser">
+  <rule first="{#, ID}" name="TemplateId">
+   <sequence first="{#, ID}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{ID}">
+     <group first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="QualifiedId"/>
+        </action>
+        <action first="{LANGLE}">
+         <token first="{LANGLE}" name="LANGLE"/>
+        </action>
+       </sequence>
+       <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, RANGLE, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, RANGLE, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, RANGLE, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+           <list first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+            <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+             <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+              <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+             </action>
+             <kleene first="{#, COMMA}">
+              <sequence first="{COMMA}">
+               <token first="{COMMA}" name="COMMA"/>
+               <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+                <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+               </action>
+              </sequence>
+             </kleene>
+            </sequence>
+           </list>
+          </group>
+          <token first="{RANGLE}" name="RANGLE"/>
+         </sequence>
+        </group>
+       </action>
+      </sequence>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{LANGLE}" name="TemplateParameterList">
+   <group first="{LANGLE}">
+    <sequence first="{LANGLE}">
+     <sequence first="{LANGLE}">
+      <token first="{LANGLE}" name="LANGLE"/>
+      <group first="{ID}">
+       <list first="{ID}">
+        <sequence first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="TemplateParameter"/>
+         </action>
+         <kleene first="{#, COMMA}">
+          <sequence first="{COMMA}">
+           <token first="{COMMA}" name="COMMA"/>
+           <action first="{ID}">
+            <nonterminal first="{ID}" ruleName="TemplateParameter"/>
+           </action>
+          </sequence>
+         </kleene>
+        </sequence>
+       </list>
+      </group>
+     </sequence>
+     <token first="{RANGLE}" name="RANGLE"/>
+    </sequence>
+   </group>
+  </rule>
+  <rule first="{ID}" name="TemplateParameter">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="Identifier"/>
+      </action>
+      <optional first="{#, ASSIGN}">
+       <group first="{ASSIGN}">
+        <sequence first="{ASSIGN}">
+         <token first="{ASSIGN}" name="ASSIGN"/>
+         <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+        </sequence>
+       </group>
+      </optional>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{NEW}" name="InstantiationRequest">
+   <action first="{NEW}">
+    <group first="{NEW}">
+     <sequence first="{NEW}">
+      <sequence first="{NEW}">
+       <sequence first="{NEW}">
+        <action first="{NEW}">
+         <token first="{NEW}" name="NEW"/>
+        </action>
+        <token first="{CLASS}" name="CLASS"/>
+       </sequence>
+       <action first="{#, ID}">
+        <nonterminal first="{#, ID}" ruleName="TemplateId"/>
+       </action>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>
