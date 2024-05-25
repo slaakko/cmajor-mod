@@ -3,6 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <llvm/ADT/ilist_base.h>
+#include <llvm/IR/DebugInfoMetadata.h>
+
 module cmajor.llvm.interface;
 
 import cmajor.llvm.emitting.context;

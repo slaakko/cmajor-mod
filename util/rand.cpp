@@ -70,21 +70,10 @@ Rng64::Rng64(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0,
 {
 }
 
-#ifdef _WIN32
-
-__declspec(thread) uint64_t init_seed = -1;
-__declspec(thread) Rng* rng = nullptr;
-__declspec(thread) Rng32* rng32 = nullptr;
-__declspec(thread) Rng64* rng64 = nullptr;
-
-#else
-
-__thread uint64_t init_seed = -1;
-__thread Rng* rng = nullptr;
-__thread Rng32* rng32 = nullptr;
-__thread Rng64* rng64 = nullptr;
-
-#endif
+thread_local uint64_t init_seed = -1;
+thread_local Rng* rng = nullptr;
+thread_local Rng32* rng32 = nullptr;
+thread_local Rng64* rng64 = nullptr;
 
 void set_rand_seed(uint64_t seed)
 {

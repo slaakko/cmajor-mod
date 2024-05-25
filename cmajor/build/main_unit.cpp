@@ -8,12 +8,175 @@ module cmajor.build.main.unit;
 import cmajor.binder;
 import cmajor.backend;
 import cmajor.ir.emitting.context;
+import cmajor.build.config;
 import soul.ast.span;
 import util;
 import std.filesystem;
 
 namespace cmajor::build {
 
+
+void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+{
+    std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
+    std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
+    bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
+    if (verbose)
+    {
+        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+    }
+    std::filesystem::path bdp = project->ExecutableFilePath();
+    bdp.remove_filename();
+    std::filesystem::create_directories(bdp);
+    std::string clangxxPath = GetClangXXPathFromBuildConfig();
+    std::string command = clangxxPath;
+    command.append(" -g");
+    command.append(" -v");
+    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    if (!userMainFunctionSymbol)
+    {
+        throw std::runtime_error("program has no main function");
+    }
+    cmajor::symbols::TypeSymbol* returnType = userMainFunctionSymbol->ReturnType();
+    {
+        std::ofstream mainFile(mainFilePath);
+        util::CodeFormatter formatter(mainFile);
+        std::string returnTypeName;
+        std::string retval;
+        if (returnType->IsVoidType())
+        {
+            returnTypeName = "void";
+        }
+        else if (returnType->IsIntType())
+        {
+            returnTypeName = "int";
+            retval = "retval = ";
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("'void' or 'int' return type expected", userMainFunctionSymbol->GetFullSpan());
+        }
+        std::string parameters;
+        std::string arguments;
+        if (userMainFunctionSymbol->Parameters().size() == 0)
+        {
+            parameters = "()";
+            arguments = "()";
+        }
+        else if (userMainFunctionSymbol->Parameters().size() == 2)
+        {
+            parameters.append("(");
+            if (userMainFunctionSymbol->Parameters()[0]->GetType()->IsIntType())
+            {
+                parameters.append("int argc");
+            }
+            else
+            {
+                throw cmajor::symbols::Exception("'int' parameter type expected", userMainFunctionSymbol->Parameters()[0]->GetFullSpan());
+            }
+            if (userMainFunctionSymbol->Parameters()[1]->GetType()->IsConstCharPtrPtrType())
+            {
+                parameters.append(", const char** argv");
+            }
+            else
+            {
+                throw cmajor::symbols::Exception("'const char**' parameter type expected", userMainFunctionSymbol->Parameters()[1]->GetFullSpan());
+            }
+            parameters.append(")");
+            arguments = "(argc, argv)";
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("either 0 or 2 parameters expected", userMainFunctionSymbol->GetFullSpan());
+        }
+        formatter.WriteLine("extern \"C\" " + returnTypeName + " " + util::ToUtf8(userMainFunctionSymbol->MangledName()) + parameters + ";");
+        formatter.WriteLine("extern \"C\" void RtmInit();");
+        formatter.WriteLine("extern \"C\" void RtmDone();");
+        formatter.WriteLine("extern \"C\" void RtmBeginUnitTest(int numAssertions, const char* unitTestFilePath);");
+        formatter.WriteLine("extern \"C\" void RtmEndUnitTest(const char* testName, int exitCode);");
+        formatter.WriteLine();
+        formatter.WriteLine("int main(int argc, const char** argv)");
+        formatter.WriteLine("{");
+        formatter.IncIndent();
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+        {
+            formatter.WriteLine("RtmBeginUnitTest(" + std::to_string(cmajor::symbols::GetNumUnitTestAssertions()) + ", \"" + util::StringStr(cmajor::symbols::UnitTestFilePath()) + "\");");
+        }
+        else
+        {
+            formatter.WriteLine("RtmInit();");
+        }
+        formatter.WriteLine("int retval = 0;");
+        formatter.WriteLine(retval + util::ToUtf8(userMainFunctionSymbol->MangledName()) + arguments + ";");
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+        {
+            formatter.WriteLine("RtmEndUnitTest(\"" + cmajor::symbols::UnitTestName() + "\", retval);");
+        }
+        else
+        {
+            formatter.WriteLine("RtmDone();");
+        }
+        formatter.WriteLine("return retval;");
+        formatter.DecIndent();
+        formatter.WriteLine("}");
+    }
+    command.append(" ").append(mainFilePath);
+    command.append(" -std=c++20");
+    int n = rootModule->LibraryFilePaths().size();
+    for (int i = 0; i < n; ++i)
+    {
+        command.append(" ").append(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
+    }
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    {
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.cmrt.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.dom.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.dom_parser.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.ast.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.lexer.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.parser.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.util.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xml_parser.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xml_processor.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xpath.release.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "soul.xml.xpath.lexer.classmap.res"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "z.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "zlibstat.lib"))));
+    }
+    else
+    {
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.cmrt.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.dom.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.dom_parser.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.ast.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.lexer.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.parser.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.util.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xml_parser.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xml_processor.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.xpath.debug.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "soul.xml.xpath.lexer.classmap.res"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "zd.lib"))));
+        command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "zlibstatd.lib"))));
+    }
+    command.append(" -o " + util::QuotedPath(project->ExecutableFilePath()));
+
+    util::ExecuteResult executeResult = util::Execute(command);
+    if (executeResult.exitCode != 0)
+    {
+        throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
+    }
+    else
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
+        }
+    }
+}
+
+/*
 void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
     cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cm").generic_string());
@@ -40,7 +203,7 @@ void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vecto
     mainFunctionBody->AddStatement(constructExitCode);
     cmajor::ast::ExpressionStatementNode* rtInitCall = nullptr;
     cmajor::ast::InvokeNode* invokeRtInit = new cmajor::ast::InvokeNode(
-        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtInit"));
+        soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtmInit"));
     invokeRtInit->AddArgument(new cmajor::ast::DivNode(soul::ast::Span(),
         new cmajor::ast::InvokeNode(soul::ast::Span(), new cmajor::ast::DotNode(soul::ast::Span(), 
             new cmajor::ast::IdentifierNode(soul::ast::Span(), U"@polymorphicClassArray"),
@@ -59,14 +222,12 @@ void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vecto
         new cmajor::ast::IdentifierNode(soul::ast::Span(), U"CBegin"))));
     rtInitCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), invokeRtInit);
     mainFunctionBody->AddStatement(rtInitCall);
-
     cmajor::ast::InvokeNode* invokeRtSetGlobalInitFunction = new cmajor::ast::InvokeNode(
         soul::ast::Span(), new cmajor::ast::IdentifierNode(soul::ast::Span(), U"RtSetGlobalInitFunction"));
     invokeRtSetGlobalInitFunction->AddArgument(new cmajor::ast::IdentifierNode(soul::ast::Span(), U"GlobalInitCompileUnits"));
     cmajor::ast::ExpressionStatementNode* rtSetGlobalInitFunctionCall = new cmajor::ast::ExpressionStatementNode(soul::ast::Span(), 
         invokeRtSetGlobalInitFunction);
     mainFunctionBody->AddStatement(rtSetGlobalInitFunctionCall);
-
 #ifdef _WIN32
     cmajor::ast::ConstructionStatementNode* argc = new cmajor::ast::ConstructionStatementNode(soul::ast::Span(), 
         new cmajor::ast::IntNode(soul::ast::Span()),
@@ -171,6 +332,7 @@ void GenerateMainUnitLLvmConsole(cmajor::symbols::Module* rootModule, std::vecto
     boundMainCompileUnit.Accept(*codeGenerator);
     objectFilePaths.push_back(boundMainCompileUnit.ObjectFilePath());
 }
+*/
 
 void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
@@ -268,6 +430,168 @@ void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<st
     objectFilePaths.push_back(mainObjectFilePath);
 }
 
+void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
+{
+    std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
+    std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
+    bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
+    if (verbose)
+    {
+        util::LogMessage(rootModule->LogStreamId(), "Generating program...");
+    }
+    std::filesystem::path bdp = project->ExecutableFilePath();
+    bdp.remove_filename();
+    std::filesystem::create_directories(bdp);
+    std::string gxxPath = GetGXXPathFromBuildConfig();
+    std::string command = gxxPath;
+    command.append(" -g");
+    command.append(" -v");
+    command.append(" -std=c++20");
+    std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
+    cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
+    if (!userMainFunctionSymbol)
+    {
+        throw std::runtime_error("program has no main function");
+    }
+    cmajor::symbols::TypeSymbol* returnType = userMainFunctionSymbol->ReturnType();
+    {
+        std::ofstream mainFile(mainFilePath);
+        util::CodeFormatter formatter(mainFile);
+        std::string returnTypeName;
+        std::string retval;
+        if (returnType->IsVoidType())
+        {
+            returnTypeName = "void";
+        }
+        else if (returnType->IsIntType())
+        {
+            returnTypeName = "int";
+            retval = "retval = ";
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("'void' or 'int' return type expected", userMainFunctionSymbol->GetFullSpan());
+        }
+        std::string parameters;
+        std::string arguments;
+        if (userMainFunctionSymbol->Parameters().size() == 0)
+        {
+            parameters = "()";
+            arguments = "()";
+        }
+        else if (userMainFunctionSymbol->Parameters().size() == 2)
+        {
+            parameters.append("(");
+            if (userMainFunctionSymbol->Parameters()[0]->GetType()->IsIntType())
+            {
+                parameters.append("int argc");
+            }
+            else
+            {
+                throw cmajor::symbols::Exception("'int' parameter type expected", userMainFunctionSymbol->Parameters()[0]->GetFullSpan());
+            }
+            if (userMainFunctionSymbol->Parameters()[1]->GetType()->IsConstCharPtrPtrType())
+            {
+                parameters.append(", const char** argv");
+            }
+            else
+            {
+                throw cmajor::symbols::Exception("'const char**' parameter type expected", userMainFunctionSymbol->Parameters()[1]->GetFullSpan());
+            }
+            parameters.append(")");
+            arguments = "(argc, argv)";
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("either 0 or 2 parameters expected", userMainFunctionSymbol->GetFullSpan());
+        }
+        formatter.WriteLine("extern \"C\" " + returnTypeName + " " + util::ToUtf8(userMainFunctionSymbol->MangledName()) + parameters + ";");
+        formatter.WriteLine("extern \"C\" void RtmInit();");
+        formatter.WriteLine("extern \"C\" void RtmDone();");
+        formatter.WriteLine("extern \"C\" void RtmBeginUnitTest(int numAssertions, const char* unitTestFilePath);");
+        formatter.WriteLine("extern \"C\" void RtmEndUnitTest(const char* testName, int exitCode);");
+        formatter.WriteLine();
+        formatter.WriteLine("int main(int argc, const char** argv)");
+        formatter.WriteLine("{");
+        formatter.IncIndent();
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+        {
+            formatter.WriteLine("RtmBeginUnitTest(" + std::to_string(cmajor::symbols::GetNumUnitTestAssertions()) + ", \"" + util::StringStr(cmajor::symbols::UnitTestFilePath()) + "\");");
+        }
+        else
+        {
+            formatter.WriteLine("RtmInit();");
+        }
+        formatter.WriteLine("int retval = 0;");
+        formatter.WriteLine(retval + util::ToUtf8(userMainFunctionSymbol->MangledName()) + arguments + ";");
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
+        {
+            formatter.WriteLine("RtmEndUnitTest(\"" + cmajor::symbols::UnitTestName() + "\", retval);");
+        }
+        else
+        {
+            formatter.WriteLine("RtmDone();");
+        }
+        formatter.WriteLine("return retval;");
+        formatter.DecIndent();
+        formatter.WriteLine("}");
+    }
+    command.append(" ").append(mainFilePath);
+    int n = rootModule->LibraryFilePaths().size();
+    for (int i = n - 1; i >= 0; --i)
+    {
+        const std::string& libraryFilePath = rootModule->LibraryFilePaths()[i];
+        command.append(" ").append(util::QuotedPath(libraryFilePath));
+    }
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    {
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.cmrt.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xpath.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.dom_parser.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xml_parser.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.dom.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xml_processor.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.parser.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.lexer.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.ast.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.util.release.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libz.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "soul.cpp.xml.xpath.lexer.classmap.o")));
+        command.append(" -l").append("ws2_32");
+    }
+    else
+    {
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.cmrt.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xpath.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.dom_parser.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xml_parser.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.dom.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.xml_processor.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.parser.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.lexer.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.ast.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libcmajor.cpp.util.debug.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "libzd.a")));
+        command.append(" ").append(util::GetFullPath(util::Path::Combine(cmajorLibDir, "soul.cpp.xml.xpath.lexer.classmap.o")));
+        command.append(" -l").append("ws2_32");
+    }
+    command.append(" -o " + util::QuotedPath(project->ExecutableFilePath()));
+
+    util::ExecuteResult executeResult = util::Execute(command);
+    if (executeResult.exitCode != 0)
+    {
+        throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
+    }
+    else
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
+        }
+    }
+}
+
+/*
 void GenerateMainUnitCppConsole(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
     cmajor::ast::CompileUnitNode mainCompileUnit(soul::ast::Span(), 
@@ -430,6 +754,7 @@ void GenerateMainUnitCppConsole(cmajor::symbols::Module* rootModule, std::vector
     std::string mainObjectFilePath = boundMainCompileUnit.ObjectFilePath();
     objectFilePaths.push_back(mainObjectFilePath);
 }
+*/
 
 void GenerateMainUnitLLvmWindowsGUI(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
 {
@@ -901,7 +1226,7 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
             {
                 case cmajor::symbols::BackEnd::llvm:
                 {
-                    GenerateMainUnitLLvmConsole(rootModule, objectFilePaths);
+                    GenerateMainUnitLLvmConsole(project, rootModule, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::systemx:
@@ -911,7 +1236,7 @@ void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* ro
                 }
                 case cmajor::symbols::BackEnd::cpp:
                 {
-                    GenerateMainUnitCppConsole(rootModule, objectFilePaths);
+                    GenerateMainUnitCppConsole(project, rootModule, objectFilePaths);
                     break;
                 }
                 case cmajor::symbols::BackEnd::masm:

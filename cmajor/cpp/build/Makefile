@@ -1,41 +1,40 @@
+# 	makefile for building the C++ runtime library for the Cmajor compiler with C++ backend (cppcmc)
+#	on windows run with 'mingw32-make' from command prompt
+#	can be run parallelly by giving the -j option to the mingw32-make
+
 include Makefile.common
 
 ifeq ($(PLATFORM),windows)
 
 all:
-	$(MAKE) -C static/debug
-	$(MAKE) -C shared/debug
-	$(MAKE) -C static/release
-	$(MAKE) -C shared/release
+	make_lib_dir.bat
+	$(MAKE) -C debug
+	$(MAKE) -C release
 	$(MAKE) -C resource
 	
 clean:
-	$(RM) /Q bin\*.*
 	$(RM) /Q lib\*.*
-	$(MAKE) -C static/debug clean
-	$(MAKE) -C shared/debug clean
-	$(MAKE) -C static/release clean
-	$(MAKE) -C shared/release clean
+	$(MAKE) -C debug clean
+	$(MAKE) -C release clean
 	
 else
 
 all:
-	$(MAKE) -C static/debug
-	$(MAKE) -C static/release
+	$(MAKE) -C debug
+	$(MAKE) -C release
 
 clean:
 	$(RM) bin/*
 	$(RM) lib/*
-	$(MAKE) -C static/debug clean
-	$(MAKE) -C static/release clean
+	$(MAKE) -C debug clean
+	$(MAKE) -C release clean
 
 endif
 
 install: $(PLATFORM)	
 	
 windows:
-	$(CP) lib\*.a ..\..\lib
-	$(CP) bin\* ..\..\bin
+	$(CP) lib\*.* ..\..\lib
 	
 linux:
-	$(CP) lib/*.a ../../lib
+	$(CP) lib/*.* ../../lib

@@ -8,6 +8,8 @@ module;
 
 module util.process;
 
+import util.execute_win;
+
 #ifndef NDEBUG
 #pragma comment(lib, "util_incd")
 #else
@@ -110,5 +112,29 @@ int GetPid()
 {
     return util_inc::GetNativePid();
 }
+
+#ifdef _WIN32
+
+ExecuteResult Execute(const std::string& commandLine)
+{
+    std::pair<int, std::string> executeResult = ExecuteWin(commandLine);
+    ExecuteResult result(executeResult.first, std::move(executeResult.second));
+    return result;
+}
+
+#else
+
+ExecuteResult Execute(const std::string& commandLine)
+{
+    Process process(commandLine, Process::Redirections::processStdOut | Process::Redirections::processStdErr);
+    process.WaitForExit();
+    std::string stdoutText = process.ReadToEnd(Process::StdHandle::stdOut);
+    std::string stderrText = process.ReadToEnd(Process::StdHandle::stdErr);
+    int exitCode = process.ExitCode();
+    ExecuteResult result(exitCode, stdoutText + stderrText);
+    return result;
+}
+
+#endif
 
 } // namespace util

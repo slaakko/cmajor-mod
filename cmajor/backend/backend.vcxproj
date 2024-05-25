@@ -156,6 +156,8 @@
     <ClCompile Include="backend.cppm" />
     <ClCompile Include="cpp.cpp" />
     <ClCompile Include="cpp.cppm" />
+    <ClCompile Include="llvm.cpp" />
+    <ClCompile Include="llvm.cppm" />
     <ClCompile Include="masm.cpp" />
     <ClCompile Include="masm.cppm" />
     <ClCompile Include="selector.cpp" />
@@ -175,6 +177,9 @@
     </ProjectReference>
     <ProjectReference Include="..\ir\ir.vcxproj">
       <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\llvm\llvm.vcxproj">
+      <Project>{d9913dcb-1325-426c-95b1-f80d2751d081}</Project>
     </ProjectReference>
     <ProjectReference Include="..\masm\backend\backend.vcxproj">
       <Project>{399eba6b-7943-42d2-aae9-8bb43cc641b9}</Project>

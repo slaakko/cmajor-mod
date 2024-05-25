@@ -1,0 +1,50 @@
+using System;
+
+int main(int argc, const char** argv)
+{
+    for (int i = 1; i < argc; ++i)
+    {
+        string cmFile = argv[i];
+        auto cmFileContentResult = System.IO.File.ReadAllText(cmFile);
+        if (cmFileContentResult.Error())
+        {
+            Console.Error() << cmFileContentResult.GetErrorMessage() << endl();
+            return 1;
+        }
+        const string& cmFileContent = cmFileContentResult.Value();
+        auto utf32Result = ToUtf32(cmFileContent);
+        if (utf32Result.Error())
+        {
+            Console.Error() << utf32Result.GetErrorMessage() << endl();
+            return 1;
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* begin = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        CmajorLexer lexer(begin, end, cmFile);
+        auto incResult = ++lexer;
+        if (incResult.Error())
+        {
+            Console.Error() << incResult.GetErrorMessage() << endl();
+            return 1;
+        }
+        while (*lexer != System.Lex.END_TOKEN)
+        {
+            if (*lexer == System.Lex.INVALID_TOKEN)
+            {
+                Console.Error() << "invalid token" << endl();
+                return 1;
+            }
+            long pos = lexer.GetPos();
+            System.Lex.Token token = lexer.GetToken(pos);
+            incResult = ++lexer;
+            if (incResult.Error())
+            {
+                Console.Error() << incResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            Console.Out() << token.ToString() << endl();
+        }
+    }
+    return 0;
+}

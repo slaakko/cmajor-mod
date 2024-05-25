@@ -12,8 +12,23 @@ using scmlg.ast;
 
 namespace scmlg
 {
-    public Result<bool> MakeNfas(Context& context)
+    public Result<bool> MakeNfas(Context& context, const string& root, bool verbose)
     {
+        string automataFileName;
+        Result<System.IO.StreamWriter> writerResult;
+        UniquePtr<System.Text.CodeFormatter> formatter;
+        System.IO.StreamWriter* writer;
+        if (context.GetDebug())
+        {
+            automataFileName = System.IO.Path.Combine(root, "automata.debug.txt");
+            writerResult = System.IO.File.CreateText(automataFileName);
+            if (writerResult.Error())
+            {
+                return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            }
+            writer = &writerResult.Value();
+            formatter.Reset(new System.Text.CodeFormatter(*writer));
+        }
         scmlg.ast.Lexer* lexer = context.GetLexer();
         ExpressionParser* expressionParser = context.GetExpressionParser();
         for (const auto& rule : lexer->Rules())
@@ -25,13 +40,21 @@ namespace scmlg
             }
             UniquePtr<Nfa> nfa(new Nfa(nfaResult.Value()));
             nfa->End()->SetRuleIndex(rule->Index());
+            if (!formatter.IsNull())
+            {
+                nfa->Print(*formatter);
+            }
             int nfaIndex = context.AddNfa(nfa.Release());
             rule->SetNfaIndex(nfaIndex);
+        }
+        if (context.GetDebug())
+        {
+            Console.Out() << "==> " << automataFileName << endl();
         }
         return Result<bool>(true);
     }
 
-    public Result<bool> MakeCanonicalClasses(Context& context)
+    public Result<bool> MakeCanonicalClasses(Context& context, const string& root, bool verbose)
     {
         List<Symbol*> symbols = context.Symbols();
         for (Symbol* symbol : symbols)
@@ -77,14 +100,40 @@ namespace scmlg
                 }
             }
         }
+        int index = 0;
         for (Class* canonicalClass : context.CanonicalClasses())
         {
+            canonicalClass->SetIndex(index++);
             for (const auto& range : canonicalClass->Ranges())
             {
                 if (canonicalClass->Chars().IsEmpty())
                 {
                     canonicalClass->AddChar(range.Start());
                 }
+                break;
+            }
+        }
+        if (context.GetDebug())
+        {
+            string canocalClassesFileName = Path.Combine(root, "classes.debug.txt");
+            auto result = System.IO.File.CreateText(canocalClassesFileName);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            StreamWriter& writer = result.Value();
+            System.Text.CodeFormatter formatter(writer);
+            for (Class* canonicalClass : context.CanonicalClasses())
+            {
+                auto result = canonicalClass->Print(formatter);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            if (verbose)
+            {
+                Console.Out() << "==> " << canocalClassesFileName << endl();
             }
         }
         return Result<bool>(true);
@@ -679,7 +728,7 @@ namespace scmlg
         return Result<bool>(true);
     }
 
-    public Result<bool> GenerateLexer(scmlg.ast.ScmlgFile* scmlgFile, scmlg.ast.LexerFile* lexerFile, const string& scmlgVersion, bool verbose, bool debug)
+    public Result<bool> GenerateLexer(scmlg.ast.ScmlgFile* scmlgFile, scmlg.ast.LexerFile* lexerFile, const string& scmlgVersion, bool verbose, bool debug, bool empty)
     {
         Lexer* lexer = lexerFile->GetLexer();
         if (lexer == null)
@@ -690,7 +739,7 @@ namespace scmlg
         {
             Console.Out() << "Generating lexer '" << lexer->Name() << "'..." << endl();
         }
-        Context context;
+        Context context(empty);
         context.SetDebug(debug);
         context.SetFileName(lexerFile->FilePath());
         RegularExpressionParser regExParser;
@@ -748,17 +797,17 @@ namespace scmlg
         context.SetKeywords(&keywords);
         context.SetExpressions(&expressions);
         context.SetLexer(lexer);
-        auto makeNfaResult = MakeNfas(context);
+        string root = Path.GetDirectoryName(scmlgFile->FilePath());
+        auto makeNfaResult = MakeNfas(context, root, verbose);
         if (makeNfaResult.Error())
         {
             return Result<bool>(ErrorId(makeNfaResult.GetErrorId()));
         }
-        auto makeCanonicalClassesResult = MakeCanonicalClasses(context);
+        auto makeCanonicalClassesResult = MakeCanonicalClasses(context, root, verbose);
         if (makeCanonicalClassesResult.Error())
         {
             return Result<bool>(ErrorId(makeCanonicalClassesResult.GetErrorId()));
         }
-        string root = Path.GetDirectoryName(scmlgFile->FilePath());
         auto partitionResult = MakeClassPartition(context, root, verbose);
         if (partitionResult.Error())
         {

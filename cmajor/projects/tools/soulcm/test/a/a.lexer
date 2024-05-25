@@ -1,0 +1,16 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using a.token;
+using a.expr;
+
+lexer ALexer
+{
+    rules
+    {
+        "{a}" { return A; }
+        "\(" { return LPAREN; }
+    }
+}

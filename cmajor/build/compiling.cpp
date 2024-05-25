@@ -286,7 +286,7 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
     int numOutputsReceived = 0;
     while (numOutputsReceived < n && !stop)
     {
-        int compileUnitIndex = output.Get();
+        int compileUnitIndex = output.Get(); 
         if (compileUnitIndex != -1)
         {
             ++numOutputsReceived;
@@ -303,7 +303,7 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
         {
             threads[i].join();
         }
-    }
+    } 
     for (int i = 0; i < numThreads; ++i)
     {
         if (compileData.exceptions[i])

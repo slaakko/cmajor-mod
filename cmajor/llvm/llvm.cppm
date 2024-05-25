@@ -11,5 +11,5 @@ export import cmajor.llvm.codegen;
 export import cmajor.llvm.codegen.windows;
 export import cmajor.llvm.link;
 export import cmajor.llvm.link.windows;
-//export import cmajor.llvm.emitter;
+export import cmajor.llvm.emitter;
 export import cmajor.llvm.emitting.context;

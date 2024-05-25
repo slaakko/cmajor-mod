@@ -2725,7 +2725,7 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
     cmajor::ast::CloneContext cloneContext;
     cmajor::ast::InvokeNode* invokeMemAlloc = nullptr;
     bool memDebug = boundCompileUnit.GetModule().IsSymbolDefined(U"MEM_DEBUG");
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         if (memDebug)
         {
@@ -2742,7 +2742,8 @@ void ExpressionBinder::Visit(cmajor::ast::NewNode& newNode)
             new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"System"), 
             new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"MemAlloc")));
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         invokeMemAlloc = new cmajor::ast::InvokeNode(newNode.GetSpan(), new cmajor::ast::IdentifierNode(newNode.GetSpan(), U"RtmMemAlloc"));
     }

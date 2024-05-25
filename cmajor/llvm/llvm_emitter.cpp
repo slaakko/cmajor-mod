@@ -17,10 +17,21 @@ module;
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/IRPrinter/IRPrintingPasses.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 
 module cmajor.llvm.emitter;
 
 import cmajor.symbols;
+
+// CreateIrDIForwardDeclaration
+// CreateDITypeForClassType
+// CreateDITypeForEnumType
+// CreateDIMemberType
+// CreateCallInst
+// CreateInvokeInst
+// CreateDIMethod
+// CreateDIFunction
+// CreateDIParameterVariable
 
 namespace cmllvm {
 
@@ -176,7 +187,8 @@ void* LLVMEmitter::GetIrTypeForDelegateType(void* retType, const std::vector<voi
 
 void* LLVMEmitter::GetIrTypeForVoidPtrType()
 {
-    return llvm::Type::getInt8PtrTy(context);
+    //return llvm::Type::getInt8PtrTy(context);
+    return llvm::PointerType::getUnqual(context); // new return opaque pointer type
 }
 
 void* LLVMEmitter::GetIrTypeForStructType(const std::vector<void*>& elementTypes)
@@ -803,13 +815,14 @@ void* LLVMEmitter::CreateDITypeForArray(void* elementDIType, const std::vector<v
 
 #if (LLVM_VERSION_MAJOR >= 10)
 
-void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
+void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, 
+    const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     uint64_t sizeInBits = dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getSizeInBits();
     uint64_t alignInBits = 8 * dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)))->getAlignment().value();
     uint64_t offsetInBits = 0;
     return diBuilder->createReplaceableCompositeType(llvm::dwarf::DW_TAG_class_type, name, nullptr,
-        static_cast<llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line,
+        static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)), lineColLen.line,
         0, sizeInBits, alignInBits, llvm::DINode::DIFlags::FlagZero, mangledName);
 }
 
@@ -827,13 +840,15 @@ void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string&
 
 #endif
 
-void* LLVMEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void* LLVMEmitter::GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan)
 {
+/*
     if (sourcePos.file == -1)
     {
         return diFile;
     }
-    std::string sourceFilePath = GetSourceFilePath(sourcePos, moduleId);
+*/
+    std::string sourceFilePath = GetSourceFilePath(fullSpan.moduleId);
     if (sourceFilePath.empty())
     {
         return diFile;
@@ -851,7 +866,7 @@ uint64_t LLVMEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 
 #if (LLVM_VERSION_MAJOR >= 10)
 
-void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId,
+void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
     const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     std::vector<llvm::Metadata*> elements;
@@ -865,14 +880,17 @@ void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void
     uint64_t alignInBits = 8 * structLayout->getAlignment().value();
     uint64_t offsetInBits = 0; // todo?
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
+/*
     return diBuilder->createClassType(static_cast<llvm::DIScope*>(CurrentScope()), name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(classSourcePos, moduleId)),
         classSourcePos.line, sizeInBits, alignInBits, offsetInBits,
         flags, static_cast<llvm::DIType*>(baseClassDIType), diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
+*/
+    return nullptr;
 }
 
 #else
 
-void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId,
+void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
     const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     std::vector<llvm::Metadata*> elements;
@@ -907,8 +925,11 @@ void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::s
     {
         elements.push_back(static_cast<llvm::Metadata*>(element));
     }
+/*
     return diBuilder->createEnumerationType(nullptr, name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits,
         diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(underlyingDIType), mangledName);
+*/
+    return nullptr;
 }
 
 void LLVMEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
@@ -953,9 +974,12 @@ void LLVMEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVa
 void* LLVMEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
+/*
     return diBuilder->createMemberType(static_cast<llvm::DIType*>(scope), name, static_cast<llvm::DIFile*>(
         GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits, offsetInBits, flags,
         static_cast<llvm::DIType*>(diType));
+*/
+    return nullptr;
 }
 
 void* LLVMEmitter::CreateConstDIType(void* diType)
@@ -1012,10 +1036,10 @@ llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::SourcePos
 
 #else
 
-llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::SourcePos& sourcePos)
+llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::LineColLen& lineColLen)
 {
-    if (!emitter->diCompileUnit || !sourcePos.IsValid() || !emitter->currentDIBuilder) return llvm::DebugLoc();
-    return llvm::DILocation::get(emitter->context, sourcePos.line, sourcePos.col, static_cast<llvm::DIScope*>(emitter->CurrentScope()));
+    if (!emitter->diCompileUnit || !lineColLen.IsValid() || !emitter->currentDIBuilder) return llvm::DebugLoc();
+    return llvm::DILocation::get(emitter->context, lineColLen.line, lineColLen.col, static_cast<llvm::DIScope*>(emitter->CurrentScope()));
 }
 
 #endif
@@ -1040,17 +1064,17 @@ void* LLVMEmitter::CurrentScope()
     return currentScope;
 }
 
-void LLVMEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+void LLVMEmitter::SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen)
 {
     if (!diCompileUnit || !currentDIBuilder) return;
-    if (inPrologue || !sourcePos.IsValid())
+    if (inPrologue || !lineColLen.IsValid())
     {
         currentDebugLocation = llvm::DebugLoc();
         builder.SetCurrentDebugLocation(currentDebugLocation);
     }
     else
     {
-        currentDebugLocation = GetDebugLocation(this, sourcePos);
+        currentDebugLocation = GetDebugLocation(this, lineColLen);
         builder.SetCurrentDebugLocation(currentDebugLocation);
     }
 }
@@ -1254,14 +1278,17 @@ void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::v
 #else
     llvm::CallInst* callInst = llvm::CallInst::Create(static_cast<llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<llvm::BasicBlock*>(CurrentBasicBlock()));
 #endif
+/*  TODO
     if (diBuilder)
     {
         callInst->setDebugLoc(GetDebugLocation(this, sourcePos));
     }
+*/
     return callInst;
 }
 
-void* LLVMEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos)
+void* LLVMEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+    const soul::ast::LineColLen& lineColLen)
 {
     std::vector<llvm::Value*> arguments;
     for (void* arg : args)
@@ -1289,7 +1316,7 @@ void* LLVMEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, 
 #endif
     if (diBuilder)
     {
-        callInst->setDebugLoc(GetDebugLocation(this, sourcePos));
+        callInst->setDebugLoc(GetDebugLocation(this, lineColLen));
     }
     return callInst;
 }
@@ -1348,7 +1375,7 @@ void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* norm
 #endif
     if (diBuilder)
     {
-        invokeInst->setDebugLoc(GetDebugLocation(this, sourcePos));
+        // invokeInst->setDebugLoc(GetDebugLocation(this, sourcePos)); TODO  LLVM debug info
     }
     return invokeInst;
 }
@@ -1680,12 +1707,16 @@ void* LLVMEmitter::GetObjectPointer()
     return objectPointer;
 }
 
-void LLVMEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId)
+void LLVMEmitter::SetFunction(void* function_, int32_t fileIndex, const util::uuid& moduleId, const util::uuid& functionId)
 {
     function = static_cast<llvm::Function*>(function_);
 }
 
 void LLVMEmitter::SetFunctionName(const std::string& functionName)
+{
+}
+
+void LLVMEmitter::SetFunctionComment(void* function, const std::string& functionComment)
 {
 }
 
@@ -2149,22 +2180,22 @@ unsigned LLVMEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, bool
     return flags;
 }
 
-void* LLVMEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+void* LLVMEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
     void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags)
 {
     void* subprogram = diBuilder->createMethod(static_cast<llvm::DIScope*>(CurrentScope()), name, mangledName, static_cast<llvm::DIFile*>(
-        GetDebugInfoForFile(sourcePos, moduleId)),
-        sourcePos.line, static_cast<llvm::DISubroutineType*>(subroutineType), vtableIndex, 0, static_cast<llvm::DIType*>(vtableHolder),
+        GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, static_cast<llvm::DISubroutineType*>(subroutineType), vtableIndex, 0, static_cast<llvm::DIType*>(vtableHolder),
         static_cast<llvm::DINode::DIFlags>(flags), llvm::DISubprogram::SPFlagDefinition);
     return subprogram;
 }
 
-void* LLVMEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+void* LLVMEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
     void* subroutineType, unsigned flags)
 {
     void* subprogram = diBuilder->createFunction(static_cast<llvm::DIScope*>(CurrentScope()), name, mangledName, static_cast<llvm::DIFile*>(
-        GetDebugInfoForFile(sourcePos, moduleId)),
-        sourcePos.line, static_cast<llvm::DISubroutineType*>(subroutineType), sourcePos.line, static_cast<llvm::DINode::DIFlags>(flags),
+        GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, static_cast<llvm::DISubroutineType*>(subroutineType), lineColLen.line, static_cast<llvm::DINode::DIFlags>(flags),
         llvm::DISubprogram::SPFlagDefinition);
     return subprogram;
 }
@@ -2179,22 +2210,23 @@ void* LLVMEmitter::CreateAlloca(void* irType)
     return builder.CreateAlloca(static_cast<llvm::Type*>(irType));
 }
 
-void* LLVMEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* LLVMEmitter::CreateDIParameterVariable(const std::string& name, int index, 
+    const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst)
 {
     llvm::DILocalVariable* paramVar = diBuilder->createParameterVariable(static_cast<llvm::DIScope*>(CurrentScope()), name, index, static_cast<llvm::DIFile*>(
-        GetDebugInfoForFile(sourcePos, moduleId)),
-        sourcePos.line, static_cast<llvm::DIType*>(irType));
-    diBuilder->insertDeclare(static_cast<llvm::Value*>(allocaInst), paramVar, diBuilder->createExpression(), GetDebugLocation(this, sourcePos),
+        GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, static_cast<llvm::DIType*>(irType));
+    diBuilder->insertDeclare(static_cast<llvm::Value*>(allocaInst), paramVar, diBuilder->createExpression(), GetDebugLocation(this, lineColLen),
         builder.GetInsertBlock());
     return paramVar;
 }
 
-void* LLVMEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* LLVMEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst)
 {
     llvm::DILocalVariable* localVar = diBuilder->createAutoVariable(static_cast<llvm::DIScope*>(CurrentScope()), name,
-        static_cast<llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)),
-        sourcePos.line, static_cast<llvm::DIType*>(irType));
-    diBuilder->insertDeclare(static_cast<llvm::Value*>(allocaInst), localVar, diBuilder->createExpression(), GetDebugLocation(this, sourcePos),
+        static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, static_cast<llvm::DIType*>(irType));
+    diBuilder->insertDeclare(static_cast<llvm::Value*>(allocaInst), localVar, diBuilder->createExpression(), GetDebugLocation(this, lineColLen),
         builder.GetInsertBlock());
     return localVar;
 }
@@ -2237,11 +2269,11 @@ void LLVMEmitter::AddUWTableAttribute(void* function)
     //fun->addFnAttr(llvm::Attribute::UWTable);   TODO UWTABLE ATTRIBUTE IS NOT WORKING!!!
 }
 
-void* LLVMEmitter::CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+void* LLVMEmitter::CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     llvm::DILexicalBlock* block = diBuilder->createLexicalBlock(static_cast<llvm::DIScope*>(CurrentScope()),
-        static_cast<llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)),
-        sourcePos.line, sourcePos.col);
+        static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, lineColLen.col);
     PushScope(block);
     return block;
 }
@@ -2557,9 +2589,9 @@ void LLVMEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t 
     // todo
 }
 
-std::string LLVMEmitter::GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId)
+std::string LLVMEmitter::GetSourceFilePath(const util::uuid& moduleId)
 {
-    return emittingDelegate->GetSourceFilePath(sourcePos, moduleId);
+    return emittingDelegate->GetSourceFilePath(moduleId);
 }
 
 cmajor::ir::Pad* LLVMEmitter::CurrentPad()

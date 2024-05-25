@@ -1,0 +1,3 @@
+project xmlecho;
+target=program;
+source <xmlecho.cm>;

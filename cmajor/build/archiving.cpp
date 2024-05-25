@@ -5,8 +5,9 @@
 
 module cmajor.build.archiving;
 
+import cmajor.build.config;
 import cmajor.symbols;
-// import cmajor.llvm;
+import cmajor.llvm;
 import cmajor.backend.systemx;
 import cmajor.systemx.object;
 import util;
@@ -24,11 +25,25 @@ void ArchiveCpp(cmajor::ast::Project* project, const std::vector<std::string>& o
     {
         std::filesystem::remove(project->LibraryFilePath());
     }
-    std::string archiveCommand = "ar rv " + util::QuotedPath(project->LibraryFilePath());
+    std::string arPath = GetARPathFromBuildConfig();
+    std::string archiveCommand = arPath + " rv " + util::QuotedPath(project->LibraryFilePath());
     for (const auto& objectFilePath : objectFilePaths)
     {
         archiveCommand.append(" ").append(util::QuotedPath(objectFilePath));
     }
+    util::ExecuteResult executeResult = util::Execute(archiveCommand);
+    if (executeResult.exitCode != 0)
+    {
+        throw std::runtime_error("archiving failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
+    }
+    else
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(project->LogStreamId(), executeResult.output);
+        }
+    }
+/*
     std::string errors;
     try
     {
@@ -61,6 +76,7 @@ void ArchiveCpp(cmajor::ast::Project* project, const std::vector<std::string>& o
     {
         throw std::runtime_error("generating archive '" + project->LibraryFilePath() + "' failed: " + ex.what() + ":\nerrors:\n" + errors);
     }
+*/
     if (verbose)
     {
         util::LogMessage(project->LogStreamId(), "==> " + project->LibraryFilePath());
@@ -72,7 +88,6 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
     bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
     switch (cmajor::symbols::GetBackEnd())
     {
-/*
         case cmajor::symbols::BackEnd::llvm:
         {
             if (verbose)
@@ -90,7 +105,6 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
             }
             break;
         }
-*/
         case cmajor::symbols::BackEnd::systemx:
         {
             cmajor::systemx::object::CreateArchive(0, project->LibraryFilePath(), objectFilePaths, verbose);
@@ -99,11 +113,6 @@ void Archive(cmajor::ast::Project* project, const std::vector<std::string>& obje
         case cmajor::symbols::BackEnd::cpp:
         {
             ArchiveCpp(project, objectFilePaths, verbose);
-            break;
-        }
-        case cmajor::symbols::BackEnd::masm:
-        {
-            // todo
             break;
         }
     }

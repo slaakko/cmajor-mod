@@ -39,6 +39,8 @@ import std.core;
 
 namespace cmajor::symbols {
 
+// CreateDIType
+
 ClassTypeFlagMap::ClassTypeFlagMap()
 {
 }
@@ -93,13 +95,13 @@ void ClassTypeFlagMap::ResetFlag(const std::u32string& classTypeMangledName, Cla
 
 int32_t GetClassIdVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx)
+    if (GetBackEnd() == BackEnd::systemx)
     {
         return 0;
     }
-    else if (GetBackEnd() == BackEnd::masm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
-        Assert(false, "MASM backend does not support class ids");
+        Assert(false, "MASM, LLVM and C++ backends do not support class ids");
         return -1;
     }
     else
@@ -111,11 +113,11 @@ int32_t GetClassIdVmtIndexOffset()
 
 int32_t GetTypeIdVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::systemx)
+    if (GetBackEnd() == BackEnd::systemx)
     {
         return 2;
     }
-    else if (GetBackEnd() == BackEnd::masm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 0;
     }
@@ -128,7 +130,7 @@ int32_t GetTypeIdVmtIndexOffset()
 
 int32_t GetClassNameVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         return 4;
     }
@@ -136,9 +138,9 @@ int32_t GetClassNameVmtIndexOffset()
     {
         return 2;
     }
-    else if (GetBackEnd() == BackEnd::masm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
-        Assert(false, "MASM backend does not support in-class typename");
+        Assert(false, "MASM and C++ backends do not support in-class typename");
         return -1;
     }
     else
@@ -150,7 +152,7 @@ int32_t GetClassNameVmtIndexOffset()
 
 int32_t GetImtsVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         return 5;
     }
@@ -158,7 +160,7 @@ int32_t GetImtsVmtIndexOffset()
     {
         return 3;
     }
-    else if (GetBackEnd() == BackEnd::masm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 2;
     }
@@ -171,7 +173,7 @@ int32_t GetImtsVmtIndexOffset()
 
 int32_t GetFunctionVmtIndexOffset()
 {
-    if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         return 6;
     }
@@ -179,7 +181,7 @@ int32_t GetFunctionVmtIndexOffset()
     {
         return 4;
     }
-    else if (GetBackEnd() == BackEnd::masm)
+    else if (GetBackEnd() == BackEnd::masm || GetBackEnd() == BackEnd::cpp || GetBackEnd() == BackEnd::llvm)
     {
         return 3;
     }
@@ -1328,10 +1330,12 @@ void ClassTypeSymbol::InitVmt(std::vector<FunctionSymbol*>& vmtToInit)
                 {
                     throw Exception("overriding function should be declared with override specifier", f->GetFullSpan());
                 }
+/* TODO exception handling
                 if (f->DontThrow() != v->DontThrow())
                 {
                     throw Exception("overriding function has conflicting nothrow specification compared to the base class virtual function", f->GetFullSpan(), v->GetFullSpan());
                 }
+*/
                 f->SetVmtIndex(j);
                 vmtToInit[j] = f;
                 found = true;
@@ -1557,12 +1561,14 @@ void* ClassTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
         uint64_t offsetInBits = emitter.GetOffsetInBits(IrType(emitter), memberVariable->LayoutIndex());
         elements.push_back(memberVariable->GetDIMemberType(emitter, offsetInBits));
     }
-    return emitter.CreateDITypeForClassType(IrType(emitter), elements, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()), baseClassDIType);
+    //return emitter.CreateDITypeForClassType(IrType(emitter), elements, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()), baseClassDIType);
+    return nullptr; // TODO
 }
 
 void* ClassTypeSymbol::CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter)
 {
-    return emitter.CreateIrDIForwardDeclaration(IrType(emitter), util::ToUtf8(Name()), util::ToUtf8(MangledName()));
+    // todo LLVM debug info
+    return emitter.CreateIrDIForwardDeclaration(IrType(emitter), util::ToUtf8(Name()), util::ToUtf8(MangledName()), soul::ast::FullSpan(), soul::ast::LineColLen()); 
 }
 
 std::string ClassTypeSymbol::VmtObjectNameStr()
@@ -1695,7 +1701,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
     void* localVmtObjectType = emitter.GetVmtObjectType(this);
     if (!localVmtObjectType)
     {
-        localVmtObjectType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), vmt.size() + GetFunctionVmtIndexOffset());
+        localVmtObjectType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), vmt.size() + GetFunctionVmtIndexOffset()); 
         emitter.SetVmtObjectType(this, localVmtObjectType);
     }
     void* className = nullptr;
@@ -1718,17 +1724,14 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
             void* comdat = emitter.GetOrInsertAnyComdat(vmtObjectName, vmtObject);
         }
         std::vector<void*> vmtArray;
-        if (GetBackEnd() == BackEnd::llvm)
+        if (GetBackEnd() == BackEnd::llvm) 
         {
-            vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType()); // 128-bit class id, initially 0, dynamically initialized
-            vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
             uint64_t typeId1 = 0;
             uint64_t typeId2 = 0;
             UuidToInts(TypeId(), typeId1, typeId2);
             //      16-byte type id:
             vmtArray.push_back(emitter.CreateIntToPtr(emitter.CreateIrValueForULong(typeId1), emitter.GetIrTypeForVoidPtrType()));
             vmtArray.push_back(emitter.CreateIntToPtr(emitter.CreateIrValueForULong(typeId2), emitter.GetIrTypeForVoidPtrType()));
-            vmtArray.push_back(emitter.CreateBitCast(className, emitter.GetIrTypeForVoidPtrType())); // class name pointer
             if (!implementedInterfaces.empty())
             {
                 void* itabsArrayObject = CreateImts(emitter);
@@ -1756,15 +1759,12 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         }
         else if (GetBackEnd() == BackEnd::cpp)
         {
-            vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType()); // 128-bit class id, initially 0, dynamically initialized
-            vmtArray.push_back(emitter.CreateDefaultIrValueForVoidPtrType());
             uint64_t typeId1 = 0;
             uint64_t typeId2 = 0;
             UuidToInts(TypeId(), typeId1, typeId2);
             //      16-byte type id:
             vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId1)));
             vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), emitter.CreateIrValueForULong(typeId2)));
-            vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), className)); // class name pointer
             if (!implementedInterfaces.empty())
             {
                 void* itabsArrayObject = CreateImts(emitter);

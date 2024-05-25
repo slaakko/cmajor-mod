@@ -1,0 +1,9 @@
+0 : prev: 4
+    a -> 1
+1 : RULE=0 : ACCEPT : prev: 0
+2 : prev: 4
+    ( -> 3
+3 : RULE=1 : ACCEPT : prev: 2
+4
+    EPS -> 0
+    EPS -> 2

@@ -299,13 +299,13 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
 #else
         objfp = (objectFileDirectory / fileName).replace_extension(".o");
 #endif
-        llFilePath = util::GetFullPath(util::ToUtf8(llfp.generic_u32string()));
-        cppFilePath = util::GetFullPath(util::ToUtf8(cppfp.generic_u32string()));
-        bcFilePath = util::GetFullPath(util::ToUtf8(bcfp.generic_u32string()));
-        optBCFilePath = util::GetFullPath(util::ToUtf8(optbcfp.generic_u32string()));
-        optLLFilePath = util::GetFullPath(util::ToUtf8(optllfp.generic_u32string()));
-        objectFilePath = util::GetFullPath(util::ToUtf8(objfp.generic_u32string()));
-        asmFilePath = util::GetFullPath(util::ToUtf8(asmfp.generic_u32string()));
+        llFilePath = util::GetFullPath(llfp.generic_string());
+        cppFilePath = util::GetFullPath(cppfp.generic_string());
+        bcFilePath = util::GetFullPath(bcfp.generic_string());
+        optBCFilePath = util::GetFullPath(optbcfp.generic_string());
+        optLLFilePath = util::GetFullPath(optllfp.generic_string());
+        objectFilePath = util::GetFullPath(objfp.generic_string());
+        asmFilePath = util::GetFullPath(asmfp.generic_string());
     }
 }
 
@@ -917,6 +917,8 @@ void BoundCompileUnit::GenerateInitUnwindInfoFunctionSymbol(const soul::ast::Spa
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitUnwindInfo_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
@@ -936,6 +938,8 @@ void BoundCompileUnit::GenerateCompileUnitInitialization(const soul::ast::Span& 
     if (module.IsCore()) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::string compileUnitId = compileUnitNode->Id();
     std::u32string groupName = U"InitCompileUnit_" + util::ToUtf32(compileUnitId);
     cmajor::symbols::FunctionSymbol* functionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
@@ -996,6 +1000,8 @@ void BoundCompileUnit::GenerateGlobalInitializationFunction(const soul::ast::Spa
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp) return;
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm) return;
     std::u32string groupName = U"GlobalInitCompileUnits";
     globalInitFunctionSymbol = new cmajor::symbols::FunctionSymbol(span, groupName);
     globalInitFunctionSymbol->SetParent(&symbolTable.GlobalNs());

@@ -18,7 +18,7 @@ WindowsCodeGenerator::WindowsCodeGenerator(cmajor::ir::Emitter* emitter_) : LLVM
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundReturnStatement.GetSourcePos());
+    //Emitter()->SetCurrentDebugLocation(boundReturnStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -71,7 +71,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundRetu
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCaseStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundGotoCaseStatement.GetSourcePos());
+    // Emitter()->SetCurrentDebugLocation(boundGotoCaseStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -88,7 +88,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
             Emitter()->SetCurrentBasicBlock(fromCatchTarget);
             SetCurrentPad(CurrentPad()->parent);
         }
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     ExitBlocks(BreakTargetBlock());
     cmajor::symbols::IntegralValue integralCaseValue(boundGotoCaseStatement.CaseValue());
@@ -100,14 +100,14 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
     }
     else
     {
-        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetSourcePos(), boundGotoCaseStatement.ModuleId());
+        throw cmajor::symbols::Exception("case not found", boundGotoCaseStatement.GetFullSpan());
     }
     SetCurrentPad(prevCurrentPad);
 }
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGotoDefaultStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundGotoDefaultStatement.GetSourcePos());
+    // Emitter()->SetCurrentDebugLocation(boundGotoDefaultStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -124,7 +124,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
             Emitter()->SetCurrentBasicBlock(fromCatchTarget);
             SetCurrentPad(CurrentPad()->parent);
         }
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     ExitBlocks(BreakTargetBlock());
     if (DefaultDest())
@@ -133,14 +133,14 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
     }
     else
     {
-        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetSourcePos(), boundGotoDefaultStatement.ModuleId());
+        throw cmajor::symbols::Exception("no default destination", boundGotoDefaultStatement.GetFullSpan());
     }
     SetCurrentPad(prevCurrentPad);
 }
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundBreakStatement.GetSourcePos());
+    // Emitter()->SetCurrentDebugLocation(boundBreakStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -157,7 +157,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreak
             Emitter()->SetCurrentBasicBlock(fromCatchTarget);
             SetCurrentPad(CurrentPad()->parent);
         }
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     ExitBlocks(BreakTargetBlock());
     Emitter()->CreateBr(BreakTarget());
@@ -169,7 +169,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreak
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundContinueStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundContinueStatement.GetSourcePos());
+    // Emitter()->SetCurrentDebugLocation(boundContinueStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -186,7 +186,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundCo
             Emitter()->SetCurrentBasicBlock(fromCatchTarget);
             SetCurrentPad(CurrentPad()->parent);
         }
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     ExitBlocks(ContinueTargetBlock());
     Emitter()->CreateBr(ContinueTarget());
@@ -198,7 +198,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundCo
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundGotoStatement.GetSourcePos());
+    //Emitter()->SetCurrentDebugLocation(boundGotoStatement.GetSourcePos()); TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -214,7 +214,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
             Emitter()->SetCurrentBasicBlock(fromCatchTarget);
             SetCurrentPad(CurrentPad()->parent);
         }
-        parent = parent->Parent();
+        parent = parent->StatementParent();
     }
     ExitBlocks(boundGotoStatement.TargetBlock());
     auto it = LabeledStatementMap().find(boundGotoStatement.TargetStatement());
@@ -225,7 +225,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
     }
     else
     {
-        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetSourcePos(), boundGotoStatement.ModuleId());
+        throw cmajor::symbols::Exception("goto target not found", boundGotoStatement.GetFullSpan());
     }
     void* nextBlock = Emitter()->CreateBasicBlock("next");
     Emitter()->SetCurrentBasicBlock(nextBlock);
@@ -284,7 +284,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         handleExceptionParamTypes.push_back(Emitter()->GetIrTypeForVoidPtrType());
         void* handleExceptionFunctionType = Emitter()->GetIrTypeForFunction(Emitter()->GetIrTypeForBool(), handleExceptionParamTypes);
         std::vector<void*> handleExceptionArgs;
-        cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSourcePos(), boundCatchStatement->ModuleId(), boundCatchStatement->CatchTypeUuidId());
+        cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
         void* catchTypeIdValue = uuidValue.IrValue(*Emitter());
         handleExceptionArgs.push_back(catchTypeIdValue);
         void* handleException = Emitter()->GetOrInsertFunction("RtHandleException", handleExceptionFunctionType, true);
@@ -297,7 +297,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         {
             std::vector<void*> bundles;
             bundles.push_back(CurrentPad()->value);
-            handleThisEx = Emitter()->CreateCallInst(handleExceptionFunctionType, handleException, handleExceptionArgs, bundles, boundCatchStatement->GetSourcePos());
+            handleThisEx = Emitter()->CreateCallInst(handleExceptionFunctionType, handleException, handleExceptionArgs, bundles);
         }
         void* nextHandlerTarget = nullptr;
         if (i < n - 1)
@@ -326,7 +326,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
     rethrowArgs.push_back(Emitter()->CreateDefaultIrValueForVoidPtrType());
     std::vector<void*> bundles;
     bundles.push_back(CurrentPad()->value);
-    Emitter()->CreateCallInstToBasicBlock(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles, resumeTarget, soul::ast::SourcePos());
+    Emitter()->CreateCallInstToBasicBlock(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles, resumeTarget, soul::ast::LineColLen()); // TODO LLVM Debug info
     Emitter()->CreateBr(nextTarget);
     SetCurrentPad(parentPad);
     Emitter()->SetCurrentBasicBlock(nextTarget);
@@ -336,7 +336,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrowStatement)
 {
-    Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos());
+    //Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos()); // TODO LLVM debug info
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -344,7 +344,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
     boundRethrowStatement.ReleaseCall()->Accept(*this);
     if (Emitter()->DIBuilder())
     {
-        Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos());
+        //Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos()); TODO LLVM debug info
     }
     std::vector<void*> cxxThrowFunctionParamTypes;
     cxxThrowFunctionParamTypes.push_back(Emitter()->GetIrTypeForVoidPtrType());
@@ -356,7 +356,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRet
     rethrowArgs.push_back(Emitter()->CreateDefaultIrValueForVoidPtrType());
     std::vector<void*> bundles;
     bundles.push_back(CurrentPad()->value);
-    void* callInst = Emitter()->CreateCallInst(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles, boundRethrowStatement.GetSourcePos());
+    void* callInst = Emitter()->CreateCallInst(cxxThrowFunctionType, cxxThrowFunction, rethrowArgs, bundles);
 }
 
 void* WindowsCodeGenerator::GetPersonalityFunction() const
@@ -400,14 +400,15 @@ void WindowsCodeGenerator::CreateCleanup()
 {
     SetCleanupBlock(Emitter()->CreateBasicBlock("cleanup"));
     cmajor::binder::BoundCompoundStatement* targetBlock = nullptr;
-    cmajor::binder::BoundStatement* parent = CurrentBlock()->Parent();
+    cmajor::binder::BoundNode* parent = CurrentBlock()->Parent();
     while (parent && parent->GetBoundNodeType() != cmajor::binder::BoundNodeType::boundTryStatement)
     {
         parent = parent->Parent();
     }
     if (parent)
     {
-        targetBlock = parent->Block();
+        cmajor::binder::BoundTryStatement* tryStatement = static_cast<cmajor::binder::BoundTryStatement*>(parent);
+        targetBlock = tryStatement->Block();
     }
     Cleanup* cleanup = new Cleanup(CleanupBlock(), HandlerBlock(), CurrentPad());
     int n = Blocks().size();

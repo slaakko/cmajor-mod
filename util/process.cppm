@@ -52,4 +52,13 @@ constexpr Process::Redirections operator&(Process::Redirections left, Process::R
 
 int GetPid();
 
+struct ExecuteResult
+{
+    ExecuteResult(int exitCode_, std::string&& output_) : exitCode(exitCode_), output(std::move(output_)) {}
+    int exitCode;
+    std::string output;
+};
+
+ExecuteResult Execute(const std::string& commandLine);
+
 } // namespace util

@@ -8,16 +8,17 @@ module cmajor.build.building;
 import cmajor.build.action;
 import cmajor.build.compiling;
 import cmajor.build.flags;
+import cmajor.build.config;
 import cmajor.build.install;
 import cmajor.build.parsing;
 import cmajor.build.archiving;
 import cmajor.build.linking;
 import cmajor.build.resources;
 import cmajor.build.main.unit;
+import cmajor.cpp.backend.codegen;
 import cmajor.masm.build;
 import cmajor.binder;
 import cmajor.ast;
-// import cmajor.llvm;
 import soul.lexer;
 import std.filesystem;
 import util;
@@ -39,10 +40,7 @@ void ResetStopBuild()
 std::unique_ptr<cmajor::ast::Project> ReadProject(const std::string& projectFilePath)
 {
     std::string config = cmajor::symbols::GetConfig();
-/*
     cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
-*/
-    cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::cpp;
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
     {
         backend = cmajor::ast::BackEnd::systemx;
@@ -106,6 +104,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
 {
     try
     {
+        cmajor::cpp::backend::SetGXXPath(cmajor::build::GetGXXPathFromBuildConfig());
         Variables variables;
         std::string outDir = project->OutDir();
         if (!outDir.empty())
@@ -224,7 +223,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 {
                     rootModule->AddResourceScriptFilePath(rcFilePath);
                 }
-                GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
+                if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
+                {
+                    GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
+                }
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
                 {
                     util::LogMessage(project->LogStreamId(), "Writing module file...");
@@ -264,7 +266,14 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 {
                     Archive(project, objectFilePaths);
                 }
-                Link(project, rootModule.get());
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                {
+                    GenerateMainUnit(project, rootModule.get(), objectFilePaths, cppFilePaths);
+                }
+                if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::llvm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
+                {
+                    Link(project, rootModule.get());
+                }
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))

@@ -456,7 +456,8 @@ void StatementBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructo
 void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunction)
 {
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx) return;
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         if (cmajor::symbols::GetConfig() == "release") return;
         cmajor::symbols::Module& currentModule = boundFunction->GetBoundCompileUnit()->GetModule();
@@ -545,7 +546,6 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         enterCode.push_back(std::move(constructTraceEntryStatement));
         enterCode.push_back(std::move(constructTraceGuardStatement));
         boundFunction->SetEnterCode(std::move(enterCode));
-
     }
     else
     {
@@ -1443,7 +1443,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         exceptionCapture = true;
     }
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         if (cmajor::symbols::GetConfig() == "debug")
         {
@@ -1493,7 +1493,7 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     arguments.push_back(std::move(memFreePtr));
     const char32_t* memFreeFunctionName = U"";
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
     {
         memFreeFunctionName = U"RtMemFree";
     }
@@ -1501,7 +1501,8 @@ void StatementBinder::Visit(cmajor::ast::DeleteStatementNode& deleteStatementNod
     {
         memFreeFunctionName = U"MemFree";
     }
-    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         memFreeFunctionName = U"RtmMemFree";
     }
@@ -1889,9 +1890,10 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
 
 void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend does not support exceptions", throwStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", throwStatementNode.GetFullSpan());
     }
     bool prevCompilingThrow = compilingThrow;
     compilingThrow = true;
@@ -1963,9 +1965,10 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend does not support exceptions", tryStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", tryStatementNode.GetFullSpan());
     }
     BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSpan());
     tryStatementNode.TryBlock()->Accept(*this);
@@ -1985,9 +1988,10 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend does not support exceptions", catchNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", catchNode.GetFullSpan());
     }
     bool prevInsideCatch = insideCatch;
     insideCatch = true;
@@ -2011,7 +2015,7 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
     }
     cmajor::ast::CompoundStatementNode handlerBlock(span);
     handlerBlock.SetParent(catchNode.Parent());
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
         cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span, 
             new cmajor::ast::IdentifierNode(span, U"void")),
@@ -2092,7 +2096,8 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
         int32_t assertionIndex = cmajor::symbols::GetNextUnitTestAssertionNumber();
         cmajor::symbols::AddAssertionLineNumber(assertionLineNumber);
         std::u32string setAssertionResultFunctionName = U"RtSetUnitTestAssertionResult";
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
         {
             setAssertionResultFunctionName = U"RtmSetUnitTestAssertionResult";
         }
@@ -2144,7 +2149,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
                 lineNumber)), symbolTable.GetTypeByName(U"int"))));
             std::unique_ptr<BoundExpression> assertExpression = BindExpression(assertStatementNode.AssertExpr(), boundCompileUnit, currentFunction, containerScope, this);
             const char32_t* failAssertionFunctionName = U"";
-            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+            if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
             {
                 failAssertionFunctionName = U"RtFailAssertion";
             }
@@ -2152,7 +2157,8 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
             {
                 failAssertionFunctionName = U"System.FailAssertion";
             }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+                cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
             {
                 failAssertionFunctionName = U"RtmFailAssertion";
             }

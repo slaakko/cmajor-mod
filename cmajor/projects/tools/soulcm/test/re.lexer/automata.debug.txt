@@ -1,0 +1,207 @@
+0
+    ( -> 1
+1 : RULE=0 : ACCEPT : prev: 0
+2
+    ) -> 3
+3 : RULE=1 : ACCEPT : prev: 2
+4
+    [ -> 5
+5 : RULE=2 : ACCEPT : prev: 4
+6
+    ] -> 7
+7 : RULE=3 : ACCEPT : prev: 6
+8
+    { -> 9
+9 : RULE=4 : ACCEPT : prev: 8
+10
+    } -> 11
+11 : RULE=5 : ACCEPT : prev: 10
+12
+    | -> 13
+13 : RULE=6 : ACCEPT : prev: 12
+14
+    * -> 15
+15 : RULE=7 : ACCEPT : prev: 14
+16
+    + -> 17
+17 : RULE=8 : ACCEPT : prev: 16
+18
+    ? -> 19
+19 : RULE=9 : ACCEPT : prev: 18
+20
+    . -> 21
+21 : RULE=10 : ACCEPT : prev: 20
+22
+    ^ -> 23
+23 : RULE=11 : ACCEPT : prev: 22
+24
+    - -> 25
+25 : RULE=12 : ACCEPT : prev: 24
+26
+    \\ -> 27
+27 : prev: 26
+    EPS -> 86
+    EPS -> 116
+28 : prev: 32
+    x -> 29
+29 : prev: 28
+    EPS -> 33
+30 : prev: 32
+    X -> 31
+32 : prev: 48
+    EPS -> 28
+    EPS -> 30
+33 : prev: 31 29
+    EPS -> 34
+34 : prev: 36 33 35
+    #00000:[U00000030..U00000039:0..9U00000061..U00000066:a..fU00000041..U00000046:A..F]
+     -> 35
+35 : prev: 34
+    EPS -> 37
+    EPS -> 34
+37 : prev: 35
+    EPS -> 49
+48 : prev: 54
+    EPS -> 32
+    EPS -> 42
+49 : prev: 47 37
+    EPS -> 55
+54 : prev: 66
+    EPS -> 48
+    EPS -> 52
+55 : prev: 49 53
+    EPS -> 67
+66 : prev: 86
+    EPS -> 54
+    EPS -> 56
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+67 : prev: 65 55
+    EPS -> 87
+68 : prev: 86
+    U -> 69
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+88 : prev: 92
+    a -> 89
+89 : prev: 88
+    EPS -> 93
+90 : prev: 92
+    b -> 91
+99 : prev: 98
+    EPS -> 101
+102 : prev: 104
+    r -> 103
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+103 : prev: 102
+    EPS -> 105
+105 : prev: 103 101
+    EPS -> 109
+105 : prev: 103 101
+    EPS -> 109
+105 : prev: 103 101
+    EPS -> 109
+105 : prev: 103 101
+    EPS -> 109
+105 : prev: 103 101
+    EPS -> 109
+106 : prev: 108
+    t -> 107
+110 : prev: 112
+    v -> 111
+113 : prev: 109 111
+    EPS -> 117
+113 : prev: 109 111
+    EPS -> 117
+113 : prev: 109 111
+    EPS -> 117
+113 : prev: 109 111
+    EPS -> 117
+113 : prev: 109 111
+    EPS -> 117
+113 : prev: 109 111
+    EPS -> 117
+114 : prev: 116
+    . -> 115
+117 : prev: 113 115
+    EPS -> 119
+117 : prev: 113 115
+    EPS -> 119
+117 : prev: 113 115
+    EPS -> 119
+119 : RULE=13 : ACCEPT : prev: 117 87
+120
+    #00015:[^EPS\r\n{}\\()[]|*+?.^-]
+     -> 121
+121 : RULE=14 : ACCEPT : prev: 120

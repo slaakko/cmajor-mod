@@ -14,6 +14,7 @@ module;
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/CodeGen.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 
 module cmajor.llvm.emitting.context;
 

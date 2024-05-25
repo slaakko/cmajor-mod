@@ -3346,7 +3346,9 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
             new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())),
             std::unique_ptr<BoundStatement>(new BoundReturnStatement(std::unique_ptr<BoundFunctionCall>(nullptr), node->GetSpan())), std::unique_ptr<BoundStatement>(nullptr)));
         boundCompoundStatement->AddStatement(std::move(ifStatement));
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || 
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
+            cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
         {
             cmajor::ast::IdentifierNode staticInitCriticalSection(node->GetSpan(), U"System.Runtime.StaticInitCriticalSection");
             cmajor::symbols::TypeSymbol* staticInitCriticalSectionClassType = ResolveType(&staticInitCriticalSection, boundCompileUnit, containerScope);
@@ -3358,8 +3360,6 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
             constructorArguments.push_back(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                 new BoundLocalVariable(node->GetSpan(), staticConstructorSymbol->CreateTemporary(staticInitCriticalSectionClassType, node->GetSpan()))),
                 staticInitCriticalSectionClassType->AddPointer())));
-            constructorArguments.push_back(std::unique_ptr<BoundExpression>(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::UuidValue(node->GetSpan(),
-                boundCompileUnit.Install(classType->TypeId()))), boundCompileUnit.GetSymbolTable().GetTypeByName(U"void")->AddPointer())));
             std::unique_ptr<BoundConstructionStatement> constructionStatement(new BoundConstructionStatement(
                 ResolveOverload(U"@constructor", containerScope, constructorLookups, constructorArguments, boundCompileUnit, boundFunction, node), node->GetSpan()));
             boundCompoundStatement->AddStatement(std::move(constructionStatement));
@@ -3450,7 +3450,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 if (memberVariableClassTypeWithDestructor)
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3483,7 +3483,8 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, node);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(atExitCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3524,7 +3525,7 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 if (memberVariableClassTypeWithDestructor)
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                    if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3557,7 +3558,8 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                             boundFunction, node);
                         boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(atExitCall))));
                     }
-                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+                        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
                     {
                         std::vector<FunctionScopeLookup> enqueueLookups;
                         enqueueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));

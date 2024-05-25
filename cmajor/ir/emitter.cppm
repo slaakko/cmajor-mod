@@ -148,10 +148,11 @@ public:
     virtual void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) = 0;
     virtual void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) = 0;
-    virtual void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName) = 0;
+    virtual void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName,
+        const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) = 0;
     virtual uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) = 0;
-    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
-        const std::string& mangledName, void* baseClassDIType) = 0;
+    virtual void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+        const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) = 0;
     virtual void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) = 0;
     virtual void* GetDITypeByTypeId(const util::uuid& typeId) const = 0;
     virtual void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) = 0;
@@ -166,7 +167,7 @@ public:
     virtual void MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className) = 0;
     virtual uint64_t GetSizeInBits(void* irType) = 0;
     virtual uint64_t GetAlignmentInBits(void* irType) = 0;
-    virtual void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen) = 0;
     virtual void SetCurrentDebugLocation(const soul::ast::Span& span) = 0;
     virtual void* GetArrayBeginAddress(void* arrayType, void* arrayPtr) = 0;
     virtual void* GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size) = 0;
@@ -263,7 +264,8 @@ public:
     virtual void* CreateClassDIType(void* classPtr) = 0;
     virtual void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) = 0;
     virtual void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) = 0;
-    virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) = 0;
+    virtual void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+        const soul::ast::LineColLen& lineColLen) = 0;
     virtual void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) = 0;
     virtual void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) = 0;
     virtual void* DIBuilder() = 0;
@@ -312,7 +314,7 @@ public:
     virtual void Compile(const std::string& objectFilePath) = 0;
     virtual void VerifyModule() = 0;
     virtual void* CreateDebugInfoForNamespace(void* scope, const std::string& name) = 0;
-    virtual void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) = 0;
+    virtual void* GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan) = 0;
     virtual void PushScope(void* scope) = 0;
     virtual void PopScope() = 0;
     virtual void* CurrentScope() = 0;
@@ -322,7 +324,7 @@ public:
     virtual void SetFunctionLinkage(void* function, bool setInline) = 0;
     virtual void SetFunctionLinkageToLinkOnceODRLinkage(void* function) = 0;
     virtual void SetFunctionCallConventionToStdCall(void* function) = 0;
-    virtual void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) = 0;
+    virtual void SetFunction(void* function_, int32_t fileIndex, const util::uuid& moduleId, const util::uuid& functionId) = 0;
     virtual void SetFunctionName(const std::string& functionName) = 0;
     virtual void SetFunctionComment(void* function, const std::string& functionComment) = 0;
     virtual void BeginScope() = 0;
@@ -340,13 +342,16 @@ public:
     virtual unsigned GetPureVirtualVirtuality() = 0;
     virtual unsigned GetVirtualVirtuality() = 0;
     virtual unsigned GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit) = 0;
-    virtual void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
-        unsigned flags) = 0;
-    virtual void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* subroutineType, unsigned flags) = 0;
+    virtual void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags) = 0;
+    virtual void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
+        void* subroutineType, unsigned flags) = 0;
     virtual void SetDISubprogram(void* function, void* subprogram) = 0;
     virtual void* CreateAlloca(void* irType) = 0;
-    virtual void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) = 0;
-    virtual void* CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) = 0;
+    virtual void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* irType, void* allocaInst) = 0;
+    virtual void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* irType, void* allocaInst) = 0;
     virtual void* GetFunctionArgument(void* function, int argumentIndex) = 0;
     virtual void SetDebugLoc(void* callInst) = 0;
     virtual void* CreateRet(void* value) = 0;
@@ -354,7 +359,7 @@ public:
     virtual void SetPersonalityFunction(void* function, void* personalityFunction) = 0;
     virtual void AddNoUnwindAttribute(void* function) = 0;
     virtual void AddUWTableAttribute(void* function) = 0;
-    virtual void* CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) = 0;
+    virtual void* CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) = 0;
     virtual void* CreateSwitch(void* condition, void* defaultDest, unsigned numCases) = 0;
     virtual void AddCase(void* switchInst, void* caseValue, void* caseDest) = 0;
     virtual void* GenerateTrap(const std::vector<void*>& args) = 0;

@@ -46,3 +46,4 @@ export import util.init.done;
 export import util.rand;
 export import util.uri;
 export import util.std.io.stream;
+export import util.execute_win;

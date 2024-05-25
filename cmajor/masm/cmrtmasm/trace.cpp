@@ -14,7 +14,7 @@ struct TraceEntry
     int32_t line;
 };
 
-__declspec(thread) TraceEntry* traceList = nullptr;
+thread_local TraceEntry* traceList = nullptr;
 
 void RtmPushFunction(void* traceEntry)
 {

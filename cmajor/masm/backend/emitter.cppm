@@ -113,10 +113,11 @@ public:
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
     void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
-    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName) override;
+    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName,
+        const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
-        const std::string& mangledName, void* baseClassDIType) override;
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+        const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) override;
     void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) override;
     void* GetDITypeByTypeId(const util::uuid& typeId) const override;
     void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) override;
@@ -131,7 +132,7 @@ public:
     void MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className) override;
     uint64_t GetSizeInBits(void* irType) override;
     uint64_t GetAlignmentInBits(void* irType) override;
-    void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) override;
+    void SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen) override;
     void SetCurrentDebugLocation(const soul::ast::Span& span) override;
     void* GetArrayBeginAddress(void* arrayType, void* arrayPtr) override;
     void* GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size) override;
@@ -228,7 +229,8 @@ public:
     void* CreateClassDIType(void* classPtr) override;
     void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) override;
     void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
-    void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+        const soul::ast::LineColLen& lineColLen) override;
     void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
     void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
     void* DIBuilder() override;
@@ -277,7 +279,7 @@ public:
     void Compile(const std::string& objectFilePath) override;
     void VerifyModule() override;
     void* CreateDebugInfoForNamespace(void* scope, const std::string& name) override;
-    void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void* GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan) override;
     void PushScope(void* scope) override;
     void PopScope() override;
     void* CurrentScope() override;
@@ -305,13 +307,15 @@ public:
     unsigned GetPureVirtualVirtuality() override;
     unsigned GetVirtualVirtuality() override;
     unsigned GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit) override;
-    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
-        unsigned flags) override;
-    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* subroutineType, unsigned flags) override;
+    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags) override;
+    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* subroutineType, unsigned flags) override;
     void SetDISubprogram(void* function, void* subprogram) override;
     void* CreateAlloca(void* irType) override;
-    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
-    void* CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
+    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* irType, void* allocaInst) override;
+    void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst) override;
     void* GetFunctionArgument(void* function, int argumentIndex) override;
     void SetDebugLoc(void* callInst) override;
     void* CreateRet(void* value) override;
@@ -319,7 +323,7 @@ public:
     void SetPersonalityFunction(void* function, void* personalityFunction) override;
     void AddNoUnwindAttribute(void* function) override;
     void AddUWTableAttribute(void* function) override;
-    void* CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void* CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) override;
     void* CreateSwitch(void* condition, void* defaultDest, unsigned numCases) override;
     void AddCase(void* switchInst, void* caseValue, void* caseDest) override;
     void* GenerateTrap(const std::vector<void*>& args) override;

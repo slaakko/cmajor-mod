@@ -15,6 +15,7 @@ module;
 #include <llvm/Support/Error.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/StringSaver.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 
 module cmajor.llvm.archive.windows;
 
@@ -75,7 +76,7 @@ void ArchiveWindows(const std::string& libraryFilePath, const std::vector<std::s
     ::llvm::COFF::MachineTypes machine = ::llvm::COFF::IMAGE_FILE_MACHINE_AMD64;
     for (const auto& path : objectFilePaths)
     {
-        ::llvm::ErrorOr<std::unique_ptr<::llvm::MemoryBuffer>> mOrErr = ::llvm::MemoryBuffer::getFile(path, -1, false);
+        ::llvm::ErrorOr<std::unique_ptr<::llvm::MemoryBuffer>> mOrErr = ::llvm::MemoryBuffer::getFile(path, false, false);
         fatalOpenError(::llvm::errorCodeToError(mOrErr.getError()), path);
         ::llvm::MemoryBufferRef mbRef = (*mOrErr)->getMemBufferRef();
         appendFile(members, machine, mbRef);

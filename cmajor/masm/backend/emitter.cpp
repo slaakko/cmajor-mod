@@ -555,7 +555,8 @@ void* MasmEmitter::CreateDITypeForEnumType(const std::string& name, const std::s
     return nullptr;
 }
 
-void* MasmEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
+void* MasmEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName,
+    const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }
@@ -565,8 +566,8 @@ uint64_t MasmEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
     return uint64_t();
 }
 
-void* MasmEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
-    const std::string& mangledName, void* baseClassDIType)
+void* MasmEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -637,7 +638,7 @@ uint64_t MasmEmitter::GetAlignmentInBits(void* irType)
     return 0;
 }
 
-void MasmEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+void MasmEmitter::SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen)
 {
 }
 
@@ -1160,7 +1161,8 @@ void* MasmEmitter::CreateCallInst(void* functionType, void* callee, const std::v
     return context->CreateCall(calleeValue);
 }
 
-void* MasmEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+void* MasmEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, 
+    void* basicBlock, const soul::ast::LineColLen& lineColLen)
 {
     void* prevBasicBlock = context->GetCurrentBasicBlock();
     SetCurrentBasicBlock(basicBlock);
@@ -1473,7 +1475,7 @@ void* MasmEmitter::CreateDebugInfoForNamespace(void* scope, const std::string& n
     return nullptr;
 }
 
-void* MasmEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* MasmEmitter::GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan)
 {
     return nullptr;
 }
@@ -1601,13 +1603,14 @@ unsigned MasmEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, bool
     return unsigned();
 }
 
-void* MasmEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
-    unsigned flags)
+void* MasmEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags)
 {
     return nullptr;
 }
 
-void* MasmEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned flags)
+void* MasmEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* subroutineType, unsigned flags)
 {
     return nullptr;
 }
@@ -1621,12 +1624,13 @@ void* MasmEmitter::CreateAlloca(void* irType)
     return context->CreateLocal(static_cast<cmajor::masm::ir::Type*>(irType));
 }
 
-void* MasmEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* MasmEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* irType, void* allocaInst)
 {
     return nullptr;
 }
 
-void* MasmEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* MasmEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst)
 {
     return nullptr;
 }
@@ -1662,7 +1666,7 @@ void MasmEmitter::AddUWTableAttribute(void* function)
 {
 }
 
-void* MasmEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* MasmEmitter::CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }

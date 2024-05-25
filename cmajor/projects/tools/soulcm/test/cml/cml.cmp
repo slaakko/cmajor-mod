@@ -1,0 +1,4 @@
+project cml;
+reference <../cm.ast/cm.ast.cmp>;
+reference <../cm.lexer/cm.lexer.cmp>;
+source <main.cm>;

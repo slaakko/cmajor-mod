@@ -184,6 +184,8 @@
     <ClCompile Include="deflate_stream.cppm" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="error.cppm" />
+    <ClCompile Include="execute_win.cpp" />
+    <ClCompile Include="execute_win.cppm" />
     <ClCompile Include="fiber.cpp" />
     <ClCompile Include="fiber.cppm" />
     <ClCompile Include="file_stream.cpp" />

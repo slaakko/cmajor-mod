@@ -99,8 +99,10 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
     if (backend == BackEnd::llvm)
     {
         std::filesystem::path sld(CmajorRootDir());
+        sld /= "masm";
         sld /= "system";
         sld /= "lib";
+        sld /= "llvm";
         sld /= config;
         return util::GetFullPath(sld.generic_string());
     }
@@ -116,6 +118,7 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
     else if (backend == BackEnd::cpp)
     {
         std::filesystem::path sld(CmajorRootDir());
+        sld /= "masm";
         sld /= "system";
         sld /= "lib";
         sld /= "cpp";
@@ -346,7 +349,11 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         mfp = outdirBasePath;
     }
     mfp /= "lib";
-    if (backend == BackEnd::cpp)
+    if (backend == BackEnd::llvm)
+    {
+        mfp /= "llvm";
+    }
+    else if (backend == BackEnd::cpp)
     {
         mfp /= "cpp";
     }
@@ -389,7 +396,11 @@ Project::Project(const std::u32string& name_, const std::string& filePath_, cons
         efp = outdirBasePath;
     }
     efp /= "bin";
-    if (backend == BackEnd::cpp)
+    if (backend == BackEnd::llvm)
+    {
+        efp /= "llvm";
+    }
+    else if (backend == BackEnd::cpp)
     {
         efp /= "cpp";
     }
@@ -478,7 +489,11 @@ void Project::ResolveDeclarations()
                     rp = outdirBasePath / rp;
                 }
                 rp /= "lib";
-                if (backend == BackEnd::cpp)
+                if (backend == BackEnd::llvm)
+                {
+                    rp /= "llvm";
+                }
+                else if (backend == BackEnd::cpp)
                 {
                     rp /= "cpp";
                 }

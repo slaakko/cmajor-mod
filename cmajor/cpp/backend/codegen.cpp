@@ -16,6 +16,13 @@ import std.filesystem;
 
 namespace cmajor::cpp::backend {
 
+std::string gxxPath = "g++";
+
+void SetGXXPath(const std::string& gxxPath_)
+{
+    gxxPath = gxxPath_;
+}
+
 struct NativeModule
 {
     NativeModule(cmajor::ir::Emitter* emitter_, const std::string& moduleFilePath_) : emitter(emitter_)
@@ -38,7 +45,7 @@ CppCodeGenerator::CppCodeGenerator(cmajor::ir::Emitter* emitter_) :
     breakTargetBlock(nullptr), continueTargetBlock(nullptr), lastAlloca(nullptr), currentClass(nullptr), basicBlockOpen(false), defaultDest(nullptr), currentCaseMap(nullptr),
     generateLineNumbers(false), currentTryBlockId(-1), nextTryBlockId(0), currentTryNextBlock(nullptr), handlerBlock(nullptr), cleanupBlock(nullptr), inTryBlock(false),
     prevWasTerminator(false), numTriesInCurrentBlock(0), tryIndex(0), prevLineNumber(0), prevControlFlowGraphNodeId(-1), continueTargetNodeId(-1), loopNodeId(-1),
-    emittingContext(nullptr)
+    emittingContext(nullptr), inSetLineOrEntryCode(false)
 {
     emitter->SetEmittingDelegate(this);
 }
@@ -47,8 +54,7 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
 {
     std::string outputDirectory = util::GetFullPath(util::Path::GetDirectoryName(intermediateCodeFile));
     std::filesystem::create_directories(outputDirectory);
-    std::string intermediateCompileCommand;
-    intermediateCompileCommand.append("g++");
+    std::string intermediateCompileCommand = gxxPath;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo))
     {
         intermediateCompileCommand.append(" -g");
@@ -59,6 +65,19 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
     std::string errors;
     try
     {
+        util::ExecuteResult executeResult = util::Execute(intermediateCompileCommand);
+        if (executeResult.exitCode != 0)
+        {
+            throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
+        }
+        else
+        {
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+            {
+                util::LogMessage(module->LogStreamId(), executeResult.output);
+            }
+        }
+/*
         util::Process::Redirections redirections = util::Process::Redirections::processStdErr;
         util::Process process(intermediateCompileCommand, redirections);
         errors = process.ReadToEnd(util::Process::StdHandle::stdErr);
@@ -68,6 +87,7 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
         {
             throw std::runtime_error("executing '" + intermediateCompileCommand + "' failed with exit code: " + std::to_string(exitCode));
         }
+*/
     }
     catch (const std::exception& ex)
     {
@@ -115,12 +135,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
         cmajor::binder::BoundNode* node = boundCompileUnit.BoundNodes()[i].get();
         node->Accept(*this);
     }
-    GenerateInitUnwindInfoFunction(boundCompileUnit);
-    GenerateInitCompileUnitFunction(boundCompileUnit);
-    if (boundCompileUnit.GetGlobalInitializationFunctionSymbol() != nullptr)
-    {
-        GenerateGlobalInitFunction(boundCompileUnit);
-    }
+    //GenerateInitUnwindInfoFunction(boundCompileUnit);
+    //GenerateInitCompileUnitFunction(boundCompileUnit);
+    //if (boundCompileUnit.GetGlobalInitializationFunctionSymbol() != nullptr)
+    //{
+        //GenerateGlobalInitFunction(boundCompileUnit);
+    //}
     nativeCompileUnit->Write();
     if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::disableCodeGen))
     {
@@ -175,16 +195,19 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     tryIndex = 0;
     prevLineNumber = 0;
     prevControlFlowGraphNodeId = -1;
-    if (functionSymbol->HasSource())
+    if (functionSymbol->HasSource() && cmajor::symbols::GetConfig() != "release" && module->Name() != U"System.Runtime" && module->Name() != U"System.Core")
     {
         generateLineNumbers = true;
+        emitter->SetGenerateLocationInfo(true);
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundFunction.Body()->GetSpan(), fileIndex); 
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
+        fullSpan = functionSymbol->GetFullSpan();
     }
     else
     {
         generateLineNumbers = false;
         emitter->SetCurrentSourcePos(0, 0, 0);
+        fullSpan = soul::ast::FullSpan();
     }
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
@@ -277,10 +300,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         emitter->SetIrObject(localVariable, allocaInst);
         lastAlloca = allocaInst;
     }
-    if (!functionSymbol->DontThrow())
-    {
-        GenerateEnterFunctionCode(boundFunction);
-    }
     for (int i = 0; i < np; ++i)
     {
         void* arg = emitter->GetFunctionArgument(function, i);
@@ -358,7 +377,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (!lastStatement || lastStatement->GetBoundNodeType() != cmajor::binder::BoundNodeType::boundReturnStatement ||
         lastStatement->GetBoundNodeType() == cmajor::binder::BoundNodeType::boundReturnStatement && destructorCallGenerated)
     {
-        GenerateExitFunctionCode(boundFunction);
+        //GenerateExitFunctionCode(boundFunction);
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
             void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
@@ -430,6 +449,10 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
     currentBlock = &boundCompoundStatement;
     blockDestructionMap[currentBlock] = std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>>();
     blocks.push_back(currentBlock);
+    if (!prevBlock)
+    {
+        GenerateEnterFunctionCode(*currentFunction);
+    }
     //SetLineNumber(boundCompoundStatement.GetSourcePos().line); TODO
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
@@ -508,7 +531,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
             sequenceSecond->Accept(*this);
         }
         ExitBlocks(nullptr);
-        GenerateExitFunctionCode(*currentFunction);
+        //GenerateExitFunctionCode(*currentFunction);
         int32_t retNodeId = -1;
         if (generateLineNumbers)
         {
@@ -532,7 +555,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
     else
     {
         ExitBlocks(nullptr);
-        GenerateExitFunctionCode(*currentFunction);
+        //GenerateExitFunctionCode(*currentFunction);
         int32_t retNodeId = -1;
         if (generateLineNumbers)
         {
@@ -1925,6 +1948,7 @@ void CppCodeGenerator::GenerateCodeForCleanups()
     }
 }
 
+/*
 void CppCodeGenerator::SetLineNumber(int32_t lineNumber)
 {
     if (currentFunction->GetFunctionSymbol()->DontThrow()) return;
@@ -1941,11 +1965,63 @@ void CppCodeGenerator::SetLineNumber(int32_t lineNumber)
         genJumpingBoolCode = prevGenJumpingBoolCode;
     }
 }
+*/
 
 std::string CppCodeGenerator::GetSourceFilePath(const util::uuid& moduleId)
 {
     return cmajor::symbols::GetSourceFilePath(fileIndex, moduleId);
 }
+
+void CppCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
+{
+    const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
+    if (enterCode.empty()) return;
+    bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+    inSetLineOrEntryCode = true;
+    cmajor::symbols::LocalVariableSymbol* traceEntryVar = boundFunction.GetFunctionSymbol()->TraceEntryVar();
+    void* traceEntryAlloca = emitter->CreateAlloca(traceEntryVar->GetType()->IrType(*emitter));
+    emitter->SetIrObject(traceEntryVar, traceEntryAlloca);
+    cmajor::symbols::LocalVariableSymbol* traceGuardVar = boundFunction.GetFunctionSymbol()->TraceGuardVar();
+    void* traceGuardAlloca = emitter->CreateAlloca(traceGuardVar->GetType()->IrType(*emitter));
+    emitter->SetIrObject(traceGuardVar, traceGuardAlloca);
+    lastAlloca = traceGuardAlloca;
+    for (const auto& statement : enterCode)
+    {
+        statement->Accept(*this);
+    }
+    inSetLineOrEntryCode = prevSetLineOrEntryCode;
+}
+
+void CppCodeGenerator::SetLineNumber(int32_t lineNumber)
+{
+    if (prevLineNumber == lineNumber) return;
+    emitter->SetCurrentSourcePos(lineNumber, 0, 0);
+    prevLineNumber = lineNumber;
+    cmajor::binder::BoundStatement* setLineNumberStatement = currentFunction->GetLineCode();
+    if (setLineNumberStatement)
+    {
+        bool prevGenJumpingBoolCode = genJumpingBoolCode;
+        genJumpingBoolCode = false;
+        emitter->BeginSubstituteLineNumber(lineNumber);
+        bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+        inSetLineOrEntryCode = true;
+        setLineNumberStatement->Accept(*this);
+        inSetLineOrEntryCode = prevSetLineOrEntryCode;
+        emitter->EndSubstituteLineNumber();
+        genJumpingBoolCode = prevGenJumpingBoolCode;
+    }
+
+}
+
+void CppCodeGenerator::SetSpan(const soul::ast::Span& span)
+{
+    if (!span.IsValid()) return;
+    if (inSetLineOrEntryCode) return;
+    fullSpan.span = span;
+    SetLineNumber(cmajor::symbols::GetLineNumber(fullSpan));
+}
+
+/*
 
 void CppCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
@@ -2074,5 +2150,6 @@ void CppCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUn
     }
     emitter->CreateRetVoid();
 }
+*/
 
 } // namespace cmajor::cpp::backend::codegen

@@ -25,7 +25,7 @@ void PrintHelp()
     Console.Out() << "  Write debug output files." << endl();
 }
 
-Result<bool> ProcessFiles(const List<string>& files, bool verbose, bool debug)
+Result<bool> ProcessFiles(const List<string>& files, bool verbose, bool debug, bool empty)
 {
     if (files.IsEmpty())
     {
@@ -37,7 +37,7 @@ Result<bool> ProcessFiles(const List<string>& files, bool verbose, bool debug)
     {
         if (file.EndsWith(".scmlg"))
         {
-            auto result = GenerateLexers(file, Version(), verbose, debug);
+            auto result = GenerateLexers(file, Version(), verbose, debug, empty);
             if (result.Error())
             {
                 return Result<bool>(ErrorId(result.GetErrorId()));
@@ -58,6 +58,7 @@ int main(int argc, const char** argv)
     List<string> files;
     bool verbose = false;
     bool debug = false;
+    bool empty = false;
     for (int i = 1; i < argc; ++i)
     {
         string arg = argv[i];
@@ -75,6 +76,10 @@ int main(int argc, const char** argv)
             else if (arg == "--debug")
             {
                 debug = true;
+            }
+            else if (arg == "--empty")
+            {
+                empty = true;
             }
             else
             {
@@ -104,6 +109,11 @@ int main(int argc, const char** argv)
                         debug = true;
                         break;
                     }
+                    case 'e':
+                    {
+                        empty = true;
+                        break;
+                    }
                     default:
                     {
                         Console.Error() << "unknown option '-" << string(o) << "'" << endl();
@@ -123,7 +133,7 @@ int main(int argc, const char** argv)
             files.Add(fullPathResult.Value());
         }
     }
-    auto result = ProcessFiles(files, verbose, debug);
+    auto result = ProcessFiles(files, verbose, debug, empty);
     if (result.Error())
     {
         Console.Error() << result.GetErrorMessage() << endl();

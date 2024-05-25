@@ -122,10 +122,11 @@ public:
     void* CreateDITypeForUChar() override;
     void* CreateDITypeForVoid() override;
     void* CreateDITypeForArray(void* elementDIType, const std::vector<void*>& elements) override;
-    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName) override;
+    void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, 
+        const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::SourcePos& classSourcePos, const util::uuid& moduleId, const std::string& name, void* vtableHolderClass,
-        const std::string& mangledName, void* baseClassDIType) override;
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
+        const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) override;
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
     void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
         uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
@@ -143,7 +144,7 @@ public:
     void MapClassPtr(const util::uuid& typeId, void* classPtr, const std::string& className) override;
     uint64_t GetSizeInBits(void* irType) override;
     uint64_t GetAlignmentInBits(void* irType) override;
-    void SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos) override;
+    void SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen) override;
 	void SetCurrentDebugLocation(const soul::ast::Span& span) override;
     void* GetArrayBeginAddress(void* arrayType, void* arrayPtr) override;
     void* GetArrayEndAddress(void* arrayType, void* arrayPtr, uint64_t size) override;
@@ -213,7 +214,8 @@ public:
     void* CreateGlobalUStringPtr(const std::u32string& name) override;
     void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) override;
     void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
-    void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& sourcePos) override;
+    void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+        const soul::ast::LineColLen& lineColLen) override;
     void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
     void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
     void* GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr) override;
@@ -250,8 +252,9 @@ public:
     void SaveObjectPointer(void* objectPointer_) override;
     void SetObjectPointer(void* objectPointer_) override;
     void* GetObjectPointer() override;
-    void SetFunction(void* function_, int32_t fileIndex, const util::uuid& sourceModuleId, const util::uuid& functionId) override;
+    void SetFunction(void* function_, int32_t fileIndex, const util::uuid& moduleId, const util::uuid& functionId) override;
     void SetFunctionName(const std::string& functionName) override;
+    void SetFunctionComment(void* function, const std::string& functionComment) override;
     void BeginScope() override;
     void EndScope() override;
     int16_t GetCurrentScopeId() const override;
@@ -275,7 +278,7 @@ public:
     void Compile(const std::string& objectFilePath) override;
     void VerifyModule() override;
     void ResetCurrentDebugLocation() override;
-    void* GetDebugInfoForFile(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void* GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan) override;
     void ReplaceForwardDeclarations();
     void* GetIrObject(void* symbol) const override;
     void SetIrObject(void* symbol, void* irObject) override;
@@ -305,14 +308,16 @@ public:
     unsigned GetPureVirtualVirtuality() override;
     unsigned GetVirtualVirtuality() override;
     unsigned GetFunctionFlags(bool isStatic, unsigned accessFlags, bool isExplicit) override;
-    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    void* CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags) override;
-    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId,
+    void* CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         void* subroutineType, unsigned flags) override;
     void SetDISubprogram(void* function, void* subprogram) override;
     void* CreateAlloca(void* irType) override;
-    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
-    void* CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId, void* irType, void* allocaInst) override;
+    void* CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* irType, void* allocaInst) override;
+    void* CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        void* irType, void* allocaInst) override;
     void* GetFunctionArgument(void* function, int argumentIndex) override;
     void SetDebugLoc(void* callInst) override;
     void* CreateRet(void* value) override;
@@ -320,7 +325,7 @@ public:
     void SetPersonalityFunction(void* function, void* personalityFunction) override;
     void AddNoUnwindAttribute(void* function) override;
     void AddUWTableAttribute(void* function) override;
-    void* CreateLexicalBlock(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    void* CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) override;
     void* CreateSwitch(void* condition, void* defaultDest, unsigned numCases) override;
     void AddCase(void* switchInst, void* caseValue, void* caseDest) override;
     void* CreateCleanupPadWithParent(void* parentPad, const std::vector<void*>& args) override;
@@ -336,7 +341,7 @@ public:
     void* CleanupBlock() override;
     bool NewCleanupNeeded() override;
     void CreateCleanup() override;
-    std::string GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId);
+    std::string GetSourceFilePath(const util::uuid& moduleId);
     cmajor::ir::Pad* CurrentPad() override;
     void* CreateClassDIType(void* classPtr) override;
     void* GetGlobalStringPtr(int stringId) override;
@@ -413,7 +418,7 @@ private:
     llvm::DebugLoc currentDebugLocation;
     int32_t currentLineNumber;
     bool substituteLineNumber;
-    friend llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::SourcePos& sourcePos);
+    friend llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::LineColLen& lineColLen);
 };
 
 } // namespace cmllvm

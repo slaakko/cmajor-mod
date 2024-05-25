@@ -29,6 +29,8 @@ struct Cleanup
     std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>> destructors;
 };
 
+void SetGXXPath(const std::string& gxxPath_);
+
 class CppCodeGenerator : public cmajor::codegen::CodeGenerator, public cmajor::ir::EmittingDelegate
 {
 public:
@@ -106,13 +108,17 @@ public:
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
     void Compile(const std::string& intermediateCodeFile);
-    void SetLineNumber(int32_t lineNumber) override;
     std::string GetSourceFilePath(const util::uuid& moduleId) override;
+/*
     void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     void GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     void GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
     void GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
     void GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
+*/
+    void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
+    void SetLineNumber(int32_t lineNumber) override;
+    void SetSpan(const soul::ast::Span& span) override;
 private:
     cmajor::ir::Emitter* emitter;
     cmajor::ir::EmittingContext* emittingContext;
@@ -170,6 +176,8 @@ private:
     std::set<cmajor::symbols::FunctionSymbol*> compileUnitFunctions;
     std::unordered_map<cmajor::binder::BoundCompoundStatement*, int16_t> scopeIdMap;
     int32_t prevControlFlowGraphNodeId;
+    bool inSetLineOrEntryCode;
+    soul::ast::FullSpan fullSpan;
 };
 
 } // namespace cmajor::cpp::backend

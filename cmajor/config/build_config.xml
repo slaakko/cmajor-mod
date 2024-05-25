@@ -1,0 +1,6 @@
+<build_config>
+ <clangxx_path>clang++</clangxx_path> <!-- you can insert full path to the clang++ executable here so that Cmajor will use that specific instance -->
+ <gxx_path>g++</gxx_path> <!-- you can insert full path to the g++ executable here so that Cmajor will use that specific instance -->
+ <gdb_path>gdb</gdb_path> <!-- you can insert full path to the gdb executable here so that Cmajor will use that specific instance -->
+ <ar_path>ar</ar_path> <!-- you can insert full path to the ar executable here so that Cmajor will use that specific instance -->
+</build_config>

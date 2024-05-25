@@ -46,13 +46,26 @@ void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::M
     argStrings.push_back("/debug");
     argStrings.push_back("/out:" + util::QuotedPath(project->ExecutableFilePath()));
     argStrings.push_back("/stack:16777216");
-    std::string rtLibName = "cmajor.rt.lib";
+    //std::string rtLibName = "cmajor.rt.lib";
+/*
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
     {
         util::LogMessage(rootModule->LogStreamId(), "Note: linking with debug runtime (cmajor.rtd.dll).");
         rtLibName = "cmajor.rtd.lib";
     }
-    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), rtLibName))));
+*/
+    //argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), rtLibName))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.cmrt.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.dom.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.dom_parser.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.lexer.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.parser.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.util.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.xml_parser.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.xml_processor.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "cmajor.llvm.xpath.debug.lib"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "soul.xml.xpath.lexer.classmap.res"))));
+    argStrings.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), "zd.lib"))));
     int n = rootModule->LibraryFilePaths().size();
     for (int i = 0; i < n; ++i)
     {
@@ -81,7 +94,7 @@ void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::M
     {
         throw std::runtime_error("error linking: could not create output file: " + util::PlatformStringToUtf8(errErrorCode.message()));
     }
-    if (lld::coff::link(args, stdOut, stdErr, true, false))
+    if (lld::coff::link(args, stdOut, stdErr, false, false))
     {
         if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
         {

@@ -101,14 +101,10 @@ public class RegExLexer : System.Lex.Lexer
                     case 28:
                     case 29:
                     case 30:
-                    case 31:
-                    case 32:
-                    case 33:
-                    case 34:
                     {
                         return 15;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 16;
                     }
@@ -196,10 +192,6 @@ public class RegExLexer : System.Lex.Lexer
                     case 28:
                     case 29:
                     case 30:
-                    case 31:
-                    case 32:
-                    case 33:
-                    case 34:
                     {
                         return 15;
                     }
@@ -264,75 +256,71 @@ public class RegExLexer : System.Lex.Lexer
                     case 11:
                     case 12:
                     case 13:
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 17:
-                    case 22:
-                    case 25:
-                    case 34:
-                    case 36:
-                    case 37:
+                    case 18:
+                    case 21:
+                    case 30:
+                    case 32:
+                    case 33:
                     {
                         return 17;
                     }
-                    case 18:
+                    case 14:
                     {
                         return 18;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 19;
                     }
-                    case 20:
+                    case 16:
                     {
                         return 20;
                     }
-                    case 21:
+                    case 17:
                     {
                         return 21;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 22;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 23;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 24;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 25;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 26;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 27;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 28;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 29;
                     }
-                    case 32:
+                    case 28:
                     {
                         return 30;
                     }
-                    case 33:
+                    case 29:
                     {
                         return 31;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 32;
                     }
@@ -377,75 +365,71 @@ public class RegExLexer : System.Lex.Lexer
                     case 11:
                     case 12:
                     case 13:
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 17:
-                    case 22:
-                    case 25:
-                    case 34:
-                    case 36:
-                    case 37:
+                    case 18:
+                    case 21:
+                    case 30:
+                    case 32:
+                    case 33:
                     {
                         return 17;
                     }
-                    case 18:
+                    case 14:
                     {
                         return 18;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 19;
                     }
-                    case 20:
+                    case 16:
                     {
                         return 20;
                     }
-                    case 21:
+                    case 17:
                     {
                         return 21;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 22;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 23;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 24;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 25;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 26;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 27;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 28;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 29;
                     }
-                    case 32:
+                    case 28:
                     {
                         return 30;
                     }
-                    case 33:
+                    case 29:
                     {
                         return 31;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 33;
                     }
@@ -490,75 +474,71 @@ public class RegExLexer : System.Lex.Lexer
                     case 11:
                     case 12:
                     case 13:
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 17:
-                    case 22:
-                    case 25:
-                    case 34:
-                    case 36:
-                    case 37:
+                    case 18:
+                    case 21:
+                    case 30:
+                    case 32:
+                    case 33:
                     {
                         return 17;
                     }
-                    case 18:
+                    case 14:
                     {
                         return 18;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 19;
                     }
-                    case 20:
+                    case 16:
                     {
                         return 20;
                     }
-                    case 21:
+                    case 17:
                     {
                         return 21;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 22;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 23;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 24;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 25;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 26;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 27;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 28;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 29;
                     }
-                    case 32:
+                    case 28:
                     {
                         return 30;
                     }
-                    case 33:
+                    case 29:
                     {
                         return 31;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 34;
                     }
@@ -589,59 +569,59 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 18:
+                    case 14:
                     {
                         return 35;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 36;
                     }
-                    case 20:
+                    case 16:
                     {
                         return 37;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 38;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 39;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 43;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 44;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 45;
                     }
-                    case 32:
+                    case 28:
                     {
                         return 46;
                     }
-                    case 33:
+                    case 29:
                     {
                         return 47;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 48;
                     }
@@ -672,51 +652,51 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 18:
+                    case 14:
                     {
                         return 35;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 36;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 38;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 39;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 43;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 44;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 45;
                     }
-                    case 32:
+                    case 28:
                     {
                         return 46;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 49;
                     }
@@ -747,47 +727,47 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 18:
+                    case 14:
                     {
                         return 35;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 36;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 38;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 39;
                     }
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 43;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 44;
                     }
-                    case 31:
+                    case 27:
                     {
                         return 45;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 50;
                     }
@@ -802,39 +782,39 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 18:
+                    case 14:
                     {
                         return 35;
                     }
-                    case 19:
+                    case 15:
                     {
                         return 36;
                     }
-                    case 23:
+                    case 19:
                     {
                         return 38;
                     }
-                    case 24:
+                    case 20:
                     {
                         return 39;
                     }
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 43;
                     }
-                    case 30:
+                    case 26:
                     {
                         return 44;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 51;
                     }
@@ -849,19 +829,19 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
-                    case 29:
+                    case 25:
                     {
                         return 43;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 52;
                     }
@@ -876,11 +856,11 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 27:
+                    case 23:
                     {
                         return 41;
                     }
-                    case 28:
+                    case 24:
                     {
                         return 42;
                     }
@@ -911,7 +891,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 53;
                     }
@@ -942,7 +922,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 54;
                     }
@@ -973,7 +953,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 55;
                     }
@@ -1024,7 +1004,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 56;
                     }
@@ -1055,7 +1035,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 53;
                     }
@@ -1086,7 +1066,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 57;
                     }
@@ -1117,7 +1097,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 56;
                     }
@@ -1148,7 +1128,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 58;
                     }
@@ -1179,7 +1159,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 57;
                     }
@@ -1210,7 +1190,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 59;
                     }
@@ -1241,7 +1221,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 58;
                     }
@@ -1272,7 +1252,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 60;
                     }
@@ -1303,7 +1283,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 59;
                     }
@@ -1334,7 +1314,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 60;
                     }
@@ -1365,11 +1345,11 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 61;
                     }
@@ -1400,11 +1380,11 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 62;
                     }
@@ -1435,7 +1415,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 63;
                     }
@@ -1466,7 +1446,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 64;
                     }
@@ -1497,7 +1477,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 55;
                     }
@@ -1512,12 +1492,12 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 66;
                     }
@@ -1532,12 +1512,12 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 67;
                     }
@@ -1552,8 +1532,8 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
@@ -1584,12 +1564,12 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 68;
                     }
@@ -1620,12 +1600,12 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 69;
                     }
@@ -1656,7 +1636,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 62;
                     }
@@ -1671,12 +1651,12 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 66;
                     }
@@ -1691,14 +1671,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 70;
                     }
@@ -1713,14 +1693,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 71;
                     }
@@ -1735,14 +1715,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 72;
                     }
@@ -1757,14 +1737,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 73;
                     }
@@ -1795,7 +1775,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 63;
                     }
@@ -1810,18 +1790,18 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 75;
                     }
@@ -1836,18 +1816,18 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 76;
                     }
@@ -1862,14 +1842,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
@@ -1900,18 +1880,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 77;
                     }
@@ -1942,18 +1922,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 69;
                     }
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
@@ -1968,18 +1948,18 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 75;
                     }
@@ -2010,7 +1990,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 53;
                     }
@@ -2041,7 +2021,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 56;
                     }
@@ -2072,7 +2052,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 57;
                     }
@@ -2103,7 +2083,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 58;
                     }
@@ -2134,7 +2114,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 59;
                     }
@@ -2165,7 +2145,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 60;
                     }
@@ -2196,7 +2176,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 60;
                     }
@@ -2227,11 +2207,11 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 78;
                     }
@@ -2262,11 +2242,11 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 26:
+                    case 22:
                     {
                         return 40;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 62;
                     }
@@ -2297,12 +2277,12 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 79;
                     }
@@ -2333,12 +2313,12 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 80;
                     }
@@ -2369,8 +2349,8 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
@@ -2401,12 +2381,12 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 25:
-                    case 26:
+                    case 21:
+                    case 22:
                     {
                         return 65;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 79;
                     }
@@ -2437,18 +2417,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 54;
                     }
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 81;
                     }
@@ -2463,14 +2443,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 82;
                     }
@@ -2485,14 +2465,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 83;
                     }
@@ -2507,14 +2487,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 84;
                     }
@@ -2529,14 +2509,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 85;
                     }
@@ -2551,14 +2531,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 86;
                     }
@@ -2573,14 +2553,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 87;
                     }
@@ -2595,14 +2575,14 @@ public class RegExLexer : System.Lex.Lexer
             {
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 88;
                     }
@@ -2633,7 +2613,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 64;
                     }
@@ -2664,18 +2644,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 54;
                     }
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 70;
                     }
@@ -2706,18 +2686,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 89;
                     }
@@ -2748,18 +2728,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 90;
                     }
@@ -2790,14 +2770,14 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
@@ -2828,18 +2808,18 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
                     case 22:
                     case 23:
                     case 24:
                     case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
                     {
                         return 74;
                     }
-                    case 35:
+                    case 31:
                     {
                         return 89;
                     }
@@ -2870,7 +2850,7 @@ public class RegExLexer : System.Lex.Lexer
                 }
                 switch (cls)
                 {
-                    case 35:
+                    case 31:
                     {
                         return 54;
                     }

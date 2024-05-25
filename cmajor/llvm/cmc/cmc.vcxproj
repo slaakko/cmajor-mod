@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{8d4416fa-b714-44ec-affd-3ff9e01e2a87}</ProjectGuid>
+    <RootNamespace>cmc</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\config\build.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\config\build.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\config\build.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\config\build.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>cmcd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>cmc</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;../../..$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <EnableModules>true</EnableModules>
+      <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>5050;4267;4244;4996;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(OutDir);$(LLVM_DEBUG_LIB_DIR);$(BOOST_LIB_DIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lldCommon.lib;lldCOFF.lib;LLVMWindowsManifest.lib;LLVMXRay.lib;LLVMLibDriver.lib;LLVMDlltoolDriver.lib;LLVMCoverage.lib;LLVMLineEditor.lib;LLVMX86TargetMCA.lib;LLVMX86Disassembler.lib;LLVMX86AsmParser.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMOrcJIT.lib;LLVMWindowsDriver.lib;LLVMMCJIT.lib;LLVMJITLink.lib;LLVMInterpreter.lib;LLVMExecutionEngine.lib;LLVMRuntimeDyld.lib;LLVMOrcTargetProcess.lib;LLVMOrcShared.lib;LLVMDWP.lib;LLVMDebugInfoLogicalView.lib;LLVMDebugInfoGSYM.lib;LLVMOption.lib;LLVMObjectYAML.lib;LLVMObjCopy.lib;LLVMMCA.lib;LLVMMCDisassembler.lib;LLVMLTO.lib;LLVMPasses.lib;LLVMCFGuard.lib;LLVMCoroutines.lib;LLVMipo.lib;LLVMVectorize.lib;LLVMLinker.lib;LLVMInstrumentation.lib;LLVMFrontendOpenMP.lib;LLVMFrontendOpenACC.lib;LLVMFrontendHLSL.lib;LLVMExtensions.lib;LLVMDWARFLinkerParallel.lib;LLVMDWARFLinker.lib;LLVMGlobalISel.lib;LLVMMIRParser.lib;LLVMAsmPrinter.lib;LLVMSelectionDAG.lib;LLVMCodeGen.lib;LLVMTarget.lib;LLVMObjCARCOpts.lib;LLVMCodeGenTypes.lib;LLVMIRPrinter.lib;LLVMInterfaceStub.lib;LLVMFileCheck.lib;LLVMFuzzMutate.lib;LLVMScalarOpts.lib;LLVMInstCombine.lib;LLVMAggressiveInstCombine.lib;LLVMTransformUtils.lib;LLVMBitWriter.lib;LLVMAnalysis.lib;LLVMProfileData.lib;LLVMSymbolize.lib;LLVMDebugInfoPDB.lib;LLVMDebugInfoMSF.lib;LLVMDebugInfoDWARF.lib;LLVMObject.lib;LLVMTextAPI.lib;LLVMMCParser.lib;LLVMIRReader.lib;LLVMAsmParser.lib;LLVMMC.lib;LLVMDebugInfoCodeView.lib;LLVMBitReader.lib;LLVMFuzzerCLI.lib;LLVMCore.lib;LLVMRemarks.lib;LLVMBitstreamReader.lib;LLVMBinaryFormat.lib;LLVMTargetParser.lib;LLVMTableGen.lib;LLVMSupport.lib;LLVMDemangle.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>.;..;../..;../../..$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
+      <EnableModules>true</EnableModules>
+      <BuildStlModules>true</BuildStlModules>
+      <DisableSpecificWarnings>5050;4267;4244;4996;4146</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(OutDir);$(LLVM_RELEASE_LIB_DIR);$(BOOST_LIB_DIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>lldCommon.lib;lldCOFF.lib;LLVMWindowsManifest.lib;LLVMXRay.lib;LLVMLibDriver.lib;LLVMDlltoolDriver.lib;LLVMCoverage.lib;LLVMLineEditor.lib;LLVMX86TargetMCA.lib;LLVMX86Disassembler.lib;LLVMX86AsmParser.lib;LLVMX86CodeGen.lib;LLVMX86Desc.lib;LLVMX86Info.lib;LLVMOrcJIT.lib;LLVMWindowsDriver.lib;LLVMMCJIT.lib;LLVMJITLink.lib;LLVMInterpreter.lib;LLVMExecutionEngine.lib;LLVMRuntimeDyld.lib;LLVMOrcTargetProcess.lib;LLVMOrcShared.lib;LLVMDWP.lib;LLVMDebugInfoLogicalView.lib;LLVMDebugInfoGSYM.lib;LLVMOption.lib;LLVMObjectYAML.lib;LLVMObjCopy.lib;LLVMMCA.lib;LLVMMCDisassembler.lib;LLVMLTO.lib;LLVMPasses.lib;LLVMCFGuard.lib;LLVMCoroutines.lib;LLVMipo.lib;LLVMVectorize.lib;LLVMLinker.lib;LLVMInstrumentation.lib;LLVMFrontendOpenMP.lib;LLVMFrontendOpenACC.lib;LLVMFrontendHLSL.lib;LLVMExtensions.lib;LLVMDWARFLinkerParallel.lib;LLVMDWARFLinker.lib;LLVMGlobalISel.lib;LLVMMIRParser.lib;LLVMAsmPrinter.lib;LLVMSelectionDAG.lib;LLVMCodeGen.lib;LLVMTarget.lib;LLVMObjCARCOpts.lib;LLVMCodeGenTypes.lib;LLVMIRPrinter.lib;LLVMInterfaceStub.lib;LLVMFileCheck.lib;LLVMFuzzMutate.lib;LLVMScalarOpts.lib;LLVMInstCombine.lib;LLVMAggressiveInstCombine.lib;LLVMTransformUtils.lib;LLVMBitWriter.lib;LLVMAnalysis.lib;LLVMProfileData.lib;LLVMSymbolize.lib;LLVMDebugInfoPDB.lib;LLVMDebugInfoMSF.lib;LLVMDebugInfoDWARF.lib;LLVMObject.lib;LLVMTextAPI.lib;LLVMMCParser.lib;LLVMIRReader.lib;LLVMAsmParser.lib;LLVMMC.lib;LLVMDebugInfoCodeView.lib;LLVMBitReader.lib;LLVMFuzzerCLI.lib;LLVMCore.lib;LLVMRemarks.lib;LLVMBitstreamReader.lib;LLVMBinaryFormat.lib;LLVMTargetParser.lib;LLVMTableGen.lib;LLVMSupport.lib;LLVMDemangle.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ext\zlib-1.2.11\contrib\vstudio\vc14\zlibstat.vcxproj">
+      <Project>{745dec58-ebb3-47a9-a9b8-4c6627c01bf8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\ast\ast.vcxproj">
+      <Project>{be756c27-f517-4d99-ac6e-710790895458}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\common\common.vcxproj">
+      <Project>{229de3f8-fa43-4ee2-8370-4d3c8ed47875}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\json\json\json.vcxproj">
+      <Project>{9c686f48-d658-47b5-bd33-50c0db0f2f32}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\lexer\lexer.vcxproj">
+      <Project>{858c4b45-3557-4861-a721-adec61d3fdb5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\parser\parser.vcxproj">
+      <Project>{536511be-fbac-449f-bd75-704655bdce4d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\rex\rex.vcxproj">
+      <Project>{679d89a0-4e43-4cf7-8e81-acc6b357e222}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom\dom.vcxproj">
+      <Project>{c69da805-04f0-4473-9e69-69888fa5e5a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\dom_parser\dom_parser.vcxproj">
+      <Project>{a04570d9-27be-464f-b3a5-6c6b1943d493}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\processor\processor.vcxproj">
+      <Project>{1ad67257-5fbe-45a6-a3bf-161bf9778089}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\serialization\serialization.vcxproj">
+      <Project>{b5840b74-4e8a-4ef1-a2a8-f59a064e3fab}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\xml_parser\xml_parser.vcxproj">
+      <Project>{21e6c1c2-daa6-4f4e-954e-b56538d46244}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\soul\xml\xpath\xpath.vcxproj">
+      <Project>{99d0a844-4ee3-4c0a-9eeb-45eb9fedca05}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\util\util.vcxproj">
+      <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ast\ast.vcxproj">
+      <Project>{61af1e25-4020-43b6-ba97-10a60a78ea0e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\backend\backend.vcxproj">
+      <Project>{f9426554-e003-4b1d-9431-04a894271dca}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\binder\binder.vcxproj">
+      <Project>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\bm\bm.vcxproj">
+      <Project>{7e92d97d-688e-42d3-bd85-8046a4ff9cb7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\bpm\bpm.vcxproj">
+      <Project>{e1e0c658-66d5-4056-a0aa-afebd16e5655}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\build\build.vcxproj">
+      <Project>{846f8ef1-64d7-4e89-96ee-edd591438dbf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cmbpms\cmbpms.vcxproj">
+      <Project>{54894c63-2c11-4349-b949-065ca8ca7070}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\codegen\codegen.vcxproj">
+      <Project>{1762c93e-3089-461c-ad9e-b8b76dfb60b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\common\common.vcxproj">
+      <Project>{75603a47-c9c4-4b9f-9689-e523093e3d03}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\eh\eh.vcxproj">
+      <Project>{1a33456a-764a-489e-a510-58f61b519d1f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ir\ir.vcxproj">
+      <Project>{6612dfb7-3015-447e-9576-d18668efa630}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\lexer\lexer.vcxproj">
+      <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\msg\msg.vcxproj">
+      <Project>{c38f8022-d886-4e11-90ff-7d8cd198812d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\parser\parser.vcxproj">
+      <Project>{067fedb4-998d-4efb-a2f4-70dc705264e1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\pm\pm.vcxproj">
+      <Project>{cc905b61-bf46-435d-82a6-a3590df97e16}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\res\res.vcxproj">
+      <Project>{06e30472-85fd-4d71-893f-c22b63caddd3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\llvm.vcxproj">
+      <Project>{d9913dcb-1325-426c-95b1-f80d2751d081}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\lexer\cmajor.container.file.lexer.classmap.rc" />
+    <ResourceCompile Include="..\..\lexer\cmajor.lexer.classmap.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

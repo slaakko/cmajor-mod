@@ -555,7 +555,8 @@ void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::st
     return nullptr;
 }
 
-void* CppEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
+void* CppEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, 
+    const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }
@@ -565,8 +566,8 @@ uint64_t CppEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
     return uint64_t();
 }
 
-void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
-    const std::string& mangledName, void* baseClassDIType)
+void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -637,7 +638,7 @@ uint64_t CppEmitter::GetAlignmentInBits(void* irType)
     return 0;
 }
 
-void CppEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+void CppEmitter::SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen)
 {
 }
 
@@ -1201,7 +1202,8 @@ void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::ve
     return context->CreateCall(calleeValue, argInsts);
 }
 
-void* CppEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+void* CppEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+    const soul::ast::LineColLen& lineColLen)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     void* prevBasicBlock = context->GetCurrentBasicBlock();
@@ -1495,7 +1497,7 @@ void* CppEmitter::CreateDebugInfoForNamespace(void* scope, const std::string& na
     return nullptr;
 }
 
-void* CppEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* CppEmitter::GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan)
 {
     return nullptr;
 }
@@ -1632,13 +1634,14 @@ unsigned CppEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, bool 
     return unsigned();
 }
 
-void* CppEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
-    unsigned flags)
+void* CppEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags)
 {
     return nullptr;
 }
 
-void* CppEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned flags)
+void* CppEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
+    void* subroutineType, unsigned flags)
 {
     return nullptr;
 }
@@ -1652,12 +1655,13 @@ void* CppEmitter::CreateAlloca(void* irType)
     return context->CreateLocal(static_cast<cmajor::cpp::ir::Type*>(irType));
 }
 
-void* CppEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* CppEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* irType, void* allocaInst)
 {
     return nullptr;
 }
 
-void* CppEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* CppEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst)
 {
     return nullptr;
 }
@@ -1693,7 +1697,7 @@ void CppEmitter::AddUWTableAttribute(void* function)
 {
 }
 
-void* CppEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* CppEmitter::CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }

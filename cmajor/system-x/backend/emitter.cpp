@@ -548,7 +548,8 @@ void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std
     return nullptr;
 }
 
-void* SystemXEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName)
+void* SystemXEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, 
+    const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }
@@ -558,8 +559,8 @@ uint64_t SystemXEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
     return uint64_t();
 }
 
-void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const std::string& name, void* vtableHolderClass,
-    const std::string& mangledName, void* baseClassDIType)
+void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
+    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -630,7 +631,7 @@ uint64_t SystemXEmitter::GetAlignmentInBits(void* irType)
     return 0;
 }
 
-void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::SourcePos& sourcePos)
+void SystemXEmitter::SetCurrentDebugLocation(const soul::ast::LineColLen& lineColLen)
 {
 }
 
@@ -1156,7 +1157,8 @@ void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std
     return context->CreateCall(calleeValue);
 }
 
-void* SystemXEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, const soul::ast::SourcePos& span)
+void* SystemXEmitter::CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
+    const soul::ast::LineColLen& lineColLen)
 {
     void* prevBasicBlock = context->GetCurrentBasicBlock();
     SetCurrentBasicBlock(basicBlock);
@@ -1465,7 +1467,7 @@ void* SystemXEmitter::CreateDebugInfoForNamespace(void* scope, const std::string
     return nullptr;
 }
 
-void* SystemXEmitter::GetDebugInfoForFile(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* SystemXEmitter::GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan)
 {
     return nullptr;
 }
@@ -1589,13 +1591,14 @@ unsigned SystemXEmitter::GetFunctionFlags(bool isStatic, unsigned accessFlags, b
     return unsigned();
 }
 
-void* SystemXEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder,
-    unsigned flags)
+void* SystemXEmitter::CreateDIMethod(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* subroutineType, unsigned virtuality, unsigned vtableIndex, void* vtableHolder, unsigned flags)
 {
     return nullptr;
 }
 
-void* SystemXEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* subroutineType, unsigned flags)
+void* SystemXEmitter::CreateDIFunction(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* subroutineType, unsigned flags)
 {
     return nullptr;
 }
@@ -1609,12 +1612,13 @@ void* SystemXEmitter::CreateAlloca(void* irType)
     return context->CreateLocal(static_cast<cmajor::systemx::ir::Type*>(irType));
 }
 
-void* SystemXEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* SystemXEmitter::CreateDIParameterVariable(const std::string& name, int index, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    void* irType, void* allocaInst)
 {
     return nullptr;
 }
 
-void* SystemXEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::SourcePos& span, const util::uuid& moduleId, void* irType, void* allocaInst)
+void* SystemXEmitter::CreateDIAutoVariable(const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, void* irType, void* allocaInst)
 {
     return nullptr;
 }
@@ -1650,7 +1654,7 @@ void SystemXEmitter::AddUWTableAttribute(void* function)
 {
 }
 
-void* SystemXEmitter::CreateLexicalBlock(const soul::ast::SourcePos& span, const util::uuid& moduleId)
+void* SystemXEmitter::CreateLexicalBlock(const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen)
 {
     return nullptr;
 }

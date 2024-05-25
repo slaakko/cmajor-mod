@@ -161,6 +161,8 @@
     <ClCompile Include="building.cppm" />
     <ClCompile Include="compiling.cpp" />
     <ClCompile Include="compiling.cppm" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="config.cppm" />
     <ClCompile Include="flags.cppm" />
     <ClCompile Include="install.cpp" />
     <ClCompile Include="install.cppm" />
@@ -213,6 +215,9 @@
     <ProjectReference Include="..\binder\binder.vcxproj">
       <Project>{e075016c-e5ba-46f8-b99d-82168d13ca4d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\cpp\backend\backend.vcxproj">
+      <Project>{312ebbfb-8c83-48aa-95d9-a21503fd76dc}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\eh\eh.vcxproj">
       <Project>{1a33456a-764a-489e-a510-58f61b519d1f}</Project>
     </ProjectReference>
@@ -221,6 +226,9 @@
     </ProjectReference>
     <ProjectReference Include="..\lexer\lexer.vcxproj">
       <Project>{b6221487-8f2d-4b27-9ec8-21c22b7fb63b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\llvm\llvm.vcxproj">
+      <Project>{d9913dcb-1325-426c-95b1-f80d2751d081}</Project>
     </ProjectReference>
     <ProjectReference Include="..\masm\build\build.vcxproj">
       <Project>{fde1c072-e87c-4f82-aedc-2a2d4b9f4de9}</Project>

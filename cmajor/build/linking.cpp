@@ -5,7 +5,7 @@
 
 module cmajor.build.linking;
 
-// import cmajor.llvm;
+import cmajor.llvm;
 import cmajor.systemx.object;
 import util;
 
@@ -47,8 +47,8 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
         case cmajor::ast::Target::winapp:
         case cmajor::ast::Target::winguiapp:
         {
-            std::string cmajorLibDir = util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib");
-            std::string cmajorBinDir = util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin");
+            std::string cmajorLibDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "lib"));
+            std::string cmajorBinDir = util::GetFullPath(util::Path::Combine(cmajor::ast::CmajorRootDir(), "bin"));
             bool verbose = cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
             if (verbose)
             {
@@ -67,6 +67,7 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
                 linkCommand.append(" ").append(util::QuotedPath(libraryFilePath));
             }
             linkCommand.append(" -Xlinker --end-group");
+            /*/
             if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
             {
                 util::LogMessage(-1, "Note: linking with debug runtime (cmajor.cpp.rt.debug.dll).");
@@ -76,22 +77,45 @@ void LinkCpp(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
             {
                 linkCommand.append(" ").append(dynamicReleaseRuntimeArg);
             }
+*/
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+            {
+                linkCommand.append(" ").append("-lcmajor.cpp.cmrtcpp.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.xpath.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.dom.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.dom_parser.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.xml_parser.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.processor.release");
+                linkCommand.append(" ").append("-lcmajor.cpp.util.release");
+                linkCommand.append(" ").append("-lz");
+            }
+            else
+            {
+                linkCommand.append(" ").append("-lcmajor.cpp.cmrtcpp.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.xpath.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.dom.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.dom_parser.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.processor.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.util.debug");
+                linkCommand.append(" ").append("-lcmajor.cpp.xml_parser.debug");
+                linkCommand.append(" ").append("-lzd");
+            }
             linkCommand.append(" -o " + util::QuotedPath(project->ExecutableFilePath()));
             switch (project->GetTarget())
             {
                 case cmajor::ast::Target::program:
                 {
-                    linkCommand.append(" --entry=main");
+                    linkCommand.append(" -mconsole --entry=main");
                     break;
                 }
                 case cmajor::ast::Target::winapp:
                 {
-                    linkCommand.append(" --entry=main");
+                    linkCommand.append(" -mconsole --entry=main");
                     break;
                 }
                 case cmajor::ast::Target::winguiapp:
                 {
-                    linkCommand.append(" --entry=WinMain");
+                    linkCommand.append(" -Wl,-subsystem,windows  --entry=WinMain");
                     linkCommand.append(" -mwindows");
                     break;
                 }
@@ -141,13 +165,11 @@ void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
     switch (cmajor::symbols::GetBackEnd())
     {
-/*
         case cmajor::symbols::BackEnd::llvm:
         {
-            cmajor::llvmlink::Link(project, rootModule);
+            //cmajor::llvmlink::Link(project, rootModule);
             break;
         }
-*/
         case cmajor::symbols::BackEnd::systemx:
         {
             LinkSystemX(project, rootModule);
@@ -155,7 +177,7 @@ void Link(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
         }
         case cmajor::symbols::BackEnd::cpp:
         {
-            LinkCpp(project, rootModule);
+            //LinkCpp(project, rootModule);
             break;
         }
     }

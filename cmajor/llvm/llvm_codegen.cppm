@@ -79,13 +79,14 @@ public:
     void* GetGlobalUStringConstant(int stringId, void*& arrayType) override;
     void* GetGlobalUuidConstant(int uuidId) override;
     void SetLineNumber(int32_t lineNumber) override;
+    void SetSpan(const soul::ast::Span& span) override;
     void* HandlerBlock() override;
     void* CleanupBlock() override;
     bool NewCleanupNeeded() override;
     bool InTryBlock() const override;
     int CurrentTryBlockId() const override;
     void CreateCleanup() override;
-    std::string GetSourceFilePath(const soul::ast::SourcePos& sourcePos, const util::uuid& moduleId) override;
+    std::string GetSourceFilePath(const util::uuid& moduleId) override;
     cmajor::ir::Pad* CurrentPad() override;
     void* CreateClassDIType(void* classPtr) override;
     int Install(const std::string& str) override;
@@ -119,6 +120,7 @@ protected:
     std::unordered_map<cmajor::binder::BoundCompoundStatement*, std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>>>& BlockDestructionMap() { return blockDestructionMap; }
     void SetNewCleanupNeeded(bool newCleanupNeeded_) { newCleanupNeeded = newCleanupNeeded_; }
     std::vector<std::unique_ptr<Cleanup>>& Cleanups() { return cleanups; }
+    bool generateLineNumbers;
 private:
     cmajor::symbols::SymbolTable* symbolTable;
     cmajor::symbols::Module* symbolsModule;
@@ -163,10 +165,13 @@ private:
     void* defaultDest;
     std::unordered_map<cmajor::symbols::IntegralValue, void*, cmajor::symbols::IntegralValueHash>* currentCaseMap;
     std::set<cmajor::symbols::FunctionSymbol*> compileUnitFunctions;
+    int fileIndex;
+    bool inSetLineOrEntryCode;
+    soul::ast::FullSpan fullSpan;
     void GenJumpingBoolCode();
-    void GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
-    void GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
-    void GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
+    //void GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
+    //void GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
+    //void GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit);
     void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
 };
 
