@@ -23,6 +23,7 @@ bind
 *.log
 *.ast
 *.classmap
+*.classmap.debug.txt
 lib
 trace
 repository
