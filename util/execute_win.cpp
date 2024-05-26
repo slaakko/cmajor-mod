@@ -20,9 +20,6 @@ namespace util {
 
 #ifdef _WIN32
 
-HANDLE g_hChildStd_OUT_Rd = nullptr;
-HANDLE g_hChildStd_OUT_Wr = nullptr;
-
 std::pair<int, std::string> Error(const std::string& command, const std::string& function)
 {
     std::u16string fn = ToUtf16(function);
@@ -57,6 +54,8 @@ std::pair<int, std::string> Error(const std::string& command, const std::string&
 
 std::pair<int, std::string> ExecuteWin(const std::string& command)
 {
+    HANDLE g_hChildStd_OUT_Rd = nullptr;
+    HANDLE g_hChildStd_OUT_Wr = nullptr;
     SECURITY_ATTRIBUTES saAttr;
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;

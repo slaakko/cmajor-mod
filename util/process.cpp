@@ -18,8 +18,6 @@ import util.execute_win;
 
 namespace util {
 
-std::mutex processMutex;
-
 util_inc::NativeProcess::Redirections ConvertRedirections(Process::Redirections redirections)
 {
     util_inc::NativeProcess::Redirections result = util_inc::NativeProcess::Redirections::none;
@@ -119,7 +117,6 @@ int GetPid()
 
 ExecuteResult Execute(const std::string& commandLine)
 {
-    std::lock_guard<std::mutex> lock(processMutex);
     std::pair<int, std::string> executeResult = ExecuteWin(commandLine);
     ExecuteResult result(executeResult.first, std::move(executeResult.second));
     return result;
@@ -129,7 +126,6 @@ ExecuteResult Execute(const std::string& commandLine)
 
 ExecuteResult Execute(const std::string& commandLine)
 {
-    std::lock_guard<std::mutex> lock(processMutex);
     Process process(commandLine, Process::Redirections::processStdOut | Process::Redirections::processStdErr);
     process.WaitForExit();
     std::string stdoutText = process.ReadToEnd(Process::StdHandle::stdOut);
