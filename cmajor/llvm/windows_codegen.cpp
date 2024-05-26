@@ -18,7 +18,10 @@ WindowsCodeGenerator::WindowsCodeGenerator(cmajor::ir::Emitter* emitter_) : LLVM
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnStatement)
 {
-    //Emitter()->SetCurrentDebugLocation(boundReturnStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundReturnStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -42,14 +45,14 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundRetu
             SequenceSecond()->Accept(*this);
         }
         ExitBlocks(nullptr);
-        GenerateExitFunctionCode(*CurrentFunction());
+        //GenerateExitFunctionCode(*CurrentFunction());
         Emitter()->CreateRet(returnValue);
         LastInstructionWasRet() = true;
     }
     else
     {
         ExitBlocks(nullptr);
-        GenerateExitFunctionCode(*CurrentFunction());
+        //GenerateExitFunctionCode(*CurrentFunction());
         Emitter()->CreateRetVoid();
         LastInstructionWasRet() = true;
     }
@@ -71,7 +74,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundRetu
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCaseStatement)
 {
-    // Emitter()->SetCurrentDebugLocation(boundGotoCaseStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundGotoCaseStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -107,7 +113,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGo
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGotoDefaultStatement)
 {
-    // Emitter()->SetCurrentDebugLocation(boundGotoDefaultStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundGotoDefaultStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -140,7 +149,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boun
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakStatement)
 {
-    // Emitter()->SetCurrentDebugLocation(boundBreakStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundBreakStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -169,7 +181,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreak
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundContinueStatement)
 {
-    // Emitter()->SetCurrentDebugLocation(boundContinueStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundContinueStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -198,7 +213,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundCo
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatement)
 {
-    //Emitter()->SetCurrentDebugLocation(boundGotoStatement.GetSourcePos()); TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundGotoStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -235,6 +253,10 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoSt
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundTryStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
@@ -336,16 +358,15 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
 
 void WindowsCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrowStatement)
 {
-    //Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos()); // TODO LLVM debug info
+    if (generateLineNumbers)
+    {
+        SetSpan(boundRethrowStatement.GetSpan());
+    }
     DestructorCallGenerated() = false;
     LastInstructionWasRet() = false;
     BasicBlockOpen() = false;
     SetTarget(&boundRethrowStatement);
     boundRethrowStatement.ReleaseCall()->Accept(*this);
-    if (Emitter()->DIBuilder())
-    {
-        //Emitter()->SetCurrentDebugLocation(boundRethrowStatement.GetSourcePos()); TODO LLVM debug info
-    }
     std::vector<void*> cxxThrowFunctionParamTypes;
     cxxThrowFunctionParamTypes.push_back(Emitter()->GetIrTypeForVoidPtrType());
     cxxThrowFunctionParamTypes.push_back(Emitter()->GetIrTypeForVoidPtrType());

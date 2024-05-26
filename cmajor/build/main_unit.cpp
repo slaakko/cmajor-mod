@@ -142,6 +142,11 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     {
         command.append(" ").append(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
     }
+    int nr = rootModule->ResourceFilePaths().size();
+    for (int i = 0; i < nr; ++i)
+    {
+        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
+    }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
         command.append(" ").append(util::QuotedPath(util::GetFullPath(util::Path::Combine(cmajorLibDir, "cmajor.llvm.cmrt.release.lib"))));
@@ -572,6 +577,11 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     {
         const std::string& libraryFilePath = rootModule->LibraryFilePaths()[i];
         command.append(" ").append(util::QuotedPath(libraryFilePath));
+    }
+    int nr = rootModule->ResourceFilePaths().size();
+    for (int i = 0; i < nr; ++i)
+    {
+        command.append(" ").append(util::QuotedPath(rootModule->ResourceFilePaths()[i]));
     }
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {

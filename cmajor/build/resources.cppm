@@ -13,4 +13,7 @@ export namespace cmajor::build {
 
 void AddResources(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths);
 
+void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, 
+    const std::string& classIndexFilePath, const std::string& traceDataFilePath);
+
 } // namespace cmajor::build

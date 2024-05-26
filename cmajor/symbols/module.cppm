@@ -171,8 +171,8 @@ public:
     const std::string& OriginalFilePath() const { return originalFilePath; }
     const std::string& FilePathReadFrom() const { return filePathReadFrom; }
     const std::string& LibraryFilePath() const { return libraryFilePath; }
-    const std::string& ResourceFilePath() const { return resourceFilePath; }
-    void SetResourceFilePath(const std::string& resourceFilePath_);
+    const std::vector<std::string>& ResourceFilePaths() const { return resourceFilePaths; }
+    void AddResourceFilePath(const std::string& resourceFilePath_);
     const std::vector<Module*>& AllReferencedModules() const { return allRefModules; }
     void PrepareForCompilation(const std::vector<std::string>& references, cmajor::ast::Target target, const soul::ast::Span& rootSpan, int rootFileIndex, 
         cmajor::ast::CompileUnitNode* rootCompileUnit);
@@ -288,7 +288,7 @@ private:
     std::string originalFilePath;
     std::string filePathReadFrom;
     std::string libraryFilePath;
-    std::string resourceFilePath;
+    std::vector<std::string> resourceFilePaths;
     std::vector<std::string> referenceFilePaths;
     FileTable fileTable;
     std::set<std::string> compileUnitIds;

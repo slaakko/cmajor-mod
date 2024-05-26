@@ -104,7 +104,7 @@ protected:
     cmajor::binder::BoundStatement* SequenceSecond() const { return sequenceSecond; }
     void ExitBlocks(cmajor::binder::BoundCompoundStatement* targetBlock);
     cmajor::binder::BoundFunction* CurrentFunction() const { return currentFunction; }
-    void GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction);
+    //void GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     cmajor::binder::BoundCompoundStatement* CurrentBlock() const { return currentBlock; }
     cmajor::binder::BoundCompoundStatement* BreakTargetBlock() const { return breakTargetBlock; }
     cmajor::binder::BoundCompoundStatement* ContinueTargetBlock() const { return continueTargetBlock; }

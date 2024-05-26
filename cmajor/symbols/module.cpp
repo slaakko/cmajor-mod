@@ -787,9 +787,9 @@ Module::~Module()
 {
 }
 
-void Module::SetResourceFilePath(const std::string& resourceFilePath_)
+void Module::AddResourceFilePath(const std::string& resourceFilePath_)
 {
-    resourceFilePath = resourceFilePath_;
+    resourceFilePaths.push_back(resourceFilePath_);
 }
 
 void Module::ImportResourceScriptFilePaths(Module* module)

@@ -1158,18 +1158,6 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCatchStatement& boundCatchSta
     void* catchBlock = emitter->CreateBasicBlock("catch");
     emitter->SetCurrentBasicBlock(catchBlock);
     void* nop1 = emitter->CreateNop();
-/*
-    void* catch_ = emitter->CreateMDStruct();
-    emitter->AddMDItem(catch_, "nodeType", emitter->CreateMDLong(catchNodeType));
-    emitter->AddMDItem(catch_, "tryBlockId", emitter->CreateMDLong(currentTryBlockId));
-    emitter->AddMDItem(catch_, "catchBlockId", emitter->CreateMDBasicBlockRef(catchBlock));
-    const util::uuid& uuid = compileUnit->GetUuid(boundCatchStatement.CatchTypeUuidId());
-    std::string uuidStr = util::ToString(uuid);
-    emitter->AddMDItem(catch_, "caughtTypeId", emitter->CreateMDString(uuidStr));
-    int catchId = emitter->GetMDStructId(catch_);
-    void* catchMdRef = emitter->CreateMDStructRef(catchId);
-    emitter->SetMetadataRef(nop1, catchMdRef);
-*/
     boundCatchStatement.CatchBlock()->Accept(*this);
     emitter->CreateBr(currentTryNextBlock);
     emitter->SetCurrentBasicBlock(currentTryNextBlock);

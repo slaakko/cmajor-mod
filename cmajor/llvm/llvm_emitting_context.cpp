@@ -10,7 +10,7 @@ module;
 #include <llvm/InitializePasses.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/IR/Module.h>
-#include "llvm/MC/TargetRegistry.h"
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/CodeGen.h>

@@ -177,10 +177,13 @@ void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::strin
     std::string errors;
     if (backend == cmajor::ast::BackEnd::llvm)
     {
+/*      TODO make it work
         resourceFilePath = util::Path::ChangeExtension(module->LibraryFilePath(), ".res");
-        //commandLine.append("llvm-rc /V /FO ").append(util::QuotedPath(resourceFilePath));
-        //commandLine.append(1, ' ').append(util::QuotedPath(resourceScriptFileName));
-        //cmajor::llvm::ResourceCompile(resourceScriptFileName, resourceFilePath); todo removed
+        commandLine.append("llvm-rc /V /FO ").append(util::QuotedPath(resourceFilePath));
+        commandLine.append(1, ' ').append(util::QuotedPath(resourceScriptFileName));
+        cmajor::llvm::ResourceCompile(resourceScriptFileName, resourceFilePath); todo removed
+
+*/
     }
     else if (backend == cmajor::ast::BackEnd::cpp)
     {
@@ -222,7 +225,7 @@ void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::strin
     {
         util::LogMessage(module->LogStreamId(), "==> " + resourceFilePath);
     }
-    module->SetResourceFilePath(resourceFilePath);
+    module->AddResourceFilePath(resourceFilePath);
 }
 
 void ProcessResourcesInProject(cmajor::ast::Project* project, cmajor::symbols::Module* module)

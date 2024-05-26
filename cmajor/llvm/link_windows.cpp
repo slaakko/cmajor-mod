@@ -71,10 +71,12 @@ void LinkWindowsLLDLinkLibrary(cmajor::ast::Project* project, cmajor::symbols::M
     {
         argStrings.push_back(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
     }
+/*
     if (!rootModule->ResourceFilePath().empty())
     {
         argStrings.push_back(util::QuotedPath(rootModule->ResourceFilePath()));
     }
+*/
     std::vector<const char*> args;
     for (const auto& str : argStrings)
     {
@@ -152,10 +154,12 @@ void LinkWindowsLLDLinkProcess(cmajor::ast::Project* project, cmajor::symbols::M
     {
         args.push_back(util::QuotedPath(rootModule->LibraryFilePaths()[i]));
     }
+/*
     if (!rootModule->ResourceFilePath().empty())
     {
         args.push_back(util::QuotedPath(rootModule->ResourceFilePath()));
     }
+*/
     std::string errors;
     std::string linkCommandLine = "lld-link";
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo))

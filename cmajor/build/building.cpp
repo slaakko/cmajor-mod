@@ -266,6 +266,17 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         cmajor::masm::build::Install(project);
                     }
                 }
+                else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+                {
+                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    {
+                        std::string classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
+                        cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
+                        std::string  traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
+                        rootModule->WriteTraceData(traceDataFilePath);
+                        GenerateRuntimeResourceFile(project, rootModule.get(), classIndexFilePath, traceDataFilePath);
+                    }
+                }
                 if (!objectFilePaths.empty())
                 {
                     Archive(project, objectFilePaths);

@@ -581,7 +581,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         lastStatement->GetBoundNodeType() == cmajor::binder::BoundNodeType::boundReturnStatement &&
         destructorCallGenerated)
     {
-        GenerateExitFunctionCode(boundFunction);
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && 
             !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
@@ -682,6 +681,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundIfStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -719,6 +722,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundWhileStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -756,6 +763,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileSta
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundDoStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -795,6 +806,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundForStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -839,6 +854,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStateme
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundSwitchStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -918,6 +937,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseState
         {
             void* caseDest = it->second;
             emitter->SetCurrentBasicBlock(caseDest);
+            if (generateLineNumbers)
+            {
+                SetSpan(boundCaseStatement.GetSpan());
+            }
             if (boundCaseStatement.CompoundStatement())
             {
                 boundCaseStatement.CompoundStatement()->Accept(*this);
@@ -943,6 +966,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaul
     if (defaultDest)
     {
         emitter->SetCurrentBasicBlock(defaultDest);
+        if (generateLineNumbers)
+        {
+            SetSpan(boundDefaultStatement.GetSpan());
+        }
         if (boundDefaultStatement.CompoundStatement())
         {
             boundDefaultStatement.CompoundStatement()->Accept(*this);
@@ -956,6 +983,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaul
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundConstructionStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundConstructionStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1000,6 +1031,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssignmentStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundAssignmentStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1009,6 +1044,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAss
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpressionStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundExpressionStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1022,6 +1061,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExp
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boundInitializationStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundInitializationStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1035,6 +1078,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boun
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundEmptyStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1080,6 +1127,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetV
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStatement) 
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundThrowStatement.GetSpan());
+    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1381,7 +1432,10 @@ void LLVMCodeGenerator::SetLineNumber(int32_t lineNumber)
         bool prevGenJumpingBoolCode = genJumpingBoolCode;
         genJumpingBoolCode = false;
         emitter->BeginSubstituteLineNumber(lineNumber);
+        bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+        inSetLineOrEntryCode = true;
         setLineNumberStatement->Accept(*this);
+        inSetLineOrEntryCode = prevSetLineOrEntryCode;
         emitter->EndSubstituteLineNumber();
         genJumpingBoolCode = prevGenJumpingBoolCode;
     }
@@ -1762,7 +1816,6 @@ void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction&
         statement->Accept(*this);
     }
 }
-*/
 
 void LLVMCodeGenerator::GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
@@ -1773,5 +1826,6 @@ void LLVMCodeGenerator::GenerateExitFunctionCode(cmajor::binder::BoundFunction& 
         statement->Accept(*this);
     }
 }
+*/
 
 } // namespace cmajor::llvm

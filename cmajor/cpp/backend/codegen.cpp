@@ -121,12 +121,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit)
         cmajor::binder::BoundNode* node = boundCompileUnit.BoundNodes()[i].get();
         node->Accept(*this);
     }
-    //GenerateInitUnwindInfoFunction(boundCompileUnit);
-    //GenerateInitCompileUnitFunction(boundCompileUnit);
-    //if (boundCompileUnit.GetGlobalInitializationFunctionSymbol() != nullptr)
-    //{
-        //GenerateGlobalInitFunction(boundCompileUnit);
-    //}
     nativeCompileUnit->Write();
     if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::disableCodeGen))
     {
@@ -363,7 +357,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (!lastStatement || lastStatement->GetBoundNodeType() != cmajor::binder::BoundNodeType::boundReturnStatement ||
         lastStatement->GetBoundNodeType() == cmajor::binder::BoundNodeType::boundReturnStatement && destructorCallGenerated)
     {
-        //GenerateExitFunctionCode(boundFunction);
         if (functionSymbol->ReturnType() && functionSymbol->ReturnType()->GetSymbolType() != cmajor::symbols::SymbolType::voidTypeSymbol && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
         {
             void* defaultValue = functionSymbol->ReturnType()->CreateDefaultIrValue(*emitter);
@@ -439,7 +432,10 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
     {
         GenerateEnterFunctionCode(*currentFunction);
     }
-    //SetLineNumber(boundCompoundStatement.GetSourcePos().line); TODO
+    if (generateLineNumbers)
+    {
+        SetSpan(boundCompoundStatement.GetSpan());
+    }
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
     {
@@ -499,6 +495,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundReturnStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundReturnStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -517,7 +514,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
             sequenceSecond->Accept(*this);
         }
         ExitBlocks(nullptr);
-        //GenerateExitFunctionCode(*currentFunction);
         int32_t retNodeId = -1;
         if (generateLineNumbers)
         {
@@ -541,7 +537,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundReturnStatement& boundReturnSt
     else
     {
         ExitBlocks(nullptr);
-        //GenerateExitFunctionCode(*currentFunction);
         int32_t retNodeId = -1;
         if (generateLineNumbers)
         {
@@ -581,6 +576,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoCaseStatement& boundGotoCa
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundGotoCaseStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoCaseStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -617,6 +613,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoDefaultStatement& boundGot
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundGotoDefaultStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoDefaultStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -650,6 +647,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundBreakStatement& boundBreakStat
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundBreakStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundBreakStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -682,6 +680,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundContinueStatement& boundContin
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundContinueStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundContinueStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -713,6 +712,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundGotoStatement& boundGotoStatem
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundGotoStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundGotoStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -770,6 +770,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundIfStatement& boundIfStatement)
     int32_t condNodeId = -1;
     if (generateLineNumbers)
     {
+        SetSpan(boundIfStatement.GetSpan());
         condNodeId = emitter->AddControlFlowGraphNode();
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundIfStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
@@ -824,6 +825,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundWhileStatement& boundWhileStat
     int32_t condNodeId = -1;
     if (generateLineNumbers)
     {
+        SetSpan(boundWhileStatement.GetSpan());
         condNodeId = emitter->AddControlFlowGraphNode();
         continueTargetNodeId = condNodeId;
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundWhileStatement.Condition()->GetSpan(), fileIndex);
@@ -879,6 +881,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDoStatement& boundDoStatement)
     int32_t doNodeId = -1;
     if (generateLineNumbers)
     {
+        SetSpan(boundDoStatement.GetSpan());
         doNodeId = emitter->AddControlFlowGraphNode();
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDoStatement.Statement()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
@@ -948,6 +951,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundForStatement& boundForStatemen
     int32_t condNodeId = -1;
     if (generateLineNumbers)
     {
+        SetSpan(boundForStatement.GetSpan());
         condNodeId = emitter->AddControlFlowGraphNode();
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundForStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
@@ -1002,6 +1006,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchSt
     int32_t condNodeId = -1;
     if (generateLineNumbers)
     {
+        SetSpan(boundSwitchStatement.GetSpan());
         condNodeId = emitter->AddControlFlowGraphNode();
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundSwitchStatement.Condition()->GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
@@ -1073,11 +1078,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundSwitchStatement& boundSwitchSt
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatement)
 {
-    if (generateLineNumbers)
-    {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCaseStatement.GetSpan(), fileIndex);
-        emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
-    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1090,6 +1090,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatem
         {
             void* caseDest = it->second;
             emitter->SetCurrentBasicBlock(caseDest);
+            if (generateLineNumbers)
+            {
+                SetSpan(boundCaseStatement.GetSpan());
+                cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundCaseStatement.GetSpan(), fileIndex);
+                emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
+            }
             if (boundCaseStatement.CompoundStatement())
             {
                 boundCaseStatement.CompoundStatement()->Accept(*this);
@@ -1109,11 +1115,6 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCaseStatement& boundCaseStatem
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefaultStatement)
 {
-    if (generateLineNumbers)
-    {
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDefaultStatement.GetSpan(), fileIndex);
-        emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
-    }
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
     basicBlockOpen = false;
@@ -1121,6 +1122,12 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundDefaultStatement& boundDefault
     if (defaultDest)
     {
         emitter->SetCurrentBasicBlock(defaultDest);
+        if (generateLineNumbers)
+        {
+            SetSpan(boundDefaultStatement.GetSpan());
+            cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundDefaultStatement.GetSpan(), fileIndex);
+            emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
+        }
         if (boundDefaultStatement.CompoundStatement())
         {
             boundDefaultStatement.CompoundStatement()->Accept(*this);
@@ -1136,6 +1143,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundConstructionStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundConstructionStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         cmajor::symbols::LocalVariableSymbol* localVariable = boundConstructionStatement.GetLocalVariable();
@@ -1210,6 +1218,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundAssignmentStatement& boundAssi
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundAssignmentStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundAssignmentStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -1242,6 +1251,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpr
 {
     if (generateLineNumbers && !boundExpressionStatement.IgnoreNode())
     {
+        SetSpan(boundExpressionStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundExpressionStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -1279,6 +1289,10 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundExpressionStatement& boundExpr
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundInitializationStatement& boundInitializationStatement)
 {
+    if (generateLineNumbers)
+    {
+        SetSpan(boundInitializationStatement.GetSpan());
+    }
     emitter->SetCurrentSourcePos(0, 0, 0);
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -1295,6 +1309,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptyStat
 {
     if (generateLineNumbers && !boundEmptyStatement.IgnoreNode())
     {
+        SetSpan(boundEmptyStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundEmptyStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -1349,6 +1364,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundThrowStatement& boundThrowStat
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundThrowStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundThrowStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -1378,6 +1394,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundTryStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundTryStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
@@ -1440,6 +1457,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
         prevControlFlowGraphNodeId = tryBlockId;
         if (generateLineNumbers)
         {
+            SetSpan(boundCatchStatement->GetSpan());
             emitter->BeginInstructionFlag(static_cast<int16_t>(cmajor::debug::InstructionFlags::catchInst));
         }
         boundCatchStatement->CatchBlock()->Accept(*this);
@@ -1469,6 +1487,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundRethrowStatement& boundRethrow
 {
     if (generateLineNumbers)
     {
+        SetSpan(boundRethrowStatement.GetSpan());
         cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundRethrowStatement.GetSpan(), fileIndex);
         emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
