@@ -261,6 +261,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     }
                     cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
                         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
+                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    {
+                        cmajor::masm::build::Install(project);
+                    }
                 }
                 if (!objectFilePaths.empty())
                 {

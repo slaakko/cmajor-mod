@@ -150,6 +150,8 @@
     <ClCompile Include="build.cppm" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="config.cppm" />
+    <ClCompile Include="install.cpp" />
+    <ClCompile Include="install.cppm" />
     <ClCompile Include="msbuild.cpp" />
     <ClCompile Include="msbuild.cppm" />
     <ClCompile Include="vs_build.cpp" />
