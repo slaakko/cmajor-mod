@@ -252,6 +252,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
     <ResourceCompile Include="..\..\lexer\cmajor.container.file.lexer.classmap.rc" />
     <ResourceCompile Include="..\..\lexer\cmajor.lexer.classmap.rc" />
   </ItemGroup>

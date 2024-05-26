@@ -29,6 +29,20 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     bdp.remove_filename();
     std::filesystem::create_directories(bdp);
     std::string clangxxPath = GetClangXXPathFromBuildConfig();
+    std::string clangxxVersionCommand = clangxxPath + " --version";
+    util::ExecuteResult versionExecuteResult = util::Execute(clangxxVersionCommand);
+    if (versionExecuteResult.exitCode != 0)
+    {
+        throw std::runtime_error("getting clang++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
+    }
+    else
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
+        }
+    }
+
     std::string command = clangxxPath;
     command.append(" -g");
     command.append(" -v");
@@ -443,6 +457,22 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     bdp.remove_filename();
     std::filesystem::create_directories(bdp);
     std::string gxxPath = GetGXXPathFromBuildConfig();
+
+    std::string gxxVersionCommand = gxxPath + " --version";
+    util::ExecuteResult versionExecuteResult = util::Execute(gxxVersionCommand);
+    if (versionExecuteResult.exitCode != 0)
+    {
+        throw std::runtime_error("getting g++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
+    }
+    else
+    {
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
+        }
+    }
+
+
     std::string command = gxxPath;
     command.append(" -g");
     command.append(" -v");

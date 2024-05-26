@@ -10,6 +10,16 @@ import cmajor.build;
 import cmajor.symbols;
 import util;
 
+void InitApplication()
+{
+    util::Init();
+}
+
+void DoneApplication()
+{
+    util::Done();
+}
+
 std::string Version()
 {
     return util::CmajorVersionStr();
@@ -54,6 +64,7 @@ int main(int argc, const char** argv)
     std::vector<std::unique_ptr<cmajor::symbols::Module>> rootModules;
     try
     {
+        InitApplication();
         std::vector<std::string> files;
         bool genDebugInfo = false;
         bool noDebugInfo = false;
@@ -296,6 +307,8 @@ int main(int argc, const char** argv)
     catch (...)
     {
         std::cerr << "unknown exception" << std::endl;
+        return 1;
     }
+    DoneApplication();
     return 0;
 }

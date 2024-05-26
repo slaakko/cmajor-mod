@@ -65,20 +65,7 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
     std::string errors;
     try
     {
-        util::ExecuteResult executeResult = util::Execute(intermediateCompileCommand);
-        if (executeResult.exitCode != 0)
-        {
-            throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
-        }
-        else
-        {
-            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-            {
-                util::LogMessage(module->LogStreamId(), executeResult.output);
-            }
-        }
-/*
-        util::Process::Redirections redirections = util::Process::Redirections::processStdErr;
+        util::Process::Redirections redirections = util::Process::Redirections::processStdOut | util::Process::Redirections::processStdErr;
         util::Process process(intermediateCompileCommand, redirections);
         errors = process.ReadToEnd(util::Process::StdHandle::stdErr);
         process.WaitForExit();
@@ -87,7 +74,6 @@ void CppCodeGenerator::Compile(const std::string& intermediateCodeFile)
         {
             throw std::runtime_error("executing '" + intermediateCompileCommand + "' failed with exit code: " + std::to_string(exitCode));
         }
-*/
     }
     catch (const std::exception& ex)
     {
