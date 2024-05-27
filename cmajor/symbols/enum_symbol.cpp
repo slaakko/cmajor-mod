@@ -214,7 +214,9 @@ void* EnumTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
         }
         elements.push_back(emitter.CreateDITypeForEnumConstant(util::ToUtf8(enumConstant->Name()), value));
     }
-    return emitter.CreateDITypeForEnumType(util::ToUtf8(Name()), util::ToUtf8(MangledName()), elements, sizeInBits, alignInBits, underlyingType->GetDIType(emitter));
+    soul::ast::FullSpan fullSpan = GetFullSpan();
+    return emitter.CreateDITypeForEnumType(util::ToUtf8(Name()), util::ToUtf8(MangledName()), fullSpan, GetLineColLen(fullSpan),
+        elements, sizeInBits, alignInBits, underlyingType->GetDIType(emitter));
 }
 
 void EnumTypeSymbol::Check()

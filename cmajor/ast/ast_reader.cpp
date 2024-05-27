@@ -239,19 +239,12 @@ soul::ast::Span AstReader::ReadSpan()
     return soul::ast::Span(pos, len);
 }
 
-/*
-soul::ast::SourcePos AstReader::ReadSourcePos()
+soul::ast::LineColLen AstReader::ReadLineColLen()
 {
-    int32_t file = -1;  
-    int32_t col = 0;
-    int32_t line = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
-    if (line)
-    {
-        file = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
-        col = static_cast<int32_t>(binaryStreamReader.ReadULEB128UInt());
-    }
-    return soul::ast::SourcePos(file, line, col);
+    int line = binaryStreamReader.ReadInt();
+    int col = binaryStreamReader.ReadInt();
+    int len = binaryStreamReader.ReadInt();
+    return soul::ast::LineColLen(line, col, len);
 }
-*/
 
 } // namespace cmajor::ast

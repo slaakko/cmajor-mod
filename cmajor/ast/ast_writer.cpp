@@ -28,19 +28,13 @@ void AstWriter::Write(const soul::ast::Span& span)
 {
     binaryStreamWriter.Write(static_cast<int32_t>(span.pos));
     binaryStreamWriter.Write(static_cast<int32_t>(span.len));
+}
 
-/*
-    if (span.line)
-    {
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.line));
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.file));
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(span.col));
-    }
-    else
-    {
-        binaryStreamWriter.WriteULEB128UInt(static_cast<uint32_t>(0));
-    }
-*/
+void AstWriter::Write(const soul::ast::LineColLen& lineColLen)
+{
+    binaryStreamWriter.Write(static_cast<int32_t>(lineColLen.line));
+    binaryStreamWriter.Write(static_cast<int32_t>(lineColLen.col));
+    binaryStreamWriter.Write(static_cast<int32_t>(lineColLen.len));
 }
 
 } // namespace cmajor::ast

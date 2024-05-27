@@ -15,7 +15,7 @@ void RunProgram(const std::string& backend, const std::string& config, cmajor::a
     std::string executableName = util::Path::Combine(project->OutdirBasePath().generic_string(), "bin");
     if (backend == "llvm")
     {
-        executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(executableName, config), 
+        executableName = util::GetFullPath(util::Path::ChangeExtension(util::Path::Combine(util::Path::Combine(util::Path::Combine(executableName, "llvm"), config),
             util::Path::GetFileName(project->FilePath())), ".exe"));
     }
     else if (backend == "cpp")

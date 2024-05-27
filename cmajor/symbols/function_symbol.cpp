@@ -964,7 +964,9 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles));
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
             }
         }
         else
@@ -993,7 +995,9 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles));
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1013,7 +1017,9 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
             }
         }
         else
@@ -1042,7 +1048,9 @@ void FunctionSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmaj
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1115,7 +1123,9 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles));
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
             }
         }
         else
@@ -1144,7 +1154,9 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles));
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -1164,7 +1176,9 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
             }
         }
         else
@@ -1193,7 +1207,9 @@ void FunctionSymbol::GenerateVirtualCall(cmajor::ir::Emitter& emitter, std::vect
             else
             {
                 void* functionType = IrType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {

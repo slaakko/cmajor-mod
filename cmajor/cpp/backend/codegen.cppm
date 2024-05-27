@@ -108,7 +108,7 @@ public:
     int Install(const std::u16string& str) override;
     int Install(const std::u32string& str) override;
     void Compile(const std::string& intermediateCodeFile);
-    std::string GetSourceFilePath(const util::uuid& moduleId) override;
+    std::string GetSourceFilePath(int fileIndex, const util::uuid& moduleId) override;
 /*
     void GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction);
     void GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction);

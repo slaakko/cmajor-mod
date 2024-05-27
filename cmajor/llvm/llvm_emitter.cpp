@@ -23,16 +23,6 @@ module cmajor.llvm.emitter;
 
 import cmajor.symbols;
 
-// CreateIrDIForwardDeclaration
-// CreateDITypeForClassType
-// CreateDITypeForEnumType
-// CreateDIMemberType
-// CreateCallInst
-// CreateInvokeInst
-// CreateDIMethod
-// CreateDIFunction
-// CreateDIParameterVariable
-
 namespace cmllvm {
 
 LLVMEmitter::LLVMEmitter(cmajor::ir::EmittingContext* emittingContext_) :
@@ -187,8 +177,7 @@ void* LLVMEmitter::GetIrTypeForDelegateType(void* retType, const std::vector<voi
 
 void* LLVMEmitter::GetIrTypeForVoidPtrType()
 {
-    //return llvm::Type::getInt8PtrTy(context);
-    return llvm::PointerType::getUnqual(context); // new return opaque pointer type
+    return llvm::PointerType::getUnqual(context); // new return opaque pointer type 
 }
 
 void* LLVMEmitter::GetIrTypeForStructType(const std::vector<void*>& elementTypes)
@@ -299,7 +288,7 @@ void* LLVMEmitter::CreateDefaultIrValueForDelegateType(void* irType)
 
 void* LLVMEmitter::CreateDefaultIrValueForVoidPtrType()
 {
-    return llvm::Constant::getNullValue(builder.getInt8PtrTy());
+    return llvm::Constant::getNullValue(builder.getPtrTy()); // // getInt8PtrTy -> getPtrTy
 }
 
 void* LLVMEmitter::CreateDefaultIrValueForDerivedType(void* irType)
@@ -441,11 +430,11 @@ void* LLVMEmitter::CreateIrValueForUuid(void* type, void* uuidConstant)
     indeces.push_back(builder.getInt32(0));
     indeces.push_back(builder.getInt32(0));
 #if (LLVM_VERSION_MAJOR < 16)
-    return builder.CreateBitCast(builder.CreateGEP(static_cast<llvm::Value*>(uuidConstant), indeces), builder.getInt8PtrTy());
+    return builder.CreateBitCast(builder.CreateGEP(static_cast<llvm::Value*>(uuidConstant), indeces), builder.getPtrTy()); // getInt8PtrTy -> getPtrTy
 #else
     llvm::Value* value = static_cast<llvm::Value*>(uuidConstant);
     llvm::Value* gep = builder.CreateGEP(static_cast<llvm::Type*>(type), value, indeces);
-    return builder.CreateBitCast(gep, builder.getInt8PtrTy()); // TODO
+    return builder.CreateBitCast(gep, builder.getPtrTy()); 
 #endif
 }
 
@@ -842,13 +831,7 @@ void* LLVMEmitter::CreateIrDIForwardDeclaration(void* irType, const std::string&
 
 void* LLVMEmitter::GetDebugInfoForFile(const soul::ast::FullSpan& fullSpan)
 {
-/*
-    if (sourcePos.file == -1)
-    {
-        return diFile;
-    }
-*/
-    std::string sourceFilePath = GetSourceFilePath(fullSpan.moduleId);
+    std::string sourceFilePath = GetSourceFilePath(fullSpan.fileIndex, fullSpan.moduleId);
     if (sourceFilePath.empty())
     {
         return diFile;
@@ -867,7 +850,7 @@ uint64_t LLVMEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 #if (LLVM_VERSION_MAJOR >= 10)
 
 void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
-    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+    const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     std::vector<llvm::Metadata*> elements;
     const llvm::StructLayout* structLayout = dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)));
@@ -880,18 +863,16 @@ void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void
     uint64_t alignInBits = 8 * structLayout->getAlignment().value();
     uint64_t offsetInBits = 0; // todo?
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
-/*
-    return diBuilder->createClassType(static_cast<llvm::DIScope*>(CurrentScope()), name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(classSourcePos, moduleId)),
-        classSourcePos.line, sizeInBits, alignInBits, offsetInBits,
+    return diBuilder->createClassType(static_cast<llvm::DIScope*>(CurrentScope()), name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)),
+        lineColLen.line, sizeInBits, alignInBits, offsetInBits,
         flags, static_cast<llvm::DIType*>(baseClassDIType), diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(vtableHolderClass), templateParams, mangledName);
-*/
     return nullptr;
 }
 
 #else
 
 void* LLVMEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
-    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+    const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     std::vector<llvm::Metadata*> elements;
     const llvm::StructLayout* structLayout = dataLayout->getStructLayout(llvm::cast<llvm::StructType>(static_cast<llvm::Type*>(irType)));
@@ -917,19 +898,16 @@ void* LLVMEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t 
     return diBuilder->createEnumerator(name, value);
 }
 
-void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName,
-    const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+void* LLVMEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan,
+    const soul::ast::LineColLen& lineColLen, const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     std::vector<llvm::Metadata*> elements;
     for (void* element : enumConstantElements)
     {
         elements.push_back(static_cast<llvm::Metadata*>(element));
     }
-/*
-    return diBuilder->createEnumerationType(nullptr, name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits,
+    return diBuilder->createEnumerationType(nullptr, name, static_cast<llvm::DIFile*>(GetDebugInfoForFile(fullSpan)), lineColLen.line, sizeInBits, alignInBits,
         diBuilder->getOrCreateArray(elements), static_cast<llvm::DIType*>(underlyingDIType), mangledName);
-*/
-    return nullptr;
 }
 
 void LLVMEmitter::MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId)
@@ -954,6 +932,7 @@ void LLVMEmitter::SetDITypeByTypeId(const util::uuid& typeId, void* diType, cons
 {
     diTypeTypeIdMap[typeId] = static_cast<llvm::DIType*>(diType);
     diTypeNameMap[static_cast<llvm::DIType*>(diType)] = typeName;
+    //std::cout << diType << " : " << typeName << "\n";
 }
 
 void* LLVMEmitter::GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId)
@@ -971,15 +950,13 @@ void LLVMEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVa
     diMemberTypeMap[memberVariableId] = static_cast<llvm::DIDerivedType*>(diType);
 }
 
-void* LLVMEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* LLVMEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
+    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     llvm::DINode::DIFlags flags = llvm::DINode::DIFlags::FlagZero;
-/*
     return diBuilder->createMemberType(static_cast<llvm::DIType*>(scope), name, static_cast<llvm::DIFile*>(
-        GetDebugInfoForFile(sourcePos, moduleId)), sourcePos.line, sizeInBits, alignInBits, offsetInBits, flags,
+        GetDebugInfoForFile(fullSpan)), lineColLen.line, sizeInBits, alignInBits, offsetInBits, flags,
         static_cast<llvm::DIType*>(diType));
-*/
-    return nullptr;
 }
 
 void* LLVMEmitter::CreateConstDIType(void* diType)
@@ -1028,10 +1005,10 @@ uint64_t LLVMEmitter::GetAlignmentInBits(void* irType)
 
 #if (LLVM_VERSION_MAJOR < 12)
 
-llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::SourcePos& sourcePos)
+llvm::DebugLoc GetDebugLocation(LLVMEmitter* emitter, const soul::ast::LineColLen& lineColLen)
 {
     if (!emitter->diCompileUnit || !sourcePos.IsValid() || !emitter->currentDIBuilder) return llvm::DebugLoc();
-    return llvm::DebugLoc::get(sourcePos.line, sourcePos.col, static_cast<llvm::DIScope*>(emitter->CurrentScope()));
+    return llvm::DebugLoc::get(lineColLen.line, lineColLen.col, static_cast<llvm::DIScope*>(emitter->CurrentScope()));
 }
 
 #else
@@ -1252,7 +1229,7 @@ void* LLVMEmitter::CreateCall(void* functionType, void* callee, const std::vecto
 #endif
 }
 
-void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen)
 {
     std::vector<llvm::Value*> arguments;
     for (void* arg : args)
@@ -1278,12 +1255,10 @@ void* LLVMEmitter::CreateCallInst(void* functionType, void* callee, const std::v
 #else
     llvm::CallInst* callInst = llvm::CallInst::Create(static_cast<llvm::Value*>(callee), arguments, bundleDefs, "", static_cast<llvm::BasicBlock*>(CurrentBasicBlock()));
 #endif
-/*  TODO
     if (diBuilder)
     {
-        callInst->setDebugLoc(GetDebugLocation(this, sourcePos));
+        callInst->setDebugLoc(GetDebugLocation(this, lineColLen));
     }
-*/
     return callInst;
 }
 
@@ -1343,7 +1318,8 @@ void* LLVMEmitter::CreateInvoke(void* functionType, void* callee, void* normalBl
 #endif
 }
 
-void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
+    const soul::ast::LineColLen& lineColLen)
 {
     std::vector<llvm::Value*> arguments;
     for (void* arg : args)
@@ -1375,7 +1351,7 @@ void* LLVMEmitter::CreateInvokeInst(void* functionType, void* callee, void* norm
 #endif
     if (diBuilder)
     {
-        // invokeInst->setDebugLoc(GetDebugLocation(this, sourcePos)); TODO  LLVM debug info
+        invokeInst->setDebugLoc(GetDebugLocation(this, lineColLen)); 
     }
     return invokeInst;
 }
@@ -1459,7 +1435,7 @@ void* LLVMEmitter::GetImtPtrFromInterface(void* interfaceType, void* interfaceTy
     llvm::Value* interfacePtrPtr = builder.CreateGEP(static_cast<llvm::Type*>(interfaceType), static_cast<llvm::Value*>(interfaceTypePtr), interfaceIndeces);
     llvm::Value* interfacePtr = builder.CreateLoad(static_cast<llvm::Type*>(GetIrTypeForVoidPtrType()), interfacePtrPtr);
 #endif
-    llvm::Value* imtPtr = builder.CreateBitCast(interfacePtr, llvm::PointerType::get(builder.getInt8PtrTy(), 0));
+    llvm::Value* imtPtr = builder.CreateBitCast(interfacePtr, llvm::PointerType::get(builder.getPtrTy(), 0)); // getInt8PtrTy -> getPtrTy
     return imtPtr;
 }
 
@@ -1519,7 +1495,8 @@ void* LLVMEmitter::GetImtArray(void* vmtType, void* vmtObjectPtr, int32_t imtsVm
 #else
     llvm::Value* imtsArrayPtrPtr = builder.CreateGEP(static_cast<llvm::Type*>(vmtType), static_cast<llvm::Value*>(vmtObjectPtr), imtsArrayIndeces);
 #endif
-    llvm::Value* imtsArrayPtr = builder.CreateBitCast(imtsArrayPtrPtr, llvm::PointerType::get(llvm::PointerType::get(builder.getInt8PtrTy(), 0), 0));
+    llvm::Value* imtsArrayPtr = builder.CreateBitCast(imtsArrayPtrPtr, 
+        llvm::PointerType::get(llvm::PointerType::get(builder.getPtrTy(), 0), 0));
 #if (LLVM_VERSION_MAJOR < 16)
     llvm::Value* imtArray = builder.CreateLoad(imtsArrayPtr);
 #else
@@ -1927,7 +1904,7 @@ void LLVMEmitter::ReplaceForwardDeclarations()
                 if (it != classPtrMap.cend())
                 {
                     void* classPtr = it->second;
-                    //std::string className = classNameMap[classPtr];
+                    std::string className = classNameMap[classPtr];
                     //std::cout << "> create di type for class" << className << std::endl;
                     diType = CreateClassDIType(classPtr);
                     //std::cout << "< create di type for class" << className << std::endl;
@@ -1938,9 +1915,10 @@ void LLVMEmitter::ReplaceForwardDeclarations()
                 }
             }
             //std::string typeName = diTypeNameMap[static_cast<llvm::DIType*>(diType)];
-            //std::cout << "> replacing " << typeName << std::endl;
-            fwdDeclaration->replaceAllUsesWith(static_cast<llvm::DIType*>(diType));
-            //std::cout << "< replacing " << typeName << std::endl;
+            //std::cout << "> replacing " << fwdDeclaration << " by " << typeName << " aka " << diType << std::endl;
+            llvm::DIType* llvmDIType = static_cast<llvm::DIType*>(diType);
+            fwdDeclaration->replaceAllUsesWith(llvmDIType);
+            //std::cout << "< replacing " << fwdDeclaration << " by " << typeName << " aka " << diType << std::endl;
         }
         currentFwdDeclarationMap.clear();
         std::swap(currentFwdDeclarationMap, fwdDeclarationMap);
@@ -2254,7 +2232,8 @@ void* LLVMEmitter::CreateRetVoid()
 
 void LLVMEmitter::SetPersonalityFunction(void* function, void* personalityFunction)
 {
-    static_cast<llvm::Function*>(function)->setPersonalityFn(llvm::ConstantExpr::getBitCast(static_cast<llvm::Function*>(personalityFunction), builder.getInt8PtrTy()));
+    // getInt8PtrTy -> getPtrTy
+    static_cast<llvm::Function*>(function)->setPersonalityFn(llvm::ConstantExpr::getBitCast(static_cast<llvm::Function*>(personalityFunction), builder.getPtrTy()));
 }
 
 void LLVMEmitter::AddNoUnwindAttribute(void* function)
@@ -2521,7 +2500,7 @@ void LLVMEmitter::AddClauseToLangdingPad(void* landingPad, void* exceptionTypeId
 {
     llvm::LandingPadInst* lp = static_cast<llvm::LandingPadInst*>(landingPad);
     llvm::Constant* typeId = static_cast<llvm::Constant*>(exceptionTypeId);
-    lp->addClause(llvm::cast<llvm::Constant>(builder.CreateBitCast(typeId, builder.getInt8PtrTy())));
+    lp->addClause(llvm::cast<llvm::Constant>(builder.CreateBitCast(typeId, builder.getPtrTy()))); // getInt8PtrTy -> getPtrTy
 }
 
 void* LLVMEmitter::CreateExtractValue(void* aggregate, const std::vector<unsigned int>& indeces)
@@ -2586,12 +2565,11 @@ void* LLVMEmitter::GetBoundCompileUnit() const
 
 void LLVMEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16_t ecol)
 {
-    // todo
 }
 
-std::string LLVMEmitter::GetSourceFilePath(const util::uuid& moduleId)
+std::string LLVMEmitter::GetSourceFilePath(int fileIndex, const util::uuid& moduleId)
 {
-    return emittingDelegate->GetSourceFilePath(moduleId);
+    return emittingDelegate->GetSourceFilePath(fileIndex, moduleId);
 }
 
 cmajor::ir::Pad* LLVMEmitter::CurrentPad()

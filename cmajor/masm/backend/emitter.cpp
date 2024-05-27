@@ -549,8 +549,8 @@ void* MasmEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t 
     return nullptr;
 }
 
-void* MasmEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
-    uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+void* MasmEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     return nullptr;
 }
@@ -567,7 +567,7 @@ uint64_t MasmEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 }
 
 void* MasmEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
-    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+    const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -594,7 +594,8 @@ void MasmEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVa
 {
 }
 
-void* MasmEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* MasmEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     return nullptr;
 }
@@ -1150,7 +1151,7 @@ void* MasmEmitter::CreateCall(void* functionType, void* callee, const std::vecto
     return context->CreateCall(calleeValue);
 }
 
-void* MasmEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* MasmEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen)
 {
     for (void* arg : args)
     {
@@ -1211,9 +1212,9 @@ void* MasmEmitter::CreateInvoke(void* functionType, void* callee, void* normalBl
     return nullptr;
 }
 
-void* MasmEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* MasmEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
+    const soul::ast::LineColLen& lineColLen)
 {
-    //return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
     return nullptr;
 }
 

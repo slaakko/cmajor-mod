@@ -8,7 +8,6 @@ export module cmajor.ast.writer;
 import std.core;
 import util;
 import cmajor.ast.specifier;
-//import soul.ast.source.pos;
 import soul.ast.span;
 import cmajor.ast.node;
 
@@ -22,6 +21,7 @@ public:
     void Write(Node* node);
     void Write(Specifiers specifiers);
     void Write(const soul::ast::Span& span);
+    void Write(const soul::ast::LineColLen& lineColLen);
 private:
     util::FileStream fileStream;
     util::BufferedStream bufferedStream;

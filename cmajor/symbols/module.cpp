@@ -2140,6 +2140,14 @@ int GetLineNumber(const soul::ast::FullSpan& fullSpan)
     return lineColLen.line;
 }
 
+soul::ast::LineColLen GetLineColLen(const soul::ast::FullSpan& fullSpan)
+{
+    Module* module = GetModuleById(fullSpan.moduleId);
+    if (!module) return soul::ast::LineColLen();
+    soul::ast::LineColLen lineColLen = module->GetLineColLen(fullSpan.span, fullSpan.fileIndex);
+    return lineColLen;
+}
+
 bool HasRootModuleForCurrentThread()
 {
     return rootModule != nullptr;

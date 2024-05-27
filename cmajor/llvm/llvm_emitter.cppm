@@ -125,17 +125,18 @@ public:
     void* CreateIrDIForwardDeclaration(void* irType, const std::string& name, const std::string& mangledName, 
         const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen) override;
     uint64_t GetOffsetInBits(void* classIrType, int layoutIndex) override;
-    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan,
+    void* CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
         const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType) override;
     void* CreateDITypeForEnumConstant(const std::string& name, int64_t value) override;
-    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
-        uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
+    void* CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType) override;
     void MapFwdDeclaration(void* fwdDeclaration, const util::uuid& typeId) override;
     void* GetDITypeByTypeId(const util::uuid& typeId) const override;
     void SetDITypeByTypeId(const util::uuid& typeId, void* diType, const std::string& typeName) override;
     void* GetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId) override;
     void SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVariableId, void* diType) override;
-    void* CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
+    void* CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+        uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType) override;
     void* CreateConstDIType(void* diType) override;
     void* CreateLValueRefDIType(void* diType) override;
     void* CreateRValueRefDIType(void* diType) override;
@@ -213,11 +214,12 @@ public:
     void* CreateGlobalWStringPtr(const std::u16string& name) override;
     void* CreateGlobalUStringPtr(const std::u32string& name) override;
     void* CreateCall(void* functionType, void* callee, const std::vector<void*>& args) override;
-    void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
+    void* CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen) override;
     void* CreateCallInstToBasicBlock(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, void* basicBlock, 
         const soul::ast::LineColLen& lineColLen) override;
     void* CreateInvoke(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args) override;
-    void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles) override;
+    void* CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
+        const soul::ast::LineColLen& lineColLen) override;
     void* GetObjectFromClassDelegate(void* classDelegateType, void* classDelegatePtr) override;
     void* GetDelegateFromClassDelegate(void* classDelegateType, void* classDelegatePtr) override;
     void* GetObjectFromInterface(void* interfaceType, void* interfaceTypePtr) override;
@@ -341,7 +343,7 @@ public:
     void* CleanupBlock() override;
     bool NewCleanupNeeded() override;
     void CreateCleanup() override;
-    std::string GetSourceFilePath(const util::uuid& moduleId);
+    std::string GetSourceFilePath(int fileIndex, const util::uuid& moduleId);
     cmajor::ir::Pad* CurrentPad() override;
     void* CreateClassDIType(void* classPtr) override;
     void* GetGlobalStringPtr(int stringId) override;

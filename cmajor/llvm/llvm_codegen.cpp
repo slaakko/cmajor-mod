@@ -58,7 +58,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     emitter->ResetCurrentDebugLocation();
     debugInfo = false;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo) && boundCompileUnit.GetCompileUnitNode() && 
-        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit())
+        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit() && compileUnitId != "Attribute_ED3EC2A45D6E25CEB95C30C28B428CF777D0BF18")
     {
         emitter->StartDebugInfo(boundCompileUnit.GetCompileUnitNode()->FilePath(), cmajor::symbols::GetCompilerVersion(), 
             cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release));
@@ -80,12 +80,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     {
         cmajor::binder::BoundNode* boundNode = boundCompileUnit.BoundNodes()[i].get();
         boundNode->Accept(*this);
-    }
-    //GenerateInitUnwindInfoFunction(boundCompileUnit);
-    //GenerateInitCompileUnitFunction(boundCompileUnit);
-    if (boundCompileUnit.GetGlobalInitializationFunctionSymbol() != nullptr)
-    {
-        //GenerateGlobalInitFunction(boundCompileUnit);
     }
     if (debugInfo)
     {
@@ -153,7 +147,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
         debugInfo = false;
         emitter->SetCurrentDIBuilder(nullptr);
     }
-/*  TODO LLVM DebugInfo
     if (debugInfo)
     {
         emitter->MapClassPtr(currentClass->GetClassTypeSymbol()->TypeId(), currentClass->GetClassTypeSymbol(), util::ToUtf8(currentClass->GetClassTypeSymbol()->FullName()));
@@ -176,17 +169,17 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
                 emitter->MapFwdDeclaration(vtableHolderClassDIType, currentClass->GetClassTypeSymbol()->VmtPtrHolderClass()->TypeId());
             }
             void* classIrType = currentClass->GetClassTypeSymbol()->IrType(*emitter);
-            soul::ast::SourcePos classSourcePos = currentClass->GetClassTypeSymbol()->GetSourcePos();
-            util::uuid moduleId = currentClass->GetClassTypeSymbol()->SourceModuleId();
+            soul::ast::FullSpan classFullSpan = currentClass->GetClassTypeSymbol()->GetFullSpan();
+            soul::ast::LineColLen classLineColLen = cmajor::symbols::GetLineColLen(classFullSpan);
             if (currentClass->GetClassTypeSymbol()->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
             {
                 cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(
                     currentClass->GetClassTypeSymbol());
-                classSourcePos = specialization->GetClassTemplate()->GetSourcePos();
-                moduleId = specialization->GetClassTemplate()->SourceModuleId();
+                classFullSpan = specialization->GetClassTemplate()->GetFullSpan();
+                classLineColLen = cmajor::symbols::GetLineColLen(classFullSpan);
             }
             void* forwardDeclaration = emitter->CreateIrDIForwardDeclaration(classIrType, util::ToUtf8(currentClass->GetClassTypeSymbol()->Name()), 
-                util::ToUtf8(currentClass->GetClassTypeSymbol()->MangledName()), classSourcePos, moduleId);
+                util::ToUtf8(currentClass->GetClassTypeSymbol()->MangledName()), classFullSpan, classLineColLen);
             emitter->SetDITypeByTypeId(currentClass->GetClassTypeSymbol()->TypeId(), forwardDeclaration, util::ToUtf8(currentClass->GetClassTypeSymbol()->FullName()));
             std::vector<void*> memberVariableElements;
             for (cmajor::symbols::MemberVariableSymbol* memberVariable : currentClass->GetClassTypeSymbol()->MemberVariables())
@@ -195,8 +188,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
                 uint64_t offsetInBits = emitter->GetOffsetInBits(classIrType, memberVariableLayoutIndex);
                 memberVariableElements.push_back(memberVariable->GetDIMemberType(*emitter, offsetInBits));
             }
-            void* clsDIType = emitter->CreateDITypeForClassType(classIrType, memberVariableElements, currentClass->GetClassTypeSymbol()->GetFullSpan(),
-                currentClass->GetClassTypeSymbol()->ModuleId(),
+            void* clsDIType = emitter->CreateDITypeForClassType(classIrType, memberVariableElements, classFullSpan, classLineColLen,
                 util::ToUtf8(currentClass->GetClassTypeSymbol()->Name()), vtableHolderClassDIType,
                 util::ToUtf8(currentClass->GetClassTypeSymbol()->MangledName()), baseClassDIType);
             emitter->MapFwdDeclaration(forwardDeclaration, currentClass->GetClassTypeSymbol()->TypeId());
@@ -204,7 +196,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
             emitter->PushScope(clsDIType);
         }
     }
-*/
     int n = boundClass.Members().size();
     for (int i = 0; i < n; ++i)
     {
@@ -213,8 +204,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
     }
     if (debugInfo)
     {
-        // TODO LLVM debug info
-        // emitter->PopScope();
+        emitter->PopScope();
     }
     currentClass = classStack.top();
     classStack.pop();
@@ -224,7 +214,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundClass& boundClass)
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnumTypeDefinition)
 {
-/*  TODO LLVM Debug Info
     if (debugInfo)
     {
         cmajor::symbols::EnumTypeSymbol* enumTypeSymbol = boundEnumTypeDefinition.GetEnumTypeSymbol();
@@ -237,8 +226,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
             int64_t value = 0;
             if (enumTypeSymbol->UnderlyingType()->IsUnsignedType())
             {
-                cmajor::symbols::Value* val = enumConstant->GetValue()->As(symbolTable->GetTypeByName(U"ulong"), false, enumTypeSymbol->GetSourcePos(), 
-                    enumTypeSymbol->SourceModuleId(), true);
+                cmajor::symbols::Value* val = enumConstant->GetValue()->As(symbolTable->GetTypeByName(U"ulong"), false, nullptr, true);
                 if (val)
                 {
                     cmajor::symbols::ULongValue* ulongValue = static_cast<cmajor::symbols::ULongValue*>(val);
@@ -247,8 +235,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
             }
             else
             {
-                cmajor::symbols::Value* val = enumConstant->GetValue()->As(symbolTable->GetTypeByName(U"long"), false, enumTypeSymbol->GetSourcePos(), 
-                    enumTypeSymbol->SourceModuleId(), true);
+                cmajor::symbols::Value* val = enumConstant->GetValue()->As(symbolTable->GetTypeByName(U"long"), false, nullptr, true);
                 if (val)
                 {
                     cmajor::symbols::LongValue* longValue = static_cast<cmajor::symbols::LongValue*>(val);
@@ -257,11 +244,12 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEnumTypeDefinition& boundEnum
             }
             elements.push_back(emitter->CreateDITypeForEnumConstant(util::ToUtf8(enumConstant->Name()), value));
         }
-        void* enumTypeDI = emitter->CreateDITypeForEnumType(util::ToUtf8(enumTypeSymbol->Name()), util::ToUtf8(enumTypeSymbol->MangledName()), enumTypeSymbol->GetSourcePos(), 
-            enumTypeSymbol->SourceModuleId(), elements, sizeInBits, alignInBits, enumTypeSymbol->UnderlyingType()->GetDIType(*emitter));
+        soul::ast::FullSpan fullSpan = enumTypeSymbol->GetFullSpan();
+        soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+        void* enumTypeDI = emitter->CreateDITypeForEnumType(util::ToUtf8(enumTypeSymbol->Name()), util::ToUtf8(enumTypeSymbol->MangledName()), 
+            fullSpan, lineColLen, elements, sizeInBits, alignInBits, enumTypeSymbol->UnderlyingType()->GetDIType(*emitter));
         emitter->SetDITypeByTypeId(enumTypeSymbol->TypeId(), enumTypeDI, util::ToUtf8(enumTypeSymbol->FullName()));
     }
-*/
 }
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
@@ -330,7 +318,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         fullSpan = functionSymbol->GetFullSpan();
         generateLineNumbers = true;
-/*      TODO LLVM debug info
         emitter->SetInPrologue(true);
         emitter->SetCurrentDebugLocation(soul::ast::LineColLen());
         std::vector<void*> elementTypes;
@@ -379,18 +366,21 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             {
                 vtableIndex = functionSymbol->VmtIndex();
             }
-            subprogram = emitter->CreateDIMethod(util::ToUtf8(functionSymbol->Name()), util::ToUtf8(functionSymbol->MangledName()), functionSymbol->GetSourcePos(), 
-                functionSymbol->SourceModuleId(), subroutineType, virtuality, vtableIndex, vtableHolder, flags);
+            soul::ast::FullSpan fullSpan = functionSymbol->GetFullSpan();
+            soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+            subprogram = emitter->CreateDIMethod(util::ToUtf8(functionSymbol->Name()), util::ToUtf8(functionSymbol->MangledName()), fullSpan, lineColLen, 
+                subroutineType, virtuality, vtableIndex, vtableHolder, flags);
         }
         else
         {
             unsigned flags = cmajor::symbols::AccessFlag(*emitter, functionSymbol->Access());
-            subprogram = emitter->CreateDIFunction(util::ToUtf8(functionSymbol->GroupName()), util::ToUtf8(functionSymbol->MangledName()), functionSymbol->GetSourcePos(), 
-                functionSymbol->SourceModuleId(), subroutineType, flags);
+            soul::ast::FullSpan fullSpan = functionSymbol->GetFullSpan();
+            soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+            subprogram = emitter->CreateDIFunction(util::ToUtf8(functionSymbol->GroupName()), util::ToUtf8(functionSymbol->MangledName()), fullSpan, lineColLen,
+                subroutineType, flags);
         }
         emitter->SetDISubprogram(function, subprogram);
         emitter->PushScope(subprogram);
-*/
     }
     void* entryBlock = emitter->CreateBasicBlock("entry");
     entryBasicBlock = entryBlock;
@@ -420,10 +410,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         lastAlloca = allocaInst;
         if (debugInfo)
         {
-/*         TODO LLVM debug info
-            void* paramVar = emitter->CreateDIParameterVariable(util::ToUtf8(parameter->Name()), i + 1, parameter->GetSourcePos(), parameter->SourceModuleId(), 
+            soul::ast::FullSpan fullSpan = parameter->GetFullSpan();
+            soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+            void* paramVar = emitter->CreateDIParameterVariable(util::ToUtf8(parameter->Name()), i + 1, fullSpan, lineColLen, 
                 parameter->GetType()->GetDIType(*emitter), allocaInst);
-*/
         }
     }
     if (functionSymbol->ReturnParam())
@@ -442,18 +432,12 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         lastAlloca = allocaInst;
         if (debugInfo && localVariable->GetSpan().IsValid())
         {
-/*          TODO LLVM debug info
-            void* localVar = emitter->CreateDIAutoVariable(util::ToUtf8(localVariable->Name()), localVariable->GetSourcePos(), localVariable->SourceModuleId(),
+            soul::ast::FullSpan fullSpan = localVariable->GetFullSpan();
+            soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+            void* localVar = emitter->CreateDIAutoVariable(util::ToUtf8(localVariable->Name()), fullSpan, lineColLen,
                 localVariable->GetType()->GetDIType(*emitter), allocaInst);
-*/
         }
     }
-/*
-    if (!functionSymbol->DontThrow())
-    {
-        GenerateEnterFunctionCode(boundFunction);
-    }
-*/
     for (int i = 0; i < np; ++i)
     {
         void* arg = emitter->GetFunctionArgument(function, i);
@@ -471,23 +455,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             std::vector<void*> args;
             args.push_back(parameter->IrObject(*emitter));
             args.push_back(arg);
-            if (debugInfo)
-            {
-/*              TODO LLVM debug info
-                emitter->SetInPrologue(false);
-                emitter->SetCurrentDebugLocation(boundFunction.Body()->GetSourcePos());
-*/
-
-                emitter->CreateCall(copyCtorType, callee, args);
-/*              TODO LLVM debug info
-                emitter->SetInPrologue(true);
-                emitter->SetCurrentDebugLocation(soul::ast::SourcePos());
-*/
-            }
-            else
-            {
-                emitter->CreateCall(copyCtorType, callee, args);
-            }
+            emitter->CreateCall(copyCtorType, callee, args);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol)
         {
@@ -502,22 +470,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             copyCtorArgs.push_back(&paramValue);
             cmajor::ir::NativeValue argumentValue(arg);
             copyCtorArgs.push_back(&argumentValue);
-            if (debugInfo)
-            {
-/*              TODO LLVM debug info
-                emitter->SetInPrologue(false);
-                emitter->SetCurrentDebugLocation(boundFunction.Body()->GetSourcePos());
-*/
-                copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
-/*
-                emitter->SetInPrologue(true);
-                emitter->SetCurrentDebugLocation(soul::ast::SourcePos());
-*/
-            }
-            else
-            {
-                copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
-            }
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
         }
         else if (parameter->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
@@ -534,22 +487,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
             cmajor::ir::NativeValue argumentValue(arg);
             argumentValue.SetType(interfaceType->AddPointer());
             copyCtorArgs.push_back(&argumentValue);
-            if (debugInfo)
-            {
-/*              TODO LLVM debug info
-                emitter->SetInPrologue(false);
-                emitter->SetCurrentDebugLocation(boundFunction.Body()->GetSourcePos());
-*/
-                copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
-/*
-                emitter->SetInPrologue(true);
-                emitter->SetCurrentDebugLocation(soul::ast::SourcePos());
-*/
-            }
-            else
-            {
-                copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
-            }
+            copyConstructor->GenerateCall(*emitter, copyCtorArgs, cmajor::symbols::OperationFlags::none);
         }
         else
         {
@@ -610,8 +548,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     GenerateCodeForCleanups();
     if (debugInfo)
     {
-        // todo LLVM debug info
-        // emitter->PopScope();
+        emitter->PopScope();
     }
     debugInfo = prevDebugInfo;
     emitter->SetCurrentDIBuilder(prevDIBuilder);
@@ -635,16 +572,6 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundSequenceStatement& boundSeque
 
 void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
 {
-    if (debugInfo)
-    { 
-        // TODO LLVM debug info
-        //emitter->SetCurrentDebugLocation(boundCompoundStatement.GetSourcePos());
-    }
-    if (debugInfo && compoundLevel > 0)
-    {  
-        // TODO LLVM debug info
-        //void* block = emitter->CreateLexicalBlock(boundCompoundStatement.GetSourcePos(), boundCompoundStatement.ModuleId());
-    }
     ++compoundLevel;
     destructorCallGenerated = false;
     lastInstructionWasRet = false;
@@ -654,13 +581,19 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
     currentBlock = &boundCompoundStatement;
     blockDestructionMap[currentBlock] = std::vector<std::unique_ptr<cmajor::binder::BoundFunctionCall>>();
     blocks.push_back(currentBlock);
-    if (!prevBlock)
+    if (!prevBlock && debugInfo)
     {
         GenerateEnterFunctionCode(*currentFunction);
     }
     if (generateLineNumbers)
     {
         SetSpan(boundCompoundStatement.GetSpan());
+        soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+        if (compoundLevel > 0)
+        {
+            void* block = emitter->CreateLexicalBlock(fullSpan, lineColLen);
+        }
+        emitter->SetCurrentDebugLocation(lineColLen);
     }
     int n = boundCompoundStatement.Statements().size();
     for (int i = 0; i < n; ++i)
@@ -674,8 +607,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompo
     --compoundLevel;
     if (debugInfo && compoundLevel > 0)
     {
-        // TODO LLVM debug info
-        //emitter->PopScope();
+        emitter->PopScope();
     }
 }
 
@@ -1102,7 +1034,8 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptySta
     }
     else
     {
-        void* callInst = emitter->CreateCallInst(doNothingFunType, doNothingFun, args, bundles);
+        soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(fullSpan);
+        void* callInst = emitter->CreateCallInst(doNothingFunType, doNothingFun, args, bundles, lineColLen);
     }
 }
 
@@ -1470,7 +1403,7 @@ void LLVMCodeGenerator::CreateCleanup()
 { 
 }
 
-std::string LLVMCodeGenerator::GetSourceFilePath(const util::uuid& moduleId)
+std::string LLVMCodeGenerator::GetSourceFilePath(int fileIndex, const util::uuid& moduleId)
 { 
     return cmajor::symbols::GetSourceFilePath(fileIndex, moduleId);
 }
@@ -1591,193 +1524,6 @@ void LLVMCodeGenerator::SetTarget(cmajor::binder::BoundStatement* labeledStateme
     }
 }
 
-/*
-void LLVMCodeGenerator::GenerateInitUnwindInfoFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
-{
-    void* prevDIBuilder = emitter->DIBuilder();
-    emitter->SetCurrentDIBuilder(nullptr);
-    bool prevDebugInfo = debugInfo;
-    debugInfo = false;
-    emitter->SetCurrentSourcePos(0, 0, 0);
-    handlerBlock = nullptr;
-    cleanupBlock = nullptr;
-    newCleanupNeeded = false;
-    currentPad = nullptr;
-    prevLineNumber = 0;
-    destructorCallGenerated = false;
-    lastInstructionWasRet = false;
-    basicBlockOpen = false;
-    lastAlloca = nullptr;
-    compoundLevel = 0;
-    cleanups.clear();
-    pads.clear();
-    labeledStatementMap.clear();
-    cmajor::symbols::FunctionSymbol* initUnwindInfoFunctionSymbol = boundCompileUnit.GetInitUnwindInfoFunctionSymbol();
-    if (!initUnwindInfoFunctionSymbol)
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        return;
-    }
-    if (compileUnitFunctions.empty())
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        return;
-    }
-    cmajor::symbols::FunctionSymbol* addCompileUnitFunctionSymbol = boundCompileUnit.GetSystemRuntimeAddCompileUnitFunctionSymbol();
-    if (!addCompileUnitFunctionSymbol)
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        return;
-    }
-    void* functionType = initUnwindInfoFunctionSymbol->IrType(*emitter);
-    void* function = emitter->GetOrInsertFunction(util::ToUtf8(initUnwindInfoFunctionSymbol->MangledName()), functionType, true);
-    emitter->SetFunction(function);
-    emitter->SetFunctionName(util::ToUtf8(initUnwindInfoFunctionSymbol->FullName()));
-    void* entryBlock = emitter->CreateBasicBlock("entry");
-    emitter->SetCurrentBasicBlock(entryBlock);
-    for (cmajor::symbols::FunctionSymbol* compileUnitFunction : compileUnitFunctions)
-    {
-        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(
-            new cmajor::binder::BoundFunctionCall(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(), addCompileUnitFunctionSymbol));
-        cmajor::binder::BoundBitCast* functionPtrAsVoidPtr = new cmajor::binder::BoundBitCast(std::unique_ptr<cmajor::binder::BoundExpression>(
-            new cmajor::binder::BoundFunctionPtr(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(),
-                compileUnitFunction, symbolTable->GetTypeByName(U"void")->AddPointer(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()))),
-            symbolTable->GetTypeByName(U"void")->AddPointer(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
-        boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(functionPtrAsVoidPtr));
-        std::string functionName = util::ToUtf8(compileUnitFunction->FullName());
-        int functionNameStringId = Install(functionName);
-        cmajor::binder::BoundLiteral* boundFunctionNameLiteral = new cmajor::binder::BoundLiteral(
-            std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(),
-            functionNameStringId, functionName)),
-            symbolTable->GetTypeByName(U"char")->AddConst(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId())->AddPointer(
-                compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
-        boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundFunctionNameLiteral));
-        std::string sourceFilePath = GetSourceFilePath(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId());
-        int sourceFilePathStringId = Install(sourceFilePath);
-        cmajor::binder::BoundLiteral* boundSourceFilePathLiteral = new cmajor::binder::BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::StringValue(
-            compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId(), sourceFilePathStringId, sourceFilePath)),
-            symbolTable->GetTypeByName(U"char")->AddConst(compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId())->AddPointer(
-                compileUnitFunction->GetSourcePos(), compileUnitFunction->SourceModuleId()));
-        boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundSourceFilePathLiteral));
-        boundFunctionCall->Accept(*this);
-    }
-    emitter->CreateRetVoid();
-    debugInfo = prevDebugInfo;
-    emitter->SetCurrentDIBuilder(prevDIBuilder);
-}
-
-void LLVMCodeGenerator::GenerateInitCompileUnitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
-{
-    void* prevDIBuilder = emitter->DIBuilder();
-    emitter->SetCurrentDIBuilder(nullptr);
-    bool prevDebugInfo = debugInfo;
-    debugInfo = false;
-    emitter->ResetCurrentDebugLocation();
-    emitter->SetCurrentSourcePos(0, 0, 0);
-    handlerBlock = nullptr;
-    cleanupBlock = nullptr;
-    newCleanupNeeded = false;
-    currentPad = nullptr;
-    prevLineNumber = 0;
-    destructorCallGenerated = false;
-    lastInstructionWasRet = false;
-    basicBlockOpen = false;
-    lastAlloca = nullptr;
-    compoundLevel = 0;
-    cleanups.clear();
-    pads.clear();
-    labeledStatementMap.clear();
-    cmajor::symbols::FunctionSymbol* initCompileUnitFunctionSymbol = boundCompileUnit.GetInitCompileUnitFunctionSymbol();
-    if (!initCompileUnitFunctionSymbol)
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        return;
-    }
-    soul::ast::SourcePos sourcePos = initCompileUnitFunctionSymbol->GetSourcePos();
-    util::uuid moduleId = initCompileUnitFunctionSymbol->SourceModuleId();
-    void* functionType = initCompileUnitFunctionSymbol->IrType(*emitter);
-    void* function = emitter->GetOrInsertFunction(util::ToUtf8(initCompileUnitFunctionSymbol->MangledName()), functionType, true);
-    emitter->SetFunction(function, -1, util::nil_uuid(), util::nil_uuid());
-    emitter->SetFunctionName(util::ToUtf8(initCompileUnitFunctionSymbol->FullName()));
-    void* entryBlock = emitter->CreateBasicBlock("entry");
-    emitter->SetCurrentBasicBlock(entryBlock);
-    cmajor::symbols::FunctionSymbol* initUnwindInfoFunctionSymbol = boundCompileUnit.GetInitUnwindInfoFunctionSymbol();
-    if (!initUnwindInfoFunctionSymbol)
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        emitter->CreateRetVoid();
-        return;
-    }
-    cmajor::symbols::FunctionSymbol* pushCompileUnitUnwindInfoInitFunctionSymbol = boundCompileUnit.GetPushCompileUnitUnwindInfoInitFunctionSymbol();
-    cmajor::symbols::TypeSymbol* initUnwindInfoDelegateType = boundCompileUnit.GetInitUnwindInfoDelegateType();
-    cmajor::symbols::GlobalVariableSymbol* compileUnitUnwindInfoVarSymbol = boundCompileUnit.GetCompileUnitUnwindInfoVarSymbol();
-    cmajor::binder::BoundGlobalVariable* boundCompileUnitUnwindInfoVar = new cmajor::binder::BoundGlobalVariable(sourcePos, moduleId, compileUnitUnwindInfoVarSymbol);
-    cmajor::binder::BoundAddressOfExpression* unwindInfoVarAddress = new cmajor::binder::BoundAddressOfExpression(std::unique_ptr<cmajor::binder::BoundExpression>(
-        boundCompileUnitUnwindInfoVar),boundCompileUnitUnwindInfoVar->GetType()->AddPointer(sourcePos, moduleId));
-    cmajor::binder::BoundFunctionPtr* boundInitUnwindInfoFunction = new cmajor::binder::BoundFunctionPtr(sourcePos, moduleId, initUnwindInfoFunctionSymbol, initUnwindInfoDelegateType);
-    std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(sourcePos, moduleId, pushCompileUnitUnwindInfoInitFunctionSymbol));
-    boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(boundInitUnwindInfoFunction));
-    boundFunctionCall->AddArgument(std::unique_ptr<cmajor::binder::BoundExpression>(unwindInfoVarAddress));
-    boundFunctionCall->Accept(*this);
-    emitter->CreateRetVoid();
-    emitter->SetCurrentDIBuilder(prevDIBuilder);
-    debugInfo = prevDebugInfo;
-}
-
-void LLVMCodeGenerator::GenerateGlobalInitFunction(cmajor::binder::BoundCompileUnit& boundCompileUnit)
-{
-    void* prevDIBuilder = emitter->DIBuilder();
-    emitter->SetCurrentDIBuilder(nullptr);
-    bool prevDebugInfo = debugInfo;
-    debugInfo = false;
-    emitter->ResetCurrentDebugLocation();
-    emitter->SetCurrentSourcePos(0, 0, 0);
-    emitter->ResetCurrentDebugLocation();
-    cmajor::symbols::FunctionSymbol* globalInitFunctionSymbol = boundCompileUnit.GetGlobalInitializationFunctionSymbol();
-    if (!globalInitFunctionSymbol)
-    {
-        emitter->SetCurrentDIBuilder(prevDIBuilder);
-        debugInfo = prevDebugInfo;
-        return;
-    }
-    handlerBlock = nullptr;
-    cleanupBlock = nullptr;
-    newCleanupNeeded = false;
-    currentPad = nullptr;
-    prevLineNumber = 0;
-    destructorCallGenerated = false;
-    lastInstructionWasRet = false;
-    basicBlockOpen = false;
-    lastAlloca = nullptr;
-    compoundLevel = 0;
-    cleanups.clear();
-    pads.clear();
-    labeledStatementMap.clear();
-    soul::ast::SourcePos sourcePos = globalInitFunctionSymbol->GetSourcePos();
-    util::uuid moduleId = globalInitFunctionSymbol->SourceModuleId();
-    void* functionType = globalInitFunctionSymbol->IrType(*emitter);
-    void* function = emitter->GetOrInsertFunction(util::ToUtf8(globalInitFunctionSymbol->MangledName()), functionType, true);
-    emitter->SetFunction(function, -1, util::nil_uuid(), util::nil_uuid());
-    emitter->SetFunctionName(util::ToUtf8(globalInitFunctionSymbol->FullName()));
-    void* entryBlock = emitter->CreateBasicBlock("entry");
-    emitter->SetCurrentBasicBlock(entryBlock);
-    const std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>>& allCompileUnitInitFunctionSymbols = boundCompileUnit.AllCompileUnitInitFunctionSymbols();
-    for (const std::unique_ptr<cmajor::symbols::FunctionSymbol>& initCompileUnitFunctionSymbol : allCompileUnitInitFunctionSymbols)
-    {
-        std::unique_ptr<cmajor::binder::BoundFunctionCall> boundFunctionCall(new cmajor::binder::BoundFunctionCall(sourcePos, moduleId, initCompileUnitFunctionSymbol.get()));
-        boundFunctionCall->Accept(*this);
-    }
-    emitter->CreateRetVoid();
-    emitter->SetCurrentDIBuilder(prevDIBuilder);
-    debugInfo = prevDebugInfo;
-}
-*/
-
 void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
 {
     const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
@@ -1797,35 +1543,5 @@ void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction&
     }
     inSetLineOrEntryCode = prevSetLineOrEntryCode;
 }
-
-/*
-void LLVMCodeGenerator::GenerateEnterFunctionCode(cmajor::binder::BoundFunction& boundFunction)
-{
-    const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& enterCode = boundFunction.EnterCode();
-    if (enterCode.empty()) return;
-    compileUnitFunctions.insert(boundFunction.GetFunctionSymbol());
-    cmajor::symbols::LocalVariableSymbol* prevUnwindInfoVar = boundFunction.GetFunctionSymbol()->PrevUnwindInfoVar();
-    void* prevUnwindInfoAlloca = emitter->CreateAlloca(prevUnwindInfoVar->GetType()->IrType(*emitter));
-    emitter->SetIrObject(prevUnwindInfoVar, prevUnwindInfoAlloca);
-    cmajor::symbols::LocalVariableSymbol* unwindInfoVar = boundFunction.GetFunctionSymbol()->UnwindInfoVar();
-    void* unwindInfoAlloca = emitter->CreateAlloca(unwindInfoVar->GetType()->IrType(*emitter));
-    emitter->SetIrObject(unwindInfoVar, unwindInfoAlloca);
-    lastAlloca = unwindInfoAlloca;
-    for (const auto& statement : enterCode)
-    {
-        statement->Accept(*this);
-    }
-}
-
-void LLVMCodeGenerator::GenerateExitFunctionCode(cmajor::binder::BoundFunction& boundFunction)
-{
-    const std::vector<std::unique_ptr<cmajor::binder::BoundStatement>>& exitCode = boundFunction.ExitCode();
-    if (exitCode.empty()) return;
-    for (const auto& statement : exitCode)
-    {
-        statement->Accept(*this);
-    }
-}
-*/
 
 } // namespace cmajor::llvm

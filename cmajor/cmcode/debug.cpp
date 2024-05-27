@@ -20,8 +20,8 @@ cmajor::service::DebugServiceStartParams MakeDebugServiceStartParams(const std::
     std::string executableFilePath;
     if (backend == "llvm")
     {
-        executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::GetDirectoryName(projectFilePath), "bin"), config),
-            executableName));
+        executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(
+            util::Path::GetDirectoryName(projectFilePath), "bin"), "llvm"), config), executableName));
     }
     else if (backend == "cpp")
     {

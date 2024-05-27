@@ -347,6 +347,7 @@ private:
 
 std::string GetSourceFilePath(int32_t fileIndex, const util::uuid& moduleId);
 int GetLineNumber(const soul::ast::FullSpan& fullSpan);
+soul::ast::LineColLen GetLineColLen(const soul::ast::FullSpan& fullSpan);
 bool HasRootModuleForCurrentThread();
 Module* GetRootModuleForCurrentThread();
 void SetRootModuleForCurrentThread(Module* rootModule_);

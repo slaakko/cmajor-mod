@@ -1561,14 +1561,17 @@ void* ClassTypeSymbol::CreateDIType(cmajor::ir::Emitter& emitter)
         uint64_t offsetInBits = emitter.GetOffsetInBits(IrType(emitter), memberVariable->LayoutIndex());
         elements.push_back(memberVariable->GetDIMemberType(emitter, offsetInBits));
     }
-    //return emitter.CreateDITypeForClassType(IrType(emitter), elements, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()), baseClassDIType);
-    return nullptr; // TODO
+    soul::ast::FullSpan fullSpan = GetFullSpan();
+    soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+    return emitter.CreateDITypeForClassType(IrType(emitter), elements, fullSpan, lineColLen, util::ToUtf8(Name()), vtableHolderClass, util::ToUtf8(MangledName()), 
+        baseClassDIType);
 }
 
 void* ClassTypeSymbol::CreateDIForwardDeclaration(cmajor::ir::Emitter& emitter)
 {
-    // todo LLVM debug info
-    return emitter.CreateIrDIForwardDeclaration(IrType(emitter), util::ToUtf8(Name()), util::ToUtf8(MangledName()), soul::ast::FullSpan(), soul::ast::LineColLen()); 
+    soul::ast::FullSpan fullSpan = GetFullSpan();
+    soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+    return emitter.CreateIrDIForwardDeclaration(IrType(emitter), util::ToUtf8(Name()), util::ToUtf8(MangledName()), fullSpan, lineColLen); 
 }
 
 std::string ClassTypeSymbol::VmtObjectNameStr()

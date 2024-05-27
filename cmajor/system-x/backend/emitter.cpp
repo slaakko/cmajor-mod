@@ -542,8 +542,8 @@ void* SystemXEmitter::CreateDITypeForEnumConstant(const std::string& name, int64
     return nullptr;
 }
 
-void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
-    uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+void* SystemXEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, 
+    const soul::ast::LineColLen& lineColLen, const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     return nullptr;
 }
@@ -560,7 +560,7 @@ uint64_t SystemXEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 }
 
 void* SystemXEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
-    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+    const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -587,7 +587,8 @@ void SystemXEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& membe
 {
 }
 
-void* SystemXEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* SystemXEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     return nullptr;
 }
@@ -1146,7 +1147,7 @@ void* SystemXEmitter::CreateCall(void* functionType, void* callee, const std::ve
     return context->CreateCall(calleeValue);
 }
 
-void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* SystemXEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen)
 {
     for (void* arg : args)
     {
@@ -1204,7 +1205,8 @@ void* SystemXEmitter::CreateInvoke(void* functionType, void* callee, void* norma
     return call;
 }
 
-void* SystemXEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* SystemXEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, const std::vector<void*>& bundles,
+    const soul::ast::LineColLen& lineColLen)
 {
     return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }

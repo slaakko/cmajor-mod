@@ -192,7 +192,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles));
+                soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen));
             }
         }
         else
@@ -221,7 +223,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles));
+                soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.Stack().Push(emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen));
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {
@@ -241,7 +245,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles);
+                soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
             }
         }
         else
@@ -266,7 +272,9 @@ void InterfaceTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector
             else
             {
                 void* functionType = interfaceMemberFunction->IrType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
+                soul::ast::FullSpan fullSpan = interfaceMemberFunction->GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
             }
             emitter.SetCurrentBasicBlock(nextBlock);
         }

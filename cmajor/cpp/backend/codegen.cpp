@@ -1972,7 +1972,7 @@ void CppCodeGenerator::SetLineNumber(int32_t lineNumber)
 }
 */
 
-std::string CppCodeGenerator::GetSourceFilePath(const util::uuid& moduleId)
+std::string CppCodeGenerator::GetSourceFilePath(int fileIndex, const util::uuid& moduleId)
 {
     return cmajor::symbols::GetSourceFilePath(fileIndex, moduleId);
 }

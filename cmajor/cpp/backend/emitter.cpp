@@ -549,8 +549,8 @@ void* CppEmitter::CreateDITypeForEnumConstant(const std::string& name, int64_t v
     return nullptr;
 }
 
-void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const std::vector<void*>& enumConstantElements,
-    uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
+void* CppEmitter::CreateDITypeForEnumType(const std::string& name, const std::string& mangledName, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen,
+    const std::vector<void*>& enumConstantElements, uint64_t sizeInBits, uint32_t alignInBits, void* underlyingDIType)
 {
     return nullptr;
 }
@@ -567,7 +567,7 @@ uint64_t CppEmitter::GetOffsetInBits(void* classIrType, int layoutIndex)
 }
 
 void* CppEmitter::CreateDITypeForClassType(void* irType, const std::vector<void*>& memberVariableElements, const soul::ast::FullSpan& fullSpan, 
-    const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
+    const soul::ast::LineColLen& lineColLen, const std::string& name, void* vtableHolderClass, const std::string& mangledName, void* baseClassDIType)
 {
     return nullptr;
 }
@@ -594,7 +594,8 @@ void CppEmitter::SetDIMemberType(const std::pair<util::uuid, int32_t>& memberVar
 {
 }
 
-void* CppEmitter::CreateDIMemberType(void* scope, const std::string& name, uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
+void* CppEmitter::CreateDIMemberType(void* scope, const std::string& name, const soul::ast::FullSpan& fullSpan, const soul::ast::LineColLen& lineColLen, 
+    uint64_t sizeInBits, uint64_t alignInBits, uint64_t offsetInBits, void* diType)
 {
     return nullptr;
 }
@@ -1190,7 +1191,7 @@ void* CppEmitter::CreateCall(void* functionType, void* callee, const std::vector
     return context->CreateCall(calleeValue, argInsts);
 }
 
-void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles)
+void* CppEmitter::CreateCallInst(void* functionType, void* callee, const std::vector<void*>& args, const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen)
 {
     std::vector<cmajor::cpp::ir::Value*> argInsts;
     for (void* arg : args)
@@ -1234,7 +1235,7 @@ void* CppEmitter::CreateInvoke(void* functionType, void* callee, void* normalBlo
 }
 
 void* CppEmitter::CreateInvokeInst(void* functionType, void* callee, void* normalBlock, void* unwindBlock, const std::vector<void*>& args, 
-    const std::vector<void*>& bundles)
+    const std::vector<void*>& bundles, const soul::ast::LineColLen& lineColLen)
 {
     return CreateInvoke(functionType, callee, normalBlock, unwindBlock, args);
 }

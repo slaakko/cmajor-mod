@@ -19,6 +19,7 @@ import cmajor.symbols.symbol.collector;
 import cmajor.symbols.variable.symbol;
 import cmajor.symbols.global.flags;
 import cmajor.symbols.classes;
+import cmajor.symbols.modules;
 import util;
 import std.core;
 
@@ -303,7 +304,9 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                void* callInst = emitter.CreateCallInst(functionType, callee, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                void* callInst = emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
                 emitter.Stack().Push(callInst);
             }
         }
@@ -333,7 +336,9 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                void* invokeInst = emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                void* invokeInst = emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
                 emitter.Stack().Push(invokeInst);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
@@ -354,7 +359,9 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                emitter.CreateCallInst(functionType, callee, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateCallInst(functionType, callee, args, bundles, lineColLen);
             }
         }
         else
@@ -383,7 +390,9 @@ void DelegateTypeSymbol::GenerateCall(cmajor::ir::Emitter& emitter, std::vector<
             else
             {
                 void* functionType = IrFunctionType(emitter);
-                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles);
+                soul::ast::FullSpan fullSpan = GetFullSpan();
+                soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+                emitter.CreateInvokeInst(functionType, callee, nextBlock, unwindBlock, args, bundles, lineColLen);
             }
             if (GetBackEnd() == BackEnd::llvm || GetBackEnd() == BackEnd::cpp)
             {

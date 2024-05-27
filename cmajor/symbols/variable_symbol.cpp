@@ -16,6 +16,7 @@ import cmajor.symbols.symbol.table;
 import cmajor.symbols.classes;
 import cmajor.symbols.symbol.collector;
 import cmajor.symbols.type.symbol;
+import cmajor.symbols.modules;
 import cmajor.ast.specifier;
 import cmajor.ir.emitter;
 import util;
@@ -316,7 +317,9 @@ void* MemberVariableSymbol::GetDIMemberType(cmajor::ir::Emitter& emitter, uint64
         uint64_t sizeInBits = GetType()->SizeInBits(emitter);
         uint32_t alignInBits = GetType()->AlignmentInBits(emitter);
         void* scope = parentClassType->GetDIType(emitter);
-        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter));
+        soul::ast::FullSpan fullSpan = GetFullSpan();
+        soul::ast::LineColLen lineColLen = GetLineColLen(fullSpan);
+        localDIType = emitter.CreateDIMemberType(scope, util::ToUtf8(Name()), fullSpan, lineColLen, sizeInBits, alignInBits, offsetInBits, GetType()->GetDIType(emitter));
         emitter.SetDIMemberType(memberVariableId, localDIType);
     }
     return localDIType;
