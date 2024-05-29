@@ -89,6 +89,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     {
         emitter->EndDebugInfo();
     }
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::print))
+    {
+        emitter->PrintModule();
+    }
     emitter->VerifyModule();
     emitter->Compile(boundCompileUnit.ObjectFilePath());
 }

@@ -223,11 +223,11 @@ void RtmEnqueueDestruction(void* destructor, void* destructorThisArg)
     DestructionList::Instance().EnqueueDestruction(destructor, destructorThisArg);
 }
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 void RunDestructors()
 {
     DestructionList::Instance().RunDestructors();
 }
 
-} // cmajor::cpp::rt;
+} // cmajor::rt;

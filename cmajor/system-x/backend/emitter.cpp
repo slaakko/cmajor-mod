@@ -1820,4 +1820,8 @@ void SystemXEmitter::SetCurrentSourcePos(int32_t lineNumber, int16_t scol, int16
     context->SetCurrentLineNumber(lineNumber);
 }
 
+void SystemXEmitter::PrintModule()
+{
+}
+
 } // namespace cmajor::systemx::backend

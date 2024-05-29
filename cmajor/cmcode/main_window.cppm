@@ -107,7 +107,7 @@ private:
     void LoadEditModuleForCurrentFile();
     void ResetEditModuleCache();
     void ParseSource();
-    void GetParamHelpList(int symbolIndex);
+    //void GetParamHelpList(int symbolIndex);
     void HandleServiceMessage();
     void ClearOutput();
     void WriteOutput(const std::string& text);
@@ -341,7 +341,7 @@ private:
     wing::StatusBarTextItem* editorReadWriteIndicatorStatusBarItem;
     wing::StatusBarTextItem* editorDirtyIndicatorStatusBarItem;
     wing::StatusBarTextItem* sourceFilePathStatusBarItem;
-    wing::StatusBarTextItem* codeCompletionStatusBarItem;
+    //wing::StatusBarTextItem* codeCompletionStatusBarItem;
     wing::StatusBarTextItem* lineStatusBarItem;
     wing::StatusBarTextItem* columnStatusBarItem;
     int buildProgressCounter;

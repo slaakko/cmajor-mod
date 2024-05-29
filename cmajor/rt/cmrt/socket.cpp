@@ -12,7 +12,7 @@
 #undef min
 #undef max
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 std::string GetSocketErrorMessage(int errorCode)
 {
@@ -58,40 +58,40 @@ struct SocketData
 void* RtmCreateSocket(int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return nullptr;
     }
     SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return nullptr;
     }
-    return new cmajor::cpp::rt::SocketData(s);
+    return new cmajor::rt::SocketData(s);
 }
 
 void RtmBindSocket(void* socketHandle, int32_t port, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
     struct sockaddr_in addr;
@@ -101,9 +101,9 @@ void RtmBindSocket(void* socketHandle, int32_t port, int32_t& errorId)
     int result = bind(s, (struct sockaddr*)&addr, sizeof(addr));
     if (result != 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return;
     }
 }
@@ -111,111 +111,111 @@ void RtmBindSocket(void* socketHandle, int32_t port, int32_t& errorId)
 void RtmListenSocket(void* socketHandle, int32_t backlog, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
     int result = listen(s, backlog);
     if (result != 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
     }
 }
 
 void* RtmAcceptSocket(void* socketHandle, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return nullptr;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return nullptr;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return nullptr;
     }
     SOCKET a = accept(s, NULL, NULL);
     if (a == INVALID_SOCKET)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return nullptr;
     }
-    void* acceptedSocketHandle = new cmajor::cpp::rt::SocketData(a);
+    void* acceptedSocketHandle = new cmajor::rt::SocketData(a);
     return acceptedSocketHandle;
 }
 
 void RtmCloseSocket(void* socketHandle, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
     int result = closesocket(s);
     if (result != 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
     }
 }
 
 void RtmShutdownSocket(void* socketHandle, ShutdownMode mode, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return;
     }
     int how = SD_RECEIVE;
@@ -228,9 +228,9 @@ void RtmShutdownSocket(void* socketHandle, ShutdownMode mode, int32_t& errorId)
     int result = shutdown(s, how);
     if (result != 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
     }
 }
 
@@ -252,9 +252,9 @@ void* RtmConnectSocket(const char* node, const char* service, int32_t& errorId)
     int result = getaddrinfo(node, service, &h, &res);
     if (result != 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return nullptr;
     }
     else
@@ -270,49 +270,49 @@ void* RtmConnectSocket(const char* node, const char* service, int32_t& errorId)
             if (result == 0)
             {
                 freeaddrinfo(res);
-                return new cmajor::cpp::rt::SocketData(s);
+                return new cmajor::rt::SocketData(s);
             }
             else
             {
                 freeaddrinfo(res);
-                int errorCode = cmajor::cpp::rt::GetLastSocketError();
-                std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-                errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+                int errorCode = cmajor::rt::GetLastSocketError();
+                std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+                errorId = cmajor::rt::AllocateError(errorMessage);
                 return nullptr;
             }
         }
     }
     std::string errorMessage = "could not connect";
-    errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+    errorId = cmajor::rt::AllocateError(errorMessage);
     return nullptr;
 }
 
 int32_t RtmSendSocket(void* socketHandle, uint8_t* buf, int32_t len, int32_t flags, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return -1;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return -1;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return -1;
     }
     int32_t result = send(s, (const char*)buf, len, flags);
     if (result < 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return -1;
     }
     return result;
@@ -321,29 +321,29 @@ int32_t RtmSendSocket(void* socketHandle, uint8_t* buf, int32_t len, int32_t fla
 int32_t RtmReceiveSocket(void* socketHandle, uint8_t* buf, int32_t len, int32_t flags, int32_t& errorId)
 {
     errorId = 0;
-    if (cmajor::cpp::rt::initError != 0)
+    if (cmajor::rt::initError != 0)
     {
-        errorId = cmajor::cpp::rt::initError;
+        errorId = cmajor::rt::initError;
         return -1;
     }
     if (!socketHandle)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return -1;
     }
-    cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+    cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
     SOCKET s = socketData->socket;
     if (s == INVALID_SOCKET)
     {
-        errorId = cmajor::cpp::rt::AllocateError("invalid socket handle");
+        errorId = cmajor::rt::AllocateError("invalid socket handle");
         return -1;
     }
     int32_t result = recv(s, (char*)buf, len, flags);
     if (result < 0)
     {
-        int errorCode = cmajor::cpp::rt::GetLastSocketError();
-        std::string errorMessage = cmajor::cpp::rt::GetSocketErrorMessage(errorCode);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        int errorCode = cmajor::rt::GetLastSocketError();
+        std::string errorMessage = cmajor::rt::GetSocketErrorMessage(errorCode);
+        errorId = cmajor::rt::AllocateError(errorMessage);
         return -1;
     }
     return result;
@@ -353,7 +353,7 @@ void RtmDestroySocket(void* socketHandle)
 {
     if (socketHandle)
     {
-        cmajor::cpp::rt::SocketData* socketData = static_cast<cmajor::cpp::rt::SocketData*>(socketHandle);
+        cmajor::rt::SocketData* socketData = static_cast<cmajor::rt::SocketData*>(socketHandle);
         delete socketData;
     }
 }

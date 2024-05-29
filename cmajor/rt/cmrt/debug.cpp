@@ -16,7 +16,7 @@
 #include <string>
 #include <memory>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 const int64_t sessionTimeoutSecs = 5 * 60;
 
@@ -345,5 +345,5 @@ void DoneCmdbSession()
     CmdbSessionServer::Done();
 }
 
-} // namespace cmajor::cpp::rt
+} // namespace cmajor::rt
 

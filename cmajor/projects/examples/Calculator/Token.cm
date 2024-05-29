@@ -12,10 +12,10 @@ namespace Calculator
 
     public class NumberToken : Token
     {
-        public nothrow NumberToken(double value_) : value(value_)
+        public NumberToken(double value_) : value(value_)
         {
         }
-        public nothrow inline double Value() const
+        public inline double Value() const
         {
             return value;
         }
@@ -24,10 +24,10 @@ namespace Calculator
 
     public class VariableNameToken : Token
     {
-        public nothrow VariableNameToken(const ustring& variableName_) : variableName(variableName_)
+        public VariableNameToken(const ustring& variableName_) : variableName(variableName_)
         {
         }
-        public nothrow inline const ustring& VariableName() const
+        public inline const ustring& VariableName() const
         {
             return variableName;
         }
@@ -36,18 +36,18 @@ namespace Calculator
 
     public class OperatorToken : Token
     {
-        public nothrow OperatorToken(uchar operatorChar_) : operatorChar(operatorChar_)
+        public OperatorToken(uchar operatorChar_) : operatorChar(operatorChar_)
         {
         }
-        public nothrow inline uchar Char() const
+        public inline uchar Char() const
         {
             return operatorChar;
         }
-        public nothrow inline bool IsAdditiveOperator() const
+        public inline bool IsAdditiveOperator() const
         {
             return operatorChar == '+' || operatorChar == '-';
         }
-        public nothrow inline bool IsMultiplicativeOperator() const
+        public inline bool IsMultiplicativeOperator() const
         {
             return operatorChar == '*' || operatorChar == '/';
         }

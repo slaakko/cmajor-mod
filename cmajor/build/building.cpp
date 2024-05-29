@@ -78,6 +78,18 @@ void SetDefines(cmajor::symbols::Module* module, const std::string& definesFileP
 #else
     module->DefineSymbol(U"LINUX");
 #endif
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
+    {
+        module->DefineSymbol(U"LLVM_BACKEND");
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
+    {
+        module->DefineSymbol(U"CPP_BACKEND");
+    }
+    else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        module->DefineSymbol(U"MASM_BACKEND");
+    }
     std::ifstream definesFile(definesFilePath);
     if (definesFile)
     {
@@ -275,6 +287,7 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                         std::string  traceDataFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
                         rootModule->WriteTraceData(traceDataFilePath);
                         GenerateRuntimeResourceFile(project, rootModule.get(), classIndexFilePath, traceDataFilePath);
+                        CompileResourceScriptFiles(project, rootModule.get());
                     }
                 }
                 if (!objectFilePaths.empty())

@@ -35,7 +35,7 @@ void RtmPopFunction(void* traceEntry)
     traceList = entry->next;
 }
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
     class SourceFileInfo
     {
@@ -225,4 +225,4 @@ namespace cmajor::cpp::rt {
         return stackTrace;
     }
 
-} // cmajor::cpp::rt
+} // cmajor::rt

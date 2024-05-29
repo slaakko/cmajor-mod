@@ -19,7 +19,7 @@ namespace Calculator
         {
             variableMap[variableName] = variableValue;
         }
-        public double GetVariableValue(const ustring& variableName)
+        public Result<double> GetVariableValue(const ustring& variableName)
         {
             Map<ustring, double>.ConstIterator it = variableMap.CFind(variableName);
             if (it != variableMap.CEnd())
@@ -29,7 +29,14 @@ namespace Calculator
             }
             else
             {
-                throw VariableNotFoundException("variable '" + ToUtf8(variableName) + "' not found");
+                auto utf8Result = ToUtf8(variableName);
+                if (utf8Result.Error())
+                {
+                    return Result<double>(ErrorId(utf8Result.GetErrorId()));
+                }
+                string variableNameValue = utf8Result.Value();
+                int errorId = AllocateError("variable '" + variableNameValue + "' not found");
+                return Result<double>(ErrorId(errorId));
             }
         }
         public void Print()

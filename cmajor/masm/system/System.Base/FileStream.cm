@@ -89,7 +89,7 @@ namespace System.IO
         {
             int errorId = 0;
             int result = RtmReadByte(file, errorId);
-            if (errorId > 0)
+            if (errorId != 0)
             {
                 SetErrorId(errorId);
                 return Result<int>(ErrorId(errorId));

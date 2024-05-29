@@ -14,18 +14,18 @@
 void RtmInit()
 {
     util::Init();
-    cmajor::cpp::rt::InitIO();
-    cmajor::cpp::rt::InitCmdbSession();
-    cmajor::cpp::rt::StartCmdbSession();
-    cmajor::cpp::rt::InitSocket();
+    cmajor::rt::InitIO();
+    cmajor::rt::InitCmdbSession();
+    cmajor::rt::StartCmdbSession();
+    cmajor::rt::InitSocket();
 }
 
 void RtmDone()
 {
-    cmajor::cpp::rt::DoneSocket();
-    cmajor::cpp::rt::DoneCmdbSession();
-    cmajor::cpp::rt::DoneThread();
-    cmajor::cpp::rt::RunDestructors();
-    cmajor::cpp::rt::DoneIO();
+    cmajor::rt::DoneSocket();
+    cmajor::rt::DoneCmdbSession();
+    cmajor::rt::DoneThread();
+    cmajor::rt::RunDestructors();
+    cmajor::rt::DoneIO();
     util::Done();
 }

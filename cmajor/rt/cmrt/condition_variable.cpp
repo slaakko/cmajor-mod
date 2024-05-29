@@ -32,7 +32,7 @@ bool RtmNotifyOne(void* nativeHandle, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
 }
@@ -48,7 +48,7 @@ bool RtmNotifyAll(void* nativeHandle, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
 }
@@ -66,7 +66,7 @@ bool RtmWaitConditionVariable(void* nativeHandle, void* recursiveMutexHandle, in
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
 }
@@ -94,7 +94,7 @@ int RtmWaitConditionVariableDuration(void* nativeHandle, void* recursiveMutexHan
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return 0;
     }
 }

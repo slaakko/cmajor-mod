@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_DEBUG_INCLUDED
-#define CMRT_CPP_DEBUG_INCLUDED
+#ifndef CMRT_DEBUG_INCLUDED
+#define CMRT_DEBUG_INCLUDED
 #include <stdint.h>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 void StartCmdbSession();
 bool IsCmdbSessionOpen();
@@ -16,6 +16,6 @@ int64_t ReadBytesFromCmdbSession(uint8_t* buffer, int64_t bufferSize);
 void InitCmdbSession();
 void DoneCmdbSession();
 
-} // namespace cmajor::cpp::rt
+} // namespace cmajor::rt
 
-#endif // CMRT_CPP_DEBUG_INCLUDED
+#endif // CMRT_DEBUG_INCLUDED

@@ -309,7 +309,7 @@ void WindowsCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStat
         cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
         void* catchTypeIdValue = uuidValue.IrValue(*Emitter());
         handleExceptionArgs.push_back(catchTypeIdValue);
-        void* handleException = Emitter()->GetOrInsertFunction("RtHandleException", handleExceptionFunctionType, true);
+        void* handleException = Emitter()->GetOrInsertFunction("RtmHandleException", handleExceptionFunctionType, true);
         void* handleThisEx = nullptr;
         if (CurrentPad() == nullptr)
         {

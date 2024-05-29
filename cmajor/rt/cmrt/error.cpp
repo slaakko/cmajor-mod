@@ -16,7 +16,7 @@ void RtmPanic(const char* message)
     std::string errorMessage = "error: ";
     errorMessage.append(message).append("\n");
     RtmPrintToFile(stderrx, errorMessage.c_str());
-    cmajor::cpp::rt::StackTrace stackTrace = cmajor::cpp::rt::GetStackTrace();
+    cmajor::rt::StackTrace stackTrace = cmajor::rt::GetStackTrace();
     if (!stackTrace.IsEmpty())
     {
         std::string trace = "\nSTACK TRACE:\n" + stackTrace.ToString();
@@ -33,7 +33,7 @@ void RtmFailAssertion(const char* assertion, const char* function, const char* s
     errorMessage.append(assertion).append("' failed: function=").append(function).append(", file=").append(sourceFilePath).append(", line=").append(
         std::to_string(lineNumber).append("\n"));
     RtmPrintToFile(stderrx, errorMessage.c_str());
-    cmajor::cpp::rt::StackTrace stackTrace = cmajor::cpp::rt::GetStackTrace();
+    cmajor::rt::StackTrace stackTrace = cmajor::rt::GetStackTrace();
     if (!stackTrace.IsEmpty())
     {
         std::string trace = "\nSTACK TRACE:\n" + stackTrace.ToString();
@@ -42,7 +42,7 @@ void RtmFailAssertion(const char* assertion, const char* function, const char* s
     std::exit(1);
 }
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
     class Error
     {
@@ -130,22 +130,22 @@ namespace cmajor::cpp::rt {
         return Errors::Instance().AllocateError(errorMessage, GetStackTrace());
     }
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
 const char* RtmGetErrorMessage(int errorId)
 {
     if (errorId == 0) return "";
-    return cmajor::cpp::rt::Errors::Instance().GetErrorMessage(errorId);
+    return cmajor::rt::Errors::Instance().GetErrorMessage(errorId);
 }
 
 int RtmAllocateError(const char* errorMessage)
 {
-    return cmajor::cpp::rt::AllocateError(errorMessage);
+    return cmajor::rt::AllocateError(errorMessage);
 }
 
 void RtmDisposeError(int errorId)
 {
-    cmajor::cpp::rt::Errors::Instance().DisposeError(errorId);
+    cmajor::rt::Errors::Instance().DisposeError(errorId);
 }
 
 int RtmGetErrno()

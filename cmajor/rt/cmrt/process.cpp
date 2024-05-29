@@ -19,7 +19,7 @@ void* RtmCreateProcess(const char* command, int32_t redirections, int32_t& error
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError("error creating process '" + cmd + "': " + ex.what());
+        errorId = cmajor::rt::AllocateError("error creating process '" + cmd + "': " + ex.what());
     }
     return nullptr;
 }
@@ -38,7 +38,7 @@ bool RtmProcessRunning(void* process, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
 }
@@ -53,7 +53,7 @@ bool RtmProcessWaitForExit(void* process, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
 }
@@ -67,7 +67,7 @@ int RtmProcessExitCode(void* process, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return 1;
     }
 }
@@ -81,7 +81,7 @@ bool RtmProcessTerminate(void* process, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
     return true;
@@ -96,7 +96,7 @@ bool RtmProcessEof(void* process, int handle, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return true;
     }
 }
@@ -111,7 +111,7 @@ int32_t RtmProcessReadLine(void* process, int handle, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return -1;
     }
 }
@@ -126,7 +126,7 @@ int32_t RtmProcessReadToEnd(void* process, int handle, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return -1;
     }
 }
@@ -141,7 +141,7 @@ bool RtmProcessWriteLine(void* process, const char* line, int32_t& errorId)
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return false;
     }
     return true;

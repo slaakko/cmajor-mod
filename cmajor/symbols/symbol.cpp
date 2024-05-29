@@ -33,6 +33,7 @@ import cmajor.symbols.constant.symbol;
 import cmajor.symbols.alias.type;
 import cmajor.symbols.class_template_specializations;
 import cmajor.symbols.string.functions;
+import cmajor.symbols.global.flags;
 import cmajor.ast.clone;
 import util.sha1;
 
@@ -1147,6 +1148,19 @@ std::unique_ptr<Symbol> Symbol::RemoveFromParent()
 {
     std::unique_ptr<Symbol> symbol = parent->RemoveMember(symbolIndex);
     return symbol;
+}
+
+bool Symbol::IsNothrow() const
+{
+    BackEnd backend = GetBackEnd();
+    if (backend == BackEnd::llvm || backend == BackEnd::cpp || backend == BackEnd::masm)
+    {
+        return true;
+    }
+    else
+    {
+        return GetFlag(SymbolFlags::nothrow_);
+    }
 }
 
 SymbolCreator::~SymbolCreator()

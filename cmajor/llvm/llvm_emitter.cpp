@@ -2577,4 +2577,9 @@ cmajor::ir::Pad* LLVMEmitter::CurrentPad()
     return emittingDelegate->CurrentPad();
 }
 
+void LLVMEmitter::PrintModule()
+{
+    module->print(llvm::errs(), nullptr);
+}
+
 } // namespace cmllvm

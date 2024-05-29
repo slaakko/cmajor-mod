@@ -185,7 +185,8 @@ public:
     void SetStatic() { SetFlag(SymbolFlags::static_); }
     bool IsExternal() const { return GetFlag(SymbolFlags::external); }
     void SetExternal() { SetFlag(SymbolFlags::external); }
-    bool IsNothrow() const { return GetFlag(SymbolFlags::nothrow_); }
+    //bool IsNothrow() const { return GetFlag(SymbolFlags::nothrow_); }
+    bool IsNothrow() const;
     void SetNothrow() { SetFlag(SymbolFlags::nothrow_); }
     bool IsProject() const { return GetFlag(SymbolFlags::project); }
     void SetProject() { SetFlag(SymbolFlags::project); }

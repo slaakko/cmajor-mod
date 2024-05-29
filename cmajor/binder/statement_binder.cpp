@@ -1890,10 +1890,9 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
 
 void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", throwStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM backend does not support exceptions", throwStatementNode.GetFullSpan());
     }
     bool prevCompilingThrow = compilingThrow;
     compilingThrow = true;
@@ -1921,7 +1920,7 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
                 newNode->AddArgument(throwStatementNode.Expression()->Clone(cloneContext));
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtThrowException"));
+                    cmajor::ast::InvokeNode invokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtmThrowException"));
                     invokeNode.AddArgument(newNode);
                     invokeNode.AddArgument(new cmajor::ast::UuidLiteralNode(span, exceptionClassType->TypeId()));
                     std::unique_ptr<BoundExpression> throwCallExpr = BindExpression(&invokeNode, boundCompileUnit, currentFunction, containerScope, this);
@@ -1965,10 +1964,9 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", tryStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM backend do not support exceptions", tryStatementNode.GetFullSpan());
     }
     BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSpan());
     tryStatementNode.TryBlock()->Accept(*this);
@@ -1988,10 +1986,9 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
-        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
     {
-        throw cmajor::symbols::Exception("MASM, LLVM and C++ backends do not support exceptions", catchNode.GetFullSpan());
+        throw cmajor::symbols::Exception("MASM backend do not support exceptions", catchNode.GetFullSpan());
     }
     bool prevInsideCatch = insideCatch;
     insideCatch = true;
@@ -2020,7 +2017,7 @@ void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
         cmajor::ast::ConstructionStatementNode* getExceptionAddr = new cmajor::ast::ConstructionStatementNode(span, new cmajor::ast::PointerNode(span, 
             new cmajor::ast::IdentifierNode(span, U"void")),
             new cmajor::ast::IdentifierNode(span, U"@exceptionAddr"));
-        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtGetException")));
+        getExceptionAddr->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"RtmGetException")));
         handlerBlock.AddStatement(getExceptionAddr);
     }
     else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)

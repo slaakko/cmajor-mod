@@ -1844,4 +1844,8 @@ void MasmEmitter::SetSpan(const soul::ast::Span& span)
     emittingDelegate->SetSpan(span);
 }
 
+void MasmEmitter::PrintModule()
+{
+}
+
 } // namespace cmajor::masm::backend

@@ -10,7 +10,7 @@
 #include <mutex>
 #include <map>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 using ThreadFunction = void(*)();
 using ThreadFunctionWithParam = void(*)(void*);
@@ -198,7 +198,7 @@ void DoneThread()
     ThreadPool::Instance().Exit();
 }
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
 int32_t RtmGetHardwareConcurrency()
 {
@@ -207,14 +207,14 @@ int32_t RtmGetHardwareConcurrency()
 
 int32_t RtmStartThreadFunction(void* function)
 {
-    cmajor::cpp::rt::ThreadFunction threadFun = reinterpret_cast<cmajor::cpp::rt::ThreadFunction>(function);
-    return cmajor::cpp::rt::ThreadPool::Instance().StartThreadFunction(threadFun);
+    cmajor::rt::ThreadFunction threadFun = reinterpret_cast<cmajor::rt::ThreadFunction>(function);
+    return cmajor::rt::ThreadPool::Instance().StartThreadFunction(threadFun);
 }
 
 int32_t RtmStartThreadFunctionWithParam(void* function, void* param)
 {
-    cmajor::cpp::rt::ThreadFunctionWithParam threadFunWithParam = reinterpret_cast<cmajor::cpp::rt::ThreadFunctionWithParam>(function);
-    return cmajor::cpp::rt::ThreadPool::Instance().StartThreadFunction(threadFunWithParam, param);
+    cmajor::rt::ThreadFunctionWithParam threadFunWithParam = reinterpret_cast<cmajor::rt::ThreadFunctionWithParam>(function);
+    return cmajor::rt::ThreadPool::Instance().StartThreadFunction(threadFunWithParam, param);
 }
 
 struct ClassDelegate
@@ -226,20 +226,20 @@ struct ClassDelegate
 int32_t RtmStartThreadMethod(void* classDelegate)
 {
     ClassDelegate* clsDlg = reinterpret_cast<ClassDelegate*>(classDelegate);
-    cmajor::cpp::rt::ThreadMethod threadMethod = reinterpret_cast<cmajor::cpp::rt::ThreadMethod>(clsDlg->method);
-    return cmajor::cpp::rt::ThreadPool::Instance().StartThreadMethod(threadMethod, clsDlg->object);
+    cmajor::rt::ThreadMethod threadMethod = reinterpret_cast<cmajor::rt::ThreadMethod>(clsDlg->method);
+    return cmajor::rt::ThreadPool::Instance().StartThreadMethod(threadMethod, clsDlg->object);
 }
 
 int32_t RtmStartThreadMethodWithParam(void* classDelegate, void* param)
 {
     ClassDelegate* clsDlg = reinterpret_cast<ClassDelegate*>(classDelegate);
-    cmajor::cpp::rt::ThreadMethodWithParam threadMethodWithParam = reinterpret_cast<cmajor::cpp::rt::ThreadMethodWithParam>(clsDlg->method);
-    return cmajor::cpp::rt::ThreadPool::Instance().StartThreadMethod(threadMethodWithParam, clsDlg->object, param);
+    cmajor::rt::ThreadMethodWithParam threadMethodWithParam = reinterpret_cast<cmajor::rt::ThreadMethodWithParam>(clsDlg->method);
+    return cmajor::rt::ThreadPool::Instance().StartThreadMethod(threadMethodWithParam, clsDlg->object, param);
 }
 
 bool RtmJoinThread(int32_t threadId)
 {
-    return cmajor::cpp::rt::ThreadPool::Instance().JoinThread(threadId);
+    return cmajor::rt::ThreadPool::Instance().JoinThread(threadId);
 }
 
 std::map<std::thread::id, int> threadIdMap;

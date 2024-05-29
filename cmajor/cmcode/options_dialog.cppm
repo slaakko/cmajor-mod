@@ -27,8 +27,8 @@ private:
     wing::Button* cancelButton;
     wing::CheckBox* showStartupDialogCheckBox;
     wing::TextBox* numberOfRecentSolutionsTextBox;
-    wing::CheckBox* codeCompletionCheckBox;
-    wing::TextBox* parsingFrequencyTextBox;
+    //wing::CheckBox* codeCompletionCheckBox;
+    //wing::TextBox* parsingFrequencyTextBox;
     wing::ComboBox* themeComboBox;
     std::vector<std::string> themes;
     int selectedThemeIndex;

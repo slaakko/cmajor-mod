@@ -11,4 +11,4 @@ project <System.Parsing/System.Parsing.cmp>;
 project <System.Runtime/System.Runtime.cmp>;
 project <System.Xml/System.Xml.cmp>;
 activeProject System;
-activeBackEnd=cpp;
+activeBackEnd=llvm;

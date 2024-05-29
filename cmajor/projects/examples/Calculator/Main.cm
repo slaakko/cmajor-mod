@@ -27,47 +27,50 @@ using Calculator;
 
 int main()
 {
-    try
-    {
-        Console.WriteLine("desk calculator");
+    Console.WriteLine("desk calculator");
 #if (WINDOWS)
-        Console.WriteLine("enter command, or CTRL-Z to end:");
+    Console.WriteLine("enter command, or CTRL-Z to end:");
 #else
-        Console.WriteLine("enter command, or CTRL-D to end:");
+    Console.WriteLine("enter command, or CTRL-D to end:");
 #endif
-        Console.Write("> ");
-        string line = Console.ReadLine();
+    Console.Write("> ");
+    auto lineResult = Console.ReadLine();
+    if (lineResult.Error())
+    {
+        Console.Out() << lineResult.GetErrorMessage() << endl();
+    }
+    else
+    {
+        string line = lineResult.Value();
+        Console.Out() << "line: '" << line << "'" << endl();
         while (!Console.In().EndOfStream())
         {
-            try
+            auto utf32Result = ToUtf32(line);
+            if (utf32Result.Error())
             {
-                Parse(ToUtf32(line));
+                Console.Out() << utf32Result.GetErrorMessage() << endl();
             }
-            catch (const ParsingException& ex)
+            else
             {
-                Console.Out() << "error: " << ex.Message() << endl();
-            }
-            catch (const DivisionByZeroException& ex)
-            {
-                Console.Out() << "error: " + ex.Message() << endl();
-            }
-            catch (const VariableNotFoundException& ex)
-            {
-                Console.Out() << "error: " + ex.Message() << endl();
-            }
-            catch (const ConversionException& ex)
-            {
-                Console.Out() << "error: " + ex.Message() << endl();
+                auto result = Parse(utf32Result.Value());
+                if (result.Error())
+                {
+                    Console.Out() << result.GetErrorMessage() << endl();
+                }
             }
             Console.Write("> ");
-            line = Console.ReadLine();
+            lineResult = Console.ReadLine();
+            if (lineResult.Error())
+            {
+                Console.Out() << lineResult.GetErrorMessage() << endl();
+            }
+            else
+            {
+                line = lineResult.Value();
+                Console.Out() << "line: '" << line << "'" << endl();
+            }
         }
-        Console.WriteLine("bye!");
     }
-    catch (Exception ex)
-    {
-        Console.Error() << ex.ToString() << endl();
-        return 1;
-    }
+    Console.WriteLine("bye!");
     return 0;
 }

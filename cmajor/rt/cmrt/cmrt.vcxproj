@@ -116,6 +116,7 @@
       <AdditionalIncludeDirectories>.;..</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4267;4996;4244;4146</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>SyncCThrow</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -134,6 +135,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>.;..</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4267;4996;4244;4146</DisableSpecificWarnings>
+      <ExceptionHandling>SyncCThrow</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -149,6 +151,7 @@
     <ClCompile Include="condition_variable.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="directory.cpp" />
+    <ClCompile Include="eh.cpp" />
     <ClCompile Include="env.cpp" />
     <ClCompile Include="error.cpp" />
     <ClCompile Include="execute.cpp" />
@@ -176,6 +179,7 @@
     <ClInclude Include="condition_variable.hpp" />
     <ClInclude Include="debug.hpp" />
     <ClInclude Include="directory.hpp" />
+    <ClInclude Include="eh.hpp" />
     <ClInclude Include="env.hpp" />
     <ClInclude Include="error.hpp" />
     <ClInclude Include="execute.hpp" />

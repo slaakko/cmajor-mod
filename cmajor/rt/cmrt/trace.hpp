@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 struct FunctionLine
 {
@@ -31,7 +31,7 @@ private:
 
 StackTrace GetStackTrace();
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
 extern "C" void RtmPushFunction(void* traceInfo);
 extern "C" void RtmPopFunction(void* traceInfo);

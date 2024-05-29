@@ -47,7 +47,8 @@ enum class GlobalFlags : uint64_t
     trace = 1ll << 32,
     cpp = 1ll << 33,
     fnxml = 1ll << 34,
-    dtxml = 1ll << 35
+    dtxml = 1ll << 35,
+    print = 1ll << 36
 };
 
 enum class BackEnd : int

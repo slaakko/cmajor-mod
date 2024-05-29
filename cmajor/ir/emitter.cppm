@@ -399,6 +399,7 @@ public:
     virtual void EndSubstituteLineNumber() = 0;
     virtual void SetBoundCompileUnit(void* boundCompileUnit) = 0;
     virtual void* GetBoundCompileUnit() const = 0;
+    virtual void PrintModule() = 0;
 private:
     ValueStack* stack;
     bool generateLocationInfo;

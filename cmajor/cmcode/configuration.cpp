@@ -163,7 +163,7 @@ void BuildSettings::FromXml(soul::xml::Element* element)
 }
 
 Options::Options()
-     : defined(), codeCompletionDefined(), showStartupDialog(), numberOfRecentSolutions(), codeCompletion(), parsingFrequency(), themeDefined(), theme()
+     : defined(), /*codeCompletionDefined(), */showStartupDialog(), numberOfRecentSolutions(), /*codeCompletion(), parsingFrequency(), */themeDefined(), theme()
 {
 }
 
@@ -228,11 +228,11 @@ soul::xml::Element* Options::ToXml(const std::string& fieldName) const
 {
     soul::xml::Element* element = soul::xml::MakeElement(fieldName);
     element->AppendChild(soul::xml::serialization::ToXml(defined, "defined"));
-    element->AppendChild(soul::xml::serialization::ToXml(codeCompletionDefined, "codeCompletionDefined"));
+    //element->AppendChild(soul::xml::serialization::ToXml(codeCompletionDefined, "codeCompletionDefined"));
     element->AppendChild(soul::xml::serialization::ToXml(showStartupDialog, "showStartupDialog"));
     element->AppendChild(soul::xml::serialization::ToXml(numberOfRecentSolutions, "numberOfRecentSolutions"));
-    element->AppendChild(soul::xml::serialization::ToXml(codeCompletion, "codeCompletion"));
-    element->AppendChild(soul::xml::serialization::ToXml(parsingFrequency, "parsingFrequency"));
+//    element->AppendChild(soul::xml::serialization::ToXml(codeCompletion, "codeCompletion"));
+//    element->AppendChild(soul::xml::serialization::ToXml(parsingFrequency, "parsingFrequency"));
     element->AppendChild(soul::xml::serialization::ToXml(themeDefined, "themeDefined"));
     element->AppendChild(soul::xml::serialization::ToXml(theme, "theme"));
     return element;
@@ -241,11 +241,11 @@ soul::xml::Element* Options::ToXml(const std::string& fieldName) const
 void Options::FromXml(soul::xml::Element* element)
 {
     soul::xml::serialization::FromXml(element, "defined", defined);
-    soul::xml::serialization::FromXml(element, "codeCompletionDefined", codeCompletionDefined);
+    //soul::xml::serialization::FromXml(element, "codeCompletionDefined", codeCompletionDefined);
     soul::xml::serialization::FromXml(element, "showStartupDialog", showStartupDialog);
     soul::xml::serialization::FromXml(element, "numberOfRecentSolutions", numberOfRecentSolutions);
-    soul::xml::serialization::FromXml(element, "codeCompletion", codeCompletion);
-    soul::xml::serialization::FromXml(element, "parsingFrequency", parsingFrequency);
+    //soul::xml::serialization::FromXml(element, "codeCompletion", codeCompletion);
+    //soul::xml::serialization::FromXml(element, "parsingFrequency", parsingFrequency);
     soul::xml::serialization::FromXml(element, "themeDefined", themeDefined);
     soul::xml::serialization::FromXml(element, "theme", theme);
 }

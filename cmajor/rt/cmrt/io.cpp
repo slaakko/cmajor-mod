@@ -19,7 +19,7 @@
 #include <string.h>
 #include <filesystem>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 const int defaultStdBufferSize = 2048;
 
@@ -115,9 +115,9 @@ int64_t StdInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
     try
     {
         FlushStdOutAndStdErr();
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
-            return cmajor::cpp::rt::ReadBytesFromCmdbSession(buffer, count);
+            return cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
         }
         errorId = 0;
         int64_t result = std::fread(buffer, 1, count, stdin);
@@ -141,10 +141,10 @@ int32_t StdInputFile::ReadByte(int32_t& errorId)
     try
     {
         FlushStdOutAndStdErr();
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
             uint8_t buffer = '\0';
-            if (cmajor::cpp::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
+            if (cmajor::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
             {
                 return buffer;
             }
@@ -236,9 +236,9 @@ int64_t StdOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& erro
 {
     try
     {
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
-            cmajor::cpp::rt::WriteBytesToCmdbSession(handle, buffer, count);
+            cmajor::rt::WriteBytesToCmdbSession(handle, buffer, count);
             return count;
         }
         errorId = 0;
@@ -261,10 +261,10 @@ bool StdOutputFile::WriteByte(uint8_t x, int32_t& errorId)
 {
     try
     {
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
             uint8_t buffer = x;
-            cmajor::cpp::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
+            cmajor::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
             return 1;
         }
         errorId = 0;
@@ -393,9 +393,9 @@ int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& error
     try
     {
         FlushStdOutAndStdErr();
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
-            return cmajor::cpp::rt::ReadBytesFromCmdbSession(buffer, count);
+            return cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
         }
         AllocateBuffer();
         int64_t result = 0;
@@ -444,10 +444,10 @@ int32_t StdUnicodeInputFile::ReadByte(int32_t& errorId)
     try
     {
         FlushStdOutAndStdErr();
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
             uint8_t buffer = '\0';
-            if (cmajor::cpp::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
+            if (cmajor::rt::ReadBytesFromCmdbSession(&buffer, 1) == 1)
             {
                 return buffer;
             }
@@ -556,9 +556,9 @@ int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_
 {
     try
     {
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
-            cmajor::cpp::rt::WriteBytesToCmdbSession(handle, buffer, count);
+            cmajor::rt::WriteBytesToCmdbSession(handle, buffer, count);
             return count;
         }
         errorId = 0;
@@ -596,10 +596,10 @@ bool StdUnicodeOutputFile::WriteByte(uint8_t x, int32_t& errorId)
 {
     try
     {
-        if (cmajor::cpp::rt::IsCmdbSessionOpen())
+        if (cmajor::rt::IsCmdbSessionOpen())
         {
             uint8_t buffer = x;
-            cmajor::cpp::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
+            cmajor::rt::WriteBytesToCmdbSession(handle, &buffer, 1);
             return 1;
         }
         return Write(&x, 1, errorId) == 1;
@@ -1121,16 +1121,16 @@ void DoneIO()
     FileTable::Instance().Done();
 }
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
-void* RtmOpenFile(const char* filePath, cmajor::cpp::rt::OpenMode openMode, int32_t& errorId)
+void* RtmOpenFile(const char* filePath, cmajor::rt::OpenMode openMode, int32_t& errorId)
 {
-    return cmajor::cpp::rt::OpenFile(filePath, openMode, errorId);
+    return cmajor::rt::OpenFile(filePath, openMode, errorId);
 }
 
 void* RtmOpenStdFile(int handle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::OpenStdFile(handle, errorId);
+    return cmajor::rt::OpenStdFile(handle, errorId);
 }
 
 void RtmPrintToFile(void* fileHandle, const char* s)
@@ -1145,57 +1145,57 @@ void RtmPrintToFile(void* fileHandle, const char* s)
 
 bool RtmClose(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::CloseFile(fileHandle, errorId);
+    return cmajor::rt::CloseFile(fileHandle, errorId);
 }
 
 bool RtmDisposeFile(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::DisposeFile(fileHandle, errorId);
+    return cmajor::rt::DisposeFile(fileHandle, errorId);
 }
 
 int64_t RtmWrite(void* fileHandle, const uint8_t* buffer, int64_t count, int32_t& errorId)
 {
-    return cmajor::cpp::rt::WriteFile(fileHandle, buffer, count, errorId);
+    return cmajor::rt::WriteFile(fileHandle, buffer, count, errorId);
 }
 
 bool RtmWriteByte(void* fileHandle, uint8_t x, int32_t& errorId)
 {
-    return cmajor::cpp::rt::WriteByte(fileHandle, x, errorId);
+    return cmajor::rt::WriteByte(fileHandle, x, errorId);
 }
 
 int64_t RtmRead(void* fileHandle, uint8_t* buffer, int64_t bufferSize, int32_t& errorId)
 {
-    return cmajor::cpp::rt::ReadFile(fileHandle, buffer, bufferSize, errorId);
+    return cmajor::rt::ReadFile(fileHandle, buffer, bufferSize, errorId);
 }
 
 int32_t RtmReadByte(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::ReadByte(fileHandle, errorId);
+    return cmajor::rt::ReadByte(fileHandle, errorId);
 }
 
 bool RtmEof(void* fileHandle)
 {
-    return cmajor::cpp::rt::Eof(fileHandle);
+    return cmajor::rt::Eof(fileHandle);
 }
 
 bool RtmGetFileError(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::GetFileError(fileHandle, errorId);
+    return cmajor::rt::GetFileError(fileHandle, errorId);
 }
 
-bool RtmSeek(void* fileHandle, int64_t pos, cmajor::cpp::rt::Origin origin, int32_t& errorId)
+bool RtmSeek(void* fileHandle, int64_t pos, cmajor::rt::Origin origin, int32_t& errorId)
 {
-    return cmajor::cpp::rt::SeekFile(fileHandle, pos, origin, errorId);
+    return cmajor::rt::SeekFile(fileHandle, pos, origin, errorId);
 }
 
 int64_t RtmTell(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::TellFile(fileHandle, errorId);
+    return cmajor::rt::TellFile(fileHandle, errorId);
 }
 
 bool RtmFlush(void* fileHandle, int32_t& errorId)
 {
-    return cmajor::cpp::rt::FlushFile(fileHandle, errorId);
+    return cmajor::rt::FlushFile(fileHandle, errorId);
 }
 
 bool RtmFileExists(const char* filePath, int32_t& errorId)
@@ -1204,7 +1204,7 @@ bool RtmFileExists(const char* filePath, int32_t& errorId)
     bool exists = std::filesystem::exists(filePath, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("error checking if file '" + std::string(filePath) + "' exists: " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("error checking if file '" + std::string(filePath) + "' exists: " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     return exists;
@@ -1219,13 +1219,13 @@ bool RtmLastWriteTimeLess(const char* filePath1, const char* filePath2, int& err
     std::filesystem::file_time_type t1 = std::filesystem::last_write_time(f1, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not get last write time of file '" + std::string(filePath1) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not get last write time of file '" + std::string(filePath1) + "': " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     std::filesystem::file_time_type t2 = std::filesystem::last_write_time(f2, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not get last write time of file '" + std::string(filePath2) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not get last write time of file '" + std::string(filePath2) + "': " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     if (t1 < t2)
@@ -1242,7 +1242,7 @@ int64_t RtmGetFileSize(const char* filePath, int32_t& errorId)
     int64_t fileSize = std::filesystem::file_size(filePath, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not get size of file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not get size of file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(ec.message()));
         return -1;
     }
     return fileSize;
@@ -1255,7 +1255,7 @@ bool RtmRemoveFile(const char* filePath, int32_t& errorId)
     std::filesystem::remove(filePath, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not remove file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not remove file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     return true;
@@ -1268,7 +1268,7 @@ bool RtmCopyFile(const char* sourceFilePath, const char* targetFilePath, int32_t
     std::filesystem::copy(sourceFilePath, targetFilePath, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not copy file '" + std::string(sourceFilePath) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not copy file '" + std::string(sourceFilePath) + "': " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     return true;
@@ -1281,7 +1281,7 @@ bool RtmMoveFile(const char* sourceFilePath, const char* targetFilePath, int32_t
     std::filesystem::rename(sourceFilePath, targetFilePath, ec);
     if (ec)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not move file '" + std::string(sourceFilePath) + "': " + util::PlatformStringToUtf8(ec.message()));
+        errorId = cmajor::rt::AllocateError("could not move file '" + std::string(sourceFilePath) + "': " + util::PlatformStringToUtf8(ec.message()));
         return false;
     }
     return true;

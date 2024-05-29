@@ -6,17 +6,17 @@ namespace Calculator
     {
         return IsAsciiDigit(c) || c == '.';
     }
-    
+
     public class Scanner
     {
-        public nothrow Scanner(const ustring& input_) : input(input_)
+        public Scanner(const ustring& input_) : input(input_)
         {
         }
-        public nothrow inline Token* CurrentToken() const
+        public inline Token* CurrentToken() const
         {
             return token.Get();
         }
-        public void NextToken()
+        public Result<bool> NextToken()
         {
             SkipWhiteSpace();
             if (pos < input.Length())
@@ -29,37 +29,75 @@ namespace Calculator
                     {
                         ++pos;
                     }
-                    double number = ParseDouble(ToUtf8(input.Substring(start, pos - start)));
+                    auto utf8Result = ToUtf8(input.Substring(start, pos - start));
+                    if (utf8Result.Error())
+                    {
+                        return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                    }
+                    auto parseResult = ParseDouble(utf8Result.Value());
+                    if (parseResult.Error())
+                    {
+                        return Result<bool>(ErrorId(parseResult.GetErrorId()));
+                    }
+                    double number = parseResult.Value();
                     token.Reset(new NumberToken(number));
                 }
-                else if (IsIdStart(input[pos]))
+                else 
                 {
-                    int start = pos;
-                    ++pos;
-                    while (pos < input.Length() && IsIdCont(input[pos]))
+                    auto idStartResult = IsIdStart(input[pos]);
+                    if (idStartResult.Error())
                     {
-                        ++pos;
+                        return idStartResult;
                     }
-                    ustring variableName = input.Substring(start, pos - start);
-                    if (ToLower(variableName) == u"print")
+                    bool isIdStart = idStartResult.Value();
+                    if (isIdStart)
                     {
-                        token.Reset(new PrintToken());
+                        int start = pos;
+                        ++pos;
+                        auto idContResult = IsIdCont(input[pos]);
+                        if (idContResult.Error())
+                        {
+                            return idContResult;
+                        }
+                        bool isIdCont = idContResult.Value();
+                        while (pos < input.Length() && isIdCont)
+                        {
+                            ++pos;
+                            idContResult = IsIdCont(input[pos]);
+                            if (idContResult.Error())
+                            {
+                                return idContResult;
+                            }
+                            isIdCont = idContResult.Value();
+                        }
+                        ustring variableName = input.Substring(start, pos - start);
+                        auto toLowerResult = ToLower(variableName);
+                        if (toLowerResult.Error())
+                        {
+                            return Result<bool>(ErrorId(toLowerResult.GetErrorId()));
+                        }
+                        ustring lower = toLowerResult.Value();
+                        if (lower == u"print")
+                        {
+                            token.Reset(new PrintToken());
+                        }
+                        else
+                        {
+                            token.Reset(new VariableNameToken(variableName));
+                        }
                     }
                     else
                     {
-                        token.Reset(new VariableNameToken(variableName));
+                        token.Reset(new OperatorToken(input[pos]));
+                        ++pos;
                     }
-                }
-                else
-                {
-                    token.Reset(new OperatorToken(input[pos]));
-                    ++pos;
                 }
             }
             else
             {
                 token.Reset(new EndToken());
             }
+            return Result<bool>(true);
         }
         public void Rewind()
         {
@@ -71,7 +109,7 @@ namespace Calculator
             {
                 ++pos;
             }
-        }    
+        }
         private UniquePtr<Token> token;
         private ustring input;
         private int pos;

@@ -382,6 +382,7 @@ public:
     void EndSubstituteLineNumber() override;
     void SetBoundCompileUnit(void* boundCompileUnit_) override;
     void* GetBoundCompileUnit() const override;
+    void PrintModule() override;
 private:
     cmajor::ir::EmittingDelegate* emittingDelegate;
     cmajor::ir::EmittingContext* emittingContext;

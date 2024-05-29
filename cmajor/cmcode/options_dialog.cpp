@@ -49,9 +49,9 @@ OptionsDialog::OptionsDialog() : wing::Window(wing::WindowCreateParams().WindowC
     okButton(nullptr),
     cancelButton(nullptr),
     showStartupDialogCheckBox(nullptr),
-    numberOfRecentSolutionsTextBox(nullptr),
-    codeCompletionCheckBox(nullptr),
-    parsingFrequencyTextBox(nullptr)
+    numberOfRecentSolutionsTextBox(nullptr)
+    //codeCompletionCheckBox(nullptr),
+    //parsingFrequencyTextBox(nullptr)
 {
     themes = wing::GetThemes();
     selectedThemeIndex = 0;
@@ -88,6 +88,7 @@ OptionsDialog::OptionsDialog() : wing::Window(wing::WindowCreateParams().WindowC
             wing::BorderStyle::single)).SetAnchors(wing::Anchors::top | wing::Anchors::left)));
     AddChild(borderedTextBox.release());
 
+/*
     std::unique_ptr<wing::CheckBox> codeCompletionCheckBoxPtr(new wing::CheckBox(wing::CheckBoxCreateParams().Text("Code completion").
         Location(wing::Point(16, 24 + 24 + 24 + 24)).SetAnchors(wing::Anchors::top | wing::Anchors::left)));
     codeCompletionCheckBox = codeCompletionCheckBoxPtr.get();
@@ -110,6 +111,7 @@ OptionsDialog::OptionsDialog() : wing::Window(wing::WindowCreateParams().WindowC
         SetSize(wing::BorderedSize(wing::PaddedSize(wing::Size(wing::ScreenMetrics::Get().MMToHorizontalPixels(10), defaultTextBoxSize.Height + 4), wing::DefaultPadding()), 
             wing::BorderStyle::single)).SetAnchors(wing::Anchors::top | wing::Anchors::left)));
     AddChild(borderedPFTextBox.release());
+*/
 
     wing::Point themeLabelLocation(16, 24 + 24 + 24 + 24 + 24 + 24 + 24 + 24);
     std::unique_ptr<wing::Label> themeLabel(new wing::Label(wing::LabelCreateParams().Text("Color Theme:").
@@ -144,7 +146,7 @@ OptionsDialog::OptionsDialog() : wing::Window(wing::WindowCreateParams().WindowC
 
 void OptionsDialog::CheckValid()
 {
-    if (IsValidRecentSolutionsNumber(numberOfRecentSolutionsTextBox->Text()) && IsValidParsingFrequency(parsingFrequencyTextBox->Text()))
+    if (IsValidRecentSolutionsNumber(numberOfRecentSolutionsTextBox->Text()) /* && IsValidParsingFrequency(parsingFrequencyTextBox->Text())*/)
     {
         okButton->Enable();
     }
@@ -168,8 +170,8 @@ void OptionsDialog::SetOptionsFrom(const Options& options)
 {
     showStartupDialogCheckBox->SetChecked(options.showStartupDialog);
     numberOfRecentSolutionsTextBox->SetText(std::to_string(options.numberOfRecentSolutions));
-    codeCompletionCheckBox->SetChecked(options.codeCompletion);
-    parsingFrequencyTextBox->SetText(std::to_string(options.parsingFrequency));
+    //codeCompletionCheckBox->SetChecked(options.codeCompletion);
+    //parsingFrequencyTextBox->SetText(std::to_string(options.parsingFrequency));
     int n = themes.size();
     for (int i = 0; i < n; ++i)
     {
@@ -186,8 +188,8 @@ Options OptionsDialog::GetOptions() const
     Options options;
     options.showStartupDialog = showStartupDialogCheckBox->Checked();
     options.numberOfRecentSolutions = std::stoi(numberOfRecentSolutionsTextBox->Text());
-    options.codeCompletion = codeCompletionCheckBox->Checked();
-    options.parsingFrequency = std::stoi(parsingFrequencyTextBox->Text());
+    //options.codeCompletion = codeCompletionCheckBox->Checked();
+    //options.parsingFrequency = std::stoi(parsingFrequencyTextBox->Text());
     options.theme = themes[themeComboBox->GetSelectedIndex()];
     return options;
 }

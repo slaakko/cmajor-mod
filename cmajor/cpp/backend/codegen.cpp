@@ -1439,7 +1439,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundTryStatement& boundTryStatemen
         cmajor::symbols::UuidValue uuidValue(boundCatchStatement->GetSpan(), boundCatchStatement->CatchTypeUuidId());
         void* catchTypeIdValue = uuidValue.IrValue(*emitter);
         handleExceptionArgs.push_back(catchTypeIdValue);
-        void* handleException = emitter->GetOrInsertFunction("RtHandleException", handleExceptionFunctionType, true);
+        void* handleException = emitter->GetOrInsertFunction("RtmHandleException", handleExceptionFunctionType, true);
         void* handleThisEx = emitter->CreateCall(handleExceptionFunctionType, handleException, handleExceptionArgs);
         void* nextHandlerTarget = nullptr;
         if (i < n - 1)

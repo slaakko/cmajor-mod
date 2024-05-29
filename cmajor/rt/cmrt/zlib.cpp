@@ -18,7 +18,7 @@ int RtmInitZlib(int mode, int level, void** handle, int& errorId)
     int ret = zlib_init(mode, level, handle);
     if (ret < 0)
     {
-        errorId = cmajor::cpp::rt::AllocateError("could not create deflate stream: zlib initialization returned error code " +
+        errorId = cmajor::rt::AllocateError("could not create deflate stream: zlib initialization returned error code " +
             std::to_string(ret) + ": " + zlib_retval_str(ret));
     }
     return ret;
@@ -41,7 +41,7 @@ int RtmInflateZlib(void* outChunk, uint32_t outChunkSize, uint32_t* have, uint32
     if (ret < 0)
     {
         std::string errorMessage = "deflate stream: could not decompress: inflate returned error code " + std::to_string(ret) + ": " + zlib_retval_str(ret);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        errorId = cmajor::rt::AllocateError(errorMessage);
     }
     return ret;
 }
@@ -53,7 +53,7 @@ int RtmDeflateZlib(void* outChunk, uint32_t outChunkSize, uint32_t* have, uint32
     if (ret < 0)
     {
         std::string errorMessage = "deflate stream: could not compress: deflate returned error code " + std::to_string(ret) + ": " + zlib_retval_str(ret);
-        errorId = cmajor::cpp::rt::AllocateError(errorMessage);
+        errorId = cmajor::rt::AllocateError(errorMessage);
     }
     return ret;
 }

@@ -7,7 +7,7 @@
 #define CMRT_CPP_SOCKET_INCLUDED
 #include <stdint.h>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 void InitSocket();
 void DoneSocket();

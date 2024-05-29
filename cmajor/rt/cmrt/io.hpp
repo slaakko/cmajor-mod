@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_IO_INCLUDED
-#define CMRT_CPP_IO_INCLUDED
+#ifndef CMRT_IO_INCLUDED
+#define CMRT_IO_INCLUDED
 #include <stdint.h>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 const int stdInFileHandle = 0;
 const int stdOutFileHandle = 1;
@@ -40,9 +40,9 @@ inline OpenMode operator|(OpenMode left, OpenMode right)
 void InitIO();
 void DoneIO();
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
-extern "C" void* RtmOpenFile(const char* filePath, cmajor::cpp::rt::OpenMode openMode, int32_t & errorId);
+extern "C" void* RtmOpenFile(const char* filePath, cmajor::rt::OpenMode openMode, int32_t & errorId);
 extern "C" void* RtmOpenStdFile(int handle, int32_t & errorId);
 extern "C" void RtmPrintToFile(void* fileHandle, const char* s);
 extern "C" bool RtmClose(void* fileHandle, int32_t & errorId);
@@ -53,7 +53,7 @@ extern "C" int64_t RtmRead(void* fileHandle, uint8_t * buffer, int64_t bufferSiz
 extern "C" int32_t RtmReadByte(void* fileHandle, int32_t & errorId);
 extern "C" bool RtmEof(void* fileHandle);
 extern "C" bool RtmGetFileError(void* fileHandle, int32_t & errorId);
-extern "C" bool RtmSeek(void* fileHandle, int64_t pos, cmajor::cpp::rt::Origin origin, int32_t & errorId);
+extern "C" bool RtmSeek(void* fileHandle, int64_t pos, cmajor::rt::Origin origin, int32_t & errorId);
 extern "C" int64_t RtmTell(void* fileHandle, int32_t & errorId);
 extern "C" bool RtmFlush(void* fileHandle, int32_t & errorId);
 extern "C" bool RtmFileExists(const char* filePath, int32_t & errorId);
@@ -70,4 +70,4 @@ extern "C" int RtmBeginGetPathToExecutable();
 extern "C" const char* RtmGetPathToExecutable(int pathHandle);
 extern "C" void RtmEndGetPathToExecutable(int pathHandle);
 
-#endif // CMRT_CPP_IO_INCLUDED
+#endif // CMRT_IO_INCLUDED

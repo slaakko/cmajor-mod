@@ -16,7 +16,7 @@
 #include <string.h>
 #include <errno.h>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 struct Exec
 {
@@ -145,7 +145,7 @@ int32_t Executor::EndExecute(int32_t execHandle)
     }
 }
 
-} // namespace cmajor::cpp::rt
+} // namespace cmajor::rt
 
 int32_t RtmExecute(const char* command)
 {
@@ -154,15 +154,15 @@ int32_t RtmExecute(const char* command)
 
 int32_t RtmBeginExec(const char* command)
 {
-    return cmajor::cpp::rt::Executor::Instance().BeginExecute(command);
+    return cmajor::rt::Executor::Instance().BeginExecute(command);
 }
 
 void RtmAddRedirection(int32_t execHandle, int handle, const char* file)
 {
-    cmajor::cpp::rt::Executor::Instance().AddRedirection(execHandle, handle, file);
+    cmajor::rt::Executor::Instance().AddRedirection(execHandle, handle, file);
 }
 
 int32_t RtmEndExec(int32_t execHandle)
 {
-    return cmajor::cpp::rt::Executor::Instance().EndExecute(execHandle);
+    return cmajor::rt::Executor::Instance().EndExecute(execHandle);
 }

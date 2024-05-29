@@ -79,7 +79,7 @@ namespace System.IO
                 }
                 else if (cast<char>(x.Value()) == '\n')
                 {
-                    return result;
+                    return Result<string>(result);
                 }
                 else
                 {

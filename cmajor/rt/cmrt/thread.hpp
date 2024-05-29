@@ -7,11 +7,11 @@
 #define CMRT_CPP_THREAD_INCLUDED
 #include <stdint.h>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 void DoneThread();
 
-} // namespace cmajor::cpp::rt
+} // namespace cmajor::rt
 
 extern "C" int32_t RtmGetHardwareConcurrency();
 extern "C" int32_t RtmStartThreadFunction(void* function);

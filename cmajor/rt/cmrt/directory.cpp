@@ -10,7 +10,7 @@
 #include <map>
 #include <mutex>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 struct Iteration
 {
@@ -117,7 +117,7 @@ void DirectoryIterationTable::EndIterate(int32_t handle)
     iterationMap.erase(handle);
 }
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
 bool RtmDirectoryExists(const char* directoryPath)
 {
@@ -131,20 +131,20 @@ void RtmCreateDirectories(const char* directoryPath)
 
 int32_t RtmBeginIterateDirectory(const char* directoryPath)
 {
-    return cmajor::cpp::rt::DirectoryIterationTable::Instance().BeginIterate(directoryPath);
+    return cmajor::rt::DirectoryIterationTable::Instance().BeginIterate(directoryPath);
 }
 
 const char* RtmGetNextFilePath(int32_t directoryIterationHandle)
 {
-    return cmajor::cpp::rt::DirectoryIterationTable::Instance().IterateFiles(directoryIterationHandle);
+    return cmajor::rt::DirectoryIterationTable::Instance().IterateFiles(directoryIterationHandle);
 }
 
 const char* RtmGetNextDirectoryPath(int32_t directoryIterationHandle)
 {
-    return cmajor::cpp::rt::DirectoryIterationTable::Instance().IterateDirectories(directoryIterationHandle);
+    return cmajor::rt::DirectoryIterationTable::Instance().IterateDirectories(directoryIterationHandle);
 }
 
 void RtmEndIterateDirectory(int32_t directoryIterationHandle)
 {
-    cmajor::cpp::rt::DirectoryIterationTable::Instance().EndIterate(directoryIterationHandle);
+    cmajor::rt::DirectoryIterationTable::Instance().EndIterate(directoryIterationHandle);
 }

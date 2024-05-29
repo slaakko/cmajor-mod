@@ -96,4 +96,13 @@ void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols:
     rootModule->AddResourceFilePath(compiledResourceFilePath);
 }
 
+void CompileResourceScriptFiles(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
+{
+    for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
+    {
+        std::string compiledResourceFilePath = CompileResourceFile(rcFilePath, project);
+        rootModule->AddResourceFilePath(compiledResourceFilePath);
+    }
+}
+
 } // namespace cmajor::build

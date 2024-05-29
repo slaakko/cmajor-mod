@@ -16,4 +16,6 @@ void AddResources(cmajor::ast::Project* project, cmajor::symbols::Module* rootMo
 void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, 
     const std::string& classIndexFilePath, const std::string& traceDataFilePath);
 
+void CompileResourceScriptFiles(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule);
+
 } // namespace cmajor::build

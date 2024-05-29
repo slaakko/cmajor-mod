@@ -56,6 +56,8 @@ void PrintHelp()
     std::cout << "  Generate debug info (automatically enabled for 'debug' configuration)." << "\n";
     std::cout << "--no-debug-info | -i" << "\n";
     std::cout << "  Do not generate debug info." << "\n";
+    std::cout << "--print | -p" << "\n";
+    std::cout << "  Print each LLVM module to stderr." << "\n";
 }
 
 int main(int argc, const char** argv)
@@ -119,6 +121,10 @@ int main(int argc, const char** argv)
                 else if (arg == "--no-debug-info")
                 {
                     noDebugInfo = true;
+                }
+                else if (arg == "--print")
+                {
+                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::print);
                 }
                 else if (arg.find('=') != std::string::npos)
                 {
@@ -254,6 +260,11 @@ int main(int argc, const char** argv)
                             case 'i':
                             {
                                 noDebugInfo = true;
+                                break;
+                            }
+                            case 'p':
+                            {
+                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::print);
                                 break;
                             }
                             default:

@@ -154,7 +154,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     editorReadWriteIndicatorStatusBarItem(nullptr),
     editorDirtyIndicatorStatusBarItem(nullptr),
     sourceFilePathStatusBarItem(nullptr),
-    codeCompletionStatusBarItem(nullptr),
+    //codeCompletionStatusBarItem(nullptr),
     lineStatusBarItem(nullptr),
     columnStatusBarItem(nullptr),
     buildProgressCounter(0),
@@ -553,11 +553,13 @@ MainWindow::MainWindow(const std::string& filePath) :
     sourceFilePathStatusBarItem = sourceFilePathStatusBarItemPtr.get();
     statusBar->AddItem(sourceFilePathStatusBarItemPtr.release());
     statusBar->AddItem(new wing::StatusBarSpringItem());
+/*
     std::unique_ptr<wing::StatusBarTextItem> codeCompletionLabelStatusBarItemPtr(new wing::StatusBarTextItem(wing::StatusBarTextItemCreateParams().MaxTextLength(11).Text("Code Completion Status:").BorderStyle(wing::StatusBarItemBorderStyle::flat)));
     statusBar->AddItem(codeCompletionLabelStatusBarItemPtr.release());
     std::unique_ptr<wing::StatusBarTextItem> codeCompletionStatusBarItemPtr(new wing::StatusBarTextItem(wing::StatusBarTextItemCreateParams().MaxTextLength(5).BorderStyle(wing::StatusBarItemBorderStyle::sunken)));
     codeCompletionStatusBarItem = codeCompletionStatusBarItemPtr.get();
     statusBar->AddItem(codeCompletionStatusBarItemPtr.release());
+*/
     std::unique_ptr<wing::StatusBarTextItem> lineLabelStatusBarItemPtr(new wing::StatusBarTextItem(wing::StatusBarTextItemCreateParams().MaxTextLength(5).Text("Line:").BorderStyle(wing::StatusBarItemBorderStyle::flat)));
     statusBar->AddItem(lineLabelStatusBarItemPtr.release());
     std::unique_ptr<wing::StatusBarTextItem> lineStatusBarItemPtr(new wing::StatusBarTextItem(wing::StatusBarTextItemCreateParams().MaxTextLength(5).BorderStyle(wing::StatusBarItemBorderStyle::sunken)));
@@ -615,6 +617,7 @@ MainWindow::MainWindow(const std::string& filePath) :
 
     SetTimer(configurationSaveTimerId, configurationSavePeriod);
 
+/*
     if (options.codeCompletion)
     {
         codeCompletionStatusBarItem->SetText("On");
@@ -624,6 +627,7 @@ MainWindow::MainWindow(const std::string& filePath) :
     {
         codeCompletionStatusBarItem->SetText("Off");
     }
+*/
 
     if (!filePath.empty())
     {
@@ -3695,7 +3699,7 @@ void MainWindow::OptionsClick()
     try
     {
         const Options& prevOptions = GetOptions();
-        bool prevCodeCompletion = prevOptions.codeCompletion;
+        //bool prevCodeCompletion = prevOptions.codeCompletion;
         OptionsDialog dialog;
         dialog.SetOptionsFrom(GetOptions());
         if (dialog.ShowDialog(*this) == wing::DialogResult::ok)
@@ -3704,6 +3708,7 @@ void MainWindow::OptionsClick()
             SetOptions(options);
             SaveConfiguration();
             wing::SetTheme(options.theme);
+/*
             if (prevCodeCompletion != options.codeCompletion)
             {
                 if (options.codeCompletion)
@@ -3717,6 +3722,7 @@ void MainWindow::OptionsClick()
                     StopCodeCompletion(true);
                 }
             }
+*/
         }
     }
     catch (const std::exception& ex)
@@ -4815,6 +4821,7 @@ void MainWindow::StopBuildClick()
 
 void MainWindow::ToggleCodeCompletionClick()
 {
+/*
     const Options& oldOptions = GetOptions();
     Options newOptions(oldOptions);
     if (oldOptions.codeCompletion)
@@ -4832,6 +4839,7 @@ void MainWindow::ToggleCodeCompletionClick()
     }
     SetOptions(newOptions);
     SaveConfiguration();
+*/
 }
 
 void MainWindow::TreeViewNodeDoubleClick(wing::TreeViewNodeClickEventArgs& args)

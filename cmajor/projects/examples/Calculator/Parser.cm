@@ -2,65 +2,107 @@ using System;
 
 namespace Calculator
 {
-    public void Parse(const ustring& input)
+    public Result<bool> Parse(const ustring& input)
     {
         Scanner scanner(input);
-        scanner.NextToken();
+        auto nextTokenResult = scanner.NextToken();
+        if (nextTokenResult.Error())
+        {
+            return nextTokenResult;
+        }
         if (scanner.CurrentToken() is PrintToken*)
         {
             SymbolTable.Instance().Print();
-            return;
+            return Result<bool>(true);
         }
         else if (scanner.CurrentToken() is VariableNameToken*)
         {
             VariableNameToken* token = cast<VariableNameToken*>(scanner.CurrentToken());
             ustring variableName = token->VariableName();
-            scanner.NextToken();
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return nextTokenResult;
+            }
             if (scanner.CurrentToken() is OperatorToken*)
             {
                 OperatorToken* token = cast<OperatorToken*>(scanner.CurrentToken());
                 if (token->Char() == '=')
                 {
-                    scanner.NextToken();
-                    double value = Expr(scanner);
+                    auto nextTokenResult = scanner.NextToken();
+                    if (nextTokenResult.Error())
+                    {
+                        return nextTokenResult;
+                    }
+                    auto expr = Expr(scanner);
+                    if (expr.Error())
+                    {
+                        return Result<bool>(ErrorId(expr.GetErrorId()));
+                    }
+                    double value = expr.Value();
                     Token* token = scanner.CurrentToken();
                     if (token is EndToken*)
                     {
                         SymbolTable.Instance().SetVariable(variableName, value);
                         Console.Out() << variableName << " = " << value << endl();
-                        return;
+                        return Result<bool>(true);
                     }
                     else
                     {
-                        throw ParsingException("invalid input");
+                        int errorId = AllocateError("invalid input");
+                        return Result<bool>(ErrorId(errorId));
                     }
                 }
             }
         }
         scanner.Rewind();
-        scanner.NextToken();
-        double value = Expr(scanner);
+        nextTokenResult = scanner.NextToken();
+        if (nextTokenResult.Error())
+        {
+            return nextTokenResult;
+        }
+        auto expr = Expr(scanner);
+        if (expr.Error())
+        {
+            return Result<bool>(ErrorId(expr.GetErrorId()));
+        }
         Token* token = scanner.CurrentToken();
         if (token is EndToken*)
         {
-            Console.Out() << "= " << value << endl();
+            Console.Out() << "= " << expr.Value() << endl();
         }
         else
         {
-            throw ParsingException("invalid input");
+            int errorId = AllocateError("invalid input");
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    internal double Expr(Scanner& scanner)
+    internal Result<double> Expr(Scanner& scanner)
     {
-        double value = Term(scanner);
+        auto term = Term(scanner);
+        if (term.Error())
+        {
+            return Result<double>(ErrorId(term.GetErrorId()));
+        }
+        double value = term.Value();
         Token* token = scanner.CurrentToken();
         OperatorToken* op = token as OperatorToken*;
         while (op != null && op->IsAdditiveOperator())
         {
             uchar opChar = op->Char();
-            scanner.NextToken();
-            double right = Term(scanner);
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+            }
+            auto rightTerm = Term(scanner);
+            if (rightTerm.Error())
+            {
+                return Result<double>(ErrorId(rightTerm.GetErrorId()));
+            }
+            double right = rightTerm.Value();
             if (opChar == '+')
             {
                 value = value + right;
@@ -71,7 +113,8 @@ namespace Calculator
             }
             else
             {
-                throw LogicErrorException("logic error");
+                int errorId = AllocateError("logic error");
+                return Result<double>(ErrorId(errorId));
             }
             token = scanner.CurrentToken();
             op = token as OperatorToken*;
@@ -79,16 +122,30 @@ namespace Calculator
         return value;
     }
 
-    internal double Term(Scanner& scanner)
+    internal Result<double> Term(Scanner& scanner)
     {
-        double value = Factor(scanner);
+        auto factor = Factor(scanner);
+        if (factor.Error())
+        {
+            return factor;
+        }
+        double value = factor.Value();
         Token* token = scanner.CurrentToken();
         OperatorToken* op = token as OperatorToken*;
         while (op != null && op->IsMultiplicativeOperator())
         {
             uchar opChar = op->Char();
-            scanner.NextToken();
-            double right = Factor(scanner);
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return Result<double>(ErrorId(nextTokenResult.GetErrorId()));;
+            }
+            auto rightFactor = Factor(scanner);
+            if (rightFactor.Error())
+            {
+                return rightFactor;
+            }
+            double right = rightFactor.Value();
             if (opChar == '*')
             {
                 value = value * right;
@@ -97,13 +154,15 @@ namespace Calculator
             {
                 if (right == 0)
                 {
-                    throw DivisionByZeroException("division by zero");
+                    int errorId = AllocateError("division by zero");
+                    return Result<double>(ErrorId(errorId));
                 }
                 value = value / right;
             }
             else
             {
-                throw LogicErrorException("logic error");
+                int errorId = AllocateError("logic error");
+                return Result<double>(ErrorId(errorId));
             }
             token = scanner.CurrentToken();
             op = token as OperatorToken*;
@@ -111,7 +170,7 @@ namespace Calculator
         return value;
     }
 
-    internal double Factor(Scanner& scanner)
+    internal Result<double> Factor(Scanner& scanner)
     {
         Token* token = scanner.CurrentToken();
         OperatorToken* op = token as OperatorToken*;
@@ -122,56 +181,93 @@ namespace Calculator
             {
                 neg = true;
             }
-            scanner.NextToken();
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+            }
         }
-        double value = Primary(scanner);
+        auto primary = Primary(scanner);
+        if (primary.Error())
+        {
+            return primary;
+        }
+        double value = primary.Value();
         if (neg)
         {
             return -value;
         }
-        return value;
+        return Result<double>(value);
     }
 
-    internal double Primary(Scanner& scanner)
+    internal Result<double> Primary(Scanner& scanner)
     {
         Token* token = scanner.CurrentToken();
         if (token is NumberToken*)
         {
             NumberToken* number = cast<NumberToken*>(token);
             double value = number->Value();
-            scanner.NextToken();
-            return value;
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+            }
+            return Result<double>(value);
         }
         else if (token is VariableNameToken*)
         {
             VariableNameToken* variableNameToken = cast<VariableNameToken*>(token);
-            double value = SymbolTable.Instance().GetVariableValue(variableNameToken->VariableName());
-            scanner.NextToken();
-            return value;
+            auto variableResult = SymbolTable.Instance().GetVariableValue(variableNameToken->VariableName());
+            if (variableResult.Error())
+            {
+                return variableResult;
+            }
+            double value = variableResult.Value();
+            auto nextTokenResult = scanner.NextToken();
+            if (nextTokenResult.Error())
+            {
+                return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+            }
+            return Result<double>(value);
         }
         else if (token is OperatorToken*)
         {
             OperatorToken* op = cast<OperatorToken*>(token);
             if (op->Char() == '(')
             {
-                scanner.NextToken();
-                double value = Expr(scanner);
+                auto nextTokenResult = scanner.NextToken();
+                if (nextTokenResult.Error())
+                {
+                    return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+                }
+                auto expr = Expr(scanner);
+                if (expr.Error())
+                {
+                    return expr;
+                }
+                double value = expr.Value();
                 token = scanner.CurrentToken();
                 if (token is OperatorToken*)
                 {
                     op = cast<OperatorToken*>(token);
                     if (op->Char() == ')')
                     {
-                        scanner.NextToken();
-                        return value;
+                        auto nextTokenResult = scanner.NextToken();
+                        if (nextTokenResult.Error())
+                        {
+                            return Result<double>(ErrorId(nextTokenResult.GetErrorId()));
+                        }
+                        return Result<double>(value);
                     }
                     else
                     {
-                        throw ParsingException("')' expected");
+                        int errorId = AllocateError("')' expected");
+                        return Result<double>(ErrorId(errorId));
                     }
                 }
             }
         }
-        throw ParsingException("number, variable name or subexpression expected");
+        int errorId = AllocateError("number, variable name or subexpression expected");
+        return Result<double>(ErrorId(errorId));
     }
 }

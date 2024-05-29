@@ -65,11 +65,11 @@ public:
     virtual void FromXml(soul::xml::Element* element);
 public:
     bool defined;
-    bool codeCompletionDefined;
+    //bool codeCompletionDefined;
     bool showStartupDialog;
     int32_t numberOfRecentSolutions;
-    bool codeCompletion;
-    int32_t parsingFrequency;
+    //bool codeCompletion;
+    //int32_t parsingFrequency;
     bool themeDefined;
     std::string theme;
 };

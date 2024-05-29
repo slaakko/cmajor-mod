@@ -13,7 +13,7 @@
 #include <util/deflate_stream.hpp>
 #include <map>
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 class ClassMaps
 {
@@ -62,17 +62,17 @@ int* ClassMaps::GetClassMap(const std::string& classMapName)
     }
 }
 
-} // cmajor::cpp::rt
+} // cmajor::rt
 
 int* RtmGetClassMap(const char* classMapName, int32_t& errorId)
 {
     try
     {
-        return cmajor::cpp::rt::ClassMaps::Instance().GetClassMap(classMapName);
+        return cmajor::rt::ClassMaps::Instance().GetClassMap(classMapName);
     }
     catch (const std::exception& ex)
     {
-        errorId = cmajor::cpp::rt::AllocateError(ex.what());
+        errorId = cmajor::rt::AllocateError(ex.what());
         return nullptr;
     }
 }

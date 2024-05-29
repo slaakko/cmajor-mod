@@ -1,0 +1,4 @@
+solution Calculator;
+project <Calculator.cmp>;
+activeProject Calculator;
+activeBackEnd=llvm;

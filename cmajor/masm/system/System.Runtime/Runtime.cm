@@ -135,4 +135,10 @@ public extern cdecl void* RtmConnectSocket(const char* node, const char* service
 public extern cdecl int RtmSendSocket(void* socketHandle, byte* buf, int len, int flags, int& errorId);
 public extern cdecl int RtmReceiveSocket(void* socketHandle, byte* buf, int len, int flags, int& errorId);
 public extern cdecl void RtmDestroySocket(void* socketHandle);
+public extern cdecl void* RtmGetExceptionTypeId();
+public extern cdecl void RtmThrowException(void* exception, void* exceptionTypeId);
+public extern cdecl void RtmCaptureException(void** exception, void** exceptionTypeId);
+public extern cdecl void RtmThrowCapturedException(void* exception, void* exceptionTypeId);
+public extern cdecl bool RtmHandleException(void* exceptionTypeId);
+public extern cdecl void* RtmGetException();
 

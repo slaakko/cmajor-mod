@@ -1858,4 +1858,8 @@ void CppEmitter::EndSubstituteLineNumber()
     substituteLineNumber = false;
 }
 
+void CppEmitter::PrintModule()
+{
+}
+
 } // namespace cmajor::cpp::backend

@@ -6,11 +6,11 @@
 #ifndef CMRT_CPP_CLASSES_INCLUDED
 #define CMRT_CPP_CLASSES_INCLUDED
 
-namespace cmajor::cpp::rt {
+namespace cmajor::rt {
 
 void RunDestructors();
 
-} // cmajor::cpp::rt;
+} // cmajor::rt;
 
 extern "C" const char* RtmClassName(void* typeId);
 extern "C" bool RtmIs(void* typeId, void* baseTypeId);
