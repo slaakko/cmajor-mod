@@ -169,6 +169,10 @@ int32_t StdInputFile::ReadByte(int32_t& errorId)
 
 bool StdInputFile::Eof() const
 {
+    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    {
+        return cmajor::masm::rt::CmdbSessionEof();
+    }
     return std::feof(stdin);
 }
 
@@ -488,6 +492,10 @@ int32_t StdUnicodeInputFile::ReadByte(int32_t& errorId)
 
 bool StdUnicodeInputFile::Eof() const
 {
+    if (cmajor::masm::rt::IsCmdbSessionOpen())
+    {
+        return cmajor::masm::rt::CmdbSessionEof();
+    }
     return std::feof(stdin);
 }
 

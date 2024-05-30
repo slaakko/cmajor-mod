@@ -13,6 +13,7 @@ void StartCmdbSession();
 bool IsCmdbSessionOpen();
 void WriteBytesToCmdbSession(int fileHandle, const uint8_t* buffer, int64_t count);
 int64_t ReadBytesFromCmdbSession(uint8_t* buffer, int64_t bufferSize);
+bool CmdbSessionEof();
 void InitCmdbSession();
 void DoneCmdbSession();
 

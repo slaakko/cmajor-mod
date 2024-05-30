@@ -2034,27 +2034,31 @@ void MainWindow::HandleTargetOutputRequest(const cmajor::debugger::OutputRequest
 void MainWindow::ConsoleInputReady()
 {
     wing::Console* console = GetConsole();
-    if (console->Eof())
+    if (state == MainWindowState::debugging)
     {
-        if (state == MainWindowState::debugging)
+        std::u32string inputLine = console->GetInputLine();
+        if (inputLine.empty())
         {
-            cmajor::service::PutRequest(new cmajor::service::SetDebugServiceProgramEofRequest());
+            if (console->Eof())
+            {
+                cmajor::service::PutRequest(new cmajor::service::SetDebugServiceProgramEofRequest());
+                return;
+            }
         }
-        else if (state == MainWindowState::running)
-        {
-            cmajor::service::PutRequest(new cmajor::service::SetRunServiceProgramEofRequest());
-        }
+        cmajor::service::PutRequest(new cmajor::service::PutDebugServiceProgramInputLineRequest(util::ToUtf8(inputLine))); 
     }
-    else
+    else if (state == MainWindowState::running)
     {
-        if (state == MainWindowState::debugging)
+        std::u32string inputLine = console->GetInputLine();
+        if (inputLine.empty())
         {
-            cmajor::service::PutRequest(new cmajor::service::PutDebugServiceProgramInputLineRequest(util::ToUtf8(console->InputLine()))); 
+            if (console->Eof())
+            {
+                cmajor::service::PutRequest(new cmajor::service::SetRunServiceProgramEofRequest());
+                return;
+            }
         }
-        else if (state == MainWindowState::running)
-        {
-            cmajor::service::PutRequest(new cmajor::service::PutRunServiceProgramInputLineRequest(util::ToUtf8(console->InputLine())));
-        }
+        cmajor::service::PutRequest(new cmajor::service::PutRunServiceProgramInputLineRequest(util::ToUtf8(inputLine)));
     }
 }
 

@@ -179,11 +179,26 @@ void Console::StartReadLine()
     SetFocus();
 }
 
+std::u32string Console::GetInputLine()
+{
+    if (!inputLines.empty())
+    {
+        std::u32string line = std::move(inputLines.front());
+        inputLines.pop_front();
+        return line;
+    }
+    return std::u32string();
+}
+
 void Console::Clear()
 {
     TextView::Clear();
     textColorLines.clear();
     backColorLines.clear();
+    inputLine.clear();
+    inputLines.clear();
+    eof = false;
+    startInputCol = 1;
 }
 
 void Console::PaintContent(Graphics& graphics, const Rect& clipRect)
@@ -224,6 +239,11 @@ void Console::OnKeyDown(KeyEventArgs& args)
     {
         eof = true;
         Write(1, "^Z\n");
+        if (!inputLine.empty())
+        {
+            inputLines.push_back(std::move(inputLine));
+            inputLine.clear();
+        }
         OnConsoleInputReady();
         args.handled = true;
         break;
@@ -232,6 +252,8 @@ void Console::OnKeyDown(KeyEventArgs& args)
     {
         eof = false;
         Write(1, "\n");
+        inputLines.push_back(std::move(inputLine));
+        StartReadLine();
         OnConsoleInputReady();
         args.handled = true;
         break;
@@ -457,13 +479,16 @@ void Console::DeleteChar()
     int caretCol = CaretColumn();
     int caretLine = CaretLine();
     int index = caretCol - startInputCol;
-    inputLine = inputLine.substr(0, index) + inputLine.substr(index + 1);
-    std::vector<std::unique_ptr<std::u32string>>& lines = Lines();
-    std::u32string line = *lines[caretLine - 1];
-    line = line.substr(0, caretCol - 1) + line.substr(caretCol);
-    *lines[caretLine - 1] = line;
-    DecrementCaretColorCount();
-    Invalidate();
+    if (index >= 0 && index < inputLine.length())
+    {
+        inputLine = inputLine.substr(0, index) + inputLine.substr(index + 1);
+        std::vector<std::unique_ptr<std::u32string>>& lines = Lines();
+        std::u32string line = *lines[caretLine - 1];
+        line = line.substr(0, caretCol - 1) + line.substr(caretCol);
+        *lines[caretLine - 1] = line;
+        DecrementCaretColorCount();
+        Invalidate();
+    }
 }
 
 void Console::IncrementCaretColorCount()

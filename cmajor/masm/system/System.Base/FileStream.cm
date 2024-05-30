@@ -195,12 +195,12 @@ namespace System
 {
     public class Endl
     {
-        public nothrow Endl()
+        public Endl()
         {
         }
     }
 
-    public nothrow Endl endl()
+    public Endl endl()
     {
         return Endl();
     }

@@ -4,6 +4,7 @@
 // =================================
 
 #include <cmrt/debug.hpp>
+#include <cmrt/io.hpp>
 #include <dom/document.hpp>
 #include <dom_parser/dom_parser.hpp>
 #include <xpath/evaluate.hpp>
@@ -32,6 +33,7 @@ public:
     bool IsSessionOpen() const { return sessionOpen; }
     void SendOutput(int fileHandle, const std::string& bytes);
     int64_t ReceiveInput(uint8_t* buffer, int64_t bufferSize);
+    bool InputEof() const { return inputEof; }
 private:
     static std::unique_ptr<CmdbSessionServer> instance;
     CmdbSessionServer();
@@ -39,12 +41,13 @@ private:
     std::string rkey;
     int port;
     bool sessionOpen;
+    bool inputEof;
     std::string inputHexByteBuffer;
 };
 
 std::unique_ptr<CmdbSessionServer> CmdbSessionServer::instance;
 
-CmdbSessionServer::CmdbSessionServer() : skey(), rkey(), port(), sessionOpen(false)
+CmdbSessionServer::CmdbSessionServer() : skey(), rkey(), port(), sessionOpen(false), inputEof(false)
 {
 }
 
@@ -189,6 +192,10 @@ int64_t CmdbSessionServer::ReceiveInput(uint8_t* buffer, int64_t bufferSize)
                     if (kind == "inputResponse")
                     {
                         std::string value = element->GetAttribute("bytes");
+                        if (value.empty())
+                        {
+                            inputEof = true;
+                        }
                         inputHexByteBuffer = value;
                         inputResponseReceived = true;
                     }
@@ -333,6 +340,11 @@ void WriteBytesToCmdbSession(int fileHandle, const uint8_t* buffer, int64_t coun
 int64_t ReadBytesFromCmdbSession(uint8_t* buffer, int64_t bufferSize)
 {
     return CmdbSessionServer::Instance().ReceiveInput(buffer, bufferSize);
+}
+
+bool CmdbSessionEof()
+{
+    return CmdbSessionServer::Instance().InputEof();
 }
 
 void InitCmdbSession()

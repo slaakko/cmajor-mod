@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <string.h>
 #include <filesystem>
+#include <fstream>
 
 namespace cmajor::rt {
 
@@ -56,7 +57,7 @@ public:
     virtual bool WriteByte(uint8_t x, int32_t& errorId) = 0;
     virtual int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) = 0;
     virtual int32_t ReadByte(int32_t& errorId) = 0;
-    virtual bool Eof() const = 0;
+    virtual bool Eof() = 0;
     virtual bool GetError(int32_t& errorId) const = 0;
     virtual bool Seek(int64_t pos, Origin origin, int32_t& errorId) = 0;
     virtual int64_t Tell(int32_t& errorId) = 0;
@@ -81,7 +82,7 @@ public:
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
     int32_t ReadByte(int32_t& errorId) override;
-    bool Eof() const override;
+    bool Eof() override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
     int64_t Tell(int32_t& errorId) override;
@@ -167,8 +168,12 @@ int32_t StdInputFile::ReadByte(int32_t& errorId)
     }
 }
 
-bool StdInputFile::Eof() const
+bool StdInputFile::Eof() 
 {
+    if (cmajor::rt::IsCmdbSessionOpen())
+    {
+        return cmajor::rt::CmdbSessionEof();
+    }
     return std::feof(stdin);
 }
 
@@ -211,7 +216,7 @@ public:
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
     int32_t ReadByte(int32_t& errorId) override;
-    bool Eof() const override;
+    bool Eof() override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
     int64_t Tell(int32_t& errorId) override;
@@ -295,7 +300,7 @@ int32_t StdOutputFile::ReadByte(int32_t& errorId)
     return -1;
 }
 
-bool StdOutputFile::Eof() const
+bool StdOutputFile::Eof() 
 {
     return std::feof(file);
 }
@@ -345,7 +350,7 @@ public:
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
     int32_t ReadByte(int32_t& errorId) override;
-    bool Eof() const override;
+    bool Eof() override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
     int64_t Tell(int32_t& errorId) override;
@@ -395,7 +400,8 @@ int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& error
         FlushStdOutAndStdErr();
         if (cmajor::rt::IsCmdbSessionOpen())
         {
-            return cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
+            int64_t result = cmajor::rt::ReadBytesFromCmdbSession(buffer, count);
+            return result;
         }
         AllocateBuffer();
         int64_t result = 0;
@@ -486,8 +492,13 @@ int32_t StdUnicodeInputFile::ReadByte(int32_t& errorId)
     }
 }
 
-bool StdUnicodeInputFile::Eof() const
+bool StdUnicodeInputFile::Eof() 
 {
+    if (cmajor::rt::IsCmdbSessionOpen())
+    {
+        bool eofValue = cmajor::rt::CmdbSessionEof();
+        return eofValue;
+    }
     return std::feof(stdin);
 }
 
@@ -530,7 +541,7 @@ public:
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
     int32_t ReadByte(int32_t& errorId) override;
-    bool Eof() const override;
+    bool Eof() override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
     int64_t Tell(int32_t& errorId) override;
@@ -623,7 +634,7 @@ int32_t StdUnicodeOutputFile::ReadByte(int32_t& errorId)
     return -1;
 }
 
-bool StdUnicodeOutputFile::Eof() const
+bool StdUnicodeOutputFile::Eof() 
 {
     return std::feof(file);
 }
@@ -769,7 +780,7 @@ public:
     bool WriteByte(uint8_t x, int32_t& errorId) override;
     int64_t Read(uint8_t* buffer, int64_t count, int32_t& errorId) override;
     int32_t ReadByte(int32_t& errorId) override;
-    bool Eof() const override;
+    bool Eof() override;
     bool GetError(int32_t& errorId) const override;
     bool Seek(int64_t pos, Origin origin, int32_t& errorId) override;
     int64_t Tell(int32_t& errorId) override;
@@ -852,7 +863,7 @@ int32_t RegularFile::ReadByte(int32_t& errorId)
     return result;
 }
 
-bool RegularFile::Eof() const
+bool RegularFile::Eof() 
 {
     return std::feof(file);
 }

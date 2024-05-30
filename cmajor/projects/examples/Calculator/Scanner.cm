@@ -42,7 +42,7 @@ namespace Calculator
                     double number = parseResult.Value();
                     token.Reset(new NumberToken(number));
                 }
-                else 
+                else
                 {
                     auto idStartResult = IsIdStart(input[pos]);
                     if (idStartResult.Error())
@@ -54,21 +54,19 @@ namespace Calculator
                     {
                         int start = pos;
                         ++pos;
-                        auto idContResult = IsIdCont(input[pos]);
-                        if (idContResult.Error())
-                        {
-                            return idContResult;
-                        }
-                        bool isIdCont = idContResult.Value();
+                        bool isIdCont = true;
                         while (pos < input.Length() && isIdCont)
                         {
-                            ++pos;
-                            idContResult = IsIdCont(input[pos]);
+                            auto idContResult = IsIdCont(input[pos]);
                             if (idContResult.Error())
                             {
                                 return idContResult;
                             }
                             isIdCont = idContResult.Value();
+                            if (isIdCont)
+                            {
+                                ++pos;
+                            }
                         }
                         ustring variableName = input.Substring(start, pos - start);
                         auto toLowerResult = ToLower(variableName);

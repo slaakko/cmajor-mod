@@ -65,7 +65,7 @@ public:
     void Clear() override;
     ConsoleInputReadyEvent& ConsoleInputReady() { return consoleInputReady; }
     bool Eof() const { return eof; }
-    const std::u32string& InputLine() const { return inputLine; }
+    std::u32string GetInputLine();
     void OutputChar(ConsoleColor textColor, ConsoleColor backColor, int handle, char32_t c);
     void OutputLines();
     int NumColumns() const;
@@ -96,6 +96,7 @@ private:
     ConsoleColor defaultBackColor;
     ConsoleColor defaultTextColor;
     std::u32string inputLine;
+    std::list<std::u32string> inputLines;
     bool eof;
     int startInputCol;
     ConsoleInputReadyEvent consoleInputReady;

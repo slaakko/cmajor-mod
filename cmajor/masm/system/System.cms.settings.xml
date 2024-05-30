@@ -3,12 +3,9 @@
     <localsViewOpen value="false"/>
     <openFiles>
         <item value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/FileStream.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/StreamReader.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/StreamReader.cm"/>
-    <currentCursorLine value="1"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/FileStream.cm"/>
+    <currentCursorLine value="203"/>
     <breakpoints/>
-    <expandedProjects>
-        <item value="System.Base"/>
-    </expandedProjects>
+    <expandedProjects/>
 </solutionSettings>
