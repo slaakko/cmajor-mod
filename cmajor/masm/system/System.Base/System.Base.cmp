@@ -18,7 +18,6 @@ source <Console.cm>;
 source <Conversion.cm>;
 source <Directory.cm>;
 source <Execute.cm>;
-source <Exception.cm>;
 source <Fiber.cm>;
 source <File.cm>;
 source <FileStream.cm>;

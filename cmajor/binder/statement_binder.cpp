@@ -1890,9 +1890,11 @@ void StatementBinder::Visit(cmajor::ast::GotoDefaultStatementNode& gotoDefaultSt
 
 void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend does not support exceptions", throwStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("exceptions not supported any more", throwStatementNode.GetFullSpan());
     }
     bool prevCompilingThrow = compilingThrow;
     compilingThrow = true;
@@ -1964,10 +1966,12 @@ void StatementBinder::Visit(cmajor::ast::ThrowStatementNode& throwStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend do not support exceptions", tryStatementNode.GetFullSpan());
-    }
+        throw cmajor::symbols::Exception("exceptions not supported any more", tryStatementNode.GetFullSpan());
+    }    
     BoundTryStatement* boundTryStatement = new BoundTryStatement(tryStatementNode.GetSpan());
     tryStatementNode.TryBlock()->Accept(*this);
     boundTryStatement->SetTryBlock(std::move(statement));
@@ -1986,9 +1990,11 @@ void StatementBinder::Visit(cmajor::ast::TryStatementNode& tryStatementNode)
 
 void StatementBinder::Visit(cmajor::ast::CatchNode& catchNode)
 {
-    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp || 
+        cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        throw cmajor::symbols::Exception("MASM backend do not support exceptions", catchNode.GetFullSpan());
+        throw cmajor::symbols::Exception("exceptions not supported any more", catchNode.GetFullSpan());
     }
     bool prevInsideCatch = insideCatch;
     insideCatch = true;
@@ -2146,11 +2152,7 @@ void StatementBinder::Visit(cmajor::ast::AssertStatementNode& assertStatementNod
                 lineNumber)), symbolTable.GetTypeByName(U"int"))));
             std::unique_ptr<BoundExpression> assertExpression = BindExpression(assertStatementNode.AssertExpr(), boundCompileUnit, currentFunction, containerScope, this);
             const char32_t* failAssertionFunctionName = U"";
-            if (false) // cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm
-            {
-                failAssertionFunctionName = U"RtFailAssertion";
-            }
-            else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::systemx)
             {
                 failAssertionFunctionName = U"System.FailAssertion";
             }

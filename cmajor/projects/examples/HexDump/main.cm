@@ -12,10 +12,15 @@ void PrintHelp()
 
 const uint bytesInLine = 16u;
 
-string HexDumpLine(uint addr, byte* bytes, uint numBytes)
+Result<string> HexDumpLine(uint addr, byte* bytes, uint numBytes)
 {
     #assert(numBytes > 0 && numBytes <= bytesInLine);
-    string line(ToHexString(addr));
+    auto lineResult = ToHexString(addr);
+    if (lineResult.Error())
+    {
+        return Result<string>(ErrorId(lineResult.GetErrorId()));
+    }
+    string line = lineResult.Value();
     line.Append(": ");
     for (uint i = 0u; i < bytesInLine; ++i)
     {
@@ -25,7 +30,13 @@ string HexDumpLine(uint addr, byte* bytes, uint numBytes)
         }
         if (i < numBytes)
         {
-            line.Append(ToHexString(bytes[i]));
+            auto byteResult = ToHexString(bytes[i]);
+            if (byteResult.Error())
+            {
+                return Result<string>(ErrorId(byteResult.GetErrorId()));
+            }
+            string hexByteStr = byteResult.Value();
+            line.Append(hexByteStr);
         }
         else
         {
@@ -48,14 +59,24 @@ string HexDumpLine(uint addr, byte* bytes, uint numBytes)
         line.Append(c);
     }
     line.Append('|');
-    return line;
+    return Result<string>(line);
 }
 
-void HexDump(const string& fileName)
+Result<bool> HexDump(const string& fileName)
 {
     Console.WriteLine(fileName + ":");
-    long fileSize = File.Size(fileName);
-    BinaryReader reader = File.OpenBinary(fileName);
+    auto fileSizeResult = File.Size(fileName);
+    if (fileSizeResult.Error())
+    {
+        return Result<bool>(ErrorId(fileSizeResult.GetErrorId()));
+    }
+    long fileSize = fileSizeResult.Value();
+    auto readerResult = File.OpenBinary(fileName);
+    if (readerResult.Error())
+    {
+        return Result<bool>(ErrorId(readerResult.GetErrorId()));
+    }
+    BinaryReader& reader = readerResult.Value();
     byte[bytesInLine] bytes;
     uint addr = 0u;
     long numRows = fileSize / bytesInLine;
@@ -63,65 +84,100 @@ void HexDump(const string& fileName)
     {
         for (uint j = 0u; j < bytesInLine; ++j)
         {
-            bytes[j] = reader.ReadByte();
+            auto byteResult = reader.ReadByte();
+            if (byteResult.Error())
+            {
+                return Result<bool>(ErrorId(byteResult.GetErrorId()));
+            }
+            bytes[j] = byteResult.Value();
         }
-        Console.WriteLine(HexDumpLine(addr, &bytes[0], bytesInLine));
+        auto lineResult = HexDumpLine(addr, &bytes[0], bytesInLine);
+        if (lineResult.Error())
+        {
+            return Result<bool>(ErrorId(lineResult.GetErrorId()));
+        }
+        string line = lineResult.Value();
+        Console.WriteLine(line);
         addr = addr + bytesInLine;
     }
     uint rest = cast<uint>(fileSize % bytesInLine);
     for (uint j = 0u; j < rest; ++j)
     {
-        bytes[j] = reader.ReadByte();
+        auto byteResult = reader.ReadByte();
+        if (byteResult.Error())
+        {
+            return Result<bool>(ErrorId(byteResult.GetErrorId()));
+        }
+        bytes[j] = byteResult.Value();
     }
-    Console.WriteLine(HexDumpLine(addr, &bytes[0], rest));
+    auto lineResult = HexDumpLine(addr, &bytes[0], rest);
+    if (lineResult.Error())
+    {
+        return Result<bool>(ErrorId(lineResult.GetErrorId()));
+    }
+    string line = lineResult.Value();
+    Console.WriteLine(line);
     addr = addr + rest;
     uint size = addr;
-    string sizeLine = ToHexString(size);
+    auto sizeLineResult = ToHexString(size);
+    if (sizeLineResult.Error())
+    {
+        return Result<bool>(ErrorId(sizeLineResult.GetErrorId()));
+    }
+    string sizeLine = sizeLineResult.Value();
     sizeLine.Append(';');
     Console.WriteLine(sizeLine);
+    return Result<bool>(true);
 }
 
 int main(int argc, const char** argv)
 {
-    try
+    List<string> fileNames;
+    for (int i = 1; i < argc; ++i)
     {
-        List<string> fileNames;
-        for (int i = 1; i < argc; ++i)
+        string arg = argv[i];
+        if (arg.StartsWith("-"))
         {
-            string arg = argv[i];
-            if (arg.StartsWith("-"))
+            if (arg == "--help" || arg == "-h")
             {
-                if (arg == "--help" || arg == "-h")
-                {
-                    PrintHelp();
-                    return 0;
-                }
-                else
-                {
-                    throw Exception("unknown arguent '" + arg + "'");
-                }
+                PrintHelp();
+                return 0;
             }
             else
             {
-                fileNames.Add(GetFullPath(arg));
+                int errorId = AllocateError("unknown arguent '" + arg + "'");
+                Console.Error() << GetErrorMessage(errorId) << endl();
+                return 1;
             }
-        }
-        if (fileNames.IsEmpty())
-        {
-            throw Exception("no files given");
         }
         else
         {
-            for (const string& fileName : fileNames)
+            auto fullPathResult = GetFullPath(arg);
+            if (fullPathResult.Error())
             {
-                HexDump(fileName);
+                Console.Error() << fullPathResult.GetErrorMessage();
+                return 1;
             }
+            fileNames.Add(fullPathResult.Value());
         }
     }
-    catch (const Exception& ex)
+    if (fileNames.IsEmpty())
     {
-        Console.Error() << ex.ToString() << endl();
+        int errorId = AllocateError("no files given");
+        Console.Error() << GetErrorMessage(errorId) << endl();
         return 1;
+    }
+    else
+    {
+        for (const string& fileName : fileNames)
+        {
+            auto result = HexDump(fileName);
+            if (result.Error())
+            {
+                Console.Error() << result.GetErrorMessage() << endl();
+                return 1;
+            }
+        }
     }
     return 0;
 }

@@ -1,0 +1,4 @@
+solution HexDump;
+project <hexdump.cmp>;
+activeProject HexDump;
+activeBackEnd=cpp;

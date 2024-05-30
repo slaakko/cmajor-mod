@@ -1,8 +1,8 @@
 solution Examples;
 project <Args/Args.cmp>;
 project <Auto/Auto.cmp>;
-//project <Calculator/Calculator.cmp>;
+project <Calculator/Calculator.cmp>;
 project <Hello/Hello.cmp>;
 //project <HelloGUI/HelloGUI.cmp>;
-//project <HexDump/hexdump.cmp>;
+project <HexDump/hexdump.cmp>;
 activeProject Args;
