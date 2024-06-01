@@ -134,6 +134,28 @@ namespace scmpg
                 }
                 invokeSystemResult->AddArgument(invokeSystemParsingMatch);
                 returnStatement.SetExpression(invokeSystemResult);
+                cm.ast.Node* parent = returnStatement.Parent();
+                if (parent != null && (parent is cm.ast.CompoundStatementNode*))
+                {
+                    cm.ast.CompoundStatementNode* compoundParent = cast<cm.ast.CompoundStatementNode*>(parent);
+                    cm.ast.ConditionalCompilationStatementNode* ifdefDebugStatement = new cm.ast.ConditionalCompilationStatementNode(span, fileIndex, 
+                        new cm.ast.ConditionalCompilationPrimaryNode(span, fileIndex, u"DEBUG"));
+                    cm.ast.InvokeNode* invokeSuccess = new cm.ast.InvokeNode(span, fileIndex, new cm.ast.IdentifierNode(span, fileIndex, u"System.Lex.WriteSuccessToLog"));
+                    invokeSuccess->AddArgument(new cm.ast.IdentifierNode(span, fileIndex, u"lexer"));
+                    invokeSuccess->AddArgument(new cm.ast.IdentifierNode(span, fileIndex, u"parser_debug_match_pos"));
+                    auto utf32Result = ToUtf32(ruleName);
+                    if (utf32Result.Error())
+                    {
+                        errorId = utf32Result.GetErrorId();
+                        return;
+                    }
+                    ustring utf32RuleName = utf32Result.Value();
+                    invokeSuccess->AddArgument(new cm.ast.UStringLiteralNode(span, fileIndex, utf32RuleName));
+                    cm.ast.ExpressionStatementNode* invokeWriteSuccessStatement = new cm.ast.ExpressionStatementNode(span, fileIndex, invokeSuccess);
+                    cm.ast.IfStatementNode* ifStatementNode = new cm.ast.IfStatementNode(span, fileIndex, new cm.ast.IdentifierNode(span, fileIndex, u"parser_debug_write_to_log"), invokeWriteSuccessStatement, null);
+                    ifdefDebugStatement->AddIfStatement(ifStatementNode);
+                    compoundParent->InsertFront(ifdefDebugStatement);
+                }
             }
         }
         public inline int GetErrorId() const

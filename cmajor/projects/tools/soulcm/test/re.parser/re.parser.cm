@@ -13,6 +13,17 @@ namespace scm.regex
         public static System.Result<Nfa> Parse(LexerT& lexer, Context* context)
         {
             System.UniquePtr<System.Parsing.Value<Nfa>> value;
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                auto result = lexer.Log()->WriteBeginRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<Nfa>(System.ErrorId(result.GetErrorId())); 
+                }
+                lexer.Log()->IncIndent();
+            }
+            #endif
             auto incResult0 = ++lexer; 
             if (incResult0.Error())
             {
@@ -25,6 +36,17 @@ namespace scm.regex
             }
             System.Parsing.Match match = matchResult.Value();
             value.Reset(cast<System.Parsing.Value<Nfa>*>(match.value));
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                lexer.Log()->DecIndent();
+                auto result = lexer.Log()->WriteEndRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<Nfa>(System.ErrorId(result.GetErrorId())); 
+                }
+            }
+            #endif
             if (match.hit)
             {
                 if (*lexer == System.Lex.END_TOKEN)
@@ -43,6 +65,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> RegularExpression(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"RegularExpression");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777473);
             System.UniquePtr<System.Parsing.Value<Nfa>> alternative;
             System.Parsing.Match match(false);
@@ -58,10 +93,34 @@ namespace scm.regex
                 alternative.Reset(cast<System.Parsing.Value<Nfa>*>(match.value));
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"RegularExpression");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<Nfa>(alternative->value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"RegularExpression");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"RegularExpression");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -70,6 +129,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Alternative(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Alternative");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777474);
             Nfa value = Nfa();
             System.UniquePtr<System.Parsing.Value<Nfa>> left;
@@ -181,10 +253,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Alternative");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<Nfa>(value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Alternative");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Alternative");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -193,6 +289,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Catenation(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Catenation");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777475);
             Nfa value = Nfa();
             System.UniquePtr<System.Parsing.Value<Nfa>> left;
@@ -280,10 +389,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Catenation");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<Nfa>(value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Catenation");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Catenation");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -292,6 +425,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Repetition(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Repetition");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777476);
             Nfa value = Nfa();
             System.UniquePtr<System.Parsing.Value<Nfa>> left;
@@ -444,10 +590,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Repetition");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<Nfa>(value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Repetition");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Repetition");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -456,6 +626,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Primary(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Primary");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777477);
             Nfa value = Nfa();
             System.UniquePtr<System.Parsing.Value<Nfa>> alt;
@@ -752,10 +935,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Primary");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<Nfa>(value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Primary");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Primary");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -764,6 +971,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Class(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Class");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777478);
             re.ast.Class* cls = null;
             System.UniquePtr<re.ast.Symbol> r;
@@ -934,10 +1154,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Class");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, cls));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Class");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Class");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -946,6 +1190,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Range(LexerT& lexer, Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Range");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777479);
             re.ast.Symbol* symbol = null;
             System.UniquePtr<System.Parsing.Value<uchar>> s;
@@ -1055,10 +1312,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Range");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, symbol));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Range");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Range");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1067,6 +1348,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> Char(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Char");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777480);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
@@ -1090,6 +1384,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('(')));
                         }
                         *parentMatch1 = match;
@@ -1118,6 +1415,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>(')')));
                         }
                         *parentMatch2 = match;
@@ -1146,6 +1446,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('[')));
                         }
                         *parentMatch3 = match;
@@ -1174,6 +1477,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('{')));
                         }
                         *parentMatch4 = match;
@@ -1202,6 +1508,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('}')));
                         }
                         *parentMatch5 = match;
@@ -1230,6 +1539,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('|')));
                         }
                         *parentMatch6 = match;
@@ -1258,6 +1570,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('*')));
                         }
                         *parentMatch7 = match;
@@ -1286,6 +1601,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('+')));
                         }
                         *parentMatch8 = match;
@@ -1314,6 +1632,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('?')));
                         }
                         *parentMatch9 = match;
@@ -1342,6 +1663,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('.')));
                         }
                         *parentMatch10 = match;
@@ -1370,6 +1694,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             auto escapeResult = MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos));
                             if (escapeResult.Error())
                             {
@@ -1404,6 +1731,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('^')));
                         }
                         *parentMatch12 = match;
@@ -1432,6 +1762,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>('-')));
                         }
                         *parentMatch13 = match;
@@ -1460,6 +1793,9 @@ namespace scm.regex
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                            #endif
                             auto match = lexer.GetToken(pos).ToString();
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<uchar>(match[0])));
                         }
@@ -1472,6 +1808,27 @@ namespace scm.regex
                     break;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Char");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Char");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1480,6 +1837,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> ExpressionRefChar(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ExpressionRefChar");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777481);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
@@ -1500,6 +1870,9 @@ namespace scm.regex
                     }
                     if (match.hit)
                     {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionRefChar");
+                        #endif
                         auto utf8Result = ToUtf8(lexer.GetToken(pos).ToString());
                         if (utf8Result.Error())
                         {
@@ -1511,6 +1884,27 @@ namespace scm.regex
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionRefChar");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ExpressionRefChar");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1519,6 +1913,19 @@ namespace scm.regex
         }
         public static System.Result<System.Parsing.Match> ExpressionReference(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ExpressionReference");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1474718497580777482);
             string s = string();
             System.UniquePtr<System.Parsing.Value<string>> chr;
@@ -1650,10 +2057,34 @@ namespace scm.regex
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionReference");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<string>(s)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionReference");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ExpressionReference");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

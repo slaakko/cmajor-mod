@@ -12,6 +12,19 @@ namespace cm.parser
     {
         public static System.Result<System.Parsing.Match> Constant(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Constant");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6144467603357171713);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<System.Parsing.Value<cm.ast.Specifiers>> specifiers;
@@ -181,10 +194,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constant");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstantNode(span, lexer.FileIndex(), specifiers->value, type.Release(), id.Release(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Constant");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Constant");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

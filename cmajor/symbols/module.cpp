@@ -1062,7 +1062,8 @@ void Module::Write(SymbolWriter& writer)
     writer.GetBinaryStreamWriter().Write(nrc);
     for (const auto& resourceScriptFilePath : resourceScriptFilePaths)
     {
-        writer.GetBinaryStreamWriter().Write(resourceScriptFilePath);
+        std::string cmajorRootRelativeFilePath = cmajor::ast::MakeCmajorRootRelativeFilePath(util::GetFullPath(resourceScriptFilePath));
+        writer.GetBinaryStreamWriter().Write(cmajorRootRelativeFilePath);
     }
 #ifdef RESOURCE_DEBUG
     int nres = resourceTable.Resources().size();
@@ -1387,7 +1388,7 @@ void Module::ReadHeader(cmajor::ast::Target target, SymbolReader& reader, Module
     int nrc = reader.GetBinaryStreamReader().ReadInt();
     for (int i = 0; i < nrc; ++i)
     {
-        std::string resourceScriptFilePath = reader.GetBinaryStreamReader().ReadUtf8String();
+        std::string resourceScriptFilePath = cmajor::ast::ExpandCmajorRootRelativeFilePath(reader.GetBinaryStreamReader().ReadUtf8String());
         resourceScriptFilePaths.push_back(resourceScriptFilePath);
         if (std::find(allResourceScriptFilePaths.begin(), allResourceScriptFilePaths.end(), resourceScriptFilePath) == allResourceScriptFilePaths.end())
         {

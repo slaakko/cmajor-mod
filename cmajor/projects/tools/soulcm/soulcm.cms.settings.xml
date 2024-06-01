@@ -2,13 +2,12 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/re.ast/nfa.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/re.ast/symbol.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg/code_generator.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/re.ast/nfa.cm"/>
-    <currentCursorLine value="26"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg/code_generator.cm"/>
+    <currentCursorLine value="878"/>
     <breakpoints/>
     <expandedProjects>
-        <item value="re.ast"/>
+        <item value="scmpg"/>
     </expandedProjects>
 </solutionSettings>

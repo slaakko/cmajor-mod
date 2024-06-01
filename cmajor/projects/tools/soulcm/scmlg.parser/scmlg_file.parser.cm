@@ -16,6 +16,17 @@ namespace scmlg.parser
         public static System.Result<System.UniquePtr<scmlg.ast.ScmlgFile>> Parse(LexerT& lexer)
         {
             System.UniquePtr<scmlg.ast.ScmlgFile> value;
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                auto result = lexer.Log()->WriteBeginRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<System.UniquePtr<scmlg.ast.ScmlgFile>>(System.ErrorId(result.GetErrorId())); 
+                }
+                lexer.Log()->IncIndent();
+            }
+            #endif
             auto incResult1 = ++lexer; 
             if (incResult1.Error())
             {
@@ -28,6 +39,17 @@ namespace scmlg.parser
             }
             System.Parsing.Match match = matchResult.Value();
             value.Reset(cast<scmlg.ast.ScmlgFile*>(match.value));
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                lexer.Log()->DecIndent();
+                auto result = lexer.Log()->WriteEndRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<System.UniquePtr<scmlg.ast.ScmlgFile>>(System.ErrorId(result.GetErrorId())); 
+                }
+            }
+            #endif
             if (match.hit)
             {
                 if (*lexer == System.Lex.END_TOKEN)
@@ -46,6 +68,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> ScmlgFile(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ScmlgFile");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573633);
             UniquePtr<scmlg.ast.ScmlgFile> scmlgFile = UniquePtr<scmlg.ast.ScmlgFile>();
             System.UniquePtr<System.Parsing.Value<string>> projectName;
@@ -202,10 +237,34 @@ namespace scmlg.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFile");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, scmlgFile.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFile");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ScmlgFile");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -214,6 +273,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> ScmlgFileDeclaration(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ScmlgFileDeclaration");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573634);
             System.UniquePtr<scmlg.ast.ScmlgFileDeclaration> tokenFileDeclaration;
             System.UniquePtr<scmlg.ast.ScmlgFileDeclaration> keywordFileDeclaration;
@@ -244,6 +316,9 @@ namespace scmlg.parser
                             tokenFileDeclaration.Reset(cast<scmlg.ast.ScmlgFileDeclaration*>(match.value));
                             if (match.hit)
                             {
+                                #if (DEBUG)
+                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFileDeclaration");
+                                #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, tokenFileDeclaration.Release()));
                             }
                             *parentMatch3 = match;
@@ -268,6 +343,9 @@ namespace scmlg.parser
                                     keywordFileDeclaration.Reset(cast<scmlg.ast.ScmlgFileDeclaration*>(match.value));
                                     if (match.hit)
                                     {
+                                        #if (DEBUG)
+                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFileDeclaration");
+                                        #endif
                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, keywordFileDeclaration.Release()));
                                     }
                                     *parentMatch5 = match;
@@ -297,6 +375,9 @@ namespace scmlg.parser
                                 expressionFileDeclaration.Reset(cast<scmlg.ast.ScmlgFileDeclaration*>(match.value));
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFileDeclaration");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, expressionFileDeclaration.Release()));
                                 }
                                 *parentMatch7 = match;
@@ -326,6 +407,9 @@ namespace scmlg.parser
                             lexerFileDeclaration.Reset(cast<scmlg.ast.ScmlgFileDeclaration*>(match.value));
                             if (match.hit)
                             {
+                                #if (DEBUG)
+                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFileDeclaration");
+                                #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, lexerFileDeclaration.Release()));
                             }
                             *parentMatch9 = match;
@@ -335,6 +419,27 @@ namespace scmlg.parser
                     *parentMatch0 = match;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ScmlgFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ScmlgFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -343,6 +448,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> TokenFileDeclaration(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"TokenFileDeclaration");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573635);
             bool external = bool();
             System.UniquePtr<System.Parsing.Value<string>> filePath;
@@ -474,10 +592,34 @@ namespace scmlg.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TokenFileDeclaration");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.TokenFileDeclaration(filePath->value, external)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TokenFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"TokenFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -486,6 +628,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> KeywordFileDeclaration(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"KeywordFileDeclaration");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573636);
             System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
@@ -550,10 +705,34 @@ namespace scmlg.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"KeywordFileDeclaration");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.KeywordFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"KeywordFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"KeywordFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -562,6 +741,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> ExpressionFileDeclaration(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ExpressionFileDeclaration");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573637);
             System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
@@ -626,10 +818,34 @@ namespace scmlg.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionFileDeclaration");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.ExpressionFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ExpressionFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ExpressionFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -638,6 +854,19 @@ namespace scmlg.parser
         }
         public static System.Result<System.Parsing.Match> LexerFileDeclaration(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"LexerFileDeclaration");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 753471983957573638);
             System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
@@ -702,10 +931,34 @@ namespace scmlg.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"LexerFileDeclaration");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.LexerFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"LexerFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"LexerFileDeclaration");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

@@ -12,6 +12,19 @@ namespace cm.parser
     {
         public static System.Result<System.Parsing.Match> Concept(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Concept");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024449);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConceptNode> conceptNode = UniquePtr<cm.ast.ConceptNode>();
@@ -451,6 +464,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Concept");
+                            #endif
                             context->EndParsingConcept();
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, conceptNode.Release()));
                         }
@@ -464,6 +480,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Concept");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Concept");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -472,6 +509,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> Refinement(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Refinement");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024450);
             UniquePtr<cm.ast.ConceptIdNode> conceptIdNode = UniquePtr<cm.ast.ConceptIdNode>();
             System.UniquePtr<cm.ast.IdentifierNode> refinedConcept;
@@ -686,10 +736,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Refinement");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, conceptIdNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Refinement");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Refinement");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -698,6 +772,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConceptBody(LexerT& lexer, cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConceptBody");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024451);
             System.Parsing.Match match(true);
             System.Parsing.Match* parentMatch0 = &match;
@@ -751,6 +838,27 @@ namespace cm.parser
                     }
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConceptBody");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConceptBody");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -759,6 +867,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConceptBodyConstraint(LexerT& lexer, cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConceptBodyConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024452);
             System.UniquePtr<cm.ast.ConstraintNode> typeNameConstraint;
             System.UniquePtr<cm.ast.ConstraintNode> signatureConstraint;
@@ -846,6 +967,27 @@ namespace cm.parser
                     *parentMatch0 = match;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConceptBodyConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConceptBodyConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -854,6 +996,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> TypeNameConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"TypeNameConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024453);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<cm.ast.Node> type;
@@ -933,10 +1088,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TypeNameConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TypeNameConstraintNode(span, lexer.FileIndex(), type.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TypeNameConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"TypeNameConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -945,6 +1124,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> SignatureConstraint(LexerT& lexer, cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"SignatureConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024454);
             System.UniquePtr<cm.ast.ConstraintNode> constructorConstraint;
             System.UniquePtr<cm.ast.ConstraintNode> destructorConstraint;
@@ -978,6 +1170,9 @@ namespace cm.parser
                                 constructorConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SignatureConstraint");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constructorConstraint.Release()));
                                 }
                                 *parentMatch4 = match;
@@ -1002,6 +1197,9 @@ namespace cm.parser
                                         destructorConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                         if (match.hit)
                                         {
+                                            #if (DEBUG)
+                                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SignatureConstraint");
+                                            #endif
                                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, destructorConstraint.Release()));
                                         }
                                         *parentMatch6 = match;
@@ -1031,6 +1229,9 @@ namespace cm.parser
                                     memberFunctionConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                     if (match.hit)
                                     {
+                                        #if (DEBUG)
+                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SignatureConstraint");
+                                        #endif
                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, memberFunctionConstraint.Release()));
                                     }
                                     *parentMatch8 = match;
@@ -1060,6 +1261,9 @@ namespace cm.parser
                                 functionConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SignatureConstraint");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, functionConstraint.Release()));
                                 }
                                 *parentMatch10 = match;
@@ -1071,6 +1275,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SignatureConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"SignatureConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1079,6 +1304,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConstructorConstraint(LexerT& lexer, cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConstructorConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024455);
             UniquePtr<cm.ast.ConstraintNode> ctorConstraintNode = UniquePtr<cm.ast.ConstraintNode>();
             System.UniquePtr<cm.ast.IdentifierNode> id;
@@ -1201,10 +1439,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConstructorConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, ctorConstraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConstructorConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConstructorConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1213,6 +1475,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> DestructorConstraint(LexerT& lexer, cm.parser.Context* context, cm.ast.IdentifierNode* firstTypeParameter)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"DestructorConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024456);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<cm.ast.IdentifierNode> id;
@@ -1356,10 +1631,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"DestructorConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DestructorConstraintNode(span, lexer.FileIndex(), id.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"DestructorConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"DestructorConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1368,6 +1667,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> MemberFunctionConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"MemberFunctionConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024457);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConstraintNode> memberFunctionConstraintNode = UniquePtr<cm.ast.ConstraintNode>();
@@ -1522,10 +1834,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberFunctionConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, memberFunctionConstraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MemberFunctionConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"MemberFunctionConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1534,6 +1870,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> FunctionConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"FunctionConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024458);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConstraintNode> functionConstraintNode = UniquePtr<cm.ast.ConstraintNode>();
@@ -1642,10 +1991,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FunctionConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, functionConstraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FunctionConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"FunctionConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1654,6 +2027,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> EmbeddedConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"EmbeddedConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024459);
             System.UniquePtr<cm.ast.WhereConstraintNode> constraint;
             System.Parsing.Match match(false);
@@ -1698,10 +2084,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EmbeddedConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constraint.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EmbeddedConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"EmbeddedConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1710,6 +2120,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> WhereConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"WhereConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024460);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<cm.ast.ConstraintNode> constraint;
@@ -1765,10 +2188,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"WhereConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.WhereConstraintNode(span, lexer.FileIndex(), constraint.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"WhereConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"WhereConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1777,6 +2224,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConstraintExpr(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConstraintExpr");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024461);
             System.UniquePtr<cm.ast.ConstraintNode> disjunctiveConstraint;
             System.Parsing.Match match(false);
@@ -1797,10 +2257,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConstraintExpr");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, disjunctiveConstraint.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1809,6 +2293,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> DisjunctiveConstraintExpr(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"DisjunctiveConstraintExpr");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024462);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConstraintNode> constraintNode = UniquePtr<cm.ast.ConstraintNode>();
@@ -1922,10 +2419,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"DisjunctiveConstraintExpr");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"DisjunctiveConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"DisjunctiveConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -1934,6 +2455,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConjunctiveConstraintExpr(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConjunctiveConstraintExpr");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024463);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConstraintNode> constraintNode = UniquePtr<cm.ast.ConstraintNode>();
@@ -2047,10 +2581,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConjunctiveConstraintExpr");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConjunctiveConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConjunctiveConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2059,6 +2617,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> PrimaryConstraintExpr(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"PrimaryConstraintExpr");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024464);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.ConstraintNode> constraintNode = UniquePtr<cm.ast.ConstraintNode>();
@@ -2138,6 +2709,9 @@ namespace cm.parser
                                 }
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryConstraintExpr");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ParenthesizedConstraintNode(span, lexer.FileIndex(), constraint.Release())));
                                 }
                                 *parentMatch7 = match;
@@ -2166,6 +2740,9 @@ namespace cm.parser
                                 atomicConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryConstraintExpr");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, atomicConstraint.Release()));
                                 }
                                 *parentMatch9 = match;
@@ -2177,6 +2754,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"PrimaryConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2185,6 +2783,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> AtomicConstraintExpr(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"AtomicConstraintExpr");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024465);
             System.UniquePtr<cm.ast.ConstraintNode> predicateConstraint;
             System.UniquePtr<cm.ast.ConstraintNode> isConstraint;
@@ -2213,6 +2824,9 @@ namespace cm.parser
                             predicateConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                             if (match.hit)
                             {
+                                #if (DEBUG)
+                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AtomicConstraintExpr");
+                                #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, predicateConstraint.Release()));
                             }
                             *parentMatch3 = match;
@@ -2237,6 +2851,9 @@ namespace cm.parser
                                     isConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                     if (match.hit)
                                     {
+                                        #if (DEBUG)
+                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AtomicConstraintExpr");
+                                        #endif
                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, isConstraint.Release()));
                                     }
                                     *parentMatch5 = match;
@@ -2266,6 +2883,9 @@ namespace cm.parser
                                 multiParamConstraint.Reset(cast<cm.ast.ConstraintNode*>(match.value));
                                 if (match.hit)
                                 {
+                                    #if (DEBUG)
+                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AtomicConstraintExpr");
+                                    #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, multiParamConstraint.Release()));
                                 }
                                 *parentMatch7 = match;
@@ -2277,6 +2897,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AtomicConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"AtomicConstraintExpr");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2285,6 +2926,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> PredicateConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"PredicateConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024466);
             System.UniquePtr<cm.ast.Node> invokeExpr;
             System.Parsing.Match match(false);
@@ -2300,10 +2954,34 @@ namespace cm.parser
                 invokeExpr.Reset(cast<cm.ast.Node*>(match.value));
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PredicateConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.PredicateConstraintNode(lexer.GetSpan(pos), lexer.FileIndex(), invokeExpr.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PredicateConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"PredicateConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2312,6 +2990,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> IsConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"IsConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024467);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<cm.ast.Node> type;
@@ -2389,10 +3080,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"IsConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IsConstraintNode(span, lexer.FileIndex(), type.Release(), conceptOrTypeName.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"IsConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"IsConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2401,6 +3116,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> ConceptOrTypeName(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"ConceptOrTypeName");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024468);
             System.UniquePtr<cm.ast.Node> conceptOrTypeName;
             System.Parsing.Match match(false);
@@ -2416,10 +3144,34 @@ namespace cm.parser
                 conceptOrTypeName.Reset(cast<cm.ast.Node*>(match.value));
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConceptOrTypeName");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, conceptOrTypeName.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ConceptOrTypeName");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"ConceptOrTypeName");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2428,6 +3180,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> MultiParamConstraint(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"MultiParamConstraint");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024469);
             UniquePtr<cm.ast.MultiParamConstraintNode> constraintNode = UniquePtr<cm.ast.MultiParamConstraintNode>();
             System.UniquePtr<cm.ast.IdentifierNode> id;
@@ -2618,10 +3383,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MultiParamConstraint");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, constraintNode.Release()));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"MultiParamConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"MultiParamConstraint");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2630,6 +3419,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> Axiom(LexerT& lexer, cm.parser.Context* context, cm.ast.ConceptNode* conceptNode)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Axiom");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024470);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.AxiomNode> axiomNode = UniquePtr<cm.ast.AxiomNode>();
@@ -2829,6 +3631,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Axiom");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Axiom");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2837,6 +3660,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> AxiomBody(LexerT& lexer, cm.parser.Context* context, cm.ast.AxiomNode* axiomNode)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"AxiomBody");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024471);
             System.UniquePtr<cm.ast.AxiomStatementNode> axiomStatement;
             System.Parsing.Match match(true);
@@ -2880,6 +3716,27 @@ namespace cm.parser
                     }
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AxiomBody");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"AxiomBody");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -2888,6 +3745,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> AxiomStatement(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"AxiomStatement");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 2218785959154024472);
             System.Lex.Span span = System.Lex.Span();
             System.UniquePtr<cm.ast.Node> expr;
@@ -2943,10 +3813,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AxiomStatement");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AxiomStatementNode(span, lexer.FileIndex(), expr.Release())));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"AxiomStatement");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"AxiomStatement");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

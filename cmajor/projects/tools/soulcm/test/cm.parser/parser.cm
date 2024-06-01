@@ -9,7 +9,7 @@ using cm.ast;
 
 namespace cm.parser
 {
-    public Result<UniquePtr<cm.ast.SourceFileNode>> ParseSourceFile(const string& sourceFilePath, System.Lex.FileMap& fileMap)
+    public Result<UniquePtr<cm.ast.SourceFileNode>> ParseSourceFile(const string& sourceFilePath, bool debug, System.Lex.FileMap& fileMap)
     {
         auto sourceFileContentResult = File.ReadAllText(sourceFilePath);
         if (sourceFileContentResult.Error())
@@ -29,6 +29,11 @@ namespace cm.parser
         if (lexer.Error())
         {
             return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(lexer.GetErrorId()));
+        }
+        System.Lex.XmlParsingLog log(Console.Error());
+        if (debug)
+        {
+            lexer.SetLog(&log);
         }
         int fileIndex = fileMap.MapFileName(sourceFilePath);
         lexer.SetFileIndex(fileIndex);

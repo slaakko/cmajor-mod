@@ -12,6 +12,19 @@ namespace cm.parser
     {
         public static System.Result<System.Parsing.Match> FundamentalType(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"FundamentalType");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6112958198560325633);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
@@ -35,6 +48,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AutoNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch1 = match;
@@ -63,6 +79,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BoolNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch2 = match;
@@ -91,6 +110,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SByteNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch3 = match;
@@ -119,6 +141,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ByteNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch4 = match;
@@ -147,6 +172,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ShortNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch5 = match;
@@ -175,6 +203,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UShortNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch6 = match;
@@ -203,6 +234,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IntNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch7 = match;
@@ -231,6 +265,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UIntNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch8 = match;
@@ -259,6 +296,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LongNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch9 = match;
@@ -287,6 +327,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ULongNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch10 = match;
@@ -315,6 +358,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.FloatNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch11 = match;
@@ -343,6 +389,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DoubleNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch12 = match;
@@ -371,6 +420,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch13 = match;
@@ -399,6 +451,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.WCharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch14 = match;
@@ -427,6 +482,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UCharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch15 = match;
@@ -455,6 +513,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.VoidNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
                         *parentMatch16 = match;
@@ -466,6 +527,27 @@ namespace cm.parser
                     break;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"FundamentalType");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

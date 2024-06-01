@@ -12,6 +12,19 @@ namespace cm.parser
     {
         public static System.Result<System.Parsing.Match> Specifiers(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Specifiers");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 8559150220632391681);
             cm.ast.Specifiers specifiers = cm.ast.Specifiers();
             System.UniquePtr<System.Parsing.Value<cm.ast.Specifiers>> specifier;
@@ -67,10 +80,34 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
+                    #if (DEBUG)
+                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifiers");
+                    #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(specifiers)));
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifiers");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Specifiers");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -79,6 +116,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> Specifier(LexerT& lexer)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Specifier");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 8559150220632391682);
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
@@ -102,6 +152,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.public_)));
                         }
                         *parentMatch1 = match;
@@ -130,6 +183,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.protected_)));
                         }
                         *parentMatch2 = match;
@@ -158,6 +214,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.private_)));
                         }
                         *parentMatch3 = match;
@@ -186,6 +245,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.internal_)));
                         }
                         *parentMatch4 = match;
@@ -214,6 +276,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.static_)));
                         }
                         *parentMatch5 = match;
@@ -242,6 +307,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.virtual_)));
                         }
                         *parentMatch6 = match;
@@ -270,6 +338,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.override_)));
                         }
                         *parentMatch7 = match;
@@ -298,6 +369,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.abstract_)));
                         }
                         *parentMatch8 = match;
@@ -326,6 +400,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.inline_)));
                         }
                         *parentMatch9 = match;
@@ -354,6 +431,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.explicit_)));
                         }
                         *parentMatch10 = match;
@@ -382,6 +462,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.external_)));
                         }
                         *parentMatch11 = match;
@@ -410,6 +493,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.suppress_)));
                         }
                         *parentMatch12 = match;
@@ -438,6 +524,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.default_)));
                         }
                         *parentMatch13 = match;
@@ -466,6 +555,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.constexpr_)));
                         }
                         *parentMatch14 = match;
@@ -494,6 +586,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.cdecl_)));
                         }
                         *parentMatch15 = match;
@@ -522,6 +617,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.nothrow_)));
                         }
                         *parentMatch16 = match;
@@ -550,6 +648,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.throw_)));
                         }
                         *parentMatch17 = match;
@@ -578,6 +679,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.new_)));
                         }
                         *parentMatch18 = match;
@@ -606,6 +710,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.unit_test_)));
                         }
                         *parentMatch19 = match;
@@ -634,6 +741,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.winapi_)));
                         }
                         *parentMatch20 = match;
@@ -645,6 +755,27 @@ namespace cm.parser
                     break;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Specifier");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Specifier");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

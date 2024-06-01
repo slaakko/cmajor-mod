@@ -8,7 +8,7 @@ using System.Collections;
 using System.IO;
 using cm.parser;
 
-Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose, System.Lex.FileMap& fileMap)
+Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose, bool debug, System.Lex.FileMap& fileMap)
 {
     for (const auto& sourceFile : project->SourceFilePaths())
     {
@@ -16,7 +16,7 @@ Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose, System.Lex.
         {
             Console.Out() << ">> " << sourceFile << endl();
         }
-        auto result = ParseSourceFile(sourceFile, fileMap);
+        auto result = ParseSourceFile(sourceFile, debug, fileMap);
         if (result.Error())
         {
             return Result<bool>(ErrorId(result.GetErrorId()));
@@ -25,7 +25,7 @@ Result<bool> ParseSourceFiles(cm.ast.Project* project, bool verbose, System.Lex.
     return Result<bool>(true);
 }
 
-Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose, System.Lex.FileMap& fileMap)
+Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose, bool debug, System.Lex.FileMap& fileMap)
 {
     for (const auto& projectFile : solution->ProjectFilePaths())
     {
@@ -39,7 +39,7 @@ Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose, System.L
             return Result<bool>(ErrorId(result.GetErrorId()));
         }
         cm.ast.Project* project = result.Value().Get();
-        auto parseResult = ParseSourceFiles(project, verbose, fileMap);
+        auto parseResult = ParseSourceFiles(project, verbose, debug, fileMap);
         if (parseResult.Error())
         {
             return Result<bool>(ErrorId(parseResult.GetErrorId()));
@@ -53,6 +53,7 @@ int main(int argc, const char** argv)
     List<string> files;
     System.Lex.FileMap fileMap;
     bool verbose = false;
+    bool debug = false;
     for (int i = 1; i < argc; ++i)
     {
         string arg = argv[i];
@@ -61,6 +62,10 @@ int main(int argc, const char** argv)
             if (arg == "--verbose")
             {
                 verbose = true;
+            }
+            else if (arg == "--debug")
+            {
+                debug = true;
             }
             else
             {
@@ -78,6 +83,11 @@ int main(int argc, const char** argv)
                     case 'v':
                     {
                         verbose = true;
+                        break;
+                    }
+                    case 'd':
+                    {
+                        debug = true;
                         break;
                     }
                     default:
@@ -108,7 +118,7 @@ int main(int argc, const char** argv)
         }
         if (file.EndsWith(".cm"))
         {
-            auto result = ParseSourceFile(file, fileMap);
+            auto result = ParseSourceFile(file, debug, fileMap);
             if (result.Error())
             {
                 Console.Error() << result.GetErrorMessage() << endl();
@@ -124,7 +134,7 @@ int main(int argc, const char** argv)
                 return 1;
             }
             cm.ast.Project* project = result.Value().Get();
-            auto parseResult = ParseSourceFiles(project, verbose, fileMap);
+            auto parseResult = ParseSourceFiles(project, verbose, debug, fileMap);
             if (parseResult.Error())
             {
                 Console.Error() << parseResult.GetErrorMessage() << endl();
@@ -140,7 +150,7 @@ int main(int argc, const char** argv)
                 return 1;
             }
             cm.ast.Solution* solution = result.Value().Get();
-            auto parseResult = ParseProjectFiles(solution, verbose, fileMap);
+            auto parseResult = ParseProjectFiles(solution, verbose, debug, fileMap);
             if (parseResult.Error())
             {
                 Console.Error() << parseResult.GetErrorMessage() << endl();

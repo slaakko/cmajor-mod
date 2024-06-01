@@ -772,6 +772,23 @@ namespace scmpg
                 sourceFormatter << ")" << endl();
                 sourceFormatter << "{" << endl();
                 sourceFormatter.IncIndent();
+                sourceFormatter << "#if (DEBUG)" << endl();
+                sourceFormatter << "long parser_debug_match_pos = 0;" << endl();
+                sourceFormatter << "bool parser_debug_write_to_log = lexer.Log() != null;" << endl();
+                sourceFormatter << "if (parser_debug_write_to_log)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "parser_debug_match_pos = lexer.GetPos();" << endl();
+                sourceFormatter << "auto result = System.Lex.WriteBeginRuleToLog(lexer, u\"" << rule.Name() << "\");" << endl();
+                sourceFormatter << "if (result.Error())" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "#endif" << endl();
                 sourceFormatter << "System.Lex.RuleGuard<LexerT> ruleGuard(lexer, " << rule.Id() << ");" << endl();
                 for (const auto& variable : rule.Variables())
                 {
@@ -853,6 +870,37 @@ namespace scmpg
                 }
                 rule.Definition()->Accept(*this);
                 if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "#if (DEBUG)" << endl();
+                sourceFormatter << "if (parser_debug_write_to_log)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "if (match.hit) " << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u\"" << rule.Name() << "\");" << endl();
+                sourceFormatter << "if (result.Error())" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "else" << endl(); 
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "auto result = System.Lex.WriteFailureToLog(lexer, u\"" << rule.Name() << "\");" << endl();
+                sourceFormatter << "if (result.Error())" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "#endif" << endl();
                 sourceFormatter << "if (!match.hit)" << endl();
                 sourceFormatter << "{" << endl();
                 sourceFormatter.IncIndent();
@@ -1004,6 +1052,21 @@ namespace scmpg
                             }
                             sourceFormatter << " value;" << endl();
                         }
+                        sourceFormatter << "#if (DEBUG)" << endl();
+                        sourceFormatter << "if (lexer.Log() != null)" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "auto result = lexer.Log()->WriteBeginRule(u\"parse\");" << endl();
+                        sourceFormatter << "if (result.Error())" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "return " << startRuleReturnTypeStr << "(System.ErrorId(result.GetErrorId())); " << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "lexer.Log()->IncIndent();" << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "#endif" << endl();
                         string incResult = "incResult" + ToString(incResultIndex++);
                         sourceFormatter << "auto " << incResult << " = ++lexer; " << endl();
                         sourceFormatter << "if (" << incResult << ".Error())" << endl();
@@ -1057,6 +1120,21 @@ namespace scmpg
                                 sourceFormatter << ">*>(match.value));" << endl();
                             }
                         }
+                        sourceFormatter << "#if (DEBUG)" << endl();
+                        sourceFormatter << "if (lexer.Log() != null)" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "lexer.Log()->DecIndent();" << endl();
+                        sourceFormatter << "auto result = lexer.Log()->WriteEndRule(u\"parse\");" << endl();
+                        sourceFormatter << "if (result.Error())" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "return " << startRuleReturnTypeStr << "(System.ErrorId(result.GetErrorId())); " << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "#endif" << endl();
                         sourceFormatter << "if (match.hit)" << endl();
                         sourceFormatter <<"{" << endl();
                         sourceFormatter.IncIndent();

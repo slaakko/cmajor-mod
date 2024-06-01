@@ -12,6 +12,19 @@ namespace cm.parser
     {
         public static System.Result<System.Parsing.Match> Function(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Function");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6925491583475253249);
             System.Lex.Span span = System.Lex.Span();
             UniquePtr<cm.ast.FunctionNode> functionNode = UniquePtr<cm.ast.FunctionNode>();
@@ -315,6 +328,9 @@ namespace cm.parser
                         }
                         if (match.hit)
                         {
+                            #if (DEBUG)
+                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Function");
+                            #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, functionNode.Release()));
                         }
                         *parentMatch24 = match;
@@ -323,6 +339,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Function");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"Function");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -331,6 +368,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> FunctionGroupId(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"FunctionGroupId");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6925491583475253250);
             System.UniquePtr<System.Parsing.Value<ustring>> operatorFunctionGroupId;
             System.Parsing.Match match(false);
@@ -353,6 +403,9 @@ namespace cm.parser
                     }
                     if (match.hit)
                     {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FunctionGroupId");
+                        #endif
                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(lexer.GetToken(pos).ToString())));
                     }
                     *parentMatch1 = match;
@@ -377,6 +430,9 @@ namespace cm.parser
                             operatorFunctionGroupId.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
                             if (match.hit)
                             {
+                                #if (DEBUG)
+                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FunctionGroupId");
+                                #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(operatorFunctionGroupId->value)));
                             }
                             *parentMatch3 = match;
@@ -386,6 +442,27 @@ namespace cm.parser
                     *parentMatch0 = match;
                 }
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FunctionGroupId");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"FunctionGroupId");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;
@@ -394,6 +471,19 @@ namespace cm.parser
         }
         public static System.Result<System.Parsing.Match> OperatorFunctionGroupId(LexerT& lexer, cm.parser.Context* context)
         {
+            #if (DEBUG)
+            long parser_debug_match_pos = 0;
+            bool parser_debug_write_to_log = lexer.Log() != null;
+            if (parser_debug_write_to_log)
+            {
+                parser_debug_match_pos = lexer.GetPos();
+                auto result = System.Lex.WriteBeginRuleToLog(lexer, u"OperatorFunctionGroupId");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            #endif
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 6925491583475253251);
             System.UniquePtr<cm.ast.Node> typeExpr;
             System.Parsing.Match match(false);
@@ -691,6 +781,9 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    #if (DEBUG)
+                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                    #endif
                                                                     lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator<<")));
                                                                 }
@@ -720,6 +813,9 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    #if (DEBUG)
+                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                    #endif
                                                                     lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator>>")));
                                                                 }
@@ -749,6 +845,9 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    #if (DEBUG)
+                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                    #endif
                                                                     lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator==")));
                                                                 }
@@ -778,6 +877,9 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    #if (DEBUG)
+                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                    #endif
                                                                     lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator=")));
                                                                 }
@@ -813,6 +915,9 @@ namespace cm.parser
                                                                 }
                                                                 if (match.hit)
                                                                 {
+                                                                    #if (DEBUG)
+                                                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                    #endif
                                                                     lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator<")));
                                                                 }
@@ -847,6 +952,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator->")));
                                                     }
@@ -876,6 +984,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator++")));
                                                     }
@@ -905,6 +1016,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator--")));
                                                     }
@@ -934,6 +1048,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator+")));
                                                     }
@@ -963,6 +1080,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator-")));
                                                     }
@@ -992,6 +1112,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator*")));
                                                     }
@@ -1021,6 +1144,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator/")));
                                                     }
@@ -1050,6 +1176,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator%")));
                                                     }
@@ -1079,6 +1208,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator&")));
                                                     }
@@ -1108,6 +1240,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator|")));
                                                     }
@@ -1137,6 +1272,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator^")));
                                                     }
@@ -1166,6 +1304,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator!")));
                                                     }
@@ -1195,6 +1336,9 @@ namespace cm.parser
                                                     }
                                                     if (match.hit)
                                                     {
+                                                        #if (DEBUG)
+                                                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                        #endif
                                                         lexer.vars.parsingOperatorFunctionGroupId = false;
                                                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator~")));
                                                     }
@@ -1244,6 +1388,9 @@ namespace cm.parser
                                                             }
                                                             if (match.hit)
                                                             {
+                                                                #if (DEBUG)
+                                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                #endif
                                                                 lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator[]")));
                                                             }
@@ -1297,6 +1444,9 @@ namespace cm.parser
                                                             }
                                                             if (match.hit)
                                                             {
+                                                                #if (DEBUG)
+                                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                                                                #endif
                                                                 lexer.vars.parsingOperatorFunctionGroupId = false;
                                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<ustring>(u"operator()")));
                                                             }
@@ -1335,6 +1485,27 @@ namespace cm.parser
                 }
                 *parentMatch0 = match;
             }
+            #if (DEBUG)
+            if (parser_debug_write_to_log)
+            {
+                if (match.hit) 
+                {
+                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"OperatorFunctionGroupId");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = System.Lex.WriteFailureToLog(lexer, u"OperatorFunctionGroupId");
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            #endif
             if (!match.hit)
             {
                 match.value = null;

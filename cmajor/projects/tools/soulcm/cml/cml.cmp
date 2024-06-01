@@ -1,4 +1,5 @@
 project cml;
+target=program;
 reference <../cm.ast/cm.ast.cmp>;
 reference <../cm.lexer/cm.lexer.cmp>;
 source <main.cm>;
